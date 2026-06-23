@@ -1,7 +1,7 @@
 # AWS SAA-C03 Study Project
 
 ## Mục tiêu
-Ôn thi AWS Solutions Architect Associate (SAA-C03) trong 2 tuần.
+Ôn thi AWS Solutions Architect Associate (SAA-C03) trong 1 tháng.
 
 ## Files trong project
 - `AWS Certified Solutions Architect Slides v47.pdf` — 900 trang slide lý thuyết
@@ -13,7 +13,7 @@
 - `001 Quiz Practice Test #6- AWS Certified Solutions Architect Associate.html`
 
 ## Người học
-- Đã có nền tảng AWS — bỏ qua giải thích cơ bản
+- Đã có nền tảng AWS
 - Điểm yếu: Networking, IAM/Security, HA, Storage & DB
 - Mục tiêu: nắm sâu để thi, không chỉ học thuộc
 
