@@ -9,8 +9,8 @@
 
 | Service | Folder | Status | Ngày học | Số câu đề thi |
 |---------|--------|--------|----------|--------------|
-| S3 | s3/ | [ ] | 1-2, 23 | 78 |
-| VPC | vpc/ | [ ] | 3-5, 8 | 48 |
+| S3 | s3/ | [ ] | 4-5, 23 | 78 |
+| VPC | vpc/ | [ ] | 1-3, 8 | 48 |
 | Route 53 | route53/ | [ ] | 6 | 12 |
 | CloudFront + Global Accelerator | cloudfront/ | [ ] | 7 | 8 |
 | IAM | iam/ | [ ] | 10-11 | 22 |

@@ -15,29 +15,29 @@ Tổng cộng: **45 ngày học** (16/09 → 06/11), chia thành các chủ đ�
 
 ---
 
-## Ngày 1 – Thứ 4 16/09: S3 — List khái niệm + đào sâu lý thuyết cơ bản (học từ đầu)
+## Ngày 1 – Thứ 4 16/09: VPC Cơ bản
+- Subnets (public/private), Route Tables, IGW, NAT Gateway vs NAT Instance
+- Tạo: `vpc/vpc.md` + `vpc/list_qa.md`
+
+## Ngày 2 – Thứ 5 17/09: VPC Security
+- Security Groups vs NACLs (stateful vs stateless), VPC Peering, VPC Endpoints (Gateway vs Interface)
+- Luyện đề VPC (phần 1)
+
+## Ngày 3 – Thứ 6 18/09: VPC Hybrid & Advanced
+- Site-to-Site VPN, Client VPN, Direct Connect, Transit Gateway, PrivateLink, Reachability Analyzer
+- Luyện đề VPC (phần 2)
+
+## Ngày 4 – Thứ 7 19/09: S3 — List khái niệm + đào sâu lý thuyết cơ bản (học từ đầu)
 - Bước 1: List khái niệm từ 78 câu trong `s3/list_qa.md` (đã có sẵn)
 - Bước 2: Đào sâu khái niệm cơ bản — Buckets/Objects, Storage classes, Versioning,
   Bucket Policy vs ACL, Encryption (SSE-S3/SSE-KMS/SSE-C)
 - Tạo mới `s3/s3.md`
 
-## Ngày 2 – Thứ 5 17/09: S3 luyện đề (bắt đầu từ câu đầu tiên)
-- Luyện câu S3 từ đầu theo `s3/list_qa.md`, thứ tự exam1 → hết exam1
-- Chưa có câu nào được làm trước đó — làm tuần tự, không bỏ sót
-
-## Ngày 3 – Thứ 6 18/09: VPC Cơ bản
-- Subnets (public/private), Route Tables, IGW, NAT Gateway vs NAT Instance
-- Tạo: `vpc/vpc.md` + `vpc/list_qa.md`
-
-## Ngày 4 – Thứ 7 19/09: VPC Security
-- Security Groups vs NACLs (stateful vs stateless), VPC Peering, VPC Endpoints (Gateway vs Interface)
-- Luyện đề VPC (phần 1)
-
 **Nghỉ – Chủ nhật 20/09**
 
-## Ngày 5 – Thứ 2 21/09: VPC Hybrid & Advanced
-- Site-to-Site VPN, Client VPN, Direct Connect, Transit Gateway, PrivateLink, Reachability Analyzer
-- Luyện đề VPC (phần 2)
+## Ngày 5 – Thứ 2 21/09: S3 luyện đề (bắt đầu từ câu đầu tiên)
+- Luyện câu S3 từ đầu theo `s3/list_qa.md`, thứ tự exam1 → hết exam1
+- Chưa có câu nào được làm trước đó — làm tuần tự, không bỏ sót
 
 ## Ngày 6 – Thứ 3 22/09: Route 53
 - Routing policies (Simple, Weighted, Latency, Failover, Geolocation, Geoproximity, Multi-Value)
