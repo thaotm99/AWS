@@ -1,10 +1,20 @@
 # AWS SAA-C03 Study Project
 
+## Lưu ý quan trọng — nơi lưu rule & tiến độ
+
+Repo này là public và có thể được mở từ nhiều máy khác nhau. **Mọi rule, workflow,
+tiến độ học đều phải lưu trong chính repo** (`CLAUDE.md`, `STUDY_PLAN.md`,
+`overview.md`, `{service}/*.md`) — **KHÔNG lưu vào Claude memory cá nhân** của máy
+đang chạy, vì memory đó không đi theo repo sang máy khác. Nếu có rule/tiến độ mới
+cần nhớ, cập nhật trực tiếp vào các file trong repo.
+
 ## Mục tiêu
 Ôn thi AWS Solutions Architect Associate (SAA-C03) trong 1 tháng.
 
 ## Files trong project
-- `AWS Certified Solutions Architect Slides v47.pdf` — 900 trang slide lý thuyết
+- `AWS Certified Solutions Architect Slides v47.pdf` — 900 trang slide, chỉ để tham khảo
+  lịch sử, KHÔNG dùng làm nguồn lý thuyết chính (có thể chứa lỗi/lỗi thời) — nguồn chính
+  là AWS official documentation (docs.aws.amazon.com)
 - `001 Quiz Practice Test #1 - AWS Certified Solutions Architect Associate.html`
 - `001 Quiz Practice Test #2 - AWS Certified Solutions Architect Associate.html`
 - `001 Quiz Practice Test #3 - AWS Certified Solutions Architect Associate.html`
@@ -19,22 +29,43 @@
 
 ---
 
-## Workflow chuẩn mỗi buổi học
+## Workflow chuẩn mỗi buổi học (question-driven)
 
-### Giai đoạn 1: Thảo luận lý thuyết
+Không đọc PDF theo section trước rồi mới luyện đề — thay vào đó bám sát câu hỏi
+thực tế để xác định phạm vi khái niệm cần học, tránh học lan man những gì đề
+không hỏi.
 
-1. Đọc section của service trong PDF (dùng pdftotext + rasterize diagram)
-2. Thảo luận sâu dựa trên nội dung PDF — hỏi qua lại để đào sâu
-3. Sau khi thảo luận xong → **tạo folder và ghi notes**
+### Bước 1: List khái niệm từ câu hỏi
 
-### Giai đoạn 2: Luyện đề
+1. Tạo folder `{service}/` nếu chưa tồn tại
+2. Lọc câu hỏi liên quan service từ 6 file HTML → tạo/update `{service}/list_qa.md`
+3. Đọc lướt các câu hỏi đó, liệt kê ra các khái niệm/concepts mà chúng kiểm tra
+4. **Ghi danh sách khái niệm ra `{service}/keyword.md`** (xem format bên dưới)
+- KHÔNG đọc toàn bộ PDF section trước — chỉ xác định phạm vi cần đào sâu
 
-1. Lọc câu hỏi liên quan service từ 6 file HTML
-2. Ra từng câu — KHÔNG reveal đáp án ngay
-3. Hỏi reasoning của người học trước
-4. Reveal + giải thích từng option đúng/sai
-5. Sau mỗi câu → **tạo file note câu hỏi**
-- Đừng bao giờ quên bước 5: tạo file note
+### Bước 2: Đào sâu khái niệm
+
+1. Với từng khái niệm đã list, tra **AWS official documentation** (docs.aws.amazon.com)
+   qua WebFetch/WebSearch — đây là nguồn chính, **KHÔNG dùng PDF slide** (slide có thể
+   chứa lỗi/lỗi thời)
+2. Thảo luận sâu, hỏi qua lại để hiểu bản chất — không chỉ học thuộc
+3. **Sau khi đào sâu xong MỘT khái niệm** → hỏi người học có muốn **thực hành hands-on**
+   (tạo resource thật trên AWS Console/CLI) không, kèm **ước tính chi phí bằng $**
+   - Nếu người học chọn OK → đưa ra step thực hành cụ thể (console hoặc CLI), và nhắc
+     dọn dẹp resource sau khi thực hành xong để tránh phát sinh phí
+   - Nếu từ chối → chuyển sang khái niệm tiếp theo
+4. Sau khi đào sâu xong toàn bộ khái niệm trong `keyword.md` → **tạo/update `{service}/{service}.md`**
+
+### Bước 3: Làm từng câu hỏi
+
+1. Ra từng câu theo `list_qa.md`, thứ tự exam1 → exam6
+2. KHÔNG reveal đáp án ngay — hỏi reasoning của người học trước
+3. Reveal + giải thích từng option đúng/sai
+
+### Bước 4: Tạo file note câu hỏi (giữ nguyên như cũ)
+
+1. Sau mỗi câu → **tạo file `exam{N}_q{M}.md` ngay lập tức**, không để dồn
+- Đừng bao giờ quên bước này
 
 ---
 
@@ -48,18 +79,21 @@
 ├── slides.pdf
 ├── exam_*.html
 ├── s3/
-│   ├── s3.md           ← lý thuyết đã thảo luận (update mỗi session)
-│   ├── list_qa.md      ← mục lục câu hỏi từ 6 đề (tạo sau lý thuyết)
-│   ├── exam1_q3.md     ← chi tiết từng câu sau khi luyện
+│   ├── list_qa.md      ← mục lục câu hỏi từ 6 đề (tạo đầu Bước 1)
+│   ├── keyword.md      ← danh sách khái niệm từ câu hỏi (cuối Bước 1)
+│   ├── s3.md           ← lý thuyết đã đào sâu (Bước 2, update mỗi session)
+│   ├── exam1_q3.md     ← chi tiết từng câu sau khi luyện (Bước 4)
 │   ├── exam2_q17.md
 │   └── exam3_q45.md
 ├── vpc/
-│   ├── vpc.md
 │   ├── list_qa.md
+│   ├── keyword.md
+│   ├── vpc.md
 │   └── exam1_q10.md
 └── iam/
-    ├── iam.md
     ├── list_qa.md
+    ├── keyword.md
+    ├── iam.md
     └── ...
 ```
 
@@ -70,7 +104,8 @@
 
 ### File `list_qa.md`
 
-Tạo ngay sau khi kết thúc thảo luận lý thuyết, **trước khi bắt đầu luyện đề**.
+Tạo **ngay đầu buổi học** (Bước 1), trước cả khi thảo luận lý thuyết — vì khái niệm
+cần đào sâu được xác định dựa trên chính các câu hỏi này.
 
 Quy trình:
 1. Parse 6 file HTML để tìm tất cả câu hỏi liên quan đến service
@@ -96,6 +131,34 @@ Quy tắc:
 - Format: `exam{N}_q{M}` — N là số đề (1–6), M là số câu trong đề gốc
 - Sắp xếp theo thứ tự: exam1 trước, exam6 sau
 - Dòng cuối ghi tổng số câu
+
+Sau khi tạo `list_qa.md` chính xác cho service → **cập nhật lại cột "Số câu đề thi"
+trong `overview.md`** bằng số thật (số ước lượng trước đó trong overview.md chỉ là
+keyword-matching sơ bộ, không chính xác 100%).
+
+### File `keyword.md`
+
+Tạo ở cuối Bước 1, ngay sau `list_qa.md` — là output chính thức của bước "list khái
+niệm", trước khi đào sâu ở Bước 2. Nếu file đã tồn tại → ghi đè (danh sách khái niệm
+xác định lại từ đầu mỗi khi ôn lại service, không append).
+
+Format:
+```markdown
+# {SERVICE} — Khái niệm từ câu hỏi đề thi
+
+## {Tên nhóm khái niệm 1}
+- {khái niệm A}
+- {khái niệm B}
+
+## {Tên nhóm khái niệm 2}
+- {khái niệm C}
+...
+```
+
+Quy tắc:
+- Tên khái niệm giữ nguyên tiếng Anh (xem mục "Quy tắc ngôn ngữ" bên dưới)
+- Nhóm theo chủ đề, không liệt kê phẳng — dễ tra cứu khi đào sâu ở Bước 2
+- Đây là checklist để Bước 2 bám theo — đào sâu xong khái niệm nào có thể tick vào đây
 
 ### Nội dung `{service}.md`
 
@@ -133,9 +196,8 @@ Ghi sau khi kết thúc thảo luận lý thuyết. Chỉ capture những gì đ
 Tạo ngay sau khi hoàn thành từng câu hỏi.
 
 **Quy tắc ngôn ngữ bắt buộc:**
-- Câu hỏi và các options: **giữ nguyên tiếng Anh**
-- Có thể thêm bản dịch tiếng Việt bên dưới mỗi phần
-- Phần giải thích: viết tiếng Việt
+- Câu hỏi, options, và tên khái niệm/concepts: **giữ nguyên tiếng Anh, KHÔNG dịch**
+- Phần giải thích/trả lời: viết tiếng Việt
 
 ```markdown
 # Exam {N} — Câu {M}
@@ -146,19 +208,11 @@ Tạo ngay sau khi hoàn thành từng câu hỏi.
 ## Câu hỏi
 {nội dung câu hỏi giữ nguyên tiếng Anh}
 
-> 🇻🇳 {bản dịch tiếng Việt}
-
 ## Các đáp án
 - A. {option A — tiếng Anh}
 - B. {option B — tiếng Anh}
 - C. {option C — tiếng Anh}
 - D. {option D — tiếng Anh}
-
-> 🇻🇳 Dịch:
-> - A. {dịch A}
-> - B. {dịch B}
-> - C. {dịch C}
-> - D. {dịch D}
 
 ## Đáp án đúng
 **{chữ cái}. {nội dung — tiếng Anh}**
@@ -188,19 +242,13 @@ Tạo ngay sau khi hoàn thành từng câu hỏi.
 
 ---
 
-## Nguyên tắc đọc PDF 900 trang
+## Nguyên tắc đào sâu lý thuyết (Bước 2)
 
-- KHÔNG đọc toàn bộ PDF một lúc — đọc từng section theo service
-- Batch tối đa 30 trang mỗi lần
-- Rasterize slide có diagram để thấy hình ảnh:
-  ```bash
-  pdftoppm -jpeg -r 150 -f {start} -l {end} slides.pdf /tmp/slides
-  ls /tmp/slides-*.jpg
-  ```
-- Extract text section:
-  ```bash
-  pdftotext -f {start} -l {end} -layout slides.pdf /tmp/section.txt
-  ```
+- **Nguồn chính: AWS official documentation** (docs.aws.amazon.com) — dùng WebFetch/WebSearch
+- **KHÔNG dùng PDF slide** (`AWS Certified Solutions Architect Slides v47.pdf`) làm nguồn
+  lý thuyết — slide có thể chứa lỗi hoặc thông tin lỗi thời (đã phát hiện: slide ghi sai
+  Max S3 Object Size là 50TB, AWS docs ghi đúng là 5TB)
+- File PDF trong repo chỉ giữ lại để tham khảo lịch sử, không dùng trong workflow học nữa
 
 ## Nguyên tắc luyện đề
 
@@ -212,24 +260,24 @@ Tạo ngay sau khi hoàn thành từng câu hỏi.
 ## Quy tắc ngôn ngữ — bắt buộc áp dụng nhất quán
 
 Áp dụng cả khi **phản hồi trong terminal** lẫn khi **tạo file**.
+Nguyên tắc chung: **câu hỏi, options, tên khái niệm/concepts giữ nguyên tiếng Anh,
+không dịch** — chỉ phần trả lời/giải thích/thảo luận dùng tiếng Việt.
+Chỉ dịch sang tiếng Việt khi người học **chủ động yêu cầu dịch** — không tự động
+thêm bản dịch.
 
 ### Khi hiển thị câu hỏi (terminal)
 ```
 [Câu hỏi giữ nguyên tiếng Anh]
 
-🇻🇳 [Bản dịch tiếng Việt]
-
 A. [Option A — tiếng Anh]
 B. [Option B — tiếng Anh]
 C. [Option C — tiếng Anh]
 D. [Option D — tiếng Anh]
-
-🇻🇳 Dịch:
-A. [Dịch A tiếng Việt]
-B. [Dịch B tiếng Việt]
-C. [Dịch C tiếng Việt]
-D. [Dịch D tiếng Việt]
 ```
+
+### Khi list/đào sâu khái niệm (Bước 1, 2)
+- Tên khái niệm/concept: giữ nguyên tiếng Anh (vd: "NAT Gateway", "Cross-account access", "Sticky sessions")
+- Nội dung thảo luận, giải thích: viết tiếng Việt
 
 ### Khi giải thích sau khi reveal
 - Viết hoàn toàn bằng tiếng Việt
@@ -239,10 +287,11 @@ D. [Dịch D tiếng Việt]
 ### Tóm tắt quy tắc
 | Phần | Ngôn ngữ |
 |------|----------|
-| Câu hỏi | Tiếng Anh (+ dịch Việt bên dưới) |
-| Options A/B/C/D | Tiếng Anh (+ dịch Việt bên dưới) |
+| Câu hỏi | Tiếng Anh (không dịch) |
+| Options A/B/C/D | Tiếng Anh (không dịch) |
+| Tên khái niệm/concepts | Tiếng Anh (không dịch) |
 | Đáp án đúng | Tiếng Anh |
-| Giải thích | Tiếng Việt |
+| Giải thích/trả lời | Tiếng Việt |
 | Key takeaway | Tiếng Việt |
 | Theory notes | Tiếng Việt |
 

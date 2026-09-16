@@ -80,4 +80,3 @@ exam6_q64
 exam6_q65
 
 Tổng: 78 câu
-Đã làm: exam1_q8, exam1_q51
