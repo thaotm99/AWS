@@ -25,7 +25,7 @@
 | EBS + EFS + FSx | storage/ | [ ] | 24 | 20 |
 | Storage Gateway + Snow Family | storage-migration/ | [ ] | 25 | 3 |
 | RDS + Aurora | rds/ | [ ] | 26-27 | 46 |
-| DynamoDB | dynamodb/ | [ ] | 27-28 | 14 |
+| DynamoDB | dynamodb/ | [ ] | 27-28 | 23 |
 | ElastiCache + Redshift + Athena | analytics/ | [ ] | 29 | 5 |
 | SQS + SNS + EventBridge | messaging/ | [ ] | 30 | 13 |
 | Kinesis | kinesis/ | [ ] | 31 | 3 |
