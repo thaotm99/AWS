@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: sticky top bar, roadmap sidebar on the left, one theory article on the right; stacks on phones. */
+/* Layout: sticky top bar, roadmap sidebar left, lesson made of interactive "scenes" right; stacks on phones. */
 :root {
   --bg: #f3f6f7;
   --surface: #ffffff;
@@ -43,89 +43,43 @@
 }
 
 * { box-sizing: border-box; }
-body {
-  background: var(--bg);
-  color: var(--ink);
-  font-family: var(--font-body);
-  font-size: var(--step-0);
-  line-height: 1.65;
-}
-body::before {
-  content: ""; position: fixed; inset: 0 0 auto;
-  height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface);
-}
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: var(--step-0); line-height: 1.65; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
 a { color: var(--accent); }
 code, .mono { font-family: var(--font-mono); font-size: 0.88em; }
 button { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
 /* Top bar */
-.topbar {
-  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
-  background: var(--surface); border-bottom: 1px solid var(--line);
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-}
-.topbar-inner {
-  max-width: 1200px; margin: 0 auto; height: 56px;
-  display: flex; align-items: center; gap: 16px;
-}
+.topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.topbar-inner { max-width: 1240px; margin: 0 auto; height: 56px; display: flex; align-items: center; gap: 16px; }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -0.01em; }
-.brand-mark {
-  width: 26px; height: 26px; border-radius: 6px; background: var(--accent);
-  display: grid; place-items: center;
-}
-.brand-mark svg { display: block; }
+.brand-mark { width: 26px; height: 26px; border-radius: 6px; background: var(--accent); display: grid; place-items: center; }
 .brand small { font-weight: 500; color: var(--muted); font-size: var(--step--1); }
 .topnav { margin-left: auto; display: flex; gap: 4px; }
-.topnav a {
-  text-decoration: none; color: var(--muted); padding: 6px 12px; border-radius: 6px;
-  font-size: var(--step--1); font-weight: 500;
-}
+.topnav a { text-decoration: none; color: var(--muted); padding: 6px 12px; border-radius: 6px; font-size: var(--step--1); font-weight: 500; }
 .topnav a[aria-current="page"] { color: var(--ink); background: var(--bg); }
 .topnav .soon { opacity: 0.6; }
-.menu-btn {
-  display: none; border: 1px solid var(--line); background: var(--surface);
-  padding: 6px 12px; border-radius: 6px; font-size: var(--step--1); cursor: pointer;
-}
+.menu-btn { display: none; border: 1px solid var(--line); background: var(--surface); padding: 6px 12px; border-radius: 6px; font-size: var(--step--1); cursor: pointer; margin-left: auto; }
 
 /* Shell */
-.shell {
-  max-width: 1200px; margin: 0 auto;
-  display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 40px;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 28px 64px;
-}
+.shell { max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 64px; }
 
 /* Sidebar roadmap */
-.sidebar { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 76px); align-self: start;
-  max-height: calc(100vh - 96px); overflow-y: auto; padding-right: 4px; }
+.sidebar { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 76px); align-self: start; max-height: calc(100vh - 96px); overflow-y: auto; padding-right: 4px; }
 .side-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
 .filter { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 6px; }
-.chip {
-  border: 1px solid var(--line); background: var(--surface); cursor: pointer;
-  border-radius: 999px; padding: 3px 11px; font-size: var(--step--1); font-weight: 500;
-}
+.chip { border: 1px solid var(--line); background: var(--surface); cursor: pointer; border-radius: 999px; padding: 3px 11px; font-size: var(--step--1); font-weight: 500; }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .filter-note { font-size: var(--step--1); color: var(--muted); margin: 0 0 14px; }
 .layers { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
-.layer > button {
-  width: 100%; display: flex; align-items: baseline; gap: 10px; text-align: left;
-  background: none; border: 0; padding: 7px 4px; cursor: pointer; font-weight: 600;
-}
-.layer-num {
-  font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted);
-  width: 22px; flex: none;
-}
+.layer > button { width: 100%; display: flex; align-items: baseline; gap: 10px; text-align: left; background: none; border: 0; padding: 7px 4px; cursor: pointer; font-weight: 600; }
+.layer-num { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); width: 22px; flex: none; }
 .layer-count { margin-left: auto; font-weight: 400; font-size: 0.75rem; color: var(--muted); font-family: var(--font-mono); }
-.concepts { list-style: none; margin: 0 0 6px; padding: 0 0 0 14px; border-left: 1px solid var(--line); margin-left: 14px; }
-.concepts[hidden] { display: none; }
-.concept {
-  display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
-  background: none; border: 0; padding: 5px 8px; border-radius: 6px; cursor: pointer;
-  font-size: 0.875rem; color: var(--ink); line-height: 1.35;
-}
+.concepts { list-style: none; margin: 0 0 6px 14px; padding: 0 0 0 14px; border-left: 1px solid var(--line); }
+.concept { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: none; border: 0; padding: 5px 8px; border-radius: 6px; cursor: pointer; font-size: 0.875rem; line-height: 1.35; }
 .concept:hover { background: var(--surface); }
 .concept[aria-current="page"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
 .concept.dim { opacity: 0.32; }
@@ -139,156 +93,219 @@ button { font: inherit; color: inherit; }
 .legend i.d { background: var(--ok); border-color: var(--ok); }
 
 /* Article */
-.article { min-width: 0; max-width: 760px; }
+.article { min-width: 0; max-width: 860px; }
 .crumbs { font-size: var(--step--1); color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; }
 .crumbs b { color: var(--ink); font-weight: 500; }
 h1 { font-size: var(--step-3); line-height: 1.15; letter-spacing: -0.02em; margin: 10px 0 12px; text-wrap: balance; }
-h2 { font-size: var(--step-2); line-height: 1.25; letter-spacing: -0.01em; margin: 0 0 12px; text-wrap: balance; }
+h2 { font-size: var(--step-2); line-height: 1.25; letter-spacing: -0.01em; margin: 0 0 8px; text-wrap: balance; }
 h3 { font-size: var(--step-1); margin: 0 0 6px; }
-.lede { font-size: var(--step-1); color: var(--muted); margin: 0 0 18px; max-width: 62ch; }
-.meta-row { display: flex; flex-wrap: wrap; gap: 18px 28px; padding: 14px 0; border-block: 1px solid var(--line); font-size: var(--step--1); }
+p { margin: 0 0 12px; max-width: 68ch; }
+.lede { font-size: var(--step-1); color: var(--muted); margin: 0 0 18px; }
+.meta-row { display: flex; flex-wrap: wrap; gap: 18px 28px; padding: 14px 0; border-block: 1px solid var(--line); font-size: var(--step--1); margin: 0; }
 .meta-row dt { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
 .meta-row dd { margin: 2px 0 0; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 .cert { font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; padding: 1px 7px; border-radius: 4px; border: 1px solid var(--line); background: var(--surface); }
-.done-btn {
-  border: 1px solid var(--line); background: var(--surface); border-radius: 6px;
-  padding: 4px 10px; cursor: pointer; font-size: var(--step--1);
-}
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 7px; padding: 6px 12px; cursor: pointer; font-size: var(--step--1); font-weight: 500; }
+.btn:hover:not(:disabled) { border-color: var(--accent); }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.btn.danger { color: var(--bad); }
+.btn[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .done-btn[aria-pressed="true"] { background: var(--ok-soft); color: var(--ok); border-color: var(--ok); }
 
-section.block { padding-top: 40px; }
-.kicker { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); font-weight: 700; margin: 0 0 6px; }
-p { margin: 0 0 14px; max-width: 66ch; }
-.analogy {
-  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
-  padding: 16px 18px; display: grid; gap: 4px;
-}
-.analogy-title { font-weight: 600; font-size: var(--step--1); color: var(--muted); }
-.analogy p { margin: 0; }
+/* Story intro */
+.story { margin-top: 28px; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 20px; align-items: center;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+.story svg { width: 100%; height: auto; display: block; }
+.story p { margin: 0; }
+.story .eyebrow { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--edge); font-weight: 700; margin-bottom: 4px; }
+.toc { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.toc a { font-size: var(--step--1); text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; color: var(--ink); background: var(--bg); }
 
-.reasons { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.reason { border-top: 2px solid var(--ink); padding-top: 10px; }
-.reason p { font-size: 0.9375rem; color: var(--muted); margin: 0; }
+/* Scene */
+.scene { margin-top: 44px; scroll-margin-top: 80px; }
+.scene-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+.scene-no { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); font-weight: 500; white-space: nowrap; }
+.stage { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-top: 12px; }
+.stage-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.stage-bar .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
+.stage-bar .sep { width: 1px; align-self: stretch; background: var(--line); margin: 0 4px; }
+.svg-wrap { overflow-x: auto; padding: 6px 8px; }
+.svg-wrap svg { display: block; width: 100%; min-width: 580px; height: auto; }
+.readout { border-top: 1px solid var(--line); padding: 12px 16px 14px; font-size: 0.9375rem; min-height: 64px; }
+.readout strong { display: block; }
+.takeaway { margin-top: 12px; display: flex; gap: 10px; align-items: flex-start; font-size: 0.9375rem; padding: 10px 14px; border-radius: 8px; background: var(--accent-soft); }
+.takeaway b { color: var(--accent); white-space: nowrap; }
 
-/* Diagram */
-.diagram {
-  background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
-}
-.diagram-controls { padding: 14px 16px 6px; display: grid; gap: 8px; }
-.svc-row { display: flex; flex-wrap: wrap; gap: 6px; }
-.svc {
-  border: 1px solid var(--line); background: var(--bg); border-radius: 6px; cursor: pointer;
-  padding: 4px 10px; font-size: var(--step--1); font-weight: 500;
-}
-.svc[aria-pressed="true"] { background: var(--accent); color: var(--surface); border-color: var(--accent); }
-.svg-wrap { overflow-x: auto; padding: 4px 8px; }
-.svg-wrap svg { display: block; width: 100%; min-width: 560px; height: auto; }
-.d-frame { fill: none; stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 5 5; transition: stroke .2s, fill .2s; }
-.d-region { fill: var(--bg); stroke: var(--muted); stroke-width: 1.5; transition: stroke .2s, fill .2s; }
-.d-az { fill: var(--surface); stroke: var(--muted); stroke-width: 1.2; transition: stroke .2s, fill .2s; }
-.d-dc { fill: var(--bg); stroke: var(--muted); stroke-width: 1; }
-.d-dc-line { stroke: var(--muted); stroke-width: 1; }
-.d-link { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 3 4; fill: none; }
-.d-edge { fill: var(--edge-soft); stroke: var(--edge); stroke-width: 1.5; transition: fill .2s; }
-.d-user { fill: var(--muted); }
-.d-text { fill: var(--ink); font-family: var(--font-body); font-size: 13px; font-weight: 600; }
-.d-sub { fill: var(--muted); font-family: var(--font-mono); font-size: 10.5px; }
-.d-edge-text { fill: var(--edge); font-family: var(--font-body); font-size: 11.5px; font-weight: 600; }
-.d-path { stroke: var(--edge); stroke-width: 1.5; fill: none; stroke-dasharray: 4 4; }
-.hl .d-frame { stroke: var(--accent); stroke-width: 3; stroke-dasharray: none; fill: var(--accent-soft); fill-opacity: 0.35; }
-.hl.d-region-g .d-region { stroke: var(--accent); stroke-width: 3; fill: var(--accent-soft); }
-.hl.d-az-g .d-az { stroke: var(--accent); stroke-width: 3; fill: var(--accent-soft); }
-.hl.d-edge-g .d-edge { fill: var(--edge); }
-.hl.d-edge-g .d-edge-ring { stroke: var(--edge); stroke-width: 2; fill: none; }
-.d-edge-ring { fill: none; stroke: transparent; }
-.diagram-note {
-  border-top: 1px solid var(--line); padding: 12px 16px 14px; font-size: 0.9375rem; min-height: 72px;
-}
-.diagram-note strong { display: block; margin-bottom: 2px; }
-.diagram-note .scope-pill {
-  font-family: var(--font-mono); font-size: 0.72rem; font-weight: 500; padding: 1px 7px; border-radius: 4px;
-  background: var(--accent-soft); color: var(--accent); margin-left: 6px; vertical-align: 1px;
-}
+/* SVG shared */
+.t { fill: var(--ink); font-family: var(--font-body); font-size: 13px; font-weight: 600; }
+.ts { fill: var(--muted); font-family: var(--font-mono); font-size: 10.5px; }
+.tw { fill: var(--surface); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
+.lane { stroke: var(--line); stroke-width: 2; fill: none; }
+.lane-hn { stroke: var(--line); stroke-width: 1.5; fill: none; }
+.node { fill: var(--surface); stroke: var(--accent); stroke-width: 2; }
+.node.won { fill: var(--accent); }
+.rank { fill: var(--surface); font-family: var(--font-mono); font-size: 11px; font-weight: 500; }
+.user { fill: var(--muted); }
+.pkt { fill: var(--accent); }
+.pkt-back { fill: var(--ok); }
+.pkt-bad { fill: var(--bad); }
+.pkt-edge { fill: var(--edge); }
+.frame { fill: none; stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 5 5; transition: all .25s; }
+.region { fill: var(--bg); stroke: var(--muted); stroke-width: 1.5; transition: all .25s; }
+.az { fill: var(--surface); stroke: var(--muted); stroke-width: 1.2; transition: all .25s; }
+.dc { fill: var(--bg); stroke: var(--muted); stroke-width: 1; }
+.dc-line { stroke: var(--muted); stroke-width: 1; }
+.edge-dot { fill: var(--edge-soft); stroke: var(--edge); stroke-width: 1.5; transition: fill .25s; }
+.edge-t { fill: var(--edge); font-family: var(--font-body); font-size: 11.5px; font-weight: 600; }
+.hl .frame { stroke: var(--accent); stroke-width: 3; stroke-dasharray: none; }
+.hl > .region, .hl .az { stroke: var(--accent); stroke-width: 2.5; fill: var(--accent-soft); }
+.hl .edge-dot { fill: var(--edge); }
+.tok rect { fill: var(--accent); }
+.tok text { fill: var(--surface); font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; }
+.tok.ghost rect { fill: var(--accent-soft); stroke: var(--accent); stroke-dasharray: 3 3; }
+.tok.ghost text { fill: var(--accent); }
+.zone { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 6 4; }
+.zone-t { fill: var(--accent); font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; }
+.pop { animation: pop .45s ease-out both; transform-box: fill-box; transform-origin: center; }
+@keyframes pop { from { opacity: .25; transform: scale(.85); } to { opacity: 1; transform: none; } }
 
-/* Parts table */
-.parts { display: grid; gap: 10px; }
-.part {
-  display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 16px;
-  padding: 14px 0; border-bottom: 1px solid var(--line);
-}
-.part:first-child { border-top: 1px solid var(--line); }
-.part-name { font-weight: 700; }
-.part-name .mono { display: block; font-weight: 400; color: var(--muted); font-size: 0.78rem; margin-top: 2px; }
-.part ul { margin: 0; padding-left: 18px; }
-.part li { margin-bottom: 4px; }
+/* Scene 1 bars */
+.lat { display: grid; gap: 8px; padding: 14px 16px; border-top: 1px solid var(--line); }
+.lat-row { display: grid; grid-template-columns: 110px minmax(0, 1fr) 190px; gap: 12px; align-items: center; font-size: var(--step--1); }
+.lat-row .name { font-weight: 600; }
+.lat-row .name small { display: block; font-family: var(--font-mono); font-weight: 400; color: var(--muted); font-size: 0.7rem; }
+.bar { height: 10px; background: var(--bg); border-radius: 5px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--accent); border-radius: 5px; transition: width .6s ease-out; }
+.lat-row.best .bar i { background: var(--ok); }
+.lat-row .val { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.criteria { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.crit { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: var(--step--1); }
+.crit b { display: block; font-size: 0.875rem; }
+.crit span { color: var(--muted); }
 
-.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
-table { border-collapse: collapse; width: 100%; font-size: 0.9375rem; }
-th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
-th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; background: var(--bg); }
-tr:last-child td { border-bottom: 0; }
-td .mono { white-space: nowrap; }
+/* Scene 3 */
+.az-box.down .az { fill: var(--bad-soft); stroke: var(--bad); stroke-width: 2.5; }
+.inst rect { fill: var(--ok-soft); stroke: var(--ok); stroke-width: 1.5; transition: fill .15s; }
+.inst text { fill: var(--ink); font-family: var(--font-mono); font-size: 11px; }
+.inst.hit rect { fill: var(--ok); }
+.inst.dead rect { fill: var(--bad-soft); stroke: var(--bad); }
+.inst.dead line { stroke: var(--bad); stroke-width: 2; }
+.lb rect { fill: var(--ink); }
+.down-t { fill: var(--bad); font-family: var(--font-body); font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.err-t { fill: var(--bad); font-family: var(--font-mono); font-size: 12px; font-weight: 500; }
+.status { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.pill i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; display: inline-block; }
+.count { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 
-.criteria { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 24px; padding: 0; list-style: none; margin: 0; }
-.criteria li { display: grid; gap: 2px; }
-.criteria b { font-weight: 600; }
-.criteria span { color: var(--muted); font-size: 0.9375rem; }
+/* Scene 4 */
+.cache-box rect { fill: var(--bg); stroke: var(--edge); stroke-width: 1.5; stroke-dasharray: 4 3; transition: all .25s; }
+.cache-box.full rect { fill: var(--edge-soft); stroke-dasharray: none; }
+.cache-t { fill: var(--edge); font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; }
+.origin rect { fill: var(--accent); }
+.log { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: var(--step--1); }
+.log li { display: flex; gap: 8px; }
+.log .tag { font-family: var(--font-mono); font-size: 0.7rem; font-weight: 500; padding: 0 6px; border-radius: 4px; height: fit-content; }
+.tag.miss { background: var(--edge-soft); color: var(--edge); }
+.tag.hit { background: var(--ok-soft); color: var(--ok); }
+.tag.info { background: var(--bg); color: var(--muted); }
+.timebar { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 10px; align-items: center; font-size: var(--step--1); margin-top: 6px; }
 
-.confuse { display: grid; gap: 12px; }
-.confuse-item { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+/* Scene 5 */
+.flow { fill: none; stroke-width: 3; stroke-dasharray: 7 7; animation: dash 1.1s linear infinite; }
+.flow.free { stroke: var(--ok); }
+.flow.paid { stroke: var(--edge); }
+.flow-hit { fill: none; stroke: transparent; stroke-width: 18; cursor: pointer; }
+.flow-g.active .flow { stroke-width: 5; }
+.flow-g.dim { opacity: .3; }
+.mk-free { fill: var(--ok); }
+.mk-paid { fill: var(--edge); }
+.cloud { fill: var(--bg); stroke: var(--muted); stroke-width: 1.5; }
+@keyframes dash { to { stroke-dashoffset: -28; } }
+.key { display: flex; gap: 14px; font-size: var(--step--1); color: var(--muted); }
+.key span { display: inline-flex; align-items: center; gap: 6px; }
+.key i { width: 18px; height: 3px; display: inline-block; border-radius: 2px; }
+
+/* Confusions */
+.confuse { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+.confuse-item { padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
 .confuse-item h3 { font-size: var(--step-0); }
-.confuse-item p { margin: 0; font-size: 0.9375rem; }
+.confuse-item p { margin: 0; font-size: 0.9rem; }
+.confuse-item svg { width: 100%; height: auto; display: block; margin-bottom: 8px; }
+
+/* Sort game */
+.game { margin-top: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+.pool { display: flex; flex-wrap: wrap; gap: 8px; min-height: 40px; padding-bottom: 12px; border-bottom: 1px dashed var(--line); }
+.card { border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 6px 12px; cursor: grab; font-size: var(--step--1); font-weight: 600; user-select: none; }
+.card[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.card.placed { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); cursor: default; }
+.card.shake { animation: shake .35s; border-color: var(--bad); color: var(--bad); }
+@keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+.bins { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+.bin { border: 1.5px dashed var(--line); border-radius: 10px; padding: 10px; min-height: 120px; cursor: pointer; text-align: left; background: none; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.bin.over, .bin.ready { border-color: var(--accent); background: var(--accent-soft); }
+.bin-title { font-weight: 700; font-size: 0.9375rem; }
+.bin-title small { display: block; font-weight: 400; color: var(--muted); font-size: 0.75rem; }
+.bin-items { display: flex; flex-wrap: wrap; gap: 6px; }
+.hint { font-size: var(--step--1); color: var(--muted); margin: 10px 0 0; min-height: 1.4em; }
+.hint.bad { color: var(--bad); }
+.hint.ok { color: var(--ok); }
 
 /* Quiz */
-.quiz { display: grid; gap: 14px; }
-.q { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+.quiz { display: grid; gap: 12px; margin-top: 16px; }
+.q { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
 .q-text { font-weight: 600; margin-bottom: 10px; }
 .opts { display: grid; gap: 6px; }
-.opt {
-  text-align: left; border: 1px solid var(--line); background: var(--bg); border-radius: 8px;
-  padding: 8px 12px; cursor: pointer; font-size: 0.9375rem; line-height: 1.45;
-}
+.opt { text-align: left; border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 0.9375rem; line-height: 1.45; }
 .opt:hover:not(:disabled) { border-color: var(--accent); }
 .opt:disabled { cursor: default; }
-.opt.right { background: var(--ok-soft); border-color: var(--ok); color: var(--ink); }
-.opt.wrong { background: var(--bad-soft); border-color: var(--bad); color: var(--ink); }
+.opt.right { background: var(--ok-soft); border-color: var(--ok); }
+.opt.wrong { background: var(--bad-soft); border-color: var(--bad); }
 .explain { margin-top: 10px; font-size: 0.9375rem; padding-left: 12px; border-left: 2px solid var(--ok); }
 .explain.miss { border-left-color: var(--bad); }
-.score { font-size: var(--step--1); color: var(--muted); }
 
 details.deep { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
 details.deep + details.deep { margin-top: 8px; }
-details.deep summary { cursor: pointer; padding: 12px 16px; font-weight: 600; list-style-position: inside; }
+details.deep summary { cursor: pointer; padding: 12px 16px; font-weight: 600; }
 details.deep .deep-body { padding: 0 16px 14px; font-size: 0.9375rem; }
 details.deep .deep-body p:last-child { margin-bottom: 0; }
 
-.next { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.next-col h3 { font-size: var(--step--1); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
+.next { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 12px; }
+.next-col h3 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
 .next-col ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
-.next-col li { font-size: 0.9375rem; }
-.tag-soon { font-size: 0.7rem; color: var(--muted); border: 1px dashed var(--line); border-radius: 4px; padding: 0 6px; margin-left: 6px; }
+.next-col li { font-size: 0.9rem; }
+.tag-soon { font-size: 0.7rem; color: var(--muted); border: 1px dashed var(--line); border-radius: 4px; padding: 0 6px; margin-left: 4px; white-space: nowrap; }
 
 .placeholder { padding: 48px 0; }
 .placeholder p { color: var(--muted); }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-size: var(--step--1); z-index: 20; max-width: calc(100% - 32px); }
 
-.toast {
-  position: fixed; left: 50%; transform: translateX(-50%);
-  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-  background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 8px;
-  font-size: var(--step--1); z-index: 20; max-width: calc(100% - 32px);
-}
-
-@media (max-width: 880px) {
+@media (max-width: 900px) {
   .shell { grid-template-columns: minmax(0, 1fr); gap: 20px; padding-block: 16px 48px; }
   .sidebar { position: static; max-height: none; display: none; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
   .sidebar.open { display: block; }
   .menu-btn { display: inline-block; }
   .topnav { display: none; }
-  .reasons, .criteria, .next { grid-template-columns: minmax(0, 1fr); }
-  .part { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .criteria { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .confuse, .next { grid-template-columns: minmax(0, 1fr); }
   h1 { font-size: 1.75rem; }
 }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+@media (max-width: 560px) {
+  .story { grid-template-columns: minmax(0, 1fr); }
+  .story svg { max-width: 150px; }
+  .lat-row { grid-template-columns: 90px minmax(0, 1fr); }
+  .lat-row .val { grid-column: 1 / -1; }
+  .bins { grid-template-columns: minmax(0, 1fr); }
+  .bin { min-height: 70px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+  .flow { animation: none; }
+  .pop, .card.shake { animation: none; }
+}
 </style>
 
 <header class="topbar">
@@ -314,288 +331,301 @@ details.deep .deep-body p:last-child { margin-bottom: 0; }
     <div class="filter" id="filter" role="group" aria-label="Lọc theo chứng chỉ"></div>
     <p class="filter-note" id="filterNote"></p>
     <ul class="layers" id="layers"></ul>
-    <div class="legend">
-      <span><i class="r"></i>Có bài</span>
-      <span><i></i>Sắp có</span>
-      <span><i class="d"></i>Đã học</span>
-    </div>
+    <div class="legend"><span><i class="r"></i>Có bài</span><span><i></i>Sắp có</span><span><i class="d"></i>Đã học</span></div>
   </aside>
 
   <main class="article" id="main">
     <div id="lesson">
       <div class="crumbs"><span>Lớp 0 · Nền cloud</span><span aria-hidden="true">/</span><b>Global Infrastructure</b></div>
       <h1>Global Infrastructure: Region, Availability Zone và Edge location</h1>
-      <p class="lede">Mọi tài nguyên trên AWS đều nằm ở một vị trí vật lý cụ thể. Hiểu ba tầng vị trí này là nền cho mọi bài sau: networking, high availability, chi phí và cả cách đề thi đặt câu hỏi.</p>
+      <p class="lede">Mọi thứ trên AWS đều chạy ở một nơi có thật trên bản đồ. Bài này cho bạn tự tay đặt một website lên đó, gây sự cố, đo độ trễ, và xem dữ liệu đi đâu thì tốn tiền.</p>
       <dl class="meta-row">
         <div><dt>Chứng chỉ</dt><dd><span class="cert">CLF</span><span class="cert">SAA</span><span class="cert">DVA</span><span class="cert">SOA</span></dd></div>
         <div><dt>Cần biết trước</dt><dd>Không có. Đây là điểm bắt đầu</dd></div>
-        <div><dt>Thời gian đọc</dt><dd>~12 phút</dd></div>
-        <div><dt>Tiến độ</dt><dd><button class="done-btn" id="doneBtn" aria-pressed="false">Đánh dấu đã học</button></dd></div>
+        <div><dt>Thời gian</dt><dd>~15 phút, 5 cảnh tương tác</dd></div>
+        <div><dt>Tiến độ</dt><dd><button class="btn done-btn" id="doneBtn" aria-pressed="false">Đánh dấu đã học</button></dd></div>
       </dl>
 
-      <section class="block" id="what">
-        <p class="kicker">Nó là gì</p>
-        <h2>Ba tầng vị trí của AWS</h2>
-        <p>AWS Global Infrastructure là mạng lưới data center của AWS trên khắp thế giới, tổ chức thành ba tầng. <b>Region</b> là một vùng địa lý (ví dụ Singapore). Mỗi Region gồm nhiều <b>Availability Zone (AZ)</b>, mỗi AZ là một hoặc nhiều data center tách biệt. Ngoài ra còn hàng trăm <b>Edge location</b> đặt gần người dùng để phục vụ nội dung và DNS nhanh hơn.</p>
-        <div class="analogy">
-          <div class="analogy-title">Hình dung</div>
-          <p>Region giống một thành phố. AZ là các khu công nghiệp trong thành phố, cách nhau đủ xa để một vụ mất điện hay ngập lụt ở khu này không lan sang khu kia, nhưng nối với nhau bằng đường cao tốc riêng. Edge location là các cửa hàng nhỏ đặt sát khu dân cư, bán sẵn những món hay được mua để khách không phải chạy vào tận thành phố.</p>
+      <div class="story">
+        <svg viewBox="0 0 150 120" aria-hidden="true">
+          <rect x="18" y="38" width="114" height="72" rx="6" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/>
+          <path d="M12 40 L28 16 H122 L138 40 Z" fill="var(--edge)"/>
+          <path d="M28 40 v6 a9 9 0 0 0 18 0 v-6 M46 40 v6 a9 9 0 0 0 18 0 v-6 M64 40 v6 a9 9 0 0 0 18 0 v-6 M82 40 v6 a9 9 0 0 0 18 0 v-6 M100 40 v6 a9 9 0 0 0 18 0 v-6" fill="var(--edge-soft)" stroke="var(--edge)" stroke-width="1.5"/>
+          <rect x="30" y="64" width="40" height="46" rx="3" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+          <rect x="80" y="64" width="40" height="28" rx="3" fill="var(--bg)" stroke="var(--muted)" stroke-width="1.5"/>
+          <text x="75" y="31" text-anchor="middle" fill="#fff" font-family="var(--font-body)" font-size="12" font-weight="700">ShopViet</text>
+        </svg>
+        <div>
+          <div class="eyebrow">Ví dụ xuyên suốt bài</div>
+          <p>Bạn là kỹ sư của <b>ShopViet</b>, một shop online bán hàng cho khách ở Việt Nam. Sếp giao việc: đưa ShopViet lên AWS sao cho <b>nhanh</b>, <b>không sập</b> và <b>không tốn tiền vô lý</b>. Mỗi cảnh dưới đây là một quyết định bạn phải đưa ra.</p>
+          <nav class="toc" aria-label="Các cảnh">
+            <a href="#s1">1 · Chọn Region</a><a href="#s2">2 · Bên trong Region</a><a href="#s3">3 · Khi một AZ sập</a><a href="#s4">4 · Edge location</a><a href="#s5">5 · Tiền data transfer</a><a href="#s6">Thử thách</a>
+          </nav>
         </div>
-      </section>
+      </div>
 
-      <section class="block" id="why">
-        <p class="kicker">Vì sao tồn tại</p>
-        <h2>Ba vấn đề mà một data center duy nhất không giải được</h2>
-        <div class="reasons">
-          <div class="reason">
-            <h3>Độ trễ</h3>
-            <p>Tín hiệu đi trong cáp quang có giới hạn tốc độ. Server ở Mỹ thì người dùng ở Hà Nội luôn chờ lâu hơn server ở Singapore.</p>
-          </div>
-          <div class="reason">
-            <h3>Sự cố</h3>
-            <p>Mất điện, cháy, lũ có thể làm sập cả một data center. Chia thành nhiều AZ độc lập để không bỏ hết trứng vào một giỏ.</p>
-          </div>
-          <div class="reason">
-            <h3>Luật dữ liệu</h3>
-            <p>Nhiều quốc gia và ngành nghề yêu cầu dữ liệu phải nằm trong một lãnh thổ nhất định (data residency).</p>
-          </div>
-        </div>
-      </section>
-
-      <section class="block" id="map">
-        <p class="kicker">Mô hình tư duy</p>
-        <h2>Mỗi service sống ở tầng nào?</h2>
-        <p>Chọn một service để xem nó nằm ở phạm vi nào. Phạm vi quyết định service đó chịu được sự cố ở mức nào và bạn phải tự thiết kế HA đến đâu.</p>
-        <div class="diagram">
-          <div class="diagram-controls">
-            <div class="svc-row" id="svcRow" role="group" aria-label="Chọn service"></div>
+      <!-- Scene 1 -->
+      <section class="scene" id="s1">
+        <div class="scene-head"><span class="scene-no">Cảnh 1/5</span><h2>Đặt ShopViet ở Region nào?</h2></div>
+        <p><b>Region</b> là một vùng địa lý có data center của AWS, ví dụ Singapore, Tokyo. Khách của ShopViet ở Hà Nội. Bấm nút để gửi gói tin đồng thời tới 4 Region và xem gói nào về trước.</p>
+        <div class="stage">
+          <div class="stage-bar">
+            <button class="btn primary" id="raceBtn">Gửi gói tin tới 4 Region</button>
+            <span class="count" id="raceNote">Ánh sáng trong cáp quang đi khoảng 200.000 km/giây</span>
           </div>
           <div class="svg-wrap">
-            <svg viewBox="0 0 760 400" role="img" aria-labelledby="dTitle" id="infraSvg">
-              <title id="dTitle">Sơ đồ một Region gồm 3 Availability Zone, bên ngoài là các Edge location gần người dùng</title>
-              <g class="d-global-g" id="g-global">
-                <rect class="d-frame" x="8" y="8" width="744" height="384" rx="14"/>
-                <text class="d-text" x="24" y="32">Mạng toàn cầu của AWS</text>
-                <text class="d-sub" x="24" y="48">Global</text>
-              </g>
-              <g class="d-region-g" id="g-region">
-                <rect class="d-region" x="30" y="62" width="510" height="312" rx="12"/>
-                <text class="d-text" x="48" y="88">Region · Singapore</text>
-                <text class="d-sub" x="48" y="104">ap-southeast-1</text>
-              </g>
-              <g id="g-links">
-                <path class="d-link" d="M190 240 H212"/>
-                <path class="d-link" d="M352 240 H374"/>
-                <text class="d-sub" x="285" y="358" text-anchor="middle">Kết nối riêng giữa các AZ, độ trễ thấp</text>
-              </g>
-              <g class="d-az-g" id="g-az">
-                <g>
-                  <rect class="d-az" x="50" y="120" width="140" height="220" rx="10"/>
-                  <text class="d-text" x="64" y="144">AZ a</text>
-                  <text class="d-sub" x="64" y="160">ap-southeast-1a</text>
-                  <g transform="translate(76 182)">
-                    <rect class="d-dc" width="88" height="56" rx="4"/>
-                    <line class="d-dc-line" x1="10" y1="16" x2="78" y2="16"/><line class="d-dc-line" x1="10" y1="28" x2="78" y2="28"/><line class="d-dc-line" x1="10" y1="40" x2="78" y2="40"/>
-                  </g>
-                  <g transform="translate(76 256)">
-                    <rect class="d-dc" width="88" height="56" rx="4"/>
-                    <line class="d-dc-line" x1="10" y1="16" x2="78" y2="16"/><line class="d-dc-line" x1="10" y1="28" x2="78" y2="28"/><line class="d-dc-line" x1="10" y1="40" x2="78" y2="40"/>
-                  </g>
-                </g>
-                <g>
-                  <rect class="d-az" x="212" y="120" width="140" height="220" rx="10"/>
-                  <text class="d-text" x="226" y="144">AZ b</text>
-                  <text class="d-sub" x="226" y="160">ap-southeast-1b</text>
-                  <g transform="translate(238 182)">
-                    <rect class="d-dc" width="88" height="56" rx="4"/>
-                    <line class="d-dc-line" x1="10" y1="16" x2="78" y2="16"/><line class="d-dc-line" x1="10" y1="28" x2="78" y2="28"/><line class="d-dc-line" x1="10" y1="40" x2="78" y2="40"/>
-                  </g>
-                </g>
-                <g>
-                  <rect class="d-az" x="374" y="120" width="140" height="220" rx="10"/>
-                  <text class="d-text" x="388" y="144">AZ c</text>
-                  <text class="d-sub" x="388" y="160">ap-southeast-1c</text>
-                  <g transform="translate(400 182)">
-                    <rect class="d-dc" width="88" height="56" rx="4"/>
-                    <line class="d-dc-line" x1="10" y1="16" x2="78" y2="16"/><line class="d-dc-line" x1="10" y1="28" x2="78" y2="28"/><line class="d-dc-line" x1="10" y1="40" x2="78" y2="40"/>
-                  </g>
-                  <g transform="translate(400 256)">
-                    <rect class="d-dc" width="88" height="56" rx="4"/>
-                    <line class="d-dc-line" x1="10" y1="16" x2="78" y2="16"/><line class="d-dc-line" x1="10" y1="28" x2="78" y2="28"/><line class="d-dc-line" x1="10" y1="40" x2="78" y2="40"/>
-                  </g>
-                </g>
-              </g>
-              <g class="d-edge-g" id="g-edge">
-                <path class="d-path" d="M540 200 C 580 200, 590 130, 628 128"/>
-                <path class="d-path" d="M540 240 C 590 240, 600 220, 628 220"/>
-                <path class="d-path" d="M540 280 C 580 280, 590 312, 628 312"/>
-                <circle class="d-edge-ring" cx="640" cy="128" r="17"/>
-                <circle class="d-edge" cx="640" cy="128" r="11"/>
-                <circle class="d-edge-ring" cx="640" cy="220" r="17"/>
-                <circle class="d-edge" cx="640" cy="220" r="11"/>
-                <circle class="d-edge-ring" cx="640" cy="312" r="17"/>
-                <circle class="d-edge" cx="640" cy="312" r="11"/>
-                <text class="d-edge-text" x="606" y="96">Edge location</text>
-              </g>
-              <g id="g-users" aria-hidden="true">
-                <g transform="translate(700 128)"><circle class="d-user" cx="0" cy="-7" r="5"/><path class="d-user" d="M-9 9 a9 9 0 0 1 18 0 z"/></g>
-                <g transform="translate(700 220)"><circle class="d-user" cx="0" cy="-7" r="5"/><path class="d-user" d="M-9 9 a9 9 0 0 1 18 0 z"/></g>
-                <g transform="translate(700 312)"><circle class="d-user" cx="0" cy="-7" r="5"/><path class="d-user" d="M-9 9 a9 9 0 0 1 18 0 z"/></g>
-                <text class="d-sub" x="700" y="350" text-anchor="middle">Người dùng</text>
-              </g>
+            <svg viewBox="0 0 760 250" id="raceSvg" role="img" aria-label="Gói tin đi từ Hà Nội tới 4 Region ở các khoảng cách khác nhau">
+              <g id="raceStatic"></g>
+              <g id="racePk"></g>
             </svg>
           </div>
-          <div class="diagram-note" id="diagramNote" aria-live="polite"></div>
+          <div class="lat" id="latBars" aria-live="polite"></div>
         </div>
+        <div class="criteria">
+          <div class="crit"><b>Compliance</b><span>Luật yêu cầu dữ liệu nằm ở đâu. Xét đầu tiên.</span></div>
+          <div class="crit"><b>Latency</b><span>Gần khách nhất. Thứ bạn vừa đo ở trên.</span></div>
+          <div class="crit"><b>Service availability</b><span>Region đó đã có service bạn cần chưa.</span></div>
+          <div class="crit"><b>Pricing</b><span>Cùng service, mỗi Region một giá.</span></div>
+        </div>
+        <div class="takeaway"><b>Nhớ:</b><span>Khoảng cách vật lý đặt ra giới hạn dưới cho độ trễ, không tối ưu code nào vượt qua được. Mỗi trang web cần nhiều lượt đi-về nên chênh lệch bị nhân lên. Chọn Region theo 4 tiêu chí trên, compliance xét trước.</span></div>
       </section>
 
-      <section class="block" id="parts">
-        <p class="kicker">Thành phần cốt lõi</p>
-        <h2>Từng tầng gồm những gì</h2>
-        <div class="parts">
-          <div class="part">
-            <div class="part-name">Region<span class="mono">ap-southeast-1</span></div>
-            <ul>
-              <li>Một vùng địa lý, gồm nhiều AZ (các Region hiện nay thường có từ 3 AZ trở lên).</li>
-              <li>Các Region tách biệt nhau. Dữ liệu không tự rời khỏi Region trừ khi bạn cấu hình (ví dụ S3 Cross-Region Replication).</li>
-              <li>Mỗi Region có danh sách service và bảng giá riêng. Service mới thường ra ở một số Region trước.</li>
-            </ul>
+      <!-- Scene 2 -->
+      <section class="scene" id="s2">
+        <div class="scene-head"><span class="scene-no">Cảnh 2/5</span><h2>Bên trong một Region: tài nguyên của ShopViet nằm đâu?</h2></div>
+        <p>Region Singapore gồm nhiều <b>Availability Zone (AZ)</b>. Mỗi AZ là một hoặc nhiều data center độc lập về điện, mạng và làm mát. Các AZ cách nhau đủ xa để không cùng gặp một sự cố, nhưng nối với nhau bằng mạng riêng tốc độ cao. Chọn từng thành phần của ShopViet để xem AWS đặt nó ở đâu.</p>
+        <div class="stage">
+          <div class="stage-bar" id="svcRow" role="group" aria-label="Chọn tài nguyên"></div>
+          <div class="svg-wrap">
+            <svg viewBox="0 0 760 400" id="scopeSvg" role="img" aria-label="Một Region với 3 AZ và các Edge location; tài nguyên được chọn hiển thị ở đúng phạm vi">
+              <g id="g-global">
+                <rect class="frame" x="8" y="8" width="744" height="384" rx="14"/>
+                <text class="t" x="24" y="32">Mạng toàn cầu của AWS</text>
+                <text class="ts" x="24" y="48">Global</text>
+              </g>
+              <g id="g-region">
+                <rect class="region" x="30" y="62" width="510" height="312" rx="12"/>
+                <text class="t" x="48" y="88">Region · Singapore</text>
+                <text class="ts" x="48" y="104">ap-southeast-1</text>
+              </g>
+              <g id="g-az"></g>
+              <g id="g-edge">
+                <path d="M540 200 C 580 200, 590 130, 628 128" fill="none" stroke="var(--edge)" stroke-width="1.5" stroke-dasharray="4 4"/>
+                <path d="M540 240 C 590 240, 600 220, 628 220" fill="none" stroke="var(--edge)" stroke-width="1.5" stroke-dasharray="4 4"/>
+                <path d="M540 280 C 580 280, 590 312, 628 312" fill="none" stroke="var(--edge)" stroke-width="1.5" stroke-dasharray="4 4"/>
+                <circle class="edge-dot" cx="640" cy="128" r="11"/><circle class="edge-dot" cx="640" cy="220" r="11"/><circle class="edge-dot" cx="640" cy="312" r="11"/>
+                <text class="edge-t" x="606" y="104">Edge location</text>
+              </g>
+              <g aria-hidden="true">
+                <g transform="translate(704 128)"><circle class="user" cy="-7" r="5"/><path class="user" d="M-9 9 a9 9 0 0 1 18 0 z"/></g>
+                <g transform="translate(704 220)"><circle class="user" cy="-7" r="5"/><path class="user" d="M-9 9 a9 9 0 0 1 18 0 z"/></g>
+                <g transform="translate(704 312)"><circle class="user" cy="-7" r="5"/><path class="user" d="M-9 9 a9 9 0 0 1 18 0 z"/></g>
+                <text class="ts" x="704" y="344" text-anchor="middle">Khách</text>
+              </g>
+              <g id="g-ov"></g>
+            </svg>
           </div>
-          <div class="part">
-            <div class="part-name">Availability Zone<span class="mono">ap-southeast-1a</span></div>
-            <ul>
-              <li>Một hoặc nhiều data center riêng biệt, có nguồn điện, mạng và làm mát dự phòng.</li>
-              <li>Các AZ trong cùng Region cách nhau đủ xa về vật lý để không cùng chịu một sự cố, nhưng nối bằng mạng riêng băng thông cao, độ trễ thấp.</li>
-              <li>Chạy ứng dụng trên ≥ 2 AZ là cách cơ bản nhất để đạt high availability.</li>
-            </ul>
-          </div>
-          <div class="part">
-            <div class="part-name">Edge location<span class="mono">Point of Presence</span></div>
-            <ul>
-              <li>Điểm hiện diện đặt gần người dùng, số lượng nhiều hơn Region rất nhiều.</li>
-              <li>Phục vụ các service cần ở gần người dùng: CloudFront (cache nội dung), Route 53 (DNS), Global Accelerator, AWS WAF, Shield.</li>
-              <li>Bạn không tạo EC2 hay database tại Edge location.</li>
-            </ul>
-          </div>
+          <div class="readout" id="scopeNote" aria-live="polite"></div>
         </div>
+        <div class="takeaway"><b>Nhớ:</b><span>Có 3 phạm vi: Global (IAM, Route 53), Region (VPC, S3, DynamoDB) và AZ (subnet, EC2, EBS). Tài nguyên cấp Region thì AWS tự lo nhiều AZ. Tài nguyên cấp AZ thì bạn phải tự đặt ở nhiều AZ.</span></div>
       </section>
 
-      <section class="block" id="scope">
-        <p class="kicker">Phạm vi · Lựa chọn · Chi phí</p>
-        <h2>Những thứ cần thuộc</h2>
-        <h3>Phạm vi của một số service hay gặp</h3>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Phạm vi</th><th>Ví dụ</th><th>Hệ quả</th></tr></thead>
-            <tbody>
-              <tr><td><b>Global</b></td><td>IAM, Route 53, CloudFront, Organizations</td><td>Tạo một lần, dùng ở mọi Region</td></tr>
-              <tr><td><b>Region</b></td><td>VPC, S3 bucket, DynamoDB, Lambda, SQS</td><td>AWS tự trải dữ liệu qua nhiều AZ cho bạn</td></tr>
-              <tr><td><b>AZ</b></td><td>Subnet, EC2 instance, EBS volume</td><td>Bạn phải tự triển khai ở nhiều AZ để chịu được sự cố</td></tr>
-            </tbody>
-          </table>
+      <!-- Scene 3 -->
+      <section class="scene" id="s3">
+        <div class="scene-head"><span class="scene-no">Cảnh 3/5</span><h2>Khi một AZ gặp sự cố</h2></div>
+        <p>ShopViet có 2 web server (EC2) phía sau một Load Balancer. Mỗi chấm là một request của khách. Chọn cách bố trí server, rồi bấm gây sự cố để xem chuyện gì xảy ra.</p>
+        <div class="stage">
+          <div class="stage-bar">
+            <span class="label">Bố trí</span>
+            <span role="group" aria-label="Bố trí server" id="modeRow" style="display:contents"></span>
+            <span class="sep"></span>
+            <span class="label">Sự cố</span>
+            <button class="btn danger" data-fail="a">Sập AZ a</button>
+            <button class="btn danger" data-fail="b">Sập AZ b</button>
+            <button class="btn" id="healBtn">Khôi phục</button>
+            <span class="sep"></span>
+            <button class="btn" id="pauseBtn" aria-pressed="false">Tạm dừng</button>
+          </div>
+          <div class="svg-wrap">
+            <svg viewBox="0 0 760 400" id="haSvg" role="img" aria-label="Request từ khách đi qua Load Balancer tới các server trong 3 AZ">
+              <g aria-hidden="true">
+                <g transform="translate(330 30)"><circle class="user" cy="-7" r="5"/><path class="user" d="M-9 9 a9 9 0 0 1 18 0 z"/></g>
+                <g transform="translate(380 30)"><circle class="user" cy="-7" r="5"/><path class="user" d="M-9 9 a9 9 0 0 1 18 0 z"/></g>
+                <g transform="translate(430 30)"><circle class="user" cy="-7" r="5"/><path class="user" d="M-9 9 a9 9 0 0 1 18 0 z"/></g>
+                <text class="ts" x="470" y="36">Khách</text>
+              </g>
+              <rect class="region" x="20" y="130" width="720" height="258" rx="12"/>
+              <text class="t" x="36" y="154">Region · ap-southeast-1</text>
+              <g class="lb"><rect x="290" y="68" width="180" height="38" rx="8"/><text class="tw" x="380" y="92" text-anchor="middle">Load Balancer</text></g>
+              <g id="haAz"></g>
+              <g id="haInst"></g>
+              <g id="haPk"></g>
+            </svg>
+          </div>
+          <div class="readout">
+            <div class="status"><span id="haPill" class="pill ok"><i></i>ShopViet đang chạy</span><span class="count" id="haCount"></span></div>
+            <p id="haText" style="margin:8px 0 0"></p>
+          </div>
         </div>
-
-        <h3 style="margin-top:24px">Bốn tiêu chí chọn Region</h3>
-        <ul class="criteria">
-          <li><b>Compliance</b><span>Luật hoặc hợp đồng yêu cầu dữ liệu ở đâu. Tiêu chí này đứng trên các tiêu chí còn lại.</span></li>
-          <li><b>Latency</b><span>Gần người dùng nhất. Người dùng ở Việt Nam thường chọn Singapore.</span></li>
-          <li><b>Service availability</b><span>Region đó đã có service hoặc tính năng bạn cần chưa.</span></li>
-          <li><b>Pricing</b><span>Cùng một service, giá có thể khác nhau giữa các Region.</span></li>
-        </ul>
-
-        <h3 style="margin-top:24px">Data transfer: hay bị quên khi tính chi phí</h3>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Chiều dữ liệu</th><th>Tính phí?</th></tr></thead>
-            <tbody>
-              <tr><td>Từ internet vào AWS</td><td>Miễn phí</td></tr>
-              <tr><td>Trong cùng một AZ (qua private IP)</td><td>Thường miễn phí</td></tr>
-              <tr><td>Giữa các AZ trong cùng Region</td><td>Có, tính theo GB</td></tr>
-              <tr><td>Giữa các Region</td><td>Có, đắt hơn giữa AZ</td></tr>
-              <tr><td>Từ AWS ra internet</td><td>Có, thường là khoản lớn nhất</td></tr>
-            </tbody>
-          </table>
-        </div>
+        <div class="takeaway"><b>Nhớ:</b><span>EC2 nằm trong một AZ, AZ sập thì server sập theo. Đặt server ở ít nhất 2 AZ là cách cơ bản nhất để đạt high availability. Muốn chịu được cả một Region sập thì phải dùng multi-Region, đắt và phức tạp hơn nhiều.</span></div>
       </section>
 
-      <section class="block" id="confuse">
-        <p class="kicker">Dễ nhầm với</p>
-        <h2>Những chỗ hay hiểu sai</h2>
+      <!-- Scene 4 -->
+      <section class="scene" id="s4">
+        <div class="scene-head"><span class="scene-no">Cảnh 4/5</span><h2>Edge location: mang ảnh sản phẩm tới gần khách</h2></div>
+        <p><b>Edge location</b> là các điểm nhỏ của AWS đặt gần người dùng, số lượng nhiều hơn Region rất nhiều. CloudFront dùng chúng để cache nội dung. Ảnh sản phẩm của ShopViet lưu ở S3 tại Singapore. Bấm mở ảnh hai lần và so sánh.</p>
+        <div class="stage">
+          <div class="stage-bar">
+            <button class="btn primary" id="cdnBtn">Khách mở ảnh sản phẩm</button>
+            <button class="btn" id="cdnClear">Cache hết hạn (TTL)</button>
+          </div>
+          <div class="svg-wrap">
+            <svg viewBox="0 0 760 230" id="cdnSvg" role="img" aria-label="Request đi từ khách tới Edge location, nếu không có trong cache thì đi tiếp tới S3 ở Singapore">
+              <path d="M90 110 H338" stroke="var(--line)" stroke-width="2" fill="none"/>
+              <path d="M382 110 H612" stroke="var(--line)" stroke-width="2" stroke-dasharray="6 5" fill="none"/>
+              <text class="ts" x="214" y="98" text-anchor="middle">gần, vài trăm km</text>
+              <text class="ts" x="497" y="98" text-anchor="middle">xa hơn, tới Region</text>
+              <g transform="translate(66 110)" aria-hidden="true"><circle class="user" cy="-9" r="7"/><path class="user" d="M-13 13 a13 13 0 0 1 26 0 z"/></g>
+              <text class="t" x="66" y="150" text-anchor="middle">Khách</text>
+              <text class="ts" x="66" y="166" text-anchor="middle">TP.HCM</text>
+              <circle class="edge-dot" cx="360" cy="110" r="22"/>
+              <text class="edge-t" x="360" y="72" text-anchor="middle">Edge location (CloudFront)</text>
+              <g class="cache-box" id="cacheBox"><rect x="300" y="146" width="120" height="40" rx="6"/><text class="cache-t" id="cacheT" x="360" y="171" text-anchor="middle">cache: trống</text></g>
+              <g class="origin"><rect x="612" y="84" width="120" height="52" rx="8"/><text class="tw" x="672" y="106" text-anchor="middle">S3 bucket</text><text class="tw" x="672" y="124" text-anchor="middle" style="font-weight:400;font-size:11px">Singapore</text></g>
+              <text class="ts" x="672" y="158" text-anchor="middle">origin</text>
+              <g id="cdnPk"></g>
+            </svg>
+          </div>
+          <div class="readout">
+            <ul class="log" id="cdnLog"><li><span class="tag info">sẵn sàng</span><span>Cache ở edge đang trống. Bấm "Khách mở ảnh sản phẩm".</span></li></ul>
+            <div id="cdnTimes"></div>
+          </div>
+        </div>
+        <div class="takeaway"><b>Nhớ:</b><span>Edge location không chạy EC2 hay database của bạn. Nó phục vụ các service ở biên mạng: CloudFront (cache), Route 53 (DNS), Global Accelerator, WAF, Shield. Lần đầu (MISS) vẫn phải về Region, các lần sau (HIT) trả ngay tại edge.</span></div>
+      </section>
+
+      <!-- Scene 5 -->
+      <section class="scene" id="s5">
+        <div class="scene-head"><span class="scene-no">Cảnh 5/5</span><h2>Dữ liệu đi đâu thì tốn tiền?</h2></div>
+        <p>Hóa đơn AWS không chỉ có tiền server. Dữ liệu di chuyển giữa các vị trí cũng bị tính phí, và đây là khoản hay bị quên nhất. Bấm vào từng luồng để xem.</p>
+        <div class="stage">
+          <div class="stage-bar" id="flowRow" role="group" aria-label="Chọn luồng dữ liệu"></div>
+          <div class="svg-wrap">
+            <svg viewBox="0 0 760 300" id="flowSvg" role="img" aria-label="Các luồng dữ liệu: từ internet vào, ra internet, giữa hai AZ, giữa hai Region">
+              <defs>
+                <marker id="mFree" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path class="mk-free" d="M0 0 L10 5 L0 10 z"/></marker>
+                <marker id="mPaid" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path class="mk-paid" d="M0 0 L10 5 L0 10 z"/></marker>
+              </defs>
+              <path class="cloud" d="M48 92 a22 22 0 0 1 14 -40 a28 28 0 0 1 52 -6 a22 22 0 0 1 30 26 a18 18 0 0 1 -6 20 z"/>
+              <text class="t" x="94" y="80" text-anchor="middle">Internet</text>
+              <rect class="region" x="196" y="96" width="364" height="190" rx="12"/>
+              <text class="t" x="212" y="118">Region Singapore</text>
+              <rect class="az" x="214" y="132" width="150" height="138" rx="8"/><text class="ts" x="226" y="150">AZ a</text>
+              <rect class="az" x="392" y="132" width="150" height="138" rx="8"/><text class="ts" x="404" y="150">AZ b</text>
+              <g class="inst"><rect x="248" y="182" width="82" height="36" rx="6"/><text x="289" y="205" text-anchor="middle">web-1</text></g>
+              <g class="inst"><rect x="426" y="182" width="82" height="36" rx="6"/><text x="467" y="205" text-anchor="middle">web-2</text></g>
+              <rect class="region" x="606" y="140" width="140" height="110" rx="12"/>
+              <text class="t" x="618" y="162">Region Tokyo</text>
+              <g class="inst"><rect x="634" y="184" width="86" height="36" rx="6"/><text x="677" y="207" text-anchor="middle">backup</text></g>
+              <g id="flows"></g>
+            </svg>
+          </div>
+          <div class="readout" id="flowNote" aria-live="polite"></div>
+        </div>
+        <div class="stage-bar key" style="border:0;padding:8px 0 0"><span><i style="background:var(--ok)"></i>Miễn phí</span><span><i style="background:var(--edge)"></i>Tính phí theo GB</span></div>
+        <div class="takeaway"><b>Nhớ:</b><span>Vào AWS thì miễn phí, ra khỏi AWS thì trả tiền. Đi qua ranh giới AZ hay Region cũng trả tiền. Giá cụ thể khác nhau theo Region, luôn kiểm tra trang AWS Pricing.</span></div>
+      </section>
+
+      <!-- Confusions -->
+      <section class="scene" id="confuse">
+        <div class="scene-head"><span class="scene-no">Dễ nhầm</span><h2>Ba chỗ hay hiểu sai</h2></div>
         <div class="confuse">
           <div class="confuse-item">
+            <svg viewBox="0 0 220 90" aria-hidden="true">
+              <text class="ts" x="10" y="16">Account A</text><text class="ts" x="120" y="16">Account B</text>
+              <rect x="10" y="24" width="90" height="26" rx="5" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="55" y="41" text-anchor="middle" class="ts" style="fill:var(--accent)">1a</text>
+              <rect x="120" y="24" width="90" height="26" rx="5" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="165" y="41" text-anchor="middle" class="ts" style="fill:var(--accent)">1a</text>
+              <path d="M55 50 V64" stroke="var(--muted)"/><path d="M165 50 V64" stroke="var(--muted)"/>
+              <rect x="20" y="64" width="70" height="22" rx="4" fill="var(--bg)" stroke="var(--muted)"/><text x="55" y="79" text-anchor="middle" class="ts">apse1-az2</text>
+              <rect x="130" y="64" width="70" height="22" rx="4" fill="var(--bg)" stroke="var(--muted)"/><text x="165" y="79" text-anchor="middle" class="ts">apse1-az1</text>
+            </svg>
             <h3>AZ name khác AZ ID</h3>
-            <p><code>ap-southeast-1a</code> của account bạn và của account khác có thể là hai data center khác nhau, vì AWS xáo trộn tên AZ theo từng account để phân bổ tải. Muốn chỉ đúng cùng một AZ giữa các account, dùng <b>AZ ID</b> (dạng <code>apse1-az1</code>).</p>
+            <p>Tên <code>ap-southeast-1a</code> có thể trỏ tới AZ vật lý khác nhau ở mỗi account. Muốn chỉ đúng cùng một AZ giữa các account thì dùng AZ ID.</p>
           </div>
           <div class="confuse-item">
-            <h3>S3 có phải service global?</h3>
-            <p>Tên bucket phải duy nhất trên toàn cầu, nhưng mỗi bucket và dữ liệu của nó nằm trong <b>một Region</b> bạn chọn lúc tạo.</p>
+            <svg viewBox="0 0 220 90" aria-hidden="true">
+              <rect x="6" y="6" width="208" height="78" rx="8" fill="none" stroke="var(--line)" stroke-dasharray="4 4"/>
+              <text class="ts" x="14" y="22">Tên bucket: duy nhất toàn cầu</text>
+              <rect x="40" y="32" width="140" height="44" rx="6" fill="var(--bg)" stroke="var(--muted)"/>
+              <text class="ts" x="110" y="50" text-anchor="middle">Region Singapore</text>
+              <rect x="70" y="56" width="80" height="14" rx="3" fill="var(--accent)"/>
+              <text x="110" y="66" text-anchor="middle" style="fill:var(--surface);font-family:var(--font-mono);font-size:9px">shopviet-images</text>
+            </svg>
+            <h3>S3 có phải global?</h3>
+            <p>Tên bucket phải duy nhất trên toàn cầu, nhưng bucket và dữ liệu nằm trong một Region bạn chọn lúc tạo.</p>
           </div>
           <div class="confuse-item">
-            <h3>Edge location không phải Region thu nhỏ</h3>
-            <p>Edge location chỉ chạy các service ở biên mạng (cache, DNS, bảo vệ). Logic nhỏ có thể chạy ở edge bằng CloudFront Functions hoặc Lambda@Edge, nhưng ứng dụng chính và database vẫn nằm trong Region.</p>
+            <svg viewBox="0 0 220 90" aria-hidden="true">
+              <circle cx="40" cy="45" r="16" fill="var(--edge-soft)" stroke="var(--edge)" stroke-width="1.5"/>
+              <text class="ts" x="40" y="80" text-anchor="middle">Edge</text>
+              <path d="M62 45 H128" stroke="var(--muted)" stroke-dasharray="4 4"/>
+              <rect x="130" y="16" width="80" height="58" rx="8" fill="var(--bg)" stroke="var(--muted)"/>
+              <text class="ts" x="170" y="34" text-anchor="middle">Region</text>
+              <rect x="142" y="42" width="56" height="20" rx="4" fill="var(--ok-soft)" stroke="var(--ok)"/>
+              <text class="ts" x="170" y="56" text-anchor="middle" style="fill:var(--ok)">EC2, DB</text>
+            </svg>
+            <h3>Edge không phải Region thu nhỏ</h3>
+            <p>Edge chạy cache, DNS và bảo vệ. Logic nhỏ chạy được bằng CloudFront Functions hoặc Lambda@Edge, nhưng app chính và database vẫn ở Region.</p>
           </div>
         </div>
       </section>
 
-      <section class="block" id="check">
-        <p class="kicker">Kiểm tra hiểu bài</p>
-        <h2>Bốn câu hỏi về bản chất</h2>
-        <p class="score" id="score">Chọn một đáp án để xem giải thích.</p>
+      <!-- Challenge -->
+      <section class="scene" id="s6">
+        <div class="scene-head"><span class="scene-no">Thử thách</span><h2>Xếp tài nguyên vào đúng phạm vi</h2></div>
+        <p>Kéo thẻ vào đúng ô. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.</p>
+        <div class="game">
+          <div class="pool" id="pool" aria-label="Các thẻ chưa xếp"></div>
+          <div class="bins" id="bins"></div>
+          <p class="hint" id="hint" aria-live="polite"></p>
+        </div>
         <div class="quiz" id="quiz"></div>
       </section>
 
-      <section class="block" id="deep">
-        <p class="kicker">Đào sâu</p>
-        <h2>Khi bạn muốn biết thêm</h2>
+      <section class="scene" id="deep">
+        <div class="scene-head"><span class="scene-no">Đào sâu</span><h2>Khi bạn muốn biết thêm</h2></div>
         <details class="deep">
           <summary>Local Zones, Wavelength Zones và Outposts</summary>
           <div class="deep-body">
             <p><b>Local Zones</b> mở rộng một Region tới gần các thành phố lớn, cho phép chạy EC2, EBS… với độ trễ rất thấp tới người dùng ở thành phố đó.</p>
-            <p><b>Wavelength Zones</b> đặt hạ tầng AWS ngay trong mạng 5G của nhà mạng, dành cho ứng dụng cần độ trễ cực thấp trên thiết bị di động.</p>
+            <p><b>Wavelength Zones</b> đặt hạ tầng AWS trong mạng 5G của nhà mạng, cho ứng dụng di động cần độ trễ cực thấp.</p>
             <p><b>Outposts</b> là tủ phần cứng AWS lắp trong data center của chính bạn, dùng cùng API và công cụ như trên AWS.</p>
           </div>
         </details>
         <details class="deep">
           <summary>Region mặc định tắt (opt-in Region)</summary>
-          <div class="deep-body">
-            <p>Các Region ra mắt sau ngày 20/03/2019 mặc định bị tắt. Bạn phải bật trong cài đặt account trước khi tạo tài nguyên ở đó. Đề thi đôi khi dùng chi tiết này để giải thích vì sao không thấy một Region trong Console.</p>
-          </div>
+          <div class="deep-body"><p>Các Region ra mắt sau ngày 20/03/2019 mặc định bị tắt. Bạn phải bật trong cài đặt account trước khi tạo tài nguyên ở đó.</p></div>
         </details>
         <details class="deep">
-          <summary>Một AZ có phải đúng một data center?</summary>
-          <div class="deep-body">
-            <p>Không nhất thiết. Một AZ có thể gồm nhiều data center, nhưng với người dùng thì AZ là đơn vị nhỏ nhất bạn chọn được. Bạn không chọn data center cụ thể.</p>
-          </div>
+          <summary>Con số độ trễ ở Cảnh 1 tính thế nào?</summary>
+          <div class="deep-body"><p>Độ trễ đi-về tối thiểu ≈ 2 × khoảng cách ÷ 200.000 km/s, dùng khoảng cách đường chim bay từ Hà Nội. Thực tế cáp không đi thẳng và còn qua nhiều router nên độ trễ đo được thường cao hơn đáng kể. Con số chỉ để so sánh giữa các Region.</p></div>
         </details>
       </section>
 
-      <section class="block" id="next">
-        <p class="kicker">Đọc tiếp</p>
-        <h2>Bài này mở khóa</h2>
+      <section class="scene" id="next">
+        <div class="scene-head"><span class="scene-no">Đọc tiếp</span><h2>Bài này mở khóa</h2></div>
         <div class="next">
-          <div class="next-col">
-            <h3>Lý thuyết tiếp theo</h3>
-            <ul>
-              <li>Shared Responsibility Model <span class="tag-soon">sắp có</span></li>
-              <li>VPC, Subnet, Route Table, IGW <span class="tag-soon">sắp có</span></li>
-              <li>EC2 cơ bản <span class="tag-soon">sắp có</span></li>
-            </ul>
-          </div>
-          <div class="next-col">
-            <h3>Tình huống áp dụng</h3>
-            <ul>
-              <li>Web vẫn chạy khi một AZ gặp sự cố <span class="tag-soon">sắp có</span></li>
-              <li>Chọn Region cho khách hàng tại Việt Nam <span class="tag-soon">sắp có</span></li>
-            </ul>
-          </div>
-          <div class="next-col">
-            <h3>AWS docs gốc</h3>
-            <ul>
-              <li><a href="https://aws.amazon.com/about-aws/global-infrastructure/" target="_blank" rel="noopener">AWS Global Infrastructure</a></li>
-              <li><a href="https://docs.aws.amazon.com/whitepapers/latest/aws-overview/global-infrastructure.html" target="_blank" rel="noopener">Overview of AWS: Global Infrastructure</a></li>
-              <li><a href="https://docs.aws.amazon.com/ram/latest/userguide/working-with-az-ids.html" target="_blank" rel="noopener">AZ IDs for your AWS resources</a></li>
-            </ul>
-          </div>
+          <div class="next-col"><h3>Lý thuyết tiếp theo</h3><ul>
+            <li>Shared Responsibility Model <span class="tag-soon">sắp có</span></li>
+            <li>VPC, Subnet, Route Table, IGW <span class="tag-soon">sắp có</span></li>
+            <li>EC2 cơ bản <span class="tag-soon">sắp có</span></li></ul></div>
+          <div class="next-col"><h3>Tình huống áp dụng</h3><ul>
+            <li>Web vẫn chạy khi một AZ gặp sự cố <span class="tag-soon">sắp có</span></li>
+            <li>Chọn Region cho khách hàng tại Việt Nam <span class="tag-soon">sắp có</span></li></ul></div>
+          <div class="next-col"><h3>AWS docs gốc</h3><ul>
+            <li><a href="https://aws.amazon.com/about-aws/global-infrastructure/" target="_blank" rel="noopener">AWS Global Infrastructure</a></li>
+            <li><a href="https://docs.aws.amazon.com/whitepapers/latest/aws-overview/global-infrastructure.html" target="_blank" rel="noopener">Overview of AWS: Global Infrastructure</a></li>
+            <li><a href="https://docs.aws.amazon.com/ram/latest/userguide/working-with-az-ids.html" target="_blank" rel="noopener">AZ IDs for your AWS resources</a></li></ul></div>
         </div>
       </section>
     </div>
@@ -604,22 +634,70 @@ details.deep .deep-body p:last-child { margin-bottom: 0; }
       <div class="crumbs"><span id="phLayer"></span></div>
       <h1 id="phTitle"></h1>
       <dl class="meta-row"><div><dt>Chứng chỉ</dt><dd id="phCerts"></dd></div></dl>
-      <p style="margin-top:18px">Bài này chưa có trong bản demo. Khi hoàn thiện, nó sẽ theo đúng khung của bài Global Infrastructure: nó là gì, vì sao tồn tại, mô hình tư duy, thành phần cốt lõi, phạm vi và chi phí, dễ nhầm với, kiểm tra hiểu bài, đào sâu, đọc tiếp.</p>
-      <button class="done-btn" id="backBtn">Quay lại bài Global Infrastructure</button>
+      <p style="margin-top:18px">Bài này chưa có trong bản demo. Khi hoàn thiện, nó sẽ theo cùng cách học với bài Global Infrastructure: một ví dụ xuyên suốt, các cảnh tương tác có hình động, phần dễ nhầm và thử thách cuối bài.</p>
+      <button class="btn" id="backBtn">Quay lại bài Global Infrastructure</button>
     </div>
   </main>
 </div>
 <div class="toast" id="toast" hidden></div>
 
 <script>
+/* ---------- helpers ---------- */
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in (attrs || {})) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function txt(parent, x, y, s, cls, anchor) {
+  const t = el("text", { x, y, class: cls }, parent);
+  if (anchor) t.setAttribute("text-anchor", anchor);
+  t.textContent = s; return t;
+}
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+/* Move a dot along a polyline. Resolves when it arrives. */
+function travel(layer, pts, dur, cls, r) {
+  return new Promise(res => {
+    const c = el("circle", { r: r || 6, class: cls, cx: pts[0][0], cy: pts[0][1] }, layer);
+    const segs = []; let total = 0;
+    for (let i = 1; i < pts.length; i++) {
+      const L = Math.hypot(pts[i][0] - pts[i-1][0], pts[i][1] - pts[i-1][1]);
+      segs.push([pts[i-1], pts[i], L]); total += L;
+    }
+    if (REDUCED) dur = Math.min(dur, 200);
+    const t0 = performance.now();
+    function step(now) {
+      const p = Math.min(1, (now - t0) / dur);
+      let d = p * total, i = 0;
+      while (i < segs.length - 1 && d > segs[i][2]) { d -= segs[i][2]; i++; }
+      const [a, b, L] = segs[i], f = L ? Math.min(1, d / L) : 1;
+      c.setAttribute("cx", a[0] + (b[0] - a[0]) * f);
+      c.setAttribute("cy", a[1] + (b[1] - a[1]) * f);
+      if (p < 1) requestAnimationFrame(step); else { c.remove(); res(); }
+    }
+    requestAnimationFrame(step);
+  });
+}
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+};
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2400);
+}
+
+/* ---------- roadmap ---------- */
 const CURRICULUM = [
   { n: 0, name: "Nền cloud", items: [
     ["api", "Console, CLI, SDK đều là API · ARN", "CLF SAA DVA SOA"],
     ["global-infra", "Global Infrastructure", "CLF SAA DVA SOA", true],
     ["shared-resp", "Shared Responsibility Model", "CLF SAA"],
     ["pricing", "Pricing models", "CLF SAA SOA"],
-    ["well-arch", "Well-Architected Framework", "CLF SAA"],
-  ]},
+    ["well-arch", "Well-Architected Framework", "CLF SAA"] ]},
   { n: 1, name: "Identity & Security", items: [
     ["iam-basics", "IAM: Root, User, Group, Role", "CLF SAA DVA SOA"],
     ["iam-policy", "IAM Policy & evaluation logic", "SAA DVA SOA"],
@@ -628,8 +706,7 @@ const CURRICULUM = [
     ["identity-center", "IAM Identity Center / Federation", "SAA"],
     ["cognito", "Cognito", "SAA DVA"],
     ["kms", "KMS & envelope encryption", "SAA DVA SOA"],
-    ["secrets", "Secrets Manager vs Parameter Store", "SAA DVA SOA"],
-  ]},
+    ["secrets", "Secrets Manager vs Parameter Store", "SAA DVA SOA"] ]},
   { n: 2, name: "Networking", items: [
     ["cidr", "CIDR trong VPC", "SAA SOA"],
     ["vpc", "VPC, Subnet, Route Table, IGW", "SAA SOA"],
@@ -639,8 +716,7 @@ const CURRICULUM = [
     ["peering-tgw", "VPC Peering vs Transit Gateway", "SAA SOA"],
     ["vpn-dx", "Site-to-Site VPN vs Direct Connect", "SAA SOA"],
     ["route53", "Route 53 & routing policies", "SAA DVA SOA"],
-    ["cloudfront", "CloudFront", "SAA DVA SOA"],
-  ]},
+    ["cloudfront", "CloudFront", "SAA DVA SOA"] ]},
   { n: 3, name: "Compute", items: [
     ["ec2", "EC2: instance types, AMI, User Data", "CLF SAA DVA SOA"],
     ["ebs-store", "EBS vs Instance Store", "SAA SOA"],
@@ -648,23 +724,20 @@ const CURRICULUM = [
     ["asg", "Auto Scaling Group", "SAA SOA"],
     ["containers", "ECS / EKS / Fargate / ECR", "SAA DVA"],
     ["lambda", "Lambda", "SAA DVA"],
-    ["beanstalk", "Elastic Beanstalk", "DVA"],
-  ]},
+    ["beanstalk", "Elastic Beanstalk", "DVA"] ]},
   { n: 4, name: "Storage", items: [
     ["storage-types", "Block / File / Object", "CLF SAA"],
     ["ebs", "EBS volume types & Snapshot", "SAA SOA"],
     ["efs-fsx", "EFS vs FSx", "SAA SOA"],
     ["s3-basics", "S3 cơ bản", "CLF SAA DVA SOA"],
     ["s3-adv", "S3 nâng cao", "SAA DVA SOA"],
-    ["hybrid-storage", "Storage Gateway, DataSync, Snow", "SAA"],
-  ]},
+    ["hybrid-storage", "Storage Gateway, DataSync, Snow", "SAA"] ]},
   { n: 5, name: "Database", items: [
     ["rds", "RDS: Multi-AZ vs Read Replica", "SAA DVA SOA"],
     ["aurora", "Aurora & Global Database", "SAA"],
     ["dynamodb", "DynamoDB", "SAA DVA"],
     ["elasticache", "ElastiCache", "SAA DVA"],
-    ["purpose-db", "Purpose-built databases", "CLF SAA"],
-  ]},
+    ["purpose-db", "Purpose-built databases", "CLF SAA"] ]},
   { n: 6, name: "Integration & Operations", items: [
     ["messaging", "SQS vs SNS vs EventBridge", "SAA DVA"],
     ["kinesis", "Kinesis", "SAA DVA"],
@@ -672,58 +745,41 @@ const CURRICULUM = [
     ["cloudwatch", "CloudWatch", "CLF SAA DVA SOA"],
     ["trail-config", "CloudTrail vs AWS Config", "SAA SOA"],
     ["iac", "CloudFormation / SAM / CDK", "DVA SOA"],
-    ["cicd", "CI/CD: CodeBuild, CodeDeploy, CodePipeline", "DVA"],
-  ]},
+    ["cicd", "CI/CD: CodeBuild, CodeDeploy, CodePipeline", "DVA"] ]},
 ];
 const CERTS = ["Tất cả", "CLF", "SAA", "DVA", "SOA"];
-
-const store = {
-  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
-  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
-};
-
 let activeCert = store.get("cert") || "Tất cả";
 let current = "global-infra";
 const openLayers = new Set([0]);
 const done = new Set((store.get("done") || "").split(",").filter(Boolean));
+const inCert = certs => activeCert === "Tất cả" || certs.split(" ").includes(activeCert);
 
 function renderFilter() {
-  const wrap = document.getElementById("filter");
-  wrap.innerHTML = "";
+  const wrap = document.getElementById("filter"); wrap.innerHTML = "";
   CERTS.forEach(c => {
     const b = document.createElement("button");
-    b.className = "chip"; b.textContent = c;
-    b.setAttribute("aria-pressed", String(c === activeCert));
+    b.className = "chip"; b.textContent = c; b.setAttribute("aria-pressed", String(c === activeCert));
     b.addEventListener("click", () => { activeCert = c; store.set("cert", c); renderFilter(); renderLayers(); });
     wrap.appendChild(b);
   });
   const total = CURRICULUM.reduce((s, l) => s + l.items.length, 0);
-  const n = activeCert === "Tất cả" ? total
-    : CURRICULUM.reduce((s, l) => s + l.items.filter(i => i[2].split(" ").includes(activeCert)).length, 0);
+  const n = CURRICULUM.reduce((s, l) => s + l.items.filter(i => inCert(i[2])).length, 0);
   document.getElementById("filterNote").textContent =
     activeCert === "Tất cả" ? `${total} khái niệm, 7 lớp nền` : `${n}/${total} khái niệm thuộc đề ${activeCert}`;
 }
-
 function renderLayers() {
-  const ul = document.getElementById("layers");
-  ul.innerHTML = "";
+  const ul = document.getElementById("layers"); ul.innerHTML = "";
   CURRICULUM.forEach(layer => {
     const li = document.createElement("li"); li.className = "layer";
-    const match = layer.items.filter(i => activeCert === "Tất cả" || i[2].split(" ").includes(activeCert)).length;
     const head = document.createElement("button");
     head.setAttribute("aria-expanded", String(openLayers.has(layer.n)));
-    head.innerHTML = `<span class="layer-num">${layer.n}</span><span>${layer.name}</span><span class="layer-count">${match}</span>`;
-    const list = document.createElement("ul"); list.className = "concepts";
-    list.hidden = !openLayers.has(layer.n);
-    head.addEventListener("click", () => {
-      openLayers.has(layer.n) ? openLayers.delete(layer.n) : openLayers.add(layer.n);
-      renderLayers();
-    });
+    head.innerHTML = `<span class="layer-num">${layer.n}</span><span>${layer.name}</span><span class="layer-count">${layer.items.filter(i => inCert(i[2])).length}</span>`;
+    head.addEventListener("click", () => { openLayers.has(layer.n) ? openLayers.delete(layer.n) : openLayers.add(layer.n); renderLayers(); });
+    const list = document.createElement("ul"); list.className = "concepts"; list.hidden = !openLayers.has(layer.n);
     layer.items.forEach(([id, title, certs, ready]) => {
       const item = document.createElement("li");
       const b = document.createElement("button");
-      const inCert = activeCert === "Tất cả" || certs.split(" ").includes(activeCert);
-      b.className = "concept" + (ready ? " ready" : "") + (done.has(id) ? " done" : "") + (inCert ? "" : " dim");
+      b.className = "concept" + (ready ? " ready" : "") + (done.has(id) ? " done" : "") + (inCert(certs) ? "" : " dim");
       if (id === current) b.setAttribute("aria-current", "page");
       b.innerHTML = `<span class="dot" aria-hidden="true"></span><span>${title}</span>`;
       b.title = certs;
@@ -733,28 +789,20 @@ function renderLayers() {
     li.appendChild(head); li.appendChild(list); ul.appendChild(li);
   });
 }
-
 function openConcept(id, title, certs, layer, ready) {
   current = id;
-  const lesson = document.getElementById("lesson");
-  const ph = document.getElementById("placeholder");
-  if (ready) { lesson.hidden = false; ph.hidden = true; }
-  else {
-    lesson.hidden = true; ph.hidden = false;
+  document.getElementById("lesson").hidden = !ready;
+  document.getElementById("placeholder").hidden = !!ready;
+  if (!ready) {
     document.getElementById("phLayer").textContent = `Lớp ${layer.n} · ${layer.name}`;
     document.getElementById("phTitle").textContent = title;
     document.getElementById("phCerts").innerHTML = certs.split(" ").map(c => `<span class="cert">${c}</span>`).join("");
   }
   document.getElementById("sidebar").classList.remove("open");
   document.getElementById("menuBtn").setAttribute("aria-expanded", "false");
-  renderLayers();
-  window.scrollTo({ top: 0 });
+  renderLayers(); window.scrollTo({ top: 0 });
 }
-document.getElementById("backBtn").addEventListener("click", () => {
-  const l0 = CURRICULUM[0]; openConcept("global-infra", "", "", l0, true);
-});
-
-/* Done toggle */
+document.getElementById("backBtn").addEventListener("click", () => openConcept("global-infra", "", "", CURRICULUM[0], true));
 const doneBtn = document.getElementById("doneBtn");
 function syncDone() {
   const on = done.has("global-infra");
@@ -763,87 +811,370 @@ function syncDone() {
 }
 doneBtn.addEventListener("click", () => {
   done.has("global-infra") ? done.delete("global-infra") : done.add("global-infra");
-  store.set("done", [...done].join(","));
-  syncDone(); renderLayers();
+  store.set("done", [...done].join(",")); syncDone(); renderLayers();
 });
-
-/* Mobile menu */
 document.getElementById("menuBtn").addEventListener("click", e => {
-  const sb = document.getElementById("sidebar");
-  const open = sb.classList.toggle("open");
+  const open = document.getElementById("sidebar").classList.toggle("open");
   e.currentTarget.setAttribute("aria-expanded", String(open));
 });
-
-/* Toast for unbuilt pages */
-let toastTimer;
-function toast(msg) {
-  const t = document.getElementById("toast");
-  t.textContent = msg; t.hidden = false;
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2400);
-}
 document.querySelectorAll("[data-soon]").forEach(a => a.addEventListener("click", e => {
   e.preventDefault(); toast(`${a.dataset.soon} chưa có trong bản demo.`);
 }));
 
-/* Scope explorer */
+/* ---------- Scene 1: latency race ---------- */
+const RACE = [
+  { name: "Singapore", code: "ap-southeast-1", km: 2200, y: 50 },
+  { name: "Tokyo", code: "ap-northeast-1", km: 3700, y: 100 },
+  { name: "Frankfurt", code: "eu-central-1", km: 8900, y: 150 },
+  { name: "N. Virginia", code: "us-east-1", km: 13300, y: 200 },
+];
+RACE.forEach(r => { r.x = 140 + r.km / 13300 * 560; r.rtt = Math.round(r.km / 100); });
+(function buildRace() {
+  const g = document.getElementById("raceStatic");
+  const u = el("g", { transform: "translate(46 125)", "aria-hidden": "true" }, g);
+  el("circle", { class: "user", cy: -10, r: 8 }, u);
+  el("path", { class: "user", d: "M-15 16 a15 15 0 0 1 30 0 z" }, u);
+  txt(g, 46, 164, "Khách", "t", "middle");
+  txt(g, 46, 180, "Hà Nội", "ts", "middle");
+  RACE.forEach((r, i) => {
+    el("path", { class: "lane-hn", d: `M70 125 C 100 125, 100 ${r.y}, 140 ${r.y}` }, g);
+    el("line", { class: "lane", x1: 140, y1: r.y, x2: r.x, y2: r.y }, g);
+    txt(g, (140 + r.x) / 2, r.y + 16, r.km.toLocaleString("vi-VN") + " km", "ts", "middle");
+    const n = el("circle", { class: "node", cx: r.x, cy: r.y, r: 10, id: "rn" + i }, g);
+    txt(g, r.x, r.y - 16, r.name, "t", r.x > 650 ? "end" : "middle").setAttribute("x", r.x > 650 ? r.x + 12 : r.x);
+    const rk = txt(g, r.x, r.y + 4, "", "rank", "middle"); rk.id = "rk" + i;
+  });
+  const bars = document.getElementById("latBars");
+  RACE.forEach((r, i) => {
+    const row = document.createElement("div"); row.className = "lat-row" + (i === 0 ? " best" : ""); row.id = "lr" + i;
+    row.innerHTML = `<div class="name">${r.name}<small>${r.code}</small></div>
+      <div class="bar"><i style="width:${(r.rtt / 133 * 100).toFixed(0)}%"></i></div>
+      <div class="val">≥ ${r.rtt} ms/lượt · 10 lượt ≥ ${(r.rtt * 10 / 1000).toFixed(2).replace(".", ",")} s</div>`;
+    bars.appendChild(row);
+  });
+})();
+document.getElementById("raceBtn").addEventListener("click", async e => {
+  const btn = e.currentTarget; btn.disabled = true;
+  const layer = document.getElementById("racePk");
+  let place = 0;
+  RACE.forEach((r, i) => { document.getElementById("rk" + i).textContent = ""; document.getElementById("rn" + i).classList.remove("won"); });
+  document.getElementById("raceNote").textContent = "Đang đi... (đã làm chậm để dễ nhìn)";
+  await Promise.all(RACE.map(async (r, i) => {
+    const there = [[70, 125], [140, r.y], [r.x, r.y]];
+    const scale = 9;
+    await travel(layer, there, r.rtt * scale, "pkt", 6);
+    await travel(layer, there.slice().reverse(), r.rtt * scale, "pkt-back", 6);
+    place++;
+    document.getElementById("rk" + i).textContent = place;
+    document.getElementById("rn" + i).classList.add("won");
+  }));
+  document.getElementById("raceNote").textContent = "Singapore về trước. Mỗi trang web cần nhiều lượt đi-về nên chênh lệch bị nhân lên.";
+  btn.disabled = false;
+});
+
+/* ---------- Scene 2: scope explorer ---------- */
+(function buildAz() {
+  const g = document.getElementById("g-az");
+  [["a", 50], ["b", 212], ["c", 374]].forEach(([n, x]) => {
+    el("rect", { class: "az", x, y: 120, width: 140, height: 220, rx: 10 }, g);
+    txt(g, x + 14, 144, "AZ " + n, "t");
+    txt(g, x + 14, 160, "ap-southeast-1" + n, "ts");
+    const dc = el("g", { transform: `translate(${x + 26} 290)` }, g);
+    el("rect", { class: "dc", width: 88, height: 40, rx: 4 }, dc);
+    [12, 22, 32].forEach(y => el("line", { class: "dc-line", x1: 10, y1: y, x2: 78, y2: y }, dc));
+    txt(g, x + 70, 286, "data center", "ts", "middle");
+  });
+  txt(document.getElementById("g-region"), 285, 360, "Các AZ nối với nhau bằng mạng riêng, độ trễ thấp", "ts", "middle");
+})();
+function token(g, x, y, w, label, ghost) {
+  const t = el("g", { class: "tok pop" + (ghost ? " ghost" : "") }, g);
+  el("rect", { x, y, width: w, height: 24, rx: 5 }, t);
+  txt(t, x + w / 2, y + 16, label, "", "middle");
+  return t;
+}
+const AZX = [50, 212, 374];
 const SERVICES = [
   { name: "IAM", scope: "global", label: "Global",
-    text: "Tạo user, role, policy một lần là dùng được ở mọi Region. Không có khái niệm IAM của Singapore hay IAM của Tokyo." },
+    text: "Role <code>shopviet-app</code> tạo một lần, dùng được ở mọi Region. Không có IAM riêng của Singapore hay của Tokyo.",
+    draw: g => token(g, 250, 18, 190, "IAM role: shopviet-app") },
   { name: "Route 53", scope: "global", label: "Global",
-    text: "DNS là service global. Các DNS server trả lời truy vấn được đặt ở Edge location, gần người dùng." },
-  { name: "CloudFront", scope: "edge", label: "Edge",
-    text: "Cache nội dung tại Edge location gần người dùng. Nội dung gốc (origin) vẫn nằm trong một Region, ví dụ một S3 bucket ở Singapore." },
+    text: "Tên miền <code>shopviet.vn</code> được phân giải bởi DNS server đặt ở các Edge location trên toàn cầu, gần khách nhất.",
+    draw: g => token(g, 560, 46, 180, "Route 53: shopviet.vn") },
+  { name: "CloudFront", scope: "edge", label: "Global, chạy ở Edge",
+    text: "CloudFront cache ảnh sản phẩm tại các Edge location gần khách. Bản gốc vẫn nằm trong Region (Cảnh 4 sẽ cho bạn thử).",
+    draw: g => { token(g, 560, 46, 180, "CloudFront distribution"); [128, 220, 312].forEach(y => token(g, 608, y + 16, 64, "cache", true)); } },
   { name: "S3", scope: "region", label: "Region",
-    text: "Bucket nằm trong một Region. Với các storage class thông thường, AWS tự lưu dữ liệu trên nhiều AZ, bạn không phải làm gì thêm." },
+    text: "Bucket <code>shopviet-images</code> thuộc Region Singapore. AWS tự lưu dữ liệu trên nhiều AZ (với các storage class thông thường), bạn không phải làm gì thêm.",
+    draw: g => { token(g, 296, 70, 220, "S3: shopviet-images"); AZX.forEach(x => token(g, x + 20, 200, 100, "bản sao", true)); } },
   { name: "VPC", scope: "region", label: "Region",
-    text: "Một VPC trải trên mọi AZ của Region. Nhưng bên trong VPC, bạn chia subnet, và mỗi subnet chỉ nằm trong một AZ." },
+    text: "VPC <code>10.0.0.0/16</code> trải trên mọi AZ của Region. Nhưng bên trong, bạn chia subnet, và mỗi subnet chỉ nằm ở một AZ.",
+    draw: g => { const r = el("rect", { class: "zone pop", x: 40, y: 112, width: 490, height: 236, rx: 12 }, g); txt(g, 516, 128, "VPC 10.0.0.0/16", "zone-t", "end"); } },
   { name: "DynamoDB", scope: "region", label: "Region",
-    text: "Table là tài nguyên cấp Region, dữ liệu được AWS tự nhân bản qua nhiều AZ. Muốn đa Region thì dùng Global Tables." },
+    text: "Table <code>orders</code> là tài nguyên cấp Region, AWS tự nhân bản qua nhiều AZ. Muốn đa Region thì bật Global Tables.",
+    draw: g => { token(g, 296, 70, 220, "DynamoDB: orders"); AZX.forEach(x => token(g, x + 20, 200, 100, "bản sao", true)); } },
   { name: "Subnet", scope: "az", label: "AZ",
-    text: "Mỗi subnet thuộc đúng một AZ. Muốn chịu được sự cố một AZ, bạn cần subnet ở ít nhất hai AZ." },
+    text: "Subnet <code>10.0.1.0/24</code> chỉ nằm trong AZ a. Muốn chịu được sự cố một AZ, bạn phải tạo subnet ở ít nhất hai AZ.",
+    draw: g => { el("rect", { class: "zone pop", x: 58, y: 170, width: 124, height: 108, rx: 8 }, g); txt(g, 120, 188, "subnet 10.0.1.0/24", "zone-t", "middle"); } },
   { name: "EC2", scope: "az", label: "AZ",
-    text: "Instance chạy trong một subnet, nên nằm trong một AZ. AZ đó sập thì instance sập theo. Đây là lý do cần ELB và Auto Scaling trải qua nhiều AZ." },
+    text: "Server <code>web-1</code> chạy trong một subnet, nên nằm trong đúng một AZ. AZ đó sập thì server sập theo. Cảnh 3 sẽ cho bạn thấy điều này.",
+    draw: g => token(g, 70, 200, 100, "EC2: web-1") },
   { name: "EBS", scope: "az", label: "AZ",
-    text: "Volume chỉ gắn được vào instance cùng AZ. Muốn chuyển sang AZ khác, tạo snapshot rồi tạo volume mới từ snapshot." },
+    text: "Ổ đĩa EBS chỉ gắn được vào server trong cùng AZ. Muốn mang sang AZ khác: tạo snapshot rồi tạo volume mới từ snapshot.",
+    draw: g => { token(g, 70, 196, 100, "EC2: web-1"); el("line", { x1: 120, y1: 220, x2: 120, y2: 238, stroke: "var(--accent)", "stroke-width": 2 }, g); token(g, 70, 238, 100, "EBS: 20 GiB", true); } },
 ];
 const GROUPS = { global: "g-global", region: "g-region", az: "g-az", edge: "g-edge" };
 let activeSvc = "EC2";
-
-function renderServices() {
-  const row = document.getElementById("svcRow");
-  row.innerHTML = "";
+function renderScope() {
+  const row = document.getElementById("svcRow"); row.innerHTML = "";
   SERVICES.forEach(s => {
     const b = document.createElement("button");
-    b.className = "svc"; b.textContent = s.name;
-    b.setAttribute("aria-pressed", String(s.name === activeSvc));
-    b.addEventListener("click", () => { activeSvc = s.name; renderServices(); });
+    b.className = "btn"; b.textContent = s.name; b.setAttribute("aria-pressed", String(s.name === activeSvc));
+    b.addEventListener("click", () => { activeSvc = s.name; renderScope(); });
     row.appendChild(b);
   });
   const s = SERVICES.find(x => x.name === activeSvc);
-  Object.entries(GROUPS).forEach(([scope, id]) => {
-    document.getElementById(id).classList.toggle("hl", scope === s.scope);
-  });
-  document.getElementById("diagramNote").innerHTML =
-    `<strong>${s.name}<span class="scope-pill">${s.label}</span></strong>${s.text}`;
+  Object.entries(GROUPS).forEach(([k, id]) => document.getElementById(id).classList.toggle("hl", k === s.scope));
+  const ov = document.getElementById("g-ov"); ov.innerHTML = ""; s.draw(ov);
+  document.getElementById("scopeNote").innerHTML = `<strong>${s.name} · ${s.label}</strong>${s.text}`;
 }
 
-/* Quiz */
-const QUIZ = [
-  { q: "Bạn có EBS volume ở ap-southeast-1a. Có gắn trực tiếp nó vào một EC2 instance ở ap-southeast-1b được không?",
-    opts: ["Được, vì cùng Region", "Không, EBS chỉ gắn được trong cùng AZ", "Được, nếu bật Multi-Attach"],
-    a: 1, why: "EBS là tài nguyên cấp AZ. Muốn dùng dữ liệu ở AZ khác, tạo snapshot rồi tạo volume mới ở AZ đích. Multi-Attach chỉ cho nhiều instance trong cùng AZ." },
-  { q: "Ứng dụng phải tiếp tục chạy khi một AZ gặp sự cố. Điều kiện tối thiểu là gì?",
-    opts: ["Chạy trên ít nhất 2 AZ trong cùng Region", "Chạy trên ít nhất 2 Region", "Dùng instance type lớn hơn"],
-    a: 0, why: "Chịu được sự cố một AZ chỉ cần trải ứng dụng qua ≥ 2 AZ. Multi-Region dành cho yêu cầu cao hơn: chịu được sự cố cả một Region." },
-  { q: "Account A và account B cùng có subnet ở ap-southeast-1a. Hai subnet này chắc chắn nằm cùng một AZ vật lý?",
-    opts: ["Đúng, tên AZ là cố định", "Không chắc chắn, phải so sánh AZ ID"],
-    a: 1, why: "Tên AZ được ánh xạ khác nhau giữa các account. AZ ID (ví dụ apse1-az1) mới chỉ cùng một vị trí vật lý ở mọi account." },
-  { q: "Service nào sau đây là global?",
-    opts: ["VPC", "IAM", "EC2", "DynamoDB"],
-    a: 1, why: "IAM là global. VPC và DynamoDB là cấp Region, EC2 instance là cấp AZ." },
+/* ---------- Scene 3: AZ failure ---------- */
+const HA_AZ = { a: 40, b: 280, c: 520 };
+const MODES = {
+  "1 AZ": [["a", "web-1", 0], ["a", "web-2", 1]],
+  "2 AZ": [["a", "web-1", 0], ["b", "web-2", 0]],
+  "3 AZ": [["a", "web-1", 0], ["b", "web-2", 0], ["c", "web-3", 0]],
+};
+let haMode = "1 AZ", haDown = new Set(), haPaused = REDUCED, haOk = 0, haErr = 0, haVisible = true;
+(function buildHa() {
+  const g = document.getElementById("haAz");
+  Object.entries(HA_AZ).forEach(([n, x]) => {
+    const box = el("g", { class: "az-box", id: "haz-" + n }, g);
+    el("rect", { class: "az", x, y: 170, width: 200, height: 204, rx: 10 }, box);
+    txt(box, x + 14, 192, "AZ " + n, "t");
+    const d = txt(box, x + 186, 192, "SỰ CỐ", "down-t", "end"); d.setAttribute("visibility", "hidden"); d.id = "hdt-" + n;
+  });
+})();
+function haInstances() { return MODES[haMode].map(([az, name, slot]) => ({ az, name, cx: HA_AZ[az] + 100, y: 222 + slot * 70 })); }
+function renderHa() {
+  const row = document.getElementById("modeRow"); row.innerHTML = "";
+  Object.keys(MODES).forEach(m => {
+    const b = document.createElement("button"); b.className = "btn"; b.textContent = m === "1 AZ" ? "Cả 2 server ở 1 AZ" : m === "2 AZ" ? "Trải 2 AZ" : "Trải 3 AZ";
+    b.setAttribute("aria-pressed", String(m === haMode));
+    b.addEventListener("click", () => { haMode = m; haOk = haErr = 0; renderHa(); });
+    row.appendChild(b);
+  });
+  Object.keys(HA_AZ).forEach(n => {
+    document.getElementById("haz-" + n).classList.toggle("down", haDown.has(n));
+    document.getElementById("hdt-" + n).setAttribute("visibility", haDown.has(n) ? "visible" : "hidden");
+  });
+  const g = document.getElementById("haInst"); g.innerHTML = "";
+  haInstances().forEach(i => {
+    const ig = el("g", { class: "inst" + (haDown.has(i.az) ? " dead" : ""), id: "hi-" + i.name }, g);
+    el("rect", { x: i.cx - 60, y: i.y, width: 120, height: 42, rx: 7 }, ig);
+    txt(ig, i.cx, i.y + 26, "EC2 " + i.name, "", "middle");
+    if (haDown.has(i.az)) {
+      el("line", { x1: i.cx - 50, y1: i.y + 6, x2: i.cx + 50, y2: i.y + 36 }, ig);
+      el("line", { x1: i.cx + 50, y1: i.y + 6, x2: i.cx - 50, y2: i.y + 36 }, ig);
+    }
+  });
+  updateHaStatus();
+}
+function updateHaStatus() {
+  const all = haInstances(), alive = all.filter(i => !haDown.has(i.az));
+  const pill = document.getElementById("haPill");
+  pill.className = "pill " + (alive.length ? "ok" : "bad");
+  pill.innerHTML = `<i></i>${alive.length ? "ShopViet đang chạy" : "ShopViet sập"}`;
+  document.getElementById("haCount").textContent = `Server khỏe: ${alive.length}/${all.length} · request thành công ${haOk} · lỗi ${haErr}`;
+  let t;
+  if (!haDown.size) t = haMode === "1 AZ" ? "Mọi thứ chạy tốt. Nhưng cả hai server cùng nằm trong AZ a. Thử bấm \"Sập AZ a\"." : "Request được chia đều cho các server ở nhiều AZ. Thử gây sự cố một AZ.";
+  else if (!alive.length) t = "Mọi server đều nằm trong AZ bị sự cố. Load Balancer không còn chỗ gửi request, khách nhận lỗi 503. Có 2 server cũng vô ích nếu chúng ở cùng một AZ.";
+  else if (alive.length < all.length) t = "Load Balancer phát hiện server ở AZ sự cố không khỏe và chuyển toàn bộ request sang server còn lại. Khách vẫn mua hàng bình thường, chỉ là tổng sức chịu tải giảm.";
+  else t = "AZ bị sự cố không chứa server nào của ShopViet nên không ảnh hưởng.";
+  document.getElementById("haText").textContent = t;
+}
+function spawnHa() {
+  if (haPaused || !haVisible || document.hidden) return;
+  const layer = document.getElementById("haPk");
+  const ux = [330, 380, 430][Math.floor(Math.random() * 3)];
+  const alive = haInstances().filter(i => !haDown.has(i.az));
+  if (alive.length) {
+    const t = alive[Math.floor(Math.random() * alive.length)];
+    travel(layer, [[ux, 46], [380, 106], [t.cx, t.y]], 1100, "pkt", 5).then(() => {
+      haOk++; updateHaStatus();
+      const ig = document.getElementById("hi-" + t.name);
+      if (ig) { ig.classList.add("hit"); setTimeout(() => ig.classList.remove("hit"), 160); }
+    });
+  } else {
+    travel(layer, [[ux, 46], [380, 106]], 600, "pkt-bad", 5).then(() => {
+      haErr++; updateHaStatus();
+      const e = txt(layer, 480, 96, "503", "err-t"); setTimeout(() => e.remove(), 500);
+    });
+  }
+}
+setInterval(spawnHa, 420);
+if ("IntersectionObserver" in window) {
+  new IntersectionObserver(es => { haVisible = es[0].isIntersecting; }).observe(document.getElementById("haSvg"));
+}
+document.querySelectorAll("[data-fail]").forEach(b => b.addEventListener("click", () => { haDown.add(b.dataset.fail); renderHa(); }));
+document.getElementById("healBtn").addEventListener("click", () => { haDown.clear(); renderHa(); });
+const pauseBtn = document.getElementById("pauseBtn");
+function syncPause() { pauseBtn.setAttribute("aria-pressed", String(haPaused)); pauseBtn.textContent = haPaused ? "Chạy tiếp" : "Tạm dừng"; }
+pauseBtn.addEventListener("click", () => { haPaused = !haPaused; syncPause(); });
+
+/* ---------- Scene 4: CloudFront cache ---------- */
+let cached = false, cdnBusy = false;
+const cdnLog = [];
+function logCdn(tag, cls, msg) {
+  cdnLog.unshift(`<li><span class="tag ${cls}">${tag}</span><span>${msg}</span></li>`);
+  document.getElementById("cdnLog").innerHTML = cdnLog.slice(0, 4).join("");
+}
+const cdnTimes = [];
+function renderTimes() {
+  const max = Math.max(...cdnTimes.map(t => t.units), 1);
+  document.getElementById("cdnTimes").innerHTML = cdnTimes.slice(-3).map(t =>
+    `<div class="timebar"><span class="tag ${t.hit ? "hit" : "miss"}" style="font-family:var(--font-mono);font-size:.7rem;padding:0 6px;border-radius:4px;width:fit-content">${t.hit ? "HIT" : "MISS"}</span><div class="bar"><i style="width:${t.units / max * 100}%;background:${t.hit ? "var(--ok)" : "var(--edge)"}"></i></div></div>`).join("");
+}
+function setCache(on) {
+  cached = on;
+  document.getElementById("cacheBox").classList.toggle("full", on);
+  document.getElementById("cacheT").textContent = on ? "cache: product.jpg ✓" : "cache: trống";
+}
+document.getElementById("cdnBtn").addEventListener("click", async e => {
+  if (cdnBusy) return; cdnBusy = true; e.currentTarget.disabled = true;
+  const L = document.getElementById("cdnPk");
+  const U = [90, 110], E = [360, 110], O = [612, 110];
+  await travel(L, [U, E], 450, "pkt", 6);
+  if (cached) {
+    logCdn("HIT", "hit", "Edge có sẵn ảnh trong cache, trả về ngay. Không cần đi tới Singapore.");
+    await travel(L, [E, U], 450, "pkt-back", 6);
+    cdnTimes.push({ hit: true, units: 2 });
+  } else {
+    logCdn("MISS", "miss", "Edge chưa có ảnh. Phải đi tiếp tới S3 ở Singapore để lấy bản gốc.");
+    await travel(L, [E, O], 1000, "pkt-edge", 6);
+    await travel(L, [O, E], 1000, "pkt-back", 6);
+    setCache(true);
+    logCdn("CACHE", "info", "Edge lưu một bản ảnh vào cache, rồi trả về cho khách.");
+    await travel(L, [E, U], 450, "pkt-back", 6);
+    cdnTimes.push({ hit: false, units: 6 });
+  }
+  renderTimes();
+  cdnBusy = false; e.currentTarget.disabled = false;
+});
+document.getElementById("cdnClear").addEventListener("click", () => {
+  setCache(false);
+  logCdn("TTL", "info", "Bản cache hết hạn và bị xóa. Request tiếp theo sẽ lại là MISS.");
+});
+
+/* ---------- Scene 5: data transfer ---------- */
+const FLOWS = [
+  { id: "in", name: "Internet → AWS", paid: false, d: "M120 96 C 160 150, 200 190, 244 196",
+    text: "Khách tải ảnh lên, gửi đơn hàng: dữ liệu <b>đi vào</b> AWS từ internet được miễn phí." },
+  { id: "out", name: "AWS → Internet", paid: true, d: "M250 214 C 160 240, 80 180, 74 100",
+    text: "Trang web, ảnh trả về cho khách: dữ liệu <b>đi ra</b> internet bị tính phí theo GB. Với web nhiều người xem, đây thường là khoản data transfer lớn nhất. CloudFront có thể giúp giảm khoản này." },
+  { id: "az", name: "AZ a ↔ AZ b", paid: true, d: "M332 200 H422",
+    text: "web-1 gọi sang web-2 hoặc database ở AZ khác: lưu lượng <b>qua ranh giới AZ</b> bị tính phí theo GB, cả chiều đi và chiều về. Giá thấp nhưng cộng dồn nhanh với hệ thống trao đổi nhiều." },
+  { id: "region", name: "Singapore → Tokyo", paid: true, d: "M510 200 C 560 200, 590 202, 630 202",
+    text: "Sao lưu dữ liệu sang Region Tokyo: dữ liệu <b>giữa hai Region</b> bị tính phí, thường đắt hơn giữa hai AZ." },
 ];
-let answered = 0, correct = 0;
-function renderQuiz() {
+let activeFlow = "out";
+(function buildFlows() {
+  const g = document.getElementById("flows");
+  FLOWS.forEach(f => {
+    const fg = el("g", { class: "flow-g", id: "fl-" + f.id }, g);
+    el("path", { class: "flow " + (f.paid ? "paid" : "free"), d: f.d, "marker-end": `url(#${f.paid ? "mPaid" : "mFree"})` }, fg);
+    const hit = el("path", { class: "flow-hit", d: f.d }, fg);
+    hit.addEventListener("click", () => { activeFlow = f.id; renderFlows(); });
+  });
+})();
+function renderFlows() {
+  const row = document.getElementById("flowRow"); row.innerHTML = "";
+  FLOWS.forEach(f => {
+    const b = document.createElement("button"); b.className = "btn"; b.textContent = f.name;
+    b.setAttribute("aria-pressed", String(f.id === activeFlow));
+    b.addEventListener("click", () => { activeFlow = f.id; renderFlows(); });
+    row.appendChild(b);
+    const fg = document.getElementById("fl-" + f.id);
+    fg.classList.toggle("active", f.id === activeFlow);
+    fg.classList.toggle("dim", f.id !== activeFlow);
+  });
+  const f = FLOWS.find(x => x.id === activeFlow);
+  document.getElementById("flowNote").innerHTML = `<strong>${f.name} · ${f.paid ? "Tính phí" : "Miễn phí"}</strong>${f.text}`;
+}
+
+/* ---------- Challenge: sort game ---------- */
+const CARDS = [
+  ["IAM", "global"], ["Organizations", "global"], ["Route 53", "global"],
+  ["S3 bucket", "region"], ["VPC", "region"], ["DynamoDB table", "region"], ["Lambda function", "region"],
+  ["Subnet", "az"], ["EC2 instance", "az"], ["EBS volume", "az"],
+];
+const BINS = [["global", "Global", "Dùng chung mọi Region"], ["region", "Region", "AWS tự lo nhiều AZ"], ["az", "AZ", "Bạn tự trải nhiều AZ"]];
+const HINTS = {
+  global: "Gợi ý: thứ này tạo một lần là dùng được ở mọi Region.",
+  region: "Gợi ý: thứ này thuộc một Region và AWS tự trải nó qua nhiều AZ.",
+  az: "Gợi ý: thứ này nằm cố định trong một AZ.",
+};
+let picked = null, placed = 0;
+(function buildGame() {
+  const pool = document.getElementById("pool");
+  CARDS.slice().sort(() => Math.random() - 0.5).forEach(([name, ans]) => {
+    const c = document.createElement("button");
+    c.className = "card"; c.textContent = name; c.draggable = true; c.dataset.ans = ans;
+    c.setAttribute("aria-pressed", "false");
+    c.addEventListener("click", () => {
+      if (c.classList.contains("placed")) return;
+      document.querySelectorAll(".card").forEach(x => x.setAttribute("aria-pressed", "false"));
+      picked = picked === c ? null : c;
+      if (picked) c.setAttribute("aria-pressed", "true");
+      document.querySelectorAll(".bin").forEach(b => b.classList.toggle("ready", !!picked));
+    });
+    c.addEventListener("dragstart", ev => { picked = c; ev.dataTransfer.setData("text/plain", name); });
+    pool.appendChild(c);
+  });
+  const bins = document.getElementById("bins");
+  BINS.forEach(([id, title, sub]) => {
+    const b = document.createElement("div");
+    b.className = "bin"; b.tabIndex = 0; b.setAttribute("role", "button"); b.dataset.bin = id;
+    b.innerHTML = `<div class="bin-title">${title}<small>${sub}</small></div><div class="bin-items"></div>`;
+    b.addEventListener("click", () => drop(b));
+    b.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); drop(b); } });
+    b.addEventListener("dragover", ev => { ev.preventDefault(); b.classList.add("over"); });
+    b.addEventListener("dragleave", () => b.classList.remove("over"));
+    b.addEventListener("drop", ev => { ev.preventDefault(); b.classList.remove("over"); drop(b); });
+    bins.appendChild(b);
+  });
+})();
+function drop(bin) {
+  if (!picked) return;
+  const c = picked, hint = document.getElementById("hint");
+  picked = null;
+  document.querySelectorAll(".bin").forEach(b => b.classList.remove("ready"));
+  c.setAttribute("aria-pressed", "false");
+  if (c.dataset.ans === bin.dataset.bin) {
+    c.classList.add("placed"); c.draggable = false;
+    bin.querySelector(".bin-items").appendChild(c);
+    placed++;
+    hint.className = "hint ok";
+    hint.textContent = placed === CARDS.length ? `Xuất sắc! Bạn đã xếp đúng cả ${CARDS.length} thẻ.` : `Đúng: ${c.textContent}. Còn ${CARDS.length - placed} thẻ.`;
+  } else {
+    c.classList.remove("shake"); void c.offsetWidth; c.classList.add("shake");
+    hint.className = "hint bad"; hint.textContent = `${c.textContent} không thuộc ô này. ${HINTS[c.dataset.ans]}`;
+  }
+}
+
+/* ---------- Quiz ---------- */
+const QUIZ = [
+  { q: "ShopViet có 2 EC2 cùng ở ap-southeast-1a phía sau Load Balancer. AZ này gặp sự cố. Điều gì xảy ra?",
+    opts: ["Load Balancer chuyển request sang Region khác", "Web sập, vì cả 2 server đều ở AZ bị sự cố", "Web vẫn chạy vì có 2 server"],
+    a: 1, why: "Hai server cùng một AZ thì cùng chịu sự cố. Muốn chịu được một AZ sập, server phải nằm ở ít nhất 2 AZ, như bạn đã thử ở Cảnh 3." },
+  { q: "Bạn có EBS volume ở ap-southeast-1a. Có gắn trực tiếp nó vào EC2 ở ap-southeast-1b được không?",
+    opts: ["Được, vì cùng Region", "Không, phải tạo snapshot rồi tạo volume mới ở AZ b"],
+    a: 1, why: "EBS là tài nguyên cấp AZ. Snapshot cho phép tạo lại volume ở AZ khác." },
+  { q: "Khoản nào sau đây thường miễn phí?",
+    opts: ["Dữ liệu từ internet đi vào AWS", "Dữ liệu từ AWS ra internet", "Dữ liệu giữa hai Region"],
+    a: 0, why: "Dữ liệu vào AWS miễn phí. Ra internet và đi giữa Region đều bị tính phí theo GB." },
+];
+(function renderQuiz() {
   const wrap = document.getElementById("quiz");
   QUIZ.forEach((item, qi) => {
     const box = document.createElement("div"); box.className = "q";
@@ -852,23 +1183,17 @@ function renderQuiz() {
     item.opts.forEach((o, oi) => {
       const b = document.createElement("button"); b.className = "opt"; b.textContent = o;
       b.addEventListener("click", () => {
-        const btns = opts.querySelectorAll(".opt");
-        btns.forEach((x, xi) => { x.disabled = true; if (xi === item.a) x.classList.add("right"); });
-        const ok = oi === item.a;
-        if (!ok) b.classList.add("wrong");
-        answered++; if (ok) correct++;
-        const ex = document.createElement("div");
-        ex.className = "explain" + (ok ? "" : " miss");
+        opts.querySelectorAll(".opt").forEach((x, xi) => { x.disabled = true; if (xi === item.a) x.classList.add("right"); });
+        const ok = oi === item.a; if (!ok) b.classList.add("wrong");
+        const ex = document.createElement("div"); ex.className = "explain" + (ok ? "" : " miss");
         ex.innerHTML = `<b>${ok ? "Đúng." : "Chưa đúng."}</b> ${item.why}`;
         box.appendChild(ex);
-        document.getElementById("score").textContent =
-          answered === QUIZ.length ? `Hoàn thành: ${correct}/${QUIZ.length} câu đúng.` : `Đã trả lời ${answered}/${QUIZ.length} câu.`;
       });
       opts.appendChild(b);
     });
     box.appendChild(opts); wrap.appendChild(box);
   });
-}
+})();
 
-renderFilter(); renderLayers(); renderServices(); renderQuiz(); syncDone();
+renderFilter(); renderLayers(); renderScope(); renderHa(); syncPause(); renderFlows(); syncDone();
 </script>
