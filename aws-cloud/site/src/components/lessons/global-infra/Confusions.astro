@@ -1,0 +1,39 @@
+<div class="confuse">
+  <div class="confuse-item">
+    <svg viewBox="0 0 220 90" aria-hidden="true">
+      <text class="ts" x="10" y="16">Account A</text><text class="ts" x="120" y="16">Account B</text>
+      <rect x="10" y="24" width="90" height="26" rx="5" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="55" y="41" text-anchor="middle" class="ts" style="fill:var(--accent)">1a</text>
+      <rect x="120" y="24" width="90" height="26" rx="5" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="165" y="41" text-anchor="middle" class="ts" style="fill:var(--accent)">1a</text>
+      <path d="M55 50 V64" stroke="var(--muted)"/><path d="M165 50 V64" stroke="var(--muted)"/>
+      <rect x="20" y="64" width="70" height="22" rx="4" fill="var(--bg)" stroke="var(--muted)"/><text x="55" y="79" text-anchor="middle" class="ts">apse1-az2</text>
+      <rect x="130" y="64" width="70" height="22" rx="4" fill="var(--bg)" stroke="var(--muted)"/><text x="165" y="79" text-anchor="middle" class="ts">apse1-az1</text>
+    </svg>
+    <h3>AZ name khác AZ ID</h3>
+    <p>Tên <code>ap-southeast-1a</code> có thể trỏ tới AZ vật lý khác nhau ở mỗi account. Muốn chỉ đúng cùng một AZ giữa các account thì dùng AZ ID.</p>
+  </div>
+  <div class="confuse-item">
+    <svg viewBox="0 0 220 90" aria-hidden="true">
+      <rect x="6" y="6" width="208" height="78" rx="8" fill="none" stroke="var(--line)" stroke-dasharray="4 4"/>
+      <text class="ts" x="14" y="22">Tên bucket: duy nhất toàn cầu</text>
+      <rect x="40" y="32" width="140" height="44" rx="6" fill="var(--bg)" stroke="var(--muted)"/>
+      <text class="ts" x="110" y="50" text-anchor="middle">Region Singapore</text>
+      <rect x="70" y="56" width="80" height="14" rx="3" fill="var(--accent)"/>
+      <text x="110" y="66" text-anchor="middle" style="fill:var(--surface);font-family:var(--font-mono);font-size:9px">shopviet-images</text>
+    </svg>
+    <h3>S3 có phải global?</h3>
+    <p>Tên bucket phải duy nhất trên toàn cầu, nhưng bucket và dữ liệu nằm trong một Region bạn chọn lúc tạo.</p>
+  </div>
+  <div class="confuse-item">
+    <svg viewBox="0 0 220 90" aria-hidden="true">
+      <circle cx="40" cy="45" r="16" fill="var(--edge-soft)" stroke="var(--edge)" stroke-width="1.5"/>
+      <text class="ts" x="40" y="80" text-anchor="middle">Edge</text>
+      <path d="M62 45 H128" stroke="var(--muted)" stroke-dasharray="4 4"/>
+      <rect x="130" y="16" width="80" height="58" rx="8" fill="var(--bg)" stroke="var(--muted)"/>
+      <text class="ts" x="170" y="34" text-anchor="middle">Region</text>
+      <rect x="142" y="42" width="56" height="20" rx="4" fill="var(--ok-soft)" stroke="var(--ok)"/>
+      <text class="ts" x="170" y="56" text-anchor="middle" style="fill:var(--ok)">EC2, DB</text>
+    </svg>
+    <h3>Edge không phải Region thu nhỏ</h3>
+    <p>Edge chạy cache, DNS và bảo vệ. Logic nhỏ chạy được bằng CloudFront Functions hoặc Lambda@Edge, nhưng app chính và database vẫn ở Region.</p>
+  </div>
+</div>

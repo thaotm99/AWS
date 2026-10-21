@@ -1,0 +1,86 @@
+---
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Scene from "../../components/Scene.astro";
+import DoneButton from "../../components/DoneButton.tsx";
+import { ALL_CONCEPTS, CURRICULUM, findConcept } from "../../data/curriculum";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("concepts");
+  return ALL_CONCEPTS.map((concept) => ({
+    params: { id: concept.id },
+    props: { entry: entries.find((e) => e.id === concept.id) },
+  }));
+}
+
+const { id } = Astro.params;
+const { entry } = Astro.props;
+const concept = findConcept(id)!;
+const { Content } = entry ? await render(entry) : { Content: null };
+
+// "Unlocks": concepts that list this one as a prerequisite, else the next few in the roadmap.
+const entries = await getCollection("concepts");
+const unlockedBy = entries.filter((e) => e.data.prerequisites.includes(id)).map((e) => findConcept(e.id)!);
+const index = ALL_CONCEPTS.findIndex((c) => c.id === id);
+const next = unlockedBy.length ? unlockedBy : ALL_CONCEPTS.slice(index + 1, index + 4);
+const ready = new Set(entries.map((e) => e.id));
+const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(p)).filter(Boolean);
+---
+<BaseLayout title={`${concept.title} · AWS Từ Nền`} description={entry?.data.lede} current={id}>
+  <div class="crumbs">
+    <span>Lớp {concept.layer.n} · {concept.layer.name}</span><span aria-hidden="true">/</span><b>{concept.title}</b>
+  </div>
+  <h1>{entry?.data.title ?? concept.title}</h1>
+  {entry && <p class="lede">{entry.data.lede}</p>}
+  <dl class="meta-row">
+    <div><dt>Chứng chỉ</dt><dd>{concept.certs.map((c) => <span class="cert">{c}</span>)}</dd></div>
+    {entry && (
+      <>
+        <div>
+          <dt>Cần biết trước</dt>
+          <dd>
+            {prereqs.length
+              ? prereqs.map((p) => <a href={`/concepts/${p!.id}/`}>{p!.title}</a>)
+              : "Không có. Đây là điểm bắt đầu"}
+          </dd>
+        </div>
+        <div><dt>Thời gian</dt><dd>~{entry.data.minutes} phút, {entry.data.scenes} cảnh tương tác</dd></div>
+        <div><dt>Tiến độ</dt><dd><DoneButton client:load id={id} /></dd></div>
+      </>
+    )}
+  </dl>
+
+  {Content ? (
+    <>
+      <Content />
+      <Scene id="next" label="Đọc tiếp" title="Bài này mở khóa">
+        <div class="next">
+          <div class="next-col">
+            <h3>Lý thuyết tiếp theo</h3>
+            <ul>
+              {next.map((c) => (
+                <li>
+                  <a href={`/concepts/${c.id}/`}>{c.title}</a>
+                  {!ready.has(c.id) && <span class="tag-soon">sắp có</span>}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div class="next-col">
+            <h3>Tình huống áp dụng</h3>
+            <ul><li>Trang tình huống <span class="tag-soon">sắp có</span></li></ul>
+          </div>
+          <div class="next-col">
+            <h3>AWS docs gốc</h3>
+            <ul>{entry!.data.docs.map((d) => <li><a href={d.url} target="_blank" rel="noopener">{d.title}</a></li>)}</ul>
+          </div>
+        </div>
+      </Scene>
+    </>
+  ) : (
+    <div class="placeholder">
+      <p>Bài này đang được xây dựng. Khi hoàn thiện, nó sẽ theo cùng cách học với bài Global Infrastructure: một ví dụ xuyên suốt, các cảnh tương tác có hình động, phần dễ nhầm và thử thách cuối bài.</p>
+      <a class="btn cta" href={`/concepts/${CURRICULUM[0].concepts[1].id}/`}>Học thử bài Global Infrastructure</a>
+    </div>
+  )}
+</BaseLayout>

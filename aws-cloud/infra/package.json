@@ -1,0 +1,21 @@
+{
+  "name": "aws-cloud-infra",
+  "private": true,
+  "bin": { "infra": "bin/app.ts" },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "synth": "cdk synth",
+    "diff": "cdk diff",
+    "deploy": "cdk deploy"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.200.1",
+    "constructs": "10.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.3",
+    "aws-cdk": "2.1018.0",
+    "ts-node": "10.9.2",
+    "typescript": "5.8.3"
+  }
+}

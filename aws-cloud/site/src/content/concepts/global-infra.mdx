@@ -1,0 +1,147 @@
+---
+title: "Global Infrastructure: Region, Availability Zone và Edge location"
+lede: "Mọi thứ trên AWS đều chạy ở một nơi có thật trên bản đồ. Bài này cho bạn tự tay đặt một website lên đó, gây sự cố, đo độ trễ, và xem dữ liệu đi đâu thì tốn tiền."
+minutes: 15
+scenes: 5
+prerequisites: []
+docs:
+  - title: "AWS Global Infrastructure"
+    url: "https://aws.amazon.com/about-aws/global-infrastructure/"
+  - title: "Overview of AWS: Global Infrastructure"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/aws-overview/global-infrastructure.html"
+  - title: "AZ IDs for your AWS resources"
+    url: "https://docs.aws.amazon.com/ram/latest/userguide/working-with-az-ids.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import Confusions from "../../components/lessons/global-infra/Confusions.astro";
+import LatencyRace from "../../components/scenes/LatencyRace.tsx";
+import ScopeExplorer from "../../components/scenes/ScopeExplorer.tsx";
+import AzFailureSim from "../../components/scenes/AzFailureSim.tsx";
+import EdgeCacheDemo from "../../components/scenes/EdgeCacheDemo.tsx";
+import DataTransferFlows from "../../components/scenes/DataTransferFlows.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#s1", label: "1 · Chọn Region" },
+  { href: "#s2", label: "2 · Bên trong Region" },
+  { href: "#s3", label: "3 · Khi một AZ sập" },
+  { href: "#s4", label: "4 · Edge location" },
+  { href: "#s5", label: "5 · Tiền data transfer" },
+  { href: "#challenge", label: "Thử thách" },
+]}>
+Bạn là kỹ sư của **ShopViet**, một shop online bán hàng cho khách ở Việt Nam. Sếp giao việc: đưa ShopViet lên AWS sao cho **nhanh**, **không sập** và **không tốn tiền vô lý**. Mỗi cảnh dưới đây là một quyết định bạn phải đưa ra.
+</Story>
+
+<Scene id="s1" label="Cảnh 1/5" title="Đặt ShopViet ở Region nào?">
+
+**Region** là một vùng địa lý có data center của AWS, ví dụ Singapore, Tokyo. Khách của ShopViet ở Hà Nội. Bấm nút để gửi gói tin đồng thời tới 4 Region và xem gói nào về trước.
+
+<LatencyRace client:visible />
+
+<div class="criteria">
+  <div class="crit"><b>Compliance</b><span>Luật yêu cầu dữ liệu nằm ở đâu. Xét đầu tiên.</span></div>
+  <div class="crit"><b>Latency</b><span>Gần khách nhất. Thứ bạn vừa đo ở trên.</span></div>
+  <div class="crit"><b>Service availability</b><span>Region đó đã có service bạn cần chưa.</span></div>
+  <div class="crit"><b>Pricing</b><span>Cùng service, mỗi Region một giá.</span></div>
+</div>
+
+<Takeaway>Khoảng cách vật lý đặt ra giới hạn dưới cho độ trễ, không tối ưu code nào vượt qua được. Mỗi trang web cần nhiều lượt đi-về nên chênh lệch bị nhân lên. Chọn Region theo 4 tiêu chí trên, compliance xét trước.</Takeaway>
+
+</Scene>
+
+<Scene id="s2" label="Cảnh 2/5" title="Bên trong một Region: tài nguyên của ShopViet nằm đâu?">
+
+Region Singapore gồm nhiều **Availability Zone (AZ)**. Mỗi AZ là một hoặc nhiều data center độc lập về điện, mạng và làm mát. Các AZ cách nhau đủ xa để không cùng gặp một sự cố, nhưng nối với nhau bằng mạng riêng tốc độ cao. Chọn từng thành phần của ShopViet để xem AWS đặt nó ở đâu.
+
+<ScopeExplorer client:visible />
+
+<Takeaway>Có 3 phạm vi: Global (IAM, Route 53), Region (VPC, S3, DynamoDB) và AZ (subnet, EC2, EBS). Tài nguyên cấp Region thì AWS tự lo nhiều AZ. Tài nguyên cấp AZ thì bạn phải tự đặt ở nhiều AZ.</Takeaway>
+
+</Scene>
+
+<Scene id="s3" label="Cảnh 3/5" title="Khi một AZ gặp sự cố">
+
+ShopViet có 2 web server (EC2) phía sau một Load Balancer. Mỗi chấm là một request của khách. Chọn cách bố trí server, rồi bấm gây sự cố để xem chuyện gì xảy ra.
+
+<AzFailureSim client:visible />
+
+<Takeaway>EC2 nằm trong một AZ, AZ sập thì server sập theo. Đặt server ở ít nhất 2 AZ là cách cơ bản nhất để đạt high availability. Muốn chịu được cả một Region sập thì phải dùng multi-Region, đắt và phức tạp hơn nhiều.</Takeaway>
+
+</Scene>
+
+<Scene id="s4" label="Cảnh 4/5" title="Edge location: mang ảnh sản phẩm tới gần khách">
+
+**Edge location** là các điểm nhỏ của AWS đặt gần người dùng, số lượng nhiều hơn Region rất nhiều. CloudFront dùng chúng để cache nội dung. Ảnh sản phẩm của ShopViet lưu ở S3 tại Singapore. Bấm mở ảnh hai lần và so sánh.
+
+<EdgeCacheDemo client:visible />
+
+<Takeaway>Edge location không chạy EC2 hay database của bạn. Nó phục vụ các service ở biên mạng: CloudFront (cache), Route 53 (DNS), Global Accelerator, WAF, Shield. Lần đầu (MISS) vẫn phải về Region, các lần sau (HIT) trả ngay tại edge.</Takeaway>
+
+</Scene>
+
+<Scene id="s5" label="Cảnh 5/5" title="Dữ liệu đi đâu thì tốn tiền?">
+
+Hóa đơn AWS không chỉ có tiền server. Dữ liệu di chuyển giữa các vị trí cũng bị tính phí, và đây là khoản hay bị quên nhất. Bấm vào từng luồng để xem.
+
+<DataTransferFlows client:visible />
+
+<Takeaway>Vào AWS thì miễn phí, ra khỏi AWS thì trả tiền. Đi qua ranh giới AZ hay Region cũng trả tiền. Giá cụ thể khác nhau theo Region, luôn kiểm tra trang AWS Pricing.</Takeaway>
+
+</Scene>
+
+<Scene id="confuse" label="Dễ nhầm" title="Ba chỗ hay hiểu sai">
+  <Confusions />
+</Scene>
+
+<Scene id="challenge" label="Thử thách" title="Xếp tài nguyên vào đúng phạm vi">
+
+Kéo thẻ vào đúng ô. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
+
+<SortGame client:visible
+  bins={[
+    { id: "global", title: "Global", sub: "Dùng chung mọi Region", hint: "Gợi ý: thứ này tạo một lần là dùng được ở mọi Region." },
+    { id: "region", title: "Region", sub: "AWS tự lo nhiều AZ", hint: "Gợi ý: thứ này thuộc một Region và AWS tự trải nó qua nhiều AZ." },
+    { id: "az", title: "AZ", sub: "Bạn tự trải nhiều AZ", hint: "Gợi ý: thứ này nằm cố định trong một AZ." },
+  ]}
+  cards={[
+    ["IAM", "global"], ["Organizations", "global"], ["Route 53", "global"],
+    ["S3 bucket", "region"], ["VPC", "region"], ["DynamoDB table", "region"], ["Lambda function", "region"],
+    ["Subnet", "az"], ["EC2 instance", "az"], ["EBS volume", "az"],
+  ]}
+/>
+
+<Quiz client:visible items={[
+  { q: "ShopViet có 2 EC2 cùng ở ap-southeast-1a phía sau Load Balancer. AZ này gặp sự cố. Điều gì xảy ra?",
+    opts: ["Load Balancer chuyển request sang Region khác", "Web sập, vì cả 2 server đều ở AZ bị sự cố", "Web vẫn chạy vì có 2 server"],
+    a: 1, why: "Hai server cùng một AZ thì cùng chịu sự cố. Muốn chịu được một AZ sập, server phải nằm ở ít nhất 2 AZ, như bạn đã thử ở Cảnh 3." },
+  { q: "Bạn có EBS volume ở ap-southeast-1a. Có gắn trực tiếp nó vào EC2 ở ap-southeast-1b được không?",
+    opts: ["Được, vì cùng Region", "Không, phải tạo snapshot rồi tạo volume mới ở AZ b"],
+    a: 1, why: "EBS là tài nguyên cấp AZ. Snapshot cho phép tạo lại volume ở AZ khác." },
+  { q: "Khoản nào sau đây thường miễn phí?",
+    opts: ["Dữ liệu từ internet đi vào AWS", "Dữ liệu từ AWS ra internet", "Dữ liệu giữa hai Region"],
+    a: 0, why: "Dữ liệu vào AWS miễn phí. Ra internet và đi giữa Region đều bị tính phí theo GB." },
+]} />
+
+</Scene>
+
+<Scene id="deep" label="Đào sâu" title="Khi bạn muốn biết thêm">
+  <details class="deep">
+    <summary>Local Zones, Wavelength Zones và Outposts</summary>
+    <div class="deep-body">
+      <p><b>Local Zones</b> mở rộng một Region tới gần các thành phố lớn, cho phép chạy EC2, EBS… với độ trễ rất thấp tới người dùng ở thành phố đó.</p>
+      <p><b>Wavelength Zones</b> đặt hạ tầng AWS trong mạng 5G của nhà mạng, cho ứng dụng di động cần độ trễ cực thấp.</p>
+      <p><b>Outposts</b> là tủ phần cứng AWS lắp trong data center của chính bạn, dùng cùng API và công cụ như trên AWS.</p>
+    </div>
+  </details>
+  <details class="deep">
+    <summary>Region mặc định tắt (opt-in Region)</summary>
+    <div class="deep-body"><p>Các Region ra mắt sau ngày 20/03/2019 mặc định bị tắt. Bạn phải bật trong cài đặt account trước khi tạo tài nguyên ở đó.</p></div>
+  </details>
+  <details class="deep">
+    <summary>Con số độ trễ ở Cảnh 1 tính thế nào?</summary>
+    <div class="deep-body"><p>Độ trễ đi-về tối thiểu ≈ 2 × khoảng cách ÷ 200.000 km/s, dùng khoảng cách đường chim bay từ Hà Nội. Thực tế cáp không đi thẳng và còn qua nhiều router nên độ trễ đo được thường cao hơn đáng kể. Con số chỉ để so sánh giữa các Region.</p></div>
+  </details>
+</Scene>
