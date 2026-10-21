@@ -11,6 +11,7 @@ tới Region, Availability Zone và Edge.
 
 ## Availability Zone và High Availability
 - EC2 trải nhiều AZ sau Load Balancer + Auto Scaling group (exam1_q2, exam2_q8, exam2_q32)
+- Tên AZ (us-east-1a) khác nhau giữa các account; dùng AZ ID để chỉ đúng cùng một AZ (exam3_q22)
 - NAT gateway là tài nguyên cấp AZ: đặt mỗi AZ một NAT gateway trong public subnet (exam3_q62)
 
 ## Edge location

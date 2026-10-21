@@ -23,7 +23,7 @@ export const LAYERS: { n: number; name: string; ids: string[] }[] = [
   { n: 3, name: "Compute", ids: ["ec2", "elb", "asg", "containers", "lambda"] },
   { n: 4, name: "Storage", ids: ["s3", "storage", "storage-migration"] },
   { n: 5, name: "Database", ids: ["rds", "dynamodb", "analytics"] },
-  { n: 6, name: "Integration & Monitoring", ids: ["messaging", "kinesis", "monitoring", "iac"] },
+  { n: 6, name: "Integration, Monitoring & vận hành", ids: ["messaging", "kinesis", "monitoring", "iac", "backup-dr", "others"] },
 ];
 
 /** Lessons that are not a row in overview.md. */

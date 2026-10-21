@@ -38,4 +38,16 @@
     <h3>CloudFront cho tải về, S3 Transfer Acceleration cho tải lên</h3>
     <p>Cả hai đều đi qua edge location. Khi đề cần tăng tốc cả xem ảnh lẫn upload ảnh, đáp án dùng cả hai cùng lúc. <code>exam6_q58</code></p>
   </div>
+  <div class="confuse-item">
+    <svg viewBox="0 0 220 90" aria-hidden="true">
+      <text class="ts" x="10" y="16">Account A</text><text class="ts" x="120" y="16">Account B</text>
+      <rect x="10" y="24" width="90" height="26" rx="5" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="55" y="41" text-anchor="middle" class="ts" style="fill:var(--accent)">us-east-1a</text>
+      <rect x="120" y="24" width="90" height="26" rx="5" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="165" y="41" text-anchor="middle" class="ts" style="fill:var(--accent)">us-east-1a</text>
+      <path d="M55 50 V64" stroke="var(--muted)"/><path d="M165 50 V64" stroke="var(--muted)"/>
+      <rect x="20" y="64" width="70" height="22" rx="4" fill="var(--bg)" stroke="var(--muted)"/><text x="55" y="79" text-anchor="middle" class="ts">use1-az2</text>
+      <rect x="130" y="64" width="70" height="22" rx="4" fill="var(--bg)" stroke="var(--muted)"/><text x="165" y="79" text-anchor="middle" class="ts">use1-az4</text>
+    </svg>
+    <h3>Cùng tên AZ chưa chắc cùng AZ</h3>
+    <p>Tên <code>us-east-1a</code> được ánh xạ khác nhau ở mỗi account. Muốn đặt tài nguyên của nhiều account vào đúng cùng một AZ, dùng AZ ID. <code>exam3_q22</code></p>
+  </div>
 </div>

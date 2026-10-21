@@ -21,6 +21,7 @@
 - MFA Delete
 - Object Lock — Governance mode
 - Object Lock — Compliance mode
+- S3 Glacier Vault Lock (lưu trữ lâu dài, khóa không cho sửa xóa) (exam4_q64)
 - Legal Hold (WORM)
 
 ## Encryption

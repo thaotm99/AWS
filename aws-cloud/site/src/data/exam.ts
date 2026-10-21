@@ -36,6 +36,9 @@ let cached: Layer[] | undefined;
 export function getCurriculum(): Layer[] {
   if (cached) return cached;
   const overview = readOverview();
+  const placed = new Set(LAYERS.flatMap((l) => l.ids));
+  const unplaced = [...overview.keys()].filter((id) => !placed.has(id));
+  if (unplaced.length) throw new Error(`curriculum: overview.md lists ${unplaced.join(", ")} but LAYERS does not`);
   cached = LAYERS.map(({ n, name, ids }) => ({
     n,
     name,

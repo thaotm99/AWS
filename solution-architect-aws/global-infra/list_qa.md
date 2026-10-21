@@ -13,6 +13,7 @@ exam2_q22
 exam2_q32
 exam2_q62
 exam3_q8
+exam3_q22
 exam3_q37
 exam3_q45
 exam3_q47
@@ -26,4 +27,4 @@ exam5_q55
 exam6_q5
 exam6_q58
 
-Tổng: 25 câu
+Tổng: 26 câu

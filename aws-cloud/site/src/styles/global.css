@@ -224,7 +224,7 @@ p { margin: 0 0 12px; max-width: 68ch; }
 .key i { width: 18px; height: 3px; display: inline-block; border-radius: 2px; }
 
 /* Confusions */
-.confuse { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+.confuse { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
 .confuse-item { padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
 .confuse-item h3 { font-size: var(--step-0); }
 .confuse-item p { margin: 0; font-size: 0.9rem; }
