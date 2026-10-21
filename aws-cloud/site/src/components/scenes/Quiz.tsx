@@ -5,6 +5,8 @@ export interface QuizItem {
   opts: string[];
   a: number;
   why: string;
+  /** Practice-test question this item is modelled on. */
+  ref?: string;
 }
 
 function Question({ item, n }: { item: QuizItem; n: number }) {
@@ -29,6 +31,7 @@ function Question({ item, n }: { item: QuizItem; n: number }) {
       {answered && (
         <div className={"explain" + (correct ? "" : " miss")}>
           <b>{correct ? "Đúng." : "Chưa đúng."}</b> {item.why}
+          {item.ref && <span className="exam-refs inline"><span>Dạng câu</span><code>{item.ref}</code></span>}
         </div>
       )}
     </div>

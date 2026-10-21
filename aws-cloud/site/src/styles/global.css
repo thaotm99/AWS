@@ -322,3 +322,56 @@ a.concept[aria-current="page"] { color: var(--accent); }
 .prose > p, .prose > ul { max-width: 68ch; }
 .timebar .tag { font-family: var(--font-mono); font-size: 0.7rem; font-weight: 500; padding: 0 6px; border-radius: 4px; width: fit-content; }
 .key i { display: inline-block; }
+
+/* Exam grounding */
+.exam-refs { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 10px; font-size: 0.75rem; }
+.exam-refs > span { color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.68rem; margin-right: 2px; }
+.exam-refs code { background: var(--edge-soft); color: var(--edge); border-radius: 4px; padding: 0 6px; font-size: 0.72rem; }
+.exam-refs.inline { display: inline-flex; margin: 0 0 0 8px; }
+.confuse-item code { font-size: 0.72rem; background: var(--edge-soft); color: var(--edge); border-radius: 4px; padding: 0 5px; }
+.q-count { margin-left: auto; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.q-badge { font-family: var(--font-mono); font-size: 0.75rem; color: var(--edge); }
+
+/* Resource boxes in scene SVGs */
+.res rect { stroke-width: 1.5; }
+.res-ec2 rect { fill: var(--ok-soft); stroke: var(--ok); }
+.res-snap rect { fill: var(--edge-soft); stroke: var(--edge); }
+.res-ami rect, .res-db rect { fill: var(--accent-soft); stroke: var(--accent); }
+.res-net rect { fill: var(--surface); stroke: var(--accent); stroke-dasharray: 4 3; }
+.res-store rect { fill: var(--accent); stroke: var(--accent); }
+.res-store .res-t, .res-store .res-s { fill: var(--surface); }
+.res-site rect { fill: var(--surface); stroke: var(--muted); }
+.res-t { fill: var(--ink); font-family: var(--font-body); font-size: 12.5px; font-weight: 600; }
+.res-s { fill: var(--muted); font-family: var(--font-mono); font-size: 10px; }
+.dep { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.err-box { fill: var(--bad-soft); stroke: var(--bad); stroke-width: 1.5; }
+
+/* Global Accelerator */
+.ga-box { fill: var(--edge-soft); fill-opacity: 0.45; stroke: var(--edge); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.backbone { fill: none; stroke: var(--accent); stroke-width: 2.5; opacity: 0.5; }
+.internet { fill: none; stroke: var(--muted); stroke-width: 2; stroke-dasharray: 2 6; }
+
+/* Edge picker */
+.picker { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
+.picker-list { display: grid; gap: 4px; padding: 12px; border-right: 1px solid var(--line); }
+.picker-item { text-align: left; border: 1px solid transparent; background: none; border-radius: 8px; padding: 8px 10px; cursor: pointer; font-size: 0.875rem; line-height: 1.4; }
+.picker-item:hover { background: var(--bg); }
+.picker-item[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); }
+.picker-answer { padding: 16px 18px; display: grid; gap: 6px; align-content: start; }
+.picker-answer .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.picker-service { font-size: var(--step-2); color: var(--accent); line-height: 1.2; }
+.picker-answer p { margin: 0; font-size: 0.9375rem; }
+
+/* Cost patterns */
+.flow.heavy { stroke-width: 6; }
+.flow-t { font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; }
+.flow-t.paid { fill: var(--edge); }
+.flow-t.free { fill: var(--ok); }
+.verdict.ok { color: var(--ok); }
+.verdict.bad { color: var(--edge); }
+.stage-bar + .stage-bar { border-top: 0; padding-top: 0; }
+
+@media (max-width: 700px) {
+  .picker { grid-template-columns: minmax(0, 1fr); }
+  .picker-list { border-right: 0; border-bottom: 1px solid var(--line); }
+}

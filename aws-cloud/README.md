@@ -1,7 +1,7 @@
 # AWS Từ Nền
 
-Web học AWS theo lớp nền: mỗi khái niệm là một bài có ví dụ xuyên suốt, các cảnh mô phỏng tương tác
-và thử thách cuối bài. Đây là giai đoạn 1: web tĩnh trên S3 + CloudFront.
+Web ôn thi AWS Solutions Architect Associate (SAA-C03): mỗi bài có ví dụ xuyên suốt, các cảnh mô
+phỏng tương tác và thử thách cuối bài, và chỉ dạy những gì 6 đề luyện thi thực sự hỏi. Đây là giai đoạn 1: web tĩnh trên S3 + CloudFront.
 
 ```
 Người dùng ──► CloudFront (HTTPS, cache ở Edge) ──OAC──► S3 bucket (private)
@@ -14,7 +14,8 @@ GitHub Actions ─────┘  build → s3 sync → invalidate (đăng nh�
 ```
 aws-cloud/
 ├── site/                         Astro + React + MDX
-│   ├── src/data/curriculum.ts    7 lớp, ~50 khái niệm, tag chứng chỉ
+│   ├── src/data/curriculum.ts    thứ tự 7 lớp, id = folder trong solution-architect-aws/
+│   ├── src/data/exam.ts          đọc overview.md + list_qa.md lúc build
 │   ├── src/content/concepts/     mỗi bài 1 file .mdx, tên file = id trong curriculum.ts
 │   ├── src/components/scenes/    các cảnh tương tác dùng lại được (React)
 │   ├── src/components/lessons/   phần minh họa riêng của từng bài
@@ -32,13 +33,22 @@ npm run dev          # http://localhost:4321
 npm run build        # kiểm tra kiểu + build ra dist/
 ```
 
-## Thêm một bài học
+## Thêm một bài học (bám đề SAA-C03)
 
-1. Tạo `site/src/content/concepts/<id>.mdx`, với `<id>` trùng một id trong `src/data/curriculum.ts`.
-2. Điền frontmatter: `title`, `lede`, `minutes`, `scenes`, `prerequisites`, `docs`.
-3. Viết các cảnh bằng `<Scene>`, `<Takeaway>` và các component trong `components/scenes/`.
-   Component tương tác cần `client:visible`.
-4. Bài tự xuất hiện trong lộ trình với trạng thái "Có bài".
+Nội dung chỉ được dạy những gì 6 đề luyện thi thực sự hỏi. Quy trình:
+
+1. Theo `solution-architect-aws/CLAUDE.md`, tạo `solution-architect-aws/<id>/list_qa.md` (câu đề của
+   service) và `keyword.md` (khái niệm các câu đó kiểm tra). `<id>` là tên folder trong `overview.md`.
+2. Tạo `site/src/content/concepts/<id>.mdx`. Mỗi `<Scene>` khai báo `questions={["exam1_q41", ...]}`;
+   khái niệm nào không có câu đề nào hỏi thì không đưa vào bài.
+3. Đối chiếu lý thuyết với AWS docs và ghi link trong frontmatter `docs`.
+4. **Không chép nguyên văn câu hỏi lên web** (đề có bản quyền, web public). Chỉ ghi mã câu; câu hỏi
+   luyện tập trong bài phải viết lại bằng lời của mình.
+
+Build tự kiểm tra:
+- Mã câu trong `<Scene questions>` phải có trong một `list_qa.md` nào đó, nếu không build báo lỗi.
+- Lộ trình và số câu đề lấy trực tiếp từ `overview.md` và các `list_qa.md` (`site/src/data/exam.ts`),
+  số có dấu ~ là ước lượng keyword từ `overview.md`, chưa có `list_qa.md`.
 
 ## Deploy lần đầu
 

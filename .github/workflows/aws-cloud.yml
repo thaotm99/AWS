@@ -3,9 +3,9 @@ name: aws-cloud
 on:
   push:
     branches: [master]
-    paths: ["aws-cloud/**", ".github/workflows/aws-cloud.yml"]
+    paths: ["aws-cloud/**", "solution-architect-aws/**/*.md", ".github/workflows/aws-cloud.yml"]
   pull_request:
-    paths: ["aws-cloud/**", ".github/workflows/aws-cloud.yml"]
+    paths: ["aws-cloud/**", "solution-architect-aws/**/*.md", ".github/workflows/aws-cloud.yml"]
   workflow_dispatch:
 
 permissions:

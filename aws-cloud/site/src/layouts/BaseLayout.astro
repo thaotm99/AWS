@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import Roadmap from "../components/Roadmap.tsx";
 import { getCollection } from "astro:content";
+import { getCurriculum } from "../data/exam";
 
 interface Props {
   title: string;
@@ -9,8 +10,9 @@ interface Props {
   current?: string;
 }
 
-const { title, description = "Học AWS theo lớp nền, qua hình minh họa và mô phỏng tương tác.", current } = Astro.props;
+const { title, description = "Ôn thi AWS Solutions Architect Associate (SAA-C03) qua hình minh họa và mô phỏng tương tác, bám theo câu hỏi đề thi.", current } = Astro.props;
 const ready = (await getCollection("concepts")).map((e) => e.id);
+const layers = getCurriculum();
 ---
 <!doctype html>
 <html lang="vi">
@@ -44,7 +46,7 @@ const ready = (await getCollection("concepts")).map((e) => e.id);
 
     <div class="shell">
       <aside class="sidebar" id="sidebar" aria-label="Lộ trình học">
-        <Roadmap client:load current={current} ready={ready} />
+        <Roadmap client:load layers={layers} current={current} ready={ready} />
       </aside>
       <main class="article">
         <slot />

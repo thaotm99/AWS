@@ -3,28 +3,28 @@ import { getCollection, render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Scene from "../../components/Scene.astro";
 import DoneButton from "../../components/DoneButton.tsx";
-import { ALL_CONCEPTS, CURRICULUM, findConcept } from "../../data/curriculum";
+import { findConcept } from "../../data/curriculum";
+import { getCurriculum } from "../../data/exam";
 
 export async function getStaticPaths() {
   const entries = await getCollection("concepts");
-  return ALL_CONCEPTS.map((concept) => ({
-    params: { id: concept.id },
-    props: { entry: entries.find((e) => e.id === concept.id) },
-  }));
+  const ids = getCurriculum().flatMap((l) => l.concepts.map((c) => c.id));
+  const orphan = entries.find((e) => !ids.includes(e.id));
+  if (orphan) throw new Error(`concepts/${orphan.id}.mdx has no matching id in curriculum.ts`);
+  return ids.map((id) => ({ params: { id }, props: { entry: entries.find((e) => e.id === id) } }));
 }
 
 const { id } = Astro.params;
 const { entry } = Astro.props;
-const concept = findConcept(id)!;
+const layers = getCurriculum();
+const concept = findConcept(layers, id)!;
 const { Content } = entry ? await render(entry) : { Content: null };
 
-// "Unlocks": concepts that list this one as a prerequisite, else the next few in the roadmap.
-const entries = await getCollection("concepts");
-const unlockedBy = entries.filter((e) => e.data.prerequisites.includes(id)).map((e) => findConcept(e.id)!);
-const index = ALL_CONCEPTS.findIndex((c) => c.id === id);
-const next = unlockedBy.length ? unlockedBy : ALL_CONCEPTS.slice(index + 1, index + 4);
-const ready = new Set(entries.map((e) => e.id));
-const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(p)).filter(Boolean);
+const all = layers.flatMap((l) => l.concepts);
+const index = all.findIndex((c) => c.id === id);
+const next = all.slice(index + 1, index + 4);
+const ready = new Set((await getCollection("concepts")).map((e) => e.id));
+const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(layers, p)).filter(Boolean);
 ---
 <BaseLayout title={`${concept.title} · AWS Từ Nền`} description={entry?.data.lede} current={id}>
   <div class="crumbs">
@@ -33,7 +33,10 @@ const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(p)).fil
   <h1>{entry?.data.title ?? concept.title}</h1>
   {entry && <p class="lede">{entry.data.lede}</p>}
   <dl class="meta-row">
-    <div><dt>Chứng chỉ</dt><dd>{concept.certs.map((c) => <span class="cert">{c}</span>)}</dd></div>
+    <div>
+      <dt>Câu đề liên quan</dt>
+      <dd>{concept.exact ? `${concept.questions} câu trong 6 đề` : `khoảng ${concept.questions} câu (ước lượng)`}</dd>
+    </div>
     {entry && (
       <>
         <div>
@@ -53,7 +56,7 @@ const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(p)).fil
   {Content ? (
     <>
       <Content />
-      <Scene id="next" label="Đọc tiếp" title="Bài này mở khóa">
+      <Scene id="next" label="Đọc tiếp" title="Bài tiếp theo trong lộ trình">
         <div class="next">
           <div class="next-col">
             <h3>Lý thuyết tiếp theo</h3>
@@ -67,8 +70,8 @@ const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(p)).fil
             </ul>
           </div>
           <div class="next-col">
-            <h3>Tình huống áp dụng</h3>
-            <ul><li>Trang tình huống <span class="tag-soon">sắp có</span></li></ul>
+            <h3>Luyện đề</h3>
+            <ul><li>Làm các câu trong <code>solution-architect-aws/{id}/list_qa.md</code></li></ul>
           </div>
           <div class="next-col">
             <h3>AWS docs gốc</h3>
@@ -79,8 +82,8 @@ const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(p)).fil
     </>
   ) : (
     <div class="placeholder">
-      <p>Bài này đang được xây dựng. Khi hoàn thiện, nó sẽ theo cùng cách học với bài Global Infrastructure: một ví dụ xuyên suốt, các cảnh tương tác có hình động, phần dễ nhầm và thử thách cuối bài.</p>
-      <a class="btn cta" href={`/concepts/${CURRICULUM[0].concepts[1].id}/`}>Học thử bài Global Infrastructure</a>
+      <p>Bài này chưa viết. Nội dung sẽ được dựng từ các câu đề trong <code>solution-architect-aws/{id}/list_qa.md</code> và đối chiếu với AWS docs, theo cùng cách học với bài Global Infrastructure.</p>
+      <a class="btn cta" href="/concepts/global-infra/">Học bài Global Infrastructure</a>
     </div>
   )}
 </BaseLayout>

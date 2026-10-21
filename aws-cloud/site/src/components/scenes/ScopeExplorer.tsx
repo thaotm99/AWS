@@ -9,6 +9,7 @@ const AZS = [
 ];
 const EDGE_Y = [128, 220, 312];
 
+
 function Token({ x, y, w, label, ghost }: { x: number; y: number; w: number; label: string; ghost?: boolean }) {
   return (
     <g className={"tok pop" + (ghost ? " ghost" : "")}>
@@ -27,12 +28,6 @@ const SERVICES: { name: string; scope: Scope; label: string; text: ReactNode; dr
   { name: "Route 53", scope: "global", label: "Global",
     text: <>Tên miền <code>shopviet.vn</code> được phân giải bởi DNS server đặt ở các Edge location trên toàn cầu, gần khách nhất.</>,
     draw: <Token x={560} y={46} w={180} label="Route 53: shopviet.vn" /> },
-  { name: "CloudFront", scope: "edge", label: "Global, chạy ở Edge",
-    text: <>CloudFront cache ảnh sản phẩm tại các Edge location gần khách. Bản gốc vẫn nằm trong Region (Cảnh 4 sẽ cho bạn thử).</>,
-    draw: <>
-      <Token x={560} y={46} w={180} label="CloudFront distribution" />
-      {EDGE_Y.map((y) => <Token key={y} x={608} y={y + 16} w={64} label="cache" ghost />)}
-    </> },
   { name: "S3", scope: "region", label: "Region",
     text: <>Bucket <code>shopviet-images</code> thuộc Region Singapore. AWS tự lưu dữ liệu trên nhiều AZ (với các storage class thông thường), bạn không phải làm gì thêm.</>,
     draw: <><Token x={296} y={70} w={220} label="S3: shopviet-images" />{replicas}</> },
@@ -42,15 +37,21 @@ const SERVICES: { name: string; scope: Scope; label: string; text: ReactNode; dr
       <rect className="zone pop" x={40} y={112} width={490} height={236} rx={12} />
       <text className="zone-t" x={516} y={128} textAnchor="end">VPC 10.0.0.0/16</text>
     </> },
-  { name: "DynamoDB", scope: "region", label: "Region",
-    text: <>Table <code>orders</code> là tài nguyên cấp Region, AWS tự nhân bản qua nhiều AZ. Muốn đa Region thì bật Global Tables.</>,
-    draw: <><Token x={296} y={70} w={220} label="DynamoDB: orders" />{replicas}</> },
+  { name: "EFS", scope: "region", label: "Region",
+    text: <>File system EFS là tài nguyên cấp Region, có mount target ở từng AZ nên server ở AZ nào cũng mount được. Server ở Region khác vẫn truy cập được qua inter-region VPC peering, không cần copy dữ liệu (exam1_q42).</>,
+    draw: <><Token x={296} y={70} w={220} label="EFS: shopviet-shared" />{AZS.map((az) => <Token key={az.n} x={az.x + 20} y={200} w={100} label="mount target" ghost />)}</> },
+  { name: "AMI", scope: "region", label: "Region",
+    text: <>AMI <code>shopviet-web</code> chỉ dùng được trong Region đã tạo ra nó, nhưng dùng được ở mọi AZ của Region đó. Muốn launch ở Region khác phải copy AMI sang (Cảnh 1).</>,
+    draw: <Token x={296} y={70} w={220} label="AMI: shopviet-web" /> },
   { name: "Subnet", scope: "az", label: "AZ",
     text: <>Subnet <code>10.0.1.0/24</code> chỉ nằm trong AZ a. Muốn chịu được sự cố một AZ, bạn phải tạo subnet ở ít nhất hai AZ.</>,
     draw: <>
       <rect className="zone pop" x={58} y={170} width={124} height={108} rx={8} />
       <text className="zone-t" x={120} y={188} textAnchor="middle">subnet 10.0.1.0/24</text>
     </> },
+  { name: "NAT Gateway", scope: "az", label: "AZ",
+    text: <>NAT gateway được tạo trong public subnet của một AZ cụ thể. Nếu cả 3 AZ dùng chung một NAT gateway thì AZ đó sập kéo theo các AZ kia mất internet. Đề chọn: mỗi AZ một NAT gateway, mỗi AZ một route table riêng (exam3_q62).</>,
+    draw: <>{AZS.map((az) => <Token key={az.n} x={az.x + 20} y={200} w={100} label="NAT gateway" ghost={az.n !== "a"} />)}</> },
   { name: "EC2", scope: "az", label: "AZ",
     text: <>Server <code>web-1</code> chạy trong một subnet, nên nằm trong đúng một AZ. AZ đó sập thì server sập theo. Cảnh 3 sẽ cho bạn thấy điều này.</>,
     draw: <Token x={70} y={200} w={100} label="EC2: web-1" /> },
