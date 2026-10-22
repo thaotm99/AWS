@@ -5,6 +5,10 @@ minutes: 24
 scenes: 5
 prerequisites: ["global-infra", "ec2", "rds", "storage"]
 docs:
+  - title: "What is AWS Backup? (backups taken outside AWS Backup are not governed)"
+    url: "https://docs.aws.amazon.com/aws-backup/latest/devguide/whatisbackup.html"
+  - title: "AWS Backup recovery points (saved in backup vaults)"
+    url: "https://docs.aws.amazon.com/aws-backup/latest/devguide/recovery-points.html"
   - title: "Disaster recovery options in the cloud"
     url: "https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/disaster-recovery-options-in-the-cloud.html"
   - title: "Using Amazon Aurora Global Database"
@@ -108,7 +112,7 @@ Web servers can be rebuilt in minutes, but data cannot: lost orders cannot be re
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/5" title="AWS Backup for a shared file system" questions={["exam5_q47", "exam5_q64"]}>
+<Scene id="en-s3" label="Part 3/5" title="AWS Backup for a shared file system" questions={["exam5_q47", "exam5_q64", "exam5_q16"]}>
 
 ShopViet's services run on ECS with Fargate and all read and write seller images and invoices on a shared file system. ShopViet chooses **Amazon EFS**: a POSIX (NFS) file system that spans multiple AZs and that Fargate tasks can mount directly. Compliance requirements: automatic backups, a copy in another Region, and at most 8 hours of data loss.
 
@@ -116,7 +120,7 @@ ShopViet's services run on ECS with Fargate and all read and write seller images
 
 <BackupPlanSim client:visible />
 
-Each kind of incident needs a different setting. A Region-level failure: you need a copy in **another Region**. Leaked admin credentials: you need a copy in **another account**, or **Vault Lock** in compliance mode so that no one, not even the root user, can delete recovery points before they expire (governance mode still lets users with sufficient IAM permissions remove the lock). Audits: you need a long enough **retention period**. The RPO is determined by the **backup frequency**.
+Each kind of incident needs a different setting. A Region-level failure: you need a copy in **another Region**. Leaked admin credentials: you need a copy in **another account**, or **Vault Lock** in compliance mode so that no one, not even the root user, can delete recovery points before they expire (governance mode still lets users with sufficient IAM permissions remove the lock). Vault Lock protects only the recovery points in that backup vault, that is, backups created by AWS Backup or copied into the vault; AWS Backup does not govern backups taken outside AWS Backup. EBS snapshots created directly by a script or the EC2 API are not in the vault, so Vault Lock cannot protect them; to recover such snapshots after an accidental deletion, use a Recycle Bin retention rule ([Storage lesson, part 2](/concepts/storage/#en-s2)). Audits: you need a long enough **retention period**. The RPO is determined by the **backup frequency**.
 
 AWS Backup serves data protection and compliance; it is not a tool for cloning data quickly. When you restore an EBS recovery point, AWS Backup creates a **new volume** from the snapshot. Like every volume created from a snapshot, its blocks are downloaded from S3 to the volume over time (**volume initialization**); during that time I/O latency is higher and the volume does not yet deliver full performance. When the test team needs frequent copies of production data with full performance right away, the fitting option is an EBS snapshot with **fast snapshot restore** (Storage lesson, part 2).
 

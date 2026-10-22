@@ -560,8 +560,8 @@
         {
           "keyword": "AWS Backup Vault Lock",
           "lesson": "backup-dr",
-          "status": "partial",
-          "where": "backup-dr.mdx#s3 / BackupPlanSim (never says Vault Lock only protects AWS Backup recovery points, not script/EC2-API snapshots)"
+          "status": "covered",
+          "where": "backup-dr.mdx#s3 (Vault Lock scope paragraph, link to storage.mdx#s2 Recycle Bin)"
         },
         {
           "keyword": "EBS snapshot",

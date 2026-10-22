@@ -531,3 +531,9 @@ Checked 2026-10-22.
 Checked 2026-10-22.
 
 - AWS WAF IP set statement as an allow exception ahead of geo match → AWS WAF evaluates rules "from the lowest numeric priority setting on up until it either finds a match that terminates the evaluation or exhausts all of the rules"; each rule in a web ACL has a unique priority → https://docs.aws.amazon.com/waf/latest/developerguide/web-acl-processing-order.html ; Allow and Block are terminating actions that stop web ACL evaluation of the request → https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-action.html (security.mdx#s1 / WafSim: new "Partner IP set: Allow, priority 0" toggle and overseas-partner request; prose paragraph + Takeaway). Partner IP 198.51.100.7 is a documentation (TEST-NET-2) address.
+
+## backup-dr (wave 6)
+
+Checked 2026-10-22.
+
+- AWS Backup Vault Lock scope → Vault Lock gives WORM for "all the backups you store and create in a backup vault" and protects "backups (recovery points) in your backup vaults" → https://docs.aws.amazon.com/aws-backup/latest/devguide/vault-lock.html ; "AWS Backup saves recovery points in backup vaults" → https://docs.aws.amazon.com/aws-backup/latest/devguide/recovery-points.html ; "AWS Backup does not govern backups you take in your AWS environment outside of AWS Backup" → https://docs.aws.amazon.com/aws-backup/latest/devguide/whatisbackup.html . Lesson conclusion: script/EC2-API EBS snapshots are not in a vault, so Vault Lock does not protect them; Recycle Bin is taught in storage.mdx#s2 (linked). (backup-dr.mdx#s3 paragraph after BackupPlanSim)

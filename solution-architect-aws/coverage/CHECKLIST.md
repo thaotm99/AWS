@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **983 keyword** khác nhau: ✅ 971 (99%) · 🟡 8 (1%) · ❌ 4 (0%).
+Có **983 keyword** khác nhau: ✅ 972 (99%) · 🟡 7 (1%) · ❌ 4 (0%).
 
 ### Theo bài học
 
@@ -43,7 +43,7 @@ Có **983 keyword** khác nhau: ✅ 971 (99%) · 🟡 8 (1%) · ❌ 4 (0%).
 | [kinesis](#kinesis) | 28 | 26 | 1 | 1 | 93% |
 | [monitoring](#monitoring) | 34 | 34 | 0 | 0 | 100% |
 | [iac](#iac) | 9 | 9 | 0 | 0 | 100% |
-| [backup-dr](#backup-dr) | 13 | 12 | 1 | 0 | 92% |
+| [backup-dr](#backup-dr) | 13 | 13 | 0 | 0 | 100% |
 | [others](#others) | 26 | 26 | 0 | 0 | 100% |
 
 ### Theo đề (số lượt keyword, chưa gộp)
@@ -54,7 +54,7 @@ Có **983 keyword** khác nhau: ✅ 971 (99%) · 🟡 8 (1%) · ❌ 4 (0%).
 | Đề 2 | 202 | 0 | 2 |
 | Đề 3 | 224 | 2 | 1 |
 | Đề 4 | 236 | 1 | 0 |
-| Đề 5 | 223 | 3 | 0 |
+| Đề 5 | 224 | 2 | 0 |
 | Đề 6 | 217 | 0 | 0 |
 
 ## global-infra
@@ -1120,12 +1120,12 @@ Có **983 keyword** khác nhau: ✅ 971 (99%) · 🟡 8 (1%) · ❌ 4 (0%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | AWS Backup Vault Lock | 🟡 Một phần | 1 | exam5_q16 | backup-dr.mdx#s3 / BackupPlanSim (never says Vault Lock only protects AWS Backup recovery points, not script/EC2-API snapshots) |
 | [ ] | ALB with Auto Scaling group (pre-provisioned standby) | ✅ Đã có | 1 | exam2_q59 | backup-dr.mdx#s1 / DrStrategySim |
 | [ ] | AMI copy across Regions | ✅ Đã có | 1 | exam4_q5 | backup-dr.mdx#s1; ec2.mdx#s2 |
 | [ ] | AWS Backup (not for fast cloning) | ✅ Đã có | 1 | exam5_q64 | backup-dr.mdx#s3 / backup-dr.mdx#s5 QuickCompare |
 | [ ] | AWS Backup (restore is not HA) | ✅ Đã có | 1 | exam6_q27 | backup-dr.mdx#s3 |
 | [ ] | AWS Backup cross-Region copy (RPO) | ✅ Đã có | 1 | exam5_q47 | backup-dr.mdx#s3 / BackupPlanSim |
+| [ ] | AWS Backup Vault Lock | ✅ Đã có | 1 | exam5_q16 | backup-dr.mdx#s3 (Vault Lock scope paragraph, link to storage.mdx#s2 Recycle Bin) |
 | [ ] | AWS DMS continuous replication (not for DR) | ✅ Đã có | 1 | exam6_q23 | backup-dr.mdx#s2 / DataFailoverSim |
 | [ ] | AWS Elastic Disaster Recovery (CloudEndure DR) | ✅ Đã có | 1 | exam6_q48 | backup-dr.mdx#s5 / QuickCompare |
 | [ ] | DR backup and restore | ✅ Đã có | 1 | exam4_q41 | backup-dr.mdx#s1 |
