@@ -23,5 +23,6 @@ Làm tuần tự từng đợt; hết đợt 4 thì rà lại toàn bộ 6 đề
 | 2 | vpc, iam, kms, elb | ✅ xong |
 | 3 | lambda, containers, rds, monitoring, cloudfront | ✅ xong |
 | 4 | route53, analytics, dynamodb, iac, backup-dr, storage-migration, security, cognito, global-infra, messaging, kinesis, others | ✅ xong |
-| 5 | Rà lại 6 đề, bổ sung phần còn sót; lặp tới khi đủ | đang làm |
+| 5 | Rà lại 6 đề (độc lập), bổ sung keyword bị sót | ✅ xong (thêm 23 keyword) |
+| 6 | Lấp 24 mục rà lại phát hiện + sửa 5 chỗ kiến thức; kiểm chứng độc lập | ✅ xong — 983/983 |
 | — | Ghi chú đáp án theo khuyến nghị cũ cho đề 2 câu 64, đề 4 câu 15 | ✅ xong |
