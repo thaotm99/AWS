@@ -255,12 +255,12 @@ export default function EdgePipelineSim() {
               {(() => {
                 const lines = sub(g);
                 // Two sub-label lines: move the block up so it stays centred in the box.
-                const top = lines.length > 1 ? LANE - 10 : LANE - 4;
+                const top = lines.length > 1 ? LANE - 12 : LANE - 4;
                 return (
                   <>
                     <text className="cfp-gt" x={GX(i)} y={top} textAnchor="middle">{g.l1}</text>
                     {lines.map((line, k) => (
-                      <text key={k} className="cfp-gs" x={GX(i)} y={top + 16 + k * 12} textAnchor="middle">{line}</text>
+                      <text key={k} className="cfp-gs" x={GX(i)} y={top + 16 + k * 13} textAnchor="middle">{line}</text>
                     ))}
                   </>
                 );

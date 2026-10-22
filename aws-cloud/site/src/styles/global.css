@@ -207,8 +207,8 @@ p { margin: 0 0 12px; max-width: 68ch; }
 
 /* Scene */
 .scene { margin-top: 44px; scroll-margin-top: 80px; }
-.scene-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; }
-.scene-no { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); font-weight: 500; white-space: nowrap; }
+.scene-head { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; margin-bottom: 4px; }
+.scene-no { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
 .stage { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-top: 12px; }
 .stage-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--line); }
 .stage-bar .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
@@ -827,6 +827,13 @@ input[type="checkbox"]:disabled, input[type="range"]:disabled { opacity: .5; cur
 .next-col a, .meta-row dd a { text-decoration: none; }
 .next-col a:hover, .meta-row dd a:hover { text-decoration: underline; }
 
-.svg-wrap[data-scroll="start"] { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
-.svg-wrap[data-scroll="end"] { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(to left, #000 calc(100% - 32px), transparent); }
-.svg-wrap[data-scroll="middle"] { -webkit-mask-image: linear-gradient(to right, transparent, #000 32px, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(to right, transparent, #000 32px, #000 calc(100% - 32px), transparent); }
+/* Scroll cue for wide diagrams: fade the clipped edge while the frame can still scroll. Pure CSS (scroll-driven
+   animation), so it never touches React-rendered DOM; browsers without support simply show no fade. */
+@property --cue-l { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@property --cue-r { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@keyframes svg-cue { from { --cue-l: 0px; --cue-r: 32px; } to { --cue-l: 32px; --cue-r: 0px; } }
+@supports (animation-timeline: scroll()) {
+  .svg-wrap { animation: svg-cue linear both; animation-timeline: scroll(self inline);
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--cue-l), #000 calc(100% - var(--cue-r)), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 var(--cue-l), #000 calc(100% - var(--cue-r)), transparent); }
+}

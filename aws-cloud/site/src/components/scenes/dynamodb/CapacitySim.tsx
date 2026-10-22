@@ -217,7 +217,7 @@ export default function CapacitySim() {
             );
           })}
           <line className="dcap-ceil" x1={PX0 - 6} x2={PX0 + PARTS * (PW + PGAP) - PGAP + 6} y1={py(PART_MAX)} y2={py(PART_MAX)} />
-          <text className="dcap-ceil-t" x={PX0 + PARTS * (PW + PGAP) - PGAP} y={py(PART_MAX) - 6} textAnchor="end">{L({ vi: "giới hạn 3.000 RCU", en: "3,000 RCU limit" })}</text>
+          <text className="dcap-ceil-t" x={PX0 + PARTS * (PW + PGAP) - PGAP} y={py(PART_MAX) - 9} textAnchor="end">{L({ vi: "giới hạn 3.000 RCU", en: "3,000 RCU limit" })}</text>
 
           <g transform={`translate(${X0} 258)`}>
             <rect className="dcap-bar" x={0} y={-9} width={12} height={10} rx={2} />
