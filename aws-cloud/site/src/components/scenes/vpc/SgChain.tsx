@@ -16,12 +16,12 @@ const TIERS = {
 const WEB_OPTIONS: { id: Rule; label: string }[] = [
   { id: "sg", label: "sg-alb, cổng 80" },
   { id: "open", label: "0.0.0.0/0, cổng 80" },
-  { id: "none", label: "chưa có rule" },
+  { id: "none", label: "không có rule" },
 ];
 const DB_OPTIONS: { id: Rule; label: string }[] = [
   { id: "sg", label: "sg-web, cổng 5432" },
   { id: "open", label: "0.0.0.0/0, cổng 5432" },
-  { id: "none", label: "chưa có rule" },
+  { id: "none", label: "không có rule" },
 ];
 
 function Tier({ at, title, sg, rule }: { at: Pt; title: string; sg: string; rule: string }) {
@@ -51,8 +51,8 @@ export default function SgChain() {
     if (web === "none") {
       await travel(layer, [TIERS.alb, TIERS.ec2], 500, "pkt-bad", 6);
       flashText(layer, TIERS.ec2[0] - 6, TIERS.ec2[1] - 40, "✕", "err-t", 1500);
-      setVerdict({ cls: "bad", title: "ALB báo target unhealthy",
-        text: "Security Group của EC2 không cho ALB vào, nên cả health check lẫn request đều bị chặn. Đây là lý do hay gặp nhất khi target bị đánh dấu unhealthy." });
+      setVerdict({ cls: "bad", title: "ALB đánh dấu target unhealthy",
+        text: "Security Group của EC2 không cho phép traffic từ ALB, nên cả health check lẫn request đều bị chặn. Đây là nguyên nhân phổ biến nhất khiến target bị đánh dấu unhealthy." });
       return setBusy(false);
     }
     await travel(layer, [TIERS.alb, TIERS.ec2], 500, "pkt", 6);
@@ -60,7 +60,7 @@ export default function SgChain() {
       await travel(layer, [TIERS.ec2, TIERS.rds], 500, "pkt-bad", 6);
       flashText(layer, TIERS.rds[0] - 6, TIERS.rds[1] - 40, "✕", "err-t", 1500);
       setVerdict({ cls: "bad", title: "could not connect to server: connection timed out",
-        text: "Ứng dụng không kết nối được database vì Security Group của RDS thiếu rule inbound từ tầng web. Security Group chặn thì client chờ tới timeout, không nhận lỗi từ chối." });
+        text: "Ứng dụng không kết nối được database vì Security Group của RDS thiếu rule inbound từ tầng web. Khi Security Group chặn traffic, client chờ tới khi hết thời gian timeout thay vì nhận lỗi từ chối kết nối." });
       return setBusy(false);
     }
     await travel(layer, [TIERS.ec2, TIERS.rds], 500, "pkt", 6);
@@ -74,13 +74,13 @@ export default function SgChain() {
     await Promise.all(targets.map(async (t) => {
       const blocked = !exposed.includes(t);
       await travel(layer, [TIERS.attacker, [t[0], 200], [t[0], t[1] + 30]], 800, blocked ? "pkt-bad" : "pkt-edge", 6);
-      flashText(layer, t[0] + 10, t[1] + 50, blocked ? "chặn" : "lọt!", blocked ? "ok-t" : "err-t", 1500);
+      flashText(layer, t[0] + 10, t[1] + 50, blocked ? "chặn" : "lọt qua", blocked ? "ok-t" : "err-t", 1500);
     }));
     setVerdict(exposed.length
-      ? { cls: "warn", title: "Chạy được nhưng không an toàn",
-          text: "Mở 0.0.0.0/0 cho EC2 hoặc RDS thì bất kỳ ai trên internet cũng gọi thẳng được vào tầng đó, bỏ qua ALB. Cách an toàn là tham chiếu Security Group của tầng phía trước." }
-      : { cls: "ok", title: "Chạy được và an toàn",
-          text: "Chỉ ALB mở 443 cho internet. EC2 chỉ nhận từ sg-alb, RDS chỉ nhận từ sg-web. Kẻ tấn công gọi thẳng EC2 bị chặn. Tham chiếu Security Group thay vì dải IP nên instance mới trong Auto Scaling group tự được phép." });
+      ? { cls: "warn", title: "Hoạt động nhưng không an toàn",
+          text: "Khi EC2 hoặc RDS cho phép 0.0.0.0/0, bất kỳ client nào trên internet cũng truy cập trực tiếp được tầng đó và bỏ qua ALB. Cấu hình an toàn là tham chiếu Security Group của tầng liền trước." }
+      : { cls: "ok", title: "Hoạt động và an toàn",
+          text: "Chỉ ALB cho phép cổng 443 từ internet. EC2 chỉ chấp nhận traffic từ sg-alb, RDS chỉ chấp nhận traffic từ sg-web. Request truy cập trực tiếp EC2 từ internet bị chặn. Do tham chiếu Security Group thay vì dải IP, instance mới trong Auto Scaling group tự động được cho phép." });
     setBusy(false);
   }
 
@@ -89,29 +89,29 @@ export default function SgChain() {
   return (
     <div className="stage">
       <div className="stage-bar">
-        <span className="label">SG của EC2 cho vào từ</span>
+        <span className="label">Inbound SG của EC2 từ</span>
         {WEB_OPTIONS.map((o) => (
           <button key={o.id} className="btn" aria-pressed={web === o.id} onClick={() => { setWeb(o.id); setVerdict(null); }} disabled={busy}>{o.label}</button>
         ))}
       </div>
       <div className="stage-bar">
-        <span className="label">SG của RDS cho vào từ</span>
+        <span className="label">Inbound SG của RDS từ</span>
         {DB_OPTIONS.map((o) => (
           <button key={o.id} className="btn" aria-pressed={db === o.id} onClick={() => { setDb(o.id); setVerdict(null); }} disabled={busy}>{o.label}</button>
         ))}
         <span className="sep" />
-        <button className="btn primary" onClick={run} disabled={busy}>Chạy thử</button>
+        <button className="btn primary" onClick={run} disabled={busy}>Chạy mô phỏng</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 0 760 240" role="img" aria-label="Ba tầng ALB, EC2, RDS với Security Group của từng tầng">
           <g transform={`translate(${TIERS.user[0]} ${TIERS.user[1]})`} aria-hidden="true">
             <circle className="user" cy={-9} r={7} /><path className="user" d="M-13 13 a13 13 0 0 1 26 0 z" />
           </g>
-          <text className="ts" x={TIERS.user[0]} y={TIERS.user[1] + 34} textAnchor="middle">Khách</text>
+          <text className="ts" x={TIERS.user[0]} y={TIERS.user[1] + 34} textAnchor="middle">Người dùng</text>
           <g transform={`translate(${TIERS.attacker[0]} ${TIERS.attacker[1]})`} aria-hidden="true">
             <circle className="attacker" cy={-9} r={7} /><path className="attacker" d="M-13 13 a13 13 0 0 1 26 0 z" />
           </g>
-          <text className="ts" x={TIERS.attacker[0]} y={TIERS.attacker[1] + 34} textAnchor="middle">Kẻ lạ trên internet</text>
+          <text className="ts" x={TIERS.attacker[0]} y={TIERS.attacker[1] + 34} textAnchor="middle">Client bên ngoài</text>
           <Tier at={TIERS.alb} title="ALB" sg="sg-alb" rule="0.0.0.0/0, cổng 443" />
           <Tier at={TIERS.ec2} title="EC2 (web)" sg="sg-web" rule={label(WEB_OPTIONS, web)} />
           <Tier at={TIERS.rds} title="RDS" sg="sg-db" rule={label(DB_OPTIONS, db)} />
@@ -125,7 +125,7 @@ export default function SgChain() {
             <p style={{ margin: "8px 0 0" }}>{verdict.text}</p>
           </>
         ) : (
-          <p style={{ margin: 0 }}>Chọn rule inbound cho từng tầng rồi bấm "Chạy thử". Thử cả cấu hình mở 0.0.0.0/0 lẫn tham chiếu Security Group để so sánh.</p>
+          <p style={{ margin: 0 }}>Chọn rule inbound cho từng tầng, sau đó nhấn "Chạy mô phỏng". Thử cả cấu hình cho phép 0.0.0.0/0 lẫn cấu hình tham chiếu Security Group để so sánh.</p>
         )}
       </div>
     </div>

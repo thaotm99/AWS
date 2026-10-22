@@ -6,25 +6,25 @@ import CaseSim, { type CaseScenario } from "../global-infra/CaseSim";
 
 const SCENARIOS: CaseScenario[] = [
   {
-    name: "Mở account mới: root user",
+    name: "Account mới: bảo vệ root user",
     request: "aws s3 rb s3://shopviet-orders --force",
-    from: "từ người lấy được thông tin root",
+    from: "từ bên thứ ba có được thông tin root",
     nodes: [
-      { id: "bad", x: 20, y: 97, w: 80, l1: "Người lạ", user: true },
-      { id: "root", x: 250, y: 97, w: 200, l1: "Root user", l2: "toàn quyền account" },
+      { id: "bad", x: 20, y: 97, w: 80, l1: "Bên thứ ba", user: true },
+      { id: "root", x: 250, y: 97, w: 200, l1: "Root user", l2: "toàn quyền trong account" },
       { id: "acct", x: 600, y: 97, w: 190, l1: "Bucket đơn hàng" },
     ],
     links: [{ a: "bad", b: "root" }, { a: "root", b: "acct" }],
     start: "bad",
-    choices: { label: "Root user", options: ["Có access key để dùng CLI", "Không access key, có MFA"], initial: 0 },
+    choices: { label: "Root user", options: ["Có access key để dùng CLI", "Không có access key, có MFA"], initial: 0 },
     run: (v) => v === 0
       ? { back: false, steps: [
-            { at: "root", state: "change", tag: "LỘ KEY", msg: "Access key của root bị lộ trong một file cấu hình." },
-            { at: "acct", state: "change", tag: "ĐÃ XÓA", msg: "Root làm được mọi việc trong account." },
+            { at: "root", state: "change", tag: "LỘ KEY", msg: "Access key của root user bị lộ trong một file cấu hình." },
+            { at: "acct", state: "change", tag: "ĐÃ XÓA", msg: "Root user thực hiện được mọi thao tác trong account." },
           ],
-          ok: false, result: "Mất dữ liệu. Root không bao giờ cần access key." }
-      : { steps: [{ at: "root", state: "block", flash: "MFA", msg: "Không có access key để dùng. Đăng nhập console cần mật khẩu mạnh **và MFA**." }],
-          ok: true, result: "Root được khóa kỹ. Email của root nên là alias tới hộp thư nhóm quản trị theo dõi." },
+          ok: false, result: "Dữ liệu bị mất. Root user không bao giờ cần access key." }
+      : { steps: [{ at: "root", state: "block", flash: "MFA", msg: "Không có access key để sử dụng. Đăng nhập console yêu cầu mật khẩu mạnh **và MFA**." }],
+          ok: true, result: "Root user được bảo vệ chặt chẽ. Email của root user nên là alias tới hộp thư do nhóm quản trị theo dõi." },
   },
   {
     name: "Cấp quyền cho 50 nhân viên kho",
@@ -35,26 +35,26 @@ const SCENARIOS: CaseScenario[] = [
       { id: "grp", x: 240, y: 97, w: 180, l1: "IAM group Kho", l2: "1 policy" },
       { id: "users", x: 580, y: 97, w: 200, l1: "50 IAM user", l2: "nhân viên kho" },
     ],
-    links: [{ a: "admin", b: "grp" }, { a: "grp", b: "users" }, { id: "direct", a: "admin", b: "users", via: [[60, 200], [680, 200]], dashed: true, label: "gắn từng người", lx: 370, ly: 194 }],
+    links: [{ a: "admin", b: "grp" }, { a: "grp", b: "users" }, { id: "direct", a: "admin", b: "users", via: [[60, 200], [680, 200]], dashed: true, label: "gắn cho từng user", lx: 370, ly: 194 }],
     start: "admin",
-    choices: { label: "Cách làm", options: ["Gắn policy cho từng user", "IAM group"], initial: 0 },
+    choices: { label: "Phương án", options: ["Gắn policy cho từng user", "IAM group"], initial: 0 },
     run: (v) => v === 0
       ? { hide: ["grp"], back: false, steps: [
-            { at: "users", via: [[60, 200], [680, 200]], state: "change", tag: "x50", msg: "Gắn policy 50 lần. Sau này đổi một quyền lại phải sửa 50 chỗ." },
+            { at: "users", via: [[60, 200], [680, 200]], state: "change", tag: "x50", msg: "Gắn policy 50 lần. Khi thay đổi một quyền, phải sửa tại 50 vị trí." },
           ],
-          ok: false, result: "Chạy được nhưng chậm và dễ sót." }
+          ok: false, result: "Hoạt động được nhưng tốn thời gian và dễ bỏ sót." }
       : { hide: ["direct"], back: false, steps: [
             { at: "grp", state: "pass", msg: "Gắn policy một lần vào group." },
-            { at: "users", state: "pass", msg: "Thêm 50 user vào group, tất cả nhận quyền ngay." },
+            { at: "users", state: "pass", msg: "Thêm 50 user vào group; tất cả được cấp quyền ngay lập tức." },
           ],
-          ok: true, result: "Nhanh nhất, và đổi quyền chỉ cần sửa một chỗ." },
+          ok: true, result: "Nhanh nhất, và thay đổi quyền chỉ cần sửa tại một vị trí." },
   },
   {
-    name: "Ai đã xóa IAM user lúc 2 giờ sáng?",
+    name: "Truy vết thao tác xóa IAM user lúc 2 giờ sáng",
     request: "iam:DeleteUser kho-07",
     from: "từ một tài khoản quản trị",
     nodes: [
-      { id: "who", x: 20, y: 97, w: 80, l1: "Ai đó", user: true },
+      { id: "who", x: 20, y: 97, w: 80, l1: "Người thực hiện", user: true },
       { id: "mfa", x: 170, y: 97, w: 140, l1: "Đăng nhập", l2: "mật khẩu + MFA" },
       { id: "iam", x: 380, y: 97, w: 160, l1: "IAM", l2: "xóa user kho-07" },
       { id: "trail", x: 620, y: 97, w: 170, l1: "CloudTrail", l2: "nhật ký API" },
@@ -64,26 +64,26 @@ const SCENARIOS: CaseScenario[] = [
     choices: { label: "Thiết lập", options: ["Không MFA, không CloudTrail", "MFA + CloudTrail"], initial: 0 },
     run: (v) => v === 0
       ? { back: false, marks: { trail: "skip" }, steps: [
-            { at: "mfa", state: "pass", msg: "Chỉ cần mật khẩu, mà mật khẩu có thể đã lộ." },
+            { at: "mfa", state: "pass", msg: "Chỉ yêu cầu mật khẩu, trong khi mật khẩu có thể đã bị lộ." },
             { at: "iam", state: "change", tag: "ĐÃ XÓA", msg: "User bị xóa." },
-            { at: "trail", state: "block", flash: "?", msg: "CloudTrail chưa bật: không có log nào." },
+            { at: "trail", state: "block", flash: "?", msg: "CloudTrail chưa được bật: không có log." },
           ],
-          ok: false, result: "Không biết ai làm, lúc nào, từ đâu." }
+          ok: false, result: "Không xác định được người thực hiện, thời điểm và nguồn truy cập." }
       : { back: false, steps: [
-            { at: "mfa", state: "pass", msg: "Người dùng đặc quyền phải qua **MFA**." },
+            { at: "mfa", state: "pass", msg: "Người dùng đặc quyền phải xác thực **MFA**." },
             { at: "iam", state: "change", tag: "ĐÃ XÓA", msg: "User bị xóa." },
-            { at: "trail", state: "pass", msg: "CloudTrail ghi lại: ai gọi, lúc nào, từ IP nào." },
+            { at: "trail", state: "pass", msg: "CloudTrail ghi lại bên gọi, thời điểm và địa chỉ IP nguồn." },
           ],
-          ok: true, result: "Khó bị mạo danh hơn, và mọi hành động IAM đều truy vết được." },
+          ok: true, result: "Giảm nguy cơ mạo danh, và mọi thao tác IAM đều truy vết được." },
   },
   {
     name: "Developer tự nâng quyền",
     request: "iam:AttachUserPolicy AdministratorAccess",
-    from: "developer tự gắn cho mình",
+    from: "developer tự gắn policy cho chính mình",
     nodes: [
       { id: "dev", x: 20, y: 97, w: 80, l1: "Developer", user: true },
-      { id: "iam", x: 160, y: 97, w: 170, l1: "IAM policy", l2: "được tự gắn policy" },
-      { id: "bound", x: 390, y: 97, w: 170, l1: "Permissions boundary", l2: "trần cho developer" },
+      { id: "iam", x: 160, y: 97, w: 170, l1: "IAM policy", l2: "cho phép tự gắn policy" },
+      { id: "bound", x: 390, y: 97, w: 170, l1: "Permissions boundary", l2: "giới hạn cho developer" },
       { id: "prod", x: 620, y: 97, w: 170, l1: "RDS production", l2: "DeleteDBInstance" },
     ],
     links: [{ a: "dev", b: "iam" }, { a: "iam", b: "bound" }, { a: "bound", b: "prod" }],
@@ -92,18 +92,18 @@ const SCENARIOS: CaseScenario[] = [
     run: (v) => v === 0
       ? { marks: { bound: "skip" }, back: false, steps: [
             { at: "iam", state: "change", tag: "ADMIN", msg: "Developer tự gắn AdministratorAccess." },
-            { at: "bound", state: "skip", msg: "Không có boundary nào giới hạn." },
-            { at: "prod", state: "change", tag: "LỠ TAY", msg: "Lỡ tay xóa được database production." },
+            { at: "bound", state: "skip", msg: "Không có permissions boundary giới hạn." },
+            { at: "prod", state: "change", tag: "XÓA NHẦM", msg: "Database production bị xóa do thao tác nhầm." },
           ],
-          ok: false, result: "Leo thang đặc quyền: được tự gắn policy nghĩa là tự cho mình mọi quyền." }
+          ok: false, result: "Leo thang đặc quyền: quyền tự gắn policy đồng nghĩa với khả năng tự cấp mọi quyền." }
       : { steps: [
             { at: "iam", state: "change", tag: "ADMIN", msg: "Developer vẫn gắn được AdministratorAccess." },
-            { at: "bound", state: "block", msg: "Quyền hiệu lực = phần giao của identity policy và **boundary**. Boundary không cho xóa RDS." },
+            { at: "bound", state: "block", msg: "Quyền hiệu lực = phần giao của identity policy và **boundary**. Boundary không cho phép xóa RDS." },
           ],
-          ok: true, result: "Developer vẫn tự phục vụ được, nhưng không vượt quá trần mà quản trị viên đặt." },
+          ok: true, result: "Developer vẫn tự phục vụ được, nhưng không vượt quá giới hạn do quản trị viên thiết lập." },
   },
 ];
 
 export default function IamMythsSim() {
-  return <CaseSim scenarios={SCENARIOS} label="Bốn thói quen IAM giữ an toàn cho account ShopViet" action="Chạy thử" />;
+  return <CaseSim scenarios={SCENARIOS} label="Bốn nguyên tắc IAM bảo vệ account ShopViet" action="Chạy mô phỏng" />;
 }

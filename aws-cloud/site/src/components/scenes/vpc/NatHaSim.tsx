@@ -11,9 +11,9 @@ const IGW: Pt = [380, 74];
 const NET: Pt = [380, 26];
 
 const MODES: Record<Mode, { label: string }> = {
-  shared: { label: "Một NAT gateway ở AZ a" },
+  shared: { label: "Một NAT gateway tại AZ a" },
   perAz: { label: "Mỗi AZ một NAT gateway" },
-  private: { label: "NAT đặt ở private subnet" },
+  private: { label: "NAT gateway trong private subnet" },
 };
 
 function natAz(mode: Mode, ec2Az: Az): Az {
@@ -82,14 +82,14 @@ export default function NatHaSim() {
 
   const brokenB = stats.b.err > 0;
   const note = mode === "private"
-    ? "NAT gateway phải nằm ở public subnet, nơi có route 0.0.0.0/0 tới Internet Gateway. Đặt ở private subnet thì NAT gateway cũng không ra được internet. Đây là lỗi bố trí hay gặp."
+    ? "NAT gateway phải nằm trong public subnet, nơi có route 0.0.0.0/0 tới Internet Gateway. Khi đặt trong private subnet, NAT gateway cũng không kết nối được internet. Đây là lỗi bố trí thường gặp."
     : mode === "shared"
       ? down
-        ? "AZ a sập kéo theo NAT gateway duy nhất. Private subnet ở AZ b vẫn khỏe nhưng mất internet vì route table của nó trỏ sang NAT ở AZ a."
-        : "Hai private subnet dùng chung NAT gateway ở AZ a. Chạy bình thường, nhưng thử bấm \"Sự cố AZ a\"."
+        ? "Sự cố tại AZ a làm ngừng hoạt động NAT gateway duy nhất. Private subnet tại AZ b vẫn hoạt động nhưng mất kết nối internet vì route table của subnet này trỏ tới NAT gateway tại AZ a."
+        : "Hai private subnet dùng chung NAT gateway tại AZ a. Hệ thống hoạt động bình thường; nhấn \"Sự cố AZ a\" để quan sát ảnh hưởng."
       : down
-        ? "Mỗi AZ có NAT gateway riêng và route table riêng trỏ tới NAT cùng AZ. AZ a sập không ảnh hưởng AZ b. Đây là thiết kế nên dùng."
-        : "Mỗi AZ một NAT gateway trong public subnet, mỗi AZ một route table riêng. Thử gây sự cố AZ a.";
+        ? "Mỗi AZ có NAT gateway riêng và route table riêng trỏ tới NAT gateway trong cùng AZ. Sự cố tại AZ a không ảnh hưởng tới AZ b. Đây là thiết kế được khuyến nghị."
+        : "Mỗi AZ một NAT gateway trong public subnet và một route table riêng. Tạo sự cố tại AZ a để quan sát kết quả.";
 
   return (
     <div className="stage">
@@ -142,7 +142,7 @@ export default function NatHaSim() {
       <div className="readout">
         <div className="status">
           <span className={"pill " + (brokenB || (mode === "private" && stats.a.err + stats.b.err > 0) ? "bad" : "ok")}>
-            <i />{brokenB ? "Private subnet AZ b mất internet" : mode === "private" && stats.a.err + stats.b.err > 0 ? "Không ra được internet" : "Ra internet bình thường"}
+            <i />{brokenB ? "Private subnet AZ b mất kết nối internet" : mode === "private" && stats.a.err + stats.b.err > 0 ? "Không kết nối được internet" : "Kết nối internet bình thường"}
           </span>
           <span className="count">AZ a: {stats.a.ok} ok · {stats.a.err} lỗi — AZ b: {stats.b.ok} ok · {stats.b.err} lỗi</span>
         </div>

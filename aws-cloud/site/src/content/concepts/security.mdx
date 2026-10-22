@@ -1,6 +1,6 @@
 ---
 title: "WAF, Shield, GuardDuty, Macie: bảo vệ và phát hiện"
-lede: "ShopViet bắt đầu bị tấn công. Bài này dựng hàng rào phía trước ứng dụng bằng AWS WAF, rồi cho sáu sự cố thật xảy ra (DDoS, server đào coin, lỗ hổng phần mềm, file khách hàng để quên, account mới thiếu rule, log nằm rải rác) để xem dịch vụ nào chặn hoặc phát hiện từng sự cố."
+lede: "Hệ thống ShopViet bắt đầu trở thành mục tiêu tấn công. Bài học trình bày lớp bảo vệ phía trước ứng dụng bằng AWS WAF, sau đó mô phỏng sáu sự cố thực tế (DDoS, server bị cài phần mềm đào tiền mã hoá, lỗ hổng phần mềm, tệp dữ liệu khách hàng bị lưu sai vị trí, account mới thiếu rule, log phân tán) để xác định dịch vụ ngăn chặn hoặc phát hiện từng sự cố."
 minutes: 15
 scenes: 2
 prerequisites: ["cloudfront", "vpc"]
@@ -26,40 +26,40 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#s1", label: "1 · AWS WAF" },
-  { href: "#s2", label: "2 · Sáu sự cố, sáu dịch vụ" },
-  { href: "#challenge", label: "Thử thách" },
+  { href: "#s2", label: "2 · Phát hiện sự cố bảo mật" },
+  { href: "#challenge", label: "Bài tập" },
 ]}>
-ShopViet bắt đầu bị tấn công: bot dò SQL injection, một IP quét liên tục, có cả lưu lượng DDoS. Bài này là hàng rào phía trước ứng dụng (**AWS WAF**, **Shield**) và các dịch vụ **phát hiện** chuyện bất thường bên trong account.
+Hệ thống ShopViet ghi nhận các hành vi tấn công: bot dò SQL injection, một IP quét liên tục và lưu lượng DDoS. Bài học trình bày lớp bảo vệ phía trước ứng dụng (**AWS WAF**, **Shield**) và các dịch vụ **phát hiện** hoạt động bất thường bên trong account.
 </Story>
 
-<Scene id="s1" label="Cảnh 1/2" title="AWS WAF: chặn request xấu trước khi tới ứng dụng" questions={["exam5_q13", "exam1_q6", "exam5_q45", "exam2_q30", "exam6_q60", "exam5_q57", "exam2_q32"]}>
+<Scene id="s1" label="Phần 1/2" title="AWS WAF: lọc request độc hại trước khi tới ứng dụng" questions={["exam5_q13", "exam1_q6", "exam5_q45", "exam2_q30", "exam6_q60", "exam5_q57", "exam2_q32"]}>
 
-Năm loại request đang gõ cửa ShopViet. Bật từng rule, chọn chỗ gắn WAF, rồi gửi.
+Năm loại request đang được gửi tới ShopViet. Kích hoạt từng rule, chọn tài nguyên liên kết với AWS WAF, sau đó gửi request.
 
 <WafSim client:visible />
 
-<Takeaway>SQL injection, XSS: managed rule. Theo quốc gia: geo match. Một IP xấu: IP set. Request dồn dập: rate-based rule. WAF gắn vào CloudFront, ALB, API Gateway, không gắn thẳng vào EC2.</Takeaway>
+<Takeaway>SQL injection, XSS: managed rule. Giới hạn theo quốc gia: geo match. Một IP độc hại: IP set. Request với tần suất bất thường: rate-based rule. AWS WAF được liên kết với CloudFront, ALB, API Gateway, không gắn trực tiếp vào EC2.</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Cảnh 2/2" title="Sáu sự cố, sáu dịch vụ" questions={["exam3_q58", "exam6_q4", "exam1_q36", "exam3_q1", "exam6_q14", "exam2_q44"]}>
+<Scene id="s2" label="Phần 2/2" title="Sáu sự cố bảo mật và dịch vụ tương ứng" questions={["exam3_q58", "exam6_q4", "exam1_q36", "exam3_q1", "exam6_q14", "exam2_q44"]}>
 
-WAF chỉ lọc request web. Nhiều chuyện xấu khác xảy ra **bên trong** account: một server bị chiếm, một file nhạy cảm để sai chỗ, một account mới quên cấu hình. Chọn một sự cố, thử bật và tắt dịch vụ tương ứng, rồi cho sự cố xảy ra.
+AWS WAF chỉ lọc request web. Nhiều sự cố khác xảy ra **bên trong** account: một server bị chiếm quyền, một tệp nhạy cảm bị lưu sai vị trí, một account mới thiếu cấu hình. Chọn một sự cố, bật hoặc tắt dịch vụ tương ứng, sau đó mô phỏng sự cố.
 
 <IncidentSim client:visible />
 
-<Takeaway>DDoS lớn, cần đội AWS hỗ trợ và báo cáo: Shield Advanced. Server bị chiếm, đào coin: GuardDuty. Lỗ hổng phần mềm trên EC2: Inspector. Dữ liệu cá nhân trong S3: Macie. Rule giống nhau cho nhiều account: Firewall Manager. Gom log bảo mật: Security Lake.</Takeaway>
+<Takeaway>DDoS quy mô lớn, cần hỗ trợ từ đội ngũ AWS và báo cáo: Shield Advanced. Server bị chiếm quyền, đào tiền mã hoá: GuardDuty. Lỗ hổng phần mềm trên EC2: Inspector. Dữ liệu cá nhân trong S3: Macie. Áp dụng rule thống nhất cho nhiều account: Firewall Manager. Tập trung log bảo mật: Security Lake.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="Ghép dịch vụ với việc của nó" questions={["exam5_q13", "exam6_q60", "exam3_q1", "exam6_q14"]}>
+<Scene id="challenge" label="Bài tập" title="Phân loại dịch vụ theo chức năng" questions={["exam5_q13", "exam6_q60", "exam3_q1", "exam6_q14"]}>
 
-Dịch vụ nào đứng chặn traffic, dịch vụ nào tìm ra vấn đề? Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
+Phân loại dịch vụ ngăn chặn traffic và dịch vụ phát hiện vấn đề. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
 <SortGame client:visible
   bins={[
-    { id: "protect", title: "Chặn, bảo vệ", sub: "Đứng trước ứng dụng", hint: "Gợi ý: dịch vụ này chặn traffic xấu hoặc quản lý rule chặn." },
-    { id: "detect", title: "Phát hiện, đánh giá", sub: "Phân tích bên trong account", hint: "Gợi ý: dịch vụ này tìm ra vấn đề, không đứng chặn traffic." },
+    { id: "protect", title: "Ngăn chặn, bảo vệ", sub: "Đặt phía trước ứng dụng", hint: "Gợi ý: dịch vụ chặn traffic độc hại hoặc quản lý rule chặn." },
+    { id: "detect", title: "Phát hiện, đánh giá", sub: "Phân tích bên trong account", hint: "Gợi ý: dịch vụ phát hiện vấn đề, không trực tiếp chặn traffic." },
   ]}
   cards={[
     ["AWS WAF", "protect"], ["AWS Shield Advanced", "protect"], ["AWS Firewall Manager", "protect"],
@@ -67,25 +67,25 @@ Dịch vụ nào đứng chặn traffic, dịch vụ nào tìm ra vấn đề? T
   ]}
 />
 
-Kiểm tra nhanh: nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "Web ShopViet chạy trên EC2 và đang bị dò SQL injection, cross-site scripting. Cách chặn hiệu quả nhất?",
+  { q: "Ứng dụng web của ShopViet chạy trên EC2 và đang bị dò SQL injection, cross-site scripting. Phương án ngăn chặn hiệu quả nhất là gì?",
     opts: ["AWS WAF gắn vào CloudFront đặt trước ứng dụng", "Security group chặn cổng 80", "Amazon Inspector"],
     a: 0,
-    why: "WAF có managed rule cho SQLi/XSS. Security group không đọc nội dung request; Inspector chỉ quét lỗ hổng." },
-  { q: "Log cho thấy một IP gửi hơn 100 request mỗi giây, khách thật chỉ vài request. ShopViet chặn IP đó thế nào?",
+    why: "AWS WAF có managed rule cho SQLi/XSS. Security Group không kiểm tra nội dung request; Inspector chỉ quét lỗ hổng." },
+  { q: "Log cho thấy một IP gửi hơn 100 request mỗi giây, trong khi người dùng thực chỉ gửi vài request. Cơ chế nào chặn được IP đó?",
     opts: ["WAF rate-based rule", "Tăng số EC2", "Shield Standard"],
     a: 0,
-    why: "Rate-based rule chặn IP vượt ngưỡng số request trong một khoảng thời gian." },
-  { q: "ShopViet muốn vừa được báo khi có hoạt động độc hại trên S3, vừa biết bucket nào chứa dữ liệu cá nhân. Cần cặp dịch vụ nào?",
+    why: "Rate-based rule chặn IP vượt ngưỡng số request trong một khoảng thời gian xác định." },
+  { q: "ShopViet cần nhận cảnh báo khi có hoạt động độc hại trên S3, đồng thời xác định bucket nào chứa dữ liệu cá nhân. Cặp dịch vụ nào đáp ứng yêu cầu?",
     opts: ["GuardDuty và Macie", "Inspector và Shield", "WAF và Firewall Manager"],
     a: 0,
-    why: "GuardDuty phát hiện mối đe doạ; Macie tìm dữ liệu nhạy cảm." },
-  { q: "Hoá đơn EC2 tăng bất thường, nghi có server bị cài phần mềm đào coin. Dịch vụ nào phát hiện được hành vi này?",
+    why: "GuardDuty phát hiện mối đe doạ; Macie phát hiện dữ liệu nhạy cảm." },
+  { q: "Chi phí EC2 tăng bất thường, nghi ngờ có server bị cài phần mềm đào tiền mã hoá. Dịch vụ nào phát hiện được hành vi này?",
     opts: ["Amazon GuardDuty", "AWS Config", "Amazon Macie"],
     a: 0,
-    why: "GuardDuty có finding riêng cho hoạt động đào tiền mã hoá trên EC2." },
+    why: "GuardDuty có loại finding riêng cho hoạt động đào tiền mã hoá trên EC2." },
 ]} />
 
 </Scene>

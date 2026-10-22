@@ -12,7 +12,7 @@ const NODES: CaseNode[] = [
   { id: "cf", x: 560, y: 6, w: 230, l1: "CloudFront", l2: "d111.cloudfront.net · AWS" },
   { id: "www", x: 560, y: 64, w: 230, l1: "www.shopviet.vn", l2: "record cùng hosted zone" },
   { id: "alb", x: 560, y: 122, w: 230, l1: "ALB", l2: "shop-alb-123.elb… · AWS" },
-  { id: "ext", x: 560, y: 180, w: 230, l1: "shopviet.wordpress.com", l2: "ngoài AWS" },
+  { id: "ext", x: 560, y: 180, w: 230, l1: "shopviet.wordpress.com", l2: "bên ngoài AWS" },
 ];
 const Y: Record<Target, number> = { cf: 29, www: 87, alb: 145, ext: 203 };
 const via = (t: Target): P[] => [[480, 120], [480, Y[t]]];
@@ -23,34 +23,34 @@ const LINKS: CaseLink[] = [
 const TYPE = { label: "Loại record", options: ["Alias", "CNAME"], initial: 1 };
 const base = { nodes: NODES, links: LINKS, start: "user", choices: TYPE };
 
-const APEX_NO_CNAME = { at: "r53", state: "block" as const, flash: "CNAME?", msg: "Không tạo được: **CNAME không đặt được ở zone apex** (`shopviet.vn`), vì tên gốc đã có record SOA và NS." };
+const APEX_NO_CNAME = { at: "r53", state: "block" as const, flash: "CNAME?", msg: "Không tạo được: **CNAME không được phép tại zone apex** (`shopviet.vn`), vì tên gốc đã có record SOA và NS." };
 
 const SCENARIOS: CaseScenario[] = [
   {
     ...base,
     name: "shopviet.vn → CloudFront",
     request: "dig shopviet.vn",
-    from: "tên miền chính trỏ tới web tĩnh",
+    from: "tên miền chính trỏ tới website tĩnh",
     run: (v) => v === 0
       ? { steps: [
-            { at: "r53", state: "pass", msg: "Alias được phép ở zone apex." },
-            { at: "cf", via: via("cf"), state: "pass", msg: "Route 53 tự lấy IP của distribution và trả thẳng về. Truy vấn Alias tới tài nguyên AWS **không tính phí**." },
+            { at: "r53", state: "pass", msg: "Alias được phép tại zone apex." },
+            { at: "cf", via: via("cf"), state: "pass", msg: "Route 53 tự động lấy IP của distribution và trả về trực tiếp. Truy vấn Alias tới tài nguyên AWS **không tính phí**." },
           ],
-          ok: true, result: "Khách gõ shopviet.vn là vào CloudFront." }
-      : { steps: [APEX_NO_CNAME], ok: false, result: "Tên miền chính không trỏ được. Dùng Alias." },
+          ok: true, result: "Truy cập shopviet.vn được định tuyến tới CloudFront." }
+      : { steps: [APEX_NO_CNAME], ok: false, result: "Tên miền chính không trỏ được tới đích. Sử dụng Alias." },
   },
   {
     ...base,
     name: "shopviet.vn → www.shopviet.vn",
     request: "dig shopviet.vn",
-    from: "gom mọi truy cập về www",
+    from: "chuyển mọi truy cập về www",
     run: (v) => v === 0
       ? { steps: [
-            { at: "r53", state: "pass", msg: "Alias ở zone apex trỏ tới một record khác trong **cùng hosted zone**." },
-            { at: "www", via: via("www"), state: "pass", msg: "Trả về đúng địa chỉ của www.shopviet.vn." },
+            { at: "r53", state: "pass", msg: "Alias tại zone apex trỏ tới một record khác trong **cùng hosted zone**." },
+            { at: "www", via: via("www"), state: "pass", msg: "Trả về địa chỉ của www.shopviet.vn." },
           ],
-          ok: true, result: "Cách rẻ và gọn nhất để shopviet.vn đi theo www." }
-      : { steps: [APEX_NO_CNAME], ok: false, result: "Không tạo được record. Ở apex chỉ dùng Alias." },
+          ok: true, result: "Phương án có chi phí thấp và đơn giản nhất để shopviet.vn trỏ theo www." }
+      : { steps: [APEX_NO_CNAME], ok: false, result: "Không tạo được record. Tại zone apex chỉ sử dụng được Alias." },
   },
   {
     ...base,
@@ -59,32 +59,32 @@ const SCENARIOS: CaseScenario[] = [
     from: "subdomain trỏ tới load balancer",
     run: (v) => v === 0
       ? { steps: [
-            { at: "r53", state: "pass", msg: "Alias dùng được cho subdomain." },
-            { at: "alb", via: via("alb"), state: "pass", msg: "Trả thẳng IP của ALB, tự cập nhật khi IP của ALB đổi. Không tính phí truy vấn." },
+            { at: "r53", state: "pass", msg: "Alias sử dụng được cho subdomain." },
+            { at: "alb", via: via("alb"), state: "pass", msg: "Trả về trực tiếp IP của ALB, tự động cập nhật khi IP của ALB thay đổi. Không tính phí truy vấn." },
           ],
-          ok: true, result: "Chạy được, và là lựa chọn tốt hơn khi đích là tài nguyên AWS." }
+          ok: true, result: "Hoạt động được, và là lựa chọn phù hợp hơn khi đích là tài nguyên AWS." }
       : { steps: [
             { at: "r53", state: "pass", msg: "www là subdomain, không phải apex, nên CNAME hợp lệ." },
-            { at: "alb", via: via("alb"), state: "change", tag: "THÊM BƯỚC", msg: "Trả về tên DNS của ALB, trình duyệt phải phân giải thêm một lần." },
+            { at: "alb", via: via("alb"), state: "change", tag: "THÊM BƯỚC", msg: "Trả về tên DNS của ALB; trình duyệt phải thực hiện thêm một lần phân giải." },
           ],
-          ok: true, result: "Chạy được. Alias vẫn tốt hơn một chút: một bước phân giải và không tính phí truy vấn." },
+          ok: true, result: "Hoạt động được. Alias vẫn có ưu thế: chỉ một bước phân giải và không tính phí truy vấn." },
   },
   {
     ...base,
     name: "blog.shopviet.vn → WordPress",
     request: "dig blog.shopviet.vn",
-    from: "blog đặt ở dịch vụ ngoài",
+    from: "blog lưu trữ tại dịch vụ bên ngoài",
     run: (v) => v === 0
       ? { steps: [{ at: "r53", state: "block", flash: "Alias?", msg: "Alias chỉ trỏ tới **tài nguyên AWS** (CloudFront, ALB, S3 website…) hoặc record trong cùng hosted zone." }],
-          ok: false, result: "Không tạo được Alias tới tên miền bên ngoài. Dùng CNAME." }
+          ok: false, result: "Không tạo được Alias tới tên miền bên ngoài. Sử dụng CNAME." }
       : { steps: [
             { at: "r53", state: "pass", msg: "blog là subdomain, CNAME hợp lệ." },
-            { at: "ext", via: via("ext"), state: "pass", msg: "Trỏ tới shopviet.wordpress.com." },
+            { at: "ext", via: via("ext"), state: "pass", msg: "Record trỏ tới shopviet.wordpress.com." },
           ],
-          ok: true, result: "Khách vào blog.shopviet.vn là tới trang WordPress." },
+          ok: true, result: "Truy cập blog.shopviet.vn được chuyển tới trang WordPress." },
   },
 ];
 
 export default function AliasCnameSim() {
-  return <CaseSim scenarios={SCENARIOS} label="Route 53 trả lời truy vấn bằng Alias hoặc CNAME" action="Tạo record và truy vấn" />;
+  return <CaseSim scenarios={SCENARIOS} label="Route 53 phản hồi truy vấn bằng Alias hoặc CNAME" action="Tạo record và truy vấn" />;
 }

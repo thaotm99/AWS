@@ -8,9 +8,9 @@ type Policy = "simple" | "latency" | "geolocation" | "geoproximity" | "failover"
 type Rid = "sg" | "fra" | "use1";
 
 const USERS = [
-  { id: "vn", label: "Khách ở Việt Nam", at: [70, 70] as Pt },
-  { id: "de", label: "Khách ở Đức", at: [70, 170] as Pt },
-  { id: "us", label: "Khách ở Mỹ", at: [70, 270] as Pt },
+  { id: "vn", label: "Người dùng tại Việt Nam", at: [80, 70] as Pt },
+  { id: "de", label: "Người dùng tại Đức", at: [80, 170] as Pt },
+  { id: "us", label: "Người dùng tại Hoa Kỳ", at: [80, 270] as Pt },
 ] as const;
 type Uid = (typeof USERS)[number]["id"];
 
@@ -29,11 +29,11 @@ const KM: Record<Uid, Record<Rid, number>> = {
 };
 
 const POLICIES: Record<Policy, { label: string; text: ReactNode }> = {
-  simple: { label: "Simple", text: <>Một record, một đích. Không có health check, không quan tâm khách ở đâu: ai cũng tới ALB Singapore.</> },
-  latency: { label: "Latency", text: <>Trả về Region có độ trễ thấp nhất tới khách. Dùng khi ứng dụng chạy ở nhiều Region và muốn khách ở châu Âu được phục vụ từ Region châu Âu.</> },
-  geolocation: { label: "Geolocation", text: <>Trả lời theo <b>vị trí của khách</b> (quốc gia, châu lục). Ở đây chỉ có record cho Việt Nam và châu Âu (nơi có bản quyền nội dung), không có record mặc định, nên khách ở Mỹ không nhận được câu trả lời. Dùng để giới hạn phân phối nội dung theo vùng.</> },
-  geoproximity: { label: "Geoproximity", text: <>Theo khoảng cách giữa khách và tài nguyên, có thể <b>nới rộng hoặc thu hẹp vùng</b> của một tài nguyên bằng bias. Khoảng cách tính lại = khoảng cách thật × (1 − bias/100). Kéo bias của Singapore lên để thấy vùng phục vụ của nó lan rộng.</> },
-  failover: { label: "Failover", text: <>Active-passive: record primary trỏ ALB, record secondary trỏ trang lỗi tĩnh trên S3. Route 53 health check thấy ALB không khỏe thì trả về secondary. Bấm "ALB không khỏe" để thử.</> },
+  simple: { label: "Simple", text: <>Một record, một đích. Không có health check, không phụ thuộc vị trí người dùng: mọi request đều tới ALB Singapore.</> },
+  latency: { label: "Latency", text: <>Trả về Region có độ trễ thấp nhất tới người dùng. Áp dụng khi ứng dụng chạy tại nhiều Region và người dùng châu Âu cần được phục vụ từ Region châu Âu.</> },
+  geolocation: { label: "Geolocation", text: <>Phản hồi theo <b>vị trí của người dùng</b> (quốc gia, châu lục). Trong ví dụ này chỉ có record cho Việt Nam và châu Âu (khu vực có bản quyền nội dung), không có record mặc định, nên người dùng tại Hoa Kỳ không nhận được phản hồi. Dùng để giới hạn phân phối nội dung theo khu vực.</> },
+  geoproximity: { label: "Geoproximity", text: <>Định tuyến theo khoảng cách giữa người dùng và tài nguyên; có thể <b>mở rộng hoặc thu hẹp khu vực</b> của một tài nguyên bằng bias. Khoảng cách hiệu chỉnh = khoảng cách thực tế × (1 − bias/100). Tăng bias của Singapore để quan sát khu vực phục vụ được mở rộng.</> },
+  failover: { label: "Failover", text: <>Active-passive: record primary trỏ tới ALB, record secondary trỏ tới trang lỗi tĩnh trên S3. Khi Route 53 health check xác định ALB unhealthy, Route 53 trả về record secondary. Nhấn "ALB unhealthy" để kiểm tra.</> },
 };
 
 export default function RoutingPolicySim() {
@@ -64,7 +64,7 @@ export default function RoutingPolicySim() {
       const a = answer(u.id);
       if (a === null) {
         await travel(layer, [u.at, [330, u.at[1]]], 700, "pkt-bad", 6);
-        flashText(layer, 300, u.at[1] - 14, "không có record khớp", "err-t", 1500);
+        flashText(layer, 300, u.at[1] - 14, "không có record phù hợp", "err-t", 1500);
         return;
       }
       const dest = a === "error" ? ERROR_PAGE : REGIONS[a].at;
@@ -90,13 +90,13 @@ export default function RoutingPolicySim() {
         )}
         {policy === "failover" && (
           <button className="btn danger" aria-pressed={unhealthy} onClick={() => setUnhealthy(!unhealthy)} disabled={busy}>
-            {unhealthy ? "ALB khỏe lại" : "ALB không khỏe"}
+            {unhealthy ? "Khôi phục ALB" : "ALB unhealthy"}
           </button>
         )}
-        <button className="btn primary" onClick={resolve} disabled={busy}>Khách truy cập shopviet.vn</button>
+        <button className="btn primary" onClick={resolve} disabled={busy}>Người dùng truy cập shopviet.vn</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 0 760 370" role="img" aria-label={`Route 53 ${POLICIES[policy].label} routing trả lời khách ở ba nơi`}>
+        <svg viewBox="0 0 760 370" role="img" aria-label={`Route 53 ${POLICIES[policy].label} routing phản hồi người dùng tại ba khu vực`}>
           <rect className="r53" x={290} y={30} width={80} height={290} rx={12} />
           <text className="tw" x={330} y={170} textAnchor="middle">Route 53</text>
           {USERS.map((u) => {
@@ -108,7 +108,7 @@ export default function RoutingPolicySim() {
                 </g>
                 <text className="ts" x={u.at[0]} y={u.at[1] + 32} textAnchor="middle">{u.label}</text>
                 <text className="ts ans-t" x={200} y={u.at[1] - 8} textAnchor="middle">
-                  {a === null ? "→ không trả lời" : a === "error" ? "→ trang lỗi S3" : `→ ${REGIONS[a].label.replace("ALB ", "")}`}
+                  {a === null ? "→ không có phản hồi" : a === "error" ? "→ trang lỗi S3" : `→ ${REGIONS[a].label.replace("ALB ", "")}`}
                 </text>
               </g>
             );

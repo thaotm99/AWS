@@ -7,17 +7,17 @@ type Rule = "sqli" | "geo" | "ip" | "rate";
 
 const RULES: { id: Rule; label: string }[] = [
   { id: "sqli", label: "Managed rule: SQL injection / XSS" },
-  { id: "geo", label: "Geo match: chỉ cho Việt Nam" },
+  { id: "geo", label: "Geo match: chỉ cho phép Việt Nam" },
   { id: "ip", label: "IP set: chặn 203.0.113.9" },
   { id: "rate", label: "Rate-based: > 100 request / 5 phút / IP" },
 ];
 
 const REQUESTS: { label: string; detail: string; blockedBy?: Rule; y: number }[] = [
-  { label: "Khách ở Hà Nội", detail: "GET /san-pham/ao-thun", y: 40 },
+  { label: "Người dùng tại Hà Nội", detail: "GET /san-pham/ao-thun", y: 40 },
   { label: "Form tìm kiếm", detail: "?q=' OR 1=1 --", blockedBy: "sqli", y: 90 },
-  { label: "Khách ở nước khác", detail: "GET / từ ngoài Việt Nam", blockedBy: "geo", y: 140 },
-  { label: "IP đã bị báo cáo", detail: "203.0.113.9", blockedBy: "ip", y: 190 },
-  { label: "Bot dồn dập", detail: "hàng nghìn request từ 1 IP", blockedBy: "rate", y: 240 },
+  { label: "Người dùng ở quốc gia khác", detail: "GET / từ ngoài Việt Nam", blockedBy: "geo", y: 140 },
+  { label: "IP có trong danh sách độc hại", detail: "203.0.113.9", blockedBy: "ip", y: 190 },
+  { label: "Bot gửi request tần suất cao", detail: "hàng nghìn request từ 1 IP", blockedBy: "rate", y: 240 },
 ];
 
 const WAF_X = 420;
@@ -48,8 +48,8 @@ export default function WafSim() {
       }
     }));
     setResult(where === "ec2"
-      ? "AWS WAF không gắn trực tiếp vào EC2. Nó gắn vào CloudFront, ALB, API Gateway (và một số dịch vụ khác). Muốn bảo vệ app chạy trên EC2, đặt CloudFront hoặc ALB phía trước rồi gắn WAF vào đó."
-      : passed ? `Còn ${passed} loại request xấu lọt vào ứng dụng. Bật thêm rule phù hợp.` : "Mọi request xấu đều bị chặn tại WAF, khách bình thường vẫn vào được.");
+      ? "AWS WAF không gắn trực tiếp vào EC2. AWS WAF được liên kết với CloudFront, ALB, API Gateway (và một số dịch vụ khác). Để bảo vệ ứng dụng chạy trên EC2, đặt CloudFront hoặc ALB phía trước và liên kết AWS WAF với tài nguyên đó."
+      : passed ? `Còn ${passed} loại request độc hại tới được ứng dụng. Cần kích hoạt thêm rule phù hợp.` : "Mọi request độc hại đều bị chặn tại AWS WAF; request hợp lệ của người dùng vẫn được chuyển tới ứng dụng.");
     setBusy(false);
   }
 
@@ -63,10 +63,10 @@ export default function WafSim() {
         ))}
       </div>
       <div className="stage-bar">
-        <span className="label">Gắn WAF vào</span>
+        <span className="label">Tài nguyên liên kết WAF</span>
         <button className="btn" aria-pressed={where === "alb"} onClick={() => setWhere("alb")} disabled={busy}>ALB</button>
         <button className="btn" aria-pressed={where === "cf"} onClick={() => setWhere("cf")} disabled={busy}>CloudFront</button>
-        <button className="btn" aria-pressed={where === "ec2"} onClick={() => setWhere("ec2")} disabled={busy}>Thẳng vào EC2</button>
+        <button className="btn" aria-pressed={where === "ec2"} onClick={() => setWhere("ec2")} disabled={busy}>Trực tiếp EC2</button>
         <span className="sep" />
         <button className="btn primary" onClick={send} disabled={busy}>Gửi 5 loại request</button>
       </div>
@@ -85,7 +85,7 @@ export default function WafSim() {
         </svg>
       </div>
       <div className="readout" aria-live="polite">
-        {result ?? "Bật các rule cần thiết, chọn nơi gắn WAF, rồi gửi request. Thử cả trường hợp gắn thẳng vào EC2."}
+        {result ?? "Kích hoạt các rule cần thiết, chọn tài nguyên liên kết với AWS WAF, sau đó gửi request. Thử cả trường hợp gắn trực tiếp vào EC2."}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 ---
-title: "KMS + ACM: mã hóa và chứng chỉ"
-lede: "ShopViet lưu hoá đơn, đơn hàng và dữ liệu khách. Bài này đi qua những việc mã hoá có thật: trả lời kiểm toán ai đã dùng key, giảm hoá đơn KMS, xoay key mỗi năm, dùng một key ở hai Region, gửi bản sao database đã mã hoá cho kiểm toán viên, bảo vệ dữ liệu trên đường truyền và giữ chứng chỉ HTTPS không bao giờ hết hạn bất ngờ."
+title: "KMS và ACM: mã hóa và chứng chỉ"
+lede: "ShopViet lưu trữ hoá đơn, đơn hàng và dữ liệu khách hàng. Bài học trình bày các yêu cầu mã hoá thực tế: cung cấp cho kiểm toán thông tin về việc sử dụng key, giảm chi phí KMS, xoay key hằng năm, sử dụng một key tại hai Region, chia sẻ bản sao database đã mã hoá cho kiểm toán viên, bảo vệ dữ liệu khi truyền và ngăn chứng chỉ HTTPS hết hạn ngoài dự kiến."
 minutes: 20
 scenes: 3
 prerequisites: ["iam"]
@@ -26,30 +26,30 @@ import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
-  { href: "#s1", label: "1 · Mã hoá hoá đơn trên S3" },
-  { href: "#s2", label: "2 · Gửi database cho kiểm toán" },
-  { href: "#s3", label: "3 · Trên đĩa và trên đường truyền" },
-  { href: "#challenge", label: "Thử thách" },
+  { href: "#s1", label: "1 · Mã hoá dữ liệu trên S3" },
+  { href: "#s2", label: "2 · Chia sẻ database đã mã hoá" },
+  { href: "#s3", label: "3 · Mã hoá khi lưu trữ và khi truyền" },
+  { href: "#challenge", label: "Bài tập" },
 ]}>
-Dữ liệu khách hàng của ShopViet phải được mã hoá, và kiểm toán muốn biết **ai đã dùng key, lúc nào**. **AWS KMS** giữ và quản lý key mã hoá. **ACM** cấp và gia hạn chứng chỉ TLS cho HTTPS.
+Dữ liệu khách hàng của ShopViet phải được mã hoá, và bộ phận kiểm toán yêu cầu thông tin **principal nào đã sử dụng key và vào thời điểm nào**. **AWS KMS** lưu trữ và quản lý key mã hoá. **ACM** cấp và gia hạn chứng chỉ TLS cho HTTPS.
 </Story>
 
-<Scene id="s1" label="Cảnh 1/3" title="Mã hoá hoá đơn trên S3" questions={["exam1_q22", "exam2_q50", "exam4_q6", "exam5_q46", "exam5_q11", "exam2_q46", "exam3_q24"]}>
+<Scene id="s1" label="Phần 1/3" title="Mã hoá hoá đơn lưu trữ trên S3" questions={["exam1_q22", "exam2_q50", "exam4_q6", "exam5_q46", "exam5_q11", "exam2_q46", "exam3_q24"]}>
 
-Mọi object mới trên S3 đều được mã hoá. Việc cần chọn là **ai giữ key** và **ai thấy được key đã được dùng**. Mỗi tình huống dưới đây là một yêu cầu ShopViet gặp thật. Chọn tình huống, bật tắt công tắc, rồi bấm Chạy để xem file đi đâu và ai được gọi.
+Mọi object mới trên S3 đều được mã hoá. Quyết định cần đưa ra là **bên nào quản lý key** và **bên nào theo dõi được việc sử dụng key**. Mỗi tình huống dưới đây là một yêu cầu thực tế của ShopViet. Chọn tình huống, thay đổi cấu hình và nhấn Chạy để quan sát đường đi của object và các dịch vụ được gọi.
 
 <S3EncryptSim client:visible />
 
-<Takeaway>Cần audit hoặc kiểm soát quyền dùng key: SSE-KMS. Xoay key mỗi năm: customer managed key + automatic rotation. Phí KMS cao: bật S3 Bucket Keys, không bỏ SSE-KMS. Một key cho nhiều Region: multi-Region keys. Mỗi object một key, không làm gì thêm: SSE-S3. Key phải nằm ngoài AWS: SSE-C.</Takeaway>
+<Takeaway>Yêu cầu audit hoặc kiểm soát quyền sử dụng key: SSE-KMS. Xoay key hằng năm: customer managed key + automatic rotation. Chi phí KMS cao: bật S3 Bucket Keys, giữ nguyên SSE-KMS. Một key cho nhiều Region: multi-Region keys. Mỗi object một key, không cần cấu hình thêm: SSE-S3. Key phải được lưu ngoài AWS: SSE-C.</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Cảnh 2/3" title="Gửi bản sao database đã mã hoá cho kiểm toán viên" questions={["exam2_q57"]}>
+<Scene id="s2" label="Phần 2/3" title="Chia sẻ bản sao database đã mã hoá cho kiểm toán viên" questions={["exam2_q57"]}>
 
-Kiểm toán viên có account AWS riêng và cần một bản sao database RDS đã mã hoá bằng KMS. Đi từng bước:
+Kiểm toán viên có account AWS riêng và cần một bản sao database RDS đã mã hoá bằng KMS. Thực hiện lần lượt từng bước:
 
 <StepSim client:visible height={240}
-  intro="Database của ShopViet mã hoá bằng một customer managed key trong KMS. Kiểm toán viên ở account khác cần một bản sao."
+  intro="Database của ShopViet được mã hoá bằng một customer managed key trong KMS. Kiểm toán viên tại account khác cần một bản sao."
   boxes={[{ x: 20, y: 20, w: 420, h: 200, label: "Account ShopViet" }, { x: 470, y: 20, w: 270, h: 200, label: "Account kiểm toán" }]}
   nodes={[
     { id: "db", x: 50, y: 70, label: "RDS", sub: "mã hoá bằng KMS", kind: "db" },
@@ -63,67 +63,67 @@ Kiểm toán viên có account AWS riêng và cần một bản sao database RDS
     { button: "1. Tạo snapshot", show: ["snap"], flows: [{ path: ["db", "snap"], tone: "neutral" }],
       note: "Snapshot của database mã hoá cũng được mã hoá bằng cùng KMS key." },
     { button: "2. Share snapshot cho account kiểm toán", show: ["copy"], flows: [{ path: ["snap", "copy"], tone: "good", label: "share" }],
-      note: "Chỉ share snapshot thì **chưa đủ**: account kiểm toán thấy snapshot nhưng không giải mã được." },
-    { button: "3. Cho account kiểm toán dùng KMS key", flows: [{ path: ["key", "copy"], tone: "good", label: "key policy" }],
-      note: "Sửa **key policy** để account kiểm toán được dùng key. Vì vậy snapshot phải mã hoá bằng **customer managed key**: key do AWS quản lý mặc định không chia sẻ được sang account khác." },
+      note: "Chỉ share snapshot là **chưa đủ**: account kiểm toán thấy snapshot nhưng không giải mã được." },
+    { button: "3. Cấp quyền sử dụng KMS key cho account kiểm toán", flows: [{ path: ["key", "copy"], tone: "good", label: "key policy" }],
+      note: "Cập nhật **key policy** để account kiểm toán được sử dụng key. Do đó snapshot phải được mã hoá bằng **customer managed key**: AWS managed key mặc định không chia sẻ được sang account khác." },
     { button: "4. Kiểm toán viên restore", show: ["audit"], flows: [{ path: ["copy", "audit"], tone: "good" }],
-      note: "Kiểm toán viên có bản database riêng, dữ liệu vẫn được mã hoá suốt quá trình." },
+      note: "Kiểm toán viên có bản database riêng; dữ liệu được mã hoá trong suốt quá trình." },
   ]} />
 
-<Takeaway>Gửi dữ liệu mã hoá sang account khác: share snapshot **và** cho account đó dùng KMS key qua key policy. Quên bước key thì bên nhận chỉ thấy một snapshot không mở được.</Takeaway>
+<Takeaway>Chia sẻ dữ liệu đã mã hoá sang account khác: share snapshot **và** cấp quyền sử dụng KMS key cho account đó qua key policy. Khi thiếu bước cấp quyền key, bên nhận chỉ thấy một snapshot không giải mã được.</Takeaway>
 
 </Scene>
 
-<Scene id="s3" label="Cảnh 3/3" title="Dữ liệu trên đĩa và trên đường truyền" questions={["exam2_q40", "exam4_q31", "exam2_q45", "exam5_q40", "exam5_q15", "exam2_q9"]}>
+<Scene id="s3" label="Phần 3/3" title="Mã hoá khi lưu trữ và khi truyền" questions={["exam2_q40", "exam4_q31", "exam2_q45", "exam5_q40", "exam5_q15", "exam2_q9"]}>
 
-KMS bảo vệ dữ liệu **nằm yên** trên đĩa (at rest). Dữ liệu **đang đi** giữa các máy (in transit) cần SSL/TLS, và HTTPS cần chứng chỉ còn hạn. Thử sáu việc ShopViet gặp khi vận hành:
+KMS bảo vệ dữ liệu **khi lưu trữ** (at rest). Dữ liệu **khi truyền** giữa các máy (in transit) cần SSL/TLS, và HTTPS yêu cầu chứng chỉ còn hiệu lực. Mô phỏng sáu tình huống ShopViet gặp trong vận hành:
 
 <DataGuardSim client:visible />
 
-<Takeaway>At rest: KMS. In transit: SSL/TLS. RDS đang chạy không bật encryption tại chỗ được: snapshot → copy có encryption → restore. Chứng chỉ cho CloudFront: ACM ở us-east-1. Chứng chỉ import: tự theo dõi hạn bằng AWS Config rule + SNS.</Takeaway>
+<Takeaway>At rest: KMS. In transit: SSL/TLS. RDS đang chạy không bật encryption trực tiếp được: snapshot → copy có encryption → restore. Chứng chỉ cho CloudFront: ACM tại us-east-1. Chứng chỉ import: tự theo dõi thời hạn bằng AWS Config rule + SNS.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="SSE-S3, SSE-KMS hay SSE-C?" questions={["exam1_q22", "exam2_q50", "exam2_q57", "exam5_q11"]}>
+<Scene id="challenge" label="Bài tập" title="Phân loại đặc tính: SSE-S3, SSE-KMS và SSE-C" questions={["exam1_q22", "exam2_q50", "exam2_q57", "exam5_q11"]}>
 
-Xếp từng đặc điểm vào đúng kiểu mã hoá. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
+Phân loại từng đặc tính vào kiểu mã hoá tương ứng. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
 <SortGame client:visible
   bins={[
-    { id: "s3", title: "SSE-S3", sub: "S3 quản lý key", hint: "Gợi ý: kiểu mã hoá đơn giản nhất, không phải quản lý gì." },
-    { id: "kms", title: "SSE-KMS", sub: "Key trong KMS", hint: "Gợi ý: kiểu mã hoá có log và kiểm soát được ai dùng key." },
-    { id: "c", title: "SSE-C", sub: "Bạn tự cung cấp key", hint: "Gợi ý: kiểu mã hoá mà AWS không lưu key." },
+    { id: "s3", title: "SSE-S3", sub: "S3 quản lý key", hint: "Gợi ý: kiểu mã hoá đơn giản nhất, không yêu cầu quản lý key." },
+    { id: "kms", title: "SSE-KMS", sub: "Key trong KMS", hint: "Gợi ý: kiểu mã hoá có log và kiểm soát được principal nào sử dụng key." },
+    { id: "c", title: "SSE-C", sub: "Khách hàng tự cung cấp key", hint: "Gợi ý: kiểu mã hoá mà AWS không lưu key." },
   ]}
   cards={[
-    ["Không phải quản lý key", "s3"], ["Mỗi object một key riêng do S3 quản lý", "s3"], ["Mặc định cho bucket mới", "s3"],
-    ["CloudTrail ghi lại việc dùng key", "kms"], ["Automatic key rotation", "kms"], ["Giảm phí bằng Bucket Keys", "kms"], ["Multi-Region keys", "kms"],
-    ["Gửi key theo từng request", "c"], ["AWS không lưu key", "c"],
+    ["Không yêu cầu quản lý key", "s3"], ["Mỗi object một key riêng do S3 quản lý", "s3"], ["Mặc định cho bucket mới", "s3"],
+    ["CloudTrail ghi lại việc sử dụng key", "kms"], ["Automatic key rotation", "kms"], ["Giảm phí bằng Bucket Keys", "kms"], ["Multi-Region keys", "kms"],
+    ["Key được gửi kèm từng request", "c"], ["AWS không lưu key", "c"],
   ]}
 />
 
-Kiểm tra nhanh: nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "ShopViet không muốn tự cung cấp key, nhưng kiểm toán cần biết key được dùng khi nào và bởi ai. Hoá đơn trên S3 nên mã hoá thế nào?",
+  { q: "ShopViet không muốn tự cung cấp key, nhưng kiểm toán cần biết key được sử dụng vào thời điểm nào và bởi principal nào. Hoá đơn trên S3 nên được mã hoá theo phương thức nào?",
     opts: ["SSE-S3", "SSE-KMS", "SSE-C"],
     a: 1,
-    why: "SSE-KMS ghi việc dùng key vào CloudTrail mà ShopViet không phải tự giữ key material." },
-  { q: "Chính sách mới: mã hoá at rest, có log việc dùng key, xoay key mỗi năm, càng ít việc tay càng tốt. ShopViet chọn gì?",
+    why: "SSE-KMS ghi lại việc sử dụng key vào CloudTrail mà ShopViet không phải tự lưu giữ key material." },
+  { q: "Chính sách mới yêu cầu: mã hoá at rest, có log việc sử dụng key, xoay key hằng năm, giảm thiểu thao tác thủ công. Phương án nào phù hợp?",
     opts: ["SSE-C, tự xoay key", "SSE-KMS với customer managed key, bật automatic rotation", "SSE-S3"],
     a: 1,
-    why: "Customer managed key bật automatic rotation tự xoay mỗi năm; CloudTrail ghi lại việc dùng key." },
-  { q: "Kiểm toán viên ở một account AWS khác cần bản sao database RDS đã mã hoá của ShopViet. Làm gì?",
-    opts: ["Share snapshot đã mã hoá và cho account đó dùng KMS key", "Tắt mã hoá rồi share", "Export database ra CSV gửi qua email"],
+    why: "Customer managed key với automatic rotation được tự động xoay hằng năm; CloudTrail ghi lại việc sử dụng key." },
+  { q: "Kiểm toán viên tại một account AWS khác cần bản sao database RDS đã mã hoá của ShopViet. Phương án nào đáp ứng yêu cầu?",
+    opts: ["Share snapshot đã mã hoá và cấp quyền sử dụng KMS key cho account đó", "Tắt mã hoá rồi share", "Export database ra CSV và gửi qua email"],
     a: 0,
     why: "Account nhận cần cả snapshot lẫn quyền giải mã bằng KMS key." },
-  { q: "Hoá đơn được replicate từ us-east-1 sang us-west-1 và phải mã hoá, giải mã bằng cùng một key ở cả hai nơi. Dùng gì?",
-    opts: ["Hai key riêng ở hai Region", "KMS multi-Region key", "SSE-S3"],
+  { q: "Hoá đơn được replicate từ us-east-1 sang us-west-1 và phải được mã hoá, giải mã bằng cùng một key tại cả hai Region. Giải pháp nào phù hợp?",
+    opts: ["Hai key riêng tại hai Region", "KMS multi-Region key", "SSE-S3"],
     a: 1,
-    why: "Multi-Region key có cùng key ID và key material ở nhiều Region." },
-  { q: "Phí gọi KMS của ShopViet tăng mạnh mùa sale. Cách giảm phí mà vẫn giữ SSE-KMS?",
+    why: "Multi-Region key có cùng key ID và key material tại nhiều Region." },
+  { q: "Chi phí request tới KMS của ShopViet tăng mạnh trong mùa khuyến mãi. Giải pháp nào giảm chi phí mà vẫn giữ SSE-KMS?",
     opts: ["Chuyển sang SSE-S3", "Bật S3 Bucket Keys", "Tắt CloudTrail"],
     a: 1,
-    why: "Bucket Keys giảm số request tới KMS mà vẫn giữ nguyên SSE-KMS và log. Chuyển sang SSE-S3 thì mất audit trail." },
+    why: "S3 Bucket Keys giảm số request tới KMS mà vẫn giữ nguyên SSE-KMS và log. Chuyển sang SSE-S3 sẽ mất audit trail." },
 ]} />
 
 </Scene>

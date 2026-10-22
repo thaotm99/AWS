@@ -78,7 +78,7 @@ interface Props {
 }
 
 const TAG: Record<HopState, { text: string; cls: string }> = {
-  pass: { text: "OK", cls: "hit" },
+  pass: { text: "THÔNG QUA", cls: "hit" },
   block: { text: "CHẶN", cls: "bad" },
   change: { text: "XỬ LÝ", cls: "miss" },
   skip: { text: "BỎ QUA", cls: "info" },
@@ -234,7 +234,7 @@ export default function HopSim({ scenarios, action, height, label }: Props) {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="hop-hint">{rich(sc.story)} <span>Bấm <b>{action}</b> để xem chuyện gì xảy ra.{sc.toggle ? " Đổi công tắc rồi chạy lại để so sánh." : ""}</span></p>
+          <p className="hop-hint">{rich(sc.story)} <span>Nhấn <b>{action}</b> để quan sát kết quả.{sc.toggle ? " Thay đổi cấu hình và chạy lại để so sánh." : ""}</span></p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) =>

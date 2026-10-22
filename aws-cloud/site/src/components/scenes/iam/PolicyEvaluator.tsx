@@ -6,7 +6,7 @@ type Principal = "user" | "root" | "slr";
 type Tri = "allow" | "deny" | "none";
 type Mode = "same" | "cross";
 
-const TRI_LABEL: Record<Tri, string> = { allow: "Allow", deny: "Deny", none: "Không nhắc tới" };
+const TRI_LABEL: Record<Tri, string> = { allow: "Allow", deny: "Deny", none: "Không đề cập" };
 
 interface Gate { name: string; state: "pass" | "fail" | "skip"; why: string }
 
@@ -20,21 +20,21 @@ function evaluate(mode: Mode, who: Principal, scp: Tri, boundary: Tri | "unset",
   const explicitDeny = applicable.includes("deny");
   // SCP
   if (who === "slr") gates.push({ name: "SCP", state: "skip", why: "SCP không ảnh hưởng service-linked role." });
-  else if (scp === "allow") gates.push({ name: "SCP", state: "pass", why: who === "root" ? "SCP áp dụng cả root user của member account, và nó đang cho phép." : "SCP cho phép action này." });
-  else gates.push({ name: "SCP", state: "fail", why: scp === "deny" ? "SCP từ chối rõ ràng. Không quyền nào ở account vượt qua được, kể cả root của member account." : "SCP không cho phép action này nên mọi user, role và cả root của member account đều không làm được." });
+  else if (scp === "allow") gates.push({ name: "SCP", state: "pass", why: who === "root" ? "SCP áp dụng cả với root user của member account, và SCP hiện cho phép action này." : "SCP cho phép action này." });
+  else gates.push({ name: "SCP", state: "fail", why: scp === "deny" ? "SCP từ chối tường minh (explicit deny). Không quyền nào trong account vượt qua được, kể cả root user của member account." : "SCP không cho phép action này nên mọi user, role và cả root user của member account đều không thực hiện được." });
   // Boundary
-  if (who !== "user") gates.push({ name: "Permissions boundary", state: "skip", why: "Boundary chỉ gắn được cho IAM user và role." });
-  else if (boundary === "unset") gates.push({ name: "Permissions boundary", state: "skip", why: "Không đặt boundary." });
-  else if (boundary === "allow") gates.push({ name: "Permissions boundary", state: "pass", why: "Action nằm trong giới hạn tối đa của boundary." });
-  else gates.push({ name: "Permissions boundary", state: "fail", why: "Boundary đặt quyền tối đa. Action ngoài boundary thì bị chặn dù identity policy cho phép." });
+  if (who !== "user") gates.push({ name: "Permissions boundary", state: "skip", why: "Permissions boundary chỉ gắn được cho IAM user và role." });
+  else if (boundary === "unset") gates.push({ name: "Permissions boundary", state: "skip", why: "Không thiết lập permissions boundary." });
+  else if (boundary === "allow") gates.push({ name: "Permissions boundary", state: "pass", why: "Action nằm trong giới hạn quyền tối đa của boundary." });
+  else gates.push({ name: "Permissions boundary", state: "fail", why: "Boundary xác định quyền tối đa. Action nằm ngoài boundary bị chặn dù identity policy cho phép." });
   // Identity policy
-  if (who === "root") gates.push({ name: "Identity policy", state: "skip", why: "Root user có toàn quyền trong account, chỉ bị SCP giới hạn." });
+  if (who === "root") gates.push({ name: "Identity policy", state: "skip", why: "Root user có toàn quyền trong account, chỉ bị giới hạn bởi SCP." });
   else if (who === "slr") gates.push({ name: "Identity policy", state: "pass", why: "Service-linked role có sẵn quyền do dịch vụ AWS định nghĩa." });
-  else gates.push({ name: "Identity policy", state: identity === "allow" ? "pass" : "fail", why: identity === "allow" ? "Policy gắn vào user/role cho phép." : identity === "deny" ? "Có Deny rõ ràng." : "Không có Allow nào: bị từ chối ngầm định." });
+  else gates.push({ name: "Identity policy", state: identity === "allow" ? "pass" : "fail", why: identity === "allow" ? "Policy gắn vào user/role cho phép action." : identity === "deny" ? "Có explicit deny." : "Không có statement Allow nào: request bị từ chối ngầm định." });
   // Resource policy (cross-account only)
   if (mode === "cross" && who === "user") {
     gates.push({ name: "Resource policy (account B)", state: resource === "allow" ? "pass" : "fail",
-      why: resource === "allow" ? "Bucket policy ở account B cho phép principal từ account A." : "Khác account thì tài nguyên ở account B cũng phải cho phép. Chỉ identity policy ở account A là chưa đủ." });
+      why: resource === "allow" ? "Bucket policy tại account B cho phép principal từ account A." : "Với truy cập cross-account, tài nguyên tại account B cũng phải cho phép; chỉ identity policy tại account A là chưa đủ." });
   }
   const allowed = !explicitDeny && gates.every((g) => g.state !== "fail");
   return { allowed, gates };
@@ -68,16 +68,16 @@ export default function PolicyEvaluator() {
       <div className="stage-bar">
         <span className="label">Tình huống</span>
         <button className="btn" aria-pressed={mode === "same"} onClick={() => setMode("same")}>Cùng account</button>
-        <button className="btn" aria-pressed={mode === "cross"} onClick={() => { setMode("cross"); setWho("user"); }}>Lambda ở account A đọc S3 ở account B</button>
+        <button className="btn" aria-pressed={mode === "cross"} onClick={() => { setMode("cross"); setWho("user"); }}>Lambda tại account A đọc S3 tại account B</button>
       </div>
       <div className="eval-grid">
         <div className="eval-inputs">
-          <Choice label="Ai gọi" value={who} onChange={setWho} disabled={mode === "cross"}
-            options={[["user", "IAM user / role"], ["root", "Root của member account"], ["slr", "Service-linked role"]]} />
+          <Choice label="Principal" value={who} onChange={setWho} disabled={mode === "cross"}
+            options={[["user", "IAM user / role"], ["root", "Root user của member account"], ["slr", "Service-linked role"]]} />
           <Choice label="SCP (Organizations)" value={scp} onChange={setScp} options={tri} />
-          <Choice label="Permissions boundary" value={boundary} onChange={setBoundary} options={[["unset", "Không đặt"], ["allow", "Có chứa action"], ["none", "Không chứa action"]]} />
+          <Choice label="Permissions boundary" value={boundary} onChange={setBoundary} options={[["unset", "Không thiết lập"], ["allow", "Chứa action"], ["none", "Không chứa action"]]} />
           <Choice label="Identity policy" value={identity} onChange={setIdentity} options={tri} />
-          {mode === "cross" && <Choice label="Bucket policy ở account B" value={resource} onChange={setResource} options={tri} />}
+          {mode === "cross" && <Choice label="Bucket policy tại account B" value={resource} onChange={setResource} options={tri} />}
         </div>
         <ol className="eval-gates" aria-live="polite">
           {gates.map((g) => (
@@ -91,7 +91,7 @@ export default function PolicyEvaluator() {
       <div className="readout">
         <span className={"pill " + (allowed ? "ok" : "bad")}><i />{allowed ? "Được phép" : "Bị từ chối"}</span>
         <p style={{ margin: "8px 0 0" }}>
-          Quy tắc: một Deny rõ ràng ở bất kỳ đâu thắng tất cả. Ngoài ra mọi lớp áp dụng đều phải cho phép; lớp nào không nhắc tới action thì coi như từ chối ngầm định.
+          Quy tắc: một explicit deny tại bất kỳ lớp nào luôn được ưu tiên. Ngoài ra, mọi lớp áp dụng đều phải cho phép; lớp không đề cập tới action được xem là từ chối ngầm định.
         </p>
       </div>
     </div>

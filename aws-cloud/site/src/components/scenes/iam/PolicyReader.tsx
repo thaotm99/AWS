@@ -20,8 +20,8 @@ const POLICIES: Pol[] = [
   }]
 }`,
     requests: [
-      { label: "Terminate instance, gọi từ 10.200.200.200", allowed: true, why: "Action có trong policy và IP 10.200.200.200 nằm trong dải 10.200.200.0/24." },
-      { label: "Terminate instance, gọi từ 10.200.201.5", allowed: false, why: "IP nằm ngoài dải /24 nên điều kiện không khớp. Không có Allow nào khớp nên bị từ chối ngầm định (implicit deny)." },
+      { label: "Terminate instance, gọi từ 10.200.200.200", allowed: true, why: "Action có trong policy và IP 10.200.200.200 thuộc dải 10.200.200.0/24." },
+      { label: "Terminate instance, gọi từ 10.200.201.5", allowed: false, why: "IP nằm ngoài dải /24 nên điều kiện không khớp. Không có statement Allow nào khớp nên request bị từ chối ngầm định (implicit deny)." },
       { label: "Stop instance, gọi từ 10.200.200.200", allowed: false, why: "ec2:StopInstances không có trong danh sách Action, dù IP hợp lệ." },
     ],
   },
@@ -39,8 +39,8 @@ const POLICIES: Pol[] = [
   }]
 }`,
     requests: [
-      { label: "Chạy EC2 ở eu-west-1, người gọi đang ở Việt Nam", allowed: true, why: "aws:RequestedRegion là Region nhận API call, không phải nơi người gọi đứng. Gọi từ đâu cũng được." },
-      { label: "Chạy EC2 ở ap-southeast-1", allowed: false, why: "Region của request không phải eu-west-1 nên điều kiện không khớp." },
+      { label: "Chạy EC2 tại eu-west-1, bên gọi đang ở Việt Nam", allowed: true, why: "aws:RequestedRegion là Region nhận API call, không phải vị trí của bên gọi. API call được phép từ bất kỳ vị trí nào." },
+      { label: "Chạy EC2 tại ap-southeast-1", allowed: false, why: "Region của request không phải eu-west-1 nên điều kiện không khớp." },
     ],
   },
   {
@@ -58,12 +58,12 @@ const POLICIES: Pol[] = [
 }`,
     requests: [
       { label: "Liệt kê object trong bucket", allowed: true, why: "s3:ListBucket là thao tác trên bucket, nên Resource là ARN của bucket (không có /*)." },
-      { label: "Tải một ảnh về", allowed: true, why: "s3:GetObject là thao tác trên object, nên Resource là bucket/*." },
-      { label: "Xóa một ảnh", allowed: false, why: "Không có s3:DeleteObject. Đây là policy chỉ đọc." },
+      { label: "Tải xuống một ảnh", allowed: true, why: "s3:GetObject là thao tác trên object, nên Resource là bucket/*." },
+      { label: "Xóa một ảnh", allowed: false, why: "Policy không chứa s3:DeleteObject. Đây là policy chỉ cấp quyền đọc." },
     ],
   },
   {
-    name: "Lỗi ARN hay mắc",
+    name: "Lỗi ARN thường gặp",
     json: `{
   "Version": "2012-10-17",
   "Statement": [{
@@ -73,7 +73,7 @@ const POLICIES: Pol[] = [
   }]
 }`,
     requests: [
-      { label: "Xóa một ảnh", allowed: false, why: "DeleteObject là thao tác trên object nhưng Resource lại là ARN của bucket. Phải sửa thành arn:aws:s3:::shopviet-images/* thì mới xóa được." },
+      { label: "Xóa một ảnh", allowed: false, why: "DeleteObject là thao tác trên object nhưng Resource lại là ARN của bucket. Resource phải được sửa thành arn:aws:s3:::shopviet-images/* để thao tác xóa được phép." },
     ],
   },
 ];
@@ -95,7 +95,7 @@ export default function PolicyReader() {
       <div className="policy-grid">
         <pre className="policy-json"><code>{p.json}</code></pre>
         <div className="policy-reqs">
-          <div className="label">Thử request</div>
+          <div className="label">Request kiểm tra</div>
           {p.requests.map((x, i) => (
             <button key={x.label} className="picker-item" aria-pressed={i === ri} onClick={() => setRi(i)}>{x.label}</button>
           ))}
@@ -107,7 +107,7 @@ export default function PolicyReader() {
             <span className={"pill " + (r.allowed ? "ok" : "bad")}><i />{r.allowed ? "Allow" : "Deny"}</span>
             <p style={{ margin: "8px 0 0" }}>{r.why}</p>
           </>
-        ) : <p style={{ margin: 0 }}>Đọc policy bên trái, đoán kết quả, rồi bấm một request để kiểm tra.</p>}
+        ) : <p style={{ margin: 0 }}>Đọc policy bên trái, dự đoán kết quả, sau đó chọn một request để kiểm tra.</p>}
       </div>
     </div>
   );
