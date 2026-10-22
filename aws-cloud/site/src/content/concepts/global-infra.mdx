@@ -27,7 +27,7 @@ import ScopeExplorer from "../../components/scenes/ScopeExplorer.tsx";
 import AzFailureSim from "../../components/scenes/AzFailureSim.tsx";
 import EdgeCacheDemo from "../../components/scenes/EdgeCacheDemo.tsx";
 import GlobalAcceleratorSim from "../../components/scenes/GlobalAcceleratorSim.tsx";
-import EdgePicker from "../../components/scenes/EdgePicker.tsx";
+import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
 import CostPatterns from "../../components/scenes/CostPatterns.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
@@ -94,7 +94,26 @@ Chiều ngược lại, khi khách ở xa **upload** file lớn vào S3, đề c
 
 Khi đọc đề, tìm từ khóa trong yêu cầu để chọn dịch vụ:
 
-<EdgePicker client:visible />
+<RequirementPicker client:visible items={[
+  { need: "Giao thức UDP hoặc TCP không phải HTTP (game, IoT, VoIP)", answer: "Global Accelerator",
+    why: "CloudFront chỉ phục vụ HTTP/HTTPS. Global Accelerator nhận cả TCP và UDP rồi đưa vào mạng AWS.",
+    refs: ["exam1_q59", "exam3_q8", "exam5_q4"] },
+  { need: "Cần IP tĩnh để khách hàng whitelist trên firewall", answer: "Global Accelerator",
+    why: "Global Accelerator cấp 2 IP tĩnh anycast đứng trước các ALB/NLB ở nhiều Region. IP của ALB thì thay đổi.",
+    refs: ["exam4_q58", "exam3_q45"] },
+  { need: "Failover nhanh sang Region khác, không chờ DNS cache", answer: "Global Accelerator",
+    why: "Global Accelerator tự chuyển traffic sang endpoint khỏe ở Region khác mà client không phải phân giải DNS lại.",
+    refs: ["exam1_q59", "exam5_q55", "exam2_q22"] },
+  { need: "API HTTPS ở một Region, khách khắp thế giới gọi bị chậm", answer: "Global Accelerator",
+    why: "Khách vào mạng AWS ở edge gần nhất thay vì đi đường dài trên internet công cộng tới Region.",
+    refs: ["exam5_q30", "exam2_q7"] },
+  { need: "Tăng tốc tải trang, ảnh, video cho người dùng ở xa", answer: "CloudFront",
+    why: "CloudFront cache nội dung tại edge location. Origin có thể là S3, ALB, hoặc server on-premises.",
+    refs: ["exam1_q62", "exam6_q5", "exam6_q58"] },
+  { need: "Upload file lớn vào S3 từ nhiều nơi trên thế giới", answer: "S3 Transfer Acceleration",
+    why: "Dữ liệu đi vào edge location gần người upload rồi chạy trên mạng AWS tới bucket. Thường đi kèm multipart upload.",
+    refs: ["exam1_q18", "exam3_q37", "exam6_q58"] },
+]} />
 
 <Takeaway>Thấy UDP, IP tĩnh để whitelist, failover nhanh giữa Region, hay DNS cache trên điện thoại: chọn Global Accelerator. Thấy cache nội dung HTTP: chọn CloudFront.</Takeaway>
 

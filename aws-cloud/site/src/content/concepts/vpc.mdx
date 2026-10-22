@@ -1,0 +1,194 @@
+---
+title: "VPC: subnet, routing, bảo mật và kết nối"
+lede: "Bài có nhiều câu đề thứ ba trong lộ trình. Gói tin đi từ internet vào EC2 phải qua những cửa nào, Security Group khác NACL ở đâu, NAT gateway đặt thế nào cho đúng, khi nào dùng VPC endpoint, peering, Transit Gateway, VPN hay Direct Connect."
+minutes: 30
+scenes: 6
+prerequisites: ["global-infra"]
+docs:
+  - title: "How Amazon VPC works"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/how-it-works.html"
+  - title: "Compare security groups and network ACLs"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/infrastructure-security.html"
+  - title: "NAT gateways"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html"
+  - title: "Gateway endpoints"
+    url: "https://docs.aws.amazon.com/vpc/latest/privatelink/gateway-endpoints.html"
+  - title: "What is a transit gateway?"
+    url: "https://docs.aws.amazon.com/vpc/latest/tgw/what-is-transit-gateway.html"
+  - title: "AWS Direct Connect virtual interfaces"
+    url: "https://docs.aws.amazon.com/directconnect/latest/UserGuide/WorkingWithVirtualInterfaces.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import Confusions from "../../components/lessons/vpc/Confusions.astro";
+import HybridDiagram from "../../components/lessons/vpc/HybridDiagram.astro";
+import PacketPath from "../../components/scenes/vpc/PacketPath.tsx";
+import SgChain from "../../components/scenes/vpc/SgChain.tsx";
+import NatHaSim from "../../components/scenes/vpc/NatHaSim.tsx";
+import EndpointSim from "../../components/scenes/vpc/EndpointSim.tsx";
+import VpcConnectSim from "../../components/scenes/vpc/VpcConnectSim.tsx";
+import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#s1", label: "1 · Đường vào từ internet" },
+  { href: "#s2", label: "2 · Chuỗi Security Group" },
+  { href: "#s3", label: "3 · NAT gateway" },
+  { href: "#s4", label: "4 · VPC endpoint" },
+  { href: "#s5", label: "5 · Nối nhiều VPC" },
+  { href: "#s6", label: "6 · Nối về on-premises" },
+  { href: "#challenge", label: "Thử thách" },
+]}>
+ShopViet đã chọn Region Singapore. Giờ bạn dựng **VPC**, mạng riêng của ShopViet trên AWS: chia subnet, mở đúng cửa cho khách, khóa cửa với người lạ, rồi nối VPC với các VPC khác và với văn phòng. Mỗi cảnh là một dạng câu đề (mã câu ở đầu cảnh).
+</Story>
+
+<Scene id="s1" label="Cảnh 1/6" title="Đường vào từ internet: gói tin phải qua những cửa nào?" questions={["exam5_q63", "exam4_q38", "exam3_q9", "exam3_q25", "exam6_q8"]}>
+
+Một subnet chỉ là **public subnet** khi route table của nó có route `0.0.0.0/0` tới **Internet Gateway (IGW)**. Request từ internet tới web server của ShopViet đi qua IGW, rồi **Network ACL** ở ranh giới subnet, rồi **Security Group** quanh instance. Bật/tắt từng điều kiện và gửi request để tìm cửa nào đang chặn.
+
+<PacketPath client:visible />
+
+<Takeaway>Ra internet cần: route tới IGW, public IP (IGW làm NAT giữa public và private IP), NACL mở cả hai chiều, Security Group mở chiều vào. Security Group stateful: response tự được cho qua. NACL stateless: phải mở cả chiều về.</Takeaway>
+
+</Scene>
+
+<Scene id="s2" label="Cảnh 2/6" title="Chuỗi Security Group: ALB → EC2 → RDS" questions={["exam2_q28", "exam2_q55", "exam4_q52", "exam4_q26", "exam5_q29"]}>
+
+Đề rất hay hỏi cấu hình Security Group cho ứng dụng ba tầng. Chọn rule inbound cho EC2 và RDS, chạy thử, rồi xem cả request của khách lẫn một kẻ lạ thử gọi thẳng vào.
+
+<SgChain client:visible />
+
+<Takeaway>Chỉ tầng ngoài cùng (ALB) mở cho internet. Mỗi tầng phía sau chỉ nhận từ Security Group của tầng ngay trước nó. Thiếu rule: ALB báo unhealthy hoặc ứng dụng gặp "connection timed out".</Takeaway>
+
+</Scene>
+
+<Scene id="s3" label="Cảnh 3/6" title="NAT gateway: cho private subnet ra internet" questions={["exam3_q44", "exam3_q62", "exam6_q13", "exam3_q12"]}>
+
+Database và worker của ShopViet nằm ở **private subnet**, không có public IP, nhưng vẫn cần tải bản vá. **NAT gateway** cho phép đi ra mà không cho internet chủ động đi vào. Thử ba cách bố trí rồi gây sự cố AZ a.
+
+<NatHaSim client:visible />
+
+<Takeaway>NAT gateway là managed, chỉ IPv4, đặt ở public subnet và thuộc một AZ. Muốn chịu lỗi AZ: mỗi AZ một NAT gateway, mỗi AZ một route table trỏ tới NAT cùng AZ.</Takeaway>
+
+</Scene>
+
+<Scene id="s4" label="Cảnh 4/6" title="VPC endpoint: gọi dịch vụ AWS mà không ra internet" questions={["exam3_q47", "exam5_q24", "exam6_q64", "exam6_q65", "exam3_q7", "exam1_q39", "exam5_q9"]}>
+
+EC2 private của ShopViet ghi ảnh vào S3 và đẩy job vào SQS. Mặc định traffic đó đi qua NAT gateway ra endpoint public. Chọn từng phương án, gửi request, và để ý route table thay đổi thế nào.
+
+<EndpointSim client:visible />
+
+<RequirementPicker client:visible items={[
+  { need: "EC2 private đọc ghi S3 cùng Region, muốn rẻ và không qua internet", answer: "Gateway endpoint cho S3",
+    why: "Không tính phí, thêm route trong route table, traffic không qua NAT gateway nữa.", refs: ["exam3_q47", "exam5_q24", "exam6_q64"] },
+  { need: "Truy cập riêng tư cả S3 lẫn DynamoDB từ VPC", answer: "Hai gateway endpoint, mỗi dịch vụ một cái",
+    why: "Gateway endpoint chỉ có cho S3 và DynamoDB, mỗi dịch vụ một endpoint, thêm route tương ứng.", refs: ["exam6_q65"] },
+  { need: "Gọi SQS hoặc dịch vụ AWS khác không qua internet", answer: "Interface endpoint (PrivateLink)",
+    why: "Tạo ENI có private IP trong subnet; dịch vụ ngoài S3 và DynamoDB dùng loại endpoint này.", refs: ["exam3_q7"] },
+  { need: "Cho VPC khác hoặc account khác gọi dịch vụ của mình, không mở peering", answer: "AWS PrivateLink + NLB phía cung cấp",
+    why: "Phía cung cấp đặt NLB trước dịch vụ; phía dùng tạo interface endpoint. Chỉ mở đúng một dịch vụ, không mở cả mạng.", refs: ["exam1_q39", "exam5_q9"] },
+]} />
+
+<Takeaway>S3 và DynamoDB: gateway endpoint, miễn phí, qua route table. Dịch vụ khác: interface endpoint, có ENI, có phí. Chia sẻ dịch vụ riêng giữa các VPC: PrivateLink với NLB.</Takeaway>
+
+</Scene>
+
+<Scene id="s5" label="Cảnh 5/6" title="Nối nhiều VPC: peering, Transit Gateway hay VPC sharing" questions={["exam4_q45", "exam1_q42", "exam5_q14", "exam4_q28", "exam6_q12", "exam3_q16", "exam2_q36", "exam3_q17", "exam6_q41", "exam2_q21"]}>
+
+ShopViet mở thêm các team, mỗi team một VPC. Kéo số VPC lên, so sánh số kết nối của peering với Transit Gateway, và thử gửi từ A tới C khi chỉ có peering A–B, B–C.
+
+<VpcConnectSim client:visible />
+
+<RequirementPicker client:visible items={[
+  { need: "Nối 2 VPC với chi phí thấp nhất", answer: "VPC peering",
+    why: "Không có phí theo giờ, đơn giản cho vài VPC. Dùng được cả giữa hai Region.", refs: ["exam4_q45", "exam1_q42"] },
+  { need: "Hàng chục VPC và on-premises cần nối với nhau qua một điểm trung tâm", answer: "AWS Transit Gateway",
+    why: "Mô hình hub-and-spoke, định tuyến bắc cầu, mỗi VPC một attachment, nối được cả VPN và Direct Connect.", refs: ["exam5_q14", "exam4_q28", "exam6_q12", "exam3_q16"] },
+  { need: "Nhiều account trong cùng Organization dùng chung một mạng, rẻ nhất", answer: "VPC sharing qua AWS RAM",
+    why: "Một account sở hữu VPC và chia sẻ subnet cho các account khác. Instance của các account nằm chung VPC nên nói chuyện trực tiếp, không cần peering.", refs: ["exam2_q36", "exam3_q17"] },
+  { need: "Quản trị nhiều account tập trung, mạng dùng chung", answer: "Control Tower + VPC dùng chung (RAM)",
+    why: "Control Tower tạo và quản lý account; một account mạng chia sẻ subnet cho các account workload.", refs: ["exam6_q41"] },
+  { need: "Dịch vụ dùng chung cho nhiều VPC, giảm công quản trị", answer: "Shared services VPC",
+    why: "Gom dịch vụ dùng chung vào một VPC thay vì lặp lại ở từng VPC.", refs: ["exam2_q21"] },
+]} />
+
+<Takeaway>Vài VPC: peering (rẻ, nhưng không bắc cầu). Nhiều VPC hoặc cần nối cả on-premises: Transit Gateway. Nhiều account cùng Organization: VPC sharing.</Takeaway>
+
+</Scene>
+
+<Scene id="s6" label="Cảnh 6/6" title="Nối về on-premises: Site-to-Site VPN hay Direct Connect" questions={["exam3_q18", "exam5_q10", "exam5_q41", "exam6_q25", "exam1_q37", "exam4_q48", "exam4_q7", "exam6_q45", "exam6_q34", "exam4_q18"]}>
+
+Văn phòng ShopViet cần nối vào VPC. Có hai con đường: **Site-to-Site VPN** đi qua internet có mã hóa, và **Direct Connect** là đường riêng tới AWS.
+
+<HybridDiagram />
+
+<RequirementPicker client:visible items={[
+  { need: "Cần kết nối nhanh, rẻ, có mã hóa", answer: "AWS Site-to-Site VPN",
+    why: "Dựng trong vài giờ trên internet sẵn có, IPsec mã hóa. Phía AWS là virtual private gateway (hoặc Transit Gateway), phía bạn là customer gateway.", refs: ["exam6_q25", "exam5_q41", "exam3_q18", "exam5_q10"] },
+  { need: "Đường riêng, ổn định, có thời gian chờ triển khai, cần mã hóa", answer: "Direct Connect + VPN",
+    why: "Direct Connect không mã hóa sẵn; chạy VPN trên Direct Connect để có cả đường riêng lẫn mã hóa.", refs: ["exam1_q37"] },
+  { need: "Direct Connect là đường chính, cần dự phòng rẻ", answer: "Site-to-Site VPN làm backup",
+    why: "VPN qua internet làm đường dự phòng cho Direct Connect với chi phí thấp.", refs: ["exam4_q48"] },
+  { need: "Một Direct Connect nối tới VPC ở nhiều Region", answer: "Direct Connect gateway",
+    why: "Gắn virtual private gateway của từng Region vào một Direct Connect gateway.", refs: ["exam4_q7"] },
+  { need: "Từ on-premises truy cập S3 qua Direct Connect", answer: "Public virtual interface",
+    why: "Private VIF vào VPC; public VIF tới các endpoint public của AWS như S3.", refs: ["exam6_q45"] },
+  { need: "Nhiều chi nhánh cần nói chuyện với nhau và với trụ sở", answer: "AWS VPN CloudHub",
+    why: "Mô hình hub-and-spoke dùng chung virtual private gateway cho nhiều VPN.", refs: ["exam6_q34"] },
+  { need: "VPN chậm, cần tăng băng thông", answer: "Transit Gateway với ECMP, thêm tunnel",
+    why: "Transit Gateway hỗ trợ equal-cost multipath để gộp băng thông nhiều tunnel VPN.", refs: ["exam4_q18"] },
+]} />
+
+<Takeaway>Nhanh và rẻ: VPN. Ổn định, đường riêng: Direct Connect (thêm VPN nếu cần mã hóa, VPN làm backup). Nhiều VPC/Region: Direct Connect gateway hoặc Transit Gateway. S3 qua Direct Connect: public VIF.</Takeaway>
+
+</Scene>
+
+<Scene id="confuse" label="Dễ nhầm" title="Sáu chỗ đáp án sai hay gài" questions={["exam2_q20", "exam6_q63", "exam3_q44", "exam3_q21", "exam3_q65", "exam6_q59", "exam3_q12"]}>
+  <Confusions />
+</Scene>
+
+<Scene id="challenge" label="Thử thách" title="Security Group hay Network ACL?" questions={["exam3_q25", "exam6_q8"]}>
+
+Xếp từng đặc điểm vào đúng loại. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
+
+<SortGame client:visible
+  bins={[
+    { id: "sg", title: "Security Group", sub: "Cấp instance (ENI)", hint: "Gợi ý: đặc điểm này thuộc lớp bảo vệ gắn trực tiếp vào instance." },
+    { id: "nacl", title: "Network ACL", sub: "Cấp subnet", hint: "Gợi ý: đặc điểm này thuộc lớp bảo vệ ở ranh giới subnet." },
+  ]}
+  cards={[
+    ["Stateful: response tự được cho qua", "sg"], ["Chỉ có rule Allow", "sg"], ["Gắn vào instance / ENI", "sg"],
+    ["Source có thể là Security Group khác", "sg"], ["Xét tất cả rule rồi mới quyết định", "sg"],
+    ["Stateless: phải mở cả chiều về", "nacl"], ["Có cả rule Allow và Deny", "nacl"], ["Gắn vào subnet", "nacl"],
+    ["Xét rule theo số thứ tự, khớp là dừng", "nacl"], ["Chặn được một IP cụ thể bằng rule Deny", "nacl"],
+  ]}
+/>
+
+Các câu dưới đây viết lại theo đúng dạng câu trong đề (mã câu hiện sau khi trả lời).
+
+<Quiz client:visible items={[
+  { q: "Subnet có route tới Internet Gateway, EC2 có public IP, Security Group mở cổng 443 chiều vào, NACL chỉ có rule inbound cho 443. Khách vẫn không truy cập được. Nguyên nhân?",
+    opts: ["Security Group thiếu rule outbound cho response", "NACL thiếu rule outbound cho cổng ephemeral (1024-65535)", "Internet Gateway phải đặt trong subnet"],
+    a: 1, ref: "exam5_q63",
+    why: "Security Group stateful nên response tự được cho qua. NACL stateless nên phải mở cả chiều về. Đề hỏi dạng này ở cả exam5_q63 và exam3_q25." },
+  { q: "Bạn cần ứng dụng trong VPC truy cập S3 và DynamoDB mà không qua internet. Làm thế nào?",
+    opts: ["Một interface endpoint dùng chung cho cả hai", "Hai gateway endpoint (S3 và DynamoDB), thêm route vào route table", "Một NAT gateway trong public subnet"],
+    a: 1, ref: "exam6_q65",
+    why: "S3 và DynamoDB đều có gateway endpoint, mỗi dịch vụ một endpoint, mỗi endpoint thêm một route vào route table." },
+  { q: "Hai VPC cần trao đổi dữ liệu. Cách nào rẻ nhất?",
+    opts: ["Transit Gateway", "VPC peering", "Site-to-Site VPN giữa hai VPC"],
+    a: 1, ref: "exam4_q45",
+    why: "Với ít VPC, peering là rẻ và đơn giản nhất. Transit Gateway hợp khi có nhiều VPC." },
+  { q: "Công ty cần nối văn phòng với VPC trong thời gian ngắn, chi phí thấp, có mã hóa. Chọn gì?",
+    opts: ["AWS Direct Connect", "AWS Site-to-Site VPN", "VPC peering"],
+    a: 1, ref: "exam6_q25",
+    why: "VPN dựng nhanh trên internet có sẵn và mã hóa bằng IPsec. Direct Connect mất nhiều thời gian triển khai." },
+  { q: "Private hosted zone của Route 53 gắn vào VPC nhưng không phân giải được. Cần bật gì?",
+    opts: ["enableDnsHostnames và enableDnsSupport", "Một Route 53 Resolver inbound endpoint", "Một Internet Gateway"],
+    a: 0, ref: "exam2_q20",
+    why: "Private hosted zone cần VPC bật cả DNS hostnames và DNS resolution (enableDnsSupport)." },
+]} />
+
+</Scene>
