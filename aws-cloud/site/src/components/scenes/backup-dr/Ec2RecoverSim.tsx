@@ -31,10 +31,10 @@ const SCENARIOS: PScenario[] = [
       steps: [
         { at: "ec2", state: "block", flash: "không phản hồi", msg: "Host vật lý gặp sự cố. **System status check** thất bại." },
         recover
-          ? { from: "cw", at: "ec2", state: "change", tag: "RECOVER", relabel: RECOVERED, msg: "Alarm chuyển sang trạng thái ALARM và thực thi **recover**: instance khởi động lại trên host khác, giữ nguyên **instance ID, private IP, Elastic IP** và metadata." }
+          ? { from: "cw", at: "ec2", state: "change", tag: "RECOVER", relabel: RECOVERED, msg: "Alarm chuyển sang trạng thái ALARM và thực thi **recover**: instance được chuyển sang host khác, giữ nguyên **instance ID, public IPv4, private IP, Elastic IP**, metadata và EBS volume." }
           : { from: "cw", at: "ec2", state: "wait", tag: "CHỈ THÔNG BÁO", msg: "Alarm chỉ gửi email. Phải chờ nhân sự trực xử lý thủ công." },
         ...(recover ? [
-          { at: "disk", state: "pass" as const, msg: "EBS volume được gắn lại nguyên vẹn. Dữ liệu trong RAM bị mất do instance khởi động lại." },
+          { at: "disk", state: "pass" as const, msg: "EBS volume vẫn được gắn với instance. Quá trình recover diễn ra như một lần reboot ngoài kế hoạch nên dữ liệu trong RAM bị mất." },
           { from: "user", at: "ec2", state: "pass" as const, flash: "OK", msg: "Nhân viên truy cập lại trang admin qua cùng địa chỉ." },
         ] : []),
       ],
@@ -48,7 +48,7 @@ const SCENARIOS: PScenario[] = [
   {
     name: "Instance sử dụng instance store",
     action: "Mô phỏng sự cố host",
-    request: "Dữ liệu ứng dụng được lưu trên instance store",
+    request: "Dữ liệu ứng dụng được lưu trên instance store (m5d.large)",
     toggle: { label: "Chuyển dữ liệu sang EBS", initial: false },
     layout: (ebs) => layout(ebs ? "ebs" : "store", "StatusCheckFailed_System → recover"),
     run: (ebs) => ({
@@ -56,16 +56,16 @@ const SCENARIOS: PScenario[] = [
         { at: "ec2", state: "block", flash: "không phản hồi", msg: "Host vật lý gặp sự cố." },
         ebs
           ? { from: "cw", at: "ec2", state: "change", tag: "RECOVER", relabel: RECOVERED, msg: "Recover chuyển instance sang host mới." }
-          : { from: "cw", at: "ec2", state: "block", tag: "KHÔNG HỖ TRỢ", msg: "Action **recover** chỉ áp dụng cho instance sử dụng **EBS**. Instance store gắn liền với host cũ, không thể chuyển theo." },
+          : { from: "cw", at: "ec2", state: "block", tag: "KHÔNG HỖ TRỢ", msg: "Khi instance có instance store, CloudWatch action based recovery chỉ hỗ trợ các instance type M3, C3, R3, X1, X1e, X2idn, X2iedn; **m5d.large** không thuộc danh sách nên action recover không thực hiện được." },
         ebs
           ? { at: "disk", state: "pass", msg: "Dữ liệu trên EBS được chuyển theo instance." }
-          : { from: "ec2", at: "disk", jump: true, state: "block", tag: "MẤT", msg: "Dữ liệu trên instance store bị mất cùng host." },
+          : { from: "ec2", at: "disk", jump: true, state: "block", tag: "MẤT", msg: "Dữ liệu trên instance store không được bảo toàn; kể cả với instance type được hỗ trợ, recover cũng làm mất dữ liệu trên instance store." },
       ],
       ok: ebs,
       back: false,
       result: ebs
-        ? "Chỉ khi dữ liệu được lưu trên EBS, tính năng recover mới sử dụng được."
-        : "Không thể tự động khôi phục. Để sử dụng recover, instance chỉ được sử dụng EBS volume.",
+        ? "Dữ liệu trên EBS được giữ nguyên qua quá trình recover; dữ liệu trên instance store thì không."
+        : "Không thể tự động khôi phục. Dữ liệu cần bảo toàn nên được lưu trên EBS volume.",
     }),
   },
   {
@@ -79,7 +79,7 @@ const SCENARIOS: PScenario[] = [
         { at: "ec2", state: "block", flash: "treo", msg: "Hệ điều hành bị treo, **instance status check** thất bại. System status check vẫn đạt." },
         reboot
           ? { from: "cw", at: "ec2", state: "change", tag: "REBOOT", relabel: { l2: "khởi động lại" }, msg: "Alarm theo dõi instance status check và thực thi action **reboot**." }
-          : { from: "cw", at: "ec2", state: "skip", tag: "KHÔNG KÍCH HOẠT", msg: "Alarm recover chỉ theo dõi lỗi phía AWS (system status check). Lỗi bên trong instance không kích hoạt alarm này." },
+          : { from: "cw", at: "ec2", state: "skip", tag: "KHÔNG KÍCH HOẠT", msg: "Alarm recover theo dõi `StatusCheckFailed_System` (lỗi của hạ tầng AWS). Lỗi bên trong instance không kích hoạt alarm này." },
       ],
       ok: reboot,
       back: false,

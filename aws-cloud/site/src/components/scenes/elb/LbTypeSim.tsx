@@ -5,7 +5,7 @@ import PacketSim, { type PLayout, type PNode, type PScenario } from "./PacketSim
 // TCP-only traffic, PrivateLink, TLS offload with private instances).
 
 const lb = (nlb: boolean, x = 320, y = 140): PNode => nlb
-  ? { id: "lb", x, y, w: 150, l1: "Network LB", l2: "tầng 4 · TCP/UDP" }
+  ? { id: "lb", x, y, w: 150, l1: "Network LB", l2: "tầng 4 · TCP/UDP/TLS" }
   : { id: "lb", x, y, w: 150, l1: "Application LB", l2: "tầng 7 · HTTP/HTTPS" };
 
 const SWITCH = { label: "Sử dụng Network Load Balancer", initial: false };
@@ -46,12 +46,12 @@ const SCENARIOS: PScenario[] = [
       [{ id: "fw", x: 170, y: 140, w: 110, l1: "Firewall", l2: "allow list IP" }], [["fw", "lb"]]),
     run: (nlb) => nlb
       ? { steps: [
-            { at: "fw", state: "pass", msg: "NLB có **một IP tĩnh cho mỗi AZ** (hỗ trợ gắn Elastic IP). Ngân hàng đã đưa hai IP này vào allow list." },
+            { at: "fw", state: "pass", msg: "NLB có **một IP cho mỗi AZ**; với NLB internet-facing, chọn một Elastic IP cho mỗi AZ để có IP tĩnh. Ngân hàng đã đưa hai IP này vào allow list." },
             { at: "lb", state: "pass", msg: "Chuyển kết nối tới máy chủ thanh toán healthy." },
             { at: "t1", state: "pass", msg: "Callback được tiếp nhận. ASG phía sau vẫn tự động scale." },
           ], ok: true, result: "Ngân hàng kết nối thành công. **NLB + Auto Scaling group** cung cấp IP cố định, đồng thời đảm bảo khả năng chịu lỗi và khả năng mở rộng." }
       : { steps: [
-            { at: "fw", state: "block", flash: "DROP", msg: "IP của ALB do AWS cấp phát và **thay đổi theo thời gian**. IP này không có trong allow list của firewall ngân hàng." },
+            { at: "fw", state: "block", flash: "DROP", msg: "IP của ALB do dịch vụ ALB quản lý: không gán Elastic IP tự chọn được, và IP không còn sử dụng được trả lại pool. IP mới không có trong allow list của firewall ngân hàng." },
           ], ok: false, result: "Callback thanh toán bị chặn. Không thể cung cấp cho đối tác một IP cố định của ALB." },
   },
   {
@@ -83,7 +83,7 @@ const SCENARIOS: PScenario[] = [
             { at: "t1", state: "pass", msg: "API tồn kho phản hồi. Không cần VPC peering, không đi qua Internet." },
           ], ok: true, result: "Đối tác gọi được API qua mạng nội bộ của AWS. Phía cung cấp dịch vụ PrivateLink sử dụng **NLB**." }
       : { steps: [
-            { at: "ep", state: "block", msg: "Không tạo được endpoint service trỏ tới ALB. PrivateLink yêu cầu NLB (hoặc Gateway Load Balancer) ở phía cung cấp dịch vụ." },
+            { at: "ep", state: "block", msg: "Không tạo được endpoint service trỏ tới ALB: endpoint service (PrivateLink) yêu cầu Network Load Balancer hoặc Gateway Load Balancer." },
           ], ok: false, result: "Đối tác chưa kết nối được. Cần đặt NLB trước dịch vụ, sau đó tạo endpoint service." },
   },
   {
@@ -106,7 +106,7 @@ const SCENARIOS: PScenario[] = [
     }),
     run: (priv) => ({
       steps: [
-        { at: "lb", state: "change", tag: "GIẢI MÃ", msg: "NLB có listener **TLS**: giải mã được thực hiện tại load balancer, EC2 không tiêu tốn CPU cho tác vụ này." },
+        { at: "lb", state: "change", tag: "GIẢI MÃ", msg: "NLB có listener **TLS**: công việc mã hoá và giải mã được chuyển cho load balancer, ứng dụng trên EC2 tập trung vào nghiệp vụ." },
         { at: "t1", state: "pass", msg: "Máy chủ tiếp nhận request đã giải mã." },
         priv
           ? { at: "t2", from: "x", state: "block", flash: "✕", msg: "EC2 trong **private subnet** không có public IP; client bên ngoài không có đường truy cập trực tiếp." }

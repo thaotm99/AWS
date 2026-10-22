@@ -1,3 +1,4 @@
+import { useI18n } from "../../app/i18n";
 import { useState } from "react";
 
 export interface QuizItem {
@@ -11,6 +12,7 @@ function Question({ item, n }: { item: QuizItem; n: number }) {
   const [chosen, setChosen] = useState<number | null>(null);
   const answered = chosen !== null;
   const correct = chosen === item.a;
+  const { t } = useI18n();
 
   return (
     <div className="q">
@@ -28,7 +30,7 @@ function Question({ item, n }: { item: QuizItem; n: number }) {
       </div>
       {answered && (
         <div className={"explain" + (correct ? "" : " miss")}>
-          <b>{correct ? "Chính xác." : "Không chính xác."}</b> {item.why}
+          <b>{correct ? t("lesson.quiz.correct") : t("lesson.quiz.incorrect")}</b> {item.why}
         </div>
       )}
     </div>

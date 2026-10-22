@@ -1,0 +1,66 @@
+import type { Messages } from "../../../core/i18n/types";
+import type { vi } from "./vi";
+
+export const en: Messages<typeof vi> = {
+  frame: {
+    layer: "Layer {n}",
+    prerequisites: "Prerequisites",
+    noPrerequisites: "None. This is the first lesson of the study path",
+    duration: "Duration",
+    durationValue: "~{minutes} min, {scenes} parts with simulations",
+    progress: "Progress",
+    nextLabel: "Next",
+    nextTitle: "Next lessons in the study path",
+    nextLessons: "Next lessons",
+    soon: "in progress",
+    practice: "Practice",
+    quizLink: "Quiz: {n} questions on this topic",
+    practiceLink: "Go to the practice tests",
+    docs: "AWS documentation",
+    placeholder: "This lesson is being written. You can start with the Global Infrastructure lesson.",
+    placeholderCta: "Start Global Infrastructure",
+    untranslated: "This lesson is not available in English yet, so it is shown in Vietnamese.",
+  },
+  done: {
+    mark: "Mark as completed",
+    done: "Completed ✓",
+  },
+  takeaway: "Key point:",
+  story: {
+    eyebrow: "System context",
+    toc: "Lesson parts",
+  },
+  quiz: {
+    correct: "Correct.",
+    incorrect: "Incorrect.",
+  },
+  sort: {
+    right: "Correct: {name}. {left} cards left.",
+    allRight: "Done: all {n} cards are in the right group.",
+    wrong: "{name} does not belong in this group.",
+    pool: "Unsorted cards",
+    finished: "All cards are sorted.",
+  },
+  step: {
+    reset: "Reset",
+    count: "Step {n}/{total}",
+    initial: "Initial state",
+  },
+  picker: {
+    label: "Recommended solution",
+    group: "Choose a requirement",
+  },
+  flow: {
+    good: "Recommended solution",
+    bad: "Not suitable",
+    scenarios: "Scenario",
+    scenarioGroup: "Choose a scenario",
+    options: "Option",
+    optionGroup: "Choose an option",
+  },
+  notFound: {
+    title: "Page not found",
+    body: "This address does not exist, or the lesson has been renamed. Go back to the home page to pick another lesson.",
+    cta: "Back to home",
+  },
+};

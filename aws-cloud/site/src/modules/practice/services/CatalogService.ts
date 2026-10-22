@@ -1,4 +1,4 @@
-import type { Certification, CertificationDetail, CertificationId, ContentLocale, Exam, ExamId } from "../domain/types";
+import type { Certification, CertificationDetail, CertificationId, ContentLocale, Exam, QuestionSetRef } from "../domain/types";
 import { ApiService } from "../../../core/api/ApiService";
 
 /** Certifications and their practice exams (read-only content). */
@@ -13,12 +13,16 @@ export class CatalogService extends ApiService {
     return this.api.get<CertificationDetail>(ApiService.path("certifications", certId));
   }
 
-  /** Exams are large and never change during a session, so each is fetched once. */
-  getExam(certId: CertificationId, examId: ExamId, locale: ContentLocale): Promise<Exam> {
-    const key = `${certId}/${examId}/${locale}`;
+  /**
+   * A practice test or a service's question set. They are large and never change during a
+   * session, so each is fetched once.
+   */
+  getQuestionSet(certId: CertificationId, set: QuestionSetRef, locale: ContentLocale): Promise<Exam> {
+    const collection = set.kind === "topic" ? "topics" : "exams";
+    const key = `${certId}/${collection}/${set.id}/${locale}`;
     let exam = this.exams.get(key);
     if (!exam) {
-      exam = this.api.get<Exam>(ApiService.path("certifications", certId, "exams", examId, locale));
+      exam = this.api.get<Exam>(ApiService.path("certifications", certId, collection, set.id, locale));
       exam.catch(() => this.exams.delete(key));
       this.exams.set(key, exam);
     }

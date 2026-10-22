@@ -23,6 +23,16 @@ docs:
     url: "https://docs.aws.amazon.com/step-functions/latest/dg/welcome.html"
   - title: "What is Amazon MQ?"
     url: "https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/welcome.html"
+  - title: "Amazon SQS message quotas"
+    url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html"
+  - title: "Amazon SQS temporary queues"
+    url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-temporary-queues.html"
+  - title: "Understanding and managing Amazon S3 storage classes"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-class-intro.html"
+  - title: "acm-certificate-expiration-check (AWS Config)"
+    url: "https://docs.aws.amazon.com/config/latest/developerguide/acm-certificate-expiration-check.html"
+  - title: "Application Integration (Overview of Amazon Web Services)"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/aws-overview/application-integration.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -54,7 +64,7 @@ Flash sale bắt đầu lúc 20h. Web tier tiếp nhận đơn hàng với tốc
 
 **Amazon SQS** là dịch vụ hàng đợi được AWS quản lý. Bên gửi (producer) đưa message vào queue và tiếp tục xử lý tác vụ khác; bên nhận (consumer) chủ động poll queue để lấy message và xử lý theo năng lực của mình. Tầng có thông lượng cao không phải chờ tầng có thông lượng thấp; mô hình này gọi là **decoupling**.
 
-Để nhóm worker tự động co giãn theo khối lượng công việc, không nên scale theo CPU, vì worker đọc queue luôn có mức sử dụng CPU tương đương nhau. Chỉ số phù hợp là **backlog per instance** (`ApproximateNumberOfMessagesVisible` chia cho số instance), kết hợp **target tracking** để duy trì chỉ số này quanh giá trị chấp nhận được.
+Để nhóm worker co giãn tương ứng với khối lượng công việc đang chờ trong queue, tài liệu Amazon EC2 Auto Scaling khuyến nghị chỉ số **backlog per instance**: số message có thể nhận trong queue (`ApproximateNumberOfMessages`, metric CloudWatch `ApproximateNumberOfMessagesVisible`) chia cho số instance ở trạng thái `InService`, kết hợp **target tracking** để duy trì chỉ số này quanh giá trị chấp nhận được. Một policy chỉ dựa trên số message trong queue không tính tới số instance hiện có, do đó có thể bổ sung nhiều instance hơn mức cần thiết trong khi queue đang giảm dần.
 
 Một số kiến trúc tích hợp queue vào hệ thống ShopViet:
 
@@ -104,13 +114,13 @@ Loại queue mặc định là **standard**: thông lượng rất cao, nhưng m
 
 <FifoSim client:visible />
 
-**FIFO queue** đảm bảo thứ tự và loại bỏ message trùng lặp (theo deduplication ID trong khoảng 5 phút). Đổi lại, thông lượng bị giới hạn. Khi chưa bật high throughput mode, FIFO queue hỗ trợ **300 lệnh gọi API mỗi giây**; với batch tối đa 10 message mỗi lệnh gọi, thông lượng đạt **3.000 message mỗi giây**. Điều chỉnh để kiểm tra:
+**FIFO queue** đảm bảo thứ tự và loại bỏ message trùng lặp (theo deduplication ID trong khoảng 5 phút). Đổi lại, thông lượng bị giới hạn. Khi chưa bật high throughput mode, FIFO queue hỗ trợ **300 transaction mỗi giây cho mỗi API action** (`SendMessage`, `ReceiveMessage`, `DeleteMessage`); với batch tối đa 10 message mỗi lệnh gọi, thông lượng đạt **3.000 message mỗi giây** cho mỗi API action. Điều chỉnh để kiểm tra:
 
 <FifoBatchCalc client:visible />
 
 Một queue standard đang vận hành không thể chuyển đổi sang FIFO. Cần **tạo queue FIFO mới** với tên kết thúc bằng `.fifo`, sau đó chuyển producer và consumer sang queue mới.
 
-<Takeaway>Yêu cầu đúng thứ tự và không trùng lặp: FIFO queue (tên kết thúc bằng .fifo, phải tạo mới, không chuyển đổi từ standard). Xử lý song song nhưng vẫn giữ thứ tự trong từng nhóm: Message Group ID. Không bật high throughput mode: 300 lệnh gọi/s; với batch 10 message: 3.000 message/s.</Takeaway>
+<Takeaway>Yêu cầu đúng thứ tự và không trùng lặp: FIFO queue (tên kết thúc bằng .fifo, phải tạo mới, không chuyển đổi từ standard). Xử lý song song nhưng vẫn giữ thứ tự trong từng nhóm: Message Group ID. Không bật high throughput mode: 300 lệnh gọi/s cho mỗi API action; với batch 10 message: 3.000 message/s.</Takeaway>
 
 </Scene>
 
@@ -125,9 +135,9 @@ Một số vấn đề ShopViet gặp phải khi vận hành thực tế:
 - **SNS kích hoạt Lambda** để gửi thông báo: trong mùa khuyến mãi, khi lượng gửi tăng gấp 50 lần, một phần thông báo không được phân phối. Nguyên nhân không nằm ở SNS mà do Lambda chạm **concurrency quota** của account trong Region. Giải pháp là yêu cầu tăng quota (xem bài Lambda).
 - Phát hiện các lệnh gọi API trái phép hàng loạt: chuyển log CloudTrail vào CloudWatch Logs, tạo **metric filter** đếm mã lỗi, đặt **alarm** trên metric đó, và cấu hình alarm gửi thông báo tới **SNS topic** của đội bảo mật.
 - SNS topic và SQS queue đều có resource policy. Để xác định tài nguyên nào đang cho phép account bên ngoài truy cập, **IAM Access Analyzer** phân tích các policy này và báo cáo kết quả.
-- Báo cáo kiểm toán chạy bằng Step Functions và đọc dữ liệu hai lần mỗi năm: do state machine đã có cơ chế retry, lưu dữ liệu ở **S3 Standard-IA** là đủ (vẫn truy xuất tức thì, chi phí thấp hơn S3 Standard).
+- Báo cáo kiểm toán chạy bằng Step Functions chỉ đọc dữ liệu hai lần mỗi năm nhưng cần truy xuất tức thì: lưu dữ liệu ở lớp lưu trữ dành cho dữ liệu ít truy cập. **S3 Standard-IA** được thiết kế cho dữ liệu truy cập khoảng một lần mỗi tháng; **S3 Glacier Instant Retrieval** dành cho dữ liệu truy cập khoảng một lần mỗi quý. Cả hai đều truy xuất trong mili giây, có availability thiết kế 99,9% và tính phí truy xuất theo GB; thời gian lưu tối thiểu lần lượt là 30 ngày và 90 ngày.
 
-<Takeaway>Một sự kiện, nhiều đích nhận: SNS fan-out tới nhiều SQS queue. Sự kiện từ SaaS hoặc dịch vụ AWS, lọc theo nội dung: EventBridge. Tác vụ theo lịch: EventBridge (Lambda cho tác vụ ngắn, Fargate cho tác vụ dài). Quy trình nhiều bước có retry: Step Functions. Ứng dụng cũ sử dụng AMQP, MQTT, RabbitMQ: Amazon MQ.</Takeaway>
+<Takeaway>Một sự kiện, nhiều đích nhận: SNS fan-out tới nhiều SQS queue. Sự kiện từ SaaS hoặc dịch vụ AWS, lọc theo nội dung: EventBridge. Tác vụ theo lịch: EventBridge (Lambda cho tác vụ ngắn, Fargate cho tác vụ dài). Quy trình nhiều bước có retry: Step Functions. Ứng dụng cũ sử dụng broker ActiveMQ hoặc RabbitMQ, giao thức AMQP, MQTT, STOMP: Amazon MQ.</Takeaway>
 
 </Scene>
 
@@ -170,7 +180,7 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
   { q: "Đội vận hành quản lý một cụm RabbitMQ tự triển khai thường xuyên gặp sự cố và cần chuyển lên AWS mà không viết lại ứng dụng. Dịch vụ nào phù hợp?",
     opts: ["Amazon SQS FIFO", "Amazon SNS", "Amazon MQ"],
     a: 2,
-    why: "Amazon MQ vận hành broker RabbitMQ (hoặc ActiveMQ) do AWS quản lý; ứng dụng giữ nguyên giao thức hiện tại." },
+    why: "Amazon MQ là dịch vụ message broker được quản lý cho Apache ActiveMQ Classic và RabbitMQ; có thể di chuyển broker hiện có mà không phải viết lại mã xử lý message." },
 ]} />
 
 </Scene>

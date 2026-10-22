@@ -1,3 +1,4 @@
+import { useI18n } from "../../app/i18n";
 import { useEffect, useState } from "react";
 
 export interface Bin {
@@ -20,6 +21,7 @@ export default function SortGame({ bins, cards }: Props) {
   const [shake, setShake] = useState<string | null>(null);
   const [hint, setHint] = useState<{ text: string; cls: string }>({ text: "", cls: "" });
   const [over, setOver] = useState<string | null>(null);
+  const { t } = useI18n();
 
   // Shuffle after hydration so server and client render the same first frame.
   useEffect(() => setOrder((o) => [...o].sort(() => Math.random() - 0.5)), []);
@@ -34,12 +36,12 @@ export default function SortGame({ bins, cards }: Props) {
       const next = { ...placed, [name]: binId };
       setPlaced(next);
       const left = cards.length - Object.keys(next).length;
-      setHint({ cls: "ok", text: left ? `Đúng: ${name}. Còn ${left} thẻ.` : `Xuất sắc! Bạn đã xếp đúng cả ${cards.length} thẻ.` });
+      setHint({ cls: "ok", text: left ? t("lesson.sort.right", { name, left }) : t("lesson.sort.allRight", { n: cards.length }) });
     } else {
       setShake(null);
       requestAnimationFrame(() => setShake(name));
       const right = bins.find((b) => b.id === answer[name]);
-      setHint({ cls: "bad", text: `${name} không thuộc nhóm này. ${right?.hint ?? ""}` });
+      setHint({ cls: "bad", text: `${t("lesson.sort.wrong", { name })} ${right?.hint ?? ""}` });
     }
   }
 
@@ -65,9 +67,9 @@ export default function SortGame({ bins, cards }: Props) {
 
   return (
     <div className="game">
-      <div className="pool" aria-label="Các thẻ chưa phân loại">
+      <div className="pool" aria-label={t("lesson.sort.pool")}>
         {order.filter((n) => !placed[n]).map(card)}
-        {placedCount === cards.length && <span className="hint ok" style={{ margin: 0 }}>Đã phân loại toàn bộ thẻ.</span>}
+        {placedCount === cards.length && <span className="hint ok" style={{ margin: 0 }}>{t("lesson.sort.finished")}</span>}
       </div>
       <div className="bins">
         {bins.map((b) => (

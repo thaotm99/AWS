@@ -13,8 +13,8 @@ const LAYOUT: PLayout = {
     { id: "c", x: 52, y: 155, l1: "Người dùng", user: true },
     { id: "sni", x: 178, y: 155, ...G, l1: "Chứng chỉ", l2: "chọn theo SNI" },
     { id: "waf", x: 278, y: 155, ...G, l1: "AWS WAF", l2: "web ACL" },
-    { id: "auth", x: 378, y: 155, ...G, l1: "Xác thực", l2: "Cognito" },
-    { id: "rule", x: 478, y: 155, ...G, l1: "Listener", l2: "rules" },
+    { id: "auth", x: 378, y: 155, ...G, l1: "Action", l2: "authenticate" },
+    { id: "rule", x: 478, y: 155, ...G, l1: "Rule", l2: "forward" },
     { id: "orders", x: 710, y: 82, w: 170, l1: "TG orders", l2: "path /orders/*" },
     { id: "products", x: 710, y: 155, w: 170, l1: "TG products", l2: "path /products/*" },
     { id: "sub", x: 710, y: 228, w: 170, l1: "TG microsite", l2: "host *.shopviet.vn" },
@@ -76,7 +76,7 @@ const SCENARIOS: PScenario[] = [
     toggle: { label: "Chuyển sang tên miền gốc shopviet.vn", initial: false },
     run: (apex) => apex
       ? { steps: [SNI, WAF, PUBLIC,
-            { at: "rule", state: "pass", msg: "`*.shopviet.vn` yêu cầu ít nhất một ký tự trước `.shopviet.vn`, do đó **không khớp** tên miền gốc `shopviet.vn`. Request được xử lý bởi default action." },
+            { at: "rule", state: "pass", msg: "Theo tài liệu ALB, rule `*.shopviet.vn` **không khớp** tên miền gốc `shopviet.vn`: `*` khớp 0 hoặc nhiều ký tự, nhưng tên miền gốc không chứa chuỗi `.shopviet.vn` (có dấu chấm đứng trước). Request được xử lý bởi default action." },
             { at: "products", state: "pass", msg: "Default action chuyển request tới trang chủ cửa hàng." }],
           ok: true, result: "200 OK: tên miền gốc được xử lý bởi default action. Để định tuyến tên miền gốc tới microsite, cần thêm rule riêng cho `shopviet.vn`." }
       : { steps: [SNI, WAF, PUBLIC,
@@ -90,7 +90,7 @@ const SCENARIOS: PScenario[] = [
     from: "nguồn: quốc gia chưa kinh doanh",
     toggle: { label: "Liên kết AWS WAF có geo match rule", initial: true },
     run: (waf) => waf
-      ? { steps: [SNI, { at: "waf", state: "block", flash: "403", msg: "Rule **geo match** của AWS WAF chặn request từ quốc gia này." }],
+      ? { steps: [SNI, { at: "waf", state: "block", flash: "403", msg: "Rule **geo match** của AWS WAF chặn request từ quốc gia này; phản hồi Block mặc định là 403 (Forbidden)." }],
           ok: true, result: "403 Forbidden: request bị chặn tại ALB, không phát sinh tải cho máy chủ." }
       : { steps: [SNI, { at: "waf", state: "skip", msg: "Chưa liên kết web ACL nào." }, PUBLIC,
             { at: "rule", state: "pass", msg: "Default rule chuyển request tới trang chủ." },

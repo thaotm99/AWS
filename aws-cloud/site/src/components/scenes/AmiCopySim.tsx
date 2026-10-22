@@ -19,7 +19,7 @@ const NOTES: Record<Step, ReactNode> = {
   0: <>Server <code>web-1</code> của ShopViet đang chạy tại Region Singapore. Yêu cầu: chuẩn bị sẵn phương án khôi phục tại Region Tokyo khi Singapore gặp sự cố. Thực hiện lần lượt các bước phía trên.</>,
   1: <>Snapshot lưu lại trạng thái EBS volume của <code>web-1</code>. Snapshot là tài nguyên cấp Region: snapshot chỉ tồn tại tại Singapore.</>,
   2: <>AMI là template dùng để launch server; AMI tham chiếu tới snapshot bên dưới. AMI cũng là tài nguyên cấp Region.</>,
-  3: <>Copy AMI sang Tokyo. AWS <b>tự động tạo một snapshot tại Tokyo</b>, vì AMI luôn yêu cầu snapshot nằm trong cùng Region.</>,
+  3: <>Copy AMI sang Tokyo. AWS <b>tự động tạo một snapshot tại Tokyo</b> làm backing snapshot cho AMI bản copy (với AMI dùng EBS).</>,
   4: <>Launch <code>web-1b</code> từ AMI tại Tokyo. Region Tokyo hiện có <b>1 EC2, 1 AMI và 1 snapshot</b>.</>,
 };
 

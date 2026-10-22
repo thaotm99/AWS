@@ -23,7 +23,7 @@ const SCENARIOS: HopScenario[] = [
     run: (on) => on
       ? { hops: [
           { to: "n2", state: "pass", times: 3, tag: "ĐỘ TRỄ THẤP", msg: "Cùng một cluster placement group: các instance được đặt gần nhau trong một AZ." },
-          { to: "n3", state: "pass", times: 3, tag: "EFA", msg: "Elastic Fabric Adapter cung cấp giao tiếp giữa các node với độ trễ rất thấp." },
+          { to: "n3", state: "pass", times: 3, tag: "EFA", msg: "Elastic Fabric Adapter cung cấp độ trễ thấp và ổn định hơn cho giao tiếp giữa các node HPC." },
         ], ok: true, result: "Hiệu năng mạng cao nhất: **cluster placement group** (+ EFA cho HPC). Đánh đổi: toàn bộ nhóm instance cùng chịu rủi ro sự cố của một AZ." }
       : { hops: [
           { to: "s2", state: "alert", times: 3, tag: "ĐỘ TRỄ CAO", msg: "Traffic đi qua AZ khác, độ trễ cao hơn đáng kể." },
@@ -39,15 +39,15 @@ const SCENARIOS: HopScenario[] = [
     nodes: [
       { id: "a", x: 120, y: 190, label: "Cache A", sub: "10.0.1.15", kind: "app" },
       { id: "b", x: 700, y: 190, w: 120, label: "Cache B", sub: "10.0.2.20", kind: "app" },
-      { id: "igw", x: 410, y: 60, label: "Internet gateway", sub: "định tuyến qua public IP", kind: "aws" },
+      { id: "igw", x: 410, y: 60, label: "Public IP", sub: "định tuyến qua địa chỉ public", kind: "aws" },
     ],
     run: (on) => on
       ? { hops: [
           { to: "b", state: "pass", times: 3, tag: "PRIVATE IP", msg: "Traffic được định tuyến trực tiếp trong VPC." },
-        ], ok: true, result: "Sử dụng private IP: traffic nằm trong mạng AWS và có chi phí thấp hơn." }
+        ], ok: true, result: "Sử dụng private IP: traffic đi trực tiếp trong VPC, không phát sinh phí data transfer qua địa chỉ public." }
       : { hops: [
-          { to: "igw", state: "alert", times: 3, tag: "RA NGOÀI", msg: "Kết nối qua public IP: traffic đi ra ngoài rồi quay lại VPC." },
-          { to: "b", state: "alert", times: 3, tag: "TÍNH PHÍ", msg: "Phát sinh phí data transfer." },
+          { to: "igw", state: "alert", times: 3, tag: "RA NGOÀI", msg: "Kết nối tới instance kia qua địa chỉ public thay vì private IP." },
+          { to: "b", state: "alert", times: 3, tag: "TÍNH PHÍ", msg: "Theo AWS, instance truy cập instance khác qua địa chỉ public bị tính phí data transfer (regional hoặc Internet)." },
         ], ok: false, result: "Cần chuyển cấu hình replication sang private IP." },
   },
   {
@@ -66,8 +66,8 @@ const SCENARIOS: HopScenario[] = [
     run: (on) => on
       ? { hops: [
           { to: "eic", state: "pass", tag: "IAM", msg: "Quyền SSH được kiểm tra bằng IAM policy." },
-          { to: "ec2", state: "change", tag: "KEY TẠM", msg: "Public key tạm thời được đẩy vào instance, sau đó thiết lập SSH." },
-        ], ok: true, result: "Loại bỏ key dùng chung. Quyền SSH do IAM quyết định và được ghi log trong CloudTrail." }
+          { to: "ec2", state: "change", tag: "KEY TẠM", msg: "Public key tạm thời được đẩy vào instance metadata và tồn tại 60 giây; SSH được thiết lập trong khoảng thời gian đó." },
+        ], ok: true, result: "Loại bỏ key dùng chung. Quyền SSH do IAM policy quyết định; mọi yêu cầu kết nối qua EC2 Instance Connect được ghi log trong CloudTrail." }
       : { hops: [
           { to: "pem", state: "alert", tag: "LỘ KEY", msg: "Key dài hạn tồn tại trong lịch sử chat." },
           { to: "ec2", state: "pass", tag: "TRUY CẬP", msg: "Truy cập thành công, nhưng bất kỳ ai có file cũng truy cập được." },

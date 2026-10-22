@@ -26,7 +26,7 @@ const SERVICES: { name: string; scope: Scope; label: string; text: ReactNode; dr
     text: <>Role <code>shopviet-app</code> được tạo một lần và sử dụng được tại mọi Region. IAM không có phiên bản riêng cho từng Region như Singapore hay Tokyo.</>,
     draw: <Token x={250} y={18} w={190} label="IAM role: shopviet-app" /> },
   { name: "Route 53", scope: "global", label: "Global",
-    text: <>Tên miền <code>shopviet.vn</code> được phân giải bởi DNS server đặt tại các Edge location trên toàn cầu, gần người dùng nhất.</>,
+    text: <>Tên miền <code>shopviet.vn</code> được phân giải bởi Route 53 Public DNS, có data plane phân bố tại các point of presence (edge location) trên toàn cầu; control plane đặt tại us-east-1.</>,
     draw: <Token x={560} y={46} w={180} label="Route 53: shopviet.vn" /> },
   { name: "S3", scope: "region", label: "Region",
     text: <>Bucket <code>shopviet-images</code> thuộc Region Singapore. AWS tự động lưu dữ liệu trên nhiều AZ (với các storage class thông thường), không yêu cầu cấu hình bổ sung.</>,
@@ -50,7 +50,7 @@ const SERVICES: { name: string; scope: Scope; label: string; text: ReactNode; dr
       <text className="zone-t" x={120} y={188} textAnchor="middle">subnet 10.0.1.0/24</text>
     </> },
   { name: "NAT Gateway", scope: "az", label: "AZ",
-    text: <>NAT gateway được tạo trong public subnet của một AZ cụ thể. Nếu cả 3 AZ dùng chung một NAT gateway, sự cố tại AZ chứa NAT gateway sẽ làm các AZ còn lại mất kết nối internet. Cấu hình đúng: mỗi AZ một NAT gateway và một route table riêng.</>,
+    text: <>Public NAT gateway ở chế độ zonal được tạo trong public subnet của một AZ cụ thể. Nếu cả 3 AZ dùng chung một NAT gateway, sự cố tại AZ chứa NAT gateway sẽ làm các AZ còn lại mất kết nối internet. Cấu hình đúng: mỗi AZ một NAT gateway và một route table riêng, hoặc sử dụng NAT gateway ở chế độ regional (tự động mở rộng sang các AZ có workload).</>,
     draw: <>{AZS.map((az) => <Token key={az.n} x={az.x + 20} y={200} w={100} label="NAT gateway" ghost={az.n !== "a"} />)}</> },
   { name: "EC2", scope: "az", label: "AZ",
     text: <>Server <code>web-1</code> chạy trong một subnet nên nằm trong đúng một AZ. Khi AZ đó gặp sự cố, server cũng ngừng hoạt động. Phần 3 minh hoạ trường hợp này.</>,

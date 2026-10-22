@@ -10,6 +10,8 @@ export function importanceOf(questions: number): Importance {
 export interface Concept {
   id: string;
   title: string;
+  /** English title; the same as `title` unless TITLES_EN overrides it. */
+  titleEn: string;
   importance: Importance;
   /** Questions about this lesson across the six SAA-C03 practice tests. */
   questions: number;
@@ -21,27 +23,37 @@ export interface Concept {
 export interface RoadmapLayer {
   n: number;
   name: string;
-  concepts: Pick<Concept, "id" | "title" | "importance">[];
+  nameEn: string;
+  concepts: (Pick<Concept, "id" | "title" | "titleEn" | "importance"> & {
+    /** Size of the lesson's question set ("Kiểm tra"); 0 when it has none. */
+    quiz: number;
+  })[];
 }
 
 export interface Layer {
   n: number;
   name: string;
+  nameEn: string;
   concepts: Concept[];
 }
 
 // Learning order for SAA-C03. Ids are the study folders in solution-architect-aws/;
 // titles and question counts are read from overview.md and list_qa.md at build time
 // (see exam.ts), so the roadmap always matches the exam material.
-export const LAYERS: { n: number; name: string; ids: string[] }[] = [
-  { n: 0, name: "Nền tảng", ids: ["global-infra"] },
-  { n: 1, name: "Networking", ids: ["vpc", "route53", "cloudfront"] },
-  { n: 2, name: "Security & Identity", ids: ["iam", "kms", "security", "cognito"] },
-  { n: 3, name: "Compute", ids: ["ec2", "elb", "asg", "containers", "lambda"] },
-  { n: 4, name: "Storage", ids: ["s3", "storage", "storage-migration"] },
-  { n: 5, name: "Database", ids: ["rds", "dynamodb", "analytics"] },
-  { n: 6, name: "Integration, Monitoring & vận hành", ids: ["messaging", "kinesis", "monitoring", "iac", "backup-dr", "others"] },
+export const LAYERS: { n: number; name: string; nameEn: string; ids: string[] }[] = [
+  { n: 0, name: "Nền tảng", nameEn: "Foundations", ids: ["global-infra"] },
+  { n: 1, name: "Networking", nameEn: "Networking", ids: ["vpc", "route53", "cloudfront"] },
+  { n: 2, name: "Security & Identity", nameEn: "Security & Identity", ids: ["iam", "kms", "security", "cognito"] },
+  { n: 3, name: "Compute", nameEn: "Compute", ids: ["ec2", "elb", "asg", "containers", "lambda"] },
+  { n: 4, name: "Storage", nameEn: "Storage", ids: ["s3", "storage", "storage-migration"] },
+  { n: 5, name: "Database", nameEn: "Database", ids: ["rds", "dynamodb", "analytics"] },
+  { n: 6, name: "Integration, Monitoring & vận hành", nameEn: "Integration, Monitoring & Operations", ids: ["messaging", "kinesis", "monitoring", "iac", "backup-dr", "others"] },
 ];
+
+/** English titles where the overview.md title is not already English. */
+export const TITLES_EN: Record<string, string> = {
+  others: "Cost tools + AI/ML + other services",
+};
 
 /** Lessons that are not a row in overview.md. */
 export const EXTRA_TITLES: Record<string, string> = {

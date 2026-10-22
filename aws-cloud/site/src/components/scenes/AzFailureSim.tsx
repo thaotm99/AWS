@@ -30,7 +30,7 @@ function explain(mode: Mode, down: Set<Az>, alive: number, total: number) {
       ? "Hệ thống hoạt động bình thường, nhưng cả hai server cùng nằm trong AZ a. Nhấn \"Sự cố AZ a\" để quan sát ảnh hưởng."
       : "Request được phân phối đều cho các server tại nhiều AZ. Tạo sự cố tại một AZ để quan sát ảnh hưởng.";
   if (!alive)
-    return "Toàn bộ server nằm trong AZ gặp sự cố. Load Balancer không còn target để chuyển request, người dùng nhận lỗi 503. Hai server không mang lại khả năng chịu lỗi nếu cùng nằm trong một AZ.";
+    return "Toàn bộ server nằm trong AZ gặp sự cố. Load Balancer không còn target healthy để xử lý request, người dùng nhận lỗi. Hai server không mang lại khả năng chịu lỗi nếu cùng nằm trong một AZ.";
   if (alive < total)
     return "Load Balancer xác định server tại AZ gặp sự cố là unhealthy và chuyển toàn bộ request sang server còn lại. Người dùng vẫn đặt hàng bình thường; chỉ tổng năng lực xử lý giảm.";
   return "AZ gặp sự cố không chứa server nào của ShopViet nên hệ thống không bị ảnh hưởng.";

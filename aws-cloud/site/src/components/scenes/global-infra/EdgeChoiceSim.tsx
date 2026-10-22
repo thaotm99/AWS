@@ -2,7 +2,7 @@ import CaseSim, { type CaseLink, type CaseNode, type CaseScenario } from "./Case
 
 // ShopViet has customers far from Singapore. Each situation needs one of the three
 // services that use AWS edge locations: CloudFront (cache, HTTP), S3 Transfer
-// Acceleration (uploads into S3) or Global Accelerator (static IPs, TCP/UDP,
+// Acceleration (long-distance transfers to/from S3) or Global Accelerator (static IPs, TCP/UDP,
 // fast failover between Regions). Pick one and watch the traffic.
 
 const NODES: CaseNode[] = [
@@ -49,7 +49,7 @@ const SCENARIOS: CaseScenario[] = [
           { at: "edge", state: "pass", msg: "S3 Transfer Acceleration cũng đi qua edge location nhưng **không cache** nội dung." },
           { at: "s3", via: TO_S3, state: "pass", msg: "Mọi request đều phải đọc từ bucket tại Singapore." },
         ],
-        ok: false, result: "Ảnh vẫn được trả về, nhưng các request sau không nhanh hơn. S3 Transfer Acceleration dành cho **tải lên** S3; truy xuất ảnh nên sử dụng CloudFront.",
+        ok: false, result: "Ảnh vẫn được trả về, nhưng các request sau không nhanh hơn. S3 Transfer Acceleration tăng tốc truyền dữ liệu tới và từ bucket nhưng không cache; phân phối ảnh cho nhiều người dùng nên sử dụng CloudFront.",
       };
       return { steps: [{ at: "edge", state: "pass", msg: "Traffic đi vào mạng AWS qua IP anycast, không có cache." }, GA_NO_S3], ok: false,
         result: "Không áp dụng được. Global Accelerator không cache và không hỗ trợ S3 làm endpoint. Ảnh, trang, video: sử dụng CloudFront." };
@@ -64,10 +64,10 @@ const SCENARIOS: CaseScenario[] = [
     run: (v) => {
       if (v === 0) return {
         steps: [
-          { at: "edge", state: "skip", msg: "CloudFront có thể chuyển request PUT tới origin, nhưng cache không mang lại lợi ích cho dữ liệu tải lên." },
-          { at: "s3", via: TO_S3, state: "pass", msg: "Tệp được ghi vào bucket, tốc độ gần như không thay đổi." },
+          { at: "edge", state: "skip", msg: "CloudFront có thể chuyển request PUT tới origin qua edge location, nhưng dữ liệu tải lên không được cache." },
+          { at: "s3", via: TO_S3, state: "pass", msg: "Tệp được ghi vào bucket thông qua distribution; phải cấu hình thêm allowed methods và quyền ghi cho origin." },
         ],
-        ok: false, result: "Hoạt động được nhưng không giải quyết vấn đề tải lên chậm. CloudFront được tối ưu cho chiều **tải xuống**.",
+        ok: false, result: "Hoạt động được nhưng không phải phương án được thiết kế cho bài toán này: tài liệu S3 nêu S3 Transfer Acceleration cho trường hợp tải lên bucket tập trung từ nhiều nơi trên thế giới. Thế mạnh chính của CloudFront là cache và phân phối nội dung.",
       };
       if (v === 1) return {
         steps: [
@@ -95,7 +95,7 @@ const SCENARIOS: CaseScenario[] = [
         ok: true, result: "Kết nối ổn định, độ trễ thấp hơn so với truyền qua internet công cộng.",
       };
       return {
-        steps: [{ at: "edge", state: "block", flash: "UDP?", msg: v === 0 ? "CloudFront chỉ phục vụ **HTTP/HTTPS**." : "S3 Transfer Acceleration chỉ dùng để truyền tệp vào S3." }],
+        steps: [{ at: "edge", state: "block", flash: "UDP?", msg: v === 0 ? "CloudFront chỉ tiếp nhận request **HTTP/HTTPS** (bao gồm WebSocket và gRPC)." : "S3 Transfer Acceleration chỉ dùng để truyền dữ liệu tới và từ S3 bucket." }],
         ok: false, result: "Gói UDP bị loại bỏ. Ứng dụng game, IoT, VoIP sử dụng UDP hoặc TCP thuần: sử dụng Global Accelerator.",
       };
     },
@@ -115,8 +115,8 @@ const SCENARIOS: CaseScenario[] = [
         ok: true, result: "200 OK: request đặt hàng của đối tác được firewall cho phép.",
       };
       return {
-        steps: [{ at: "edge", state: "block", flash: "IP?", msg: v === 0 ? "CloudFront sử dụng nhiều địa chỉ IP và các địa chỉ này thay đổi; đối tác không thể đưa vào allow list." : "S3 Transfer Acceleration không đặt trước API." }],
-        ok: false, result: "Firewall của đối tác chặn request. Yêu cầu IP cố định phía trước ALB: sử dụng Global Accelerator.",
+        steps: [{ at: "edge", state: "block", flash: "IP?", msg: v === 0 ? "Với cấu hình mặc định, distribution không có danh sách IP cố định dành riêng. CloudFront hỗ trợ **Anycast static IP list** (21 địa chỉ) nhưng phải gửi yêu cầu tới CloudFront support và chờ phê duyệt." : "S3 Transfer Acceleration không đặt trước API." }],
+        ok: false, result: "Firewall của đối tác chặn request. Yêu cầu IP cố định phía trước ALB với cấu hình đơn giản nhất: sử dụng Global Accelerator, accelerator được cấp IP tĩnh ngay khi tạo.",
       };
     },
   },

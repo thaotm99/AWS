@@ -1,18 +1,18 @@
 import PacketSim, { type PLayout, type PScenario, type PStep } from "../elb/PacketSim";
 
 // A request to ShopViet's public API passes the checks API Gateway runs before any
-// code: resource policy (IP ranges), JWT authorizer, usage plan + API key, cache. Then
+// code on a REST API: resource policy (IP ranges), Cognito user pool authorizer, usage plan + API key, cache. Then
 // it reaches Lambda, or goes straight into SQS for slow work.
 
 const G = { w: 84, h: 70 };
 const LAYOUT: PLayout = {
   viewBox: "0 40 840 225",
-  aria: "Request đi qua API Gateway: resource policy, authorizer, usage plan, cache, sau đó tới Lambda hoặc SQS",
-  boxes: [{ x: 118, y: 58, w: 420, h: 190, label: "API Gateway · api.shopviet.vn" }],
+  aria: "Request đi qua REST API trên API Gateway: resource policy, Cognito authorizer, usage plan, cache, sau đó tới Lambda hoặc SQS",
+  boxes: [{ x: 118, y: 58, w: 420, h: 190, label: "API Gateway REST API · api.shopviet.vn" }],
   nodes: [
     { id: "c", x: 52, y: 155, l1: "Client", user: true },
     { id: "ip", x: 178, y: 155, ...G, l1: "Resource", l2: "policy" },
-    { id: "auth", x: 278, y: 155, ...G, l1: "Authorizer", l2: "JWT" },
+    { id: "auth", x: 278, y: 155, ...G, l1: "Authorizer", l2: "Cognito" },
     { id: "plan", x: 378, y: 155, ...G, l1: "Usage plan", l2: "API key" },
     { id: "cache", x: 478, y: 155, ...G, l1: "Cache", l2: "theo stage" },
     { id: "fn", x: 710, y: 95, w: 170, l1: "Lambda", l2: "xử lý request" },
@@ -45,7 +45,7 @@ const SCENARIOS: PScenario[] = [
     from: "nguồn: hệ thống đối tác B",
     toggle: { label: "Đối tác B đã sử dụng hết 10.000 request trong ngày", initial: true },
     run: (over) => over
-      ? { steps: [IP_OPEN, NO_JWT, { at: "plan", state: "block", flash: "429", msg: "API key này thuộc usage plan **Basic**: 50 request/giây, 10.000 request/ngày. Quota đã được sử dụng hết." }],
+      ? { steps: [IP_OPEN, NO_JWT, { at: "plan", state: "block", flash: "429", msg: "API key này thuộc usage plan **Basic** (ví dụ: throttle 50 request/giây, quota 10.000 request/ngày). Quota đã được sử dụng hết." }],
           ok: true, result: "429 Too Many Requests: đối tác B bị giới hạn, các đối tác khác không bị ảnh hưởng. Mỗi client sử dụng một **usage plan + API key** riêng." }
       : { steps: [IP_OPEN, NO_JWT, { at: "plan", state: "pass", msg: "Usage plan Basic vẫn còn quota." }, NO_CACHE,
             { at: "fn", state: "pass", msg: "Trả về số lượng tồn kho." }],
@@ -69,10 +69,10 @@ const SCENARIOS: PScenario[] = [
     from: "nguồn: ứng dụng",
     toggle: { label: "Token còn hiệu lực", initial: true },
     run: (valid) => valid
-      ? { steps: [IP_OPEN, { at: "auth", state: "pass", msg: "**HTTP API** xác thực JWT do OIDC provider phát hành bằng **JWT authorizer** tích hợp sẵn, không cần viết mã." }, NO_PLAN, NO_CACHE,
+      ? { steps: [IP_OPEN, { at: "auth", state: "pass", msg: "**Cognito user pool authorizer** của REST API kiểm tra token do user pool phát hành trong header Authorization, không cần viết mã. (HTTP API có **JWT authorizer** tương đương nhưng không hỗ trợ resource policy, API key và caching.)" }, NO_PLAN, NO_CACHE,
             { at: "fn", state: "pass", msg: "Lambda nhận thông tin người dùng đã xác thực." }],
           ok: true, result: "200 OK: trả về đơn hàng của đúng người dùng đó." }
-      : { steps: [IP_OPEN, { at: "auth", state: "block", flash: "401", msg: "Token đã hết hạn; authorizer từ chối request." }],
+      : { steps: [IP_OPEN, { at: "auth", state: "block", flash: "401", msg: "Token đã hết hạn, không hợp lệ; authorizer từ chối request." }],
           ok: true, result: "401 Unauthorized: ứng dụng yêu cầu token mới và gọi lại." },
   },
   {
@@ -81,7 +81,7 @@ const SCENARIOS: PScenario[] = [
     from: "nguồn: ứng dụng",
     run: () => ({
       steps: [IP_OPEN, NO_JWT, NO_PLAN, NO_CACHE,
-        { at: "sqs", state: "change", tag: "ENQUEUE", msg: "API Gateway đẩy trực tiếp message vào **SQS** và trả 200 cho người dùng ngay lập tức." },
+        { at: "sqs", state: "change", tag: "ENQUEUE", msg: "AWS service integration của API Gateway gửi message trực tiếp vào **SQS** (SendMessage) và trả 200 cho người dùng ngay." },
         { at: "fn", state: "pass", msg: "Lambda đọc hàng đợi và gọi **Amazon Comprehend** để phân tích cảm xúc." }],
       ok: true,
       back: false,

@@ -15,6 +15,12 @@ docs:
     url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/high_availability_origin_failover.html"
   - title: "Requirements for using SSL/TLS certificates with CloudFront"
     url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-https-requirements.html"
+  - title: "What is Amazon CloudFront?"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html"
+  - title: "Configuring fast, secure file transfers using Amazon S3 Transfer Acceleration"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/transfer-acceleration.html"
+  - title: "Listeners for Global Accelerator (TCP/UDP)"
+    url: "https://docs.aws.amazon.com/global-accelerator/latest/dg/about-listeners.html"
   - title: "What is AWS Global Accelerator?"
     url: "https://docs.aws.amazon.com/global-accelerator/latest/dg/what-is-global-accelerator.html"
 ---
@@ -98,7 +104,7 @@ Ngoài S3, CloudFront hỗ trợ custom origin bao gồm Application Load Balanc
   { need: "Kết hợp nội dung tĩnh và động theo kiến trúc serverless", answer: "S3 cho tĩnh, Lambda + DynamoDB cho động, CloudFront phía trước",
     why: "Một distribution phân phối cả hai loại nội dung thông qua nhiều cache behavior." },
   { need: "Chi phí data transfer out từ S3 tăng đột biến", answer: "Phân phối qua CloudFront",
-    why: "Data transfer từ S3 tới CloudFront không tính phí; phần lớn request được phục vụ từ cache." },
+    why: "Data transfer từ origin AWS (S3, Elastic Load Balancing, API Gateway) tới CloudFront không tính phí; phần lớn request được phục vụ từ cache." },
   { need: "Tần suất đọc lặp lại cao trên DynamoDB và S3", answer: "DAX cho DynamoDB, CloudFront cho S3",
     why: "Mỗi tầng dữ liệu sử dụng lớp cache tương ứng." },
 ]} />
@@ -109,7 +115,7 @@ Ngoài S3, CloudFront hỗ trợ custom origin bao gồm Application Load Balanc
 
 <Scene id="s3" label="Phần 3/4" title="Quy trình xử lý request tại edge location" questions={["exam6_q62", "exam1_q38", "exam4_q63", "exam5_q15", "exam5_q13", "exam5_q57"]}>
 
-Trước khi được chuyển tới origin, mỗi request đi qua chuỗi bước xử lý tại edge location: TLS termination với chứng chỉ ACM, đánh giá bởi AWS WAF, geo restriction, xác thực signed URL/cookie, field-level encryption và lựa chọn origin theo cache behavior. Chọn một tình huống, thay đổi cấu hình và gửi request để quan sát bước xử lý tương ứng.
+Trước khi chuyển request tới origin, CloudFront có thể áp dụng tại edge location các cơ chế sau: TLS termination với chứng chỉ ACM, đánh giá bởi AWS WAF, geo restriction, xác thực signed URL/cookie, field-level encryption và lựa chọn origin theo cache behavior. Mô phỏng sắp xếp các cơ chế này thành một chuỗi để minh hoạ. Chọn một tình huống, thay đổi cấu hình và gửi request để quan sát bước xử lý tương ứng.
 
 <EdgePipelineSim client:visible />
 
@@ -123,13 +129,13 @@ Ba dịch vụ cùng sử dụng mạng edge của AWS nhưng phục vụ các m
 
 <RequirementPicker client:visible items={[
   { need: "Cache nội dung web (trang, ảnh, video) cho người dùng ở xa", answer: "CloudFront", why: "Hỗ trợ HTTP/HTTPS, có cache tại edge." },
-  { need: "Tải lên tệp dung lượng lớn vào S3 từ nhiều khu vực địa lý", answer: "S3 Transfer Acceleration", why: "Dữ liệu đi vào edge location gần nhất, sau đó truyền qua mạng backbone của AWS tới bucket." },
-  { need: "Ứng dụng game hoặc ứng dụng sử dụng giao thức UDP", answer: "Global Accelerator", why: "Hỗ trợ TCP và UDP; CloudFront chỉ hỗ trợ HTTP/HTTPS." },
-  { need: "Đối tác yêu cầu allow-list một số địa chỉ IP cố định", answer: "Global Accelerator", why: "Cung cấp hai địa chỉ IP tĩnh anycast đứng trước ALB/NLB tại nhiều Region." },
+  { need: "Tải lên tệp dung lượng lớn vào S3 từ nhiều khu vực địa lý", answer: "S3 Transfer Acceleration", why: "Dữ liệu đi vào edge location gần nhất, sau đó được định tuyến tới bucket qua đường mạng đã tối ưu của AWS. Transfer Acceleration tăng tốc truyền dữ liệu cả tới và từ bucket nhưng không cache." },
+  { need: "Ứng dụng game hoặc ứng dụng sử dụng giao thức UDP", answer: "Global Accelerator", why: "Listener của Global Accelerator hỗ trợ TCP và UDP; CloudFront phân phối nội dung qua HTTP/HTTPS (bao gồm WebSocket và gRPC)." },
+  { need: "Đối tác yêu cầu allow-list một số địa chỉ IP cố định", answer: "Global Accelerator", why: "Cung cấp hai địa chỉ IPv4 tĩnh anycast (dual-stack: thêm hai địa chỉ IPv6) đứng trước ALB/NLB/EC2 tại nhiều Region." },
   { need: "Failover tự động giữa các Region, không phụ thuộc DNS TTL", answer: "Global Accelerator", why: "Chuyển traffic sang endpoint healthy mà client không cần phân giải DNS lại." },
 ]} />
 
-<Takeaway>Cache nội dung web: CloudFront. Tăng tốc tải lên S3: S3 Transfer Acceleration. Giao thức UDP, địa chỉ IP tĩnh hoặc failover giữa các Region: AWS Global Accelerator.</Takeaway>
+<Takeaway>Cache nội dung web: CloudFront. Tăng tốc truyền dữ liệu đường dài tới/từ bucket S3 (điển hình là tải lên tập trung): S3 Transfer Acceleration. Giao thức UDP, địa chỉ IP tĩnh hoặc failover giữa các Region: AWS Global Accelerator.</Takeaway>
 
 </Scene>
 
@@ -166,7 +172,7 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
   { q: "Chi phí data transfer out từ S3 tăng mạnh do lượng tải ảnh lớn. Giải pháp nào giảm chi phí mà vẫn duy trì độ trễ thấp?",
     opts: ["Phân phối qua CloudFront", "Chuyển sang S3 Glacier", "Bật S3 Transfer Acceleration"],
     a: 0,
-    why: "Data transfer từ S3 tới CloudFront không tính phí và CloudFront phục vụ từ cache gần người dùng. S3 Transfer Acceleration chỉ tăng tốc tải lên, không giảm chi phí." },
+    why: "Data transfer từ origin AWS như S3 tới CloudFront không tính phí và CloudFront phục vụ từ cache gần người dùng. S3 Transfer Acceleration tăng tốc truyền dữ liệu nhưng không cache và có thể phát sinh phí data transfer bổ sung." },
 ]} />
 
 </Scene>

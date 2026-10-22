@@ -69,14 +69,14 @@ const SCENARIOS: CaseScenario[] = [
           { at: "natPriv", state: "pass", msg: "Route `0.0.0.0/0` của private subnet trỏ tới NAT gateway." },
           { at: "natPriv", state: "block", msg: "NAT gateway nằm trong private subnet, và subnet này không có route tới Internet Gateway." },
         ],
-        ok: false, result: "Không truy cập được internet. NAT gateway phải nằm trong **public subnet**." };
+        ok: false, result: "Không truy cập được internet. Public NAT gateway ở chế độ zonal phải nằm trong **public subnet**." };
       if (v === 1) return { hide: ["natPriv", "eigw"],
         steps: [
           { at: "natPub", via: [[125, 73]], state: "change", tag: "NAT", msg: "NAT gateway thay thế private IP của worker bằng Elastic IP của NAT gateway." },
           { at: "igw", state: "pass", msg: "Public subnet có route tới Internet Gateway." },
           { at: "net", state: "pass", msg: "Bản vá được tải về. Internet không thể khởi tạo kết nối ngược vào worker." },
         ],
-        ok: true, result: "Truy cập internet thành công. NAT gateway thuộc một AZ, do đó mỗi AZ cần một NAT gateway để chịu được sự cố AZ." };
+        ok: true, result: "Truy cập internet thành công. Zonal NAT gateway thuộc một AZ, do đó mỗi AZ cần một NAT gateway để chịu được sự cố AZ; chế độ regional NAT gateway tự động mở rộng sang các AZ có workload." };
       return { hide: ["natPriv", "natPub"],
         steps: [{ at: "eigw", state: "block", flash: "IPv4?", msg: "Egress-only internet gateway chỉ cho phép traffic **IPv6** đi ra." }],
         ok: false, result: "Không truy cập được internet bằng IPv4. Kết nối internet một chiều với IPv4 sử dụng NAT gateway." };
@@ -104,7 +104,7 @@ const SCENARIOS: CaseScenario[] = [
           ok: false, result: "Hai server nằm tại hai AZ khác nhau: phát sinh thêm độ trễ và phí data transfer giữa các AZ." }
       : { hide: ["far"],
           steps: [{ at: "near", state: "pass", msg: "Cả hai account chọn subnet theo **AZ ID** `use1-az2`." }],
-          ok: true, result: "Hai server nằm trong cùng một AZ vật lý. Ánh xạ tên AZ khác nhau giữa các account, còn AZ ID thì không đổi." },
+          ok: true, result: "Hai server nằm trong cùng một AZ vật lý. Tại các Region ánh xạ AZ độc lập theo account như us-east-1, cùng một tên AZ có thể trỏ tới AZ vật lý khác nhau; AZ ID thì nhất quán giữa mọi account." },
   },
   {
     name: "Người dùng vừa truy xuất vừa tải lên ảnh",

@@ -116,3 +116,76 @@
 .pr-lang-btn { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 2px 10px; font-size: var(--step--1); color: var(--muted); cursor: pointer; }
 .pr-lang-btn:hover { color: var(--ink); border-color: var(--accent); }
 .pr-lang-btn[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+/* Illustration under the verdict (modules/practice/illustrations): one animated scenario per option */
+.pr-illus { background: var(--surface); border-radius: 8px; padding: 12px 14px; margin: 4px 0 10px; min-width: 0; }
+.pr-illus-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 10px; }
+.pr-illus-title { font-weight: 600; }
+.pr-illus-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.pr-illus-tab { border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 2px 11px; font-size: var(--step--1); font-weight: 500; cursor: pointer; display: inline-flex; gap: 6px; align-items: baseline; }
+.pr-illus-tab:hover { border-color: var(--accent); }
+.pr-illus-tab.right { border-color: var(--ok); }
+.pr-illus-tab.wrong { border-color: var(--bad); }
+.pr-illus-tab[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.pr-illus-tag { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ok); }
+.pr-illus-tab.wrong .pr-illus-tag { color: var(--bad); }
+.pr-illus-tab[aria-selected="true"] .pr-illus-tag { color: inherit; opacity: 0.85; }
+.pr-illus-frame { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.pr-illus-frame svg { display: block; width: 100%; height: auto; }
+
+.pr-illus-zone rect { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 5 4; }
+.pr-illus-zone text { fill: var(--muted); font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; }
+.pr-illus-zone.t-region rect { stroke: var(--accent); }
+.pr-illus-zone.t-region text { fill: var(--accent); }
+.pr-illus-zone.t-vpc rect { stroke: var(--ok); stroke-dasharray: none; }
+.pr-illus-zone.t-vpc text { fill: var(--ok); }
+.pr-illus-zone.t-account rect { stroke: var(--violet); }
+.pr-illus-zone.t-account text { fill: var(--violet); }
+.pr-illus-zone.t-onprem rect { stroke: var(--edge); }
+.pr-illus-zone.t-onprem text { fill: var(--edge); }
+.pr-illus-zone.t-az rect { stroke-dasharray: 2 4; }
+
+.pr-illus-link { stroke: var(--line); stroke-width: 2; transition: stroke .25s; }
+.pr-illus-link.ok { stroke: var(--ok); }
+.pr-illus-link.warn { stroke: var(--edge); }
+.pr-illus-link.bad { stroke: var(--bad); }
+
+.pr-illus-node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill .2s, stroke .2s, opacity .2s; }
+.pr-illus-node .nt { fill: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
+.pr-illus-node .ns { fill: var(--muted); font-family: var(--font-body); font-size: 10px; }
+.pr-illus-node.k-actor rect { stroke: var(--ink); stroke-dasharray: 3 3; }
+.pr-illus-node.k-service rect { fill: var(--accent-soft); stroke: var(--accent); }
+.pr-illus-node.k-data rect { stroke: var(--accent); }
+.pr-illus-node.k-onprem rect { fill: var(--edge-soft); stroke: var(--edge); }
+.pr-illus-node.k-ghost rect { fill: var(--bg); stroke: var(--muted); stroke-dasharray: 4 3; }
+.pr-illus-node.k-ghost .nt { fill: var(--muted); }
+.pr-illus-node.ok rect { fill: var(--ok-soft); stroke: var(--ok); stroke-dasharray: none; }
+.pr-illus-node.warn rect { fill: var(--edge-soft); stroke: var(--edge); stroke-dasharray: none; }
+.pr-illus-node.bad rect { fill: var(--bad-soft); stroke: var(--bad); stroke-dasharray: none; }
+.pr-illus-node.dim { opacity: .4; }
+
+.pr-illus-badge rect { fill: var(--surface); stroke-width: 1.2; }
+.pr-illus-badge text { font-family: var(--font-mono); font-size: 10.5px; font-weight: 600; }
+.pr-illus-badge.ok rect { stroke: var(--ok); fill: var(--ok-soft); }
+.pr-illus-badge.ok text { fill: var(--ok); }
+.pr-illus-badge.warn rect { stroke: var(--edge); fill: var(--edge-soft); }
+.pr-illus-badge.warn text { fill: var(--edge); }
+.pr-illus-badge.bad rect { stroke: var(--bad); fill: var(--bad-soft); }
+.pr-illus-badge.bad text { fill: var(--bad); }
+.pr-illus-stop circle { fill: var(--bad); }
+.pr-illus-stop path { stroke: var(--surface); stroke-width: 2; stroke-linecap: round; }
+
+.pr-illus-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 10px; }
+.pr-illus-bar .btn { padding: 4px 12px; font-size: var(--step--1); font-weight: 600; }
+.pr-illus-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; }
+.pr-illus-steps button { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+  font-family: var(--font-mono); font-size: 0.75rem; cursor: pointer; padding: 0; }
+.pr-illus-steps button.seen { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.pr-illus-steps button[aria-current="step"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.pr-verdict .pr-illus-caption { margin: 10px 0 0; min-height: 3.3em; font-size: 0.9375rem; }
+.pr-verdict .pr-illus-verdict { margin: 8px 0 0; padding: 8px 10px; border-radius: 8px; font-size: 0.9375rem; }
+.pr-illus-verdict.ok { background: var(--ok-soft); }
+.pr-illus-verdict.ok b { color: var(--ok); }
+.pr-illus-verdict.bad { background: var(--bad-soft); }
+.pr-illus-verdict.bad b { color: var(--bad); }
+.pr-illus-head .zoom-btn { margin-left: auto; }

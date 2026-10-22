@@ -65,12 +65,12 @@ export default function AuroraSim() {
     flashHot(writer);
     await travel(L, [[w.x + 30, w.y + 22], [w.x + 30, VOL_Y - 25]], 350, "pkt");
     for (let k = 1; k <= 6; k++) { setCopies(k); await wait(60); }
-    flashText(L, 418, VOL_Y - 30, "ghi hoàn tất khi 4/6 bản xác nhận", "rdx-flash-ok", 1300);
+    flashText(L, 418, VOL_Y - 30, "ghi vào cluster volume", "rdx-flash-ok", 1300);
     if (global) await travel(L, [[578, VOL_Y], [615, VOL_Y]], 500, "pkt-edge", 5);
     await travel(L, [[w.x + 30, VOL_Y - 25], [w.x + 30, w.y + 22]], 300, "pkt-back");
     await travel(L, [top(writer), [w.x, 70], [250, 70], [WEP[0] + 60, WEP[1]], [APP[0] + 45, APP[1] - 10]], 600, "pkt-back");
     setTimeout(() => setCopies(0), 900);
-    setNote(<>Request ghi đi qua <b>cluster endpoint</b> tới writer. Dữ liệu được ghi vào <b>cluster volume</b> dùng chung, gồm 6 bản sao trên 3 AZ. Reader đọc cùng volume nên replica lag thường chỉ vài chục mili giây.{global ? <> Volume cũng được sao chép sang Tokyo, thường dưới 1 giây.</> : null}</>);
+    setNote(<>Request ghi đi qua <b>cluster endpoint</b> tới writer. Dữ liệu được ghi vào <b>cluster volume</b> dùng chung, gồm 6 bản sao trên 3 AZ. Reader đọc cùng volume nên replica lag thường thấp hơn nhiều so với 100 mili giây.{global ? <> Volume cũng được sao chép sang Tokyo, thường dưới 1 giây.</> : null}</>);
   });
 
   const read = () => act(async (L) => {
@@ -113,7 +113,7 @@ export default function AuroraSim() {
     setWriter(next);
     flashText(L, INST[next].x, INST[next].y - 30, "promote", "rdx-flash-ok", 1100);
     await travel(L, [[WEP[0] + 60, WEP[1]], [250, 70], [INST[next].x, 70], top(next)], 600, "pkt");
-    setNote(<>Aurora <b>promote một reader</b> thành writer, thường trong khoảng 30 giây, và <b>cluster endpoint</b> tự động trỏ tới writer mới. Do đó, cluster nên luôn có tối thiểu một Aurora Replica tại AZ khác.</>);
+    setNote(<>Aurora <b>promote một reader</b> thành writer; dịch vụ thường được khôi phục trong vòng dưới 60 giây, nhiều trường hợp dưới 30 giây, và <b>cluster endpoint</b> tự động trỏ tới writer mới. AWS khuyến nghị tạo Aurora Replica tại hai AZ khác nhau trở lên.</>);
   });
 
   const addGlobal = () => act(async (L) => {
@@ -131,7 +131,7 @@ export default function AuroraSim() {
     flashText(L, TOKYO[0], TOKYO[1] - 30, "promote", "rdx-flash-ok", 1200);
     await travel(L, [[APP[0], APP[1] + 25], [APP[0], 280], [TOKYO[0], 280], [TOKYO[0], TOKYO[1] + 22]], 900, "pkt");
     flashHot("tokyo");
-    setNote(<>Cluster tại Tokyo được promote thành primary (managed failover giữa các Region). <b>RPO thường vài giây, RTO khoảng một phút</b>. Phương án copy snapshot sang Region khác chậm hơn đáng kể.</>);
+    setNote(<>Cluster tại Tokyo được promote thành primary (cross-Region failover của Global Database). <b>RPO thường tính bằng giây, RTO có thể tính bằng phút</b>. Với chuyển đổi có kế hoạch, dùng <b>switchover</b> (RPO = 0). Phương án copy snapshot sang Region khác chậm hơn đáng kể.</>);
   });
 
   function reset() {

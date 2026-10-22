@@ -73,7 +73,7 @@ const INCIDENTS: Record<IncidentId, { name: string; about: string; stop: number;
         note: "Khi bảng có PITR bị xoá, DynamoDB lưu giữ một system backup trong 35 ngày và có thể restore. Tuy nhiên, ứng dụng **ngừng hoạt động** trong thời gian restore và phải được trỏ sang bảng mới. PITR là biện pháp khôi phục sau sự cố, không phải biện pháp ngăn chặn sự cố." },
       { id: "protect", name: "Deletion protection đã bật", ok: true, refused: true, flash: "từ chối",
         lostText: "không mất dữ liệu", downText: "0 phút",
-        note: "**Deletion protection**: không ai xoá được bảng, kể cả người có quyền DeleteTable, cho tới khi tính năng này được tắt. Không tính phí, chỉ cần bật một lần, không phát sinh tác vụ vận hành." },
+        note: "**Deletion protection**: không ai xoá được bảng, kể cả người có quyền DeleteTable, cho tới khi tính năng này được tắt. Chỉ cần bật một lần, không phát sinh tác vụ vận hành." },
     ],
   },
 };

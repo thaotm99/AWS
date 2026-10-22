@@ -101,12 +101,12 @@ export default function SharedStorageSim() {
       add("ĐỌC", "hit", `${okCount}/${alive.length} server truy cập được video qua **mount target** trong AZ tương ứng.`);
       setResult({ ok: true, msg: rich(azDown
         ? "AZ a gặp sự cố nhưng EFS lưu dữ liệu tại nhiều AZ; web-3 vẫn đọc dữ liệu qua mount target tại AZ b. EFS tính phí theo dung lượng thực tế sử dụng."
-        : "Mọi server truy cập cùng một thư mục, tương tự một ổ mạng dùng chung. EFS tính phí theo dung lượng thực tế sử dụng, chi phí cao hơn S3 nhưng ứng dụng đọc ghi tệp theo cách thông thường.") });
+        : "Mọi server truy cập cùng một thư mục, tương tự một ổ mạng dùng chung. EFS tự co giãn và tính phí theo dung lượng dữ liệu thực tế lưu trữ; ứng dụng đọc ghi tệp theo cách thông thường qua NFS.") });
     } else {
       add("ĐỌC", "hit", `${okCount}/${alive.length} server truy xuất video qua **S3 API**.`);
       setResult({ ok: true, msg: rich(azDown
         ? "S3 Standard lưu dữ liệu tại tối thiểu 3 AZ, không phụ thuộc vào instance hay AZ cụ thể. Video được giữ nguyên."
-        : "Mọi server đọc cùng một object. S3 có chi phí thấp nhất và độ bền dữ liệu cao nhất trong ba loại, nhưng ứng dụng phải gọi API thay vì đọc tệp như trên ổ đĩa.") });
+        : "Mọi server đọc cùng một object. S3 Standard lưu dữ liệu tại tối thiểu 3 AZ và tính phí theo dung lượng sử dụng, nhưng ứng dụng phải gọi API thay vì đọc tệp như trên ổ đĩa.") });
     }
     setBusy(false);
   }

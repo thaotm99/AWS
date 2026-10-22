@@ -49,7 +49,7 @@ function writeShard(agg: boolean) {
   return { rec, mb, use, rejected };
 }
 
-/** Write capacity in MB/s: 2 shards, or on-demand (at least 4 MB/s, up to double the previous peak). */
+/** Write capacity in MB/s: 2 shards, or on-demand (new stream 4 MB/s by default, up to double the previous peak; AWS counts the peak over the previous 30 days). */
 function capacityAt(onDemand: boolean, t: number) {
   if (!onDemand) return 2;
   const peak = Math.max(0, ...TRAFFIC.slice(0, t));
@@ -142,7 +142,7 @@ export default function ShardThroughputSim() {
       ? { ok: true, text: `Gộp ${AGG} sự kiện vào một record: mỗi shard chỉ còn ${nf(writeShard(true).rec)} records/s. Không cần bổ sung shard, do đó **không phát sinh thêm chi phí**.` }
       : { ok: false, text: `Mỗi shard nhận ${nf(writeShard(false).rec)} records/s, vượt giới hạn **1.000 records/s**, phát sinh lỗi **ProvisionedThroughput\u200BExceededException**. Bổ sung shard khắc phục được lỗi nhưng tăng chi phí; retry với backoff chỉ trì hoãn lỗi. Gộp sự kiện trước khi gửi là phương án có chi phí thấp nhất.` };
     if (sc.view === "chart") return on
-      ? { ok: rejected === 0, text: "**On-demand capacity mode**: stream tự động tăng capacity ghi theo lưu lượng (tức thời tới gấp đôi mức đỉnh gần nhất), không cần dự đoán trước hay chia shard thủ công. Phù hợp với tải khó dự đoán; chi phí tính theo lượng dữ liệu." }
+      ? { ok: rejected === 0, text: "**On-demand capacity mode**: stream mới có capacity ghi mặc định 4 MB/s và đáp ứng tới **gấp đôi đỉnh ghi trong 30 ngày trước**; khi lưu lượng đạt đỉnh mới, Kinesis tự động tăng capacity. Nếu lưu lượng tăng quá gấp đôi đỉnh trước đó trong vòng 15 phút, request ghi có thể bị throttle và cần retry. Phù hợp với tải biến động mạnh, khó dự đoán; chi phí tính theo GB dữ liệu ghi và đọc." }
       : { ok: false, text: `Chế độ provisioned với 2 shard chỉ ghi được 2 MB/s. Tại thời điểm cao điểm, ${nf(rejected / 1000, 1)} MB bị từ chối. Việc tự chia shard đòi hỏi dự đoán trước và giám sát liên tục.` };
     return on
       ? { ok: true, text: "**Enhanced fan-out**: mỗi ứng dụng đăng ký làm consumer riêng, có thông lượng **2 MB/s trên mỗi shard dành riêng**, dữ liệu được đẩy tới consumer (độ trễ khoảng 70 ms). Bổ sung ứng dụng không làm giảm thông lượng của ứng dụng khác." }

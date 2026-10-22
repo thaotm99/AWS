@@ -11,6 +11,14 @@ docs:
     url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy.html"
   - title: "Active-active and active-passive failover"
     url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-types.html"
+  - title: "Geoproximity routing"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-geoproximity.html"
+  - title: "Geolocation routing"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-geo.html"
+  - title: "Considerations when working with a private hosted zone"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/hosted-zone-private-considerations.html"
+  - title: "How Elastic Load Balancing works (cross-zone load balancing)"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/how-elastic-load-balancing-works.html"
   - title: "Resolving DNS queries between VPCs and your network"
     url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver.html"
   - title: "DNS attributes for your VPC"
@@ -43,7 +51,7 @@ ShopViet cần bốn record: tên miền chính trỏ tới CloudFront, tên mi�
 
 <AliasCnameSim client:visible />
 
-<Takeaway>Zone apex: chỉ sử dụng được Alias. Trỏ tới CloudFront, ALB, S3 website: Alias (không tính phí truy vấn). Subdomain trỏ tới một tên miền khác: có thể sử dụng CNAME.</Takeaway>
+<Takeaway>Zone apex: không tạo được CNAME; trỏ tới tài nguyên AWS tại zone apex bằng Alias. Trỏ tới CloudFront, ALB, S3 website: Alias (không tính phí truy vấn Alias tới tài nguyên AWS). Subdomain trỏ tới một tên miền khác: có thể sử dụng CNAME.</Takeaway>
 
 </Scene>
 

@@ -1,0 +1,27 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import ExamPage from "../../../modules/practice/ui/ExamPage.tsx";
+import { practiceCatalog } from "../../../modules/practice/content/PracticeCatalog";
+import "../../../styles/practice.css";
+
+// getStaticPaths runs in its own scope, so the certification id is written inside it.
+export function getStaticPaths() {
+  const cert = "saa-c03";
+  return practiceCatalog.topicContentPaths()
+    .filter((p) => p.cert === cert && p.lang === "en")
+    .map(({ topic }) => ({ params: { id: topic }, props: { cert, title: practiceCatalog.getTopic(cert, topic).title } }));
+}
+
+const { id } = Astro.params;
+const { cert, title } = Astro.props;
+---
+<BaseLayout
+  title={`Kiểm tra ${title} · AWS Thực Chiến`}
+  titleKey="practice.topic.pageTitle"
+  titleParams={{ title }}
+  description={`Các câu hỏi luyện tập về ${title}.`}
+  current={id}
+  currentQuiz
+>
+  <ExamPage client:only="react" certId={cert} topic={{ id, title }} />
+</BaseLayout>

@@ -112,7 +112,7 @@ const SCENARIOS: PScenario[] = [
           ], ok: true,
           result: "Tác vụ định kỳ ngắn (vài phút): EventBridge kích hoạt Lambda. Tác vụ dài hơn 15 phút: EventBridge Scheduler khởi chạy Fargate task." }
       : { steps: [
-            { at: "job", state: "block", flash: "15 phút", msg: "Thời gian thực thi tối đa của một lần gọi Lambda là **15 phút**. Script 30 phút bị dừng giữa chừng." },
+            { at: "job", state: "block", flash: "15 phút", msg: "Timeout tối đa của một Lambda function tiêu chuẩn là **900 giây (15 phút)**. Script 30 phút bị dừng giữa chừng." },
           ], ok: false,
           result: "Lịch thực thi phù hợp nhưng môi trường thực thi không phù hợp. Tác vụ dài cần chạy container trên Fargate." },
   },
@@ -166,10 +166,10 @@ const SCENARIOS: PScenario[] = [
     }),
     run: (mq) => mq
       ? { steps: [
-            { at: "broker", state: "pass", msg: "**Amazon MQ** vận hành broker ActiveMQ hoặc RabbitMQ do AWS quản lý, hỗ trợ các giao thức chuẩn: AMQP, MQTT, STOMP, JMS…" },
+            { at: "broker", state: "pass", msg: "**Amazon MQ** là dịch vụ message broker được quản lý cho Apache ActiveMQ Classic và RabbitMQ, sử dụng các API và giao thức chuẩn như JMS, NMS, AMQP, STOMP, MQTT và WebSocket." },
             { at: "cons", state: "pass", msg: "Ứng dụng giao vận nhận message như trước." },
           ], ok: true,
-          result: "Di chuyển lên cloud gần như không cần thay đổi mã nguồn; AWS chịu trách nhiệm vá lỗi và vận hành broker. Với ứng dụng phát triển mới, SQS và SNS vẫn là lựa chọn được khuyến nghị." }
+          result: "Trong hầu hết trường hợp, không phải viết lại mã xử lý message khi di chuyển lên AWS; Amazon MQ thực hiện bảo trì và nâng cấp phiên bản broker trong maintenance window đã lên lịch. Amazon MQ phù hợp nhất cho việc di chuyển từ message broker truyền thống." }
       : { steps: [
             { at: "broker", state: "block", flash: "AMQP?", msg: "SQS không hỗ trợ AMQP. Cả hai ứng dụng phải được viết lại bằng SDK của SQS." },
           ], ok: false,
@@ -179,7 +179,7 @@ const SCENARIOS: PScenario[] = [
     name: "Chứng chỉ import sắp hết hạn",
     action: "Chạy đánh giá",
     request: "Chứng chỉ của shopviet.vn còn hiệu lực 29 ngày",
-    toggle: { label: "Kích hoạt AWS Config managed rule + SNS", initial: false },
+    toggle: { label: "Kích hoạt AWS Config managed rule (daysToExpiration = 30) + SNS", initial: false },
     layout: {
       viewBox: VB,
       aria: "AWS Config đánh giá chứng chỉ trong ACM và gửi thông báo qua SNS tới đội bảo mật",
@@ -193,7 +193,7 @@ const SCENARIOS: PScenario[] = [
     },
     run: (on) => on
       ? { back: false, steps: [
-            { at: "cfg", state: "change", tag: "KHÔNG ĐẠT", msg: "Managed rule phát hiện chứng chỉ còn hiệu lực dưới 30 ngày (tham số `daysToExpiration` = 30)." },
+            { at: "cfg", state: "change", tag: "KHÔNG ĐẠT", msg: "Managed rule đánh giá chứng chỉ là NON_COMPLIANT vì còn hiệu lực dưới 30 ngày. Tham số `daysToExpiration` có giá trị mặc định 14; ShopViet đã cấu hình thành 30." },
             { at: "sns", state: "pass", msg: "Kết quả đánh giá được gửi tới SNS topic." },
             { at: "team", state: "pass", msg: "Đội bảo mật nhận email thông báo, còn khoảng một tháng để thay thế chứng chỉ." },
           ], ok: true,

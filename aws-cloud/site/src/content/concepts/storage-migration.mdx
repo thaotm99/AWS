@@ -13,6 +13,10 @@ docs:
     url: "https://docs.aws.amazon.com/datasync/latest/userguide/what-is-datasync.html"
   - title: "AWS Snowball Edge"
     url: "https://docs.aws.amazon.com/snowball/latest/developer-guide/whatisedge.html"
+  - title: "Snowball Edge device configurations"
+    url: "https://docs.aws.amazon.com/snowball/latest/developer-guide/device-differences.html"
+  - title: "What is AWS Data Transfer Terminal?"
+    url: "https://docs.aws.amazon.com/datatransferterminal/latest/userguide/what-is-dtt.html"
   - title: "What is AWS Application Migration Service?"
     url: "https://docs.aws.amazon.com/mgn/latest/ug/what-is-application-migration-service.html"
   - title: "What is AWS Database Migration Service?"
@@ -88,7 +92,9 @@ Ngoài đợt di chuyển dữ liệu lớn, ShopViet còn một số nhu cầu 
     why: "DataSync thực hiện đợt di chuyển lớn; File Gateway cho phép ứng dụng tại kho tiếp tục làm việc với dữ liệu đã nằm trên S3." },
 ]} />
 
-<Takeaway>Băng thông đủ đáp ứng: DataSync (có thể truyền riêng qua Direct Connect + VPC endpoint). Dữ liệu vượt quá khả năng của đường truyền: Snowball, nhập vào S3 rồi áp dụng lifecycle hoặc sao chép tiếp. SFTP: Transfer Family. Object đã tồn tại cần sao chép sang Region khác: S3 Batch Replication.</Takeaway>
+Snowball Edge hiện **không còn nhận khách hàng mới**. Thiết bị Storage Optimized có 210 TB dung lượng khả dụng. Với khách hàng mới, AWS đề xuất DataSync cho truyền trực tuyến, **AWS Data Transfer Terminal** cho truyền vật lý (mang thiết bị lưu trữ tới cơ sở của AWS; hiện chỉ dành cho khách hàng Enterprise Support), hoặc giải pháp của AWS Partner.
+
+<Takeaway>Băng thông đủ đáp ứng: DataSync (có thể truyền riêng qua Direct Connect + VPC endpoint). Dữ liệu vượt quá khả năng của đường truyền: vận chuyển vật lý (Snowball Edge với khách hàng hiện có; Data Transfer Terminal hoặc AWS Partner với khách hàng mới), nhập vào S3 rồi áp dụng lifecycle hoặc sao chép tiếp. SFTP: Transfer Family. Object đã tồn tại cần sao chép sang Region khác: S3 Batch Replication.</Takeaway>
 
 </Scene>
 

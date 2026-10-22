@@ -28,7 +28,7 @@ function evaluate(mode: Mode, who: Principal, scp: Tri, boundary: Tri | "unset",
   else if (boundary === "allow") gates.push({ name: "Permissions boundary", state: "pass", why: "Action nằm trong giới hạn quyền tối đa của boundary." });
   else gates.push({ name: "Permissions boundary", state: "fail", why: "Boundary xác định quyền tối đa. Action nằm ngoài boundary bị chặn dù identity policy cho phép." });
   // Identity policy
-  if (who === "root") gates.push({ name: "Identity policy", state: "skip", why: "Root user có toàn quyền trong account, chỉ bị giới hạn bởi SCP." });
+  if (who === "root") gates.push({ name: "Identity policy", state: "skip", why: "Root user có toàn quyền trong account và không bị giới hạn bằng identity policy. Root user của member account vẫn bị giới hạn bởi SCP, RCP và explicit deny trong resource-based policy." });
   else if (who === "slr") gates.push({ name: "Identity policy", state: "pass", why: "Service-linked role có sẵn quyền do dịch vụ AWS định nghĩa." });
   else gates.push({ name: "Identity policy", state: identity === "allow" ? "pass" : "fail", why: identity === "allow" ? "Policy gắn vào user/role cho phép action." : identity === "deny" ? "Có explicit deny." : "Không có statement Allow nào: request bị từ chối ngầm định." });
   // Resource policy (cross-account only)

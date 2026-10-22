@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import type { PracticeError } from "../app/errors";
 import type { Dispatch } from "../app/events";
 import type { AnswerRecord, Question } from "../domain/types";
+import { illustrations } from "../illustrations/registry";
 import { domainLabel } from "./domainLabel";
 import { errorText } from "./errorText";
 import { useT } from "./useT";
@@ -20,6 +21,9 @@ interface Props {
 }
 
 const label = (key: string) => key.toUpperCase();
+
+// The diagram engine and each question's data download only after an illustrated question is answered.
+const IllustrationPanel = lazy(() => import("../illustrations/IllustrationPanel"));
 
 export default function QuestionCard({ question: translated, original, total, answer, selection, saving, error, isLast, dispatch }: Props) {
   const tr = useT();
@@ -80,6 +84,11 @@ export default function QuestionCard({ question: translated, original, total, an
             {t(multi ? "exam.correctAnswers" : "exam.correctAnswer")} <b>{q.correct.map(label).join(", ")}</b>
             {!answer.correct && <> · {t("exam.yourAnswer", { keys: answer.chosen.map(label).join(", ") })}</>}
           </p>
+          {illustrations.has(q.id) && (
+            <Suspense fallback={null}>
+              <IllustrationPanel questionId={q.id} correct={q.correct} chosen={answer.chosen} />
+            </Suspense>
+          )}
           <details className="pr-explain" open>
             <summary>{t("exam.explanation")}</summary>
             <div className="pr-html" dangerouslySetInnerHTML={{ __html: q.explanationHtml }} />

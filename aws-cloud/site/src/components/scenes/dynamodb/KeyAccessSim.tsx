@@ -74,7 +74,7 @@ const SCENARIOS: PScenario[] = [
     }),
     run: (s3) => s3
       ? { steps: [
-            { at: "s3", state: "pass", roundTrip: true, msg: "Video 80 MB được tải lên S3. Object S3 có kích thước tối đa 5 TB." },
+            { at: "s3", state: "pass", roundTrip: true, msg: "Video 80 MB được tải lên S3. Object S3 có kích thước tối đa 50 TB (tải lên bằng multipart upload)." },
             { at: "ddb", state: "pass", flash: "1 KB", msg: "Item chỉ chứa `videoKey`, số sao và nội dung văn bản; kích thước nhỏ, đọc ghi nhanh." },
           ], ok: true, result: "Khi đọc review, ứng dụng lấy item từ DynamoDB, sau đó tải video từ S3 (hoặc qua CloudFront)." }
       : { steps: [

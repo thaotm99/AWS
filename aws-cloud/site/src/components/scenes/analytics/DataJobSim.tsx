@@ -54,7 +54,7 @@ const SCENARIOS: PScenario[] = [
     }),
     run: (sl) => sl
       ? { steps: [
-            { at: "etl", state: "pass", msg: "Glue đọc, làm sạch và biến đổi dữ liệu. Chỉ tính phí trong thời gian job chạy." },
+            { at: "etl", state: "pass", msg: "Glue đọc, làm sạch và biến đổi dữ liệu. Glue là dịch vụ serverless, không có hạ tầng cần quản lý." },
             { at: "dw", state: "pass", msg: "Nạp vào **Redshift Serverless**: kho dữ liệu MPP, tự động co giãn, không cần quản lý node." },
             { at: "ml", state: "pass", msg: "Analyst viết `CREATE MODEL` bằng SQL, không cần code Python." },
           ], ok: true, back: false, result: "Toàn bộ pipeline là serverless: không có cluster nào cần chọn kích thước, vá lỗi hay bật tắt." }
@@ -133,7 +133,7 @@ const SCENARIOS: PScenario[] = [
     run: (os) => os
       ? { steps: [
             { at: "kds", state: "pass", msg: "Tiếp nhận dữ liệu từ nhiều nguồn gần thời gian thực." },
-            { at: "store", state: "pass", flash: "120 kết quả", msg: "OpenSearch đánh index từng đơn hàng, tìm kiếm full-text trong vài trăm mili giây." },
+            { at: "store", state: "pass", flash: "120 kết quả", msg: "OpenSearch đánh index từng đơn hàng và hỗ trợ tìm kiếm full-text." },
             { at: "qs", state: "pass", msg: "QuickSight hiển thị dashboard tương tác cho đội vận hành." },
           ], ok: true, back: false, result: "Tìm kiếm và dashboard thời gian thực bằng các dịch vụ managed." }
       : { steps: [
@@ -184,8 +184,8 @@ const SCENARIOS: PScenario[] = [
     run: (cold) => cold
       ? { steps: [
             { at: "engine", state: "pass", msg: "Không có cluster nào chạy thường trực." },
-            { at: "data", state: "pass", msg: "Standard-IA có giá lưu trữ thấp, truy xuất ngay (có phí truy xuất theo GB). Truy vấn thực thi ngay lập tức." },
-          ], ok: true, result: "Vẫn truy vấn bằng SQL, thực thi ngay, chi phí thấp hơn đáng kể. Glacier Deep Archive có chi phí thấp hơn nữa nhưng phải restore trong nhiều giờ trước khi đọc." }
+            { at: "data", state: "pass", msg: "Standard-IA dành cho dữ liệu ít truy cập nhưng vẫn truy xuất trong mili giây (có phí truy xuất theo GB). Truy vấn thực thi ngay lập tức." },
+          ], ok: true, result: "Vẫn truy vấn bằng SQL, thực thi ngay, không phải duy trì cluster cho dữ liệu hiếm dùng. Glacier Deep Archive có chi phí lưu trữ thấp hơn nữa nhưng phải restore (mất nhiều giờ) trước khi Athena đọc được." }
       : { steps: [
             { at: "engine", state: "pass", msg: "Truy vấn được thực thi." },
             { at: "data", state: "change", tag: "TỐN", msg: "Cluster phải đủ lớn để chứa cả dữ liệu hầu như không được truy cập." },
@@ -211,7 +211,7 @@ const SCENARIOS: PScenario[] = [
       ? { steps: [
             { at: "s3", state: "change", tag: "GHI", msg: "Tệp được ghi vào bucket. Với **Bucket owner enforced**, ACL bị vô hiệu hoá và mọi object thuộc về chủ sở hữu bucket." },
             { at: "partner", from: "s3", state: "pass", msg: "Đối tác sở hữu mọi object nên đọc được bằng quyền IAM của mình." },
-          ], ok: true, back: false, result: "Đọc thành công. Bucket tạo mới từ năm 2023 mặc định sử dụng Bucket owner enforced." }
+          ], ok: true, back: false, result: "Đọc thành công. Bucket mới mặc định sử dụng Bucket owner enforced." }
       : { steps: [
             { at: "s3", state: "change", tag: "GHI", msg: "Tệp được ghi vào bucket, nhưng bucket vẫn bật ACL (Object writer): object thuộc về **account đã ghi**, tức ShopViet." },
             { at: "partner", from: "s3", state: "block", tag: "403", flash: "403", msg: "Chủ sở hữu bucket không mặc nhiên có quyền trên object do account khác ghi vào." },

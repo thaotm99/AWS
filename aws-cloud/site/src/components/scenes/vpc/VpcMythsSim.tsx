@@ -138,12 +138,12 @@ const SCENARIOS: CaseScenario[] = [
     choices: { label: "Địa chỉ đích", options: ["Public IP của EC2 B", "Private IP của EC2 B"], initial: 0 },
     run: (v) => v === 0
       ? { hide: ["priv"], back: false, steps: [
-            { at: "igw", via: [[135, 36]], state: "change", tag: "TÍNH PHÍ", msg: "Khi gửi tới public IP, traffic đi ra Internet Gateway rồi quay lại VPC." },
+            { at: "igw", via: [[135, 36]], state: "change", tag: "TÍNH PHÍ", msg: "Instance truy cập instance khác qua public IP bị tính phí data transfer regional hoặc internet." },
             { at: "b", via: [[685, 36]], state: "pass", msg: "Dữ liệu tới đích, nhưng lượng data transfer này bị tính phí." },
           ],
           ok: false, result: "Hoạt động được nhưng phát sinh chi phí và đường truyền không tối ưu." }
       : { hide: ["pub"], back: false, steps: [{ at: "b", state: "pass", msg: "Traffic đi trực tiếp trong VPC qua private IP." }],
-          ok: true, result: "Chi phí thấp hơn và traffic không rời khỏi mạng riêng." },
+          ok: true, result: "Chi phí thấp hơn và traffic không rời khỏi mạng riêng. Lưu ý: nếu EC2 A và EC2 B ở hai AZ khác nhau, data transfer giữa các AZ vẫn bị tính phí theo GB." },
   },
 ];
 

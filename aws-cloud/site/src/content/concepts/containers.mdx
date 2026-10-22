@@ -13,6 +13,14 @@ docs:
     url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/efs-volumes.html"
   - title: "IAM roles for service accounts (EKS)"
     url: "https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html"
+  - title: "Amazon ECS standalone tasks (chạy theo lịch với EventBridge Scheduler)"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/standalone-tasks.html"
+  - title: "Amazon EKS compute options (so sánh tính phí EC2 và Fargate)"
+    url: "https://docs.aws.amazon.com/eks/latest/userguide/eks-compute.html"
+  - title: "Deploy Amazon EKS on-premises with AWS Outposts"
+    url: "https://docs.aws.amazon.com/eks/latest/userguide/eks-outposts.html"
+  - title: "Lambda quotas"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -67,10 +75,10 @@ Chọn một tác vụ, chạy thử với phương án đơn giản nhất, sau
 Một số tình huống khác của ShopViet:
 
 - Worker hiện tại giao tiếp với message broker qua **AMQP** và đội ngũ không muốn quản lý node: chạy worker trên **EKS với Fargate**, chuyển broker sang **Amazon MQ** (managed broker, hỗ trợ AMQP).
-- Service trên ECS quá tải CPU: kích hoạt **Service Auto Scaling** để tăng số task.
-- Dữ liệu của một chi nhánh bắt buộc lưu trữ tại chỗ nhưng vẫn cần Kubernetes do AWS hỗ trợ: **EKS Anywhere** trên **AWS Outposts** đặt trong data center của doanh nghiệp.
+- Service trên ECS quá tải CPU: kích hoạt **Service Auto Scaling** (dựa trên Application Auto Scaling) để tăng số task theo metric CPU, bộ nhớ của service.
+- Dữ liệu của một chi nhánh bắt buộc lưu trữ tại chỗ nhưng vẫn cần Amazon EKS: **Amazon EKS trên AWS Outposts** đặt trong data center của doanh nghiệp (extended cluster: control plane ở Region, node trên Outpost; local cluster: cả control plane và node trên Outpost). **EKS Anywhere** là lựa chọn khác, chạy trên hạ tầng do doanh nghiệp tự quản lý, dành cho môi trường air-gapped.
 
-<Takeaway>Lưu trữ bền vững, dùng chung giữa các task: EFS. Chạy theo lịch: EventBridge Scheduler khởi chạy task Fargate. Job dài hơn 15 phút: container thay cho Lambda. Quyền riêng cho từng Pod: IRSA. Pod chờ do cluster hết tài nguyên: Cluster Autoscaler.</Takeaway>
+<Takeaway>Lưu trữ bền vững, dùng chung giữa các task: EFS. Chạy theo lịch: EventBridge Scheduler khởi chạy task Fargate. Job dài hơn giới hạn thời gian của Lambda (15 phút với function tiêu chuẩn): container trên Fargate. Quyền riêng cho từng Pod: IRSA. Pod chờ do cluster hết tài nguyên: Cluster Autoscaler.</Takeaway>
 
 </Scene>
 
@@ -95,15 +103,15 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
   { q: "Bộ phận kế toán cần giải thích vì sao hoá đơn ECS tháng này khác tháng trước, sau khi đội ngũ chuyển từ EC2 launch type sang Fargate. Cơ sở tính phí đã thay đổi như thế nào?",
     opts: ["Cả hai đều tính theo vCPU và RAM của task", "Trước đây tính theo EC2 và EBS; hiện tại tính theo vCPU và RAM mà task yêu cầu", "Fargate miễn phí, chỉ tính phí EC2"],
     a: 1,
-    why: "Với EC2 launch type, chi phí tính cho hạ tầng đang chạy; với Fargate, chi phí tính cho tài nguyên mà task yêu cầu." },
+    why: "Với EC2 launch type, chi phí tính cho EC2 instance (và EBS volume) đang chạy; với Fargate, chi phí tính theo cấu hình vCPU và bộ nhớ của từng task." },
   { q: "ShopViet có service trên ECS và service trên EKS; đội ngũ không muốn tiếp tục quản lý EC2. Phương án nào phù hợp?",
     opts: ["Chạy cả hai trên Fargate", "Chạy cả hai trên EC2 launch type", "Chuyển toàn bộ sang Elastic Beanstalk"],
     a: 0,
     why: "Fargate áp dụng được cho cả ECS và EKS; không còn node nào cần vá lỗi." },
-  { q: "Mỗi job tổng hợp dữ liệu stream của ShopViet chạy khoảng 30 phút và yêu cầu kiến trúc serverless. Phần xử lý nên chạy trên dịch vụ nào?",
+  { q: "Mỗi job tổng hợp dữ liệu stream của ShopViet chạy khoảng 2 giờ và yêu cầu không quản lý máy chủ. Phần xử lý nên chạy trên dịch vụ nào?",
     opts: ["AWS Lambda", "ECS trên Fargate", "EC2 Spot"],
     a: 1,
-    why: "Lambda giới hạn tối đa 15 phút cho mỗi lần thực thi; task Fargate không có giới hạn này." },
+    why: "Lambda function tiêu chuẩn chạy tối đa 15 phút mỗi lần thực thi (Lambda Managed Instances: tối đa 90 phút với một số kiểu gọi), không đủ cho job 2 giờ. Task ECS trên Fargate chạy cho tới khi tiến trình kết thúc, không có máy chủ cần quản lý." },
 ]} />
 
 </Scene>

@@ -11,6 +11,16 @@ docs:
     url: "https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-rate-based.html"
   - title: "AWS Shield Advanced"
     url: "https://docs.aws.amazon.com/waf/latest/developerguide/shield-chapter.html"
+  - title: "Rate-based rule high-level settings"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-rate-based-high-level-settings.html"
+  - title: "What is AWS WAF?"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/what-is-aws-waf.html"
+  - title: "Shield Response Team (SRT) support"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/ddos-srt-support.html"
+  - title: "AWS Firewall Manager"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/fms-chapter.html"
+  - title: "GuardDuty EC2 finding types"
+    url: "https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_finding-types-ec2.html"
   - title: "What is Amazon GuardDuty?"
     url: "https://docs.aws.amazon.com/guardduty/latest/ug/what-is-guardduty.html"
   - title: "What is Amazon Macie?"
@@ -38,7 +48,7 @@ Năm loại request đang được gửi tới ShopViet. Kích hoạt từng rul
 
 <WafSim client:visible />
 
-<Takeaway>SQL injection, XSS: managed rule. Giới hạn theo quốc gia: geo match. Một IP độc hại: IP set. Request với tần suất bất thường: rate-based rule. AWS WAF được liên kết với CloudFront, ALB, API Gateway, không gắn trực tiếp vào EC2.</Takeaway>
+<Takeaway>SQL injection, XSS: managed rule. Giới hạn theo quốc gia: geo match. Một IP độc hại: IP set. Request với tần suất bất thường: rate-based rule (evaluation window 1, 2, 5 hoặc 10 phút, mặc định 5 phút; ngưỡng tối thiểu 10 request). AWS WAF được liên kết với CloudFront, ALB, API Gateway REST API và một số dịch vụ khác (AppSync, Cognito, App Runner, Verified Access, Amplify), không gắn trực tiếp vào EC2.</Takeaway>
 
 </Scene>
 

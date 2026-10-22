@@ -17,6 +17,28 @@ docs:
     url: "https://docs.aws.amazon.com/managed-flink/latest/java/what-is.html"
   - title: "What is Amazon MSK?"
     url: "https://docs.aws.amazon.com/msk/latest/developerguide/what-is-msk.html"
+  - title: "Choose the data stream capacity mode"
+    url: "https://docs.aws.amazon.com/streams/latest/dev/how-do-i-size-a-stream.html"
+  - title: "Change the data retention period"
+    url: "https://docs.aws.amazon.com/streams/latest/dev/kinesis-extended-retention.html"
+  - title: "Kinesis Data Streams terminology and concepts"
+    url: "https://docs.aws.amazon.com/streams/latest/dev/key-concepts.html"
+  - title: "KPL key concepts (aggregation)"
+    url: "https://docs.aws.amazon.com/streams/latest/dev/kinesis-kpl-concepts.html"
+  - title: "Using Lambda with Kinesis Data Streams"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html"
+  - title: "Amazon Data Firehose API Reference (Welcome)"
+    url: "https://docs.aws.amazon.com/firehose/latest/APIReference/Welcome.html"
+  - title: "Amazon Managed Service for Apache Flink API Reference (Welcome)"
+    url: "https://docs.aws.amazon.com/managed-flink/latest/apiv2/Welcome.html"
+  - title: "Amazon Kinesis Data Analytics for SQL Applications discontinuation"
+    url: "https://docs.aws.amazon.com/kinesisanalytics/latest/dev/discontinuation.html"
+  - title: "Using Amazon S3 as a source for AWS DMS"
+    url: "https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Source.S3.html"
+  - title: "Using Amazon Kinesis Data Streams as a target for AWS DMS"
+    url: "https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Target.Kinesis.html"
+  - title: "What is Amazon Quick?"
+    url: "https://docs.aws.amazon.com/quicksight/latest/user/welcome.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -44,9 +66,9 @@ Ba ứng dụng của ShopViet đều cần nhận toàn bộ sự kiện mua h�
 
 Các đặc điểm của **Kinesis Data Streams** thể hiện trong mô phỏng:
 
-- Stream được chia thành các **shard**. Producer gửi mỗi record kèm một **partition key**; Kinesis băm key để xác định shard. Các record cùng key được ghi vào cùng một shard, do đó các sự kiện của một người dùng luôn giữ đúng thứ tự.
-- Record **không bị xoá** sau khi được đọc. Mỗi ứng dụng (consumer) tự quản lý vị trí đọc. Record được lưu giữ 24 giờ, có thể tăng tới 365 ngày, do đó ứng dụng gặp lỗi có thể đọc lại dữ liệu.
-- Consumer có thể là ứng dụng tự phát triển hoặc **Lambda**: Lambda tự động poll stream, đọc theo batch, lưu vị trí đọc và retry khi gặp lỗi. Bảng xếp hạng của chương trình khuyến mãi ShopViet chỉ cần kiến trúc Kinesis → Lambda → DynamoDB, không cần quản lý máy chủ.
+- Stream được chia thành các **shard**. Producer gửi mỗi record kèm một **partition key**; Kinesis băm key bằng MD5 để xác định shard. Các record cùng key được ghi vào cùng một shard, do đó các sự kiện của một người dùng luôn giữ đúng thứ tự.
+- Record **không bị xoá** sau khi được đọc. Mỗi ứng dụng (consumer) tự quản lý vị trí đọc. Record được lưu giữ mặc định 24 giờ, có thể tăng tới 365 ngày (tính phí bổ sung khi vượt 24 giờ), do đó ứng dụng gặp lỗi có thể đọc lại dữ liệu.
+- Consumer có thể là ứng dụng tự phát triển hoặc **Lambda**: event source mapping của Lambda tự động poll từng shard, đọc record theo batch và gọi function với từng batch. Bảng xếp hạng của chương trình khuyến mãi ShopViet chỉ cần kiến trúc Kinesis → Lambda → DynamoDB, không cần quản lý máy chủ.
 
 <Takeaway>Phân phối tác vụ, mỗi tác vụ do một worker xử lý: SQS. Nhiều ứng dụng cùng đọc một luồng dữ liệu, đúng thứ tự theo key, có khả năng đọc lại: Kinesis Data Streams. Partition key xác định shard; thứ tự chỉ được đảm bảo trong phạm vi một shard.</Takeaway>
 
@@ -54,13 +76,13 @@ Các đặc điểm của **Kinesis Data Streams** thể hiện trong mô phỏn
 
 <Scene id="s2" label="Phần 2/3" title="Xử lý khi stream vượt giới hạn thông lượng" questions={["exam5_q53", "exam6_q31", "exam5_q38"]}>
 
-Mỗi shard có giới hạn thông lượng: ghi **1.000 record hoặc 1 MB mỗi giây**, đọc **2 MB mỗi giây**. Mô phỏng dưới đây trình bày ba sự cố ShopViet đã gặp và giải pháp tương ứng. Chạy mô phỏng trong 10 giây, sau đó bật cấu hình khắc phục:
+Mỗi shard có giới hạn thông lượng: ghi **1.000 record hoặc 1 MB mỗi giây**, đọc **2 MB mỗi giây** (tổng cho mọi consumer dùng `GetRecords`). Mô phỏng dưới đây trình bày ba sự cố ShopViet đã gặp và giải pháp tương ứng. Chạy mô phỏng trong 10 giây, sau đó bật cấu hình khắc phục:
 
 <ShardThroughputSim client:visible />
 
-Stream hỗ trợ hai **capacity mode**. **Provisioned**: người vận hành tự xác định số shard, chi phí tính theo shard-giờ; phù hợp khi lưu lượng ổn định và dự đoán được. **On-demand**: Kinesis tự động quản lý capacity, chi phí tính theo lượng dữ liệu; phù hợp khi tải biến động khó dự đoán. Kết hợp on-demand với Lambda làm consumer là phương án có chi phí vận hành thấp nhất để xử lý clickstream theo thời gian thực.
+Stream có hai loại **capacity mode**. **Provisioned**: người vận hành tự xác định số shard, chi phí tính theo số shard mỗi giờ; phù hợp khi lưu lượng dễ dự đoán. **On-demand**: Kinesis tự động quản lý shard, không cần lập kế hoạch capacity, chi phí tính theo GB dữ liệu ghi và đọc; phù hợp khi tải biến động mạnh và khó dự đoán. On-demand gồm **On-demand Standard** (mỗi stream có thêm phí cố định) và **On-demand Advantage** (thiết lập cấp account trong Region: không còn phí cố định theo stream, cho phép cấu hình warm throughput, yêu cầu cam kết lượng dữ liệu tối thiểu). Stream on-demand mới có capacity ghi mặc định 4 MB/s và đáp ứng tới **gấp đôi đỉnh ghi trong 30 ngày trước**; nếu lưu lượng tăng quá gấp đôi đỉnh trước đó trong vòng 15 phút, request ghi có thể bị throttle và cần retry.
 
-<Takeaway>ProvisionedThroughput<wbr />ExceededException do gửi từng record nhỏ: gộp record trước khi gửi, chi phí thấp hơn so với tăng số shard. Tải khó dự đoán: on-demand capacity mode. Nhiều consumer có độ trễ đọc tăng dần: enhanced fan-out, mỗi consumer có 2 MB/s trên mỗi shard.</Takeaway>
+<Takeaway>ProvisionedThroughput<wbr />ExceededException do gửi từng record nhỏ: gộp record trước khi gửi, chi phí thấp hơn so với tăng số shard. Tải khó dự đoán: on-demand capacity mode (tới gấp đôi đỉnh ghi của 30 ngày trước). Nhiều consumer có độ trễ đọc tăng dần: enhanced fan-out, mỗi consumer có 2 MB/s trên mỗi shard (tối đa 20 consumer đăng ký mỗi stream, 50 với On-demand Advantage).</Takeaway>
 
 </Scene>
 
@@ -72,12 +94,12 @@ Kinesis Data Streams đóng vai trò kênh truyền dữ liệu: phía trước 
 
 Hai dịch vụ thường bị nhầm lẫn với Data Streams:
 
-- **Amazon Data Firehose** (tên cũ Kinesis Data Firehose): gộp dữ liệu và **phân phối tới đích** như S3, Redshift, OpenSearch, có thể chuyển đổi định dạng trong quá trình truyền. Không cần phát triển consumer và không hỗ trợ đọc lại; ứng dụng không thể đọc dữ liệu trực tiếp từ Firehose.
-- **Amazon Managed Service for Apache Flink** (tên cũ Kinesis Data Analytics): thực thi truy vấn SQL hoặc mã Flink **liên tục** trên stream, ví dụ đếm số click theo từng phút.
+- **Amazon Data Firehose** (tên cũ Amazon Kinesis Data Firehose): **phân phối dữ liệu tới đích** như S3, Redshift, OpenSearch, Splunk hoặc HTTP endpoint, có thể chuyển đổi dữ liệu trước khi phân phối. Không cần phát triển consumer; API của Firehose chỉ có thao tác ghi (`PutRecord`, `PutRecordBatch`), không có thao tác để ứng dụng đọc hay đọc lại dữ liệu.
+- **Amazon Managed Service for Apache Flink** (tên cũ Amazon Kinesis Data Analytics for Apache Flink): xử lý stream **liên tục** bằng Java, Scala, Python hoặc SQL, ví dụ đếm số click theo từng phút; **Managed Service for Apache Flink Studio** cho phép truy vấn stream tương tác bằng SQL. Dịch vụ riêng **Kinesis Data Analytics for SQL Applications** đã ngừng: từ 15/10/2025 không tạo được ứng dụng mới, từ 27/01/2026 ứng dụng bị xoá; AWS khuyến nghị chuyển sang Managed Service for Apache Flink hoặc Flink Studio.
 
-Với các ứng dụng đã được phát triển cho **Apache Kafka**, sử dụng **Amazon MSK**: Kafka do AWS quản lý, mã nguồn được giữ nguyên. Không nên tự triển khai Kafka trên EC2 và tự phát triển script để scale thủ công.
+Với các ứng dụng đã được phát triển cho **Apache Kafka**, sử dụng **Amazon MSK**: dịch vụ Kafka được quản lý hoàn toàn, ứng dụng tiếp tục dùng Kafka API. Với MSK Serverless, MSK quản lý broker và capacity của cluster.
 
-<Takeaway>Phân tích stream bằng SQL: Kinesis Data Analytics (Managed Service for Apache Flink). Lưu stream vào S3 không cần viết mã: Firehose. Tìm kiếm full-text: OpenSearch; dashboard: QuickSight. Chuyển dữ liệu từ S3 vào stream: AWS DMS. Tác vụ dài hơn 15 phút: Fargate thay cho Lambda. Hệ thống đã sử dụng Kafka: Amazon MSK.</Takeaway>
+<Takeaway>Phân tích stream liên tục, kể cả bằng SQL: Amazon Managed Service for Apache Flink (Kinesis Data Analytics for SQL Applications đã ngừng). Lưu stream vào S3 không cần viết mã: Firehose. Tìm kiếm full-text: OpenSearch Service; dashboard: Amazon Quick Sight (trước đây là Amazon QuickSight). Chuyển dữ liệu từ S3 vào stream: AWS DMS (full load file hiện có; thay đổi mới phải ở dạng file CDC theo định dạng của DMS). Tác vụ dài hơn 15 phút: Fargate thay cho Lambda. Hệ thống đã sử dụng Kafka: Amazon MSK.</Takeaway>
 
 </Scene>
 
@@ -114,9 +136,9 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     a: 0,
     why: "Mỗi consumer sử dụng enhanced fan-out có thông lượng riêng 2 MB/s trên mỗi shard, không chia sẻ với ứng dụng khác." },
   { q: "Dữ liệu click cần được truy vấn bằng SQL ngay khi tiếp nhận, kết quả được lưu vào S3. Kiến trúc nào phù hợp?",
-    opts: ["Data Streams → Kinesis Data Analytics → Firehose → S3", "Data Streams → QuickSight → S3", "Firehose → S3 → Athena mỗi giờ"],
+    opts: ["Data Streams → Managed Service for Apache Flink → Firehose → S3", "Data Streams → Quick Sight → S3", "Firehose → S3 → Athena mỗi giờ"],
     a: 0,
-    why: "Kinesis Data Analytics (Flink) thực thi SQL liên tục trên stream; Firehose lưu kết quả vào S3." },
+    why: "Managed Service for Apache Flink (tên cũ Kinesis Data Analytics for Apache Flink) xử lý stream liên tục, hỗ trợ SQL; Firehose phân phối kết quả vào S3." },
 ]} />
 
 </Scene>

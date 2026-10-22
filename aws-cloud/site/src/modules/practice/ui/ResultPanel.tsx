@@ -9,15 +9,17 @@ interface Props {
   cert: CertificationDetail;
   exam: Exam;
   attempt: Attempt;
+  /** Set when the questions are a service's set rather than a practice test. */
+  topic?: { id: string; title: string };
   saving: boolean;
   dispatch: Dispatch;
 }
 
-export default function ResultPanel({ cert, exam, attempt, saving, dispatch }: Props) {
+export default function ResultPanel({ cert, exam, attempt, topic, saving, dispatch }: Props) {
   const tr = useT();
   const { t } = tr;
   const score = Scoring.score(attempt, cert);
-  const next = cert.exams[cert.exams.findIndex((e) => e.id === exam.id) + 1];
+  const next = topic ? undefined : cert.exams[cert.exams.findIndex((e) => e.id === exam.id) + 1];
 
   const domains = new Map<string, { right: number; total: number }>();
   for (const q of exam.questions) {
@@ -50,7 +52,9 @@ export default function ResultPanel({ cert, exam, attempt, saving, dispatch }: P
 
       <div className="pr-actions">
         <button type="button" className="btn" disabled={saving} onClick={() => dispatch({ type: "exam/restart" })}>{t("result.retake")}</button>
-        {next ? (
+        {topic ? (
+          <a className="btn primary" href={routes.lesson(topic.id)}>{t("topic.backToLesson")}</a>
+        ) : next ? (
           <a className="btn primary" href={routes.exam(cert.id, next.id)}>{t("result.nextExam", { n: next.number })}</a>
         ) : (
           <a className="btn primary" href={routes.catalog(cert.id)}>{t("exam.backToList")}</a>

@@ -21,6 +21,12 @@ docs:
     url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/optimizing-performance.html"
   - title: "Uploading and copying objects using multipart upload"
     url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html"
+  - title: "Server-side encryption with customer-provided keys (SSE-C)"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerSideEncryptionCustomerKeys.html"
+  - title: "Amazon S3 Storage Lens metrics glossary"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens_metrics_glossary.html"
+  - title: "Amazon Glacier Vault Lock"
+    url: "https://docs.aws.amazon.com/amazonglacier/latest/dev/vault-lock.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -51,23 +57,23 @@ Chi phí S3 gồm hai thành phần chính: phí lưu trữ tính theo GB và ph
 <RequirementPicker client:visible items={[
   { need: "Thumbnail có thể tạo lại từ ảnh gốc; truy cập nhiều trong tuần đầu, sau đó giảm nhưng vẫn phải truy xuất được ngay", answer: "Lifecycle sang One Zone-IA sau 30 ngày",
     why: "Do dữ liệu có thể tạo lại, việc lưu tại một AZ để có chi phí thấp hơn Standard-IA là chấp nhận được. Dữ liệu vẫn được truy xuất ngay." },
-  { need: "Kho video sản phẩm hàng trăm TB, chỉ được truy cập vài lần mỗi năm nhưng khi truy cập phải có dữ liệu trong mili giây", answer: "S3 Standard-IA",
-    why: "Chi phí thấp hơn Standard mà vẫn truy xuất ngay. Glacier Deep Archive có chi phí thấp hơn nữa nhưng thời gian truy xuất lên tới nhiều giờ." },
+  { need: "Kho video sản phẩm hàng trăm TB, lưu nhiều năm, chỉ được truy cập khoảng một lần mỗi quý nhưng khi truy cập phải có dữ liệu trong mili giây", answer: "S3 Glacier Instant Retrieval",
+    why: "AWS mô tả lớp này dành cho dữ liệu lưu trữ dài hạn, truy cập khoảng một lần mỗi quý và cần truy xuất trong mili giây. Đổi lại: phí truy xuất theo GB và thời gian lưu trữ tối thiểu 90 ngày. Glacier Flexible Retrieval và Deep Archive yêu cầu restore trước khi đọc, mất từ vài phút tới nhiều giờ." },
   { need: "Tệp trung gian của pipeline xử lý đơn hàng, được đọc lại liên tục", answer: "S3 Standard",
     why: "Với dữ liệu đọc thường xuyên, Standard có chi phí thấp nhất vì các lớp IA tính phí cho mỗi lần truy xuất dữ liệu." },
   { need: "Ảnh sản phẩm: mẫu bán chạy được truy cập liên tục, các mẫu khác hầu như không được truy cập; không dự đoán trước được", answer: "S3 Intelligent-Tiering",
-    why: "Tự động chuyển từng object giữa các tầng theo mức độ truy cập, không tính phí truy xuất dữ liệu và không yêu cầu giám sát thủ công." },
+    why: "Tự động chuyển từng object giữa các tầng theo mức độ truy cập, không tính phí truy xuất dữ liệu; chỉ thu một khoản phí monitoring và automation nhỏ cho mỗi object." },
   { need: "Hoá đơn: truy cập thường xuyên trong tháng đầu, sau đó ít nhưng phải truy xuất được ngay; lưu giữ 5 năm rồi xoá", answer: "Lifecycle sang Standard-IA sau 30 ngày + expiration",
     why: "Standard-IA vẫn truy xuất ngay; rule expiration tự động xoá object khi hết thời hạn lưu giữ." },
   { need: "Log thô đã xử lý xong, chỉ lưu giữ để dự phòng, gần như không được đọc lại", answer: "Lifecycle sang Glacier Deep Archive",
     why: "Storage class có chi phí thấp nhất cho dữ liệu lưu trữ dài hạn, đổi lại thời gian truy xuất lên tới nhiều giờ." },
 ]} />
 
-Lifecycle chỉ chuyển object theo một chiều, xuống các storage class có chi phí thấp hơn. Thử một số cặp, ví dụ Intelligent-Tiering → Standard hoặc One Zone-IA → Standard-IA:
+Lifecycle chuyển object theo mô hình thác nước (waterfall): chỉ theo một chiều, xuống các storage class có chi phí thấp hơn. Thử một số cặp, ví dụ Intelligent-Tiering → Standard hoặc One Zone-IA → Standard-IA:
 
 <LifecycleValidator client:visible />
 
-<Takeaway>Truy cập thường xuyên: Standard. Mẫu truy cập không dự đoán được: Intelligent-Tiering. Truy cập ít nhưng cần truy xuất ngay: Standard-IA (One Zone-IA nếu dữ liệu tạo lại được). Lưu trữ dài hạn: các lớp Glacier. Lifecycle không chuyển ngược lên, và object phải được lưu đủ 30 ngày mới chuyển được sang Standard-IA/One Zone-IA.</Takeaway>
+<Takeaway>Truy cập thường xuyên: Standard. Mẫu truy cập không dự đoán được: Intelligent-Tiering. Truy cập ít nhưng cần truy xuất ngay: Standard-IA (One Zone-IA nếu dữ liệu tạo lại được). Lưu trữ dài hạn: các lớp Glacier. Lifecycle không chuyển ngược lên. Standard-IA và One Zone-IA có thời gian lưu trữ tối thiểu 30 ngày: object bị xoá, ghi đè hoặc chuyển đi sớm hơn vẫn bị tính phí đủ 30 ngày.</Takeaway>
 
 </Scene>
 
@@ -77,7 +83,7 @@ Quy định pháp lý yêu cầu ShopViet lưu giữ hoá đơn trong nhiều n�
 
 <DeleteGuardSim client:visible />
 
-Thời hạn lưu giữ (**Retain Until Date**) được đặt cho từng phiên bản object, do đó mỗi phiên bản có thể có mode và thời hạn lưu giữ riêng. Với dữ liệu lưu trong S3 Glacier vault, **Glacier Vault Lock** hoạt động theo cơ chế tương tự: sau khi vault lock policy được khoá, không ai có thể thay đổi policy đó.
+Thời hạn lưu giữ (**Retain Until Date**) được đặt cho từng phiên bản object, do đó mỗi phiên bản có thể có mode và thời hạn lưu giữ riêng. Với dữ liệu lưu trong vault của **Amazon Glacier** (dịch vụ vault độc lập, khác với các storage class S3 Glacier, và không còn nhận khách hàng mới), **Vault Lock** hoạt động theo cơ chế tương tự: sau khi Vault Lock policy được khoá, policy đó không thể thay đổi hoặc xoá.
 
 <Takeaway>Chống xoá nhầm: versioning (thao tác xoá thông thường chỉ thêm delete marker). Yêu cầu xác thực bổ sung khi xoá vĩnh viễn: MFA Delete. Không ai xoá được, kể cả root: Object Lock Compliance mode. Governance mode vẫn cho phép người có quyền bypass thực hiện xoá. Lưu giữ không thời hạn, ví dụ khi có tranh chấp: legal hold.</Takeaway>
 
@@ -96,8 +102,8 @@ Khi số lượng team và đối tác sử dụng dữ liệu tăng lên, việ
     why: "Hai điều kiện phải được thoả mãn đồng thời: thuộc dải /24 và không phải địa chỉ .188." },
   { need: "Redshift của team dữ liệu (account khác) UNLOAD tệp vào bucket, nhưng ShopViet không đọc được các tệp đó", answer: "Object thuộc account đã tải lên, không mặc nhiên thuộc chủ sở hữu bucket",
     why: "Đây là cơ chế của ACL kiểu cũ. Bucket mới mặc định Object Ownership = bucket owner enforced: ACL bị vô hiệu hoá và chủ sở hữu bucket sở hữu mọi object." },
-  { need: "Cần xác định các bucket chưa bật versioning trong toàn công ty, trên mọi Region và account", answer: "S3 Storage Lens (advanced metrics)",
-    why: "Cung cấp dashboard tổng hợp cho toàn bộ Organization." },
+  { need: "Cần xác định các bucket chưa bật versioning trong toàn công ty, trên mọi Region và account", answer: "S3 Storage Lens",
+    why: "Cung cấp dashboard tổng hợp cho toàn bộ Organization. Metric Versioning-enabled bucket count thuộc nhóm metric miễn phí, không cần advanced metrics." },
   { need: "Cần xác định thời điểm nên chuyển dữ liệu từ Standard sang Standard-IA", answer: "Storage Class Analysis",
     why: "Phân tích mẫu truy cập dữ liệu và đề xuất thời điểm chuyển từ Standard sang Standard-IA. Tính năng này không đề xuất cho các storage class khác." },
   { need: "Ảnh sản phẩm chỉ được truy cập thông qua CloudFront", answer: "OAC/OAI + bucket policy", why: "Xem bài CloudFront." },
@@ -113,7 +119,7 @@ Mọi phương thức mã hoá đều khiến dữ liệu lưu trên đĩa khôn
 
 <EncryptionSim client:visible />
 
-<Takeaway>Cấu hình đơn giản nhất: SSE-S3. Cần audit việc sử dụng key: SSE-KMS (bật S3 Bucket Key để giảm chi phí gọi KMS). Key phải được lưu giữ tại công ty nhưng S3 thực hiện mã hoá: SSE-C. Thuật toán mã hoá riêng: client-side encryption.</Takeaway>
+<Takeaway>Cấu hình đơn giản nhất: SSE-S3. Cần audit việc sử dụng key: SSE-KMS (bật S3 Bucket Key để giảm chi phí gọi KMS). Key phải được lưu giữ tại công ty nhưng S3 thực hiện mã hoá: SSE-C (từ tháng 4/2026, SSE-C bị chặn mặc định trên bucket mới; cần bật lại bằng PutBucketEncryption). Thuật toán mã hoá riêng: client-side encryption.</Takeaway>
 
 </Scene>
 
@@ -125,7 +131,7 @@ Phần này trình bày bốn sự cố ShopViet gặp phải khi khối lượn
 
 Với người dùng ở xa vừa tải video xuống vừa tải tệp lên, cần kết hợp cả hai: **CloudFront** cho chiều tải xuống và **S3 Transfer Acceleration** cho chiều tải lên.
 
-<Takeaway>Tệp dung lượng lớn: multipart upload (bắt buộc với object trên 5 GB). Người tải lên ở xa: Transfer Acceleration, không tính phí nếu không cải thiện tốc độ. Số lượng request quá lớn: phân bổ key ra nhiều prefix. Chỉ cần một phần của tệp: byte-range fetch.</Takeaway>
+<Takeaway>Tệp dung lượng lớn: multipart upload (bắt buộc với object trên 5 GB). Người tải lên ở xa: Transfer Acceleration (đi qua edge location của CloudFront; có thể phát sinh phí truyền dữ liệu bổ sung). Số lượng request quá lớn: phân bổ key ra nhiều prefix. Chỉ cần một phần của tệp: byte-range fetch.</Takeaway>
 
 </Scene>
 
@@ -164,11 +170,11 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
   { q: "Bộ phận bảo mật yêu cầu key mã hoá phải được lưu giữ trên máy chủ của công ty, nhưng S3 đảm nhận việc mã hoá. Phương án nào phù hợp?",
     opts: ["SSE-KMS", "SSE-C", "Client-side encryption"],
     a: 1,
-    why: "Với SSE-C, ứng dụng gửi key kèm theo từng request; S3 mã hoá dữ liệu rồi loại bỏ key, không lưu lại." },
-  { q: "Trong đợt flash sale, tác vụ tải lên ảnh đơn hàng gặp lỗi 503 khi vượt 5.000 request/giây vào cùng một prefix. Cách khắc phục nào phù hợp?",
+    why: "Với SSE-C, ứng dụng gửi key kèm theo từng request qua HTTPS; S3 mã hoá dữ liệu và không lưu key. Trên bucket mới, SSE-C bị chặn mặc định nên phải bật lại bằng PutBucketEncryption trước khi sử dụng." },
+  { q: "Trong đợt flash sale, tác vụ tải lên ảnh đơn hàng gặp lỗi 503 Slow Down khi vượt khoảng 3.500 request PUT/giây vào cùng một prefix. Cách khắc phục nào phù hợp?",
     opts: ["Tạo thêm bucket tại nhiều Region", "Đặt key theo prefix riêng cho từng shop", "Chuyển sang EFS"],
     a: 1,
-    why: "Giới hạn request được tính theo từng prefix; bổ sung prefix đồng nghĩa với tăng khả năng xử lý request." },
+    why: "S3 hỗ trợ tối thiểu 3.500 PUT/COPY/POST/DELETE hoặc 5.500 GET/HEAD request mỗi giây trên mỗi prefix đã được phân vùng; số prefix trong bucket không bị giới hạn, nên bổ sung prefix đồng nghĩa với tăng khả năng xử lý request." },
 ]} />
 
 </Scene>

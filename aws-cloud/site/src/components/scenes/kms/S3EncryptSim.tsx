@@ -59,7 +59,7 @@ const SCENARIOS: HopScenario[] = [
     toggle: { label: "Bật automatic key rotation", initial: false },
     start: "cal",
     nodes: [
-      { id: "cal", x: 110, y: 70, label: "Lịch xoay key", sub: "hằng năm", kind: "aws" },
+      { id: "cal", x: 110, y: 70, label: "Lịch xoay key", sub: "mặc định 365 ngày", kind: "aws" },
       { id: "ops", x: 110, y: 195, label: "Kỹ sư ShopViet", kind: "user" },
       { ...KMS, x: 380, y: 130 },
       { ...S3, x: 650, y: 70, sub: "hoá đơn cũ và mới" },
@@ -67,7 +67,7 @@ const SCENARIOS: HopScenario[] = [
     ],
     run: (on) => on
       ? { hops: [
-          { to: "kms", state: "change", tag: "XOAY", flash: "v2", msg: "KMS tự động tạo key material mới. **Key ID giữ nguyên**, ứng dụng không cần thay đổi." },
+          { to: "kms", state: "change", tag: "XOAY", flash: "v2", msg: "KMS tự động tạo key material mới theo rotation period (mặc định 365 ngày, cấu hình được từ 90 đến 2560 ngày). **Key ID giữ nguyên**, ứng dụng không cần thay đổi." },
           { to: "s3", state: "pass", tag: "ĐỌC ĐƯỢC", msg: "Hoá đơn cũ vẫn giải mã được vì KMS lưu giữ key material cũ." },
           { from: "kms", to: "trail", state: "pass", tag: "GHI LOG", msg: "Việc sử dụng key được ghi log để đối chiếu." },
         ], ok: true, result: "Đáp ứng chính sách mà không phát sinh thêm tác vụ: **customer managed key** + **automatic rotation**." }
@@ -130,11 +130,11 @@ const SCENARIOS: HopScenario[] = [
     run: (on) => ({ hops: [
       { from: "hsm", to: "app", state: "pass", tag: "LẤY KEY", msg: "Ứng dụng lấy key từ hệ thống của đối tác." },
       { to: "s3", state: on ? "change" : "block", tag: on ? "SSE-C" : "THIẾU KEY",
-        msg: on ? "Request mang key trong header (bắt buộc HTTPS). S3 giải mã rồi **xoá key khỏi bộ nhớ**." : "Request không kèm key. S3 không lưu key nên không giải mã được." },
+        msg: on ? "Request mang key trong header (bắt buộc HTTPS). S3 dùng key để giải mã và **không lưu key**." : "Request không kèm key. S3 không lưu key nên không giải mã được." },
       { to: "app", state: on ? "pass" : "block", packet: on ? "pkt-back" : "pkt-bad", tag: on ? "200" : "400",
         msg: on ? "Trả về object." : "Từ chối request." },
     ], ok: on, result: on
-      ? "Đây là **SSE-C**: AWS không bao giờ lưu key. Đổi lại, mỗi request phải gửi kèm key và ShopViet chịu trách nhiệm bảo quản key."
+      ? "Đây là **SSE-C**: S3 không bao giờ lưu key. Đổi lại, mỗi request phải gửi kèm key và ShopViet chịu trách nhiệm bảo quản key. Từ tháng 4/2026, SSE-C bị chặn mặc định trên bucket mới; phải bật lại bằng `PutBucketEncryption`."
       : "Với SSE-C, mất key đồng nghĩa với mất dữ liệu. Mọi thao tác ghi và đọc đều phải gửi kèm đúng key." }),
   },
 ];

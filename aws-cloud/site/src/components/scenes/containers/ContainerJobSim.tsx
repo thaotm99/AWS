@@ -2,7 +2,7 @@ import PacketSim, { type PScenario } from "../elb/PacketSim";
 
 // Five jobs ShopViet runs in containers. Each switch is the AWS feature that fixes the
 // problem: shared storage with EFS, a cron job with EventBridge Scheduler + Fargate,
-// a 30-minute job on Fargate instead of Lambda, one IAM role per Pod (IRSA), and the
+// a 2-hour job on Fargate instead of Lambda, one IAM role per Pod (IRSA), and the
 // Cluster Autoscaler for Pods stuck in Pending.
 
 const VB = "0 40 820 215";
@@ -74,8 +74,8 @@ const SCENARIOS: PScenario[] = [
           ], ok: false, result: "Giải pháp hoạt động nhưng phát sinh chi phí và công sức vận hành. Giải pháp phù hợp: EventBridge Scheduler khởi chạy task Fargate." },
   },
   {
-    name: "Xử lý stream kéo dài 30 phút",
-    request: "Kinesis Data Streams → job tổng hợp (30 phút)",
+    name: "Xử lý stream kéo dài 2 giờ",
+    request: "Kinesis Data Streams → job tổng hợp (2 giờ)",
     toggle: { label: "Chạy job trên ECS Fargate", initial: false },
     action: "Chạy job",
     layout: (fg) => ({
@@ -83,18 +83,18 @@ const SCENARIOS: PScenario[] = [
       aria: "Dữ liệu từ Kinesis Data Streams được xử lý bởi Lambda hoặc task Fargate, sau đó ghi kết quả",
       nodes: [
         { id: "kds", x: 110, y: 148, w: 170, l1: "Kinesis Data Streams", l2: "lượt xem sản phẩm" },
-        { id: "run", x: 410, y: 148, w: 170, l1: fg ? "Task Fargate" : "Lambda", l2: fg ? "không giới hạn thời gian" : "tối đa 15 phút" },
+        { id: "run", x: 410, y: 148, w: 170, l1: fg ? "Task Fargate" : "Lambda", l2: fg ? "chạy tới khi job kết thúc" : "tối đa 15 phút" },
         { id: "out", x: 700, y: 148, w: 150, l1: "DynamoDB", l2: "bảng xếp hạng" },
       ],
       links: [["kds", "run"], ["run", "out"]],
     }),
     run: (fg) => fg
       ? { steps: [
-            { at: "run", state: "pass", msg: "Task chạy đủ 30 phút. Vẫn là serverless: không có node cần quản lý." },
+            { at: "run", state: "pass", msg: "Task chạy đủ 2 giờ rồi dừng khi job kết thúc. Fargate không có máy chủ hay node cần quản lý." },
             { at: "out", state: "pass", msg: "Bảng xếp hạng được ghi." },
-          ], ok: true, result: "Job hoàn tất. Tác vụ dài hơn 15 phút nhưng vẫn yêu cầu serverless: container trên Fargate." }
+          ], ok: true, result: "Job hoàn tất. Tác vụ dài hơn giới hạn thời gian của Lambda nhưng vẫn không muốn quản lý máy chủ: container trên Fargate." }
       : { steps: [
-            { at: "run", state: "block", flash: "15:00", tag: "TIMEOUT", msg: "Mỗi lần thực thi Lambda tối đa **15 phút**; job bị dừng giữa chừng." },
+            { at: "run", state: "block", flash: "15:00", tag: "TIMEOUT", msg: "Lambda function tiêu chuẩn tối đa **15 phút** mỗi lần thực thi (Lambda Managed Instances: tối đa 90 phút với một số kiểu gọi); job 2 giờ bị dừng giữa chừng." },
           ], ok: false, result: "Bảng xếp hạng không bao giờ được cập nhật." },
   },
   {
@@ -149,7 +149,7 @@ const SCENARIOS: PScenario[] = [
         { at: "n2", state: "block", msg: "Node 2 cũng không còn CPU khả dụng. Pod ở trạng thái **Pending**." },
         ...(ca
           ? [
-              { at: "n3", from: "ca", state: "change" as const, tag: "THÊM NODE", label: "Cluster Autoscaler", relabel: { l1: "Node 3 (mới)", l2: "còn tài nguyên" }, msg: "Cluster Autoscaler phát hiện Pod đang chờ và tăng desired capacity của Auto Scaling group thêm một node." },
+              { at: "n3", from: "ca", state: "change" as const, tag: "THÊM NODE", label: "Cluster Autoscaler", relabel: { l1: "Node 3 (mới)", l2: "còn tài nguyên" }, msg: "Cluster Autoscaler phát hiện Pod không lập lịch được và tăng desired capacity của Auto Scaling group thêm một node." },
               { at: "n3", from: "pod", state: "pass" as const, msg: "Pod được lập lịch lên node mới." },
             ]
           : []),

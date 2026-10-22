@@ -15,6 +15,8 @@ interface Props {
   title: string;
   description?: string;
   current?: string;
+  /** The page is the current lesson's question set, not the lesson itself. */
+  currentQuiz?: boolean;
   /** Top-nav section this page belongs to. */
   section?: "theory" | "practice";
   /** Practice pages have no lesson roadmap. */
@@ -30,6 +32,7 @@ const {
   title,
   description = "Học AWS qua hình minh họa và mô phỏng tương tác, đi từ những tình huống thực tế của một cửa hàng online.",
   current,
+  currentQuiz = false,
   section = "theory",
   sidebar = true,
   wide = false,
@@ -43,10 +46,11 @@ const earlyPreferences = `(function(){var h=document.documentElement,t=${JSON.st
 const toc = Astro.slots.has("toc");
 const ready = (await getCollection("concepts")).map((e) => e.id);
 // Only what the roadmap shows reaches the browser.
-const layers = getCurriculum().map(({ n, name, concepts }) => ({
+const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
   n,
   name,
-  concepts: concepts.map(({ id, title, importance }) => ({ id, title, importance })),
+  nameEn,
+  concepts: concepts.map(({ id, title, titleEn, importance, questions, exact }) => ({ id, title, titleEn, importance, quiz: exact ? questions : 0 })),
 }));
 ---
 <!doctype html>
@@ -93,7 +97,7 @@ const layers = getCurriculum().map(({ n, name, concepts }) => ({
           <a href="#" class="soon" data-soon="shell.nav.scenarios"><T k="shell.nav.scenarios" /></a>
           <a href="/on-tap/" aria-current={section === "practice" ? "page" : undefined}><T k="shell.nav.practice" /></a>
         </nav>
-        {sidebar && <Roadmap client:load layers={layers} current={current} ready={ready} />}
+        {sidebar && <Roadmap client:load layers={layers} current={current} currentQuiz={currentQuiz} ready={ready} />}
       </aside>
       <div class="scrim" id="scrim" hidden></div>
       <main class="article">
@@ -107,8 +111,10 @@ const layers = getCurriculum().map(({ n, name, concepts }) => ({
       import { i18n } from "../app/i18n";
       import { theme } from "../app/theme";
       import { ShellController } from "../modules/shell/ui/ShellController";
+      import { diagramZoom } from "../app/zoom";
 
       new ShellController(i18n, theme).start();
+      diagramZoom.start();
     </script>
   </body>
 </html>

@@ -61,9 +61,9 @@ const PROBLEMS: Record<ProblemId, Problem> = {
       { name: "Cost Explorer", ok: false,
         note: "Cost Explorer thể hiện rõ chi phí tăng, nhưng **chỉ khi có người truy cập để xem**. Do không ai theo dõi, sự cố chỉ được phát hiện vào cuối tháng." },
       { name: "AWS Budgets: chỉ cảnh báo", alertDay: 7, alertText: "email", ok: false,
-        note: "Budgets gửi email ngay khi chi phí **dự báo** vượt ngân sách. Tuy nhiên, người nhận đang nghỉ phép nên các instance không được tắt." },
+        note: "Budgets gửi email khi chi phí **dự báo** vượt ngân sách (dữ liệu Budgets được cập nhật tối đa ba lần mỗi ngày). Tuy nhiên, người nhận đang nghỉ phép nên các instance không được tắt." },
       { name: "AWS Budgets: cảnh báo + action", alertDay: 7, alertText: "email", actDay: 12, actText: "action", after: 2, ok: true,
-        note: "Khi chi phí chạm 80% ngân sách, **Budgets action** tự động gắn IAM policy DenyAll vào role của lập trình viên và stop các EC2 đang chạy. Chi phí ngừng tăng mà không cần giám sát thủ công." },
+        note: "Ngưỡng 80% ngân sách được gắn **hai budget action** chạy tự động: một action gắn IAM policy DenyAll vào role của lập trình viên, một action nhắm vào các EC2 instance đang chạy để stop. Mỗi action thuộc một loại (IAM policy, SCP, hoặc EC2/RDS instance); nhiều action có thể cùng gắn với một ngưỡng. Chi phí ngừng tăng mà không cần giám sát thủ công." },
     ],
   },
   coverage: {
@@ -80,11 +80,11 @@ const PROBLEMS: Record<ProblemId, Problem> = {
     summary: (v) => `Coverage trung bình: ${Math.round(v.reduce((s, x) => s + x, 0) / v.length)}%`,
     tools: [
       { name: "CloudWatch dashboard tự xây dựng", alertDay: 15, alertText: "alarm", ok: false,
-        note: "CloudWatch không có sẵn metric coverage của Savings Plans. Phải **viết script** thu thập số liệu, tự tính bằng metric math và tự cập nhật khi có service mới. Cảnh báo bị trễ và tốn công sức." },
+        note: "Dashboard tự xây dựng đòi hỏi **viết script** thu thập số liệu coverage, tự tính toán và tự cập nhật khi có service mới, trong khi AWS Budgets có sẵn loại Savings Plans coverage budget. Cảnh báo bị trễ và tốn công sức." },
       { name: "Compute Optimizer", ok: false,
         note: "Compute Optimizer khuyến nghị **kích thước tài nguyên**. Dịch vụ này không theo dõi coverage của Savings Plans nên không có cảnh báo nào được gửi." },
       { name: "AWS Budgets: coverage budget", alertDay: 9, alertText: "email", actDay: 12, actText: "mua thêm", after: 94, ok: true,
-        note: "Một **Savings Plans coverage budget** theo ngày, ngưỡng 90%. Ngay trong ngày đầu tiên coverage giảm, Budgets gửi thông báo qua email/SNS. Đội vận hành mua thêm Savings Plans và coverage tăng trở lại. Không cần viết mã." },
+        note: "Một **Savings Plans coverage budget** theo ngày, ngưỡng 90%. Khi coverage xuống dưới ngưỡng, Budgets gửi thông báo qua email hoặc SNS sau lần cập nhật dữ liệu kế tiếp (tối đa ba lần mỗi ngày). Đội vận hành mua thêm Savings Plans và coverage tăng trở lại. Không cần viết mã." },
     ],
   },
   rightsize: {
@@ -105,7 +105,7 @@ const PROBLEMS: Record<ProblemId, Problem> = {
       { name: "Compute Optimizer tự động mua RI", ok: false,
         note: "Compute Optimizer đề xuất **loại và kích thước** instance; dịch vụ này không lựa chọn phương thức mua hay đặt trước Reserved Instance. Chi phí không thay đổi." },
       { name: "Cost Optimization Hub + Compute Optimizer", alertDay: 2, alertText: "báo cáo", actDay: 7, actText: "−32%", after: 68, ok: true,
-        note: "**Cost Optimization Hub** tổng hợp khuyến nghị của mọi account và Region tại một nơi: 2 EC2 không được sử dụng, một số instance có kích thước quá lớn. **Compute Optimizer** đề xuất kích thước phù hợp. Xoá instance dư thừa và giảm kích thước instance giúp giảm chi phí." },
+        note: "**Cost Optimization Hub** tổng hợp khuyến nghị của các account và Region tại một nơi: 2 EC2 không được sử dụng (idle), một số instance có kích thước quá lớn (rightsizing). **Compute Optimizer** đề xuất kích thước phù hợp. Xoá instance dư thừa và giảm kích thước instance giúp giảm chi phí." },
     ],
   },
 };

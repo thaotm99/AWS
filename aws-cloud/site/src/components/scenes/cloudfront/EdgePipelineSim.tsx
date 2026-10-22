@@ -102,11 +102,11 @@ const SCENARIOS: Scenario[] = [
   },
   {
     name: "Dữ liệu thanh toán",
-    request: "POST /api/checkout  { card: 4111… }",
+    request: "POST /api/checkout  card=4111…",
     from: "Việt Nam",
     run: () => ({
       gates: { tls: PASS_TLS, waf: PASS_WAF, geo: PASS_GEO, sign: OPEN,
-        fle: { state: "change", msg: "**Field-level encryption** mã hoá trường `card` bằng public key tại edge." },
+        fle: { state: "change", msg: "**Field-level encryption** mã hoá trường `card` của form POST (`application/x-www-form-urlencoded`) bằng public key tại edge." },
         route: { state: "pass", msg: "Path `/api/*` khớp cache behavior trỏ tới **ALB**." } },
       origin: "alb", ok: true,
       result: "200 OK: load balancer, log và các thành phần trung gian chỉ tiếp nhận giá trị đã mã hoá; chỉ dịch vụ thanh toán nắm private key mới giải mã được.",

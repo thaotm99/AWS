@@ -90,8 +90,8 @@ const SCENARIOS: Scenario[] = [
       log("EDGE", "hit", "Dữ liệu đi vào **edge location** gần Frankfurt.");
       await travel(L, [[EDGE[0] + 75, EDGE[1]], [540, EDGE[1]], [540, ROW.r1[1]], ROW.r1], 650, "pkt-edge");
       row("r1", "ok");
-      log("AWS", "hit", "Dữ liệu tiếp tục truyền qua **mạng backbone của AWS** tới bucket tại Singapore.");
-      return { tone: "ok", msg: "Tốc độ cao và ổn định hơn. Lần tải lên nào không nhanh hơn đường truyền thông thường thì **không tính phí** tăng tốc. Với tệp lớn, kết hợp thêm multipart upload." };
+      log("AWS", "hit", "Từ edge location, dữ liệu được định tuyến tới bucket tại Singapore qua **đường mạng đã được tối ưu**.");
+      return { tone: "ok", msg: "Tốc độ cao và ổn định hơn: dữ liệu vào edge location rồi đi theo đường mạng đã tối ưu tới S3. Transfer Acceleration có thể phát sinh phí truyền dữ liệu bổ sung (xem S3 pricing). Với tệp lớn, kết hợp thêm multipart upload." };
     },
   },
   {

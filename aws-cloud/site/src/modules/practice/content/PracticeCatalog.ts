@@ -4,9 +4,19 @@ import { resolve } from "node:path";
 import type { Certification, CertificationDetail, ContentLocale, Exam } from "../domain/types";
 import type { ExamSource } from "./ExamSource";
 import { QuizHtmlSource } from "./QuizHtmlSource";
+import { getCurriculum, readListQa } from "../../../data/exam";
+
+/** Every question about one service, as "examN_qM" references into the practice tests. */
+export interface TopicConfig {
+  id: string;
+  title: string;
+  refs: string[];
+}
 
 export interface CertificationConfig extends Omit<Certification, "examCount"> {
   source: ExamSource;
+  /** Per-service question sets, built from the study folder's list_qa.md files. */
+  topics?: () => TopicConfig[];
 }
 
 const REPO = resolve(process.cwd(), "../..");
@@ -22,6 +32,11 @@ export const CERTIFICATIONS: CertificationConfig[] = [
     questionCount: 65,
     passingScore: 720,
     source: new QuizHtmlSource(resolve(REPO, "solution-architect-aws")),
+    topics: () =>
+      getCurriculum()
+        .flatMap((l) => l.concepts)
+        .map((c) => ({ id: c.id, title: c.title, refs: readListQa(c.id) ?? [] }))
+        .filter((t) => t.refs.length > 0),
   },
 ];
 
@@ -47,12 +62,15 @@ export class PracticeCatalog {
   }
 
   listCertifications(): Certification[] {
-    return this.configs.map(({ source, ...c }) => ({ ...c, examCount: this.examsOf({ source, ...c }).length }));
+    return this.configs.map((config) => {
+      const { source, topics, ...c } = config;
+      return { ...c, examCount: this.examsOf(config).length };
+    });
   }
 
   getCertification(certId: string): CertificationDetail {
     const config = this.config(certId);
-    const { source, ...cert } = config;
+    const { source, topics, ...cert } = config;
     const exams = this.examsOf(config);
     return {
       ...cert,
@@ -65,6 +83,50 @@ export class PracticeCatalog {
     const exam = this.examsOf(this.config(certId), locale).find((e) => e.id === examId);
     if (!exam) throw new Error(`Không có đề ${certId}/${examId}`);
     return exam;
+  }
+
+  private topicsOf(config: CertificationConfig): TopicConfig[] {
+    return config.topics?.() ?? [];
+  }
+
+  /**
+   * Every question about one service, numbered 1..N in study-path order. The practice-test
+   * references stay on the server: the set only carries question ids, which reveal nothing.
+   */
+  getTopic(certId: string, topicId: string, locale: ContentLocale = "en"): Exam {
+    const config = this.config(certId);
+    const topic = this.topicsOf(config).find((t) => t.id === topicId);
+    if (!topic) throw new Error(`Không có chủ đề ${certId}/${topicId}`);
+    const exams = this.examsOf(config, locale);
+    const questions = topic.refs.map((ref, i) => {
+      const [, n, m] = ref.match(/^exam(\d+)_q(\d+)$/)!;
+      const q = exams.find((e) => e.number === Number(n))?.questions[Number(m) - 1];
+      if (!q || q.number !== Number(m)) throw new Error(`${topicId}/list_qa.md: không tìm thấy ${ref}`);
+      return { ...q, number: i + 1 };
+    });
+    return {
+      id: `topic-${topic.id}`,
+      certId,
+      number: 0,
+      title: topic.title,
+      questionCount: questions.length,
+      multiSelectCount: questions.filter((q) => q.selectCount > 1).length,
+      locale,
+      translatedCount: questions.filter((q) => q.translated).length,
+      questions,
+    };
+  }
+
+  /** Every (certId, topicId, lang) triple, for the topic content endpoint. */
+  topicContentPaths(): Array<{ cert: string; topic: string; lang: ContentLocale }> {
+    return this.configs.flatMap((c) =>
+      this.topicsOf(c).flatMap((t) => PracticeCatalog.LOCALES.map((lang) => ({ cert: c.id, topic: t.id, lang }))),
+    );
+  }
+
+  /** Question count of each service's set, keyed by service id. */
+  topicSizes(certId: string): Record<string, number> {
+    return Object.fromEntries(this.topicsOf(this.config(certId)).map((t) => [t.id, t.refs.length]));
   }
 
   /** Every (certId, examId) pair, for getStaticPaths. */

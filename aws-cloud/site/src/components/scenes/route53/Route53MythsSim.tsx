@@ -72,7 +72,7 @@ const SCENARIOS: CaseScenario[] = [
           { at: "r53", state: "change", tag: "FAILOVER", msg: "Health check xác định primary unhealthy, Route 53 trả về record secondary." },
           { at: "s3", via: [[480, 120], [480, 187]], state: "pass", msg: "Người dùng nhận trang thông báo lỗi tĩnh trên S3 thay vì trang trắng." },
         ],
-        ok: true, result: "Failover **active-passive**: tài nguyên dự phòng chỉ được sử dụng khi primary gặp sự cố. Với active-active, Route 53 phản hồi bằng mọi tài nguyên healthy cùng lúc." };
+        ok: true, result: "Failover **active-passive**: tài nguyên dự phòng chỉ được sử dụng khi primary gặp sự cố. Với active-active, mọi record healthy đều được sử dụng và Route 53 có thể phản hồi bằng bất kỳ record healthy nào." };
     },
   },
   {

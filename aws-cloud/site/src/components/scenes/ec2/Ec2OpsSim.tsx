@@ -9,7 +9,7 @@ import HopSim, { type HopScenario } from "../security/HopSim";
 const SCENARIOS: HopScenario[] = [
   {
     name: "Lỗi máy chủ vật lý",
-    story: "Lúc 3 giờ sáng, phần cứng bên dưới instance **shop-api** gặp lỗi. Instance sử dụng EBS và có Elastic IP đã được đối tác đưa vào allow list.",
+    story: "Lúc 3 giờ sáng, phần cứng bên dưới instance **shop-api** gặp lỗi. Instance sử dụng EBS và có Elastic IP đã được đối tác đưa vào allow list. Simplified automatic recovery mặc định của instance này đã bị tắt.",
     request: "StatusCheckFailed_System = 1",
     toggle: { label: "CloudWatch alarm với action recover", initial: false },
     start: "h1",
@@ -27,11 +27,11 @@ const SCENARIOS: HopScenario[] = [
           { to: "cw", state: "alert", tag: "ALARM", msg: "Alarm chuyển sang trạng thái ALARM." },
           { to: "h2", state: "change", tag: "RECOVER", msg: "Action **recover** chuyển instance sang host hoạt động bình thường." },
           { to: "ec2", state: "pass", tag: "KHÔI PHỤC", packet: "pkt-back", msg: "Instance hoạt động trở lại sau vài phút." },
-        ], ok: true, result: "Instance được khôi phục và **giữ nguyên** instance ID, private IP, Elastic IP và metadata. Chỉ áp dụng cho instance sử dụng EBS." }
+        ], ok: true, result: "Instance được khôi phục và **giữ nguyên** instance ID, địa chỉ IP (public, private, Elastic IP), metadata và EBS volume. Dữ liệu trong RAM bị mất. Simplified automatic recovery được bật mặc định trên instance được hỗ trợ; CloudWatch alarm action recover là cơ chế cấu hình thêm." }
       : { hops: [
           { to: "ec2", state: "alert", tag: "LỖI", flash: "✕", msg: "System status check thất bại." },
           { from: "ec2", to: "ops", state: "alert", tag: "CHỜ", msg: "Sự cố chỉ được xử lý khi người dùng báo lỗi." },
-        ], ok: false, result: "Downtime kéo dài hàng giờ. Giải pháp: tạo CloudWatch alarm trên StatusCheckFailed_System với action recover." },
+        ], ok: false, result: "Downtime kéo dài cho tới khi có người xử lý. Giải pháp: bật lại automatic recovery hoặc tạo CloudWatch alarm trên StatusCheckFailed_System với action recover." },
   },
   {
     name: "Ứng dụng không phản hồi, khắc phục bằng reboot",
@@ -74,11 +74,11 @@ const SCENARIOS: HopScenario[] = [
       ? { hops: [
           { to: "ebs", state: "pass", tag: "GIỮ NGUYÊN", msg: "Volume được tách khỏi host cũ, dữ liệu được giữ nguyên." },
           { to: "new", state: "pass", tag: "GẮN LẠI", msg: "Volume được gắn vào instance trên host mới; quá trình xử lý tiếp tục." },
-        ], ok: true, result: "Dữ liệu EBS được duy trì qua stop/start. Instance store có hiệu năng cao nhất và đã bao gồm trong giá instance, phù hợp cho tệp **tạm**: sau khi xử lý, kết quả được đẩy lên S3." }
+        ], ok: true, result: "Dữ liệu EBS được duy trì qua stop/start. Instance store đã bao gồm trong giá instance và phù hợp cho dữ liệu **tạm** (buffer, cache, scratch): sau khi xử lý, kết quả được đẩy lên S3." }
       : { hops: [
-          { to: "is", state: "alert", tag: "MẤT DỮ LIỆU", flash: "✕", msg: "Khi stop, toàn bộ dữ liệu instance store bị xoá." },
+          { to: "is", state: "alert", tag: "MẤT DỮ LIỆU", flash: "✕", msg: "Khi stop, mọi block của instance store volume bị xoá bằng mã hoá (cryptographically erased)." },
           { to: "new", state: "alert", tag: "TRỐNG", msg: "Instance khởi động lại với ổ đĩa trống." },
-        ], ok: false, result: "Instance store mất dữ liệu khi stop hoặc terminate, không thể tách ra để gắn sang instance khác và không được đưa vào AMI. Chỉ phù hợp cho tệp tạm hoặc dữ liệu đã có bản sao ở nơi khác." },
+        ], ok: false, result: "Instance store mất dữ liệu khi stop, hibernate hoặc terminate (giữ dữ liệu khi reboot) và không thể tách ra để gắn sang instance khác. Chỉ phù hợp cho tệp tạm hoặc dữ liệu đã có bản sao ở nơi khác." },
   },
   {
     name: "Dừng instance ban đêm, khởi động nhanh buổi sáng",
@@ -95,7 +95,7 @@ const SCENARIOS: HopScenario[] = [
       ? { hops: [
           { to: "root", state: "change", tag: "LƯU RAM", msg: "Nội dung RAM được ghi xuống EBS root volume." },
           { to: "am", state: "pass", tag: "TIẾP TỤC", msg: "Khi start lại, RAM được nạp từ đĩa; ứng dụng tiếp tục hoạt động ngay." },
-        ], ok: true, result: "**Hibernate**: dừng và khởi động lại instance mà không phải khởi động ứng dụng từ đầu. Khi instance dừng, chỉ phát sinh chi phí EBS." }
+        ], ok: true, result: "**Hibernate**: dừng và khởi động lại instance mà không phải khởi động ứng dụng từ đầu. Khi instance ở trạng thái hibernated, không tính phí sử dụng instance; vẫn tính phí lưu trữ EBS (kể cả phần chứa nội dung RAM) và Elastic IP nếu có." }
       : { hops: [
           { to: "root", state: "skip", tag: "MẤT RAM", msg: "Stop thông thường: nội dung RAM bị xoá." },
           { to: "am", state: "alert", tag: "10 PHÚT", msg: "Mỗi buổi sáng phải chờ ứng dụng nạp lại dữ liệu." },
@@ -145,8 +145,8 @@ const SCENARIOS: HopScenario[] = [
       { to: "cw", state: on ? "pass" : "skip", times: on ? 5 : 1, tag: on ? "MỖI 1 PHÚT" : "MỖI 5 PHÚT", msg: on ? "5 điểm dữ liệu trong 5 phút." : "1 điểm dữ liệu trong 5 phút." },
       { to: "dash", state: on ? "pass" : "alert", tag: on ? "KỊP THỜI" : "CHẬM", msg: on ? "Phát hiện CPU tăng ngay lập tức." : "Đỉnh tải có thể không được ghi nhận." },
     ], ok: on, result: on
-      ? "Detailed monitoring gửi metric mỗi 1 phút; chỉ cần kích hoạt, không cần cài đặt thêm."
-      : "Theo mặc định, EC2 gửi metric mỗi 5 phút. Kích hoạt detailed monitoring để có metric chu kỳ 1 phút." }),
+      ? "Detailed monitoring cung cấp metric theo chu kỳ 1 phút; chỉ cần kích hoạt (có tính phí), không cần cài đặt agent."
+      : "Basic monitoring (mặc định, miễn phí): metric như CPUUtilization theo chu kỳ 5 phút, riêng status check theo chu kỳ 1 phút. Kích hoạt detailed monitoring để có metric chu kỳ 1 phút." }),
   },
 ];
 

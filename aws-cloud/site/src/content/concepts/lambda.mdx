@@ -15,6 +15,16 @@ docs:
     url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-vs-rest.html"
   - title: "Usage plans and API keys"
     url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-api-usage-plans.html"
+  - title: "Error handling for asynchronous invocation (Lambda)"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/invocation-async-error-handling.html"
+  - title: "Use Amazon Cognito user pools as authorizer for a REST API"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-integrate-with-cognito.html"
+  - title: "Cache settings for REST APIs"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-caching.html"
+  - title: "IAM database authentication (RDS)"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.html"
+  - title: "What is Amazon Managed Service for Apache Flink?"
+    url: "https://docs.aws.amazon.com/managed-flink/latest/java/what-is.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -83,7 +93,7 @@ Ba tác vụ của ShopViet: tạo thumbnail khi người bán tải ảnh lên,
         text: "Máy chủ chạy suốt tuần chỉ để thực hiện một tác vụ kéo dài vài phút." },
       { name: "EventBridge cron → Lambda", verdict: "good", hide: ["ec2"],
         flows: [{ path: ["eb", "fn"], tone: "good", label: "schedule" }, { path: ["fn", "db"], tone: "good" }],
-        text: "**EventBridge** (rule hoặc Scheduler) với biểu thức cron kích hoạt Lambda đúng lịch. Đây là phương án có chi phí thấp và độ tin cậy cao nhất." },
+        text: "**EventBridge** (rule hoặc Scheduler) với biểu thức cron kích hoạt Lambda đúng lịch. Không có máy chủ chạy chờ; chi phí Lambda chỉ phát sinh trong vài phút thực thi mỗi tuần." },
     ] },
 ]} />
 
@@ -93,11 +103,11 @@ Ba tác vụ của ShopViet: tạo thumbnail khi người bán tải ảnh lên,
 
 <Scene id="s2" label="Phần 2/3" title="Vận hành Lambda trong môi trường production" questions={["exam4_q25", "exam1_q50", "exam3_q20", "exam6_q35", "exam4_q39", "exam2_q16"]}>
 
-Một số vấn đề chỉ xuất hiện khi triển khai lên production: function gắn vào VPC không truy cập được Internet, người dùng chờ lâu vào giờ cao điểm, thông báo bị mất, mật khẩu database lưu trong cấu hình. Chọn từng tình huống, chạy thử, sau đó bật tuỳ chọn để khắc phục:
+Một số vấn đề chỉ xuất hiện khi triển khai lên production: function gắn vào VPC không truy cập được Internet, người dùng chờ lâu vào giờ cao điểm, thông báo bị throttle khi vượt concurrency quota, mật khẩu database lưu trong cấu hình. Chọn từng tình huống, chạy thử, sau đó bật tuỳ chọn để khắc phục:
 
 <LambdaRunSim client:visible />
 
-Hai lưu ý bổ sung. Mỗi lần thực thi Lambda tối đa **15 phút**; job dài hơn nên chạy bằng container trên Fargate (bài Containers). Khi nhiều function dùng chung thư viện, đóng gói thư viện đó thành **Lambda Layers**.
+Hai lưu ý bổ sung. Mỗi lần thực thi Lambda function tiêu chuẩn tối đa **15 phút** (900 giây; Lambda Managed Instances cho phép tới 90 phút với lời gọi bất đồng bộ hoặc qua event source mapping, trừ Amazon MQ và Amazon DocumentDB); job dài hơn nên chạy bằng container trên Fargate (bài Containers). Khi nhiều function dùng chung thư viện, đóng gói thư viện đó thành **Lambda Layers**.
 
 <Takeaway>Lambda trong VPC cần NAT gateway để truy cập Internet. Cold start vào giờ cao điểm: provisioned concurrency. Concurrency có quota theo account và Region; cấu hình alarm trên ConcurrentExecutions. Không lưu mật khẩu: IAM database authentication. Truy cập cross-account: cả execution role và bucket policy đều phải cho phép.</Takeaway>
 
@@ -112,10 +122,10 @@ Hai lưu ý bổ sung. Mỗi lần thực thi Lambda tối đa **15 phút**; job
 Một số yêu cầu khác:
 
 - Chat giữa người mua và người bán cần kết nối hai chiều, máy chủ chủ động đẩy tin nhắn tới client: **WebSocket API**. Với REST API, mỗi request độc lập và không duy trì kết nối.
-- Shipper gửi vị trí liên tục để theo dõi đơn hàng: API Gateway tiếp nhận dữ liệu và đẩy vào Kinesis để **Kinesis Data Analytics** phân tích stream.
+- Shipper gửi vị trí liên tục để theo dõi đơn hàng: API Gateway tiếp nhận dữ liệu và đẩy vào Kinesis Data Streams để **Amazon Managed Service for Apache Flink** (tên cũ: Amazon Kinesis Data Analytics) phân tích stream.
 - Tiếp nhận giao dịch từ ứng dụng, kiểm tra dữ liệu đơn giản rồi xử lý, với chi phí vận hành thấp nhất: **REST API + Lambda** kiểm tra dữ liệu, backend serverless phía sau. Không có máy chủ hay container nào cần vá lỗi.
 
-<Takeaway>Giới hạn truy cập theo dải IP nội bộ: resource policy. Xác thực JWT không cần viết mã: HTTP API với JWT authorizer. Giới hạn theo từng client: usage plan + API key. Giảm tải backend khi request lặp lại: caching. Tác vụ xử lý lâu: API Gateway đẩy vào SQS. Giao tiếp hai chiều: WebSocket API.</Takeaway>
+<Takeaway>Giới hạn truy cập theo dải IP nội bộ: resource policy. Xác thực token không cần viết mã: REST API với Cognito user pool authorizer, hoặc HTTP API với JWT authorizer (HTTP API không hỗ trợ resource policy, API key, caching). Giới hạn theo từng client: usage plan + API key. Giảm tải backend khi request lặp lại: caching. Tác vụ xử lý lâu: API Gateway đẩy vào SQS. Giao tiếp hai chiều: WebSocket API.</Takeaway>
 
 </Scene>
 
@@ -149,10 +159,10 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Usage plans với API keys", "WAF rate-based rule", "Lambda reserved concurrency"],
     a: 0,
     why: "Usage plan thiết lập throttle và quota theo từng API key." },
-  { q: "ShopViet cần dọn dữ liệu cũ mỗi tuần một lần, tác vụ kéo dài vài phút. Phương án nào có chi phí thấp và độ tin cậy cao nhất?",
+  { q: "ShopViet cần dọn dữ liệu cũ mỗi tuần một lần, tác vụ kéo dài vài phút. Yêu cầu: không duy trì máy chủ chạy chờ và chi phí chỉ phát sinh khi tác vụ chạy. Phương án nào phù hợp?",
     opts: ["EC2 chạy crontab", "EventBridge cron gọi Lambda", "Lambda chạy liên tục và sleep"],
     a: 1,
-    why: "Chi phí chỉ phát sinh cho vài phút thực thi mỗi tuần." },
+    why: "Lịch cron của EventBridge kích hoạt Lambda đúng thời điểm; chi phí Lambda chỉ phát sinh cho vài phút thực thi mỗi tuần. EC2 chạy crontab phải chạy suốt tuần; Lambda function tiêu chuẩn không chạy liên tục được vì mỗi lần thực thi tối đa 15 phút." },
 ]} />
 
 </Scene>

@@ -75,7 +75,7 @@ const SCENARIOS: Scenario[] = [
     result: "Mọi database được tạo đều có cùng cấu hình: Multi-AZ, mã hoá, backup 7 ngày, có bảo vệ chống xoá nhầm. Nhân sự mới chỉ chọn instance class trong danh sách cho phép. Template được lưu trong Git và review như mã nguồn.",
   },
   {
-    name: "Đổi volume io1 sang gp2 để giảm chi phí",
+    name: "Đổi volume io1 sang gp3 để giảm chi phí",
     action: "Update stack",
     stack: "report-server",
     template: [
@@ -88,7 +88,7 @@ const SCENARIOS: Scenario[] = [
       { line: "      Size: 500" },
       { line: "      VolumeType: io1", mark: "del" },
       { line: "      Iops: 10000", mark: "del" },
-      { line: "      VolumeType: gp2", mark: "add" },
+      { line: "      VolumeType: gp3", mark: "add" },
     ],
     resources: [
       { id: "ReportServer", type: "AWS::EC2::Instance" },
@@ -101,7 +101,7 @@ const SCENARIOS: Scenario[] = [
       { res: "DataVolume", status: "done", text: "UPDATE_COMPLETE" },
     ],
     ok: true,
-    result: "Volume io1 chiếm 90% chi phí trong khi CloudWatch cho thấy I/O chỉ tăng cao không thường xuyên. gp2 tích luỹ burst credit cho các thời điểm đó. Thay đổi được thực hiện trong template và áp dụng qua update stack, không chỉnh sửa thủ công, để template luôn phản ánh đúng hạ tầng thực tế. Bản thân CloudFormation không tính phí; chỉ tài nguyên được tạo mới bị tính phí.",
+    result: "Volume io1 chiếm 90% chi phí trong khi CloudWatch cho thấy I/O chỉ tăng cao không thường xuyên. gp3 là loại SSD volume có chi phí thấp nhất của EBS, cung cấp baseline 3.000 IOPS và có thể provision thêm IOPS khi cần (gp2 thế hệ trước dùng I/O credit để burst). Thay đổi được thực hiện trong template và áp dụng qua update stack, không chỉnh sửa thủ công, để template luôn phản ánh đúng hạ tầng thực tế. CloudFormation không tính phí bổ sung với tài nguyên AWS::*; chỉ tài nguyên AWS được tạo mới bị tính phí.",
   },
   {
     name: "Lỗi trong quá trình tạo",
@@ -123,7 +123,7 @@ const SCENARIOS: Scenario[] = [
       { res: "DbSecurityGroup", status: "deleted", text: "DELETE_COMPLETE" },
     ],
     ok: false,
-    result: "Stack chuyển về ROLLBACK_COMPLETE: CloudFormation xoá các tài nguyên đã tạo, không để lại hệ thống ở trạng thái dở dang. Cần sửa template và tạo lại.",
+    result: "Theo mặc định, stack rollback và chuyển về ROLLBACK_COMPLETE: CloudFormation xoá các tài nguyên đã tạo, không để lại hệ thống ở trạng thái dở dang. Cần sửa template và tạo lại.",
   },
 ];
 

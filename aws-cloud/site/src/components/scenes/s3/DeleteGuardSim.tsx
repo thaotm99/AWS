@@ -75,7 +75,7 @@ function evaluate(g: Guard, a: Actor): Outcome {
   const gates: Outcome["gates"] = { ver: { state: "pass", msg: "Request xoá vĩnh viễn phiên bản **v1**, không tạo delete marker." } };
   if (g === "mfa") {
     if (!a.mfa) {
-      gates.mfa = { state: "block", msg: "**MFA Delete** đang được bật: xoá vĩnh viễn một phiên bản yêu cầu mã MFA của root." };
+      gates.mfa = { state: "block", msg: "**MFA Delete** đang được bật: xoá vĩnh viễn một phiên bản yêu cầu kèm mã từ thiết bị MFA." };
       return { gates, effect: "kept", ok: true, result: "403: request không kèm mã MFA nên bị từ chối. Hoá đơn v1 được giữ nguyên." };
     }
     gates.mfa = { state: "pass", msg: "Request kèm mã MFA từ thiết bị của root." };

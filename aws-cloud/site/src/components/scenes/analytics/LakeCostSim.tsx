@@ -139,14 +139,14 @@ export default function LakeCostSim() {
             <text className="ts" x={17} y={0}>raw zone</text>
             <rect className="lkc-ref" x={100} y={-9} width={12} height={10} rx={2} />
             <text className="ts" x={117} y={0}>refined zone</text>
-            <text className="ts" x={230} y={0}>đơn vị chi phí tương đối / tháng (S3 Standard ≈ 23, Deep Archive ≈ 1 mỗi TB)</text>
+            <text className="ts" x={230} y={0}>đơn vị chi phí minh hoạ / tháng (giả định, không phải bảng giá AWS)</text>
           </g>
           <g ref={fx} />
         </svg>
       </div>
       <div className="readout" aria-live="polite">
         {shown === 0 ? (
-          <p className="lkc-hint">Chọn phương án lưu trữ cho từng zone, sau đó nhấn <b>Mô phỏng 12 tháng</b>. Mô phỏng giả định Parquet nén có dung lượng bằng 1/4 CSV.</p>
+          <p className="lkc-hint">Chọn phương án lưu trữ cho từng zone, sau đó nhấn <b>Mô phỏng 12 tháng</b>. Mô phỏng dùng đơn giá minh hoạ (Deep Archive rẻ hơn nhiều so với S3 Standard) và giả định Parquet nén có dung lượng bằng 1/4 CSV. Giá thực tế xem tại trang S3 pricing.</p>
         ) : (
           <>
             <div className="status">

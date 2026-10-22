@@ -23,7 +23,7 @@ const LINKS: CaseLink[] = [
 const TYPE = { label: "Loại record", options: ["Alias", "CNAME"], initial: 1 };
 const base = { nodes: NODES, links: LINKS, start: "user", choices: TYPE };
 
-const APEX_NO_CNAME = { at: "r53", state: "block" as const, flash: "CNAME?", msg: "Không tạo được: **CNAME không được phép tại zone apex** (`shopviet.vn`), vì tên gốc đã có record SOA và NS." };
+const APEX_NO_CNAME = { at: "r53", state: "block" as const, flash: "CNAME?", msg: "Không tạo được: Route 53 **không cho phép tạo CNAME tại zone apex** (`shopviet.vn`)." };
 
 const SCENARIOS: CaseScenario[] = [
   {
@@ -46,11 +46,11 @@ const SCENARIOS: CaseScenario[] = [
     from: "chuyển mọi truy cập về www",
     run: (v) => v === 0
       ? { steps: [
-            { at: "r53", state: "pass", msg: "Alias tại zone apex trỏ tới một record khác trong **cùng hosted zone**." },
+            { at: "r53", state: "pass", msg: "Alias tại zone apex trỏ tới một record khác trong **cùng hosted zone** và cùng loại (A/AAAA); www không được là CNAME." },
             { at: "www", via: via("www"), state: "pass", msg: "Trả về địa chỉ của www.shopviet.vn." },
           ],
           ok: true, result: "Phương án có chi phí thấp và đơn giản nhất để shopviet.vn trỏ theo www." }
-      : { steps: [APEX_NO_CNAME], ok: false, result: "Không tạo được record. Tại zone apex chỉ sử dụng được Alias." },
+      : { steps: [APEX_NO_CNAME], ok: false, result: "Không tạo được record. Tại zone apex không tạo được CNAME; sử dụng Alias." },
   },
   {
     ...base,
@@ -65,9 +65,9 @@ const SCENARIOS: CaseScenario[] = [
           ok: true, result: "Hoạt động được, và là lựa chọn phù hợp hơn khi đích là tài nguyên AWS." }
       : { steps: [
             { at: "r53", state: "pass", msg: "www là subdomain, không phải apex, nên CNAME hợp lệ." },
-            { at: "alb", via: via("alb"), state: "change", tag: "THÊM BƯỚC", msg: "Trả về tên DNS của ALB; trình duyệt phải thực hiện thêm một lần phân giải." },
+            { at: "alb", via: via("alb"), state: "change", tag: "THÊM BƯỚC", msg: "Trả về tên DNS của ALB; DNS resolver phải phân giải thêm tên này. Route 53 tính phí truy vấn CNAME." },
           ],
-          ok: true, result: "Hoạt động được. Alias vẫn có ưu thế: chỉ một bước phân giải và không tính phí truy vấn." },
+          ok: true, result: "Hoạt động được. Alias vẫn có ưu thế: Route 53 trả về trực tiếp địa chỉ của ALB và không tính phí truy vấn Alias tới tài nguyên AWS." },
   },
   {
     ...base,

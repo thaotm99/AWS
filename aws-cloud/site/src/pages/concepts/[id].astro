@@ -1,7 +1,7 @@
 ---
-import { getCollection, render } from "astro:content";
+import { getCollection, getEntry, render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import Scene from "../../components/Scene.astro";
+import L from "../../components/L.astro";
 import Donate from "../../components/Donate.astro";
 import DoneButton from "../../components/DoneButton.tsx";
 import Importance from "../../components/Importance.astro";
@@ -22,12 +22,18 @@ const { entry } = Astro.props;
 const layers = getCurriculum();
 const concept = findConcept(layers, id)!;
 const { Content } = entry ? await render(entry) : { Content: null };
+const entryEn = entry ? await getEntry("conceptsEn", id) : undefined;
+const { Content: ContentEn } = entryEn ? await render(entryEn) : { Content: null };
 
 const all = layers.flatMap((l) => l.concepts);
 const index = all.findIndex((c) => c.id === id);
 const next = all.slice(index + 1, index + 4);
 const ready = new Set((await getCollection("concepts")).map((e) => e.id));
 const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(layers, p)).filter(Boolean);
+const title = entry?.data.title ?? concept.title;
+const titleEn = entryEn?.data.title ?? concept.titleEn;
+// Docs links are the same pages in both languages; the English file may add its own.
+const docs = [...(entry?.data.docs ?? []), ...(entryEn?.data.docs ?? [])].filter((d, i, list) => list.findIndex((x) => x.url === d.url) === i);
 ---
 <BaseLayout title={`${concept.title} · AWS Thực Chiến`} description={entry?.data.lede} current={id}>
   {entry && (
@@ -36,7 +42,7 @@ const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(layers,
         <span class="side-label"><T k="shell.toc.progress" /></span>
         <span class="toc-percent" data-read-percent>0%</span>
       </div>
-      <p class="toc-lesson">{entry.data.title}</p>
+      <p class="toc-lesson"><L vi={title} en={titleEn} /></p>
       <div class="side-label toc-title"><T k="shell.toc.title" /></div>
       <ol></ol>
       <div class="toc-bar" aria-hidden="true"><i /></div>
@@ -44,10 +50,11 @@ const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(layers,
     </nav>
   )}
   <div class="crumbs">
-    <span>Lớp {concept.layer.n} · {concept.layer.name}</span><span aria-hidden="true">/</span><b>{concept.title}</b>
+    <span><T k="lesson.frame.layer" params={{ n: concept.layer.n }} /> · <L vi={concept.layer.name} en={concept.layer.nameEn} /></span>
+    <span aria-hidden="true">/</span><b><L vi={concept.title} en={concept.titleEn} /></b>
   </div>
-  <h1>{entry?.data.title ?? concept.title}</h1>
-  {entry && <p class="lede">{entry.data.lede}</p>}
+  <h1><L vi={title} en={titleEn} /></h1>
+  {entry && <p class="lede"><L vi={entry.data.lede} en={entryEn?.data.lede ?? entry.data.lede} /></p>}
   <dl class="meta-row">
     <div>
       <dt><T k="shell.importance.label" /></dt>
@@ -56,59 +63,87 @@ const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(layers,
     {entry && (
       <>
         <div>
-          <dt>Kiến thức tiên quyết</dt>
+          <dt><T k="lesson.frame.prerequisites" /></dt>
           <dd>
             {prereqs.length
-              ? prereqs.map((p) => <a href={`/concepts/${p!.id}/`}>{p!.title}</a>)
-              : "Không yêu cầu. Đây là bài khởi đầu của lộ trình"}
+              ? prereqs.map((p) => <a href={`/concepts/${p!.id}/`}><L vi={p!.title} en={p!.titleEn} /></a>)
+              : <T k="lesson.frame.noPrerequisites" />}
           </dd>
         </div>
-        <div><dt>Thời lượng</dt><dd>~{entry.data.minutes} phút, {entry.data.scenes} phần có mô phỏng</dd></div>
-        <div><dt>Tiến độ</dt><dd><DoneButton client:load id={id} /></dd></div>
+        <div>
+          <dt><T k="lesson.frame.duration" /></dt>
+          <dd><T k="lesson.frame.durationValue" params={{ minutes: entry.data.minutes, scenes: entry.data.scenes }} /></dd>
+        </div>
+        <div><dt><T k="lesson.frame.progress" /></dt><dd><DoneButton client:load id={id} /></dd></div>
       </>
     )}
   </dl>
 
   {Content ? (
     <>
-      <Content />
-      <Scene id="next" label="Tiếp theo" title="Các bài tiếp theo trong lộ trình">
+      {ContentEn ? (
+        <>
+          <div data-lang="vi"><Content /></div>
+          <div data-lang="en"><ContentEn /></div>
+        </>
+      ) : (
+        <>
+          <p class="untranslated" data-lang="en"><T k="lesson.frame.untranslated" /></p>
+          <Content />
+        </>
+      )}
+      <section class="scene prose" id="next">
+        <div class="scene-head">
+          <span class="scene-no"><T k="lesson.frame.nextLabel" /></span>
+          <h2><T k="lesson.frame.nextTitle" /></h2>
+        </div>
         <div class="next">
           <div class="next-col">
-            <h3>Bài học tiếp theo</h3>
+            <h3><T k="lesson.frame.nextLessons" /></h3>
             <ul>
               {next.map((c) => (
                 <li>
-                  <a href={`/concepts/${c.id}/`}>{c.title}</a>
-                  {!ready.has(c.id) && <span class="tag-soon">đang biên soạn</span>}
+                  <a href={`/concepts/${c.id}/`}><L vi={c.title} en={c.titleEn} /></a>
+                  {!ready.has(c.id) && <span class="tag-soon"><T k="lesson.frame.soon" /></span>}
                 </li>
               ))}
             </ul>
           </div>
           <div class="next-col">
-            <h3>Luyện tập</h3>
-            <ul><li><a href="/on-tap/">Làm bài ở trang Luyện đề</a></li></ul>
+            <h3><T k="lesson.frame.practice" /></h3>
+            <ul>
+              {concept.exact && concept.questions > 0 && (
+                <li><a href={`/concepts/${id}/kiem-tra/`}><T k="lesson.frame.quizLink" params={{ n: concept.questions }} /></a></li>
+              )}
+              <li><a href="/on-tap/"><T k="lesson.frame.practiceLink" /></a></li>
+            </ul>
           </div>
           <div class="next-col">
-            <h3>Tài liệu AWS</h3>
-            <ul>{entry!.data.docs.map((d) => <li><a href={d.url} target="_blank" rel="noopener">{d.title}</a></li>)}</ul>
+            <h3><T k="lesson.frame.docs" /></h3>
+            <ul>{docs.map((d) => <li><a href={d.url} target="_blank" rel="noopener">{d.title}</a></li>)}</ul>
           </div>
         </div>
-      </Scene>
+      </section>
       <Donate />
     </>
   ) : (
     <div class="placeholder">
-      <p>Bài này đang được viết. Trong lúc chờ, bạn có thể bắt đầu từ bài nền Global Infrastructure.</p>
-      <a class="btn cta" href="/concepts/global-infra/">Học bài Global Infrastructure</a>
+      <p><T k="lesson.frame.placeholder" /></p>
+      <a class="btn cta" href="/concepts/global-infra/"><T k="lesson.frame.placeholderCta" /></a>
     </div>
   )}
 </BaseLayout>
 
 <script>
+  import { i18n } from "../../app/i18n";
   import { LessonToc } from "../../modules/shell/ui/LessonToc";
 
   const root = document.getElementById("toc");
   const content = document.querySelector<HTMLElement>("main.article");
-  if (root && content) new LessonToc(root, content).start();
+  if (root && content) {
+    const toc = new LessonToc(root, content);
+    toc.start();
+    // Each language has its own copy of the lesson; rebuild the contents for the visible one.
+    i18n.subscribe(() => requestAnimationFrame(() => toc.refresh()));
+  }
 </script>
