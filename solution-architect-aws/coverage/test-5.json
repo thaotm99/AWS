@@ -314,8 +314,8 @@
         {
           "keyword": "AWS PrivateLink unidirectional (consumer-initiated connections only)",
           "lesson": "vpc",
-          "status": "partial",
-          "where": "vpc.mdx#s4 RequirementPicker (only 'one service exposed'; not that the provider cannot initiate connections to the consumer)"
+          "status": "covered",
+          "where": "vpc.mdx#s4 / RequirementPicker + Takeaway"
         }
       ]
     },

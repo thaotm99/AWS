@@ -5,6 +5,12 @@ minutes: 42
 scenes: 9
 prerequisites: ["global-infra"]
 docs:
+  - title: "Gateway endpoints for Amazon S3 (considerations)"
+    url: "https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-s3.html"
+  - title: "Gateway endpoints for Amazon DynamoDB (considerations)"
+    url: "https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-ddb.html"
+  - title: "Multi-VPC network infrastructure whitepaper: AWS PrivateLink"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/building-scalable-secure-multi-vpc-network-infrastructure/aws-privatelink.html"
   - title: "How Amazon VPC works"
     url: "https://docs.aws.amazon.com/vpc/latest/userguide/how-it-works.html"
   - title: "Compare security groups and network ACLs"
@@ -173,12 +179,12 @@ EC2 trong private subnet của ShopViet ghi ảnh vào S3 và gửi job vào SQS
   { need: "Worker gửi job vào SQS mà không đi ra internet", answer: "Interface endpoint (PrivateLink)",
     why: "Tạo ENI có private IP trong subnet; các dịch vụ ngoài S3 và DynamoDB sử dụng loại endpoint này." },
   { need: "Đối tác vận chuyển gọi API tồn kho của ShopViet từ VPC của đối tác, không mở quyền truy cập toàn bộ mạng", answer: "AWS PrivateLink + NLB phía cung cấp",
-    why: "Phía cung cấp đặt NLB trước dịch vụ; phía sử dụng tạo interface endpoint (gửi traffic TCP hoặc UDP tới endpoint service). Chỉ một dịch vụ được công bố, không mở quyền truy cập toàn bộ mạng." },
+    why: "Phía cung cấp đặt NLB trước dịch vụ; phía sử dụng tạo interface endpoint (gửi traffic TCP hoặc UDP tới endpoint service). Chỉ một dịch vụ được công bố, không mở quyền truy cập toàn bộ mạng. Kết nối chỉ theo một chiều: client trong VPC của đối tác khởi tạo kết nối tới dịch vụ, máy chủ của ShopViet không khởi tạo được kết nối vào VPC của đối tác. VPC peering thì ngược lại: route giữa hai VPC, instance ở cả hai phía giao tiếp được với nhau như trong cùng một mạng." },
   { need: "DataSync agent tại kho on-premises chép video hằng ngày vào EFS qua Direct Connect sẵn có, không đi qua internet", answer: "Interface endpoint (PrivateLink) + private VIF",
     why: "Interface endpoint là ENI có private IP trong VPC nên truy cập được từ on-premises qua private VIF của Direct Connect hoặc qua Site-to-Site VPN (DataSync agent dùng VPC service endpoint; EFS có interface endpoint cho EFS API). Gateway endpoint không dùng được từ on-premises." },
 ]} />
 
-<Takeaway>S3 và DynamoDB: gateway endpoint, không tính phí, định tuyến qua route table. Dịch vụ khác: interface endpoint, sử dụng ENI, có tính phí. Chia sẻ dịch vụ riêng giữa các VPC: PrivateLink kết hợp NLB. Gateway endpoint không truy cập được từ on-premises, từ VPC peering khác Region hay qua Transit Gateway; truy cập từ on-premises qua Direct Connect hoặc VPN: interface endpoint.</Takeaway>
+<Takeaway>S3 và DynamoDB: gateway endpoint, không tính phí, định tuyến qua route table. Dịch vụ khác: interface endpoint, sử dụng ENI, có tính phí. Chia sẻ dịch vụ riêng giữa các VPC: PrivateLink kết hợp NLB. PrivateLink chỉ cho phía sử dụng khởi tạo kết nối; phía cung cấp không khởi tạo được kết nối vào VPC của phía sử dụng (VPC peering cho phép giao tiếp hai chiều). Kết nối qua gateway endpoint không mở rộng ra ngoài VPC: tài nguyên ở phía bên kia của VPN, VPC peering (cùng Region hay khác Region), transit gateway hoặc Direct Connect đều không dùng được gateway endpoint; trường hợp này dùng interface endpoint.</Takeaway>
 
 </Scene>
 

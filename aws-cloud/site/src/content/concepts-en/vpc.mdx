@@ -5,6 +5,12 @@ minutes: 42
 scenes: 9
 prerequisites: ["global-infra"]
 docs:
+  - title: "Gateway endpoints for Amazon S3 (considerations)"
+    url: "https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-s3.html"
+  - title: "Gateway endpoints for Amazon DynamoDB (considerations)"
+    url: "https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-ddb.html"
+  - title: "Multi-VPC network infrastructure whitepaper: AWS PrivateLink"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/building-scalable-secure-multi-vpc-network-infrastructure/aws-privatelink.html"
   - title: "How Amazon VPC works"
     url: "https://docs.aws.amazon.com/vpc/latest/userguide/how-it-works.html"
   - title: "Compare security groups and network ACLs"
@@ -173,12 +179,12 @@ EC2 instances in ShopViet's private subnet write images to S3 and send jobs to S
   { need: "Workers send jobs to SQS without going out to the internet", answer: "Interface endpoint (PrivateLink)",
     why: "Creates an ENI with a private IP in the subnet; services other than S3 and DynamoDB use this endpoint type." },
   { need: "A shipping partner calls ShopViet's inventory API from the partner's VPC, without opening access to the whole network", answer: "AWS PrivateLink + NLB on the provider side",
-    why: "The provider places an NLB in front of the service; the consumer creates an interface endpoint (which sends TCP or UDP traffic to the endpoint service). Only one service is exposed, without opening access to the whole network." },
+    why: "The provider places an NLB in front of the service; the consumer creates an interface endpoint (which sends TCP or UDP traffic to the endpoint service). Only one service is exposed, without opening access to the whole network. Access is unidirectional: clients in the partner's VPC initiate connections to the service, and ShopViet's servers cannot initiate connections into the partner's VPC. VPC peering is the opposite: traffic is routed between the two VPCs, and instances on either side can communicate as if they are within the same network." },
   { need: "A DataSync agent in the on-premises warehouse copies video files to EFS every day over the existing Direct Connect connection, without crossing the internet", answer: "Interface endpoint (PrivateLink) + private VIF",
     why: "An interface endpoint is an ENI with a private IP in the VPC, so it can be reached from on premises over a Direct Connect private VIF or a Site-to-Site VPN (the DataSync agent uses a VPC service endpoint; EFS offers an interface endpoint for the EFS API). A gateway endpoint cannot be used from on premises." },
 ]} />
 
-<Takeaway>S3 and DynamoDB: gateway endpoint, no charge, routed through the route table. Other services: interface endpoint, uses an ENI, charged. Sharing a private service between VPCs: PrivateLink combined with an NLB. A gateway endpoint cannot be reached from on premises, from a peered VPC in another Region, or through a transit gateway; access from on premises over Direct Connect or VPN: interface endpoint.</Takeaway>
+<Takeaway>S3 and DynamoDB: gateway endpoint, no charge, routed through the route table. Other services: interface endpoint, uses an ENI, charged. Sharing a private service between VPCs: PrivateLink combined with an NLB. PrivateLink lets only the consumer initiate connections; the provider cannot initiate connections into the consumer VPC (VPC peering allows two-way communication). Gateway endpoint connections cannot be extended out of a VPC: resources on the other side of a VPN connection, a VPC peering connection (same Region or another Region), a transit gateway or a Direct Connect connection cannot use a gateway endpoint; use an interface endpoint instead.</Takeaway>
 
 </Scene>
 

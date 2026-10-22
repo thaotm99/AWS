@@ -14,14 +14,14 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **983 keyword** khác nhau: ✅ 968 (98%) · 🟡 10 (1%) · ❌ 5 (1%).
+Có **983 keyword** khác nhau: ✅ 969 (99%) · 🟡 9 (1%) · ❌ 5 (1%).
 
 ### Theo bài học
 
 | Bài học | Keyword | ✅ Đã có | 🟡 Một phần | ❌ Thiếu | Tỷ lệ đã có |
 |---|---:|---:|---:|---:|---:|
 | [global-infra](#global-infra) | 23 | 22 | 0 | 1 | 96% |
-| [vpc](#vpc) | 108 | 107 | 1 | 0 | 99% |
+| [vpc](#vpc) | 108 | 108 | 0 | 0 | 100% |
 | [route53](#route53) | 28 | 28 | 0 | 0 | 100% |
 | [cloudfront](#cloudfront) | 32 | 31 | 0 | 1 | 97% |
 | [iam](#iam) | 49 | 49 | 0 | 0 | 100% |
@@ -54,7 +54,7 @@ Có **983 keyword** khác nhau: ✅ 968 (98%) · 🟡 10 (1%) · ❌ 5 (1%).
 | Đề 2 | 202 | 0 | 2 |
 | Đề 3 | 224 | 2 | 1 |
 | Đề 4 | 236 | 1 | 0 |
-| Đề 5 | 220 | 5 | 1 |
+| Đề 5 | 221 | 4 | 1 |
 | Đề 6 | 217 | 0 | 0 |
 
 ## global-infra
@@ -89,7 +89,6 @@ Có **983 keyword** khác nhau: ✅ 968 (98%) · 🟡 10 (1%) · ❌ 5 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | AWS PrivateLink unidirectional (consumer-initiated connections only) | 🟡 Một phần | 1 | exam5_q9 | vpc.mdx#s4 RequirementPicker (only 'one service exposed'; not that the provider cannot initiate connections to the consumer) |
 | [ ] | AWS Direct Connect | ✅ Đã có | 10 | exam1_q18, exam1_q27, exam2_q59, exam3_q31, exam4_q14, exam4_q45, exam4_q48, exam5_q2, exam5_q4, exam6_q5 | vpc.mdx#s6<br>vpc.mdx#s6 / HybridLinkSim |
 | [ ] | AWS Site-to-Site VPN | ✅ Đã có | 8 | exam1_q18, exam1_q37, exam3_q7, exam3_q16, exam4_q36, exam5_q9, exam5_q41, exam6_q25 | vpc.mdx#s6<br>vpc.mdx#s6 / HybridLinkSim |
 | [ ] | AWS Transit Gateway | ✅ Đã có | 8 | exam1_q37, exam1_q39, exam2_q21, exam2_q36, exam3_q16, exam4_q28, exam5_q14, exam6_q12 | vpc.mdx#s5<br>vpc.mdx#s5 / VpcConnectSim |
@@ -121,6 +120,7 @@ Có **983 keyword** khác nhau: ✅ 968 (98%) · 🟡 10 (1%) · ❌ 5 (1%).
 | [ ] | AWS PrivateLink (interface endpoint to a provider service) | ✅ Đã có | 1 | exam5_q9 | vpc.mdx#s4 / EndpointSim |
 | [ ] | AWS PrivateLink (TCP only) | ✅ Đã có | 1 | exam5_q4 | vpc.mdx#compare / QuickCompare (current docs: TCP or UDP; ruled out because it serves VPC-endpoint consumers, not internet users) |
 | [ ] | AWS PrivateLink (VPC endpoint service) | ✅ Đã có | 1 | exam3_q16 | vpc.mdx#s4 / RequirementPicker |
+| [ ] | AWS PrivateLink unidirectional (consumer-initiated connections only) | ✅ Đã có | 1 | exam5_q9 | vpc.mdx#s4 / RequirementPicker + Takeaway |
 | [ ] | AWS Site-to-Site VPN (bandwidth) | ✅ Đã có | 1 | exam5_q5 | vpc.mdx#s6 / HybridLinkSim |
 | [ ] | AWS Site-to-Site VPN (IPsec) | ✅ Đã có | 1 | exam5_q10 | vpc.mdx#s6 / HybridLinkSim |
 | [ ] | Bastion host | ✅ Đã có | 1 | exam5_q10 | vpc.mdx#compare / QuickCompare |
