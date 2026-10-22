@@ -99,6 +99,8 @@ ShopViet adds developers, a production account and auditors. Each user and each 
 
 <Scene id="en-s1" label="Part 1/6" title="Working out the permissions a policy grants" questions={["exam2_q37", "exam2_q38", "exam2_q48", "exam2_q54", "exam1_q58"]}>
 
+<p class="scene-intro">Every permission on AWS is described by a policy, a JSON document that lists which actions are allowed or denied on which resources; reading policies is a skill you need before granting access.</p>
+
 Before attaching a policy written by someone else to a ShopViet user or role, you must determine exactly what permissions it grants. Choose a policy, predict the result, then send each request to check.
 
 <PolicyReader client:visible />
@@ -113,6 +115,8 @@ Reading a policy correctly is half the job; the other half is granting **exactly
 
 <Scene id="en-s2" label="Part 2/6" title="The permission layers that evaluate a request" questions={["exam3_q59", "exam1_q25", "exam2_q39", "exam2_q16"]}>
 
+<p class="scene-intro">A request to AWS succeeds only when every relevant permission layer allows it; a single layer that denies it blocks the request.</p>
+
 A request can be stopped at several layers: an Organizations **SCP** limits the whole account, a **permissions boundary** limits the maximum permissions of a user/role, an **identity policy** grants permissions, and for cross-account access, a **resource policy** (for example a bucket policy) must also allow it. Change each layer and watch the result.
 
 <PolicyEvaluator client:visible />
@@ -122,6 +126,8 @@ A request can be stopped at several layers: an Organizations **SCP** limits the 
 </Scene>
 
 <Scene id="en-s3" label="Part 3/6" title="IAM roles instead of access keys" questions={["exam2_q3", "exam3_q23", "exam1_q17", "exam4_q34", "exam1_q5", "exam4_q39", "exam2_q16", "exam3_q6", "exam1_q16"]}>
+
+<p class="scene-intro">Applications need permissions to call AWS services; instead of storing fixed credentials (access keys) in the code, they should receive temporary permissions through an IAM role.</p>
 
 ShopViet's server needs to read data from DynamoDB. The simple but risky option is to store an access key in the source code: when the source code leaks, the access key leaks too. The secure option:
 
@@ -168,6 +174,8 @@ The same principle applies to other cases:
 
 <Scene id="en-s4" label="Part 4/6" title="Governing many accounts with AWS Organizations" questions={["exam2_q43", "exam5_q18", "exam6_q41", "exam3_q36", "exam6_q22", "exam5_q17", "exam2_q36", "exam3_q17"]}>
 
+<p class="scene-intro">When a company uses many AWS accounts for different environments and teams, it needs a central point to apply common policies and consolidate billing.</p>
+
 ShopViet now has many accounts: dev, staging, prod, sandbox, marketing. Managing each account by hand cannot keep up as the organization grows. Each scenario below is a real governance task. Try the manual option first, then switch to the AWS tool to compare.
 
 <OrgGuardSim client:visible />
@@ -177,6 +185,8 @@ ShopViet now has many accounts: dev, staging, prod, sandbox, marketing. Managing
 </Scene>
 
 <Scene id="en-s5" label="Part 5/6" title="Central workforce access with existing identities" questions={["exam1_q10", "exam4_q4", "exam6_q10"]}>
+
+<p class="scene-intro">Employees already have accounts in the company's identity system; instead of creating separate AWS sign-ins for each person, they can sign in to AWS with those same accounts.</p>
 
 ShopViet has 6 accounts in Organizations and manages its staff in on-premises Active Directory; a subsidiary uses Microsoft Entra ID. Staff need access to the right accounts for their job, with their own company account. AWS recommends that human users access AWS through **federation** with an identity provider and use temporary credentials; for centralized access management across many accounts, AWS recommends **IAM Identity Center**.
 
@@ -192,6 +202,8 @@ The directory used by Identity Center must be in the Organizations management ac
 
 <Scene id="en-confuse" label="Common mistakes" title="Five principles for protecting an account" questions={["exam1_q31", "exam6_q40", "exam1_q16", "exam6_q29", "exam1_q25"]}>
 
+<p class="scene-intro">Most incidents where control of an AWS account is lost come from ignoring a few basic rules for managing identities and credentials.</p>
+
 The five principles below determine how secure ShopViet's account is. Choose a scenario, try the shortcut option first, then switch to the correct option.
 
 <IamMythsSim client:visible />
@@ -201,6 +213,8 @@ The five principles below determine how secure ShopViet's account is. Choose a s
 </Scene>
 
 <Scene id="en-s6" label="Part 6/6" title="Quick comparison: IAM tools that are easy to confuse" questions={["exam5_q17", "exam5_q23", "exam2_q24", "exam2_q43"]}>
+
+<p class="scene-intro">IAM and related services offer several tools with similar names; each one meets a different access need.</p>
 
 The tools below have similar names or functions. Each item states when to use the tool, why it does not fit ShopViet's situation, and what fits instead.
 

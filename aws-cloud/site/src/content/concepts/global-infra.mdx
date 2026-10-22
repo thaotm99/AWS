@@ -106,6 +106,8 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Scene id="s1" label="Phần 1/7" title="Phạm vi Region: tài nguyên không tự động khả dụng tại Region khác" questions={["exam1_q41", "exam4_q5"]}>
 
+<p class="scene-intro">AWS đặt data center ở nhiều nơi trên thế giới và gom chúng thành từng Region; tài nguyên tạo ở Region nào thì chỉ nằm ở Region đó, không tự xuất hiện ở Region khác.</p>
+
 **Region** là một khu vực địa lý độc lập, ví dụ Singapore hoặc Tokyo. Nhiều tài nguyên như **AMI** và **EBS snapshot** chỉ tồn tại trong Region nơi chúng được tạo. ShopViet cần chuẩn bị phương án khôi phục tại Tokyo. Thực hiện lần lượt từng bước, hoặc thử launch trực tiếp tại Tokyo để quan sát kết quả.
 
 <AmiCopySim client:visible />
@@ -115,6 +117,8 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 </Scene>
 
 <Scene id="s2" label="Phần 2/7" title="Phạm vi của từng loại tài nguyên" questions={["exam1_q42", "exam3_q62"]}>
+
+<p class="scene-intro">Mỗi loại tài nguyên AWS có một phạm vi tồn tại: có loại chỉ nằm trong một AZ, có loại thuộc cả Region, có loại dùng chung toàn cầu. Phạm vi này quyết định tài nguyên còn dùng được hay không khi một AZ gặp sự cố.</p>
 
 Một Region gồm nhiều **Availability Zone (AZ)**: các data center độc lập về nguồn điện và mạng, kết nối với nhau bằng mạng riêng có độ trễ thấp. Phạm vi của tài nguyên quyết định mức độ chịu lỗi của tài nguyên đó. Chọn từng tài nguyên của ShopViet để xem phạm vi tương ứng.
 
@@ -126,6 +130,8 @@ Một Region gồm nhiều **Availability Zone (AZ)**: các data center độc l
 
 <Scene id="s3" label="Phần 3/7" title="Ảnh hưởng của sự cố Availability Zone" questions={["exam1_q2", "exam2_q8", "exam2_q32"]}>
 
+<p class="scene-intro">Khi mọi máy chủ của một ứng dụng nằm trong cùng một AZ, sự cố tại AZ đó làm toàn bộ ứng dụng ngừng hoạt động; phân bổ máy chủ trên nhiều AZ loại bỏ rủi ro này.</p>
+
 ShopViet vận hành 2 web server EC2 phía sau một Load Balancer. Mỗi chấm biểu diễn một request của người dùng. Chọn cách bố trí server, sau đó tạo sự cố để quan sát ảnh hưởng.
 
 <AzFailureSim client:visible />
@@ -135,6 +141,8 @@ ShopViet vận hành 2 web server EC2 phía sau một Load Balancer. Mỗi chấ
 </Scene>
 
 <Scene id="s4" label="Phần 4/7" title="Edge location: CloudFront cache nội dung, S3 Transfer Acceleration tăng tốc truyền tới và từ bucket" questions={["exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
+
+<p class="scene-intro">Người dùng ở xa máy chủ phải chờ lâu hơn vì dữ liệu đi qua quãng đường dài; AWS rút ngắn quãng đường này bằng các điểm hiện diện đặt gần người dùng, gọi là edge location.</p>
 
 **Edge location** là các điểm hiện diện của AWS đặt gần người dùng, với số lượng lớn hơn nhiều so với số Region. **CloudFront** cache nội dung tại các điểm này; origin có thể là S3, ALB hoặc máy chủ on-premises. Ảnh sản phẩm của ShopViet được lưu tại S3 Singapore. Truy xuất ảnh hai lần để so sánh kết quả.
 
@@ -147,6 +155,8 @@ ShopViet vận hành 2 web server EC2 phía sau một Load Balancer. Mỗi chấ
 </Scene>
 
 <Scene id="s5" label="Phần 5/7" title="Global Accelerator: địa chỉ IP tĩnh, TCP/UDP và failover giữa các Region" questions={["exam1_q59", "exam2_q7", "exam2_q22", "exam3_q8", "exam3_q45", "exam4_q58", "exam5_q4", "exam5_q30", "exam5_q55", "exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
+
+<p class="scene-intro">Không phải ứng dụng nào cũng là website có nội dung cache được: game, ứng dụng dùng TCP/UDP hoặc đối tác yêu cầu địa chỉ IP cố định cần một cách khác để đi nhanh trên mạng AWS.</p>
 
 **AWS Global Accelerator** cũng sử dụng edge location nhưng không cache nội dung. Dịch vụ cung cấp **2 địa chỉ IPv4 tĩnh anycast** (dual-stack: thêm 2 địa chỉ IPv6), tiếp nhận traffic TCP/UDP tại edge location gần người dùng nhất, sau đó chuyển qua mạng riêng của AWS tới endpoint healthy gần nhất (ALB, NLB, EC2 hoặc Elastic IP) tại một hoặc nhiều Region. Mô phỏng dưới đây so sánh với phương án chỉ sử dụng DNS khi một Region gặp sự cố:
 
@@ -161,6 +171,8 @@ Ba dịch vụ cùng sử dụng edge location nhưng giải quyết ba bài to�
 </Scene>
 
 <Scene id="bluegreen" label="Phần 6/7" title="Blue/green toàn cầu: chuyển traffic bằng endpoint weight thay vì DNS" questions={["exam2_q22"]}>
+
+<p class="scene-intro">Khi phát hành phiên bản mới, có thể chạy song song bản cũ (blue) và bản mới (green) rồi chuyển dần traffic sang bản mới; cách chuyển traffic quyết định tốc độ chuyển đổi và khả năng quay lại.</p>
 
 Hai ngày trước đợt khuyến mãi lớn, ShopViet cần thử phiên bản mới (green) của ứng dụng toàn cầu trên càng nhiều người dùng càng tốt, trong khi phần lớn người dùng truy cập bằng điện thoại. Phiên bản hiện tại (blue) và green chạy song song. Có hai cơ chế chuyển một phần traffic sang green:
 
@@ -177,6 +189,8 @@ Chọn cơ chế, đặt tỷ lệ chuyển sang green và áp dụng thay đổ
 
 <Scene id="s6" label="Phần 7/7" title="Các luồng dữ liệu phát sinh chi phí data transfer" questions={["exam2_q62", "exam3_q47", "exam5_q2"]}>
 
+<p class="scene-intro">AWS tính phí không chỉ cho máy chủ và lưu trữ mà cả cho dữ liệu di chuyển giữa các AZ, các Region và ra internet; luồng dữ liệu thiết kế chưa hợp lý có thể làm chi phí tăng đáng kể.</p>
+
 Chi phí AWS của ShopViet tăng thường không do đơn giá dịch vụ mà do luồng dữ liệu được thiết kế chưa phù hợp. Dưới đây là ba tình huống thường phát sinh chi phí. Chọn một tình huống và so sánh các phương án.
 
 <CostPatterns client:visible />
@@ -186,6 +200,8 @@ Chi phí AWS của ShopViet tăng thường không do đơn giá dịch vụ mà
 </Scene>
 
 <Scene id="confuse" label="Lỗi thường gặp" title="Bốn lỗi cấu hình thường gặp khi mở rộng hạ tầng" questions={["exam1_q42", "exam3_q62", "exam6_q58", "exam3_q22"]}>
+
+<p class="scene-intro">Khi mở rộng sang nhiều AZ hoặc nhiều Region, một số cấu hình tưởng như được áp dụng tự động nhưng thực tế phải thực hiện riêng.</p>
 
 Bốn yêu cầu dưới đây có vẻ đơn giản nhưng thường bị cấu hình sai khi ShopViet mở rộng hạ tầng. Chọn tình huống, thử phương án thường được áp dụng trước, sau đó so sánh với phương án đúng.
 
@@ -240,6 +256,8 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
 </Scene>
 
 <Scene id="deep" label="Mở rộng" title="Dữ liệu phải nằm tại on-premises: Outposts và các hạ tầng gần người dùng" questions={["exam1_q27"]}>
+
+<p class="scene-intro">Một số dữ liệu bắt buộc phải nằm trong data center của doanh nghiệp (on-premises) theo quy định pháp lý; AWS có thể đưa hạ tầng và dịch vụ của mình tới chính địa điểm đó.</p>
 
 Công ty con xử lý thanh toán của ShopViet vận hành Kubernetes trong data center riêng. Quy định bắt buộc toàn bộ dữ liệu và workload phải nằm vật lý trong data center này, nhưng đội hạ tầng muốn sử dụng Kubernetes control plane do AWS quản lý, CloudWatch và IAM.
 

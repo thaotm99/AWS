@@ -158,6 +158,8 @@ ShopViet triển khai hệ thống tại Region Singapore. Bước tiếp theo l
 
 <Scene id="addr" label="Phần 1/9" title="Địa chỉ và định tuyến: CIDR, subnet và route table" questions={["exam4_q8", "exam5_q63"]}>
 
+<p class="scene-intro">Mỗi máy chủ trong mạng cần một địa chỉ IP; VPC chia dải địa chỉ của mình thành các subnet, và route table của mỗi subnet quy định traffic được chuyển tới đâu.</p>
+
 Mọi địa chỉ trong VPC của ShopViet được khai báo bằng **CIDR notation**: `10.0.0.0/16` nghĩa là 16 bit đầu cố định, 16 bit sau thay đổi, tức 65.536 địa chỉ. Cùng cách viết này xuất hiện trong rule của Security Group, NACL và trong điều kiện `aws:SourceIp` của bucket policy. Chọn một khối mẫu hoặc kéo thanh prefix, sau đó nhập IP nguồn để kiểm tra IP đó có thuộc khối hay không.
 
 <CidrSim client:visible />
@@ -174,6 +176,8 @@ Sau khi chia subnet, mỗi subnet cần một **route table** quyết định tr
 
 <Scene id="s1" label="Phần 2/9" title="Truy cập từ internet: các lớp kiểm soát trên đường đi của gói tin" questions={["exam5_q63", "exam4_q38", "exam3_q9", "exam3_q25", "exam6_q8"]}>
 
+<p class="scene-intro">Để một request từ internet tới được web server trong VPC, nó phải đi qua ba lớp kiểm soát: điểm vào của VPC, bộ lọc của subnet và tường lửa của chính máy chủ.</p>
+
 Một subnet chỉ là **public subnet** khi route table của subnet đó có route `0.0.0.0/0` tới **Internet Gateway (IGW)**. Request từ internet tới web server của ShopViet lần lượt đi qua IGW, **Network ACL** tại ranh giới subnet, và **Security Group** gắn với instance. Bật hoặc tắt từng điều kiện và gửi request để xác định lớp kiểm soát đang chặn traffic.
 
 <PacketPath client:visible />
@@ -183,6 +187,8 @@ Một subnet chỉ là **public subnet** khi route table của subnet đó có r
 </Scene>
 
 <Scene id="s2" label="Phần 3/9" title="Chuỗi Security Group: ALB → EC2 → RDS" questions={["exam2_q28", "exam2_q55", "exam4_q52", "exam4_q26", "exam5_q29"]}>
+
+<p class="scene-intro">Hệ thống web thường có ba tầng: load balancer nhận request, máy chủ ứng dụng xử lý, database lưu dữ liệu. Mỗi tầng chỉ nên nhận traffic từ tầng ngay trước nó.</p>
 
 Ứng dụng web của ShopViet gồm ba tầng: ALB tiếp nhận request của người dùng, EC2 chạy ứng dụng, RDS lưu trữ dữ liệu. Mỗi tầng chỉ nên cho phép traffic từ tầng liền trước. Chọn rule inbound cho EC2 và RDS, chạy mô phỏng, và quan sát cả request hợp lệ của người dùng lẫn request truy cập trực tiếp từ bên ngoài.
 
@@ -194,6 +200,8 @@ Một subnet chỉ là **public subnet** khi route table của subnet đó có r
 
 <Scene id="s3" label="Phần 4/9" title="NAT gateway: kết nối internet cho private subnet" questions={["exam3_q44", "exam3_q62", "exam6_q13", "exam3_q12"]}>
 
+<p class="scene-intro">Máy chủ trong private subnet không nhận kết nối từ internet, nhưng vẫn cần chủ động kết nối ra ngoài, ví dụ để tải bản vá hệ điều hành.</p>
+
 Database và worker của ShopViet nằm trong **private subnet**, không có public IP, nhưng vẫn cần tải bản vá. **NAT gateway** cho phép kết nối đi ra nhưng không cho phép internet khởi tạo kết nối vào. Thử ba cách bố trí, sau đó tạo sự cố tại AZ a.
 
 <NatHaSim client:visible />
@@ -203,6 +211,8 @@ Database và worker của ShopViet nằm trong **private subnet**, không có pu
 </Scene>
 
 <Scene id="s4" label="Phần 5/9" title="VPC endpoint: truy cập dịch vụ AWS không qua internet" questions={["exam3_q47", "exam5_q24", "exam6_q64", "exam6_q65", "exam3_q7", "exam1_q39", "exam5_q9", "exam2_q11"]}>
+
+<p class="scene-intro">Máy chủ trong VPC thường xuyên gọi các dịch vụ AWS như S3; theo mặc định, traffic này đi ra ngoài VPC tới endpoint public của dịch vụ, vừa phát sinh chi phí vừa không đi qua mạng riêng.</p>
 
 EC2 trong private subnet của ShopViet ghi ảnh vào S3 và gửi job vào SQS. Theo mặc định, traffic này đi qua NAT gateway tới public endpoint của dịch vụ. Chọn từng phương án, gửi request và quan sát thay đổi trong route table.
 
@@ -226,6 +236,8 @@ EC2 trong private subnet của ShopViet ghi ảnh vào S3 và gửi job vào SQS
 </Scene>
 
 <Scene id="s5" label="Phần 6/9" title="Kết nối nhiều VPC: VPC peering, Transit Gateway và VPC sharing" questions={["exam4_q45", "exam1_q42", "exam5_q14", "exam4_q28", "exam6_q12", "exam3_q16", "exam2_q36", "exam3_q17", "exam6_q41", "exam2_q21"]}>
+
+<p class="scene-intro">Khi mỗi team dùng một VPC riêng, các VPC cần được kết nối với nhau; phương thức kết nối quyết định số kết nối phải quản lý và việc traffic có đi qua được VPC trung gian hay không.</p>
 
 ShopViet thành lập thêm các team, mỗi team sử dụng một VPC. Tăng số lượng VPC, so sánh số kết nối cần thiết giữa VPC peering, Transit VPC và Transit Gateway, và thử gửi traffic từ A tới C khi chỉ có peering A–B và B–C. Với Transit Gateway, tắt route propagation để quan sát route table của Transit Gateway khi thiếu route.
 
@@ -252,6 +264,8 @@ ShopViet thành lập thêm các team, mỗi team sử dụng một VPC. Tăng s
 
 <Scene id="s6" label="Phần 7/9" title="Kết nối on-premises: Site-to-Site VPN và Direct Connect" questions={["exam3_q18", "exam5_q10", "exam5_q41", "exam6_q25", "exam1_q37", "exam4_q48", "exam4_q7", "exam6_q45", "exam6_q34", "exam4_q18"]}>
 
+<p class="scene-intro">Văn phòng và data center của doanh nghiệp (on-premises) cũng cần kết nối vào VPC, hoặc qua internet có mã hoá, hoặc qua đường truyền riêng.</p>
+
 Văn phòng ShopViet cần kết nối vào VPC. Có hai phương thức: **Site-to-Site VPN** truyền qua internet với mã hóa, và **Direct Connect** là kết nối chuyên dụng tới AWS. Mỗi tình huống dưới đây tương ứng với một yêu cầu thực tế của văn phòng. Chọn phương thức kết nối và gửi request để quan sát đường đi của traffic.
 
 <HybridLinkSim client:visible />
@@ -261,6 +275,8 @@ Văn phòng ShopViet cần kết nối vào VPC. Có hai phương thức: **Site
 </Scene>
 
 <Scene id="hub" label="Phần 8/9" title="Mạng trung tâm: Transit Gateway, Direct Connect và shared services VPC" questions={["exam3_q16", "exam2_q21", "exam4_q7", "exam4_q28"]}>
+
+<p class="scene-intro">Khi số VPC và data center tăng lên, việc kết nối từng cặp với nhau trở nên khó quản lý; một điểm trung tâm cho phép mọi mạng kết nối qua đó và dùng chung các dịch vụ nền.</p>
 
 ShopViet đã có 25 VPC cho các kho, một data center nối bằng Direct Connect, và vừa sáp nhập một công ty có data center và VPC tại châu Âu. Mỗi tình huống dưới đây so sánh thiết kế theo từng VPC với thiết kế tập trung. Chọn thiết kế và gửi request để quan sát đường đi.
 
@@ -274,6 +290,8 @@ Direct Connect có ba loại virtual interface: **private VIF** truy cập VPC b
 
 <Scene id="confuse" label="Lỗi thường gặp" title="Bảy cấu hình có vẻ hợp lệ nhưng không hoạt động như mong đợi" questions={["exam2_q20", "exam6_q63", "exam3_q44", "exam3_q21", "exam3_q65", "exam6_q59", "exam3_q12", "exam4_q38"]}>
 
+<p class="scene-intro">Một số cấu hình trông hợp lệ trên console nhưng không cho kết quả như mong đợi, vì cơ chế hoạt động thực tế khác với cách hiểu thông thường.</p>
+
 Các cấu hình dưới đây có vẻ hợp lý khi thao tác trên console, nhưng hoạt động thực tế lại khác. Chọn tình huống, thử phương án thường được áp dụng trước, sau đó chuyển sang phương án đúng.
 
 <VpcMythsSim client:visible />
@@ -283,6 +301,8 @@ Các cấu hình dưới đây có vẻ hợp lý khi thao tác trên console, n
 </Scene>
 
 <Scene id="compare" label="Phần 9/9" title="Phân biệt nhanh: các thành phần mạng dễ nhầm lẫn" questions={["exam5_q10", "exam5_q45", "exam5_q4", "exam6_q36", "exam4_q28", "exam4_q38"]}>
+
+<p class="scene-intro">Nhiều thành phần mạng có tên hoặc chức năng gần giống nhau; phân biệt được chúng giúp chọn đúng thành phần cho từng nhu cầu.</p>
 
 Một số thành phần mạng có tên hoặc chức năng gần với nhu cầu của ShopViet nhưng giải quyết một vấn đề khác. Chọn từng thành phần để xem trường hợp sử dụng, lý do không phù hợp trong tình huống tương ứng, và phương án nên chọn:
 

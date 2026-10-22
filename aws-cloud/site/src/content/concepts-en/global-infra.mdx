@@ -106,6 +106,8 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Scene id="en-s1" label="Part 1/7" title="Region scope: resources are not automatically available in another Region" questions={["exam1_q41", "exam4_q5"]}>
 
+<p class="scene-intro">AWS runs data centers in many places around the world and groups them into Regions; a resource created in one Region exists only there and does not appear in other Regions on its own.</p>
+
 A **Region** is an independent geographic area, for example Singapore or Tokyo. Many resources, such as **AMIs** and **EBS snapshots**, exist only in the Region where they were created. ShopViet needs to prepare a recovery plan in Tokyo. Perform each step in turn, or try launching directly in Tokyo to see the result.
 
 <AmiCopySim client:visible />
@@ -115,6 +117,8 @@ A **Region** is an independent geographic area, for example Singapore or Tokyo. 
 </Scene>
 
 <Scene id="en-s2" label="Part 2/7" title="The scope of each resource type" questions={["exam1_q42", "exam3_q62"]}>
+
+<p class="scene-intro">Every kind of AWS resource has a scope: some live in one AZ, some belong to a whole Region, some are global. That scope decides whether the resource is still usable when an AZ fails.</p>
 
 A Region consists of multiple **Availability Zones (AZs)**: data centers with independent power and networking, connected to each other by a private low-latency network. The scope of a resource determines its fault tolerance. Select each ShopViet resource to see its scope.
 
@@ -126,6 +130,8 @@ A Region consists of multiple **Availability Zones (AZs)**: data centers with in
 
 <Scene id="en-s3" label="Part 3/7" title="The impact of an Availability Zone failure" questions={["exam1_q2", "exam2_q8", "exam2_q32"]}>
 
+<p class="scene-intro">When every server of an application sits in one AZ, a failure in that AZ stops the whole application; spreading servers across AZs removes that risk.</p>
+
 ShopViet runs 2 EC2 web servers behind a load balancer. Each dot represents a user request. Choose a server placement, then trigger a failure to see the impact.
 
 <AzFailureSim client:visible />
@@ -135,6 +141,8 @@ ShopViet runs 2 EC2 web servers behind a load balancer. Each dot represents a us
 </Scene>
 
 <Scene id="en-s4" label="Part 4/7" title="Edge locations: CloudFront caches content, S3 Transfer Acceleration speeds transfers to and from a bucket" questions={["exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
+
+<p class="scene-intro">Users far from the servers wait longer because data travels a long way; AWS shortens that distance with points of presence near users, called edge locations.</p>
 
 **Edge locations** are AWS points of presence located close to users, far more numerous than Regions. **CloudFront** caches content at these locations; the origin can be S3, an ALB or an on-premises server. ShopViet's product images are stored in S3 in Singapore. Fetch an image twice to compare the results.
 
@@ -147,6 +155,8 @@ ShopViet runs 2 EC2 web servers behind a load balancer. Each dot represents a us
 </Scene>
 
 <Scene id="en-s5" label="Part 5/7" title="Global Accelerator: static IP addresses, TCP/UDP and failover between Regions" questions={["exam1_q59", "exam2_q7", "exam2_q22", "exam3_q8", "exam3_q45", "exam4_q58", "exam5_q4", "exam5_q30", "exam5_q55", "exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
+
+<p class="scene-intro">Not every application is a website with cacheable content: games, TCP/UDP applications and partners that require fixed IP addresses need another way to travel fast over the AWS network.</p>
 
 **AWS Global Accelerator** also uses edge locations but does not cache content. The service provides **2 static anycast IPv4 addresses** (dual-stack: 2 additional IPv6 addresses), receives TCP/UDP traffic at the edge location closest to the user, then carries it over the AWS private network to the nearest healthy endpoint (ALB, NLB, EC2 or Elastic IP) in one or more Regions. The simulation below compares it with a DNS-only approach when a Region fails:
 
@@ -161,6 +171,8 @@ The three services all use edge locations but solve three different problems. Ch
 </Scene>
 
 <Scene id="en-bluegreen" label="Part 6/7" title="Global blue/green: shift traffic with endpoint weights instead of DNS" questions={["exam2_q22"]}>
+
+<p class="scene-intro">When releasing a new version, the old (blue) and new (green) versions can run side by side while traffic shifts gradually to the new one; how traffic is shifted decides how fast the switch happens and how quickly it can be reversed.</p>
 
 Two days before a major sale, ShopViet needs to test a new version (green) of its global application on as many users as possible, while most users connect from mobile phones. The current version (blue) and green run side by side. There are two ways to send part of the traffic to green:
 
@@ -177,6 +189,8 @@ Choose a mechanism, set the share sent to green and apply the change. The cache 
 
 <Scene id="en-s6" label="Part 7/7" title="Data flows that incur data transfer charges" questions={["exam2_q62", "exam3_q47", "exam5_q2"]}>
 
+<p class="scene-intro">AWS charges not only for servers and storage but also for data moving between AZs, between Regions and out to the internet; a poorly planned data flow can raise costs considerably.</p>
+
 When ShopViet's AWS bill grows, the cause is often not the unit price of a service but data flows that were not designed well. Below are three scenarios that commonly incur charges. Choose a scenario and compare the options.
 
 <CostPatterns client:visible />
@@ -186,6 +200,8 @@ When ShopViet's AWS bill grows, the cause is often not the unit price of a servi
 </Scene>
 
 <Scene id="en-confuse" label="Common mistakes" title="Four common configuration mistakes when expanding infrastructure" questions={["exam1_q42", "exam3_q62", "exam6_q58", "exam3_q22"]}>
+
+<p class="scene-intro">When expanding to several AZs or Regions, some configurations seem to apply automatically but in fact must be set up separately.</p>
 
 The four requirements below look simple but are often configured wrongly as ShopViet expands its infrastructure. Choose a scenario, try the option that is commonly applied first, then compare it with the correct option.
 
@@ -240,6 +256,8 @@ Check your understanding: as the designer of the ShopViet system, which option i
 </Scene>
 
 <Scene id="en-deep" label="Going further" title="Data that must stay on premises: Outposts and infrastructure close to users" questions={["exam1_q27"]}>
+
+<p class="scene-intro">Some data must stay in the company's own data center (on premises) by regulation; AWS can bring its infrastructure and services to that site.</p>
 
 ShopViet's payment subsidiary runs Kubernetes in its own data center. Regulations require all data and workloads to stay physically in that data center, but the infrastructure team wants an AWS-managed Kubernetes control plane, CloudWatch and IAM.
 
