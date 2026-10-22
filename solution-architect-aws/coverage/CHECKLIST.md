@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 960 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
+Có **963 keyword** khác nhau: ✅ 963 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 
 ### Theo bài học
 
@@ -40,10 +40,10 @@ Có **960 keyword** khác nhau: ✅ 960 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 | [dynamodb](#dynamodb) | 23 | 23 | 0 | 0 | 100% |
 | [analytics](#analytics) | 47 | 47 | 0 | 0 | 100% |
 | [messaging](#messaging) | 50 | 50 | 0 | 0 | 100% |
-| [kinesis](#kinesis) | 26 | 26 | 0 | 0 | 100% |
-| [monitoring](#monitoring) | 33 | 33 | 0 | 0 | 100% |
+| [kinesis](#kinesis) | 27 | 27 | 0 | 0 | 100% |
+| [monitoring](#monitoring) | 34 | 34 | 0 | 0 | 100% |
 | [iac](#iac) | 9 | 9 | 0 | 0 | 100% |
-| [backup-dr](#backup-dr) | 12 | 12 | 0 | 0 | 100% |
+| [backup-dr](#backup-dr) | 13 | 13 | 0 | 0 | 100% |
 | [others](#others) | 26 | 26 | 0 | 0 | 100% |
 
 ### Theo đề (số lượt keyword, chưa gộp)
@@ -55,7 +55,7 @@ Có **960 keyword** khác nhau: ✅ 960 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 | Đề 3 | 222 | 0 | 0 |
 | Đề 4 | 236 | 0 | 0 |
 | Đề 5 | 221 | 0 | 0 |
-| Đề 6 | 210 | 0 | 0 |
+| Đề 6 | 217 | 0 | 0 |
 
 ## global-infra
 
@@ -88,7 +88,7 @@ Có **960 keyword** khác nhau: ✅ 960 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | AWS Direct Connect | ✅ Đã có | 9 | exam1_q18, exam1_q27, exam2_q59, exam3_q31, exam4_q14, exam4_q45, exam4_q48, exam5_q2, exam5_q4 | vpc.mdx#s6<br>vpc.mdx#s6 / HybridLinkSim |
+| [ ] | AWS Direct Connect | ✅ Đã có | 10 | exam1_q18, exam1_q27, exam2_q59, exam3_q31, exam4_q14, exam4_q45, exam4_q48, exam5_q2, exam5_q4, exam6_q5 | vpc.mdx#s6<br>vpc.mdx#s6 / HybridLinkSim |
 | [ ] | AWS Site-to-Site VPN | ✅ Đã có | 8 | exam1_q18, exam1_q37, exam3_q7, exam3_q16, exam4_q36, exam5_q9, exam5_q41, exam6_q25 | vpc.mdx#s6<br>vpc.mdx#s6 / HybridLinkSim |
 | [ ] | AWS Transit Gateway | ✅ Đã có | 8 | exam1_q37, exam1_q39, exam2_q21, exam2_q36, exam3_q16, exam4_q28, exam5_q14, exam6_q12 | vpc.mdx#s5<br>vpc.mdx#s5 / VpcConnectSim |
 | [ ] | VPC peering | ✅ Đã có | 6 | exam1_q9, exam2_q36, exam3_q17, exam4_q45, exam5_q9, exam6_q34 | vpc.mdx#s5<br>vpc.mdx#s5 / VpcConnectSim |
@@ -465,6 +465,7 @@ Có **960 keyword** khác nhau: ✅ 960 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 |---|---|---|---:|---|---|
 | [ ] | ALB health check | ✅ Đã có | 2 | exam4_q26, exam5_q1 | elb.mdx#s4 / HealthCheckSim |
 | [ ] | ALB sticky sessions | ✅ Đã có | 2 | exam5_q37, exam6_q60 | analytics.mdx#s1 / CacheSim<br>elb.mdx#s7 / QuickCompare |
+| [ ] | Application Load Balancer (HTTP/HTTPS only) | ✅ Đã có | 2 | exam5_q4, exam6_q56 | elb.mdx#s1 / LbTypeSim |
 | [ ] | Network Load Balancer | ✅ Đã có | 2 | exam1_q2, exam3_q13 | elb.mdx#s1<br>elb.mdx#s1 / LbTypeSim |
 | [ ] | ALB (no static IP) | ✅ Đã có | 1 | exam4_q9 | elb.mdx#challenge |
 | [ ] | ALB authenticate-cognito listener rule action | ✅ Đã có | 1 | exam2_q17 | elb.mdx#s3 / AlbRuleSim |
@@ -480,7 +481,6 @@ Có **960 keyword** khác nhau: ✅ 960 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 | [ ] | ALB query string parameter-based routing | ✅ Đã có | 1 | exam1_q48 | elb.mdx#s3 / RuleMatchSim |
 | [ ] | ALB SNI (multiple certificates) | ✅ Đã có | 1 | exam4_q40 | elb.mdx#s3 / AlbRuleSim |
 | [ ] | ALB target group deregistration during patching | ✅ Đã có | 1 | exam5_q34 | monitoring.mdx#s5 / PatchWindowSim |
-| [ ] | Application Load Balancer (HTTP/HTTPS only) | ✅ Đã có | 1 | exam5_q4 | elb.mdx#s1 / LbTypeSim |
 | [ ] | Application Load Balancer content-based routing | ✅ Đã có | 1 | exam1_q2 | elb.mdx#s3 |
 | [ ] | Application Load Balancer target group | ✅ Đã có | 1 | exam6_q53 | elb.mdx#s1 / LbTypeSim |
 | [ ] | ELB across multiple AZs | ✅ Đã có | 1 | exam2_q8 | global-infra.mdx#s3 / AzFailureSim; elb.mdx#s1 |
@@ -636,10 +636,10 @@ Có **960 keyword** khác nhau: ✅ 960 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 | [ ] | S3 Intelligent-Tiering | ✅ Đã có | 4 | exam1_q15, exam5_q49, exam5_q54, exam6_q9 | s3.mdx#s1<br>s3.mdx#s1 / LifecycleValidator |
 | [ ] | S3 Lifecycle rule | ✅ Đã có | 4 | exam1_q8, exam1_q35, exam4_q43, exam6_q3 | s3.mdx#s1 / LifecycleValidator<br>s3.mdx#s1 |
 | [ ] | S3 bucket policy | ✅ Đã có | 3 | exam2_q4, exam4_q8, exam6_q54 | s3.mdx#s3 / RequirementPicker<br>s3.mdx#s3 |
+| [ ] | S3 Cross-Region Replication | ✅ Đã có | 3 | exam1_q62, exam2_q46, exam6_q58 | analytics.mdx#s4<br>analytics.mdx (CRR paragraph); kms.mdx#s1 / S3EncryptSim |
 | [ ] | S3 multipart upload | ✅ Đã có | 3 | exam1_q18, exam1_q64, exam4_q14 | s3.mdx#s5 / UploadSim |
 | [ ] | Amazon S3 static website hosting | ✅ Đã có | 2 | exam2_q2, exam4_q53 | cloudfront.mdx#s2 / RequirementPicker<br>s3.mdx#s6 / WebsiteEndpointSim |
 | [ ] | S3 Access Points | ✅ Đã có | 2 | exam1_q9, exam5_q24 | s3.mdx#s3 |
-| [ ] | S3 Cross-Region Replication | ✅ Đã có | 2 | exam1_q62, exam2_q46 | analytics.mdx#s4<br>analytics.mdx (CRR paragraph); kms.mdx#s1 / S3EncryptSim |
 | [ ] | S3 Glacier Flexible Retrieval | ✅ Đã có | 2 | exam4_q64, exam6_q28 | s3.mdx#s1<br>s3.mdx#s1 / LifecycleValidator |
 | [ ] | S3 Object Lock (compliance mode) | ✅ Đã có | 2 | exam4_q64, exam5_q50 | s3.mdx#s2<br>s3.mdx#s2 / DeleteGuardSim |
 | [ ] | S3 Object Lock (governance mode) | ✅ Đã có | 2 | exam4_q64, exam5_q50 | s3.mdx#s2<br>s3.mdx#s2 / DeleteGuardSim |
@@ -918,6 +918,7 @@ Có **960 keyword** khác nhau: ✅ 960 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 | [ ] | Amazon OpenSearch Service | ✅ Đã có | 2 | exam4_q11, exam6_q6 | analytics.mdx#s3 / DataJobSim |
 | [ ] | Amazon QuickSight | ✅ Đã có | 2 | exam1_q57, exam5_q6 | analytics.mdx#s3 / DataJobSim<br>analytics.mdx#s3 / DataJobSim; kinesis.mdx#s3 / StreamPipelineSim |
 | [ ] | AWS Glue | ✅ Đã có | 2 | exam1_q24, exam3_q30 | analytics.mdx#s3 |
+| [ ] | AWS Glue (batch ETL) | ✅ Đã có | 2 | exam5_q23, exam6_q31 | analytics.mdx#s3 / DataJobSim<br>analytics.mdx#s3 |
 | [ ] | ElastiCache for Memcached | ✅ Đã có | 2 | exam1_q1, exam5_q65 | analytics.mdx#s2<br>analytics.mdx#s2 / CacheEngineSim |
 | [ ] | ElastiCache for Redis OSS | ✅ Đã có | 2 | exam1_q1, exam6_q47 | analytics.mdx#s2<br>analytics.mdx#s2 / CacheEngineSim |
 | [ ] | ElastiCache for Redis OSS geospatial | ✅ Đã có | 2 | exam4_q50, exam5_q65 | analytics.mdx#s1 / CacheSim |
@@ -930,7 +931,6 @@ Có **960 keyword** khác nhau: ✅ 960 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 | [ ] | Amazon Redshift ML | ✅ Đã có | 1 | exam1_q26 | analytics.mdx#s3 / DataJobSim |
 | [ ] | Amazon Redshift Serverless | ✅ Đã có | 1 | exam1_q26 | analytics.mdx#s3 / DataJobSim |
 | [ ] | Amazon Redshift Spectrum | ✅ Đã có | 1 | exam5_q11 | analytics.mdx#s3 |
-| [ ] | AWS Glue (batch ETL) | ✅ Đã có | 1 | exam5_q23 | analytics.mdx#s3 / DataJobSim |
 | [ ] | AWS Glue (ETL, not query translation) | ✅ Đã có | 1 | exam1_q47 | analytics.mdx#s3 |
 | [ ] | AWS Glue Data Catalog | ✅ Đã có | 1 | exam1_q26 | analytics.mdx#s3 / DataJobSim |
 | [ ] | AWS Glue DataBrew (recipes, data profiling) | ✅ Đã có | 1 | exam1_q53 | analytics.mdx#s3 |
@@ -1022,6 +1022,7 @@ Có **960 keyword** khác nhau: ✅ 960 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 | [ ] | Amazon Data Firehose (no consumers) | ✅ Đã có | 1 | exam5_q38 | kinesis.mdx#s3 |
 | [ ] | Amazon Data Firehose (single destination, no consumers) | ✅ Đã có | 1 | exam5_q35 | kinesis.mdx#s3 |
 | [ ] | Amazon Kinesis Data Analytics (Managed Service for Apache Flink) | ✅ Đã có | 1 | exam1_q57 | kinesis.mdx#s3 |
+| [ ] | Amazon MSK (vs self-managed Kafka on EC2) | ✅ Đã có | 1 | exam6_q31 | kinesis.mdx#s3; kinesis.mdx#s4 |
 | [ ] | Amazon QuickSight | ✅ Đã có | 1 | exam4_q22 | kinesis.mdx#s3 / StreamPipelineSim |
 | [ ] | AWS DMS (S3 source, Kinesis target) | ✅ Đã có | 1 | exam4_q27 | kinesis.mdx#s3 / StreamPipelineSim; storage-migration.mdx#s3 |
 | [ ] | Kinesis Data Firehose destinations (no DynamoDB) | ✅ Đã có | 1 | exam1_q33 | kinesis.mdx#s3 |
@@ -1053,6 +1054,7 @@ Có **960 keyword** khác nhau: ✅ 960 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 | [ ] | AWS CloudTrail | ✅ Đã có | 1 | exam3_q29 | monitoring.mdx#s4 / WhoAnswersSim |
 | [ ] | AWS Config conformance pack | ✅ Đã có | 1 | exam6_q41 | monitoring.mdx#s4 / monitoring.mdx#s6 QuickCompare |
 | [ ] | AWS Config managed rule acm-certificate-expiration-check | ✅ Đã có | 1 | exam2_q9 | monitoring.mdx (Config scene Takeaway) / ConfigTimelineSim; kms.mdx#s3 |
+| [ ] | AWS Config remediation | ✅ Đã có | 1 | exam6_q22 | monitoring.mdx#s4 |
 | [ ] | AWS Config rule with Systems Manager Automation remediation | ✅ Đã có | 1 | exam5_q18 | monitoring.mdx#s4 / GuardrailSim |
 | [ ] | AWS Trusted Advisor | ✅ Đã có | 1 | exam3_q38 | backup-dr.mdx#challenge / Quiz |
 | [ ] | AWS Trusted Advisor (service limits checks) | ✅ Đã có | 1 | exam1_q61 | monitoring.mdx#s6 / QuickCompare |
@@ -1101,6 +1103,7 @@ Có **960 keyword** khác nhau: ✅ 960 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 | [ ] | ALB with Auto Scaling group (pre-provisioned standby) | ✅ Đã có | 1 | exam2_q59 | backup-dr.mdx / DrStrategySim |
 | [ ] | AMI copy across Regions | ✅ Đã có | 1 | exam4_q5 | backup-dr.mdx#s1; ec2.mdx#s2 |
 | [ ] | AWS Backup (not for fast cloning) | ✅ Đã có | 1 | exam5_q64 | backup-dr.mdx#s3 / backup-dr.mdx#s5 QuickCompare |
+| [ ] | AWS Backup (restore is not HA) | ✅ Đã có | 1 | exam6_q27 | backup-dr.mdx#s3 |
 | [ ] | AWS Backup cross-Region copy (RPO) | ✅ Đã có | 1 | exam5_q47 | backup-dr.mdx#s3 / BackupPlanSim |
 | [ ] | AWS Backup Vault Lock | ✅ Đã có | 1 | exam5_q16 | backup-dr.mdx#s3 / BackupPlanSim |
 | [ ] | AWS DMS continuous replication (not for DR) | ✅ Đã có | 1 | exam6_q23 | backup-dr.mdx#s2 / DataFailoverSim |

@@ -167,6 +167,12 @@
           "lesson": "security",
           "status": "covered",
           "where": "security.mdx#s2 / IncidentSim"
+        },
+        {
+          "keyword": "AWS Direct Connect",
+          "lesson": "vpc",
+          "status": "covered",
+          "where": "vpc.mdx#s6 / HybridLinkSim"
         }
       ]
     },
@@ -651,6 +657,12 @@
           "lesson": "iac",
           "status": "covered",
           "where": "iac.mdx#s4 / QuickCompare; iac.mdx#challenge / Quiz"
+        },
+        {
+          "keyword": "AWS Config remediation",
+          "lesson": "monitoring",
+          "status": "covered",
+          "where": "monitoring.mdx#s4"
         }
       ]
     },
@@ -784,6 +796,12 @@
           "lesson": "asg",
           "status": "covered",
           "where": "ec2.mdx#s4 / Ec2OpsSim"
+        },
+        {
+          "keyword": "AWS Backup (restore is not HA)",
+          "lesson": "backup-dr",
+          "status": "covered",
+          "where": "backup-dr.mdx#s3"
         }
       ]
     },
@@ -906,6 +924,18 @@
           "lesson": "kinesis",
           "status": "covered",
           "where": "kinesis.mdx#s3 / StreamPipelineSim"
+        },
+        {
+          "keyword": "AWS Glue (batch ETL)",
+          "lesson": "analytics",
+          "status": "covered",
+          "where": "analytics.mdx#s3"
+        },
+        {
+          "keyword": "Amazon MSK (vs self-managed Kafka on EC2)",
+          "lesson": "kinesis",
+          "status": "covered",
+          "where": "kinesis.mdx#s3; kinesis.mdx#s4"
         }
       ]
     },
@@ -1653,6 +1683,12 @@
           "lesson": "ec2",
           "status": "covered",
           "where": "ec2.mdx#s4 / Ec2OpsSim"
+        },
+        {
+          "keyword": "Application Load Balancer (HTTP/HTTPS only)",
+          "lesson": "elb",
+          "status": "covered",
+          "where": "elb.mdx#s1 / LbTypeSim"
         }
       ]
     },
@@ -1709,6 +1745,12 @@
           "lesson": "global-infra",
           "status": "covered",
           "where": "global-infra.mdx#s5 / EdgeChoiceSim"
+        },
+        {
+          "keyword": "S3 Cross-Region Replication",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s7 / QuickCompare; analytics.mdx#s4"
         }
       ]
     },
