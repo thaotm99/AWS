@@ -938,3 +938,6 @@ input[type="checkbox"]:disabled, input[type="range"]:disabled { opacity: .5; cur
   .kw-chips { flex-basis: 100%; }
 }
 @media (prefers-reduced-motion: reduce) { .kw-panel, .kw-chip[data-known] svg { animation: none; } }
+
+/* Plain-language opening sentence of a lesson scene: what problem the section solves, before the terms. */
+.prose > .scene-intro { margin: 2px 0 14px; font-size: 1.06rem; line-height: 1.7; font-weight: 500; color: var(--ink); text-wrap: pretty; }

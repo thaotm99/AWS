@@ -99,6 +99,8 @@ ShopViet bổ sung developer, account production và kiểm toán viên. Mỗi n
 
 <Scene id="s1" label="Phần 1/6" title="Phân tích phạm vi quyền của một policy" questions={["exam2_q37", "exam2_q38", "exam2_q48", "exam2_q54", "exam1_q58"]}>
 
+<p class="scene-intro">Mỗi quyền trên AWS được mô tả bằng một policy, tức một tài liệu JSON liệt kê hành động nào được phép hoặc bị từ chối trên tài nguyên nào; đọc được policy là kỹ năng cần có trước khi cấp quyền.</p>
+
 Trước khi gắn một policy do người khác soạn vào user hoặc role của ShopViet, cần xác định chính xác phạm vi quyền mà policy đó cấp. Chọn policy, dự đoán kết quả, sau đó gửi từng request để kiểm tra.
 
 <PolicyReader client:visible />
@@ -113,6 +115,8 @@ Trước khi gắn một policy do người khác soạn vào user hoặc role c
 
 <Scene id="s2" label="Phần 2/6" title="Các lớp quyền tham gia đánh giá request" questions={["exam3_q59", "exam1_q25", "exam2_q39", "exam2_q16"]}>
 
+<p class="scene-intro">Một request tới AWS chỉ được thực hiện khi mọi lớp kiểm soát quyền liên quan đều cho phép; chỉ cần một lớp từ chối là request bị chặn.</p>
+
 Một request có thể bị chặn tại nhiều lớp: **SCP** của Organizations giới hạn toàn bộ account, **permissions boundary** giới hạn quyền tối đa của một user/role, **identity policy** cấp quyền, và với truy cập cross-account, **resource policy** (ví dụ bucket policy) cũng phải cho phép. Thay đổi từng lớp và quan sát kết quả.
 
 <PolicyEvaluator client:visible />
@@ -122,6 +126,8 @@ Một request có thể bị chặn tại nhiều lớp: **SCP** của Organizat
 </Scene>
 
 <Scene id="s3" label="Phần 3/6" title="IAM role thay cho access key" questions={["exam2_q3", "exam3_q23", "exam1_q17", "exam4_q34", "exam1_q5", "exam4_q39", "exam2_q16", "exam3_q6", "exam1_q16"]}>
+
+<p class="scene-intro">Ứng dụng cần quyền để gọi dịch vụ AWS; thay vì lưu thông tin xác thực cố định (access key) trong mã nguồn, ứng dụng nên nhận quyền tạm thời thông qua một IAM role.</p>
 
 Server của ShopViet cần đọc dữ liệu từ DynamoDB. Phương án đơn giản nhưng rủi ro là lưu access key trong mã nguồn: khi mã nguồn bị lộ, access key cũng bị lộ. Phương án an toàn:
 
@@ -168,6 +174,8 @@ Nguyên tắc tương tự áp dụng cho các trường hợp khác:
 
 <Scene id="s4" label="Phần 4/6" title="Quản trị nhiều account bằng AWS Organizations" questions={["exam2_q43", "exam5_q18", "exam6_q41", "exam3_q36", "exam6_q22", "exam5_q17", "exam2_q36", "exam3_q17"]}>
 
+<p class="scene-intro">Khi doanh nghiệp dùng nhiều tài khoản AWS cho các môi trường và team khác nhau, cần một điểm quản lý tập trung để áp chính sách chung và hợp nhất hoá đơn.</p>
+
 ShopViet hiện có nhiều account: dev, staging, prod, sandbox, marketing. Quản trị thủ công từng account không thể duy trì khi quy mô tăng. Mỗi tình huống dưới đây là một tác vụ quản trị thực tế. Thử phương án thủ công trước, sau đó chuyển sang công cụ của AWS để so sánh.
 
 <OrgGuardSim client:visible />
@@ -177,6 +185,8 @@ ShopViet hiện có nhiều account: dev, staging, prod, sandbox, marketing. Qu�
 </Scene>
 
 <Scene id="s5" label="Phần 5/6" title="Truy cập tập trung cho nhân sự bằng danh tính có sẵn" questions={["exam1_q10", "exam4_q4", "exam6_q10"]}>
+
+<p class="scene-intro">Nhân viên đã có tài khoản trong hệ thống danh tính của công ty; thay vì tạo thêm thông tin đăng nhập AWS riêng cho từng người, có thể cho họ đăng nhập AWS bằng chính tài khoản đó.</p>
 
 ShopViet có 6 account trong Organizations và quản lý nhân sự trong Active Directory on-premises; một công ty con dùng Microsoft Entra ID. Nhân viên cần vào đúng account theo vai trò công việc, bằng chính tài khoản công ty. AWS khuyến nghị người dùng là con người truy cập AWS qua **federation** với một identity provider và dùng credentials tạm thời; để quản lý tập trung nhiều account, AWS khuyến nghị **IAM Identity Center**.
 
@@ -192,6 +202,8 @@ Directory dùng cho Identity Center phải nằm trong management account của 
 
 <Scene id="confuse" label="Lỗi thường gặp" title="Năm nguyên tắc bảo vệ account" questions={["exam1_q31", "exam6_q40", "exam1_q16", "exam6_q29", "exam1_q25"]}>
 
+<p class="scene-intro">Phần lớn sự cố mất quyền kiểm soát tài khoản AWS bắt nguồn từ việc bỏ qua một vài nguyên tắc cơ bản về quản lý danh tính và thông tin đăng nhập.</p>
+
 Năm nguyên tắc dưới đây quyết định mức độ an toàn của account ShopViet. Chọn tình huống, thử phương án tắt trước, sau đó chuyển sang phương án đúng.
 
 <IamMythsSim client:visible />
@@ -201,6 +213,8 @@ Năm nguyên tắc dưới đây quyết định mức độ an toàn của acco
 </Scene>
 
 <Scene id="s6" label="Phần 6/6" title="Phân biệt nhanh: các công cụ IAM dễ nhầm lẫn" questions={["exam5_q17", "exam5_q23", "exam2_q24", "exam2_q43"]}>
+
+<p class="scene-intro">IAM và các dịch vụ liên quan có nhiều công cụ tên gần giống nhau; mỗi công cụ giải quyết một nhu cầu riêng về quyền truy cập.</p>
 
 Các công cụ dưới đây có tên hoặc chức năng gần nhau. Mỗi mục nêu công cụ dùng khi nào, vì sao không phù hợp với tình huống của ShopViet, và phương án phù hợp.
 

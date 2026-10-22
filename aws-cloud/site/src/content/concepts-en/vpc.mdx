@@ -158,6 +158,8 @@ ShopViet runs its system in the Singapore Region. The next step is to design the
 
 <Scene id="en-addr" label="Part 1/9" title="Addressing and routing: CIDR, subnets and route tables" questions={["exam4_q8", "exam5_q63"]}>
 
+<p class="scene-intro">Every server on a network needs an IP address; a VPC divides its address range into subnets, and each subnet's route table decides where traffic goes.</p>
+
 Every address in ShopViet's VPC is written in **CIDR notation**: `10.0.0.0/16` means the first 16 bits are fixed and the last 16 bits vary, which gives 65,536 addresses. The same notation appears in security group and NACL rules and in the `aws:SourceIp` condition of a bucket policy. Pick a sample block or drag the prefix slider, then enter a source IP to check whether it falls inside the block.
 
 <CidrSim client:visible />
@@ -174,6 +176,8 @@ Once the subnets exist, each subnet needs a **route table** that decides where i
 
 <Scene id="en-s1" label="Part 2/9" title="Access from the internet: the control layers along the packet's path" questions={["exam5_q63", "exam4_q38", "exam3_q9", "exam3_q25", "exam6_q8"]}>
 
+<p class="scene-intro">For a request from the internet to reach a web server in the VPC, it must pass three control layers: the VPC's entry point, the subnet's filter and the server's own firewall.</p>
+
 A subnet is a **public subnet** only when its route table has a `0.0.0.0/0` route to an **internet gateway (IGW)**. A request from the internet to ShopViet's web server passes in turn through the IGW, the **network ACL** at the subnet boundary, and the **security group** attached to the instance. Turn each condition on or off and send a request to find the control layer that is blocking traffic.
 
 <PacketPath client:visible />
@@ -183,6 +187,8 @@ A subnet is a **public subnet** only when its route table has a `0.0.0.0/0` rout
 </Scene>
 
 <Scene id="en-s2" label="Part 3/9" title="Security group chain: ALB → EC2 → RDS" questions={["exam2_q28", "exam2_q55", "exam4_q52", "exam4_q26", "exam5_q29"]}>
+
+<p class="scene-intro">A web system usually has three tiers: a load balancer receives requests, application servers process them, and a database stores data. Each tier should accept traffic only from the tier just before it.</p>
 
 ShopViet's web application has three tiers: an ALB receives user requests, EC2 runs the application, and RDS stores the data. Each tier should allow traffic only from the tier in front of it. Choose the inbound rules for EC2 and RDS, run the simulation, and watch both legitimate user requests and direct access attempts from outside.
 
@@ -194,6 +200,8 @@ ShopViet's web application has three tiers: an ALB receives user requests, EC2 r
 
 <Scene id="en-s3" label="Part 4/9" title="NAT gateway: internet access for private subnets" questions={["exam3_q44", "exam3_q62", "exam6_q13", "exam3_q12"]}>
 
+<p class="scene-intro">Servers in a private subnet accept no connections from the internet, yet still need to reach out, for example to download operating system patches.</p>
+
 ShopViet's database and workers are in **private subnets** without public IPs, but they still need to download patches. A **NAT gateway** allows outbound connections but does not allow the internet to initiate inbound connections. Try three placements, then trigger a failure in AZ a.
 
 <NatHaSim client:visible />
@@ -203,6 +211,8 @@ ShopViet's database and workers are in **private subnets** without public IPs, b
 </Scene>
 
 <Scene id="en-s4" label="Part 5/9" title="VPC endpoints: reaching AWS services without the internet" questions={["exam3_q47", "exam5_q24", "exam6_q64", "exam6_q65", "exam3_q7", "exam1_q39", "exam5_q9", "exam2_q11"]}>
+
+<p class="scene-intro">Servers in a VPC call AWS services such as S3 all the time; by default this traffic leaves the VPC for the service's public endpoint, which adds cost and does not stay on a private network.</p>
 
 EC2 instances in ShopViet's private subnet write images to S3 and send jobs to SQS. By default, this traffic goes through the NAT gateway to the service's public endpoint. Choose each option, send a request and watch the change in the route table.
 
@@ -226,6 +236,8 @@ EC2 instances in ShopViet's private subnet write images to S3 and send jobs to S
 </Scene>
 
 <Scene id="en-s5" label="Part 6/9" title="Connecting many VPCs: VPC peering, Transit Gateway and VPC sharing" questions={["exam4_q45", "exam1_q42", "exam5_q14", "exam4_q28", "exam6_q12", "exam3_q16", "exam2_q36", "exam3_q17", "exam6_q41", "exam2_q21"]}>
+
+<p class="scene-intro">When each team has its own VPC, the VPCs must be connected; the connection method decides how many connections there are to manage and whether traffic can pass through an intermediate VPC.</p>
 
 ShopViet sets up more teams, each using its own VPC. Increase the number of VPCs, compare the number of connections needed with VPC peering, a transit VPC and Transit Gateway, and try sending traffic from A to C when only the A–B and B–C peerings exist. With Transit Gateway, turn route propagation off to see the transit gateway route table without the routes.
 
@@ -252,6 +264,8 @@ ShopViet sets up more teams, each using its own VPC. Increase the number of VPCs
 
 <Scene id="en-s6" label="Part 7/9" title="Connecting on premises: Site-to-Site VPN and Direct Connect" questions={["exam3_q18", "exam5_q10", "exam5_q41", "exam6_q25", "exam1_q37", "exam4_q48", "exam4_q7", "exam6_q45", "exam6_q34", "exam4_q18"]}>
 
+<p class="scene-intro">The company's offices and data centers (on premises) also need to connect to the VPC, either over the internet with encryption or over a dedicated line.</p>
+
 ShopViet's office needs to connect to the VPC. There are two methods: **Site-to-Site VPN** travels over the internet with encryption, and **Direct Connect** is a dedicated connection to AWS. Each scenario below corresponds to a real requirement of the office. Choose a connection method and send a request to watch the traffic's path.
 
 <HybridLinkSim client:visible />
@@ -261,6 +275,8 @@ ShopViet's office needs to connect to the VPC. There are two methods: **Site-to-
 </Scene>
 
 <Scene id="en-hub" label="Part 8/9" title="Network hub: Transit Gateway, Direct Connect and a shared services VPC" questions={["exam3_q16", "exam2_q21", "exam4_q7", "exam4_q28"]}>
+
+<p class="scene-intro">As the number of VPCs and data centers grows, connecting each pair becomes hard to manage; a central hub lets every network connect through it and share common services.</p>
 
 ShopViet now has 25 VPCs for its warehouses, a data center connected with Direct Connect, and has just acquired a company with its own data center and VPC in Europe. Each situation below compares a per-VPC design with a centralized one. Pick a design and send the request to follow its path.
 
@@ -274,6 +290,8 @@ Direct Connect has three types of virtual interface: a **private VIF** reaches a
 
 <Scene id="en-confuse" label="Common mistakes" title="Seven configurations that look valid but do not work as expected" questions={["exam2_q20", "exam6_q63", "exam3_q44", "exam3_q21", "exam3_q65", "exam6_q59", "exam3_q12", "exam4_q38"]}>
 
+<p class="scene-intro">Some configurations look valid in the console but do not behave as expected, because the actual mechanism differs from the common assumption.</p>
+
 The configurations below look reasonable in the console, but they behave differently in practice. Choose a scenario, try the option that is commonly applied first, then switch to the correct option.
 
 <VpcMythsSim client:visible />
@@ -283,6 +301,8 @@ The configurations below look reasonable in the console, but they behave differe
 </Scene>
 
 <Scene id="en-compare" label="Part 9/9" title="Quick comparison: networking components that are easy to confuse" questions={["exam5_q10", "exam5_q45", "exam5_q4", "exam6_q36", "exam4_q28", "exam4_q38"]}>
+
+<p class="scene-intro">Many networking components have similar names or functions; telling them apart helps you pick the right one for each need.</p>
 
 Some networking components have a name or function close to what ShopViet needs but solve a different problem. Pick each component to see when to use it, why it does not fit the matching situation, and what to choose instead:
 
