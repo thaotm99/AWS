@@ -268,7 +268,7 @@
         {
           "keyword": "AWS Glue ETL (not CDC)",
           "lesson": "analytics",
-          "status": "partial",
+          "status": "covered",
           "where": "analytics.mdx#s3 / DataJobSim"
         }
       ]
@@ -1809,8 +1809,8 @@
         {
           "keyword": "Amazon Neptune",
           "lesson": "analytics",
-          "status": "partial",
-          "where": "analytics.mdx#s3 / DataJobSim"
+          "status": "covered",
+          "where": "analytics.mdx#s3 / DataJobSim; analytics.mdx#s6 / QuickCompare"
         }
       ]
     },

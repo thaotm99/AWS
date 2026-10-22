@@ -1,8 +1,8 @@
 ---
 title: "ElastiCache and data analytics: Redshift, Athena, Glue"
 lede: "This lesson covers two groups of ShopViet data needs: responding to users with low latency (caching, sessions, leaderboards, finding the nearest shipper) and analyzing data (data checks, a data warehouse, dashboards, converting call recordings). It covers choosing the right service for each task and controlling the storage cost of a data lake over time."
-minutes: 25
-scenes: 4
+minutes: 35
+scenes: 6
 prerequisites: ["rds", "dynamodb", "s3"]
 docs:
   - title: "What is Amazon ElastiCache?"
@@ -29,6 +29,52 @@ docs:
     url: "https://docs.aws.amazon.com/redshift/latest/dg/c_redshift_system_overview.html"
   - title: "Multi-Region keys in AWS KMS"
     url: "https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html"
+  - title: "Resilience in Amazon ElastiCache (Mitigating Failures)"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/disaster-recovery-resiliency.html"
+  - title: "Minimizing downtime in ElastiCache by using Multi-AZ"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/AutoFailover.html"
+  - title: "High availability using replication groups (ElastiCache)"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/Replication.html"
+  - title: "Snapshot and restore (ElastiCache)"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/backups.html"
+  - title: "Scheduling automatic backups (ElastiCache)"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/backups-automatic.html"
+  - title: "Taking manual backups (ElastiCache)"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/backups-manual.html"
+  - title: "Valkey and Redis OSS parameters (appendonly)"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/ParameterGroups.Engine.html"
+  - title: "Durability in ElastiCache"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/durability.html"
+  - title: "Caching strategies (lazy loading, write-through)"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/Strategies.html"
+  - title: "What is Amazon SQS?"
+    url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/welcome.html"
+  - title: "Building visual ETL jobs with AWS Glue Studio"
+    url: "https://docs.aws.amazon.com/glue/latest/dg/author-job-glue.html"
+  - title: "Creating and working with DataBrew profile jobs"
+    url: "https://docs.aws.amazon.com/databrew/latest/dg/jobs.profile.html"
+  - title: "Creating and using DataBrew recipes"
+    url: "https://docs.aws.amazon.com/databrew/latest/dg/recipes.html"
+  - title: "AWS Glue DataBrew features"
+    url: "https://aws.amazon.com/glue/features/databrew/"
+  - title: "What is Amazon AppFlow?"
+    url: "https://docs.aws.amazon.com/appflow/latest/userguide/what-is-appflow.html"
+  - title: "What is AWS Lake Formation?"
+    url: "https://docs.aws.amazon.com/lake-formation/latest/dg/what-is-lake-formation.html"
+  - title: "What is Amazon Security Lake?"
+    url: "https://docs.aws.amazon.com/security-lake/latest/userguide/what-is-security-lake.html"
+  - title: "Amazon OpenSearch Service operational best practices (refresh interval)"
+    url: "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/bp.html"
+  - title: "Using OpenSearch Dashboards with Amazon OpenSearch Service (map service)"
+    url: "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/dashboards.html"
+  - title: "What is Amazon Neptune?"
+    url: "https://docs.aws.amazon.com/neptune/latest/userguide/intro.html"
+  - title: "Using Amazon Neptune with a global database"
+    url: "https://docs.aws.amazon.com/neptune/latest/userguide/neptune-global-database.html"
+  - title: "Working with AWS DMS Serverless"
+    url: "https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Serverless.html"
+  - title: "What is AWS Database Migration Service?"
+    url: "https://docs.aws.amazon.com/dms/latest/userguide/Welcome.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -37,26 +83,30 @@ import CacheSim from "../../components/scenes/analytics/CacheSim.tsx";
 import CacheEngineSim from "../../components/scenes/analytics/CacheEngineSim.tsx";
 import DataJobSim from "../../components/scenes/analytics/DataJobSim.tsx";
 import LakeCostSim from "../../components/scenes/analytics/LakeCostSim.tsx";
+import CacheRecoverySim from "../../components/scenes/analytics/CacheRecoverySim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#en-s1", label: "1 · A cache in front of the database" },
   { href: "#en-s2", label: "2 · Redis and Memcached" },
-  { href: "#en-s3", label: "3 · Choosing a tool for each data task" },
-  { href: "#en-s4", label: "4 · Optimizing data lake cost" },
+  { href: "#en-s5", label: "3 · When a cache node fails" },
+  { href: "#en-s3", label: "4 · Choosing a tool for each data task" },
+  { href: "#en-s4", label: "5 · Optimizing data lake cost" },
+  { href: "#en-s6", label: "6 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
 ShopViet's user base grows every month. Aurora starts to get overloaded by repeated queries, while the analytics department needs to work with the data without affecting the performance of the sales system. **Amazon ElastiCache** keeps frequently accessed data in memory. **Amazon Athena**, **Amazon Redshift** and **AWS Glue** handle analytics on the S3 data lake.
 </Story>
 
-<Scene id="en-s1" label="Part 1/4" title="A cache in front of the database" questions={["exam4_q12", "exam3_q33", "exam5_q37", "exam4_q50", "exam4_q32", "exam6_q6", "exam1_q29"]}>
+<Scene id="en-s1" label="Part 1/6" title="A cache in front of the database" questions={["exam4_q12", "exam3_q33", "exam5_q37", "exam4_q50", "exam4_q32", "exam6_q6", "exam1_q29", "exam1_q55"]}>
 
-**ElastiCache** is a managed in-memory data store with sub-millisecond response times. The most common usage pattern is **cache-aside**: the application queries the cache first; if the data is not there (a cache miss), the application reads from the database and writes the result to the cache with a TTL. Try five ShopViet scenarios:
+**ElastiCache** is a managed in-memory data store with sub-millisecond response times. The most common usage pattern is **cache-aside** (AWS calls it lazy loading): the application queries the cache first; if the data is not there (a cache miss), the application reads from the database and writes the result to the cache with a TTL. The **write-through** pattern adds this: whenever the application writes to the database, it also updates the cache. In both patterns the database remains the system of record. Try six ShopViet scenarios:
 
 <CacheSim client:visible />
 
-ElastiCache fits two kinds of workload: **heavy read traffic** (the same data is queried repeatedly) and **compute-intensive results** (results that take a lot of resources to compute, such as leaderboards). ElastiCache does not solve heavy write traffic, does not run complex JOINs and does not perform ETL.
+ElastiCache fits two kinds of workload: **heavy read traffic** (the same data is queried repeatedly) and **compute-intensive results** (results that take a lot of resources to compute, such as leaderboards). ElastiCache does not solve heavy write traffic, does not run complex JOINs and does not perform ETL. Cache nodes keep data in memory and replicate to replicas asynchronously, so transactions such as purchases are not written to the cache **instead of** the database: when a write peak makes the database time out, use a queue (SQS) to absorb the peak and RDS Proxy to pool connections. ElastiCache for Valkey offers a **durability** option (a Multi-AZ transactional log) for using ElastiCache as a primary data store; ShopViet's ordinary cache configuration does not turn it on.
 
 For data on DynamoDB, there is also **DAX** (DynamoDB lesson). ElastiCache works with any data source: RDS, Aurora, DynamoDB, or ElastiCache itself acting as a session store.
 
@@ -64,7 +114,7 @@ For data on DynamoDB, there is also **DAX** (DynamoDB lesson). ElastiCache works
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/4" title="Choosing an engine: Redis and Memcached" questions={["exam6_q47", "exam5_q65", "exam1_q29", "exam4_q32"]}>
+<Scene id="en-s2" label="Part 2/6" title="Choosing an engine: Redis and Memcached" questions={["exam6_q47", "exam5_q65", "exam1_q29", "exam4_q32"]}>
 
 ElastiCache supports three engines: **Valkey**, **Redis OSS** and **Memcached**. Valkey and Redis OSS support many data structures and high availability features. **Memcached** is simpler but multithreaded. Send the same sequence of commands to two identically configured nodes, then choose ShopViet's requirements:
 
@@ -76,24 +126,41 @@ Examples: caching the results of slow JOIN queries on RDS while making use of ma
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/4" title="Choosing a tool for each data task" questions={["exam5_q12", "exam1_q26", "exam1_q53", "exam5_q58", "exam5_q6", "exam4_q11", "exam2_q15", "exam6_q26"]}>
+<Scene id="en-s5" label="Part 3/6" title="When a cache node fails: backups, replicas or Multi-AZ" questions={["exam4_q32", "exam1_q55"]}>
+
+ShopViet's ElastiCache cluster (Redis OSS, node-based) holds carts and query results for RDS. When the primary node has a hardware failure, the two goals are **the shortest possible downtime** and **the least possible data loss**. Choose each protection option, then simulate the failure:
+
+<CacheRecoverySim client:visible />
+
+Each mechanism solves a different problem:
+
+- **Backups** (.rdb snapshots stored in S3): automatic backups run daily and are kept up to 35 days; manual backups are kept until you delete them. You restore by creating a new cache from a backup, so the data since the last backup is lost. Use them for corrupted or deleted data, or to seed a new cache.
+- **Append-only file (AOF)**: not supported from Redis OSS 2.8.22; on older engines, AOF and Multi-AZ are mutually exclusive.
+- **Read replicas** (1 to 5 per shard, replicated asynchronously): scale reads and keep a copy of the data; with Multi-AZ off, a failed primary is replaced by a newly provisioned node, and writes stop in the meantime.
+- **Multi-AZ with automatic failover**: places replicas in other AZs and automatically promotes the replica with the least replication lag; writes resume within seconds and the endpoint stays the same. This is the configuration AWS recommends for high availability. ElastiCache Serverless has a Multi-AZ architecture built in.
+
+<Takeaway>Shortest downtime and least data loss when a node fails: Multi-AZ with automatic failover. Daily backups lose up to almost a day of data and require a new cache. AOF is no longer supported. Read replicas scale reads and do not fail over by themselves with Multi-AZ off. A cache does not replace durable storage for transactions.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 4/6" title="Choosing a tool for each data task" questions={["exam5_q12", "exam1_q26", "exam1_q53", "exam5_q58", "exam5_q6", "exam4_q11", "exam2_q15", "exam6_q26", "exam5_q8"]}>
 
 ShopViet's data is stored in a data lake on S3. Each task has a best-fit service:
 
 - **Athena**: SQL queries directly on files in S3, serverless, billed by the bytes of data scanned. Suits ad-hoc queries.
 - **Redshift**: an MPP data warehouse for reports and dashboards that run on a schedule. Has a **Serverless** option. **Redshift Spectrum** lets a Redshift cluster also query data on S3.
-- **Glue**: serverless ETL and the Data Catalog. **Glue DataBrew**: clean data through a visual interface, with no code to write.
+- **Glue**: serverless ETL and the Data Catalog; **Glue Studio** is the visual interface for creating, running and monitoring Glue jobs. **Glue DataBrew**: clean data through a visual interface, with no code to write, with data profiling, shareable recipes and a data lineage map.
 - **EMR**: Spark/Hadoop clusters of the size you choose, used when you need control over the framework and configuration.
 
-Choose a task, run the simulation, then switch to the better-suited tool:
+Choose a task, run the simulation, then switch to the better-suited tool. Continuous database sync is covered in detail in the [data migration lesson](/concepts/storage-migration/#en-s3):
 
 <DataJobSim client:visible />
 
-<Takeaway>Ad-hoc SQL on S3: Athena. Serverless MPP data warehouse: Redshift Serverless, loaded with Glue. No-code data cleaning: DataBrew. Converting recordings to text: Transcribe. Full-text search: OpenSearch. Relationships between users (graph): Neptune. Infrequently accessed data that still needs immediate SQL queries: S3 Standard-IA + Athena.</Takeaway>
+<Takeaway>Ad-hoc SQL on S3: Athena. Serverless MPP data warehouse: Redshift Serverless, loaded with Glue. No-code data cleaning with profiling and shared recipes: DataBrew. Syncing data and ongoing changes between two databases: DMS, not Glue. Converting recordings to text: Transcribe. Full-text search: OpenSearch. Relationships between users (graph): Neptune. Infrequently accessed data that still needs immediate SQL queries: S3 Standard-IA + Athena.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/4" title="Controlling data lake cost over time" questions={["exam2_q34", "exam6_q26", "exam5_q11"]}>
+<Scene id="en-s4" label="Part 5/6" title="Controlling data lake cost over time" questions={["exam2_q34", "exam6_q26", "exam5_q11"]}>
 
 ShopViet's data lake is split into two zones. The **raw zone** stores the original data as it was received. The **refined zone** stores data that Glue has cleaned for analysts to query. Each zone grows by 1 TB a day. Choose a storage option, then simulate one year:
 
@@ -106,6 +173,39 @@ When the data lake needs another copy in a different Region for disaster recover
 - Athena can query in the Region that holds the data.
 
 <Takeaway>Original data that must be retained but is rarely read: lifecycle to Glacier Deep Archive. Data that is still queried: keep it in a storage class with immediate access, written in a compressed columnar format (Parquet). Athena cannot read data in Glacier Deep Archive until it is restored.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s6" label="Part 6/6" title="Quick comparison: data services that are easy to confuse" questions={["exam1_q53", "exam2_q44", "exam4_q50", "exam5_q59"]}>
+
+Some services have names or features close to a ShopViet need but solve a different problem. Choose each service to see when to use it, why it does not fit the matching situation, and what to choose instead:
+
+<QuickCompare client:visible items={[
+  { name: "AWS Glue Studio",
+    use: "A visual interface for **creating, running and monitoring Glue ETL jobs** on the serverless Apache Spark engine; drag and drop source, transform and target nodes without writing Spark; generates an editable PySpark script; includes a Data Quality node to check data against rules.",
+    notHere: "ShopViet's engineers and analysts need to prepare Parquet data on S3 together, see a **profile of every column** (distributions, null values, data types), save the steps as a shared recipe and view **data lineage**. Those are the features of a data preparation tool; Glue Studio is a tool for building ETL jobs.",
+    instead: "**AWS Glue DataBrew**: more than 250 built-in transformations, versioned **recipes** you can download and reuse, **profile jobs**, a data lineage map (part 4)." },
+  { name: "Amazon AppFlow",
+    use: "Exchanges data between **SaaS applications** (Salesforce, Zendesk…) and AWS services (S3, Redshift) with no code, on demand or on a schedule; for example, pulling support tickets from Zendesk into S3.",
+    notHere: "The data is already in the S3 data lake; the need is multi-step cleaning, profiling and sharing transformation logic. This is not a SaaS integration problem.",
+    instead: "**Glue DataBrew** to prepare data on S3. AppFlow is for when the source is a SaaS application." },
+  { name: "AWS Lake Formation",
+    use: "Centrally governs, secures and shares a data lake: **fine-grained permissions down to column, row and cell** on S3 data and the Glue Data Catalog, enforced across Athena, Redshift Spectrum, EMR and Glue; shares data across accounts.",
+    notHere: "ShopViet's security team needs to centralize security logs and events from every account with the least development effort. With Lake Formation, ShopViet would still have to build the log collection and the Glue jobs that normalize the formats itself.",
+    instead: "**Amazon Security Lake**: automatically collects security data from AWS services, third-party sources, many accounts and Regions, converts it to Parquet in the standard **OCSF** schema, and stores it in S3 in ShopViet's own account (Security lesson, part 2)." },
+  { name: "OpenSearch Service (coordinate data)",
+    use: "Full-text search and log analytics; OpenSearch Dashboards includes a map service for coordinate map visualizations. Suits searching and analyzing location data.",
+    notHere: "Shipper locations are updated thousands of times a second and must be read back immediately. OpenSearch indexes have **eventual read consistency**: a change becomes searchable only after a refresh (every second by default), and AWS recommends raising the refresh interval to 30 seconds or more for indexing performance.",
+    instead: "**ElastiCache (Redis OSS or Valkey)** with geospatial commands and TTLs, in front of PostgreSQL (part 1, nearest shipper scenario)." },
+  { name: "Amazon Neptune",
+    use: "A graph database for **highly connected data**: product recommendations, fraud detection, knowledge graphs. A **Neptune global database** has one primary cluster that takes writes and up to 5 read-only clusters in other Regions, with replication latency typically under a second.",
+    notHere: "ShopViet's global orders are not graph data, and the application in every Region needs to **write** locally. A Neptune global database accepts writes only in the primary Region; building replication yourself with Lambda and SQS adds complexity.",
+    instead: "**DynamoDB global tables**: every Region has a replica table that accepts reads and writes (DynamoDB lesson, part 5)." },
+]} />
+
+More on Security Lake: [Security lesson, part 2](/concepts/security/#en-s2). More on global tables: [DynamoDB lesson, part 5](/concepts/dynamodb/#en-s5).
+
+<Takeaway>Building ETL jobs visually: Glue Studio; preparing data with profiling and shared recipes: DataBrew. Bringing SaaS data into AWS: AppFlow. Fine-grained permissions on a data lake: Lake Formation; centralizing security logs: Security Lake. Constantly updated locations: Redis geospatial; search and maps: OpenSearch. Graphs: Neptune; multi-Region writes: DynamoDB global tables.</Takeaway>
 
 </Scene>
 
@@ -149,6 +249,14 @@ Check question: as the designer of the ShopViet system, which option fits?
     opts: ["Redshift cannot write to another account", "The objects belong to the writing account while the bucket still uses ACLs (Object writer)", "The partner has not enabled versioning"],
     a: 1,
     why: "When ACLs are enabled, objects belong to the account that uploaded them. Set Object Ownership = Bucket owner enforced so the bucket owner owns every object." },
+  { q: "An ElastiCache (Redis OSS) cluster in front of RDS needs the shortest downtime and the least data loss when the primary node fails. Which configuration fits?",
+    opts: ["Daily automatic backups at off-peak hours", "Add read replicas without Multi-AZ", "Multi-AZ with automatic failover"],
+    a: 2,
+    why: "Multi-AZ automatically promotes the replica with the least lag, and writes resume within seconds. Backups lose the data since the last backup; replicas do not fail over by themselves with Multi-AZ off." },
+  { q: "During a flash sale, Aurora times out when taking orders. One proposal is to write orders to ElastiCache first and push them to Aurora later. Which assessment is correct?",
+    opts: ["Fits, because the cache writes faster", "Does not fit: orders in cache memory can be lost when a node fails; use SQS and scalable workers", "Fits if daily backups are on"],
+    a: 1,
+    why: "A cache speeds up reads; it is not a durable store for transactions. SQS stores messages on multiple servers and absorbs the write peak." },
 ]} />
 
 </Scene>

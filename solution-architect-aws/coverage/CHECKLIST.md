@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 950 (99%) · 🟡 5 (1%) · ❌ 5 (1%).
+Có **960 keyword** khác nhau: ✅ 960 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 
 ### Theo bài học
 
@@ -38,7 +38,7 @@ Có **960 keyword** khác nhau: ✅ 950 (99%) · 🟡 5 (1%) · ❌ 5 (1%).
 | [storage-migration](#storage-migration) | 34 | 34 | 0 | 0 | 100% |
 | [rds](#rds) | 58 | 58 | 0 | 0 | 100% |
 | [dynamodb](#dynamodb) | 23 | 23 | 0 | 0 | 100% |
-| [analytics](#analytics) | 47 | 37 | 5 | 5 | 79% |
+| [analytics](#analytics) | 47 | 47 | 0 | 0 | 100% |
 | [messaging](#messaging) | 50 | 50 | 0 | 0 | 100% |
 | [kinesis](#kinesis) | 26 | 26 | 0 | 0 | 100% |
 | [monitoring](#monitoring) | 33 | 33 | 0 | 0 | 100% |
@@ -50,11 +50,11 @@ Có **960 keyword** khác nhau: ✅ 950 (99%) · 🟡 5 (1%) · ❌ 5 (1%).
 
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
-| Đề 1 | 221 | 1 | 2 |
-| Đề 2 | 197 | 0 | 1 |
+| Đề 1 | 224 | 0 | 0 |
+| Đề 2 | 198 | 0 | 0 |
 | Đề 3 | 222 | 0 | 0 |
-| Đề 4 | 232 | 2 | 2 |
-| Đề 5 | 219 | 2 | 0 |
+| Đề 4 | 236 | 0 | 0 |
+| Đề 5 | 221 | 0 | 0 |
 | Đề 6 | 210 | 0 | 0 |
 
 ## global-infra
@@ -908,18 +908,9 @@ Có **960 keyword** khác nhau: ✅ 950 (99%) · 🟡 5 (1%) · ❌ 5 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | Amazon AppFlow | ❌ Thiếu | 1 | exam1_q53 |  |
-| [ ] | AWS Glue Studio | ❌ Thiếu | 1 | exam1_q53 |  |
-| [ ] | AWS Lake Formation | ❌ Thiếu | 1 | exam2_q44 |  |
-| [ ] | OpenSearch geospatial | ❌ Thiếu | 1 | exam4_q50 |  |
-| [ ] | Redis append-only file (AOF) | ❌ Thiếu | 1 | exam4_q32 |  |
-| [ ] | Amazon Neptune | 🟡 Một phần ⚠ | 5 | exam1_q29, exam2_q53, exam4_q10, exam4_q11, exam5_q59 | analytics.mdx#s3 / DataJobSim<br>analytics.mdx#s1 Takeaway |
-| [ ] | AWS Glue ETL (not CDC) | 🟡 Một phần | 1 | exam5_q8 | analytics.mdx#s3 / DataJobSim |
-| [ ] | ElastiCache (cache-aside, not a durable write store) | 🟡 Một phần | 1 | exam1_q55 | analytics.mdx#s1 / CacheSim |
-| [ ] | ElastiCache backup | 🟡 Một phần | 1 | exam4_q32 | analytics.mdx#s1 / CacheSim |
-| [ ] | ElastiCache read replica | 🟡 Một phần | 1 | exam4_q32 | analytics.mdx#s2 |
 | [ ] | Amazon Athena | ✅ Đã có | 10 | exam1_q26, exam1_q53, exam1_q57, exam2_q34, exam4_q22, exam5_q6, exam5_q11, exam5_q12, exam5_q58, exam6_q26 | analytics.mdx#s3 / DataJobSim<br>analytics.mdx#s3 |
 | [ ] | Amazon EMR | ✅ Đã có | 5 | exam1_q24, exam1_q26, exam4_q33, exam5_q12, exam6_q18 | analytics.mdx#s3<br>analytics.mdx#s3 / DataJobSim |
+| [ ] | Amazon Neptune | ✅ Đã có | 5 | exam1_q29, exam2_q53, exam4_q10, exam4_q11, exam5_q59 | analytics.mdx#s3 / DataJobSim<br>analytics.mdx#s1 Takeaway |
 | [ ] | Amazon Redshift | ✅ Đã có | 4 | exam2_q5, exam4_q11, exam5_q12, exam6_q6 | analytics.mdx#s1<br>analytics.mdx#s3 |
 | [ ] | Amazon Athena and QuickSight | ✅ Đã có | 2 | exam2_q26, exam2_q44 | analytics.mdx#s1 |
 | [ ] | Amazon ElastiCache | ✅ Đã có | 2 | exam3_q33, exam6_q17 | analytics.mdx#s1 / CacheSim |
@@ -930,6 +921,7 @@ Có **960 keyword** khác nhau: ✅ 950 (99%) · 🟡 5 (1%) · ❌ 5 (1%).
 | [ ] | ElastiCache for Memcached | ✅ Đã có | 2 | exam1_q1, exam5_q65 | analytics.mdx#s2<br>analytics.mdx#s2 / CacheEngineSim |
 | [ ] | ElastiCache for Redis OSS | ✅ Đã có | 2 | exam1_q1, exam6_q47 | analytics.mdx#s2<br>analytics.mdx#s2 / CacheEngineSim |
 | [ ] | ElastiCache for Redis OSS geospatial | ✅ Đã có | 2 | exam4_q50, exam5_q65 | analytics.mdx#s1 / CacheSim |
+| [ ] | Amazon AppFlow | ✅ Đã có | 1 | exam1_q53 | analytics.mdx#s6 / QuickCompare |
 | [ ] | Amazon Athena on CloudTrail logs | ✅ Đã có | 1 | exam1_q61 | analytics.mdx#s3 |
 | [ ] | Amazon OpenSearch Service (full-text search) | ✅ Đã có | 1 | exam5_q6 | analytics.mdx#s3 / DataJobSim; kinesis.mdx#s3 / StreamPipelineSim |
 | [ ] | Amazon QuickSight (visualization, not SQL analysis) | ✅ Đã có | 1 | exam5_q58 | analytics.mdx#s3 / DataJobSim |
@@ -942,17 +934,25 @@ Có **960 keyword** khác nhau: ✅ 950 (99%) · 🟡 5 (1%) · ❌ 5 (1%).
 | [ ] | AWS Glue (ETL, not query translation) | ✅ Đã có | 1 | exam1_q47 | analytics.mdx#s3 |
 | [ ] | AWS Glue Data Catalog | ✅ Đã có | 1 | exam1_q26 | analytics.mdx#s3 / DataJobSim |
 | [ ] | AWS Glue DataBrew (recipes, data profiling) | ✅ Đã có | 1 | exam1_q53 | analytics.mdx#s3 |
+| [ ] | AWS Glue ETL (not CDC) | ✅ Đã có | 1 | exam5_q8 | analytics.mdx#s3 / DataJobSim |
 | [ ] | AWS Glue ETL compressed columnar format (Parquet) | ✅ Đã có | 1 | exam2_q34 | analytics.mdx / LakeCostSim |
 | [ ] | AWS Glue ETL job | ✅ Đã có | 1 | exam1_q26 | analytics.mdx#s3 / DataJobSim |
+| [ ] | AWS Glue Studio | ✅ Đã có | 1 | exam1_q53 | analytics.mdx#s6 / QuickCompare |
+| [ ] | AWS Lake Formation | ✅ Đã có | 1 | exam2_q44 | analytics.mdx#s6 / QuickCompare |
+| [ ] | ElastiCache (cache-aside, not a durable write store) | ✅ Đã có | 1 | exam1_q55 | analytics.mdx#s1 / CacheSim; analytics.mdx#s5 |
 | [ ] | ElastiCache (requires application change) | ✅ Đã có | 1 | exam4_q13 | analytics.mdx#s1 |
 | [ ] | ElastiCache as cache in front of DynamoDB/RDS | ✅ Đã có | 1 | exam6_q6 | analytics.mdx#s1 / CacheSim |
 | [ ] | ElastiCache as distributed session store | ✅ Đã có | 1 | exam5_q37 | analytics.mdx#s1 / CacheSim |
+| [ ] | ElastiCache backup | ✅ Đã có | 1 | exam4_q32 | analytics.mdx#s5 / CacheRecoverySim |
 | [ ] | ElastiCache for Memcached (multi-threaded) | ✅ Đã có | 1 | exam6_q47 | analytics.mdx#s2 / CacheEngineSim |
 | [ ] | ElastiCache for Redis OSS (cache-aside) | ✅ Đã có | 1 | exam4_q12 | analytics.mdx#s1 / CacheSim |
 | [ ] | ElastiCache for Redis OSS (leaderboard) | ✅ Đã có | 1 | exam1_q29 | analytics.mdx#s1 / analytics.mdx#s2 |
 | [ ] | ElastiCache Multi-AZ automatic failover | ✅ Đã có | 1 | exam4_q32 | analytics.mdx#s1 / CacheSim |
+| [ ] | ElastiCache read replica | ✅ Đã có | 1 | exam4_q32 | analytics.mdx#s5 / CacheRecoverySim |
 | [ ] | ElastiCache TTL | ✅ Đã có | 1 | exam4_q50 | analytics.mdx#s1 |
 | [ ] | ElastiCache use cases (read-heavy, compute-intensive) | ✅ Đã có | 1 | exam3_q33 | analytics.mdx#s1 / CacheSim |
+| [ ] | OpenSearch geospatial | ✅ Đã có | 1 | exam4_q50 | analytics.mdx#s6 / QuickCompare |
+| [ ] | Redis append-only file (AOF) | ✅ Đã có | 1 | exam4_q32 | analytics.mdx#s5 / CacheRecoverySim |
 | [ ] | Redshift UNLOAD to cross-account bucket | ✅ Đã có | 1 | exam2_q15 | analytics.mdx#challenge / DataJobSim |
 | [ ] | S3 Glacier Deep Archive (not queryable without restore) | ✅ Đã có | 1 | exam6_q26 | analytics.mdx#s4 / LakeCostSim |
 

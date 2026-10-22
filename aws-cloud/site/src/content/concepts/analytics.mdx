@@ -1,8 +1,8 @@
 ---
 title: "ElastiCache và phân tích dữ liệu: Redshift, Athena, Glue"
 lede: "Bài học trình bày hai nhóm nhu cầu xử lý dữ liệu của ShopViet: phản hồi người dùng với độ trễ thấp (cache, session, bảng xếp hạng, tìm shipper gần nhất) và phân tích dữ liệu (kiểm tra dữ liệu, kho dữ liệu, dashboard, chuyển đổi ghi âm cuộc gọi). Nội dung bao gồm lựa chọn dịch vụ phù hợp cho từng tác vụ và kiểm soát chi phí lưu trữ của data lake theo thời gian."
-minutes: 25
-scenes: 4
+minutes: 35
+scenes: 6
 prerequisites: ["rds", "dynamodb", "s3"]
 docs:
   - title: "What is Amazon ElastiCache?"
@@ -29,6 +29,52 @@ docs:
     url: "https://docs.aws.amazon.com/redshift/latest/dg/c_redshift_system_overview.html"
   - title: "Multi-Region keys in AWS KMS"
     url: "https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html"
+  - title: "Resilience in Amazon ElastiCache (Mitigating Failures)"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/disaster-recovery-resiliency.html"
+  - title: "Minimizing downtime in ElastiCache by using Multi-AZ"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/AutoFailover.html"
+  - title: "High availability using replication groups (ElastiCache)"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/Replication.html"
+  - title: "Snapshot and restore (ElastiCache)"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/backups.html"
+  - title: "Scheduling automatic backups (ElastiCache)"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/backups-automatic.html"
+  - title: "Taking manual backups (ElastiCache)"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/backups-manual.html"
+  - title: "Valkey and Redis OSS parameters (appendonly)"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/ParameterGroups.Engine.html"
+  - title: "Durability in ElastiCache"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/durability.html"
+  - title: "Caching strategies (lazy loading, write-through)"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/Strategies.html"
+  - title: "What is Amazon SQS?"
+    url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/welcome.html"
+  - title: "Building visual ETL jobs with AWS Glue Studio"
+    url: "https://docs.aws.amazon.com/glue/latest/dg/author-job-glue.html"
+  - title: "Creating and working with DataBrew profile jobs"
+    url: "https://docs.aws.amazon.com/databrew/latest/dg/jobs.profile.html"
+  - title: "Creating and using DataBrew recipes"
+    url: "https://docs.aws.amazon.com/databrew/latest/dg/recipes.html"
+  - title: "AWS Glue DataBrew features"
+    url: "https://aws.amazon.com/glue/features/databrew/"
+  - title: "What is Amazon AppFlow?"
+    url: "https://docs.aws.amazon.com/appflow/latest/userguide/what-is-appflow.html"
+  - title: "What is AWS Lake Formation?"
+    url: "https://docs.aws.amazon.com/lake-formation/latest/dg/what-is-lake-formation.html"
+  - title: "What is Amazon Security Lake?"
+    url: "https://docs.aws.amazon.com/security-lake/latest/userguide/what-is-security-lake.html"
+  - title: "Amazon OpenSearch Service operational best practices (refresh interval)"
+    url: "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/bp.html"
+  - title: "Using OpenSearch Dashboards with Amazon OpenSearch Service (map service)"
+    url: "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/dashboards.html"
+  - title: "What is Amazon Neptune?"
+    url: "https://docs.aws.amazon.com/neptune/latest/userguide/intro.html"
+  - title: "Using Amazon Neptune with a global database"
+    url: "https://docs.aws.amazon.com/neptune/latest/userguide/neptune-global-database.html"
+  - title: "Working with AWS DMS Serverless"
+    url: "https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Serverless.html"
+  - title: "What is AWS Database Migration Service?"
+    url: "https://docs.aws.amazon.com/dms/latest/userguide/Welcome.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -37,26 +83,30 @@ import CacheSim from "../../components/scenes/analytics/CacheSim.tsx";
 import CacheEngineSim from "../../components/scenes/analytics/CacheEngineSim.tsx";
 import DataJobSim from "../../components/scenes/analytics/DataJobSim.tsx";
 import LakeCostSim from "../../components/scenes/analytics/LakeCostSim.tsx";
+import CacheRecoverySim from "../../components/scenes/analytics/CacheRecoverySim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#s1", label: "1 · Cache phía trước database" },
   { href: "#s2", label: "2 · Redis và Memcached" },
-  { href: "#s3", label: "3 · Lựa chọn công cụ theo tác vụ dữ liệu" },
-  { href: "#s4", label: "4 · Tối ưu chi phí data lake" },
+  { href: "#s5", label: "3 · Khi cache node gặp lỗi" },
+  { href: "#s3", label: "4 · Lựa chọn công cụ theo tác vụ dữ liệu" },
+  { href: "#s4", label: "5 · Tối ưu chi phí data lake" },
+  { href: "#s6", label: "6 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
 Số lượng người dùng của ShopViet tăng theo từng tháng. Aurora bắt đầu quá tải do các truy vấn lặp lại, trong khi bộ phận phân tích cần khai thác dữ liệu mà không ảnh hưởng hiệu năng của hệ thống bán hàng. **Amazon ElastiCache** lưu dữ liệu truy cập thường xuyên trong bộ nhớ. **Amazon Athena**, **Amazon Redshift** và **AWS Glue** đảm nhận tác vụ phân tích trên data lake S3.
 </Story>
 
-<Scene id="s1" label="Phần 1/4" title="Cache phía trước database" questions={["exam4_q12", "exam3_q33", "exam5_q37", "exam4_q50", "exam4_q32", "exam6_q6", "exam1_q29"]}>
+<Scene id="s1" label="Phần 1/6" title="Cache phía trước database" questions={["exam4_q12", "exam3_q33", "exam5_q37", "exam4_q50", "exam4_q32", "exam6_q6", "exam1_q29", "exam1_q55"]}>
 
-**ElastiCache** là kho dữ liệu in-memory dạng managed, thời gian phản hồi dưới một mili giây. Mẫu sử dụng phổ biến nhất là **cache-aside**: ứng dụng truy vấn cache trước; nếu không có dữ liệu (cache miss), ứng dụng đọc từ database rồi ghi kết quả vào cache kèm TTL. Thử năm tình huống của ShopViet:
+**ElastiCache** là kho dữ liệu in-memory dạng managed, thời gian phản hồi dưới một mili giây. Mẫu sử dụng phổ biến nhất là **cache-aside** (AWS gọi là lazy loading): ứng dụng truy vấn cache trước; nếu không có dữ liệu (cache miss), ứng dụng đọc từ database rồi ghi kết quả vào cache kèm TTL. Mẫu **write-through** bổ sung: mỗi khi ghi vào database, ứng dụng cập nhật luôn cache. Trong cả hai mẫu, database vẫn là nơi lưu dữ liệu gốc. Thử sáu tình huống của ShopViet:
 
 <CacheSim client:visible />
 
-ElastiCache phù hợp với hai loại tải: **tải đọc lớn** (cùng một dữ liệu được truy vấn lặp lại) và **tính toán tốn tài nguyên** (kết quả đòi hỏi nhiều tài nguyên để tính, ví dụ bảng xếp hạng). ElastiCache không giải quyết tải ghi lớn, không thực thi JOIN phức tạp và không thực hiện ETL.
+ElastiCache phù hợp với hai loại tải: **tải đọc lớn** (cùng một dữ liệu được truy vấn lặp lại) và **tính toán tốn tài nguyên** (kết quả đòi hỏi nhiều tài nguyên để tính, ví dụ bảng xếp hạng). ElastiCache không giải quyết tải ghi lớn, không thực thi JOIN phức tạp và không thực hiện ETL. Cache node lưu dữ liệu trong bộ nhớ và sao chép sang replica bất đồng bộ, nên giao dịch như đơn mua hàng không được ghi vào cache **thay cho** database: khi đỉnh tải ghi làm database timeout, dùng queue (SQS) để hấp thụ đỉnh tải và RDS Proxy để gom kết nối. ElastiCache for Valkey có tuỳ chọn **durability** (transactional log Multi-AZ) dành cho trường hợp dùng ElastiCache làm kho dữ liệu chính; cấu hình cache thông thường của ShopViet không bật tuỳ chọn này.
 
 Với dữ liệu trên DynamoDB, có thêm lựa chọn **DAX** (bài DynamoDB). ElastiCache dùng được cho mọi nguồn dữ liệu: RDS, Aurora, DynamoDB, hoặc chính ElastiCache đóng vai trò session store.
 
@@ -64,7 +114,7 @@ Với dữ liệu trên DynamoDB, có thêm lựa chọn **DAX** (bài DynamoDB)
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/4" title="Lựa chọn engine: Redis và Memcached" questions={["exam6_q47", "exam5_q65", "exam1_q29", "exam4_q32"]}>
+<Scene id="s2" label="Phần 2/6" title="Lựa chọn engine: Redis và Memcached" questions={["exam6_q47", "exam5_q65", "exam1_q29", "exam4_q32"]}>
 
 ElastiCache hỗ trợ ba engine: **Valkey**, **Redis OSS** và **Memcached**. Valkey và Redis OSS hỗ trợ nhiều cấu trúc dữ liệu và các tính năng high availability. **Memcached** đơn giản hơn nhưng xử lý đa luồng. Gửi cùng một chuỗi lệnh tới hai node có cấu hình giống nhau, sau đó chọn yêu cầu của ShopViet:
 
@@ -76,24 +126,41 @@ Ví dụ: cache kết quả các truy vấn JOIN chậm trên RDS và cần tậ
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/4" title="Lựa chọn công cụ theo tác vụ dữ liệu" questions={["exam5_q12", "exam1_q26", "exam1_q53", "exam5_q58", "exam5_q6", "exam4_q11", "exam2_q15", "exam6_q26"]}>
+<Scene id="s5" label="Phần 3/6" title="Khi cache node gặp lỗi: backup, replica hay Multi-AZ" questions={["exam4_q32", "exam1_q55"]}>
+
+Cluster ElastiCache (Redis OSS, node-based) của ShopViet giữ giỏ hàng và kết quả truy vấn cho RDS. Khi primary node gặp lỗi phần cứng, hai yêu cầu cần đạt là **thời gian gián đoạn ngắn nhất** và **lượng dữ liệu mất ít nhất**. Chọn từng phương án bảo vệ rồi mô phỏng sự cố:
+
+<CacheRecoverySim client:visible />
+
+Mỗi cơ chế giải quyết một vấn đề khác nhau:
+
+- **Backup** (snapshot .rdb lưu trên S3): backup tự động chạy hằng ngày, giữ tối đa 35 ngày; backup manual giữ tới khi tự xoá. Khôi phục bằng cách tạo cache mới từ backup, nên mất dữ liệu kể từ lần backup cuối. Dùng cho dữ liệu bị hỏng, xoá nhầm, hoặc tạo cache mới có sẵn dữ liệu.
+- **Append-only file (AOF)**: không được hỗ trợ từ Redis OSS 2.8.22; trên engine cũ, AOF và Multi-AZ loại trừ nhau.
+- **Read replica** (1 đến 5 replica mỗi shard, sao chép bất đồng bộ): mở rộng đọc và giữ bản sao dữ liệu; khi không bật Multi-AZ, primary lỗi được thay bằng node mới tạo, ghi bị gián đoạn trong thời gian đó.
+- **Multi-AZ với automatic failover**: đặt replica ở AZ khác và tự promote replica có độ trễ replication thấp nhất; ghi tiếp tục trong vài giây, endpoint không đổi. Đây là cấu hình AWS khuyến nghị cho high availability. ElastiCache Serverless tự có kiến trúc Multi-AZ.
+
+<Takeaway>Thời gian gián đoạn ngắn nhất và mất ít dữ liệu nhất khi node lỗi: Multi-AZ với automatic failover. Backup hằng ngày mất tới gần một ngày dữ liệu và phải tạo cache mới. AOF không còn được hỗ trợ. Read replica mở rộng đọc, không tự failover khi tắt Multi-AZ. Cache không thay thế nơi lưu giao dịch bền vững.</Takeaway>
+
+</Scene>
+
+<Scene id="s3" label="Phần 4/6" title="Lựa chọn công cụ theo tác vụ dữ liệu" questions={["exam5_q12", "exam1_q26", "exam1_q53", "exam5_q58", "exam5_q6", "exam4_q11", "exam2_q15", "exam6_q26", "exam5_q8"]}>
 
 Dữ liệu của ShopViet được lưu trong data lake trên S3. Mỗi tác vụ có một dịch vụ phù hợp nhất:
 
 - **Athena**: truy vấn SQL trực tiếp trên tệp trong S3, serverless, tính phí theo số byte dữ liệu được quét. Phù hợp với truy vấn ad-hoc.
 - **Redshift**: kho dữ liệu (data warehouse) MPP cho báo cáo và dashboard chạy định kỳ. Có phiên bản **Serverless**. **Redshift Spectrum** cho phép cluster Redshift truy vấn thêm dữ liệu trên S3.
-- **Glue**: ETL serverless và Data Catalog. **Glue DataBrew**: làm sạch dữ liệu qua giao diện trực quan, không cần viết code.
+- **Glue**: ETL serverless và Data Catalog; **Glue Studio** là giao diện trực quan để tạo, chạy và giám sát Glue job. **Glue DataBrew**: làm sạch dữ liệu qua giao diện trực quan, không cần viết code, có data profiling, recipe chia sẻ được và sơ đồ data lineage.
 - **EMR**: cluster Spark/Hadoop với kích thước tự lựa chọn, dùng khi cần kiểm soát framework và cấu hình.
 
-Chọn một tác vụ, chạy mô phỏng, sau đó chuyển sang công cụ phù hợp hơn:
+Chọn một tác vụ, chạy mô phỏng, sau đó chuyển sang công cụ phù hợp hơn. Tác vụ đồng bộ liên tục database được trình bày chi tiết tại [bài di chuyển dữ liệu](/concepts/storage-migration/#s3):
 
 <DataJobSim client:visible />
 
-<Takeaway>SQL ad-hoc trên S3: Athena. Kho dữ liệu MPP serverless: Redshift Serverless, nạp dữ liệu bằng Glue. Làm sạch dữ liệu không cần code: DataBrew. Chuyển ghi âm thành văn bản: Transcribe. Tìm kiếm full-text: OpenSearch. Quan hệ giữa người dùng (đồ thị): Neptune. Dữ liệu ít truy cập nhưng vẫn cần truy vấn SQL ngay: S3 Standard-IA + Athena.</Takeaway>
+<Takeaway>SQL ad-hoc trên S3: Athena. Kho dữ liệu MPP serverless: Redshift Serverless, nạp dữ liệu bằng Glue. Làm sạch dữ liệu không cần code, có profiling và recipe dùng chung: DataBrew. Đồng bộ dữ liệu và thay đổi liên tục giữa hai database: DMS, không phải Glue. Chuyển ghi âm thành văn bản: Transcribe. Tìm kiếm full-text: OpenSearch. Quan hệ giữa người dùng (đồ thị): Neptune. Dữ liệu ít truy cập nhưng vẫn cần truy vấn SQL ngay: S3 Standard-IA + Athena.</Takeaway>
 
 </Scene>
 
-<Scene id="s4" label="Phần 4/4" title="Kiểm soát chi phí data lake theo thời gian" questions={["exam2_q34", "exam6_q26", "exam5_q11"]}>
+<Scene id="s4" label="Phần 5/6" title="Kiểm soát chi phí data lake theo thời gian" questions={["exam2_q34", "exam6_q26", "exam5_q11"]}>
 
 Data lake của ShopViet được chia thành hai zone. **Raw zone** lưu dữ liệu gốc ở trạng thái như khi tiếp nhận. **Refined zone** lưu dữ liệu đã được Glue làm sạch để analyst truy vấn. Mỗi zone tăng thêm 1 TB mỗi ngày. Chọn phương án lưu trữ, sau đó mô phỏng một năm:
 
@@ -106,6 +173,39 @@ Khi data lake cần thêm một bản sao tại Region khác để dự phòng s
 - Athena truy vấn được tại Region có dữ liệu.
 
 <Takeaway>Dữ liệu gốc phải lưu giữ nhưng hiếm khi đọc: lifecycle sang Glacier Deep Archive. Dữ liệu còn được truy vấn: giữ ở storage class truy xuất ngay, ghi ở định dạng cột có nén (Parquet). Athena không đọc được dữ liệu trong Glacier Deep Archive khi chưa restore.</Takeaway>
+
+</Scene>
+
+<Scene id="s6" label="Phần 6/6" title="Phân biệt nhanh: các dịch vụ dữ liệu dễ nhầm lẫn" questions={["exam1_q53", "exam2_q44", "exam4_q50", "exam5_q59"]}>
+
+Một số dịch vụ có tên hoặc tính năng gần với nhu cầu của ShopViet nhưng giải quyết vấn đề khác. Chọn từng dịch vụ để xem trường hợp sử dụng, lý do không phù hợp trong tình huống tương ứng, và phương án nên chọn:
+
+<QuickCompare client:visible items={[
+  { name: "AWS Glue Studio",
+    use: "Giao diện trực quan để **tạo, chạy và giám sát Glue ETL job** trên engine Apache Spark serverless; kéo thả các node nguồn, biến đổi, đích mà không cần viết Spark; tự sinh script PySpark có thể chỉnh sửa; có node Data Quality để kiểm tra dữ liệu theo rule.",
+    notHere: "Kỹ sư và analyst của ShopViet cần cùng chuẩn bị dữ liệu Parquet trên S3, xem **profile từng cột** (phân bố, giá trị null, kiểu dữ liệu), lưu các bước thành công thức dùng chung và xem **data lineage**. Đó là bộ tính năng của công cụ chuẩn bị dữ liệu, còn Glue Studio là công cụ xây dựng ETL job.",
+    instead: "**AWS Glue DataBrew**: hơn 250 phép biến đổi có sẵn, **recipe** có phiên bản và tải về để dùng lại, **profile job**, sơ đồ data lineage (phần 4)." },
+  { name: "Amazon AppFlow",
+    use: "Trao đổi dữ liệu giữa **ứng dụng SaaS** (Salesforce, Zendesk…) và dịch vụ AWS (S3, Redshift) không cần code, chạy theo yêu cầu hoặc theo lịch; ví dụ đưa phiếu hỗ trợ từ Zendesk vào S3.",
+    notHere: "Dữ liệu đã nằm trong data lake S3; yêu cầu là làm sạch nhiều bước, profiling và chia sẻ logic biến đổi. Đây không phải bài toán tích hợp SaaS.",
+    instead: "**Glue DataBrew** để chuẩn bị dữ liệu trên S3. AppFlow dùng khi nguồn là ứng dụng SaaS." },
+  { name: "AWS Lake Formation",
+    use: "Quản trị, bảo mật và chia sẻ data lake tập trung: **phân quyền chi tiết tới cột, hàng, ô** trên dữ liệu S3 và Glue Data Catalog, áp dụng thống nhất cho Athena, Redshift Spectrum, EMR, Glue; chia sẻ dữ liệu giữa các account.",
+    notHere: "Đội bảo mật của ShopViet cần tập trung log và sự kiện bảo mật từ mọi account với ít công phát triển nhất. Với Lake Formation, ShopViet vẫn phải tự xây dựng luồng thu thập log và job Glue chuẩn hoá định dạng.",
+    instead: "**Amazon Security Lake**: tự động thu thập dữ liệu bảo mật từ dịch vụ AWS, nguồn bên thứ ba, nhiều account và Region, chuyển sang Parquet theo schema chuẩn **OCSF**, lưu trong S3 thuộc account của ShopViet (bài Security, phần 2)." },
+  { name: "OpenSearch Service (dữ liệu toạ độ)",
+    use: "Tìm kiếm full-text và phân tích log; OpenSearch Dashboards có dịch vụ bản đồ cho visualization theo toạ độ. Phù hợp với tìm kiếm và phân tích dữ liệu vị trí.",
+    notHere: "Vị trí shipper được cập nhật hàng nghìn lần mỗi giây và phải đọc lại ngay. Index của OpenSearch có **eventual read consistency**: thay đổi chỉ tìm thấy được sau lần refresh (mặc định mỗi giây), và AWS khuyến nghị tăng refresh interval lên 30 giây trở lên để tối ưu hiệu năng ghi.",
+    instead: "**ElastiCache (Redis OSS hoặc Valkey)** với lệnh geospatial và TTL, đặt trước PostgreSQL (phần 1, tình huống tìm shipper)." },
+  { name: "Amazon Neptune",
+    use: "Graph database cho dữ liệu **nhiều quan hệ đan xen**: gợi ý sản phẩm, phát hiện gian lận, knowledge graph. **Neptune global database**: một cluster primary ghi dữ liệu, tối đa 5 cluster chỉ đọc ở Region khác, độ trễ replication thường dưới một giây.",
+    notHere: "Đơn hàng toàn cầu của ShopViet không phải dữ liệu đồ thị, và ứng dụng ở mỗi Region cần **ghi** cục bộ. Neptune global database chỉ ghi được tại Region primary; tự xây dựng replication bằng Lambda và SQS làm tăng độ phức tạp.",
+    instead: "**DynamoDB global tables**: mỗi Region có bảng replica đọc và ghi được (bài DynamoDB, phần 5)." },
+]} />
+
+Chi tiết về Security Lake: [bài Security, phần 2](/concepts/security/#s2). Chi tiết về global tables: [bài DynamoDB, phần 5](/concepts/dynamodb/#s5).
+
+<Takeaway>Xây dựng ETL job trực quan: Glue Studio; chuẩn bị dữ liệu có profiling và recipe dùng chung: DataBrew. Đưa dữ liệu từ SaaS vào AWS: AppFlow. Phân quyền chi tiết trên data lake: Lake Formation; tập trung log bảo mật: Security Lake. Vị trí cập nhật liên tục: Redis geospatial; tìm kiếm và bản đồ: OpenSearch. Đồ thị: Neptune; ghi đa Region: DynamoDB global tables.</Takeaway>
 
 </Scene>
 
@@ -149,6 +249,14 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Redshift không ghi được sang account khác", "Object thuộc account đã ghi khi bucket còn dùng ACL (Object writer)", "Đối tác chưa bật versioning"],
     a: 1,
     why: "Khi ACL được bật, object thuộc account đã tải lên. Cấu hình Object Ownership = Bucket owner enforced để chủ sở hữu bucket sở hữu mọi object." },
+  { q: "Cluster ElastiCache (Redis OSS) trước RDS cần thời gian gián đoạn ngắn nhất và mất ít dữ liệu nhất khi primary node gặp lỗi. Cấu hình nào phù hợp?",
+    opts: ["Backup tự động hằng ngày vào giờ thấp điểm", "Thêm read replica, không bật Multi-AZ", "Multi-AZ với automatic failover"],
+    a: 2,
+    why: "Multi-AZ tự promote replica có độ trễ thấp nhất, ghi tiếp tục trong vài giây. Backup mất dữ liệu từ lần backup cuối; replica không tự failover khi tắt Multi-AZ." },
+  { q: "Trong flash sale, Aurora timeout khi nhận đơn. Một đề xuất là ghi đơn vào ElastiCache trước rồi đẩy sang Aurora sau. Đánh giá nào đúng?",
+    opts: ["Phù hợp vì cache ghi nhanh hơn", "Không phù hợp: đơn trong bộ nhớ cache có thể mất khi node lỗi; dùng SQS và worker co giãn", "Phù hợp nếu bật backup hằng ngày"],
+    a: 1,
+    why: "Cache tăng tốc đọc, không phải nơi lưu giao dịch bền vững. SQS lưu message trên nhiều server và hấp thụ đỉnh tải ghi." },
 ]} />
 
 </Scene>

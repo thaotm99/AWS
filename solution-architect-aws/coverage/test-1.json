@@ -1609,14 +1609,14 @@
         {
           "keyword": "AWS Glue Studio",
           "lesson": "analytics",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "analytics.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "Amazon AppFlow",
           "lesson": "analytics",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "analytics.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "Amazon Athena",
@@ -1686,8 +1686,8 @@
         {
           "keyword": "ElastiCache (cache-aside, not a durable write store)",
           "lesson": "analytics",
-          "status": "partial",
-          "where": "analytics.mdx#s1 / CacheSim"
+          "status": "covered",
+          "where": "analytics.mdx#s1 / CacheSim; analytics.mdx#s5"
         },
         {
           "keyword": "Aurora cross-Region read replica (read-only)",

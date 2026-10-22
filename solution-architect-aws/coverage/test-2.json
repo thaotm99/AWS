@@ -1303,8 +1303,8 @@
         {
           "keyword": "AWS Lake Formation",
           "lesson": "analytics",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "analytics.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "Amazon Athena and QuickSight",

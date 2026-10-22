@@ -143,6 +143,34 @@ const scenarios = (L: Lang): PScenario[] => [
             { at: "db", from: "app", state: "wait", flash: L({ vi: "quá tải", en: "overloaded" }), msg: L({ vi: "Mọi request được chuyển trực tiếp tới database cùng lúc.", en: "Every request goes straight to the database at once." }) },
           ], ok: false, result: L({ vi: "Backup hằng ngày không giúp phục hồi nhanh và vẫn mất dữ liệu kể từ lần backup cuối. Giảm thời gian gián đoạn và mất dữ liệu: Multi-AZ với automatic failover.", en: "Daily backups do not give a fast recovery and still lose the data since the last backup. To reduce downtime and data loss: Multi-AZ with automatic failover." }) },
   },
+  {
+    name: L({ vi: "Flash sale: đơn mua ghi vào cache trước database", en: "Flash sale: purchases written to the cache before the database" }),
+    request: L({ vi: "POST /orders  (hàng nghìn đơn mỗi phút, Aurora bắt đầu timeout)", en: "POST /orders  (thousands of orders a minute, Aurora starts timing out)" }),
+    toggle: { label: L({ vi: "Đưa đơn vào SQS queue, worker trong Auto Scaling group ghi Aurora", en: "Send orders to an SQS queue; workers in an Auto Scaling group write to Aurora" }), initial: false },
+    action: L({ vi: "Đặt mua", en: "Place order" }),
+    layout: (sqs) => ({
+      viewBox: VB,
+      aria: L({ vi: "Ứng dụng ghi đơn hàng vào ElastiCache hoặc vào SQS queue; Aurora là nơi lưu đơn hàng cuối cùng", en: "The application writes orders to ElastiCache or to an SQS queue; Aurora is where orders are finally stored" }),
+      nodes: [
+        { id: "app", x: 90, y: 150, w: 140, l1: L({ vi: "App ShopViet", en: "ShopViet app" }), l2: "EC2" },
+        { id: "buf", x: 320, y: 150, w: 180, l1: sqs ? "Amazon SQS" : "ElastiCache", l2: sqs ? L({ vi: "lưu trên nhiều server", en: "stored on multiple servers" }) : L({ vi: "dữ liệu trong bộ nhớ", en: "data in memory" }) },
+        { id: "wk", x: 540, y: 150, w: 160, l1: sqs ? L({ vi: "Worker (ASG)", en: "Workers (ASG)" }) : L({ vi: "Job đẩy sang DB", en: "Flush job" }), l2: sqs ? L({ vi: "co giãn theo queue", en: "scale with the queue" }) : L({ vi: "chạy định kỳ", en: "runs periodically" }) },
+        { id: "db", x: 730, y: 150, w: 150, l1: "Aurora", l2: L({ vi: "nơi lưu đơn hàng", en: "system of record" }) },
+      ],
+      links: [["app", "buf"], ["buf", "wk"], ["wk", "db"]],
+    }),
+    run: (sqs) => sqs
+      ? { steps: [
+            { at: "buf", state: "pass", tag: "SEND", msg: L({ vi: "Đơn hàng được gửi vào SQS. SQS lưu message trên nhiều server nên không mất khi một server gặp lỗi.", en: "The order is sent to SQS. SQS stores messages on multiple servers, so they survive a server failure." }) },
+            { at: "wk", state: "pass", msg: L({ vi: "Worker nhận message và xử lý theo tốc độ Aurora chịu được; Auto Scaling thêm worker khi queue dài ra.", en: "Workers receive the messages and process them at a rate Aurora can handle; Auto Scaling adds workers as the queue grows." }) },
+            { at: "db", state: "pass", msg: L({ vi: "Đơn được ghi vào Aurora. Cache chỉ dùng cho tải đọc (cache-aside hoặc write-through sau khi database đã ghi).", en: "The order is written to Aurora. The cache is used only for reads (cache-aside, or write-through after the database write)." }) },
+          ], ok: true, back: false, result: L({ vi: "Đỉnh tải được queue hấp thụ, không mất đơn. Thêm RDS Proxy để gom kết nối tới Aurora (bài RDS).", en: "The queue absorbs the peak and no order is lost. Add RDS Proxy to pool connections to Aurora (RDS lesson)." }) }
+      : { steps: [
+            { at: "buf", state: "change", tag: "SET", msg: L({ vi: "Đơn hàng chỉ nằm trong bộ nhớ của cache node, chưa có trong database.", en: "The order exists only in the cache node's memory, not yet in the database." }) },
+            { at: "buf", state: "block", tag: L({ vi: "LỖI", en: "FAIL" }), msg: L({ vi: "Cache node gặp lỗi trước khi job kịp ghi sang Aurora. Replication sang replica là bất đồng bộ.", en: "The cache node fails before the job writes to Aurora. Replication to replicas is asynchronous." }) },
+            { at: "db", state: "block", flash: L({ vi: "mất đơn", en: "orders lost" }), msg: L({ vi: "Các đơn chưa được ghi xuống database bị mất.", en: "The orders not yet written to the database are lost." }) },
+          ], ok: false, back: false, result: L({ vi: "ElastiCache tăng tốc đọc, không phải nơi lưu giao dịch bền vững, và cũng không giảm tải ghi hay số kết nối tới Aurora. Đơn hàng phải vào nơi lưu trữ bền vững: queue hoặc database.", en: "ElastiCache speeds up reads; it is not a durable store for transactions, and it does not reduce write load or connections to Aurora. Orders must go to durable storage: a queue or the database." }) },
+  },
 ];
 
 export default function CacheSim() {
