@@ -1,0 +1,11 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import CatalogPage from "../../practice/ui/CatalogPage.tsx";
+import "../../styles/practice.css";
+---
+<BaseLayout title="Ôn tập · AWS Từ Nền" description="Luyện đề chứng chỉ AWS từng câu, xem đúng sai và lời giải ngay." section="practice" sidebar={false}>
+  <div class="crumbs"><b>Ôn tập</b></div>
+  <h1>Luyện đề chứng chỉ AWS</h1>
+  <p class="lede">Chọn chứng chỉ và đề, làm từng câu. Bấm Kiểm tra để xem đúng sai cùng lời giải, rồi sang câu tiếp theo. Tiến độ được lưu trên trình duyệt này.</p>
+  <CatalogPage client:only="react" certId={null} />
+</BaseLayout>

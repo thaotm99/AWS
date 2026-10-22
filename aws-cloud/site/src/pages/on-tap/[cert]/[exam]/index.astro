@@ -1,0 +1,19 @@
+---
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import ExamPage from "../../../../practice/ui/ExamPage.tsx";
+import { practiceCatalog } from "../../../../data/practice/PracticeCatalog";
+import "../../../../styles/practice.css";
+
+export function getStaticPaths() {
+  return practiceCatalog.examPaths().map(({ cert, exam }) => ({
+    params: { cert, exam },
+    props: { code: practiceCatalog.getCertification(cert).code, title: practiceCatalog.getExam(cert, exam).title },
+  }));
+}
+
+const { cert, exam } = Astro.params;
+const { code, title } = Astro.props;
+---
+<BaseLayout title={`${code} ${title} · Ôn tập`} section="practice" sidebar={false}>
+  <ExamPage client:only="react" certId={cert} examId={exam} />
+</BaseLayout>

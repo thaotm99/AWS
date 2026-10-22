@@ -8,9 +8,19 @@ interface Props {
   title: string;
   description?: string;
   current?: string;
+  /** Top-nav section this page belongs to. */
+  section?: "theory" | "practice";
+  /** Practice pages have no lesson roadmap. */
+  sidebar?: boolean;
 }
 
-const { title, description = "Ôn thi AWS Solutions Architect Associate (SAA-C03) qua hình minh họa và mô phỏng tương tác, bám theo câu hỏi đề thi.", current } = Astro.props;
+const {
+  title,
+  description = "Ôn thi AWS Solutions Architect Associate (SAA-C03) qua hình minh họa và mô phỏng tương tác, bám theo câu hỏi đề thi.",
+  current,
+  section = "theory",
+  sidebar = true,
+} = Astro.props;
 const ready = (await getCollection("concepts")).map((e) => e.id);
 const layers = getCurriculum();
 ---
@@ -33,21 +43,23 @@ const layers = getCurriculum();
           <span class="brand-mark" aria-hidden="true">
             <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="9" width="14" height="5" rx="1" fill="#fff"/><rect x="3" y="4" width="10" height="4" rx="1" fill="#fff" opacity=".75"/><rect x="5" y="1" width="6" height="2" rx="1" fill="#fff" opacity=".5"/></svg>
           </span>
-          AWS Từ Nền
+          <span class="brand-text">AWS Từ Nền</span>
         </a>
         <nav class="topnav" aria-label="Chính">
-          <a href="/" aria-current="page">Lý thuyết</a>
+          <a href="/" aria-current={section === "theory" ? "page" : undefined}>Lý thuyết</a>
           <a href="#" class="soon" data-soon="Trang Tình huống">Tình huống</a>
-          <a href="#" class="soon" data-soon="Trang Ôn tập">Ôn tập</a>
+          <a href="/on-tap/" aria-current={section === "practice" ? "page" : undefined}>Ôn tập</a>
         </nav>
-        <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="sidebar">Lộ trình học</button>
+        {sidebar && <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="sidebar">Lộ trình học</button>}
       </div>
     </header>
 
-    <div class="shell">
-      <aside class="sidebar" id="sidebar" aria-label="Lộ trình học">
-        <Roadmap client:load layers={layers} current={current} ready={ready} />
-      </aside>
+    <div class:list={["shell", { single: !sidebar }]}>
+      {sidebar && (
+        <aside class="sidebar" id="sidebar" aria-label="Lộ trình học">
+          <Roadmap client:load layers={layers} current={current} ready={ready} />
+        </aside>
+      )}
       <main class="article">
         <slot />
       </main>
@@ -55,10 +67,10 @@ const layers = getCurriculum();
     <div class="toast" id="toast" hidden></div>
 
     <script>
-      const menuBtn = document.getElementById("menuBtn")!;
-      menuBtn.addEventListener("click", () => {
+      const menuBtn = document.getElementById("menuBtn");
+      menuBtn?.addEventListener("click", () => {
         const open = document.getElementById("sidebar")!.classList.toggle("open");
-        menuBtn.setAttribute("aria-expanded", String(open));
+        menuBtn!.setAttribute("aria-expanded", String(open));
       });
       let timer: ReturnType<typeof setTimeout>;
       document.querySelectorAll<HTMLAnchorElement>("[data-soon]").forEach((a) =>

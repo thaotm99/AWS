@@ -1,0 +1,85 @@
+// Shapes exchanged over the practice API. The static build and a future server return the same JSON.
+
+export type CertificationId = string;
+export type ExamId = string;
+export type QuestionId = string;
+export type OptionKey = string;
+export type AttemptId = string;
+
+export interface Certification {
+  id: CertificationId;
+  /** Official exam code, e.g. "SAA-C03". */
+  code: string;
+  name: string;
+  level: "Foundational" | "Associate" | "Professional" | "Specialty";
+  /** Real exam format, shown next to the practice tests. */
+  minutes: number;
+  questionCount: number;
+  /** Scaled passing score out of 1000. */
+  passingScore: number;
+  examCount: number;
+}
+
+export interface ExamSummary {
+  id: ExamId;
+  certId: CertificationId;
+  number: number;
+  title: string;
+  questionCount: number;
+  multiSelectCount: number;
+}
+
+export interface CertificationDetail extends Certification {
+  exams: ExamSummary[];
+}
+
+export interface QuestionOption {
+  key: OptionKey;
+  html: string;
+}
+
+export interface Question {
+  id: QuestionId;
+  /** 1-based position in the exam. */
+  number: number;
+  domain: string;
+  /** How many options must be picked; more than 1 means "select N". */
+  selectCount: number;
+  promptHtml: string;
+  options: QuestionOption[];
+  correct: OptionKey[];
+  explanationHtml: string;
+}
+
+export interface Exam extends ExamSummary {
+  questions: Question[];
+}
+
+export interface AnswerRecord {
+  questionId: QuestionId;
+  chosen: OptionKey[];
+  correct: boolean;
+  answeredAt: string;
+}
+
+export interface Attempt {
+  id: AttemptId;
+  certId: CertificationId;
+  examId: ExamId;
+  questionCount: number;
+  answers: Record<QuestionId, AnswerRecord>;
+  startedAt: string;
+  updatedAt: string;
+  finishedAt: string | null;
+}
+
+export interface NewAttempt {
+  certId: CertificationId;
+  examId: ExamId;
+  questionCount: number;
+}
+
+export interface AnswerInput {
+  chosen: OptionKey[];
+  correct: boolean;
+}
