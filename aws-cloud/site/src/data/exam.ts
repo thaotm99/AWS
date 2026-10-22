@@ -10,10 +10,13 @@ const QUESTION_ID = /^exam[1-6]_q\d{1,2}$/;
 export function readListQa(id: string): string[] | undefined {
   const file = join(STUDY_DIR, id, "list_qa.md");
   if (!existsSync(file)) return undefined;
-  return readFileSync(file, "utf8")
+  const refs = readFileSync(file, "utf8")
     .split("\n")
     .map((line) => line.trim())
     .filter((line) => QUESTION_ID.test(line));
+  const dup = refs.find((ref, i) => refs.indexOf(ref) !== i);
+  if (dup) throw new Error(`${file}: ${dup} is listed twice; remove the duplicate line`);
+  return refs;
 }
 
 /** Rows of the service table in overview.md, keyed by folder id. */

@@ -15,6 +15,10 @@ concurrency:
   group: aws-cloud-${{ github.ref }}
   cancel-in-progress: true
 
+# The site is deployed by Vercel (aws-cloud/site/vercel.json + middleware.ts Basic Auth).
+# The former S3 + CloudFront deploy job was removed: it published the copyrighted practice-test
+# content with no auth and without the vercel.json redirects. aws-cloud/infra stays as reference
+# and is only synthesized here, never deployed.
 jobs:
   site:
     name: Build site
@@ -30,12 +34,8 @@ jobs:
           cache: npm
           cache-dependency-path: aws-cloud/site/package-lock.json
       - run: npm ci
+      # No artifact upload: dist/ holds the copyrighted practice tests, and nothing deploys from CI any more.
       - run: npm run build
-      - uses: actions/upload-artifact@v4
-        with:
-          name: site
-          path: aws-cloud/site/dist
-          retention-days: 7
 
   infra:
     name: Check infra
@@ -56,33 +56,3 @@ jobs:
       - run: npx cdk synth --quiet
         env:
           CDK_DEFAULT_ACCOUNT: "000000000000"
-
-  deploy:
-    name: Deploy to S3 + CloudFront
-    needs: [site, infra]
-    # Runs only on master, and only once the repo variables from aws-cloud/README.md are set.
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master' && vars.AWS_DEPLOY_ROLE_ARN != ''
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    env:
-      BUCKET: ${{ vars.SITE_BUCKET }}
-      DISTRIBUTION_ID: ${{ vars.DISTRIBUTION_ID }}
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: site
-          path: dist
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION || 'ap-southeast-1' }}
-      - name: Upload hashed assets (cached for a year)
-        run: aws s3 sync dist/_astro "s3://$BUCKET/_astro" --cache-control "public,max-age=31536000,immutable"
-      - name: Upload pages (always revalidated)
-        run: aws s3 sync dist "s3://$BUCKET" --exclude "_astro/*" --cache-control "public,max-age=0,must-revalidate"
-      - name: Remove files no longer in the build
-        run: aws s3 sync dist "s3://$BUCKET" --delete
-      - name: Invalidate CloudFront
-        run: aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths "/*"

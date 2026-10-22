@@ -1,5 +1,6 @@
 // Build-time only (uses fs). Never import from a client component.
 // Serves the content behind the static /api/certifications… endpoints.
+import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 import type { Certification, CertificationDetail, ContentLocale, Exam } from "../domain/types";
 import type { ExamSource } from "./ExamSource";
@@ -90,19 +91,32 @@ export class PracticeCatalog {
   }
 
   /**
-   * Every question about one service, numbered 1..N in study-path order. The practice-test
-   * references stay on the server: the set only carries question ids, which reveal nothing.
+   * Opaque id of a question inside one topic set: a short hash of the topic and the original id, so
+   * the topic JSON cannot be joined with the exam JSON on `id`. Stable across builds, so saved answers
+   * survive rebuilds; the same question gets a different id in each topic.
+   */
+  static topicQuestionId(topicId: string, questionId: string): string {
+    return "t" + createHash("sha256").update(`${topicId}\0${questionId}`).digest("hex").slice(0, 12);
+  }
+
+  /**
+   * Every question about one service, numbered 1..N in study-path order. The practice-test references
+   * (examN_qM) stay on the server, and each question gets an opaque id (`topicQuestionId`) and its
+   * position in the set, so neither `id` nor `number` points back to an exam question.
    */
   getTopic(certId: string, topicId: string, locale: ContentLocale = "en"): Exam {
     const config = this.config(certId);
     const topic = this.topicsOf(config).find((t) => t.id === topicId);
     if (!topic) throw new Error(`Không có chủ đề ${certId}/${topicId}`);
     const exams = this.examsOf(config, locale);
+    const seen = new Set<string>();
     const questions = topic.refs.map((ref, i) => {
+      if (seen.has(ref)) throw new Error(`${topicId}/list_qa.md: ${ref} xuất hiện hai lần`);
+      seen.add(ref);
       const [, n, m] = ref.match(/^exam(\d+)_q(\d+)$/)!;
       const q = exams.find((e) => e.number === Number(n))?.questions[Number(m) - 1];
       if (!q || q.number !== Number(m)) throw new Error(`${topicId}/list_qa.md: không tìm thấy ${ref}`);
-      return { ...q, number: i + 1 };
+      return { ...q, id: PracticeCatalog.topicQuestionId(topic.id, q.id), number: i + 1 };
     });
     return {
       id: `topic-${topic.id}`,

@@ -194,7 +194,23 @@ Cấu hình build nằm trong repo:
 
 1. Vào vercel.com → **Add New… → Project**, rồi import repo `thaotm99/aws` từ GitHub.
 2. **Root Directory**: chọn `aws-cloud/site`. Giữ bật tuỳ chọn cho phép dùng file nằm ngoài Root Directory, vì lúc build site cần đọc `solution-architect-aws/` để sinh dữ liệu đề.
-3. **Environment Variables**: thêm `SITE_USER` và `SITE_PASSWORD` (chọn cả Production và Preview). Bỏ trống hai biến này thì site public.
+3. **Environment Variables**: thêm `SITE_USER` và `SITE_PASSWORD` (chọn cả Production và Preview). Xem bảng biến môi trường bên dưới.
 4. Bấm **Deploy**. Từ đó, mỗi lần push lên nhánh production, Vercel tự build lại. Mỗi PR có link preview riêng.
+
+**Biến môi trường của `middleware.ts`:**
+
+| Biến | Ý nghĩa |
+|---|---|
+| `SITE_USER` | Tên đăng nhập (Basic Auth). |
+| `SITE_PASSWORD` | Mật khẩu. Được giải mã theo UTF-8, nên dùng được ký tự tiếng Việt có dấu. |
+| `SITE_PUBLIC` | Đặt `1` để chủ động mở site public khi không đặt `SITE_USER`/`SITE_PASSWORD`. |
+| `VERCEL_ENV` | Do Vercel tự đặt (`production`, `preview`, `development`). Không cần khai báo. |
+
+Middleware đóng mặc định (fail closed):
+
+- Chỉ đặt một trong hai biến `SITE_USER` / `SITE_PASSWORD`: mọi request trả về 500 "Site auth misconfigured".
+- Không đặt cả hai trên Production (`VERCEL_ENV=production`): cũng trả về 500, trừ khi có `SITE_PUBLIC=1`.
+- Không đặt cả hai trên Preview/Development, hoặc có `SITE_PUBLIC=1`: site public.
+- Đặt đủ cả hai: hỏi tài khoản và mật khẩu (401 nếu sai).
 
 Trình duyệt sẽ hỏi tài khoản và mật khẩu ở lần mở đầu tiên, và nhớ cho các lần sau. Middleware chỉ chạy trên Vercel; `npm run dev` và `npm run preview` ở máy không bị hỏi mật khẩu.
