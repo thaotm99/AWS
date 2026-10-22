@@ -488,3 +488,13 @@ input[type="range"] { accent-color: var(--accent); }
 .mix-legend i { width: 12px !important; height: 12px !important; border-radius: 3px; }
 .note-small { font-size: 0.78rem; color: var(--muted); margin: 8px 0 0; }
 .base-t { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; }
+
+/* ELB lesson */
+.cz-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 14px; }
+.cz-az { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--bg); }
+.cz-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.cz-targets { display: flex; flex-wrap: wrap; gap: 8px; }
+.cz-target { display: grid; justify-items: center; gap: 4px; font-family: var(--font-mono); font-size: 0.72rem; width: 54px; }
+.cz-bar { width: 26px; height: 90px; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; display: flex; align-items: flex-end; overflow: hidden; }
+.cz-bar i { display: block; width: 100%; background: var(--accent); transition: height .3s; }
+@media (max-width: 560px) { .cz-grid { grid-template-columns: minmax(0, 1fr); } }
