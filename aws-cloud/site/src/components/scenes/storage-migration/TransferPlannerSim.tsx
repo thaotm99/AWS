@@ -92,18 +92,18 @@ export default function TransferPlannerSim() {
     setLit((s) => ({ ...s, aws: "ok" }));
     flashText(L, 720, 42, "đã tới AWS", "mgx-flash-ok", 1000);
 
-    add("MẠNG", onlineWins ? "hit" : "info", `**DataSync** qua ${link.name}: khoảng **${fmtDays(onlineDays)}** cho ${fmtSize(tb)}.${link.dx ? " Agent gửi qua Direct Connect tới **interface VPC endpoint** (PrivateLink), không đi ra Internet." : ""}`);
-    add("SNOW", onlineWins ? "info" : "hit", `**Snowball Edge**: ${devices} thiết bị (khoảng ${DEVICE_TB} TB mỗi máy), khoảng **${snowDays} ngày** cả nạp dữ liệu và vận chuyển.`);
+    add("MẠNG", onlineWins ? "hit" : "info", `**DataSync** qua ${link.name}: khoảng **${fmtDays(onlineDays)}** cho ${fmtSize(tb)}.${link.dx ? " Agent truyền dữ liệu qua Direct Connect tới **interface VPC endpoint** (PrivateLink), không đi qua Internet." : ""}`);
+    add("SNOW", onlineWins ? "info" : "hit", `**Snowball Edge**: ${devices} thiết bị (khoảng ${DEVICE_TB} TB mỗi thiết bị), khoảng **${snowDays} ngày** bao gồm nạp dữ liệu và vận chuyển.`);
     const notes: Record<Target, string> = {
-      s3: onlineWins ? "DataSync ghi thẳng vào bucket S3, có kiểm tra toàn vẹn và lên lịch chạy được." : "Snowball nhập dữ liệu vào bucket S3 khi thiết bị về tới AWS.",
-      efs: onlineWins ? "DataSync ghi thẳng vào **EFS**." : "Snowball chỉ nhập vào **S3**. Muốn vào EFS phải chép tiếp từ S3 sang bằng DataSync.",
-      lustre: onlineWins ? "DataSync ghi được vào FSx for Lustre." : "Snowball nhập vào **S3**, rồi tạo **FSx for Lustre** liên kết với bucket đó để HPC đọc với độ trễ dưới mili giây.",
-      gda: onlineWins ? "DataSync chọn được storage class **Glacier Deep Archive** khi ghi vào S3." : "Snowball không ghi thẳng vào Glacier Deep Archive. Nhập vào S3, rồi đặt **lifecycle rule 0 ngày** để chuyển sang Deep Archive ngay.",
+      s3: onlineWins ? "DataSync ghi trực tiếp vào bucket S3, có kiểm tra tính toàn vẹn dữ liệu và hỗ trợ lập lịch." : "Snowball nhập dữ liệu vào bucket S3 khi thiết bị được chuyển tới AWS.",
+      efs: onlineWins ? "DataSync ghi trực tiếp vào **EFS**." : "Snowball chỉ nhập dữ liệu vào **S3**. Để đưa dữ liệu vào EFS, cần sao chép tiếp từ S3 bằng DataSync.",
+      lustre: onlineWins ? "DataSync hỗ trợ ghi vào FSx for Lustre." : "Snowball nhập dữ liệu vào **S3**, sau đó tạo **FSx for Lustre** liên kết với bucket đó để workload HPC đọc với độ trễ dưới mili giây.",
+      gda: onlineWins ? "DataSync cho phép chọn storage class **Glacier Deep Archive** khi ghi vào S3." : "Snowball không ghi trực tiếp vào Glacier Deep Archive. Dữ liệu được nhập vào S3, sau đó cấu hình **lifecycle rule 0 ngày** để chuyển ngay sang Deep Archive.",
     };
     add("ĐÍCH", "miss", notes[target]);
     setResult(rich(onlineWins
-      ? `Đường mạng đủ nhanh: dùng **AWS DataSync**. Chuyển xong mà ứng dụng ở kho vẫn cần đọc ghi tiếp thì đặt thêm **S3 File Gateway**.`
-      : `Đường mạng quá chậm cho ${fmtSize(tb)}: gửi **Snowball Edge** nhanh và rẻ hơn. Phần thay đổi phát sinh sau đó có thể đồng bộ bằng DataSync.`));
+      ? `Băng thông đáp ứng được yêu cầu: sử dụng **AWS DataSync**. Nếu sau khi di chuyển, ứng dụng tại kho vẫn cần đọc ghi dữ liệu, triển khai thêm **S3 File Gateway**.`
+      : `Băng thông không đáp ứng được ${fmtSize(tb)}: vận chuyển bằng **Snowball Edge** nhanh hơn và chi phí thấp hơn. Dữ liệu thay đổi phát sinh sau đó có thể được đồng bộ bằng DataSync.`));
     setDone(true);
     setBusy(false);
   }
@@ -113,7 +113,7 @@ export default function TransferPlannerSim() {
       <div className="mgx-row">
         <span className="mgx-lbl">Dữ liệu</span>
         <label className="mgx-size">
-          <input type="range" min={0} max={SIZES.length - 1} value={sizeIx} disabled={busy} aria-label="Dung lượng cần chuyển"
+          <input type="range" min={0} max={SIZES.length - 1} value={sizeIx} disabled={busy} aria-label="Dung lượng cần di chuyển"
             onChange={(e) => { setSizeIx(Number(e.target.value)); reset(); }} />
           <b>{fmtSize(tb)}</b>
         </label>
@@ -124,24 +124,24 @@ export default function TransferPlannerSim() {
           <button key={l.id} className="chip" aria-pressed={i === linkIx} disabled={busy} onClick={() => { setLinkIx(i); reset(); }}>{l.name}</button>
         ))}
       </div>
-      <div className="mgx-row" role="group" aria-label="Đích">
-        <span className="mgx-lbl">Đích</span>
+      <div className="mgx-row" role="group" aria-label="Đích nhận">
+        <span className="mgx-lbl">Đích nhận</span>
         {TARGETS.map((t) => (
           <button key={t.id} className="chip" aria-pressed={t.id === target} disabled={busy} onClick={() => { setTarget(t.id); reset(); }}>{t.name}</button>
         ))}
       </div>
       <div className="stage-bar">
-        <span className="mgx-hint">Hai cách chạy đua: qua mạng và gửi thiết bị.</span>
-        <button className="btn primary" onClick={start} disabled={busy}>Bắt đầu chuyển</button>
+        <span className="mgx-hint">So sánh hai phương án: truyền qua mạng và vận chuyển thiết bị.</span>
+        <button className="btn primary" onClick={start} disabled={busy}>Bắt đầu di chuyển</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 20 820 220" role="img" aria-label="Dữ liệu từ kho đi lên AWS theo hai đường: qua mạng bằng DataSync và gửi thiết bị Snowball">
+        <svg viewBox="0 20 820 220" role="img" aria-label="Dữ liệu từ kho được chuyển lên AWS theo hai phương án: truyền qua mạng bằng DataSync và vận chuyển thiết bị Snowball">
           <path className="mgx-wire" d={`M${SRC_X} ${L1} H${AGENT[0] - 60} M${AGENT[0] + 60} ${L1} H${AWS_X}`} />
           <path className="mgx-road" d={`M${SRC_X} ${L2} H${AWS_X}`} />
           <g className="mgx-node on">
             <rect x={20} y={50} width={140} height={170} rx={10} />
             <text className="mgx-t" x={90} y={128} textAnchor="middle">Kho ShopViet</text>
-            <text className="mgx-s" x={90} y={146} textAnchor="middle">NAS cũ · {fmtSize(tb)}</text>
+            <text className="mgx-s" x={90} y={146} textAnchor="middle">NAS hiện có · {fmtSize(tb)}</text>
           </g>
           <g className={`mgx-node ${lit.net ?? ""}`}>
             <rect x={AGENT[0] - 60} y={L1 - 22} width={120} height={44} rx={8} />
@@ -153,21 +153,21 @@ export default function TransferPlannerSim() {
           {done && (
             <>
               <text className={`mgx-days ${onlineWins ? "win" : "lose"}`} x={470} y={L1 + 24} textAnchor="middle">≈ {fmtDays(onlineDays)}</text>
-              <text className={`mgx-days ${onlineWins ? "lose" : "win"}`} x={400} y={L2 + 28} textAnchor="middle">≈ {snowDays} ngày · {devices} máy</text>
+              <text className={`mgx-days ${onlineWins ? "lose" : "win"}`} x={400} y={L2 + 28} textAnchor="middle">≈ {snowDays} ngày · {devices} thiết bị</text>
             </>
           )}
           <g className={`mgx-node ${lit.aws ?? ""}`}>
             <rect x={AWS_X} y={50} width={170} height={170} rx={10} />
             <text className="mgx-t" x={AWS_X + 85} y={78} textAnchor="middle">AWS</text>
             <text className="mgx-t" x={AWS_X + 85} y={135} textAnchor="middle">{tgt.label.length > 18 ? "S3 Glacier" : tgt.label}</text>
-            <text className="mgx-s" x={AWS_X + 85} y={151} textAnchor="middle">{tgt.label.length > 18 ? "Deep Archive" : "đích"}</text>
+            <text className="mgx-s" x={AWS_X + 85} y={151} textAnchor="middle">{tgt.label.length > 18 ? "Deep Archive" : "đích nhận"}</text>
           </g>
           <g ref={pk} />
         </svg>
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="mgx-hint">Kéo dung lượng, chọn đường truyền và nơi nhận, rồi bấm <b>Bắt đầu chuyển</b>. Thử 10 TB với 1 Gbps, rồi 2 PB với 100 Mbps.</p>
+          <p className="mgx-hint">Điều chỉnh dung lượng, chọn đường truyền và đích nhận, sau đó nhấn <b>Bắt đầu di chuyển</b>. Thử 10 TB với 1 Gbps, sau đó 2 PB với 100 Mbps.</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) => (

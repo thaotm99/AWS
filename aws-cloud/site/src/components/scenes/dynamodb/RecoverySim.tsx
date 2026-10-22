@@ -42,38 +42,38 @@ const END = 18;
 
 const INCIDENTS: Record<IncidentId, { name: string; about: string; stop: number; options: Option[] }> = {
   corrupt: {
-    name: "Bản deploy lỗi ghi hỏng dữ liệu",
-    about: "14:32 bản deploy mới ghi sai giá vào hàng loạt đơn. 15:10 đội phát hiện. Cần quay bảng về đúng trạng thái ngay trước 14:32.",
+    name: "Bản deploy lỗi ghi sai dữ liệu",
+    about: "Lúc 14:32, bản deploy mới ghi sai giá vào hàng loạt đơn hàng. Lúc 15:10, đội vận hành phát hiện sự cố. Bảng cần được khôi phục về đúng trạng thái ngay trước 14:32.",
     stop: T_FOUND,
     options: [
       { id: "backup", name: "On-demand backup lúc 02:00", ok: false, lost: [BACKUP, T_BAD], to: BACKUP,
-        lostText: "12 giờ 32 phút đơn đúng", downText: "trong lúc restore",
-        note: "On-demand backup chỉ khôi phục về **đúng lúc tạo backup**. Mọi đơn đúng từ 02:00 tới 14:32 mất theo. Loại backup này hợp để giữ lâu dài (lưu tới khi tự xóa, phục vụ tuân thủ)." },
+        lostText: "12 giờ 32 phút đơn hàng hợp lệ", downText: "trong thời gian restore",
+        note: "On-demand backup chỉ khôi phục về **đúng thời điểm tạo backup**. Mọi đơn hàng hợp lệ từ 02:00 tới 14:32 đều bị mất. Loại backup này phù hợp để lưu giữ dài hạn (lưu tới khi được xoá thủ công, phục vụ yêu cầu tuân thủ)." },
       { id: "pitr", name: "Point-in-time recovery (PITR)", ok: true, lost: [T_BAD, T_FOUND], to: T_BAD,
-        lostText: "chỉ phần ghi sau 14:32", downText: "trong lúc restore",
-        note: "**PITR** sao lưu liên tục, khôi phục về **bất kỳ giây nào** trong tối đa 35 ngày gần nhất. Chọn 14:31:59. Kết quả luôn là **một bảng mới**; trỏ app sang bảng đó." },
-      { id: "streams", name: "DynamoDB Streams", ok: false, flash: "không có restore",
+        lostText: "chỉ phần ghi sau 14:32", downText: "trong thời gian restore",
+        note: "**PITR** sao lưu liên tục, khôi phục về **bất kỳ giây nào** trong tối đa 35 ngày gần nhất. Chọn 14:31:59. Kết quả luôn là **một bảng mới**; ứng dụng cần được trỏ sang bảng đó." },
+      { id: "streams", name: "DynamoDB Streams", ok: false, flash: "không hỗ trợ restore",
         lostText: "không khôi phục được", downText: "không áp dụng",
-        note: "Streams là luồng sự kiện giữ 24 giờ để Lambda xử lý, **không phải backup**. Không có thao tác restore nào từ Streams." },
-      { id: "global", name: "Replica global table ở Tokyo", ok: false, replica: true, flash: "đã hỏng theo",
-        lostText: "replica cũng hỏng", downText: "không áp dụng",
-        note: "Global table sao chép mọi lần ghi sang Region khác trong khoảng một giây, kể cả ghi sai. Nó chống **mất cả Region**, không chống **ghi hỏng**." },
+        note: "Streams là luồng sự kiện được lưu giữ 24 giờ để Lambda xử lý, **không phải backup**. Streams không hỗ trợ thao tác restore." },
+      { id: "global", name: "Replica global table tại Tokyo", ok: false, replica: true, flash: "đã nhận dữ liệu lỗi",
+        lostText: "replica cũng chứa dữ liệu lỗi", downText: "không áp dụng",
+        note: "Global table sao chép mọi thao tác ghi sang Region khác trong khoảng một giây, kể cả thao tác ghi sai. Cơ chế này bảo vệ trước **sự cố toàn Region**, không bảo vệ trước **ghi sai dữ liệu**." },
     ],
   },
   delete: {
-    name: "Kỹ sư xóa nhầm bảng production",
-    about: "16:05 một kỹ sư dọn bảng test, chọn nhầm bảng Orders và bấm DeleteTable. Thứ đã bật từ trước quyết định chuyện gì xảy ra.",
+    name: "Kỹ sư xoá nhầm bảng production",
+    about: "Lúc 16:05, một kỹ sư dọn dẹp bảng test, chọn nhầm bảng Orders và thực hiện DeleteTable. Kết quả phụ thuộc vào cơ chế bảo vệ đã được bật từ trước.",
     stop: T_DEL,
     options: [
-      { id: "none", name: "Không bật gì", ok: false, gone: true, flash: "DeleteTable",
-        lostText: "toàn bộ bảng", downText: "không quay lại được",
-        note: "Bảng và dữ liệu mất hẳn. Không có bản nào để khôi phục." },
+      { id: "none", name: "Không có cơ chế bảo vệ", ok: false, gone: true, flash: "DeleteTable",
+        lostText: "toàn bộ bảng", downText: "không khôi phục được",
+        note: "Bảng và dữ liệu bị xoá vĩnh viễn. Không có bản sao nào để khôi phục." },
       { id: "pitr", name: "PITR đã bật", ok: false, kept: true, down: [T_DEL, 17], flash: "DeleteTable",
         lostText: "không mất (restore ra bảng mới)", downText: "khoảng 1 giờ",
-        note: "Bảng có PITR bị xóa thì DynamoDB giữ một system backup trong 35 ngày, restore được. Nhưng app **đã sập** trong lúc restore và phải trỏ sang bảng mới. PITR là cứu sau sự cố, không phải ngăn sự cố." },
+        note: "Khi bảng có PITR bị xoá, DynamoDB lưu giữ một system backup trong 35 ngày và có thể restore. Tuy nhiên, ứng dụng **ngừng hoạt động** trong thời gian restore và phải được trỏ sang bảng mới. PITR là biện pháp khôi phục sau sự cố, không phải biện pháp ngăn chặn sự cố." },
       { id: "protect", name: "Deletion protection đã bật", ok: true, refused: true, flash: "từ chối",
-        lostText: "không mất gì", downText: "0 phút",
-        note: "**Deletion protection**: không ai xóa được bảng, kể cả người có quyền DeleteTable, cho tới khi tắt nó đi. Miễn phí, bật một lần, không cần vận hành gì thêm." },
+        lostText: "không mất dữ liệu", downText: "0 phút",
+        note: "**Deletion protection**: không ai xoá được bảng, kể cả người có quyền DeleteTable, cho tới khi tính năng này được tắt. Không tính phí, chỉ cần bật một lần, không phát sinh tác vụ vận hành." },
     ],
   },
 };
@@ -172,7 +172,7 @@ export default function RecoverySim() {
         ))}
       </div>
       <div className="stage-bar">
-        <span className="label">{incident === "corrupt" ? "Khôi phục bằng" : "Đã bật từ trước"}</span>
+        <span className="label">{incident === "corrupt" ? "Phương án khôi phục" : "Cơ chế đã bật"}</span>
         {inc.options.map((o) => (
           <button key={o.id} className="btn" aria-pressed={o.id === opt.id} disabled={busy && o.id !== opt.id} onClick={() => pickOption(o.id)}>
             {o.name}
@@ -235,12 +235,12 @@ export default function RecoverySim() {
       </div>
       <div className="readout" aria-live="polite">
         {!done ? (
-          <p className="rcv-hint">Chọn sự cố và cách khôi phục, rồi bấm <b>Chạy</b>.</p>
+          <p className="rcv-hint">Chọn sự cố và phương án khôi phục, sau đó nhấn <b>Chạy</b>.</p>
         ) : (
           <>
             <div className="status">
               <span className={"pill " + (opt.ok || opt.kept ? "ok" : "bad")}><i />Dữ liệu mất: {opt.lostText}</span>
-              <span className="pill rcv-muted"><i />App ngừng: {opt.downText}</span>
+              <span className="pill rcv-muted"><i />Ứng dụng ngừng: {opt.downText}</span>
             </div>
             <p className={`rcv-result ${opt.ok ? "ok" : "bad"}`}>{rich(opt.note)}</p>
           </>

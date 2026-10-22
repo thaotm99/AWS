@@ -23,22 +23,22 @@ const HOT = [0.1, 0.7, 0.1, 0.1];
 
 const PATTERNS: Record<PatternId, { name: string; about: string; need: number[]; hit: number; hot: number[] }> = {
   shipper: {
-    name: "App shipper: đêm vắng, ngày thất thường",
-    about: "Shipper chỉ làm ban ngày. Đơn đổ về theo đợt, tăng gấp mấy lần chỉ trong vài phút. Vị trí đổi liên tục nên ít khi đọc lại đúng dữ liệu cũ.",
+    name: "Ứng dụng shipper: ban đêm thấp, ban ngày biến động",
+    about: "Shipper chỉ làm việc ban ngày. Đơn hàng phát sinh theo đợt, tải tăng gấp nhiều lần chỉ trong vài phút. Vị trí thay đổi liên tục nên hiếm khi đọc lại đúng dữ liệu cũ.",
     need: [20, 20, 20, 20, 20, 20, 300, 2600, 900, 3800, 1200, 4200, 1500, 600, 3600, 900, 4400, 5200, 1600, 700, 300, 40, 20, 20],
     hit: 0.15,
     hot: [],
   },
   steady: {
-    name: "Danh mục sản phẩm: tải đều, đoán trước được",
-    about: "Khách xem sản phẩm cả ngày, tăng giảm từ từ theo giờ, ngày nào cũng giống ngày nào.",
+    name: "Danh mục sản phẩm: tải ổn định, dự đoán được",
+    about: "Người dùng xem sản phẩm suốt cả ngày; tải tăng giảm dần theo giờ và lặp lại giống nhau giữa các ngày.",
     need: [1500, 1400, 1300, 1300, 1400, 1600, 2000, 2500, 3000, 3500, 3800, 4000, 4100, 4000, 3900, 3900, 4000, 4300, 4600, 4800, 4600, 3800, 2800, 2000],
     hit: 0.6,
     hot: [],
   },
   live: {
-    name: "Livestream của một shop nổi tiếng",
-    about: "Từ 19h đến 22h, hàng chục nghìn người cùng mở trang của một shop. Phần lớn lượt đọc rơi vào cùng một partition key.",
+    name: "Livestream của một shop có lưu lượng lớn",
+    about: "Từ 19h đến 22h, hàng chục nghìn người dùng cùng truy cập trang của một shop. Phần lớn lượt đọc tập trung vào cùng một partition key.",
     need: [800, 700, 600, 600, 600, 700, 1000, 1500, 2000, 2400, 2600, 2800, 3000, 2800, 2600, 2600, 2800, 3200, 3600, 4500, 8000, 7600, 3000, 1400],
     hit: 0.95,
     hot: [19, 20, 21],
@@ -55,19 +55,19 @@ const BEST: Record<PatternId, ModeId> = { shipper: "od", steady: "prov", live: "
 
 const NOTE: Record<PatternId, Record<ModeId, string>> = {
   shipper: {
-    prov: "Auto Scaling cần vài phút mới nâng capacity, đợt tăng đột ngột bị **throttle**. Ban đêm gần như không ai dùng mà vẫn trả tiền cho capacity tối thiểu.",
-    od: "**On-Demand** trả theo từng request: đêm không có request thì không tốn tiền đọc ghi, ban ngày tăng vọt vẫn phục vụ ngay. Hợp tải không đoán trước, có lúc gần như bằng 0.",
-    dax: "Vị trí shipper đổi liên tục, cache hiếm khi trúng. Thêm cụm DAX chạy 24/7 mà gần như không đỡ được gì.",
+    prov: "Auto Scaling cần vài phút để tăng capacity, nên các đợt tăng đột ngột bị **throttle**. Ban đêm gần như không có người dùng nhưng vẫn phát sinh phí cho capacity tối thiểu.",
+    od: "**On-Demand** tính phí theo từng request: ban đêm không có request thì không phát sinh phí đọc ghi, ban ngày tải tăng đột biến vẫn được phục vụ ngay. Phù hợp với tải không dự đoán được, có thời điểm gần bằng 0.",
+    dax: "Vị trí shipper thay đổi liên tục nên tỷ lệ cache hit rất thấp. Cụm DAX chạy 24/7 nhưng gần như không giảm được tải.",
   },
   steady: {
-    prov: "Tải đều, đoán trước được: **Provisioned + Auto Scaling** giữ capacity sát nhu cầu, giá mỗi đơn vị capacity thấp hơn trả theo request. Đây là cách rẻ nhất cho kiểu tải này.",
-    od: "Chạy tốt, không throttle. Nhưng tải đều cả ngày thì trả theo từng request đắt hơn đặt trước capacity.",
-    dax: "Chạy tốt, nhưng bảng không có vấn đề về tốc độ. Trả thêm tiền cụm DAX mà không cần.",
+    prov: "Tải ổn định, dự đoán được: **Provisioned + Auto Scaling** giữ capacity sát nhu cầu, đơn giá mỗi đơn vị capacity thấp hơn so với tính phí theo request. Đây là phương án chi phí thấp nhất cho mẫu tải này.",
+    od: "Hoạt động ổn định, không bị throttle. Tuy nhiên, với tải ổn định cả ngày, tính phí theo từng request có chi phí cao hơn cấp phát trước capacity.",
+    dax: "Hoạt động ổn định, nhưng bảng không gặp vấn đề về hiệu năng. Chi phí cụm DAX phát sinh mà không cần thiết.",
   },
   live: {
-    prov: "Tổng capacity của bảng đủ, nhưng 70% lượt đọc dồn vào **một partition**, vượt trần 3.000 RCU của partition đó. Tăng RCU cho cả bảng cũng không giúp.",
-    od: "On-Demand tự co giãn theo tải của cả bảng, nhưng trần **mỗi partition** vẫn còn. Partition nóng vẫn bị throttle.",
-    dax: "**DAX** trả các lượt đọc lặp lại từ bộ nhớ trong vài micro giây. Chỉ phần nhỏ còn lại tới DynamoDB, partition nóng hết nóng. Ứng dụng gần như không phải sửa vì DAX dùng cùng API với DynamoDB.",
+    prov: "Tổng capacity của bảng đủ đáp ứng, nhưng 70% lượt đọc tập trung vào **một partition**, vượt giới hạn 3.000 RCU của partition đó. Tăng RCU cho toàn bảng cũng không khắc phục được.",
+    od: "On-Demand tự động co giãn theo tải của toàn bảng, nhưng giới hạn của **mỗi partition** vẫn áp dụng. Hot partition vẫn bị throttle.",
+    dax: "**DAX** phục vụ các lượt đọc lặp lại từ bộ nhớ trong vài micro giây. Chỉ phần nhỏ còn lại được chuyển tới DynamoDB, hot partition không còn quá tải. Ứng dụng gần như không cần thay đổi vì DAX sử dụng cùng API với DynamoDB.",
   },
 };
 
@@ -151,7 +151,7 @@ export default function CapacitySim() {
 
   return (
     <div className="stage dcap">
-      <div className="dcap-row" role="group" aria-label="Kiểu tải">
+      <div className="dcap-row" role="group" aria-label="Mẫu tải">
         {(Object.keys(PATTERNS) as PatternId[]).map((id) => (
           <button key={id} className="chip" aria-pressed={id === pattern} disabled={busy && id !== pattern} onClick={() => change(() => setPattern(id))}>
             {PATTERNS[id].name}
@@ -165,11 +165,11 @@ export default function CapacitySim() {
             {m.name}
           </button>
         ))}
-        <button className="btn primary dcap-play" onClick={play} disabled={busy}>Chạy một ngày</button>
+        <button className="btn primary dcap-play" onClick={play} disabled={busy}>Mô phỏng một ngày</button>
       </div>
       <p className="dcap-about">{PATTERNS[pattern].about}</p>
       <div className="svg-wrap">
-        <svg viewBox="0 0 820 268" role="img" aria-label="Biểu đồ 24 giờ: cột là lượt đọc, đường là capacity của bảng; bên phải là tải trên bốn partition so với trần 3.000 RCU">
+        <svg viewBox="0 0 820 268" role="img" aria-label="Biểu đồ 24 giờ: cột là lượt đọc, đường là capacity của bảng; bên phải là tải trên bốn partition so với giới hạn 3.000 RCU">
           {[0, 3000, 6000, 9000].map((v) => (
             <g key={v}>
               <line className="dcap-grid" x1={X0} x2={X0 + W} y1={y(v)} y2={y(v)} />
@@ -197,7 +197,7 @@ export default function CapacitySim() {
             <text key={h} className="ts" x={X0 + h * bw + bw / 2} y={y(0) + 16} textAnchor="middle">{h}h</text>
           ))}
 
-          <text className="dcap-title" x={PX0} y={Y0 - 12}>{shown < 0 ? "Partition" : done ? `Partition lúc ${at}h (đỉnh)` : `Partition lúc ${at}h`}</text>
+          <text className="dcap-title" x={PX0} y={Y0 - 12}>{shown < 0 ? "Partition" : done ? `Partition lúc ${at}h (cao điểm)` : `Partition lúc ${at}h`}</text>
           {Array.from({ length: PARTS }, (_, i) => {
             const v = shown < 0 ? 0 : part.parts[i];
             const x = PX0 + i * (PW + PGAP);
@@ -210,7 +210,7 @@ export default function CapacitySim() {
             );
           })}
           <line className="dcap-ceil" x1={PX0 - 6} x2={PX0 + PARTS * (PW + PGAP) - PGAP + 6} y1={py(PART_MAX)} y2={py(PART_MAX)} />
-          <text className="dcap-ceil-t" x={PX0 + PARTS * (PW + PGAP) - PGAP} y={py(PART_MAX) - 6} textAnchor="end">trần 3.000 RCU</text>
+          <text className="dcap-ceil-t" x={PX0 + PARTS * (PW + PGAP) - PGAP} y={py(PART_MAX) - 6} textAnchor="end">giới hạn 3.000 RCU</text>
 
           <g transform={`translate(${X0} 258)`}>
             <rect className="dcap-bar" x={0} y={-9} width={12} height={10} rx={2} />
@@ -219,11 +219,11 @@ export default function CapacitySim() {
             <text className="ts" x={197} y={0}>bị throttle</text>
             {mode === "prov" && <>
               <line className="dcap-cap" x1={290} x2={310} y1={-4} y2={-4} />
-              <text className="ts" x={316} y={0}>capacity đã đặt</text>
+              <text className="ts" x={316} y={0}>capacity đã cấp phát</text>
             </>}
             {mode === "dax" && <>
               <rect className="dcap-bar cached" x={290} y={-9} width={12} height={10} rx={2} />
-              <text className="ts" x={307} y={0}>DAX trả từ cache</text>
+              <text className="ts" x={307} y={0}>DAX phục vụ từ cache</text>
             </>}
           </g>
           <g ref={fx} />
@@ -231,19 +231,19 @@ export default function CapacitySim() {
       </div>
       <div className="readout" aria-live="polite">
         {shown < 0 ? (
-          <p className="dcap-hint">Chọn kiểu tải và capacity mode, rồi bấm <b>Chạy một ngày</b>. Mô hình đơn giản hoá: Auto Scaling đặt capacity theo tải giờ trước, nhắm 70%.</p>
+          <p className="dcap-hint">Chọn mẫu tải và capacity mode, sau đó nhấn <b>Mô phỏng một ngày</b>. Mô hình đã được đơn giản hoá: Auto Scaling đặt capacity theo tải của giờ trước, với mức sử dụng mục tiêu 70%.</p>
         ) : (
           <>
             <div className="status">
               <span className="count">{shown}h · {fmt(now.need)} RCU{mode === "dax" ? ` · ${fmt(now.table)} tới bảng` : ""}</span>
               <span className={"pill " + (throttled ? "bad" : "ok")}><i />{throttled} giờ bị throttle</span>
-              {mode === "prov" && <span className="pill dcap-muted"><i />{fmt(idle)} RCU-giờ trả mà không dùng</span>}
-              {mode === "od" && <span className="pill dcap-muted"><i />trả theo từng request</span>}
-              {mode === "dax" && <span className="pill dcap-muted"><i />cụm DAX chạy suốt 24 giờ</span>}
+              {mode === "prov" && <span className="pill dcap-muted"><i />{fmt(idle)} RCU-giờ trả phí nhưng không sử dụng</span>}
+              {mode === "od" && <span className="pill dcap-muted"><i />tính phí theo từng request</span>}
+              {mode === "dax" && <span className="pill dcap-muted"><i />cụm DAX chạy liên tục 24 giờ</span>}
             </div>
             {done && (
               <p className={`dcap-result ${fits ? "ok" : "bad"}`}>
-                <b>{fits ? "Hợp với kiểu tải này. " : "Chưa hợp. "}</b>{rich(NOTE[pattern][mode])}
+                <b>{fits ? "Phù hợp với mẫu tải này. " : "Chưa phù hợp. "}</b>{rich(NOTE[pattern][mode])}
               </p>
             )}
           </>

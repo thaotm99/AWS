@@ -10,17 +10,17 @@ import "./cache-engine-sim.css";
 type Engine = "redis" | "mem";
 
 const NEEDS: { id: string; name: string; redis: boolean; mem: boolean }[] = [
-  { id: "multi", name: "Dùng hết nhiều core trên một node", redis: false, mem: true },
+  { id: "multi", name: "Tận dụng nhiều core trên một node", redis: false, mem: true },
   { id: "simple", name: "Cache key-value đơn giản", redis: true, mem: true },
   { id: "sorted", name: "Bảng xếp hạng (sorted set)", redis: true, mem: false },
-  { id: "geo", name: "Tìm theo vị trí (geospatial)", redis: true, mem: false },
+  { id: "geo", name: "Truy vấn theo vị trí (geospatial)", redis: true, mem: false },
   { id: "repl", name: "Replica + Multi-AZ automatic failover", redis: true, mem: false },
   { id: "pubsub", name: "Pub/Sub", redis: true, mem: false },
 ];
 
 const ENGINES: { id: Engine; name: string; x: number; cores: string }[] = [
-  { id: "redis", name: "Redis OSS / Valkey", x: 20, cores: "chạy lệnh trên một thread chính" },
-  { id: "mem", name: "Memcached", x: 420, cores: "chạy lệnh trên nhiều thread" },
+  { id: "redis", name: "Redis OSS / Valkey", x: 20, cores: "xử lý lệnh trên một thread chính" },
+  { id: "mem", name: "Memcached", x: 420, cores: "xử lý lệnh trên nhiều thread" },
 ];
 
 const CMDS = 8;
@@ -78,16 +78,16 @@ export default function CacheEngineSim() {
 
   let verdict: string;
   let good = true;
-  if (chosen.length === 0) { verdict = "Chọn ít nhất một nhu cầu."; good = false; }
-  else if (okRedis && okMem) verdict = "Cả hai đều đáp ứng. Chỉ cần cache đơn giản thì Memcached gọn nhẹ hơn.";
-  else if (okRedis) verdict = "Redis OSS (hoặc Valkey) đáp ứng hết. Memcached thiếu: " + chosen.filter((n) => !n.mem).map((n) => n.name).join(", ") + ".";
-  else if (okMem) verdict = "Memcached đáp ứng hết. Redis OSS thiếu: " + chosen.filter((n) => !n.redis).map((n) => n.name).join(", ") + ".";
-  else { verdict = "Không engine nào đáp ứng hết. Tách thành hai cluster cho hai việc khác nhau, hoặc xem lại nhu cầu nào thật sự cần."; good = false; }
+  if (chosen.length === 0) { verdict = "Chọn tối thiểu một yêu cầu."; good = false; }
+  else if (okRedis && okMem) verdict = "Cả hai engine đều đáp ứng. Khi chỉ cần cache đơn giản, Memcached gọn nhẹ hơn.";
+  else if (okRedis) verdict = "Redis OSS (hoặc Valkey) đáp ứng đầy đủ. Memcached không hỗ trợ: " + chosen.filter((n) => !n.mem).map((n) => n.name).join(", ") + ".";
+  else if (okMem) verdict = "Memcached đáp ứng đầy đủ. Redis OSS không hỗ trợ: " + chosen.filter((n) => !n.redis).map((n) => n.name).join(", ") + ".";
+  else { verdict = "Không engine nào đáp ứng đầy đủ. Tách thành hai cluster cho hai tác vụ khác nhau, hoặc rà soát lại các yêu cầu thực sự cần thiết."; good = false; }
 
   return (
     <div className="stage cen">
       <div className="stage-bar">
-        <span className="label">Cùng một node 4 vCPU</span>
+        <span className="label">Hai node cùng cấu hình 4 vCPU</span>
         <button className="btn primary cen-play" onClick={play} disabled={busy}>Gửi {CMDS} lệnh</button>
       </div>
       <div className="svg-wrap">
@@ -112,12 +112,12 @@ export default function CacheEngineSim() {
                   return (
                     <g key={i}>
                       <rect className={cls} x={coreX(en.x, i)} y={CORE_Y} width={CORE} height={CORE} rx={6} />
-                      <text className="cen-core-t" x={coreX(en.x, i) + CORE / 2} y={CORE_Y + CORE / 2 + 4} textAnchor="middle">{used ? "T" + (i + 1) : "rảnh"}</text>
+                      <text className="cen-core-t" x={coreX(en.x, i) + CORE / 2} y={CORE_Y + CORE / 2 + 4} textAnchor="middle">{used ? "T" + (i + 1) : "rỗi"}</text>
                     </g>
                   );
                 })}
                 <text className={"cen-done" + (rounds ? "" : " idle")} x={en.x + 250} y={CORE_Y + CORE + 30} textAnchor="middle">
-                  {rounds ? `xong sau ${rounds} lượt` : busy ? "đang chạy…" : " "}
+                  {rounds ? `hoàn tất sau ${rounds} lượt` : busy ? "đang xử lý…" : " "}
                 </text>
               </g>
             );
@@ -126,20 +126,20 @@ export default function CacheEngineSim() {
         </svg>
       </div>
       <div className="readout">
-        <p className="cen-hint">ShopViet cần gì? Chọn các nhu cầu:</p>
-        <div className="cen-needs" role="group" aria-label="Nhu cầu của ShopViet">
+        <p className="cen-hint">Chọn các yêu cầu của ShopViet:</p>
+        <div className="cen-needs" role="group" aria-label="Yêu cầu của ShopViet">
           {NEEDS.map((n) => (
             <button key={n.id} className="chip" aria-pressed={picked.includes(n.id)} onClick={() => toggle(n.id)}>{n.name}</button>
           ))}
         </div>
         <table className="cen-table">
-          <thead><tr><th>Nhu cầu đã chọn</th><th>Redis OSS / Valkey</th><th>Memcached</th></tr></thead>
+          <thead><tr><th>Yêu cầu đã chọn</th><th>Redis OSS / Valkey</th><th>Memcached</th></tr></thead>
           <tbody>
             {chosen.map((n) => (
               <tr key={n.id}>
                 <td>{n.name}</td>
-                <td className={n.redis ? "yes" : "no"}>{n.redis ? "có" : "không"}</td>
-                <td className={n.mem ? "yes" : "no"}>{n.mem ? "có" : "không"}</td>
+                <td className={n.redis ? "yes" : "no"}>{n.redis ? "hỗ trợ" : "không"}</td>
+                <td className={n.mem ? "yes" : "no"}>{n.mem ? "hỗ trợ" : "không"}</td>
               </tr>
             ))}
           </tbody>

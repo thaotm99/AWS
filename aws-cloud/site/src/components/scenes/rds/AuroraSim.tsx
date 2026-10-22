@@ -21,7 +21,7 @@ const VOL_Y = 232;
 const TOKYO: Pt = [705, 100];
 const COPIES = [285, 331, 395, 441, 505, 551];
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
-const INTRO = "Writer ở AZ a, hai reader ở AZ b và c, tất cả dùng chung một cluster volume. Thử từng thao tác bên trên.";
+const INTRO = "Writer tại AZ a, hai reader tại AZ b và c, tất cả dùng chung một cluster volume. Thực hiện lần lượt từng thao tác phía trên.";
 
 export default function AuroraSim() {
   const pk = useRef<SVGGElement>(null);
@@ -56,7 +56,7 @@ export default function AuroraSim() {
     if (regionDown) {
       await travel(L, [[APP[0], APP[1] + 25], [APP[0], 280], [TOKYO[0], 280], [TOKYO[0], TOKYO[1] + 22]], 900, "pkt");
       flashHot("tokyo");
-      setNote(<>Đơn hàng giờ ghi vào cluster ở <b>Tokyo</b>, nay đã thành primary.</>);
+      setNote(<>Đơn hàng hiện được ghi vào cluster tại <b>Tokyo</b>, cluster này đã trở thành primary.</>);
       return;
     }
     const w = INST[writer];
@@ -65,19 +65,19 @@ export default function AuroraSim() {
     flashHot(writer);
     await travel(L, [[w.x + 30, w.y + 22], [w.x + 30, VOL_Y - 25]], 350, "pkt");
     for (let k = 1; k <= 6; k++) { setCopies(k); await wait(60); }
-    flashText(L, 418, VOL_Y - 30, "ghi xong khi 4/6 bản xác nhận", "rdx-flash-ok", 1300);
+    flashText(L, 418, VOL_Y - 30, "ghi hoàn tất khi 4/6 bản xác nhận", "rdx-flash-ok", 1300);
     if (global) await travel(L, [[578, VOL_Y], [615, VOL_Y]], 500, "pkt-edge", 5);
     await travel(L, [[w.x + 30, VOL_Y - 25], [w.x + 30, w.y + 22]], 300, "pkt-back");
     await travel(L, [top(writer), [w.x, 70], [250, 70], [WEP[0] + 60, WEP[1]], [APP[0] + 45, APP[1] - 10]], 600, "pkt-back");
     setTimeout(() => setCopies(0), 900);
-    setNote(<>Ghi đi qua <b>cluster endpoint</b> tới writer. Dữ liệu ghi vào <b>cluster volume</b> dùng chung, 6 bản trên 3 AZ. Reader đọc cùng volume nên độ trễ replica thường chỉ vài chục mili giây.{global ? <> Volume cũng được sao chép sang Tokyo, thường dưới 1 giây.</> : null}</>);
+    setNote(<>Request ghi đi qua <b>cluster endpoint</b> tới writer. Dữ liệu được ghi vào <b>cluster volume</b> dùng chung, gồm 6 bản sao trên 3 AZ. Reader đọc cùng volume nên replica lag thường chỉ vài chục mili giây.{global ? <> Volume cũng được sao chép sang Tokyo, thường dưới 1 giây.</> : null}</>);
   });
 
   const read = () => act(async (L) => {
     if (regionDown) {
       await travel(L, [[APP[0], APP[1] + 25], [APP[0], 280], [TOKYO[0], 280], [TOKYO[0], TOKYO[1] + 22]], 900, "pkt");
       flashHot("tokyo");
-      setNote(<>Region Singapore đang lỗi; cả đọc và ghi đều vào Tokyo.</>);
+      setNote(<>Region Singapore đang gặp sự cố; toàn bộ request đọc và ghi được chuyển tới Tokyo.</>);
       return;
     }
     await Promise.all([0, 1, 2, 3, 4, 5].map(async (k) => {
@@ -89,7 +89,7 @@ export default function AuroraSim() {
       await travel(L, entry, 400, "pkt");
       flashHot(r);
     }));
-    setNote(<><b>Reader endpoint</b> chia kết nối đọc cho {readers.length} reader. Ứng dụng chỉ cần một địa chỉ đọc, không phải biết có bao nhiêu replica.</>);
+    setNote(<><b>Reader endpoint</b> phân phối kết nối đọc cho {readers.length} reader. Ứng dụng chỉ cần một endpoint đọc, không cần biết số lượng replica.</>);
   });
 
   const surge = () => act(async (L) => {
@@ -98,22 +98,22 @@ export default function AuroraSim() {
     if (!hasR3) {
       setHasR3(true);
       flashText(L, INST.i4.x, INST.i4.y - 30, "+ reader mới", "rdx-flash-ok", 1100);
-      setNote(<><b>Aurora Auto Scaling</b> thấy CPU của các reader vượt ngưỡng nên thêm một Aurora Replica. Hết cao điểm, replica thừa được bỏ bớt.</>);
+      setNote(<><b>Aurora Auto Scaling</b> phát hiện CPU của các reader vượt ngưỡng và bổ sung một Aurora Replica. Sau thời điểm cao điểm, các replica dư thừa được loại bỏ.</>);
     } else {
-      setNote(<>Auto Scaling đã thêm reader rồi. Nó giữ số replica trong khoảng min/max bạn đặt.</>);
+      setNote(<>Auto Scaling đã bổ sung reader. Số lượng replica được duy trì trong khoảng min/max đã cấu hình.</>);
     }
   });
 
   const failWriter = () => act(async (L) => {
     const old = writer;
     setDown(old);
-    flashText(L, INST[old].x, INST[old].y - 30, "writer hỏng", "flash-bad", 1300);
+    flashText(L, INST[old].x, INST[old].y - 30, "writer lỗi", "flash-bad", 1300);
     await wait(1100);
     const next = (["i2", "i3", "i4", "i1"] as Inst[]).find((i) => i !== old && (i !== "i4" || hasR3))!;
     setWriter(next);
     flashText(L, INST[next].x, INST[next].y - 30, "promote", "rdx-flash-ok", 1100);
     await travel(L, [[WEP[0] + 60, WEP[1]], [250, 70], [INST[next].x, 70], top(next)], 600, "pkt");
-    setNote(<>Aurora <b>promote một reader</b> thành writer, thường trong khoảng 30 giây, và <b>cluster endpoint</b> tự trỏ sang writer mới. Vì vậy nên luôn có ít nhất một Aurora Replica ở AZ khác.</>);
+    setNote(<>Aurora <b>promote một reader</b> thành writer, thường trong khoảng 30 giây, và <b>cluster endpoint</b> tự động trỏ tới writer mới. Do đó, cluster nên luôn có tối thiểu một Aurora Replica tại AZ khác.</>);
   });
 
   const addGlobal = () => act(async (L) => {
@@ -121,17 +121,17 @@ export default function AuroraSim() {
     await wait(300);
     await travel(L, [[578, VOL_Y], [615, VOL_Y]], 600, "pkt-edge", 5);
     flashText(L, 597, VOL_Y - 18, "< 1 giây", "rdx-flash-ok", 1200);
-    setNote(<><b>Aurora Global Database</b> sao chép ở tầng storage sang Region Tokyo, độ trễ thường dưới 1 giây. Khách ở Nhật đọc tại chỗ với độ trễ thấp; Tokyo cũng là nơi dự phòng.</>);
+    setNote(<><b>Aurora Global Database</b> sao chép ở tầng storage sang Region Tokyo, độ trễ thường dưới 1 giây. Người dùng tại Nhật Bản đọc dữ liệu tại Region gần nhất với độ trễ thấp; Tokyo đồng thời là Region dự phòng.</>);
   });
 
   const failRegion = () => act(async (L) => {
     setRegionDown(true);
-    flashText(L, 350, 46, "Region Singapore lỗi", "flash-bad", 1400);
+    flashText(L, 350, 46, "Region Singapore sự cố", "flash-bad", 1400);
     await wait(1200);
     flashText(L, TOKYO[0], TOKYO[1] - 30, "promote", "rdx-flash-ok", 1200);
     await travel(L, [[APP[0], APP[1] + 25], [APP[0], 280], [TOKYO[0], 280], [TOKYO[0], TOKYO[1] + 22]], 900, "pkt");
     flashHot("tokyo");
-    setNote(<>Promote cluster ở Tokyo thành primary (managed failover giữa Region). <b>RPO thường vài giây, RTO khoảng một phút</b>. Snapshot copy sang Region khác thì chậm hơn nhiều.</>);
+    setNote(<>Cluster tại Tokyo được promote thành primary (managed failover giữa các Region). <b>RPO thường vài giây, RTO khoảng một phút</b>. Phương án copy snapshot sang Region khác chậm hơn đáng kể.</>);
   });
 
   function reset() {
@@ -149,7 +149,7 @@ export default function AuroraSim() {
     if (i === "i4" && !hasR3) return null;
     const { x, y, az } = INST[i];
     const isDown = down === i || regionDown;
-    const role = down === i ? "Hỏng" : i === writer ? "Writer" : "Reader";
+    const role = down === i ? "Lỗi" : i === writer ? "Writer" : "Reader";
     const cls = isDown ? "bad" : hot[i] ? "ok" : i === writer ? "on" : "";
     return (
       <g key={i} className={`rdx-node ${cls}${i === "i4" ? " rdx-pop" : ""}`}>
@@ -165,14 +165,14 @@ export default function AuroraSim() {
       <div className="stage-bar">
         <button className="btn primary" onClick={write} disabled={busy}>Ghi đơn hàng</button>
         <button className="btn" onClick={read} disabled={busy}>6 lượt đọc</button>
-        <button className="btn" onClick={surge} disabled={busy || regionDown}>Tải đọc tăng mạnh</button>
-        <button className="btn danger" onClick={failWriter} disabled={busy || !!down || regionDown}>Writer hỏng</button>
+        <button className="btn" onClick={surge} disabled={busy || regionDown}>Tải đọc tăng đột biến</button>
+        <button className="btn danger" onClick={failWriter} disabled={busy || !!down || regionDown}>Sự cố writer</button>
         <button className="btn" onClick={addGlobal} disabled={busy || global}>Thêm Region Tokyo</button>
-        <button className="btn danger" onClick={failRegion} disabled={busy || !global || regionDown}>Region Singapore sập</button>
-        <button className="btn" onClick={reset} disabled={busy}>Làm lại</button>
+        <button className="btn danger" onClick={failRegion} disabled={busy || !global || regionDown}>Sự cố Region Singapore</button>
+        <button className="btn" onClick={reset} disabled={busy}>Đặt lại</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 20 820 270" role="img" aria-label="Aurora cluster: cluster endpoint và reader endpoint, writer và các reader ở ba AZ dùng chung cluster volume; tuỳ chọn thêm Region Tokyo">
+        <svg viewBox="0 20 820 270" role="img" aria-label="Aurora cluster: cluster endpoint và reader endpoint, writer và các reader tại ba AZ dùng chung cluster volume; tuỳ chọn bổ sung Region Tokyo">
           <rect className={`rdx-region ${regionDown ? "down" : ""}`} x={115} y={28} width={472} height={242} rx={12} />
           <text className="rdx-m" x={127} y={262}>Region Singapore · Aurora cluster</text>
           {["a", "b", "c"].map((az, k) => (
@@ -195,7 +195,7 @@ export default function AuroraSim() {
           <g className="rdx-node">
             <rect x={REP[0] - 60} y={REP[1] - 22} width={120} height={44} rx={8} />
             <text className="rdx-t" x={REP[0]} y={REP[1] - 3} textAnchor="middle">Reader endpoint</text>
-            <text className="rdx-s" x={REP[0]} y={REP[1] + 13} textAnchor="middle">chia cho {readers.length} reader</text>
+            <text className="rdx-s" x={REP[0]} y={REP[1] + 13} textAnchor="middle">tới {readers.length} reader</text>
           </g>
           {(Object.keys(INST) as Inst[]).map(inst)}
           <g className={`rdx-node ${regionDown ? "bad" : ""}`}>
@@ -210,7 +210,7 @@ export default function AuroraSim() {
               <g className={`rdx-node ${hot.tokyo ? "ok" : regionDown ? "on" : ""}`}>
                 <rect x={TOKYO[0] - 70} y={TOKYO[1] - 22} width={140} height={44} rx={8} />
                 <text className="rdx-t" x={TOKYO[0]} y={TOKYO[1] - 3} textAnchor="middle">{regionDown ? "Writer mới" : "Reader"}</text>
-                <text className="rdx-s" x={TOKYO[0]} y={TOKYO[1] + 13} textAnchor="middle">{regionDown ? "đã promote" : "đọc tại Nhật"}</text>
+                <text className="rdx-s" x={TOKYO[0]} y={TOKYO[1] + 13} textAnchor="middle">{regionDown ? "đã promote" : "đọc tại Nhật Bản"}</text>
               </g>
               <g className="rdx-node">
                 <rect x={615} y={VOL_Y - 25} width={180} height={44} rx={8} />
