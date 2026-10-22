@@ -1,0 +1,179 @@
+---
+title: "CloudFront + Global Accelerator"
+lede: "This lesson covers four topics: restricting access to an S3 origin so that it is reachable only through CloudFront, choosing the right origin type, the protection and availability mechanisms at the edge (WAF, geo restriction, signed URLs/cookies, field-level encryption, origin failover), and the criteria for choosing between CloudFront, S3 Transfer Acceleration and AWS Global Accelerator."
+minutes: 20
+scenes: 4
+prerequisites: ["global-infra", "route53"]
+docs:
+  - title: "Restricting access to an Amazon S3 origin (OAC)"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.html"
+  - title: "Choosing between signed URLs and signed cookies"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-choosing-signed-urls-cookies.html"
+  - title: "Using field-level encryption to help protect sensitive data"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/field-level-encryption.html"
+  - title: "Optimizing high availability with origin failover"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/high_availability_origin_failover.html"
+  - title: "Requirements for using SSL/TLS certificates with CloudFront"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-https-requirements.html"
+  - title: "What is Amazon CloudFront?"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html"
+  - title: "Configuring fast, secure file transfers using Amazon S3 Transfer Acceleration"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/transfer-acceleration.html"
+  - title: "Listeners for Global Accelerator (TCP/UDP)"
+    url: "https://docs.aws.amazon.com/global-accelerator/latest/dg/about-listeners.html"
+  - title: "What is AWS Global Accelerator?"
+    url: "https://docs.aws.amazon.com/global-accelerator/latest/dg/what-is-global-accelerator.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
+import EdgeCacheDemo from "../../components/scenes/EdgeCacheDemo.tsx";
+import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
+import EdgePipelineSim from "../../components/scenes/cloudfront/EdgePipelineSim.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#en-s1", label: "1 · Controlling access to the S3 origin" },
+  { href: "#en-s2", label: "2 · Origin types" },
+  { href: "#en-s3", label: "3 · Request processing at the edge" },
+  { href: "#en-s4", label: "4 · CloudFront and Global Accelerator" },
+  { href: "#en-challenge", label: "Exercise" },
+]}>
+ShopViet's static content is already distributed through **Amazon CloudFront** (see the Global Infrastructure lesson). The system is now expanding to paid video courses, card payments and users in many countries, which leads to three requirements: the S3 bucket must not be accessed directly, paid content must be served only to entitled users, and the service must keep running when the primary origin fails.
+</Story>
+
+<Scene id="en-s1" label="Part 1/4" title="Restricting access to the S3 origin through CloudFront" questions={["exam6_q54", "exam3_q60", "exam5_q15"]}>
+
+When the bucket is configured as public, clients can access the S3 endpoint directly and bypass every control layer at CloudFront (cache, AWS WAF, geo restriction). The configuration options are compared below:
+
+<ScenarioFlow client:visible height={240} scenarios={[
+  { name: "Only through CloudFront",
+    nodes: [
+      { id: "user", x: 30, y: 50, w: 110, label: "Customer", kind: "user" },
+      { id: "other", x: 30, y: 170, w: 110, label: "Direct S3 caller", kind: "warn" },
+      { id: "cf", x: 300, y: 50, w: 150, label: "CloudFront", sub: "OAC / OAI", kind: "edge" },
+      { id: "s3", x: 600, y: 105, w: 130, label: "S3 bucket", sub: "origin", kind: "store" },
+    ],
+    options: [
+      { name: "Public bucket", verdict: "bad",
+        flows: [{ path: ["user", "cf", "s3"], tone: "neutral" }, { path: ["other", "s3"], tone: "bad", label: "readable directly" }],
+        text: "With a public bucket, any client that knows the object key can access it directly; CloudFront is no longer the only access point." },
+      { name: "OAC/OAI + bucket policy", verdict: "good",
+        flows: [{ path: ["user", "cf", "s3"], tone: "good" }, { path: ["other", "s3"], blocked: true, label: "403 Access Denied" }],
+        text: "Configure **origin access control** (OAC, the recommended mechanism) or **origin access identity** (OAI, the legacy mechanism, still found in many systems), and update the **bucket policy** so that only the CloudFront principal can read objects. The bucket stays private; every direct request is denied." },
+    ] },
+  { name: "Only certain IPs",
+    nodes: [
+      { id: "ok", x: 30, y: 50, w: 120, label: "Allowed IP", kind: "user" },
+      { id: "no", x: 30, y: 170, w: 120, label: "Unknown IP", kind: "warn" },
+      { id: "waf", x: 260, y: 105, w: 110, label: "AWS WAF", sub: "IP match", kind: "net" },
+      { id: "cf", x: 430, y: 105, w: 120, label: "CloudFront", sub: "OAI", kind: "edge" },
+      { id: "s3", x: 620, y: 105, w: 110, label: "S3 bucket", kind: "store" },
+    ],
+    options: [
+      { name: "Security group on EC2", verdict: "bad",
+        flows: [{ path: ["no", "cf", "s3"], tone: "bad", label: "still gets in" }],
+        text: "A security group applies only to network interfaces (for example EC2); requests to CloudFront and S3 do not pass through a security group, so they are not restricted." },
+      { name: "WAF on CloudFront + OAI", verdict: "good",
+        flows: [{ path: ["ok", "waf", "cf", "s3"], tone: "good" }, { path: ["no", "waf"], blocked: true, label: "blocked" }],
+        text: "Associate an **AWS WAF** web ACL that contains an **IP set** with the CloudFront distribution so that only the allowed IP ranges are accepted, combined with **OAI/OAC** to prevent direct access to S3. Both control layers must be applied together." },
+    ] },
+]} />
+
+<Takeaway>The bucket stays private; OAC (or OAI) combined with a bucket policy ensures that only CloudFront can access the origin. Restrictions by IP or by country are implemented with AWS WAF associated with the CloudFront distribution.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 2/4" title="CloudFront origin types" questions={["exam1_q62", "exam6_q5", "exam3_q40", "exam2_q2", "exam3_q42", "exam3_q48", "exam1_q1"]}>
+
+How the edge cache works: the first request (cache miss) is forwarded to the origin; later requests within the TTL (cache hit) are served directly at the edge location.
+
+<EdgeCacheDemo client:visible />
+
+Besides S3, CloudFront supports custom origins, including an Application Load Balancer, EC2 and on-premises servers. Select each requirement to see the matching architecture:
+
+<RequirementPicker client:visible items={[
+  { need: "The backend must stay in a data center in the US, and users in Asia require low latency", answer: "CloudFront with a custom origin pointing to on premises",
+    why: "A custom origin can be a server outside AWS, so the backend does not need to move." },
+  { need: "A dynamic web application behind an ALB, with heavy read load overloading the database", answer: "CloudFront in front of the ALB + Aurora Replica",
+    why: "CloudFront caches the cacheable responses; an Aurora Replica takes the remaining read load." },
+  { need: "A static website, serverless architecture, cost-optimized", answer: "S3 + CloudFront + Route 53 Alias",
+    why: "S3 stores the static content, CloudFront distributes it, and an Alias record at the zone apex points to the distribution." },
+  { need: "Combine static and dynamic content in a serverless architecture", answer: "S3 for static, Lambda + DynamoDB for dynamic, CloudFront in front",
+    why: "One distribution serves both kinds of content through multiple cache behaviors." },
+  { need: "Data transfer out charges from S3 spike", answer: "Distribute through CloudFront",
+    why: "Data transfer from AWS origins (S3, Elastic Load Balancing, API Gateway) to CloudFront is free; most requests are served from the cache." },
+  { need: "High rate of repeated reads on DynamoDB and S3", answer: "DAX for DynamoDB, CloudFront for S3",
+    why: "Each data tier uses its matching cache layer." },
+]} />
+
+<Takeaway>CloudFront supports S3, ALB, EC2 and on-premises servers as origins; besides reducing latency, CloudFront reduces the load on the origin and its data transfer costs.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 3/4" title="How a request is processed at the edge location" questions={["exam6_q62", "exam1_q38", "exam4_q63", "exam5_q15", "exam5_q13", "exam5_q57"]}>
+
+Before forwarding a request to the origin, CloudFront can apply the following mechanisms at the edge location: TLS termination with an ACM certificate, evaluation by AWS WAF, geo restriction, signed URL/cookie validation, field-level encryption and origin selection by cache behavior. The simulation arranges these mechanisms into a chain for illustration. Choose a scenario, change the configuration and send a request to see the corresponding processing step.
+
+<EdgePipelineSim client:visible />
+
+<Takeaway>Filtering application-layer attacks: AWS WAF. Restricting by country: geo restriction. Private content: signed URL (one object) or signed cookie (many objects). Sensitive data: field-level encryption. Path-based routing: cache behavior. Origin redundancy: origin group. Custom domain name: ACM certificate in us-east-1.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s4" label="Part 4/4" title="CloudFront, S3 Transfer Acceleration and AWS Global Accelerator" questions={["exam5_q21", "exam6_q58", "exam1_q59", "exam3_q8", "exam4_q58", "exam5_q55", "exam2_q22"]}>
+
+The three services all use the AWS edge network but serve different purposes. Global Accelerator failover was covered in the Global Infrastructure lesson; this part summarizes the selection criteria by requirement.
+
+<RequirementPicker client:visible items={[
+  { need: "Cache web content (pages, images, video) for distant users", answer: "CloudFront", why: "Supports HTTP/HTTPS, with caching at the edge." },
+  { need: "Upload large files to S3 from many geographic regions", answer: "S3 Transfer Acceleration", why: "Data enters the nearest edge location, then is routed to the bucket over an AWS-optimized network path. Transfer Acceleration speeds up transfers both to and from the bucket but does not cache." },
+  { need: "A game or an application that uses the UDP protocol", answer: "Global Accelerator", why: "Global Accelerator listeners support TCP and UDP; CloudFront distributes content over HTTP/HTTPS (including WebSocket and gRPC)." },
+  { need: "A partner requires allow-listing a few fixed IP addresses", answer: "Global Accelerator", why: "Provides two static anycast IPv4 addresses (dual-stack: two additional IPv6 addresses) in front of ALB/NLB/EC2 in multiple Regions." },
+  { need: "Automatic failover between Regions, independent of DNS TTL", answer: "Global Accelerator", why: "Shifts traffic to a healthy endpoint without clients having to resolve DNS again." },
+]} />
+
+<Takeaway>Caching web content: CloudFront. Accelerating long-distance transfers to/from an S3 bucket (typically centralized uploads): S3 Transfer Acceleration. UDP, static IP addresses or failover between Regions: AWS Global Accelerator.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Sort the features: CloudFront and Global Accelerator" questions={["exam6_q54", "exam5_q15", "exam6_q62", "exam3_q48"]}>
+
+Sort each feature into the matching service. On a mobile device: select a card, then select the target box.
+
+<SortGame client:visible
+  bins={[
+    { id: "cf", title: "CloudFront", sub: "CDN, caching at the edge", hint: "Hint: this feature relates to caching or HTTP content." },
+    { id: "ga", title: "Global Accelerator", sub: "Network proxy, no caching", hint: "Hint: this feature relates to static IPs, TCP/UDP or routing between Regions." },
+  ]}
+  cards={[
+    ["Caches content at the edge", "cf"], ["Signed URL / signed cookie", "cf"], ["Geo restriction", "cf"], ["Origin group", "cf"], ["S3 as an origin", "cf"],
+    ["2 static anycast IPs", "ga"], ["Supports UDP", "ga"], ["NLB/ALB endpoints in multiple Regions", "ga"], ["Traffic split for blue/green", "ga"],
+  ]}
+/>
+
+Check your understanding: as the designer of the ShopViet system, which option is right?
+
+<Quiz client:visible items={[
+  { q: "Product images are stored in S3. Requirement: users access images only through CloudFront, not directly from the bucket. Which configuration meets the requirement?",
+    opts: ["Enable S3 Transfer Acceleration", "Create an origin access identity/control and update the bucket policy", "Place the bucket in a private subnet"],
+    a: 1,
+    why: "OAI/OAC is CloudFront's identity; the bucket policy grants read access only to that identity. An S3 bucket does not belong to any subnet, so the subnet option does not apply." },
+  { q: "The distribution uses the custom domain shopviet.vn over HTTPS; the origin is in ap-southeast-1. In which Region must the ACM certificate be created?",
+    opts: ["ap-southeast-1, the same Region as the origin", "us-east-1", "Any Region"],
+    a: 1,
+    why: "CloudFront uses only ACM certificates in us-east-1 (N. Virginia), regardless of the origin's Region." },
+  { q: "A video course consists of many files; only users who have purchased it may access it, and the current URLs must stay unchanged. Which mechanism fits?",
+    opts: ["CloudFront signed cookies", "An S3 presigned URL for each file", "Geo restriction"],
+    a: 0,
+    why: "Signed cookies grant access to many objects without changing the URLs; signed URLs fit when granting access to individual objects." },
+  { q: "Data transfer out charges from S3 rise sharply because of heavy image downloads. Which solution reduces cost while keeping latency low?",
+    opts: ["Distribute through CloudFront", "Move to S3 Glacier", "Enable S3 Transfer Acceleration"],
+    a: 0,
+    why: "Data transfer from an AWS origin such as S3 to CloudFront is free, and CloudFront serves from a cache close to users. S3 Transfer Acceleration speeds up transfers but does not cache and can incur additional data transfer charges." },
+]} />
+
+</Scene>
+

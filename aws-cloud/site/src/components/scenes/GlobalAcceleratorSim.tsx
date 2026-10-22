@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { flashText, prefersReducedMotion, travel, type Pt } from "../../lib/animate";
+import { useLang, type Bi } from "../../lib/lang";
 
 // Global Accelerator: two static anycast IPs, traffic enters the AWS network at the
 // nearest edge and goes to the nearest healthy Region; failover does not wait for
@@ -7,9 +8,9 @@ import { flashText, prefersReducedMotion, travel, type Pt } from "../../lib/anim
 type Mode = "ga" | "dns";
 type RegionId = "sg" | "fra";
 
-const USERS: { id: string; label: string; y: number; home: RegionId }[] = [
-  { id: "asia", label: "Người dùng châu Á", y: 90, home: "sg" },
-  { id: "eu", label: "Người dùng châu Âu", y: 230, home: "fra" },
+const USERS: { id: string; label: Bi; y: number; home: RegionId }[] = [
+  { id: "asia", label: { vi: "Người dùng châu Á", en: "Users in Asia" }, y: 90, home: "sg" },
+  { id: "eu", label: { vi: "Người dùng châu Âu", en: "Users in Europe" }, y: 230, home: "fra" },
 ];
 const REGIONS: Record<RegionId, { label: string; code: string; y: number }> = {
   sg: { label: "Singapore", code: "ap-southeast-1", y: 90 },
@@ -26,6 +27,7 @@ export default function GlobalAcceleratorSim() {
   const pk = useRef<SVGGElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const visible = useRef(true);
+  const L = useLang();
 
   useEffect(() => {
     if (prefersReducedMotion()) setPaused(true);
@@ -70,45 +72,49 @@ export default function GlobalAcceleratorSim() {
     setErr(0);
   }
 
-  const note =
+  const note = L<string>(
     mode === "ga"
       ? down
-        ? "Global Accelerator thực hiện health check endpoint và chuyển traffic của người dùng châu Á sang Frankfurt. Client vẫn kết nối tới 2 địa chỉ IP tĩnh ban đầu, không cần thay đổi DNS, nên không bị ảnh hưởng bởi DNS cache trên thiết bị."
-        : "Traffic của người dùng đi vào mạng AWS tại Edge location gần nhất, sau đó truyền qua mạng riêng của AWS tới Region gần nhất. Mọi người dùng kết nối tới cùng 2 địa chỉ IP tĩnh (anycast). Nhấn \"Sự cố Region Singapore\" để quan sát cơ chế failover."
+        ? { vi: "Global Accelerator thực hiện health check endpoint và chuyển traffic của người dùng châu Á sang Frankfurt. Client vẫn kết nối tới 2 địa chỉ IP tĩnh ban đầu, không cần thay đổi DNS, nên không bị ảnh hưởng bởi DNS cache trên thiết bị.",
+            en: "Global Accelerator health checks the endpoints and shifts the traffic of users in Asia to Frankfurt. Clients still connect to the same 2 static IP addresses, with no DNS change, so they are not affected by DNS caches on their devices." }
+        : { vi: "Traffic của người dùng đi vào mạng AWS tại Edge location gần nhất, sau đó truyền qua mạng riêng của AWS tới Region gần nhất. Mọi người dùng kết nối tới cùng 2 địa chỉ IP tĩnh (anycast). Nhấn \"Sự cố Region Singapore\" để quan sát cơ chế failover.",
+            en: "User traffic enters the AWS network at the nearest edge location, then travels over the AWS private network to the nearest Region. All users connect to the same 2 static (anycast) IP addresses. Press \"Fail Singapore Region\" to see how failover works." }
       : down
-        ? "Chỉ sử dụng DNS: dù bản ghi DNS đã được cập nhật, nhiều client vẫn giữ địa chỉ cũ trong cache cho tới khi hết TTL và tiếp tục gửi request tới Region đang gặp sự cố. Do đó, khi cần failover nhanh giữa các Region, giải pháp phù hợp là Global Accelerator."
-        : "Chỉ sử dụng DNS: traffic của người dùng đi qua internet công cộng trực tiếp tới Region. Tạo sự cố để so sánh với Global Accelerator.";
+        ? { vi: "Chỉ sử dụng DNS: dù bản ghi DNS đã được cập nhật, nhiều client vẫn giữ địa chỉ cũ trong cache cho tới khi hết TTL và tiếp tục gửi request tới Region đang gặp sự cố. Do đó, khi cần failover nhanh giữa các Region, giải pháp phù hợp là Global Accelerator.",
+            en: "DNS only: even after the DNS record is updated, many clients keep the old address in their cache until the TTL expires and keep sending requests to the failed Region. So when fast failover between Regions is needed, the right solution is Global Accelerator." }
+        : { vi: "Chỉ sử dụng DNS: traffic của người dùng đi qua internet công cộng trực tiếp tới Region. Tạo sự cố để so sánh với Global Accelerator.",
+            en: "DNS only: user traffic goes over the public internet directly to the Region. Trigger a failure to compare with Global Accelerator." });
 
   return (
     <div className="stage">
       <div className="stage-bar">
-        <span className="label">Phương thức định tuyến</span>
+        <span className="label">{L({ vi: "Phương thức định tuyến", en: "Routing method" })}</span>
         <button className="btn" aria-pressed={mode === "ga"} onClick={() => pick("ga")}>Global Accelerator</button>
-        <button className="btn" aria-pressed={mode === "dns"} onClick={() => pick("dns")}>Chỉ sử dụng DNS</button>
+        <button className="btn" aria-pressed={mode === "dns"} onClick={() => pick("dns")}>{L({ vi: "Chỉ sử dụng DNS", en: "DNS only" })}</button>
         <span className="sep" />
-        <button className="btn danger" onClick={() => setDown("sg")} disabled={down === "sg"}>Sự cố Region Singapore</button>
-        <button className="btn" onClick={() => setDown(null)}>Khôi phục</button>
+        <button className="btn danger" onClick={() => setDown("sg")} disabled={down === "sg"}>{L({ vi: "Sự cố Region Singapore", en: "Fail Singapore Region" })}</button>
+        <button className="btn" onClick={() => setDown(null)}>{L({ vi: "Khôi phục", en: "Recover" })}</button>
         <span className="sep" />
-        <button className="btn" aria-pressed={paused} onClick={() => setPaused(!paused)}>{paused ? "Chạy tiếp" : "Tạm dừng"}</button>
+        <button className="btn" aria-pressed={paused} onClick={() => setPaused(!paused)}>{paused ? L({ vi: "Chạy tiếp", en: "Resume" }) : L({ vi: "Tạm dừng", en: "Pause" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg ref={svgRef} viewBox="0 0 760 320" role="img" aria-label="Người dùng ở châu Á và châu Âu đi qua Global Accelerator tới Region gần nhất">
+        <svg ref={svgRef} viewBox="0 0 760 320" role="img" aria-label={L({ vi: "Người dùng ở châu Á và châu Âu đi qua Global Accelerator tới Region gần nhất", en: "Users in Asia and Europe go through Global Accelerator to the nearest Region" })}>
           {mode === "ga" && (
             <g>
               <rect className="ga-box" x={160} y={20} width={120} height={290} rx={12} />
               <text className="edge-t" x={220} y={42} textAnchor="middle">Global Accelerator</text>
-              <text className="ts" x={220} y={300} textAnchor="middle">2 IP tĩnh anycast</text>
+              <text className="ts" x={220} y={300} textAnchor="middle">{L({ vi: "2 IP tĩnh anycast", en: "2 static anycast IPs" })}</text>
               <path className="backbone" d={`M${EDGE_X} 90 C 400 90, 420 90, ${ALB_X - 50} 90`} />
               <path className="backbone" d={`M${EDGE_X} 230 C 400 230, 420 230, ${ALB_X - 50} 230`} />
               <path className="backbone" d={`M${EDGE_X} 90 C 400 110, 420 210, ${ALB_X - 50} 230`} />
-              <text className="ts" x={420} y={160} textAnchor="middle">mạng riêng của AWS</text>
+              <text className="ts" x={420} y={160} textAnchor="middle">{L({ vi: "mạng riêng của AWS", en: "AWS private network" })}</text>
             </g>
           )}
           {mode === "dns" && (
             <g>
               <path className="internet" d={`M${USER_X + 22} 90 H${ALB_X - 50}`} />
               <path className="internet" d={`M${USER_X + 22} 230 H${ALB_X - 50}`} />
-              <text className="ts" x={330} y={160} textAnchor="middle">internet công cộng</text>
+              <text className="ts" x={330} y={160} textAnchor="middle">{L({ vi: "internet công cộng", en: "public internet" })}</text>
             </g>
           )}
           {USERS.map((u) => (
@@ -117,7 +123,7 @@ export default function GlobalAcceleratorSim() {
                 <circle className="user" cy={-9} r={7} />
                 <path className="user" d="M-13 13 a13 13 0 0 1 26 0 z" />
               </g>
-              <text className="ts" x={USER_X} y={u.y + 34} textAnchor="middle">{u.label}</text>
+              <text className="ts" x={USER_X} y={u.y + 34} textAnchor="middle">{L(u.label)}</text>
               {mode === "ga" && <circle className="edge-dot" cx={EDGE_X} cy={u.y} r={13} />}
             </g>
           ))}
@@ -130,7 +136,7 @@ export default function GlobalAcceleratorSim() {
                 <text className="t" x={ALB_X - 46} y={reg.y - 16}>{reg.label}</text>
                 <text className="ts" x={ALB_X - 46} y={reg.y}>{reg.code}</text>
                 <text className="ts" x={ALB_X - 46} y={reg.y + 18}>ALB + EC2</text>
-                {isDown && <text className="down-t" x={ALB_X + 120} y={reg.y - 16} textAnchor="end">SỰ CỐ</text>}
+                {isDown && <text className="down-t" x={ALB_X + 120} y={reg.y - 16} textAnchor="end">{L({ vi: "SỰ CỐ", en: "FAILED" })}</text>}
               </g>
             );
           })}
@@ -140,9 +146,9 @@ export default function GlobalAcceleratorSim() {
       <div className="readout">
         <div className="status">
           <span className={"pill " + (err && mode === "dns" && down ? "bad" : "ok")}>
-            <i />{err && mode === "dns" && down ? "Một phần người dùng gặp lỗi" : "Người dùng truy cập bình thường"}
+            <i />{err && mode === "dns" && down ? L({ vi: "Một phần người dùng gặp lỗi", en: "Some users get errors" }) : L({ vi: "Người dùng truy cập bình thường", en: "Users connect normally" })}
           </span>
-          <span className="count">thành công {ok} · lỗi {err}</span>
+          <span className="count">{L({ vi: "thành công", en: "successful" })} {ok} · {L({ vi: "lỗi", en: "errors" })} {err}</span>
         </div>
         <p style={{ margin: "8px 0 0" }}>{note}</p>
       </div>

@@ -1,0 +1,175 @@
+---
+title: "Storage Gateway, Snow, DataSync, DMS: hybrid storage and data migration"
+lede: "This lesson covers three topics: integrating on-premises applications with AWS storage through Storage Gateway, choosing between transferring data over the network and shipping it on Snowball devices, and migrating servers and databases to AWS."
+minutes: 20
+scenes: 3
+prerequisites: ["s3", "storage", "vpc"]
+docs:
+  - title: "What is AWS Storage Gateway?"
+    url: "https://docs.aws.amazon.com/storagegateway/latest/userguide/WhatIsStorageGateway.html"
+  - title: "Volume Gateway: cached and stored volumes"
+    url: "https://docs.aws.amazon.com/storagegateway/latest/vgw/StorageGatewayConcepts.html"
+  - title: "What is AWS DataSync?"
+    url: "https://docs.aws.amazon.com/datasync/latest/userguide/what-is-datasync.html"
+  - title: "AWS Snowball Edge"
+    url: "https://docs.aws.amazon.com/snowball/latest/developer-guide/whatisedge.html"
+  - title: "Snowball Edge device configurations"
+    url: "https://docs.aws.amazon.com/snowball/latest/developer-guide/device-differences.html"
+  - title: "What is AWS Data Transfer Terminal?"
+    url: "https://docs.aws.amazon.com/datatransferterminal/latest/userguide/what-is-dtt.html"
+  - title: "What is AWS Application Migration Service?"
+    url: "https://docs.aws.amazon.com/mgn/latest/ug/what-is-application-migration-service.html"
+  - title: "What is AWS Database Migration Service?"
+    url: "https://docs.aws.amazon.com/dms/latest/userguide/Welcome.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
+import StepSim from "../../components/scenes/StepSim.tsx";
+import TransferPlannerSim from "../../components/scenes/storage-migration/TransferPlannerSim.tsx";
+import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#en-s1", label: "1 · Storage Gateway" },
+  { href: "#en-s2", label: "2 · Network transfer and device shipping" },
+  { href: "#en-s3", label: "3 · Migrating servers and databases" },
+  { href: "#en-challenge", label: "Exercise" },
+]}>
+ShopViet's warehouse still runs its legacy systems in the office, including a tape library used for backups. Part of the system needs to use AWS storage without changing the applications; the rest needs to move entirely to AWS.
+</Story>
+
+<Scene id="en-s1" label="Part 1/3" title="Storage Gateway: on-premises applications using AWS storage" questions={["exam1_q35", "exam5_q28", "exam3_q31", "exam4_q37", "exam2_q59", "exam4_q36", "exam3_q56"]}>
+
+Storage Gateway is a virtual machine deployed at the warehouse. To existing applications, the gateway appears as a disk, a file share or a tape library, while the data itself is stored on AWS. Choose each gateway type to see the data flow:
+
+<ScenarioFlow client:visible height={230} legend={["Fits", "Does not fit"]} scenarios={[
+  { name: "Storage Gateway types",
+    boxes: [{ x: 20, y: 20, w: 330, h: 190, label: "ShopViet warehouse", tone: "onprem" }, { x: 430, y: 20, w: 310, h: 190, label: "AWS" }],
+    nodes: [
+      { id: "app", x: 40, y: 60, label: "Existing application", sub: "NFS / SMB / iSCSI / tape", kind: "site" },
+      { id: "gw", x: 200, y: 130, label: "Gateway", sub: "local cache", kind: "net" },
+      { id: "s3", x: 470, y: 45, label: "S3", kind: "store" },
+      { id: "snap", x: 470, y: 150, label: "EBS snapshot", kind: "edge" },
+      { id: "glacier", x: 620, y: 95, w: 110, label: "Glacier", sub: "tape archive", kind: "store" },
+    ],
+    options: [
+      { name: "S3 File Gateway", verdict: "good", verdictLabel: "NFS/SMB file share",
+        flows: [{ path: ["app", "gw"], tone: "good", label: "NFS / SMB" }, { path: ["gw", "s3"], tone: "good", label: "1 file = 1 object" }],
+        text: "The application accesses an NFS or SMB file share; each file is stored as an object in S3, so lifecycle, Athena and so on apply. Frequently accessed files are cached locally." },
+      { name: "Volume Gateway: cached", verdict: "good", verdictLabel: "Primary data on AWS",
+        flows: [{ path: ["app", "gw"], tone: "good", label: "iSCSI" }, { path: ["gw", "s3"], tone: "good", label: "entire volume" }],
+        text: "All data is stored on AWS; only **frequently accessed data** is kept at the warehouse. This reduces the disk capacity needed on premises." },
+      { name: "Volume Gateway: stored", verdict: "good", verdictLabel: "Primary data on premises",
+        flows: [{ path: ["app", "gw"], tone: "good", label: "iSCSI" }, { path: ["gw", "snap"], tone: "good", label: "async backup" }],
+        text: "**All** data is stored at the warehouse for low-latency access; AWS keeps the backups as EBS snapshots." },
+      { name: "Tape Gateway", verdict: "good", verdictLabel: "Replaces the tape library",
+        flows: [{ path: ["app", "gw"], tone: "good", label: "same backup software" }, { path: ["gw", "glacier"], tone: "good", label: "virtual tape" }],
+        text: "The backup software writes to virtual tapes; the tapes are stored in S3 and archived to the Glacier classes, at low cost for retention periods of many years." },
+    ] },
+]} />
+
+<Takeaway>A file share stored on S3: S3 File Gateway. iSCSI disks with the primary data on AWS: cached volumes; with the primary data on premises: stored volumes. Replacing a tape library: Tape Gateway.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 2/3" title="Transfer data over the network or ship devices" questions={["exam3_q3", "exam2_q11", "exam5_q48", "exam5_q5", "exam2_q41", "exam3_q61", "exam2_q4", "exam5_q62", "exam4_q29"]}>
+
+The existing NAS at the warehouse holds product images and backup data accumulated over many years. The first question to answer: can the link bandwidth meet the deadline? Change the data size, bandwidth and destination, then compare the time of the two options:
+
+<TransferPlannerSim client:visible />
+
+Besides the large data migration, ShopViet has some other data transfer needs:
+
+<RequirementPicker client:visible items={[
+  { need: "Suppliers send daily price lists over SFTP; ShopViet does not want to manage its own SFTP server", answer: "AWS Transfer Family (SFTP) storing to S3 or EFS",
+    why: "An SFTP endpoint managed by AWS; files are written directly to S3 or EFS." },
+  { need: "Replication to another Region is enabled, but images already in the bucket are not copied", answer: "S3 Batch Replication (or aws s3 sync)",
+    why: "A replication rule applies only to new objects. Batch Replication copies existing objects." },
+  { need: "The old data has been migrated, but the warehouse software still needs to keep reading and writing it", answer: "DataSync to migrate, then S3 File Gateway for continued use",
+    why: "DataSync performs the large migration; File Gateway lets the warehouse applications keep working with the data now in S3." },
+]} />
+
+Snowball Edge is **no longer available to new customers**. The Storage Optimized device has 210 TB of usable capacity. For new customers, AWS suggests DataSync for online transfers, **AWS Data Transfer Terminal** for physical transfers (bringing storage devices to an AWS facility; currently available only to Enterprise Support customers), or an AWS Partner solution.
+
+<Takeaway>Bandwidth is sufficient: DataSync (can transfer privately over Direct Connect + a VPC endpoint). Data beyond what the link can handle: physical shipping (Snowball Edge for existing customers; Data Transfer Terminal or an AWS Partner for new customers), import into S3, then apply lifecycle or copy onward. SFTP: Transfer Family. Existing objects that must be copied to another Region: S3 Batch Replication.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 3/3" title="Migrating servers and databases to AWS" questions={["exam6_q48", "exam3_q4", "exam1_q47", "exam5_q8", "exam4_q27"]}>
+
+The warehouse management server is a virtual machine that has been running for many years and cannot be reinstalled. Migrating this server to EC2 with **Application Migration Service (MGN)** takes the following steps:
+
+<StepSim client:visible height={220}
+  intro="The warehouse has virtual machines running applications. Goal: move them to EC2 as is (lift-and-shift) with minimal downtime."
+  boxes={[{ x: 20, y: 20, w: 300, h: 180, label: "ShopViet warehouse", tone: "onprem" }, { x: 380, y: 20, w: 360, h: 180, label: "AWS" }]}
+  nodes={[
+    { id: "vm", x: 50, y: 90, label: "Source VM", sub: "Replication Agent installed", kind: "site" },
+    { id: "stage", x: 400, y: 85, label: "Staging area", sub: "receives data", kind: "net" },
+    { id: "test", x: 600, y: 35, w: 130, label: "Test instance", kind: "ec2" },
+    { id: "cut", x: 600, y: 145, w: 130, label: "Cutover instance", kind: "ec2" },
+  ]}
+  initial={["vm"]}
+  steps={[
+    { button: "1. Install agent, replicate", show: ["stage"], flows: [{ path: ["vm", "stage"], tone: "good", label: "continuous replication" }],
+      note: "Install the **AWS Replication Agent** on the source machine. Data is replicated continuously to AWS while the source machine keeps running." },
+    { button: "2. Launch test instance", show: ["test"], flows: [{ path: ["stage", "test"], tone: "neutral", label: "testing" }],
+      note: "After the initial replication completes, launch a **test instance** to check that the application works correctly on AWS." },
+    { button: "3. Cutover", show: ["cut"], flows: [{ path: ["stage", "cut"], tone: "good", label: "cutover" }],
+      note: "Once testing is done and replication is still keeping up, launch the **cutover instance** and switch users over. Downtime occurs only at the moment of the switch." },
+  ]} />
+
+Databases are migrated with a separate set of tools. Choose each ShopViet scenario:
+
+<RequirementPicker client:visible items={[
+  { need: "An existing Oracle database must move to Aurora PostgreSQL (a different engine)", answer: "AWS SCT + AWS DMS", why: "SCT converts the schema and code; DMS migrates the data." },
+  { need: "The accounting system runs on SQL Server and must move to Aurora PostgreSQL with minimal T-SQL code changes", answer: "Babelfish for Aurora PostgreSQL", why: "Aurora PostgreSQL understands T-SQL and the SQL Server wire protocol." },
+  { need: "Continuous replication from the warehouse Oracle database to RDS, with a fluctuating volume of changes", answer: "AWS DMS Serverless", why: "Automatically provisions resources for the actual workload; there is no replication instance size to choose." },
+  { need: "Move existing log files in S3 and new logs to Kinesis Data Streams as fast as possible", answer: "DMS with an S3 source and a Kinesis target", why: "DMS supports S3 as a source and Kinesis Data Streams as a target." },
+]} />
+
+<Takeaway>Servers: MGN (agent → test → cutover). Databases with a different engine: SCT + DMS. SQL Server to Aurora PostgreSQL with minimal code changes: Babelfish. Continuous replication with a fluctuating volume of changes: DMS Serverless.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Sort the tasks by tool group" questions={["exam3_q31", "exam4_q36", "exam3_q3", "exam6_q48"]}>
+
+Sort each task into the matching tool group. On a mobile device: tap a card, then tap the target box.
+
+<SortGame client:visible
+  bins={[
+    { id: "gw", title: "Storage Gateway", sub: "On-premises apps use AWS storage", hint: "Hint: the on-premises system keeps running; only where data is stored changes." },
+    { id: "move", title: "Data transfer", sub: "DataSync, Snow, Transfer Family", hint: "Hint: the goal is to get data onto AWS." },
+    { id: "mig", title: "System migration", sub: "MGN, DMS, SCT", hint: "Hint: moving whole servers or databases." },
+  ]}
+  cards={[
+    ["NFS file share stored on S3", "gw"], ["Replace the tape library", "gw"], ["iSCSI, frequently accessed data kept on premises", "gw"],
+    ["Online transfer into EFS", "move"], ["5 PB, not enough bandwidth", "move"], ["Partners send files over SFTP", "move"],
+    ["Lift-and-shift virtual machines", "mig"], ["Oracle to Aurora", "mig"],
+  ]}
+/>
+
+Check question: as the designer of the ShopViet system, which option fits?
+
+<Quiz client:visible items={[
+  { q: "A logging application at the warehouse only needs to keep frequently accessed logs on premises, with all logs stored on AWS. Which option fits?",
+    opts: ["Volume Gateway stored volumes", "Volume Gateway cached volumes", "Snowball"],
+    a: 1,
+    why: "Cached volumes keep frequently accessed data on premises, and the entire volume is stored in S3." },
+  { q: "The warehouse tape library holds petabytes of backup data. Requirement: retire the tape library but keep the backup software, at the lowest cost. Which option fits?",
+    opts: ["Tape Gateway", "S3 File Gateway", "DataSync"],
+    a: 0,
+    why: "Tape Gateway replaces the tape library; virtual tapes are stored in S3 and the Glacier classes." },
+  { q: "Warehouse data must be moved into S3, EFS and FSx for Windows over the network quickly and automatically. Which service fits?",
+    opts: ["AWS DataSync", "Snowball Edge", "S3 Transfer Acceleration"],
+    a: 0,
+    why: "DataSync supports all three destinations and automates online transfers." },
+  { q: "When migrating the warehouse management server with Application Migration Service, which order is correct?",
+    opts: ["Cut over, then test", "Install the Replication Agent, replicate, launch a test instance, then cut over", "Create an AMI manually, then copy it"],
+    a: 1,
+    why: "Replicate continuously, test with a test instance, and finally perform the cutover." },
+]} />
+
+</Scene>

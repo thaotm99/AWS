@@ -1,0 +1,166 @@
+---
+title: "IAM and Organizations: authentication and authorization"
+lede: "As ShopViet grows in staff, applications and accounts, controlling access becomes necessary. This lesson covers how to read a JSON policy, how a request is evaluated across several permission layers (SCP, permissions boundary, identity policy, resource policy), using IAM roles instead of access keys for applications, and governing many accounts with AWS Organizations."
+minutes: 30
+scenes: 4
+prerequisites: ["global-infra"]
+docs:
+  - title: "Policy evaluation logic"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html"
+  - title: "Permissions boundaries for IAM entities"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html"
+  - title: "Service control policies (SCPs)"
+    url: "https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html"
+  - title: "IAM roles for Amazon EC2"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html"
+  - title: "Resource control policies (RCPs)"
+    url: "https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_rcps.html"
+  - title: "Tag policies"
+    url: "https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies.html"
+  - title: "Working with CloudTrail event history"
+    url: "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/view-cloudtrail-events.html"
+  - title: "Security best practices in IAM"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import PolicyReader from "../../components/scenes/iam/PolicyReader.tsx";
+import PolicyEvaluator from "../../components/scenes/iam/PolicyEvaluator.tsx";
+import StepSim from "../../components/scenes/StepSim.tsx";
+import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
+import OrgGuardSim from "../../components/scenes/iam/OrgGuardSim.tsx";
+import IamMythsSim from "../../components/scenes/iam/IamMythsSim.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#en-s1", label: "1 · Reading a policy" },
+  { href: "#en-s2", label: "2 · Evaluating permission layers" },
+  { href: "#en-s3", label: "3 · IAM roles" },
+  { href: "#en-s4", label: "4 · Organizations" },
+  { href: "#en-challenge", label: "Exercise" },
+]}>
+ShopViet adds developers, a production account and auditors. Each user and each application must be granted only the permissions its job requires. This requirement is met with **IAM** within one account and **AWS Organizations** across many accounts.
+</Story>
+
+<Scene id="en-s1" label="Part 1/4" title="Working out the permissions a policy grants" questions={["exam2_q37", "exam2_q38", "exam2_q48", "exam2_q54", "exam1_q58"]}>
+
+Before attaching a policy written by someone else to a ShopViet user or role, you must determine exactly what permissions it grants. Choose a policy, predict the result, then send each request to check.
+
+<PolicyReader client:visible />
+
+<Takeaway>When no Allow statement matches, the request is implicitly denied (implicit deny). aws:SourceIp is the caller's IP; aws:RequestedRegion is the Region that receives the API call. ListBucket applies to the bucket ARN; GetObject/DeleteObject apply to bucket/*.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 2/4" title="The permission layers that evaluate a request" questions={["exam3_q59", "exam1_q25", "exam2_q39", "exam2_q16"]}>
+
+A request can be stopped at several layers: an Organizations **SCP** limits the whole account, a **permissions boundary** limits the maximum permissions of a user/role, an **identity policy** grants permissions, and for cross-account access, a **resource policy** (for example a bucket policy) must also allow it. Change each layer and watch the result.
+
+<PolicyEvaluator client:visible />
+
+<Takeaway>An explicit deny always takes precedence. SCPs restrict even the root user of a member account but do not affect service-linked roles. A permissions boundary prevents privilege escalation (a developer attaching AdministratorAccess to themselves). Cross-account access: needs both an identity policy on the caller's side and a resource policy on the resource's side.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 3/4" title="IAM roles instead of access keys" questions={["exam2_q3", "exam3_q23", "exam1_q17", "exam4_q34", "exam1_q5", "exam4_q39", "exam2_q16"]}>
+
+ShopViet's server needs to read data from DynamoDB. The simple but risky option is to store an access key in the source code: when the source code leaks, the access key leaks too. The secure option:
+
+<StepSim client:visible height={220}
+  intro="EC2 web-1 needs to read the orders table in DynamoDB. Perform each step in turn to grant access without storing an access key on the server."
+  nodes={[
+    { id: "ec2", x: 40, y: 90, label: "EC2 web-1", kind: "ec2" },
+    { id: "role", x: 250, y: 30, label: "IAM role", sub: "via instance profile", kind: "net" },
+    { id: "sts", x: 250, y: 150, label: "AWS STS", sub: "temporary credentials", kind: "edge" },
+    { id: "ddb", x: 560, y: 90, label: "DynamoDB", sub: "orders table", kind: "db" },
+  ]}
+  initial={["ec2", "ddb"]}
+  steps={[
+    { button: "1. Attach an IAM role to EC2", show: ["role"], flows: [{ path: ["role", "ec2"], tone: "good", label: "instance profile" }],
+      note: "Create an IAM role with read access to the orders table and attach it to EC2 through an **instance profile**. The role's trust policy allows the EC2 service to assume the role." },
+    { button: "2. The application gets temporary credentials", show: ["sts"], flows: [{ path: ["ec2", "sts"], tone: "good", label: "automatic, auto-rotated" }],
+      note: "The SDK on EC2 automatically gets **temporary credentials** from STS through instance metadata. The credentials expire and are refreshed automatically." },
+    { button: "3. Call DynamoDB", flows: [{ path: ["ec2", "ddb"], tone: "good", label: "authorized" }], move: ["ec2", "ddb"],
+      note: "EC2 calls DynamoDB with the role's permissions. There is no access key in the source code or on disk. This is the **most secure** option." },
+  ]} />
+
+The same principle applies to other cases:
+
+<RequirementPicker client:visible items={[
+  { need: "A ShopViet developer in the dev account needs to view logs in the production account", answer: "Create a role in production, and the developer assumes it",
+    why: "The role in the target account has a trust policy that trusts the dev account. The developer uses the role's temporary credentials, without a new user in production." },
+  { need: "A Lambda function that processes orders in account A reads images in S3 in account B", answer: "Lambda execution role + bucket policy in account B",
+    why: "The execution role grants permissions on the Lambda side; the bucket policy in account B must allow that role." },
+  { need: "Each Pod on ShopViet's EKS may call only the services that Pod needs", answer: "IAM Roles for Service Accounts (IRSA)",
+    why: "Each Kubernetes service account is mapped to its own IAM role, ensuring least privilege for each Pod." },
+  { need: "A Lambda function connects to RDS PostgreSQL without storing a password in the source code", answer: "IAM database authentication + an IAM role for Lambda",
+    why: "Lambda uses the role to get a short-lived authentication token when connecting to RDS." },
+  { need: "Define which principals can assume a role", answer: "The role's trust policy",
+    why: "The trust policy is the only resource-based policy of IAM itself: it is attached to the role and defines which principals can assume the role." },
+]} />
+
+<Takeaway>Applications on AWS use IAM roles, not access keys. Cross-account access: create a role in the target account and assume it.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s4" label="Part 4/4" title="Governing many accounts with AWS Organizations" questions={["exam2_q43", "exam5_q18", "exam6_q41", "exam3_q36", "exam6_q22", "exam5_q17", "exam2_q36", "exam3_q17"]}>
+
+ShopViet now has many accounts: dev, staging, prod, sandbox, marketing. Managing each account by hand cannot keep up as the organization grows. Each scenario below is a real governance task. Try the manual option first, then switch to the AWS tool to compare.
+
+<OrgGuardSim client:visible />
+
+<Takeaway>SCP: the maximum permissions for a whole account, including admins. Tag policy + SCP: enforce standard tagging. Budgets actions: automatically restrict when a budget is exceeded. Access Analyzer: find resources shared unintentionally. StackSets: deploy one template to many accounts and Regions. Control Tower: create new accounts to a common standard.</Takeaway>
+
+</Scene>
+
+<Scene id="en-confuse" label="Common mistakes" title="Four principles for protecting an account" questions={["exam1_q31", "exam6_q40", "exam1_q16", "exam6_q29", "exam1_q25"]}>
+
+The four principles below determine how secure ShopViet's account is. Choose a scenario, try the shortcut option first, then switch to the correct option.
+
+<IamMythsSim client:visible />
+
+<Takeaway>Root user: no access keys, MFA enabled. Granting permissions to many users: IAM groups. Privileged users: MFA, with CloudTrail for traceability. Letting developers attach policies themselves: combine with a permissions boundary.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Sort the functions by policy type" questions={["exam2_q3", "exam2_q38", "exam3_q59", "exam2_q39"]}>
+
+Sort each function into the matching policy type. On a mobile device: select a card, then select the target box.
+
+<SortGame client:visible
+  bins={[
+    { id: "scp", title: "SCP", sub: "Maximum for a whole account", hint: "Hint: a mechanism that applies to every principal in an Organizations member account." },
+    { id: "boundary", title: "Permissions boundary", sub: "Maximum for one user/role", hint: "Hint: a mechanism that limits the maximum permissions of an individual user or role." },
+    { id: "resource", title: "Resource policy", sub: "Attached to a resource", hint: "Hint: a policy attached to a resource that defines which principals can access it." },
+  ]}
+  cards={[
+    ["Restricts even the root user of a member account", "scp"], ["Does not affect service-linked roles", "scp"], ["Blocks CloudTrail changes in every dev account", "scp"],
+    ["Stops developers attaching AdministratorAccess to themselves", "boundary"], ["Set on an individual IAM user or role", "boundary"],
+    ["Bucket policy granting read access to another account", "resource"], ["Trust policy of an IAM role", "resource"],
+  ]}
+/>
+
+Check your understanding: as the designer of the ShopViet system, which option is right?
+
+<Quiz client:visible items={[
+  { q: "ShopViet's application on EC2 needs to read images on S3 and orders in DynamoDB. Which way of granting permissions is the most secure?",
+    opts: ["Store an IAM user's access key in a configuration file", "Attach an IAM role to EC2 through an instance profile", "Use the root user's access key"],
+    a: 1,
+    why: "A role provides temporary credentials that rotate automatically, with no key stored on the server." },
+  { q: "A policy allows ec2:RunInstances with the condition aws:RequestedRegion = eu-west-1. A ShopViet developer is in Vietnam. Which statement is correct?",
+    opts: ["EC2 can run only in eu-west-1, and the API can be called from anywhere", "The API can be called only when the user is in Europe", "EC2 can run in any Region but must be called from eu-west-1"],
+    a: 0,
+    why: "aws:RequestedRegion is the Region the API call is directed to, not the caller's location." },
+  { q: "A developer's IAM policy allows deleting log groups, but the dev account's SCP does not allow this action. What is the result?",
+    opts: ["Allowed, because the identity policy allows it", "Denied", "Allowed if the user is an admin"],
+    a: 1,
+    why: "An SCP sets the maximum permissions for the whole account. An action outside this limit is not allowed for any principal, including admins and the root user of a member account." },
+  { q: "ShopViet lets developers attach managed policies themselves when needed, but developers must not be able to escalate themselves to admin. Which mechanism meets the requirement?",
+    opts: ["Set a permissions boundary for each developer", "Use an SCP to block the whole account", "Remove the developers' IAM permissions"],
+    a: 0,
+    why: "A permissions boundary limits the maximum permissions; even if a developer attaches AdministratorAccess, the effective permissions still do not exceed the boundary." },
+]} />
+
+</Scene>

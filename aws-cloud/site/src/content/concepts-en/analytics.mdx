@@ -1,0 +1,154 @@
+---
+title: "ElastiCache and data analytics: Redshift, Athena, Glue"
+lede: "This lesson covers two groups of ShopViet data needs: responding to users with low latency (caching, sessions, leaderboards, finding the nearest shipper) and analyzing data (data checks, a data warehouse, dashboards, converting call recordings). It covers choosing the right service for each task and controlling the storage cost of a data lake over time."
+minutes: 25
+scenes: 4
+prerequisites: ["rds", "dynamodb", "s3"]
+docs:
+  - title: "What is Amazon ElastiCache?"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/WhatIs.html"
+  - title: "What is Amazon Athena?"
+    url: "https://docs.aws.amazon.com/athena/latest/ug/what-is.html"
+  - title: "What is Amazon Redshift?"
+    url: "https://docs.aws.amazon.com/redshift/latest/mgmt/welcome.html"
+  - title: "What is AWS Glue?"
+    url: "https://docs.aws.amazon.com/glue/latest/dg/what-is-glue.html"
+  - title: "What is AWS Glue DataBrew?"
+    url: "https://docs.aws.amazon.com/databrew/latest/dg/what-is.html"
+  - title: "What is Amazon EMR?"
+    url: "https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-what-is-emr.html"
+  - title: "Comparing node-based Valkey, Memcached, and Redis OSS clusters"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/SelectEngine.html"
+  - title: "Common ElastiCache use cases"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/elasticache-use-cases.html"
+  - title: "Query restored Amazon Glacier objects (Athena)"
+    url: "https://docs.aws.amazon.com/athena/latest/ug/querying-glacier.html"
+  - title: "Athena data optimization techniques"
+    url: "https://docs.aws.amazon.com/athena/latest/ug/performance-tuning-data-optimization-techniques.html"
+  - title: "Amazon Redshift system overview"
+    url: "https://docs.aws.amazon.com/redshift/latest/dg/c_redshift_system_overview.html"
+  - title: "Multi-Region keys in AWS KMS"
+    url: "https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import CacheSim from "../../components/scenes/analytics/CacheSim.tsx";
+import CacheEngineSim from "../../components/scenes/analytics/CacheEngineSim.tsx";
+import DataJobSim from "../../components/scenes/analytics/DataJobSim.tsx";
+import LakeCostSim from "../../components/scenes/analytics/LakeCostSim.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#en-s1", label: "1 · A cache in front of the database" },
+  { href: "#en-s2", label: "2 · Redis and Memcached" },
+  { href: "#en-s3", label: "3 · Choosing a tool for each data task" },
+  { href: "#en-s4", label: "4 · Optimizing data lake cost" },
+  { href: "#en-challenge", label: "Exercise" },
+]}>
+ShopViet's user base grows every month. Aurora starts to get overloaded by repeated queries, while the analytics department needs to work with the data without affecting the performance of the sales system. **Amazon ElastiCache** keeps frequently accessed data in memory. **Amazon Athena**, **Amazon Redshift** and **AWS Glue** handle analytics on the S3 data lake.
+</Story>
+
+<Scene id="en-s1" label="Part 1/4" title="A cache in front of the database" questions={["exam4_q12", "exam3_q33", "exam5_q37", "exam4_q50", "exam4_q32", "exam6_q6", "exam1_q29"]}>
+
+**ElastiCache** is a managed in-memory data store with sub-millisecond response times. The most common usage pattern is **cache-aside**: the application queries the cache first; if the data is not there (a cache miss), the application reads from the database and writes the result to the cache with a TTL. Try five ShopViet scenarios:
+
+<CacheSim client:visible />
+
+ElastiCache fits two kinds of workload: **heavy read traffic** (the same data is queried repeatedly) and **compute-intensive results** (results that take a lot of resources to compute, such as leaderboards). ElastiCache does not solve heavy write traffic, does not run complex JOINs and does not perform ETL.
+
+For data on DynamoDB, there is also **DAX** (DynamoDB lesson). ElastiCache works with any data source: RDS, Aurora, DynamoDB, or ElastiCache itself acting as a session store.
+
+<Takeaway>Repeated read queries overloading the database: ElastiCache with cache-aside and a TTL. Sessions shared across servers: ElastiCache. Reducing downtime and cache data loss: Multi-AZ with automatic failover.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 2/4" title="Choosing an engine: Redis and Memcached" questions={["exam6_q47", "exam5_q65", "exam1_q29", "exam4_q32"]}>
+
+ElastiCache supports three engines: **Valkey**, **Redis OSS** and **Memcached**. Valkey and Redis OSS support many data structures and high availability features. **Memcached** is simpler but multithreaded. Send the same sequence of commands to two identically configured nodes, then choose ShopViet's requirements:
+
+<CacheEngineSim client:visible />
+
+Examples: caching the results of slow JOIN queries on RDS while making use of many cores: Memcached. Real-time leaderboards, finding the nearest store, requiring failover: Redis OSS. For leaderboards on DynamoDB data, DynamoDB + DAX is also an in-memory option.
+
+<Takeaway>Multithreaded, simple key-value: Memcached. Sorted sets, geospatial, pub/sub, replicas, Multi-AZ failover, backups: Valkey or Redis OSS (comparison for node-based clusters; with ElastiCache Serverless, Memcached also supports backup and restore).</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 3/4" title="Choosing a tool for each data task" questions={["exam5_q12", "exam1_q26", "exam1_q53", "exam5_q58", "exam5_q6", "exam4_q11", "exam2_q15", "exam6_q26"]}>
+
+ShopViet's data is stored in a data lake on S3. Each task has a best-fit service:
+
+- **Athena**: SQL queries directly on files in S3, serverless, billed by the bytes of data scanned. Suits ad-hoc queries.
+- **Redshift**: an MPP data warehouse for reports and dashboards that run on a schedule. Has a **Serverless** option. **Redshift Spectrum** lets a Redshift cluster also query data on S3.
+- **Glue**: serverless ETL and the Data Catalog. **Glue DataBrew**: clean data through a visual interface, with no code to write.
+- **EMR**: Spark/Hadoop clusters of the size you choose, used when you need control over the framework and configuration.
+
+Choose a task, run the simulation, then switch to the better-suited tool:
+
+<DataJobSim client:visible />
+
+<Takeaway>Ad-hoc SQL on S3: Athena. Serverless MPP data warehouse: Redshift Serverless, loaded with Glue. No-code data cleaning: DataBrew. Converting recordings to text: Transcribe. Full-text search: OpenSearch. Relationships between users (graph): Neptune. Infrequently accessed data that still needs immediate SQL queries: S3 Standard-IA + Athena.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s4" label="Part 4/4" title="Controlling data lake cost over time" questions={["exam2_q34", "exam6_q26", "exam5_q11"]}>
+
+ShopViet's data lake is split into two zones. The **raw zone** stores the original data as it was received. The **refined zone** stores data that Glue has cleaned for analysts to query. Each zone grows by 1 TB a day. Choose a storage option, then simulate one year:
+
+<LakeCostSim client:visible />
+
+When the data lake needs another copy in a different Region for disaster recovery:
+
+- Enable **Cross-Region Replication** on the bucket. CRR replicates only objects written **after** it is enabled; existing objects need S3 Batch Replication. Starting from scratch with a new bucket is the simplest option.
+- Encrypt with **SSE-KMS using a multi-Region key**: the key has a replica in the other Region with the same key material, so the data in both places uses the same set of keys and the same permission configuration.
+- Athena can query in the Region that holds the data.
+
+<Takeaway>Original data that must be retained but is rarely read: lifecycle to Glacier Deep Archive. Data that is still queried: keep it in a storage class with immediate access, written in a compressed columnar format (Parquet). Athena cannot read data in Glacier Deep Archive until it is restored.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Sort the tasks by service group" questions={["exam4_q12", "exam6_q47", "exam5_q12", "exam1_q53", "exam2_q34"]}>
+
+Sort each ShopViet task into the matching service group. On a mobile device: tap a card, then tap the target box.
+
+<SortGame client:visible
+  bins={[
+    { id: "cache", title: "ElastiCache", sub: "Redis OSS, Memcached", hint: "Hint: the task needs an instant response to users, from memory." },
+    { id: "query", title: "SQL analytics", sub: "Athena, Redshift", hint: "Hint: the task is a SQL query over a large volume of data." },
+    { id: "prep", title: "Data preparation", sub: "Glue, DataBrew", hint: "Hint: the task transforms data before it is used." },
+  ]}
+  cards={[
+    ["Login sessions shared across servers", "cache"], ["Top 10 sellers, updated continuously", "cache"], ["The shipper nearest the user", "cache"],
+    ["Check click data just written to S3", "query"], ["A revenue dashboard run every morning on the data warehouse", "query"], ["Count complaint calls in the transcripts", "query"],
+    ["Convert CSV to compressed Parquet nightly", "prep"], ["Analysts filter anomalous data in a drag-and-drop interface", "prep"],
+  ]}
+/>
+
+Check question: as the designer of the ShopViet system, which option fits?
+
+<Quiz client:visible items={[
+  { q: "Aurora already has a read replica but is still overloaded because users query order status over and over. Which solution is effective at the lowest cost?",
+    opts: ["Add another read replica", "ElastiCache in front of Aurora, caching results with a TTL", "Move to Aurora Serverless v2"],
+    a: 1,
+    why: "Most of the load is repeated reads; the cache responds from memory, so identical queries do not reach the database." },
+  { q: "ShopViet needs to cache the results of slow JOIN queries on RDS, running on multi-core nodes and using all the cores. Which engine fits?",
+    opts: ["Memcached", "Redis OSS", "DAX"],
+    a: 0,
+    why: "Memcached processes commands on multiple threads. DAX is only for DynamoDB." },
+  { q: "A data engineer needs to run a few SQL queries to check raw data on S3, at low cost and with no maintenance tasks. Which service fits?",
+    opts: ["Load into Redshift every hour", "Amazon Athena", "An EMR cluster with SparkSQL"],
+    a: 1,
+    why: "Athena queries S3 directly, is serverless and charges only for the data scanned." },
+  { q: "The raw zone must be kept for 5 years but is almost never read; the refined zone is queried daily. Which solution reduces storage cost?",
+    opts: ["Lifecycle both zones to Glacier Deep Archive", "Raw zone to Glacier Deep Archive, Glue writes the refined zone compressed", "Lambda deletes the raw zone after 1 day"],
+    a: 1,
+    why: "The raw zone is still retained at the lowest cost; the refined zone can still be queried with Athena and is smaller thanks to the compressed format." },
+  { q: "Redshift UNLOADs files into a bucket in a partner's account, but the partner itself gets AccessDenied errors. What is the cause?",
+    opts: ["Redshift cannot write to another account", "The objects belong to the writing account while the bucket still uses ACLs (Object writer)", "The partner has not enabled versioning"],
+    a: 1,
+    why: "When ACLs are enabled, objects belong to the account that uploaded them. Set Object Ownership = Bucket owner enforced so the bucket owner owns every object." },
+]} />
+
+</Scene>

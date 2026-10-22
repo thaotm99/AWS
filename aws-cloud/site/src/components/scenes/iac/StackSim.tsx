@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { prefersReducedMotion } from "../../../lib/animate";
 import { rich } from "../diagram";
+import { useLang, type Bi } from "../../../lib/lang";
 import "./iac-sims.css";
 
 // A CloudFormation stack of ShopViet, event by event. Create: every database comes
@@ -127,11 +128,80 @@ const SCENARIOS: Scenario[] = [
   },
 ];
 
+const RDS_TEMPLATE_EN: Scenario["template"] = RDS_TEMPLATE.map((l) =>
+  l.line.includes("DbSecurityGroup:  #") ? { ...l, line: "  DbSecurityGroup:  # allows only 5432 from sg-app" }
+  : l.line.includes("DbSubnetGroup:    #") ? { ...l, line: "  DbSubnetGroup:    # two private subnets, two AZs" }
+  : l);
+
+const SCENARIOS_EN: Scenario[] = [
+  {
+    name: "Create a database to the standard",
+    action: "Create stack",
+    stack: "orders-db",
+    template: RDS_TEMPLATE_EN,
+    resources: DB_RES,
+    start: "none",
+    events: [
+      { res: "DbSecurityGroup", status: "progress", text: "CREATE_IN_PROGRESS" },
+      { res: "DbSecurityGroup", status: "done", text: "CREATE_COMPLETE" },
+      { res: "DbSubnetGroup", status: "progress", text: "CREATE_IN_PROGRESS" },
+      { res: "DbSubnetGroup", status: "done", text: "CREATE_COMPLETE" },
+      { res: "Database", status: "progress", text: "CREATE_IN_PROGRESS", reason: "Refs the security group and subnet group, so it waits until both are created" },
+      { res: "Database", status: "done", text: "CREATE_COMPLETE" },
+    ],
+    ok: true,
+    result: "Every database created has the same configuration: Multi-AZ, encryption, 7-day backups, protection against accidental deletion. New employees only choose an instance class from the allowed list. The template is stored in Git and reviewed like code.",
+  },
+  {
+    name: "Change io1 volume to gp3 to cut cost",
+    action: "Update stack",
+    stack: "report-server",
+    template: SCENARIOS[1].template,
+    resources: SCENARIOS[1].resources,
+    start: "done",
+    changeSet: "Change set: **Modify** `DataVolume` (VolumeType, Iops) · Replacement: **False**. `ReportServer` does not change.",
+    events: [
+      { res: "DataVolume", status: "updating", text: "UPDATE_IN_PROGRESS", reason: "Elastic Volumes changes the volume type while the volume stays attached" },
+      { res: "DataVolume", status: "done", text: "UPDATE_COMPLETE" },
+    ],
+    ok: true,
+    result: "The io1 volume accounts for 90% of the cost while CloudWatch shows I/O is high only occasionally. gp3 is the lowest-cost EBS SSD volume type, provides a baseline of 3,000 IOPS and can provision additional IOPS when needed (the previous-generation gp2 uses I/O credits to burst). The change is made in the template and applied through an update stack, not edited manually, so that the template always reflects the actual infrastructure. CloudFormation incurs no additional charge for AWS::* resources; only the AWS resources created are charged.",
+  },
+  {
+    name: "Failure during creation",
+    action: "Create stack",
+    stack: "orders-db-test",
+    template: RDS_TEMPLATE_EN.map((l) => (l.line.includes("DBInstanceClass") ? { line: "      DBInstanceClass: db.x9.huge  # typo", mark: "bad" as const } : l)),
+    resources: DB_RES,
+    start: "none",
+    events: [
+      { res: "DbSecurityGroup", status: "progress", text: "CREATE_IN_PROGRESS" },
+      { res: "DbSecurityGroup", status: "done", text: "CREATE_COMPLETE" },
+      { res: "DbSubnetGroup", status: "progress", text: "CREATE_IN_PROGRESS" },
+      { res: "DbSubnetGroup", status: "done", text: "CREATE_COMPLETE" },
+      { res: "Database", status: "progress", text: "CREATE_IN_PROGRESS" },
+      { res: "Database", status: "failed", text: "CREATE_FAILED", reason: "Invalid DB instance class" },
+      { res: "DbSubnetGroup", status: "deleting", text: "DELETE_IN_PROGRESS", reason: "ROLLBACK_IN_PROGRESS" },
+      { res: "DbSubnetGroup", status: "deleted", text: "DELETE_COMPLETE" },
+      { res: "DbSecurityGroup", status: "deleting", text: "DELETE_IN_PROGRESS" },
+      { res: "DbSecurityGroup", status: "deleted", text: "DELETE_COMPLETE" },
+    ],
+    ok: false,
+    result: "By default, the stack rolls back and ends in ROLLBACK_COMPLETE: CloudFormation deletes the resources it created and does not leave the system half-built. Fix the template and create the stack again.",
+  },
+];
+
 const STATUS_CLASS: Record<Status, string> = {
   none: "", progress: "progress", done: "done", failed: "failed", deleting: "progress", deleted: "deleted", updating: "progress",
 };
-const STATUS_TEXT: Record<Status, string> = {
-  none: "chưa tạo", progress: "đang tạo", done: "hoàn tất", failed: "lỗi", deleting: "đang xoá", deleted: "đã xoá", updating: "đang cập nhật",
+const STATUS_TEXT: Record<Status, Bi> = {
+  none: { vi: "chưa tạo", en: "not created" },
+  progress: { vi: "đang tạo", en: "creating" },
+  done: { vi: "hoàn tất", en: "complete" },
+  failed: { vi: "lỗi", en: "failed" },
+  deleting: { vi: "đang xoá", en: "deleting" },
+  deleted: { vi: "đã xoá", en: "deleted" },
+  updating: { vi: "đang cập nhật", en: "updating" },
 };
 const TAG: Record<Status, string> = {
   none: "info", progress: "info", done: "hit", failed: "bad", deleting: "miss", deleted: "miss", updating: "info",
@@ -140,9 +210,10 @@ const TAG: Record<Status, string> = {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export default function StackSim() {
+  const L = useLang();
   const alive = useRef(true);
   const [index, setIndex] = useState(0);
-  const sc = SCENARIOS[index];
+  const sc = L({ vi: SCENARIOS, en: SCENARIOS_EN })[index];
   const [shown, setShown] = useState(-1);
   const [busy, setBusy] = useState(false);
   useEffect(() => () => { alive.current = false; }, []);
@@ -185,9 +256,9 @@ export default function StackSim() {
 
   return (
     <div className="stage sks">
-      <div className="sks-row" role="group" aria-label="Tình huống">
-        {SCENARIOS.map((s, i) => (
-          <button key={s.name} className="chip" aria-pressed={i === index} disabled={busy && i !== index} onClick={() => pick(i)}>{s.name}</button>
+      <div className="sks-row" role="group" aria-label={L({ vi: "Tình huống", en: "Scenarios" })}>
+        {L({ vi: SCENARIOS, en: SCENARIOS_EN }).map((s, i) => (
+          <button key={i} className="chip" aria-pressed={i === index} disabled={busy && i !== index} onClick={() => pick(i)}>{s.name}</button>
         ))}
       </div>
       <div className="stage-bar">
@@ -202,7 +273,7 @@ export default function StackSim() {
         ))}
       </pre>
       <div className="svg-wrap">
-        <svg viewBox="0 0 820 150" role="img" aria-label={`Các resource trong stack ${sc.stack} và trạng thái của từng resource`}>
+        <svg viewBox="0 0 820 150" role="img" aria-label={L({ vi: `Các resource trong stack ${sc.stack} và trạng thái của từng resource`, en: `The resources in stack ${sc.stack} and the status of each resource` })}>
           <rect className="sks-stack" x={10} y={10} width={800} height={130} rx={12} />
           <text className="sks-stack-label" x={24} y={30}>Stack {sc.stack}</text>
           {sc.resources.map((r, i) => {
@@ -213,7 +284,7 @@ export default function StackSim() {
                 <rect x={x} y={48} width={cardW} height={72} rx={9} />
                 <text className="sks-id" x={x + cardW / 2} y={72} textAnchor="middle">{r.id}</text>
                 <text className="sks-type" x={x + cardW / 2} y={90} textAnchor="middle">{r.type}</text>
-                <text className="sks-st" x={x + cardW / 2} y={109} textAnchor="middle">{STATUS_TEXT[st]}</text>
+                <text className="sks-st" x={x + cardW / 2} y={109} textAnchor="middle">{L(STATUS_TEXT[st])}</text>
               </g>
             );
           })}
@@ -222,7 +293,7 @@ export default function StackSim() {
       <div className="readout" aria-live="polite">
         {sc.changeSet && <p className="sks-change">{rich(sc.changeSet)}</p>}
         {shown < 0 ? (
-          <p className="sks-hint">Chọn <b>{sc.action}</b> để xem lần lượt các stack event.</p>
+          <p className="sks-hint">{L({ vi: <>Chọn <b>{sc.action}</b> để xem lần lượt các stack event.</>, en: <>Choose <b>{sc.action}</b> to see the stack events one by one.</> })}</p>
         ) : (
           <ul className="log">
             {sc.events.slice(0, shown + 1).map((e, i) => (

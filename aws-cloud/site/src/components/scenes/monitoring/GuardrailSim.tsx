@@ -1,4 +1,5 @@
 import PacketSim, { type PScenario } from "../elb/PacketSim";
+import { useLang } from "../../../lib/lang";
 
 // Guardrails around ShopViet's accounts. An SCP keeps the mandatory CloudTrail trail
 // running even for a developer who is root in their own account. An AWS Config managed
@@ -98,6 +99,100 @@ const SCENARIOS: PScenario[] = [
   },
 ];
 
+const SCENARIOS_EN: PScenario[] = [
+  {
+    name: "Developer disables CloudTrail",
+    request: "cloudtrail:StopLogging  (root user of account dev-an)",
+    toggle: { label: "SCP that blocks CloudTrail changes, attached to the Developers OU", initial: false },
+    layout: {
+      viewBox: "0 40 820 200",
+      aria: "A call to disable CloudTrail is evaluated against the AWS Organizations SCP, then against IAM permissions in the account",
+      boxes: [{ x: 200, y: 56, w: 600, h: 168, label: "Account dev-an (member of AWS Organizations)" }],
+      nodes: [
+        { id: "dev", x: 80, y: 150, l1: "Developer An", l2: "signed in as root", user: true },
+        { id: "scp", x: 310, y: 150, w: 160, l1: "SCP", l2: "Organizations guardrail" },
+        { id: "iam", x: 500, y: 150, w: 150, l1: "Account permissions", l2: "root: full access" },
+        { id: "trail", x: 700, y: 150, w: 150, l1: "Mandatory trail", l2: "org-audit-trail" },
+      ],
+      links: [["dev", "scp"], ["scp", "iam"], ["iam", "trail"]],
+    },
+    run: (scp) => scp
+      ? { steps: [
+            { at: "scp", state: "block", flash: "Deny", msg: "`Deny cloudtrail:StopLogging, DeleteTrail, UpdateTrail, PutEventSelectors`. An SCP affects **every** user and role in the account it is attached to, including the **root user** of a member account (SCPs do not affect the management account)." }],
+          ok: true,
+          result: "The trail keeps logging. The developer still has full access to other actions in their own account. Identity-based policies cannot be attached to the root user; an SCP can restrict the root user of a member account." }
+      : { steps: [
+            { at: "scp", state: "skip", msg: "No SCP restricts CloudTrail actions yet." },
+            { at: "iam", state: "pass", msg: "Root has full access in the account." },
+            { at: "trail", state: "change", tag: "STOPPED", relabel: { l2: "turned off" }, msg: "The trail stops logging. From this point on, actions in the account are no longer recorded." }],
+          ok: false,
+          result: "A mandatory control is disabled with a single API call. Attach an **SCP** that blocks every action that modifies CloudTrail to the developers' OU." },
+  },
+  {
+    name: "Imported certificate about to expire",
+    action: "Run daily evaluation",
+    request: "The pay.shopviet.vn certificate, bought externally and imported into ACM, is valid for 25 more days",
+    toggle: { label: "Enable the acm-certificate-expiration-check Config rule (30 days)", initial: false },
+    layout: {
+      viewBox: "0 96 820 104",
+      aria: "AWS Config evaluates the certificate in ACM and sends a notification through EventBridge and SNS",
+      nodes: [
+        { id: "acm", x: 90, y: 140, w: 150, l1: "ACM", l2: "imported certificate" },
+        { id: "config", x: 270, y: 140, w: 160, l1: "AWS Config", l2: "managed rule" },
+        { id: "eb", x: 450, y: 140, w: 140, l1: "EventBridge", l2: "compliance change" },
+        { id: "sns", x: 610, y: 140, w: 110, l1: "SNS", l2: "email" },
+        { id: "team", x: 750, y: 140, l1: "Security team", user: true },
+      ],
+      links: [["acm", "config"], ["config", "eb"], ["eb", "sns"], ["sns", "team"]],
+    },
+    run: (rule) => rule
+      ? { steps: [
+            { at: "acm", jump: true, state: "wait", tag: "25 DAYS", msg: "An externally **imported** certificate: ACM **does not renew it automatically**. Certificates issued by ACM are renewed automatically by ACM." },
+            { at: "config", state: "change", tag: "NON_COMPLIANT", flash: "< 30 days", msg: "The `acm-certificate-expiration-check` rule with `daysToExpiration = 30` (the default is 14; ShopViet has set it to 30) marks the certificate NON_COMPLIANT." },
+            { at: "eb", state: "pass", msg: "The \"Config Rules Compliance Change\" event matches an EventBridge rule." },
+            { at: "sns", state: "pass", msg: "An email is sent through the security team's topic." },
+            { at: "team", state: "pass", msg: "There is almost a month left to buy and import a new certificate." }],
+          ok: true, back: false,
+          result: "No script to write and no server to maintain. The managed rule is ready to use; the `daysToExpiration` parameter defaults to 14 days and can be reconfigured." }
+      : { steps: [
+            { at: "acm", jump: true, state: "wait", tag: "25 DAYS", msg: "The imported certificate is not renewed automatically, and its expiration date is not monitored." },
+            { at: "config", state: "skip", msg: "No rule is evaluating yet." }],
+          ok: false, back: false,
+          result: "After 25 days, the payment page shows a certificate error and users cannot pay." },
+  },
+  {
+    name: "SSH open to the internet",
+    action: "Change configuration",
+    request: "sg-web: add inbound 22/tcp from 0.0.0.0/0",
+    toggle: { label: "Enable automatic remediation for the rule", initial: false },
+    layout: {
+      viewBox: "0 100 820 80",
+      aria: "AWS Config detects a security group with SSH open to the internet, and Systems Manager Automation remediates it",
+      nodes: [
+        { id: "sg", x: 110, y: 140, w: 150, l1: "sg-web", l2: "security group" },
+        { id: "config", x: 340, y: 140, w: 170, l1: "AWS Config", l2: "rule restricted-ssh" },
+        { id: "ssm", x: 590, y: 140, w: 250, l1: "SSM Automation runbook", l2: "AWS-DisablePublicAccessForSecurityGroup" },
+      ],
+      links: [["sg", "config"], ["config", "ssm"]],
+    },
+    run: (fix) => fix
+      ? { steps: [
+            { at: "sg", jump: true, state: "change", tag: "CHANGE", msg: "The new configuration is recorded as a configuration item." },
+            { at: "config", state: "change", tag: "NON_COMPLIANT", flash: "22 open", msg: "The `restricted-ssh` rule (identifier `INCOMING_SSH_DISABLED`) evaluates NON_COMPLIANT because SSH is open to 0.0.0.0/0." },
+            { at: "ssm", state: "pass", msg: "The **remediation action** runs the runbook and removes the SSH rule open to the internet." },
+            { at: "sg", from: "ssm", state: "pass", tag: "COMPLIANT", relabel: { l2: "port 22 closed" }, msg: "The security group is compliant again." }],
+          ok: true, back: false,
+          result: "Port 22 is open for only a few minutes. Config keeps the full history: when it was opened and when it was closed." }
+      : { steps: [
+            { at: "sg", jump: true, state: "change", tag: "CHANGE", msg: "The new configuration is recorded." },
+            { at: "config", state: "change", tag: "NON_COMPLIANT", flash: "22 open", msg: "The rule shows NON_COMPLIANT on the dashboard." },
+            { at: "ssm", state: "skip", msg: "No remediation configured, only an alert." }],
+          ok: false, back: false,
+          result: "Config detects the violation, but the port stays open until someone fixes it manually. Configure **remediation** to fix it automatically." },
+  },
+];
+
 export default function GuardrailSim() {
-  return <PacketSim scenarios={SCENARIOS} hint="Chọn một tình huống, thay đổi cấu hình, sau đó chọn nút chạy." />;
+  const L = useLang();
+  return <PacketSim scenarios={L({ vi: SCENARIOS, en: SCENARIOS_EN })} action={L({ vi: "Gửi request", en: "Send request" })} hint={L({ vi: "Chọn một tình huống, thay đổi cấu hình, sau đó chọn nút chạy.", en: "Choose a scenario, change the setting, then choose the run button." })} />;
 }

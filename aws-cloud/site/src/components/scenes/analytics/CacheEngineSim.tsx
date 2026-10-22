@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { prefersReducedMotion, travel, type Pt } from "../../../lib/animate";
+import { useLang, type Bi } from "../../../lib/lang";
 import "./cache-engine-sim.css";
 
 // Redis OSS (or Valkey) and Memcached side by side on a node with four vCPUs.
@@ -9,18 +10,18 @@ import "./cache-engine-sim.css";
 
 type Engine = "redis" | "mem";
 
-const NEEDS: { id: string; name: string; redis: boolean; mem: boolean }[] = [
-  { id: "multi", name: "Tận dụng nhiều core trên một node", redis: false, mem: true },
-  { id: "simple", name: "Cache key-value đơn giản", redis: true, mem: true },
-  { id: "sorted", name: "Bảng xếp hạng (sorted set)", redis: true, mem: false },
-  { id: "geo", name: "Truy vấn theo vị trí (geospatial)", redis: true, mem: false },
-  { id: "repl", name: "Replica + Multi-AZ automatic failover", redis: true, mem: false },
-  { id: "pubsub", name: "Pub/Sub", redis: true, mem: false },
+const NEEDS: { id: string; name: Bi; redis: boolean; mem: boolean }[] = [
+  { id: "multi", name: { vi: "Tận dụng nhiều core trên một node", en: "Use many cores on one node" }, redis: false, mem: true },
+  { id: "simple", name: { vi: "Cache key-value đơn giản", en: "Simple key-value cache" }, redis: true, mem: true },
+  { id: "sorted", name: { vi: "Bảng xếp hạng (sorted set)", en: "Leaderboard (sorted set)" }, redis: true, mem: false },
+  { id: "geo", name: { vi: "Truy vấn theo vị trí (geospatial)", en: "Location queries (geospatial)" }, redis: true, mem: false },
+  { id: "repl", name: { vi: "Replica + Multi-AZ automatic failover", en: "Replica + Multi-AZ automatic failover" }, redis: true, mem: false },
+  { id: "pubsub", name: { vi: "Pub/Sub", en: "Pub/Sub" }, redis: true, mem: false },
 ];
 
-const ENGINES: { id: Engine; name: string; x: number; cores: string }[] = [
-  { id: "redis", name: "Redis OSS / Valkey", x: 20, cores: "xử lý lệnh trên một thread chính" },
-  { id: "mem", name: "Memcached", x: 420, cores: "xử lý lệnh trên nhiều thread" },
+const ENGINES: { id: Engine; name: string; x: number; cores: Bi }[] = [
+  { id: "redis", name: "Redis OSS / Valkey", x: 20, cores: { vi: "xử lý lệnh trên một thread chính", en: "runs commands on one main thread" } },
+  { id: "mem", name: "Memcached", x: 420, cores: { vi: "xử lý lệnh trên nhiều thread", en: "runs commands on multiple threads" } },
 ];
 
 const CMDS = 8;
@@ -30,6 +31,7 @@ const CORE_Y = 96;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export default function CacheEngineSim() {
+  const L = useLang();
   const fx = useRef<SVGGElement>(null);
   const alive = useRef(true);
   const [picked, setPicked] = useState<string[]>(["multi", "simple"]);
@@ -78,20 +80,20 @@ export default function CacheEngineSim() {
 
   let verdict: string;
   let good = true;
-  if (chosen.length === 0) { verdict = "Chọn tối thiểu một yêu cầu."; good = false; }
-  else if (okRedis && okMem) verdict = "Cả hai engine đều đáp ứng. Khi chỉ cần cache đơn giản, Memcached gọn nhẹ hơn.";
-  else if (okRedis) verdict = "Redis OSS (hoặc Valkey) đáp ứng đầy đủ. Memcached không hỗ trợ: " + chosen.filter((n) => !n.mem).map((n) => n.name).join(", ") + ".";
-  else if (okMem) verdict = "Memcached đáp ứng đầy đủ. Redis OSS không hỗ trợ: " + chosen.filter((n) => !n.redis).map((n) => n.name).join(", ") + ".";
-  else { verdict = "Không engine nào đáp ứng đầy đủ. Tách thành hai cluster cho hai tác vụ khác nhau, hoặc rà soát lại các yêu cầu thực sự cần thiết."; good = false; }
+  if (chosen.length === 0) { verdict = L({ vi: "Chọn tối thiểu một yêu cầu.", en: "Choose at least one requirement." }); good = false; }
+  else if (okRedis && okMem) verdict = L({ vi: "Cả hai engine đều đáp ứng. Khi chỉ cần cache đơn giản, Memcached gọn nhẹ hơn.", en: "Both engines meet the requirements. When you only need a simple cache, Memcached is lighter." });
+  else if (okRedis) verdict = L({ vi: "Redis OSS (hoặc Valkey) đáp ứng đầy đủ. Memcached không hỗ trợ: ", en: "Redis OSS (or Valkey) meets every requirement. Memcached does not support: " }) + chosen.filter((n) => !n.mem).map((n) => L(n.name)).join(", ") + ".";
+  else if (okMem) verdict = L({ vi: "Memcached đáp ứng đầy đủ. Redis OSS không hỗ trợ: ", en: "Memcached meets every requirement. Redis OSS does not support: " }) + chosen.filter((n) => !n.redis).map((n) => L(n.name)).join(", ") + ".";
+  else { verdict = L({ vi: "Không engine nào đáp ứng đầy đủ. Tách thành hai cluster cho hai tác vụ khác nhau, hoặc rà soát lại các yêu cầu thực sự cần thiết.", en: "No engine meets every requirement. Split into two clusters for the two different jobs, or review which requirements are really needed." }); good = false; }
 
   return (
     <div className="stage cen">
       <div className="stage-bar">
-        <span className="label">Hai node cùng cấu hình 4 vCPU</span>
-        <button className="btn primary cen-play" onClick={play} disabled={busy}>Gửi {CMDS} lệnh</button>
+        <span className="label">{L({ vi: "Hai node cùng cấu hình 4 vCPU", en: "Two identical 4-vCPU nodes" })}</span>
+        <button className="btn primary cen-play" onClick={play} disabled={busy}>{L({ vi: `Gửi ${CMDS} lệnh`, en: `Send ${CMDS} commands` })}</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 0 820 196" role="img" aria-label="Hai node cache 4 vCPU: Redis OSS xử lý lệnh trên một thread chính, Memcached xử lý trên nhiều thread">
+        <svg viewBox="0 0 820 196" role="img" aria-label={L({ vi: "Hai node cache 4 vCPU: Redis OSS xử lý lệnh trên một thread chính, Memcached xử lý trên nhiều thread", en: "Two 4-vCPU cache nodes: Redis OSS runs commands on one main thread, Memcached on multiple threads" })}>
           {ENGINES.map((en) => {
             const lit = hot[en.id] ?? [];
             const rounds = doneAt[en.id];
@@ -99,10 +101,10 @@ export default function CacheEngineSim() {
               <g key={en.id}>
                 <rect className="cen-card" x={en.x} y={12} width={380} height={172} rx={12} />
                 <text className="cen-title" x={en.x + 16} y={36}>{en.name}</text>
-                <text className="cen-sub" x={en.x + 16} y={54}>{en.cores}</text>
+                <text className="cen-sub" x={en.x + 16} y={54}>{L(en.cores)}</text>
                 <g transform={`translate(${en.x + 50} 140)`} aria-hidden="true">
                   <rect className="cen-queue" x={-30} y={-14} width={60} height={28} rx={6} />
-                  <text className="cen-sub" x={0} y={4} textAnchor="middle">{CMDS} lệnh</text>
+                  <text className="cen-sub" x={0} y={4} textAnchor="middle">{L({ vi: `${CMDS} lệnh`, en: `${CMDS} cmds` })}</text>
                 </g>
                 <rect className="cen-node" x={en.x + 136} y={CORE_Y - 22} width={228} height={CORE + 64} rx={8} />
                 <text className="cen-sub" x={en.x + 250} y={CORE_Y - 6} textAnchor="middle">node · 4 vCPU</text>
@@ -112,12 +114,12 @@ export default function CacheEngineSim() {
                   return (
                     <g key={i}>
                       <rect className={cls} x={coreX(en.x, i)} y={CORE_Y} width={CORE} height={CORE} rx={6} />
-                      <text className="cen-core-t" x={coreX(en.x, i) + CORE / 2} y={CORE_Y + CORE / 2 + 4} textAnchor="middle">{used ? "T" + (i + 1) : "rỗi"}</text>
+                      <text className="cen-core-t" x={coreX(en.x, i) + CORE / 2} y={CORE_Y + CORE / 2 + 4} textAnchor="middle">{used ? "T" + (i + 1) : L({ vi: "rỗi", en: "idle" })}</text>
                     </g>
                   );
                 })}
                 <text className={"cen-done" + (rounds ? "" : " idle")} x={en.x + 250} y={CORE_Y + CORE + 30} textAnchor="middle">
-                  {rounds ? `hoàn tất sau ${rounds} lượt` : busy ? "đang xử lý…" : " "}
+                  {rounds ? L({ vi: `hoàn tất sau ${rounds} lượt`, en: `done after ${rounds} rounds` }) : busy ? L({ vi: "đang xử lý…", en: "processing…" }) : " "}
                 </text>
               </g>
             );
@@ -126,20 +128,20 @@ export default function CacheEngineSim() {
         </svg>
       </div>
       <div className="readout">
-        <p className="cen-hint">Chọn các yêu cầu của ShopViet:</p>
-        <div className="cen-needs" role="group" aria-label="Yêu cầu của ShopViet">
+        <p className="cen-hint">{L({ vi: "Chọn các yêu cầu của ShopViet:", en: "Choose ShopViet’s requirements:" })}</p>
+        <div className="cen-needs" role="group" aria-label={L({ vi: "Yêu cầu của ShopViet", en: "ShopViet requirements" })}>
           {NEEDS.map((n) => (
-            <button key={n.id} className="chip" aria-pressed={picked.includes(n.id)} onClick={() => toggle(n.id)}>{n.name}</button>
+            <button key={n.id} className="chip" aria-pressed={picked.includes(n.id)} onClick={() => toggle(n.id)}>{L(n.name)}</button>
           ))}
         </div>
         <table className="cen-table">
-          <thead><tr><th>Yêu cầu đã chọn</th><th>Redis OSS / Valkey</th><th>Memcached</th></tr></thead>
+          <thead><tr><th>{L({ vi: "Yêu cầu đã chọn", en: "Selected requirement" })}</th><th>Redis OSS / Valkey</th><th>Memcached</th></tr></thead>
           <tbody>
             {chosen.map((n) => (
               <tr key={n.id}>
-                <td>{n.name}</td>
-                <td className={n.redis ? "yes" : "no"}>{n.redis ? "hỗ trợ" : "không"}</td>
-                <td className={n.mem ? "yes" : "no"}>{n.mem ? "hỗ trợ" : "không"}</td>
+                <td>{L(n.name)}</td>
+                <td className={n.redis ? "yes" : "no"}>{n.redis ? L({ vi: "hỗ trợ", en: "yes" }) : L({ vi: "không", en: "no" })}</td>
+                <td className={n.mem ? "yes" : "no"}>{n.mem ? L({ vi: "hỗ trợ", en: "yes" }) : L({ vi: "không", en: "no" })}</td>
               </tr>
             ))}
           </tbody>

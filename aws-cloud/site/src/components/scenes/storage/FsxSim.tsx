@@ -1,6 +1,7 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, useState } from "react";
 import { flashText, travel, type Pt } from "../../../lib/animate";
 import { rich } from "../diagram";
+import { useLang, type Bi } from "../../../lib/lang";
 import "./storage-sims.css";
 
 // Four ShopViet teams each need a shared file system. Pick a team and a file system,
@@ -12,70 +13,70 @@ type Fs = "efs" | "win" | "lustre" | "ontap";
 type State = "pass" | "block";
 type Tone = "ok" | "warn" | "bad";
 
-const FS: { id: Fs; l1: string; l2: string }[] = [
-  { id: "efs", l1: "Amazon EFS", l2: "NFS cho Linux" },
-  { id: "win", l1: "FSx for Windows", l2: "File Server · SMB" },
-  { id: "lustre", l1: "FSx for Lustre", l2: "file system song song" },
-  { id: "ontap", l1: "FSx for NetApp ONTAP", l2: "NFS · SMB · iSCSI" },
+const FS: { id: Fs; l1: string; l2: Bi }[] = [
+  { id: "efs", l1: "Amazon EFS", l2: { vi: "NFS cho Linux", en: "NFS for Linux" } },
+  { id: "win", l1: "FSx for Windows", l2: { vi: "File Server · SMB", en: "File Server · SMB" } },
+  { id: "lustre", l1: "FSx for Lustre", l2: { vi: "file system song song", en: "parallel file system" } },
+  { id: "ontap", l1: "FSx for NetApp ONTAP", l2: { vi: "NFS · SMB · iSCSI", en: "NFS · SMB · iSCSI" } },
 ];
 
 interface Team {
-  name: string;
-  client: [string, string];
-  gates: [string, string][];
+  name: Bi;
+  client: [Bi, Bi];
+  gates: [Bi, Bi][];
   /** For each file system: one verdict per gate (stops at the first block) and the result. */
-  fit: Record<Fs, { steps: [State, string][]; tone: Tone; result: string }>;
+  fit: Record<Fs, { steps: [State, Bi][]; tone: Tone; result: Bi }>;
 }
 
 const TEAMS: Team[] = [
   {
-    name: "Kế toán: Windows + AD",
-    client: ["Máy Windows", "phòng kế toán"],
-    gates: [["SMB", "giao thức Windows"], ["Quyền NTFS", "ACL từng thư mục"], ["Active Directory", "xác thực domain"]],
+    name: { vi: "Kế toán: Windows + AD", en: "Accounting: Windows + AD" },
+    client: [{ vi: "Máy Windows", en: "Windows PCs" }, { vi: "phòng kế toán", en: "accounting office" }],
+    gates: [[{ vi: "SMB", en: "SMB" }, { vi: "giao thức Windows", en: "Windows protocol" }], [{ vi: "Quyền NTFS", en: "NTFS permissions" }, { vi: "ACL từng thư mục", en: "per-folder ACLs" }], [{ vi: "Active Directory", en: "Active Directory" }, { vi: "xác thực domain", en: "domain auth" }]],
     fit: {
-      efs: { steps: [["block", "EFS chỉ hỗ trợ **NFS**; máy Windows không mount được."]], tone: "bad", result: "Không đáp ứng được yêu cầu file share Windows." },
-      win: { steps: [["pass", "Hỗ trợ đầy đủ file share **SMB**."], ["pass", "Giữ nguyên **NTFS ACL** của từng thư mục."], ["pass", "Join **Active Directory** (AWS Managed Microsoft AD hoặc AD tại văn phòng)."]],
-        tone: "ok", result: "**FSx for Windows File Server** là file server Windows đầy đủ chức năng. Dịch vụ hỗ trợ DFS Namespaces nên thay thế được cụm DFS hiện có; máy Linux cũng mount được qua SMB." },
-      lustre: { steps: [["block", "Lustre yêu cầu client Lustre trên Linux, không hỗ trợ SMB."]], tone: "bad", result: "Không đáp ứng được yêu cầu cho máy Windows." },
-      ontap: { steps: [["pass", "ONTAP hỗ trợ **SMB**."], ["pass", "Hỗ trợ quyền NTFS."], ["pass", "Join được Active Directory."]],
-        tone: "warn", result: "Đáp ứng được yêu cầu. Tuy nhiên, nếu không cần tính năng của NetApp, **FSx for Windows File Server** là lựa chọn phù hợp và đơn giản hơn." },
+      efs: { steps: [["block", { vi: "EFS chỉ hỗ trợ **NFS**; máy Windows không mount được.", en: "EFS supports only **NFS**; Windows machines cannot mount it." }]], tone: "bad", result: { vi: "Không đáp ứng được yêu cầu file share Windows.", en: "Does not meet the Windows file share requirement." } },
+      win: { steps: [["pass", { vi: "Hỗ trợ đầy đủ file share **SMB**.", en: "Full support for **SMB** file shares." }], ["pass", { vi: "Giữ nguyên **NTFS ACL** của từng thư mục.", en: "Keeps the **NTFS ACLs** of every folder." }], ["pass", { vi: "Join **Active Directory** (AWS Managed Microsoft AD hoặc AD tại văn phòng).", en: "Joins **Active Directory** (AWS Managed Microsoft AD or the office AD)." }]],
+        tone: "ok", result: { vi: "**FSx for Windows File Server** là file server Windows đầy đủ chức năng. Dịch vụ hỗ trợ DFS Namespaces nên thay thế được cụm DFS hiện có; máy Linux cũng mount được qua SMB.", en: "**FSx for Windows File Server** is a fully featured Windows file server. It supports DFS Namespaces, so it can replace the existing DFS cluster; Linux machines can also mount it over SMB." } },
+      lustre: { steps: [["block", { vi: "Lustre yêu cầu client Lustre trên Linux, không hỗ trợ SMB.", en: "Lustre requires the Lustre client on Linux and does not support SMB." }]], tone: "bad", result: { vi: "Không đáp ứng được yêu cầu cho máy Windows.", en: "Does not meet the requirements for Windows machines." } },
+      ontap: { steps: [["pass", { vi: "ONTAP hỗ trợ **SMB**.", en: "ONTAP supports **SMB**." }], ["pass", { vi: "Hỗ trợ quyền NTFS.", en: "Supports NTFS permissions." }], ["pass", { vi: "Join được Active Directory.", en: "Can join Active Directory." }]],
+        tone: "warn", result: { vi: "Đáp ứng được yêu cầu. Tuy nhiên, nếu không cần tính năng của NetApp, **FSx for Windows File Server** là lựa chọn phù hợp và đơn giản hơn.", en: "Meets the requirements. However, if you do not need NetApp features, **FSx for Windows File Server** is the better and simpler choice." } },
     },
   },
   {
-    name: "Mô phỏng HPC trên 200 node",
-    client: ["Cụm HPC", "200 node Linux"],
-    gates: [["Song song", "nhiều server lưu"], ["Nạp từ S3", "data repository"], ["Độ trễ thấp", "dưới mili giây"]],
+    name: { vi: "Mô phỏng HPC trên 200 node", en: "HPC simulation on 200 nodes" },
+    client: [{ vi: "Cụm HPC", en: "HPC cluster" }, { vi: "200 node Linux", en: "200 Linux nodes" }],
+    gates: [[{ vi: "Song song", en: "Parallel" }, { vi: "nhiều server lưu", en: "many storage servers" }], [{ vi: "Nạp từ S3", en: "Load from S3" }, { vi: "data repository", en: "data repository" }], [{ vi: "Độ trễ thấp", en: "Low latency" }, { vi: "dưới mili giây", en: "sub-millisecond" }]],
     fit: {
-      efs: { steps: [["block", "EFS là file system NFS dùng chung, không phải parallel file system cho HPC."]], tone: "bad", result: "Không đáp ứng yêu cầu tính toán hiệu năng cao." },
-      win: { steps: [["block", "File share SMB cho văn phòng, không được thiết kế cho HPC."]], tone: "bad", result: "Không đáp ứng yêu cầu tính toán hiệu năng cao." },
-      lustre: { steps: [["pass", "Lustre phân tán tệp trên nhiều server lưu trữ; 200 node đọc **song song**."], ["pass", "Liên kết với bucket **S3**: dữ liệu được nạp tự động khi đọc, kết quả được ghi ngược về S3."], ["pass", "Độ trễ **dưới mili giây**, throughput tăng theo dung lượng."]],
-        tone: "ok", result: "**FSx for Lustre** phù hợp cho HPC, machine learning và thiết kế chip. Sau khi tác vụ hoàn tất, có thể xoá file system; dữ liệu vẫn được lưu trên S3." },
-      ontap: { steps: [["block", "ONTAP là file system đa giao thức, không phải parallel file system."]], tone: "bad", result: "Không đáp ứng yêu cầu tính toán hiệu năng cao." },
+      efs: { steps: [["block", { vi: "EFS là file system NFS dùng chung, không phải parallel file system cho HPC.", en: "EFS is a shared NFS file system, not a parallel file system for HPC." }]], tone: "bad", result: { vi: "Không đáp ứng yêu cầu tính toán hiệu năng cao.", en: "Does not meet the high performance computing requirements." } },
+      win: { steps: [["block", { vi: "File share SMB cho văn phòng, không được thiết kế cho HPC.", en: "An SMB file share for offices, not designed for HPC." }]], tone: "bad", result: { vi: "Không đáp ứng yêu cầu tính toán hiệu năng cao.", en: "Does not meet the high performance computing requirements." } },
+      lustre: { steps: [["pass", { vi: "Lustre phân tán tệp trên nhiều server lưu trữ; 200 node đọc **song song**.", en: "Lustre spreads files across many storage servers; the 200 nodes read **in parallel**." }], ["pass", { vi: "Liên kết với bucket **S3**: dữ liệu được nạp tự động khi đọc, kết quả được ghi ngược về S3.", en: "Linked to an **S3** bucket: data is loaded automatically on read, and results are written back to S3." }], ["pass", { vi: "Độ trễ **dưới mili giây**, throughput tăng theo dung lượng.", en: "**Sub-millisecond** latency; throughput scales with capacity." }]],
+        tone: "ok", result: { vi: "**FSx for Lustre** phù hợp cho HPC, machine learning và thiết kế chip. Sau khi tác vụ hoàn tất, có thể xoá file system; dữ liệu vẫn được lưu trên S3.", en: "**FSx for Lustre** suits HPC, machine learning and chip design. When the job finishes, you can delete the file system; the data stays in S3." } },
+      ontap: { steps: [["block", { vi: "ONTAP là file system đa giao thức, không phải parallel file system.", en: "ONTAP is a multiprotocol file system, not a parallel file system." }]], tone: "bad", result: { vi: "Không đáp ứng yêu cầu tính toán hiệu năng cao.", en: "Does not meet the high performance computing requirements." } },
     },
   },
   {
-    name: "Kho hàng đang dùng NetApp",
-    client: ["NetApp tại kho", "đang dùng ONTAP"],
-    gates: [["Đa giao thức", "NFS + SMB + iSCSI"], ["SnapMirror", "sao chép dữ liệu"], ["Công cụ ONTAP", "giữ quy trình"]],
+    name: { vi: "Kho hàng đang dùng NetApp", en: "Warehouse already on NetApp" },
+    client: [{ vi: "NetApp tại kho", en: "Warehouse NetApp" }, { vi: "đang dùng ONTAP", en: "running ONTAP" }],
+    gates: [[{ vi: "Đa giao thức", en: "Multiprotocol" }, { vi: "NFS + SMB + iSCSI", en: "NFS + SMB + iSCSI" }], [{ vi: "SnapMirror", en: "SnapMirror" }, { vi: "sao chép dữ liệu", en: "data replication" }], [{ vi: "Công cụ ONTAP", en: "ONTAP tools" }, { vi: "giữ quy trình", en: "same processes" }]],
     fit: {
-      efs: { steps: [["block", "EFS chỉ hỗ trợ NFS, không hỗ trợ SMB hoặc iSCSI."]], tone: "bad", result: "Các ứng dụng tại kho phải thay đổi phương thức truy cập dữ liệu." },
-      win: { steps: [["block", "Chỉ hỗ trợ SMB, không hỗ trợ NFS hoặc iSCSI."]], tone: "bad", result: "Các ứng dụng tại kho phải thay đổi phương thức truy cập dữ liệu." },
-      lustre: { steps: [["block", "Chỉ hỗ trợ client Lustre."]], tone: "bad", result: "Không phù hợp cho ứng dụng doanh nghiệp đa giao thức." },
-      ontap: { steps: [["pass", "Hỗ trợ đồng thời **NFS, SMB và iSCSI**."], ["pass", "Sử dụng **SnapMirror** để sao chép dữ liệu từ hệ thống NetApp hiện có."], ["pass", "Đội vận hành giữ nguyên lệnh và công cụ ONTAP."]],
-        tone: "ok", result: "**FSx for NetApp ONTAP**: chuyển lên AWS mà không phải thay đổi kỹ năng vận hành. AWS quản lý phần cứng và vận hành hạ tầng." },
+      efs: { steps: [["block", { vi: "EFS chỉ hỗ trợ NFS, không hỗ trợ SMB hoặc iSCSI.", en: "EFS supports only NFS, not SMB or iSCSI." }]], tone: "bad", result: { vi: "Các ứng dụng tại kho phải thay đổi phương thức truy cập dữ liệu.", en: "The warehouse applications would have to change how they access data." } },
+      win: { steps: [["block", { vi: "Chỉ hỗ trợ SMB, không hỗ trợ NFS hoặc iSCSI.", en: "Supports only SMB, not NFS or iSCSI." }]], tone: "bad", result: { vi: "Các ứng dụng tại kho phải thay đổi phương thức truy cập dữ liệu.", en: "The warehouse applications would have to change how they access data." } },
+      lustre: { steps: [["block", { vi: "Chỉ hỗ trợ client Lustre.", en: "Supports only the Lustre client." }]], tone: "bad", result: { vi: "Không phù hợp cho ứng dụng doanh nghiệp đa giao thức.", en: "Not suitable for multiprotocol enterprise applications." } },
+      ontap: { steps: [["pass", { vi: "Hỗ trợ đồng thời **NFS, SMB và iSCSI**.", en: "Supports **NFS, SMB and iSCSI** at the same time." }], ["pass", { vi: "Sử dụng **SnapMirror** để sao chép dữ liệu từ hệ thống NetApp hiện có.", en: "Uses **SnapMirror** to replicate data from the existing NetApp system." }], ["pass", { vi: "Đội vận hành giữ nguyên lệnh và công cụ ONTAP.", en: "The operations team keeps the same ONTAP commands and tools." }]],
+        tone: "ok", result: { vi: "**FSx for NetApp ONTAP**: chuyển lên AWS mà không phải thay đổi kỹ năng vận hành. AWS quản lý phần cứng và vận hành hạ tầng.", en: "**FSx for NetApp ONTAP**: move to AWS without changing operational skills. AWS manages the hardware and runs the infrastructure." } },
     },
   },
   {
-    name: "Web server Linux: thư mục dùng chung",
-    client: ["Web server", "EC2 Linux"],
-    gates: [["NFS", "mount trên Linux"], ["Nhiều AZ", "chịu lỗi cấp AZ"], ["Tự co giãn", "không cấp trước"]],
+    name: { vi: "Web server Linux: thư mục dùng chung", en: "Linux web servers: shared folder" },
+    client: [{ vi: "Web server", en: "Web servers" }, { vi: "EC2 Linux", en: "EC2 Linux" }],
+    gates: [[{ vi: "NFS", en: "NFS" }, { vi: "mount trên Linux", en: "mount on Linux" }], [{ vi: "Nhiều AZ", en: "Multiple AZs" }, { vi: "chịu lỗi cấp AZ", en: "AZ fault tolerance" }], [{ vi: "Tự co giãn", en: "Elastic" }, { vi: "không cấp trước", en: "no provisioning" }]],
     fit: {
-      efs: { steps: [["pass", "Mount bằng **NFS** như một thư mục thông thường."], ["pass", "Lưu trữ tại **nhiều AZ**, mỗi AZ một mount target."], ["pass", "Dung lượng **tự động co giãn**, tính phí theo dung lượng sử dụng."]],
-        tone: "ok", result: "**Amazon EFS** là lựa chọn đơn giản nhất cho thư mục dùng chung trên Linux." },
-      win: { steps: [["block", "Chỉ hỗ trợ SMB. Linux mount được qua SMB, nhưng không qua NFS."]], tone: "bad", result: "Không phù hợp cho thư mục NFS dùng chung." },
-      lustre: { steps: [["block", "Yêu cầu client Lustre, không phải NFS."]], tone: "bad", result: "Vượt quá nhu cầu và không đúng giao thức cho web server." },
-      ontap: { steps: [["pass", "ONTAP hỗ trợ **NFS**."], ["pass", "Có tuỳ chọn triển khai **Multi-AZ**."], ["block", "Phải **cấp phát trước** dung lượng SSD và quản lý volume."]],
-        tone: "bad", result: "Sử dụng được nhưng đòi hỏi nhiều công sức quản lý hơn. Thư mục dùng chung đơn giản cho Linux: **EFS**." },
+      efs: { steps: [["pass", { vi: "Mount bằng **NFS** như một thư mục thông thường.", en: "Mounts over **NFS** like a regular folder." }], ["pass", { vi: "Lưu trữ tại **nhiều AZ**, mỗi AZ một mount target.", en: "Stores data across **multiple AZs**, with one mount target per AZ." }], ["pass", { vi: "Dung lượng **tự động co giãn**, tính phí theo dung lượng sử dụng.", en: "Capacity **scales automatically**; you pay for the storage you use." }]],
+        tone: "ok", result: { vi: "**Amazon EFS** là lựa chọn đơn giản nhất cho thư mục dùng chung trên Linux.", en: "**Amazon EFS** is the simplest choice for a shared folder on Linux." } },
+      win: { steps: [["block", { vi: "Chỉ hỗ trợ SMB. Linux mount được qua SMB, nhưng không qua NFS.", en: "Supports only SMB. Linux can mount it over SMB, but not over NFS." }]], tone: "bad", result: { vi: "Không phù hợp cho thư mục NFS dùng chung.", en: "Not suitable for a shared NFS folder." } },
+      lustre: { steps: [["block", { vi: "Yêu cầu client Lustre, không phải NFS.", en: "Requires the Lustre client, not NFS." }]], tone: "bad", result: { vi: "Vượt quá nhu cầu và không đúng giao thức cho web server.", en: "More than needed, and the wrong protocol for web servers." } },
+      ontap: { steps: [["pass", { vi: "ONTAP hỗ trợ **NFS**.", en: "ONTAP supports **NFS**." }], ["pass", { vi: "Có tuỳ chọn triển khai **Multi-AZ**.", en: "Offers a **Multi-AZ** deployment option." }], ["block", { vi: "Phải **cấp phát trước** dung lượng SSD và quản lý volume.", en: "You must **provision** SSD capacity in advance and manage volumes." }]],
+        tone: "bad", result: { vi: "Sử dụng được nhưng đòi hỏi nhiều công sức quản lý hơn. Thư mục dùng chung đơn giản cho Linux: **EFS**.", en: "Usable, but it takes more management effort. A simple shared folder for Linux: **EFS**." } },
     },
   },
 ];
@@ -87,10 +88,11 @@ const BUS = 548;
 const FY = (i: number) => 42 + i * 62;
 const FX = 590;
 
-const TAG: Record<State, { text: string; cls: string }> = { pass: { text: "ĐẠT", cls: "hit" }, block: { text: "KHÔNG", cls: "bad" } };
-type LogEntry = { state: State; gate: string; msg: ReactNode };
+const TAG: Record<State, { text: Bi; cls: string }> = { pass: { text: { vi: "ĐẠT", en: "MET" }, cls: "hit" }, block: { text: { vi: "KHÔNG", en: "NOT MET" }, cls: "bad" } };
+type LogEntry = { state: State; gate: Bi; msg: Bi };
 
 export default function FsxSim() {
+  const tr = useLang();
   const pk = useRef<SVGGElement>(null);
   const [teamIx, setTeamIx] = useState(0);
   const [fs, setFs] = useState<Fs>("efs");
@@ -99,7 +101,7 @@ export default function FsxSim() {
   const [lit, setLit] = useState<Record<number, State>>({});
   const [fsState, setFsState] = useState<Tone | "">("");
   const [log, setLog] = useState<LogEntry[]>([]);
-  const [result, setResult] = useState<{ tone: Tone; msg: ReactNode } | null>(null);
+  const [result, setResult] = useState<{ tone: Tone; msg: Bi } | null>(null);
 
   function reset() {
     setLit({});
@@ -121,7 +123,7 @@ export default function FsxSim() {
       await travel(L, [at, next], i === 0 ? 420 : 280, state === "block" ? "pkt-bad" : "pkt");
       at = next;
       setLit((s) => ({ ...s, [i]: state }));
-      setLog((l) => [...l, { state, gate: team.gates[i][0], msg: rich(msg) }]);
+      setLog((l) => [...l, { state, gate: team.gates[i][0], msg }]);
       if (state === "block") {
         flashText(L, GX(i), LANE - 48, "✗", "flash-bad", 900);
         await travel(L, [at, [CLIENT[0] + 65, LANE]], 450, "pkt-bad");
@@ -138,16 +140,16 @@ export default function FsxSim() {
     } else {
       setFsState("bad");
     }
-    setResult({ tone: fit.tone, msg: rich(fit.result) });
+    setResult({ tone: fit.tone, msg: fit.result });
     setBusy(false);
   }
 
   return (
     <div className="stage stx">
-      <div className="stx-row" role="group" aria-label="Nhóm người dùng">
-        <span className="stx-lbl">Nhóm</span>
+      <div className="stx-row" role="group" aria-label={tr({ vi: "Nhóm người dùng", en: "User group" })}>
+        <span className="stx-lbl">{tr({ vi: "Nhóm", en: "Group" })}</span>
         {TEAMS.map((t, i) => (
-          <button key={t.name} className="chip" aria-pressed={i === teamIx} disabled={busy} onClick={() => { setTeamIx(i); reset(); }}>{t.name}</button>
+          <button key={t.name.vi} className="chip" aria-pressed={i === teamIx} disabled={busy} onClick={() => { setTeamIx(i); reset(); }}>{tr(t.name)}</button>
         ))}
       </div>
       <div className="stx-row" role="group" aria-label="File system">
@@ -157,30 +159,30 @@ export default function FsxSim() {
         ))}
       </div>
       <div className="stage-bar">
-        <span className="stx-hint">Ba yêu cầu bắt buộc: {team.gates.map((g) => g[0]).join(" · ")}</span>
-        <button className="btn primary" onClick={mount} disabled={busy}>Mount thử</button>
+        <span className="stx-hint">{tr({ vi: "Ba yêu cầu bắt buộc: ", en: "Three must-haves: " })}{team.gates.map((g) => tr(g[0])).join(" · ")}</span>
+        <button className="btn primary" onClick={mount} disabled={busy}>{tr({ vi: "Mount thử", en: "Try mount" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 10 820 250" role="img" aria-label="Request mount đi từ máy của nhóm qua ba yêu cầu bắt buộc rồi tới file system được chọn">
+        <svg viewBox="0 10 820 250" role="img" aria-label={tr({ vi: "Request mount đi từ máy của nhóm qua ba yêu cầu bắt buộc rồi tới file system được chọn", en: "The mount request goes from the group’s machines through three must-have requirements to the chosen file system" })}>
           <path className="stx-wire" d={`M145 ${LANE} H${BUS} M${BUS} ${FY(0)} V${FY(3)}`} />
           {FS.map((_, i) => <path key={i} className="stx-wire" d={`M${BUS} ${FY(i)} H${FX}`} />)}
           <g className="stx-node on">
             <rect x={CLIENT[0] - 65} y={LANE - 28} width={130} height={56} rx={8} />
-            <text className="stx-t" x={CLIENT[0]} y={LANE - 4} textAnchor="middle">{team.client[0]}</text>
-            <text className="stx-s" x={CLIENT[0]} y={LANE + 13} textAnchor="middle">{team.client[1]}</text>
+            <text className="stx-t" x={CLIENT[0]} y={LANE - 4} textAnchor="middle">{tr(team.client[0])}</text>
+            <text className="stx-s" x={CLIENT[0]} y={LANE + 13} textAnchor="middle">{tr(team.client[1])}</text>
           </g>
           {team.gates.map(([l1, l2], i) => (
             <g key={i} className={`stx-node ${lit[i] ?? ""}`}>
               <rect x={GX(i) - 50} y={LANE - 35} width={100} height={70} rx={8} />
-              <text className="stx-t" x={GX(i)} y={LANE - 3} textAnchor="middle">{l1}</text>
-              <text className="stx-s" x={GX(i)} y={LANE + 13} textAnchor="middle">{l2}</text>
+              <text className="stx-t" x={GX(i)} y={LANE - 3} textAnchor="middle">{tr(l1)}</text>
+              <text className="stx-s" x={GX(i)} y={LANE + 13} textAnchor="middle">{tr(l2)}</text>
             </g>
           ))}
           {FS.map((f, i) => (
             <g key={f.id} className={`stx-node ${f.id === fs ? fsState || "pick" : "off"}`}>
               <rect x={FX} y={FY(i) - 24} width={220} height={48} rx={8} />
               <text className="stx-t" x={FX + 110} y={FY(i) - 4} textAnchor="middle">{f.l1}</text>
-              <text className="stx-s" x={FX + 110} y={FY(i) + 12} textAnchor="middle">{f.l2}</text>
+              <text className="stx-s" x={FX + 110} y={FY(i) + 12} textAnchor="middle">{tr(f.l2)}</text>
             </g>
           ))}
           <g ref={pk} />
@@ -188,16 +190,16 @@ export default function FsxSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="stx-hint">Chọn một nhóm và một file system, sau đó nhấn <b>Mount thử</b>. Thử lần lượt cả bốn file system để xác định lý do mỗi nhóm phù hợp với một loại.</p>
+          <p className="stx-hint">{tr({ vi: <>Chọn một nhóm và một file system, sau đó nhấn <b>Mount thử</b>. Thử lần lượt cả bốn file system để xác định lý do mỗi nhóm phù hợp với một loại.</>, en: <>Choose a group and a file system, then press <b>Try mount</b>. Try all four file systems in turn to see why each group fits one type.</> })}</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) => (
               <li key={i}>
-                <span className={`tag ${TAG[e.state].cls}`}>{TAG[e.state].text}</span>
-                <span><b>{e.gate}:</b> {e.msg}</span>
+                <span className={`tag ${TAG[e.state].cls}`}>{tr(TAG[e.state].text)}</span>
+                <span><b>{tr(e.gate)}:</b> {rich(tr(e.msg))}</span>
               </li>
             ))}
-            {result && <li className={`stx-result ${result.tone}`}>{result.msg}</li>}
+            {result && <li className={`stx-result ${result.tone}`}>{rich(tr(result.msg))}</li>}
           </ul>
         )}
       </div>

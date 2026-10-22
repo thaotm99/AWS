@@ -1,6 +1,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import { flashText, travel, type Pt } from "../../../lib/animate";
 import { rich } from "../diagram";
+import { useLang, type Bi } from "../../../lib/lang";
 import "./hop-sim.css";
 
 // Small engine for "pick a situation, flip a switch, run it" simulations, in the style of
@@ -77,12 +78,12 @@ interface Props {
   label: string;
 }
 
-const TAG: Record<HopState, { text: string; cls: string }> = {
-  pass: { text: "THÔNG QUA", cls: "hit" },
-  block: { text: "CHẶN", cls: "bad" },
-  change: { text: "XỬ LÝ", cls: "miss" },
-  skip: { text: "BỎ QUA", cls: "info" },
-  alert: { text: "CẢNH BÁO", cls: "bad" },
+const TAG: Record<HopState, { text: Bi; cls: string }> = {
+  pass: { text: { vi: "THÔNG QUA", en: "PASS" }, cls: "hit" },
+  block: { text: { vi: "CHẶN", en: "BLOCKED" }, cls: "bad" },
+  change: { text: { vi: "XỬ LÝ", en: "PROCESSED" }, cls: "miss" },
+  skip: { text: { vi: "BỎ QUA", en: "SKIPPED" }, cls: "info" },
+  alert: { text: { vi: "CẢNH BÁO", en: "WARNING" }, cls: "bad" },
 };
 
 const PACKET: Record<HopState, Hop["packet"]> = {
@@ -128,6 +129,7 @@ function resolve(sc: HopScenario, run: HopRun): (Hop & { from: string })[] {
 }
 
 export default function HopSim({ scenarios, action, height, label }: Props) {
+  const L = useLang();
   const pk = useRef<SVGGElement>(null);
   const [index, setIndex] = useState(0);
   const sc = scenarios[index];
@@ -190,7 +192,7 @@ export default function HopSim({ scenarios, action, height, label }: Props) {
 
   return (
     <div className="stage hop">
-      <div className="hop-scenarios" role="group" aria-label="Tình huống">
+      <div className="hop-scenarios" role="group" aria-label={L({ vi: "Tình huống", en: "Scenario" })}>
         {scenarios.map((s, i) => (
           <button key={s.name} className="chip" aria-pressed={i === index} onClick={() => pick(i)} disabled={busy && i !== index}>
             {s.name}
@@ -234,7 +236,10 @@ export default function HopSim({ scenarios, action, height, label }: Props) {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="hop-hint">{rich(sc.story)} <span>Nhấn <b>{action}</b> để quan sát kết quả.{sc.toggle ? " Thay đổi cấu hình và chạy lại để so sánh." : ""}</span></p>
+          <p className="hop-hint">{rich(sc.story)} <span>{L({
+            vi: <>Nhấn <b>{action}</b> để quan sát kết quả.{sc.toggle ? " Thay đổi cấu hình và chạy lại để so sánh." : ""}</>,
+            en: <>Press <b>{action}</b> to see the result.{sc.toggle ? " Change the configuration and run again to compare." : ""}</>,
+          })}</span></p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) =>
@@ -242,7 +247,7 @@ export default function HopSim({ scenarios, action, height, label }: Props) {
                 <li key={i} className={`hop-result ${e.ok ? "ok" : "bad"}`}>{e.msg}</li>
               ) : (
                 <li key={i}>
-                  <span className={`tag ${TAG[e.state].cls}`}>{e.tag ?? TAG[e.state].text}</span>
+                  <span className={`tag ${TAG[e.state].cls}`}>{e.tag ?? L(TAG[e.state].text)}</span>
                   <span><b>{e.who}:</b> {e.msg}</span>
                 </li>
               ),

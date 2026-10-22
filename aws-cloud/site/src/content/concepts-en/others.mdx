@@ -1,0 +1,218 @@
+---
+title: "Cost management, AI services and other services"
+lede: "ShopViet has grown: AWS costs need tight control, and the volume of user data exceeds what can be processed manually. This lesson shows how to control costs with AWS Budgets, Cost Optimization Hub, Compute Optimizer and Savings Plans; how to use Comprehend, Transcribe and Textract without an ML team; and introduces AWS Batch and AWS Outposts."
+minutes: 20
+scenes: 4
+prerequisites: ["iam", "ec2", "lambda", "containers"]
+docs:
+  - title: "Managing your costs with AWS Budgets"
+    url: "https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html"
+  - title: "What is AWS Compute Optimizer?"
+    url: "https://docs.aws.amazon.com/compute-optimizer/latest/ug/what-is-compute-optimizer.html"
+  - title: "What are Savings Plans?"
+    url: "https://docs.aws.amazon.com/savingsplans/latest/userguide/what-is-savings-plans.html"
+  - title: "What is Amazon Comprehend?"
+    url: "https://docs.aws.amazon.com/comprehend/latest/dg/what-is.html"
+  - title: "What is Amazon Transcribe?"
+    url: "https://docs.aws.amazon.com/transcribe/latest/dg/what-is.html"
+  - title: "What is Amazon Textract?"
+    url: "https://docs.aws.amazon.com/textract/latest/dg/what-is.html"
+  - title: "What is AWS Batch?"
+    url: "https://docs.aws.amazon.com/batch/latest/userguide/what-is-batch.html"
+  - title: "What is AWS Outposts?"
+    url: "https://docs.aws.amazon.com/outposts/latest/userguide/what-is-outposts.html"
+  - title: "Configuring budget actions"
+    url: "https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-controls.html"
+  - title: "Configuring a budget action"
+    url: "https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-action-configure.html"
+  - title: "Identifying opportunities with Cost Optimization Hub"
+    url: "https://docs.aws.amazon.com/cost-management/latest/userguide/cost-optimization-hub.html"
+  - title: "Savings Plans types"
+    url: "https://docs.aws.amazon.com/savingsplans/latest/userguide/plan-types.html"
+  - title: "Compute Savings Plans and Reserved Instances"
+    url: "https://docs.aws.amazon.com/savingsplans/latest/userguide/sp-ris.html"
+  - title: "Languages supported in Amazon Comprehend"
+    url: "https://docs.aws.amazon.com/comprehend/latest/dg/supported-languages.html"
+  - title: "Custom entity recognition (Amazon Comprehend)"
+    url: "https://docs.aws.amazon.com/comprehend/latest/dg/custom-entity-recognition.html"
+  - title: "Amazon Textract quotas (languages)"
+    url: "https://docs.aws.amazon.com/textract/latest/dg/limits-document.html"
+  - title: "Supported languages (Amazon Transcribe)"
+    url: "https://docs.aws.amazon.com/transcribe/latest/dg/supported-languages.html"
+  - title: "What is Snowball Edge?"
+    url: "https://docs.aws.amazon.com/snowball/latest/developer-guide/whatisedge.html"
+  - title: "What is Amazon Quick?"
+    url: "https://docs.aws.amazon.com/quicksight/latest/user/welcome.html"
+  - title: "Using time to live (TTL) in DynamoDB"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/TTL.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
+import CostWatchSim from "../../components/scenes/others/CostWatchSim.tsx";
+import SavingsPlanSim from "../../components/scenes/others/SavingsPlanSim.tsx";
+import AiPipelineSim from "../../components/scenes/others/AiPipelineSim.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#en-s1", label: "1 · Cost control" },
+  { href: "#en-s2", label: "2 · Savings Plans" },
+  { href: "#en-s3", label: "3 · Pre-trained AI services" },
+  { href: "#en-s4", label: "4 · AWS Batch and Outposts" },
+  { href: "#en-challenge", label: "Exercise" },
+]}>
+ShopViet now has many AWS accounts and many engineering teams, and its monthly costs keep rising. At the same time, thousands of reviews, call-center calls and scanned documents arrive every day, more than can be processed manually, while ShopViet has no machine learning experts. This lesson brings together the services that meet these needs: cost management tools, pre-trained AI services, and two services for special requirements.
+</Story>
+
+<Scene id="en-s1" label="Part 1/4" title="Controlling AWS costs" questions={["exam6_q22", "exam6_q1", "exam4_q30"]}>
+
+Each cost management tool answers a different question:
+
+- **Cost Explorer**: where are the costs coming from? Shows charts and filters by service and by account.
+- **AWS Budgets**: alerts when costs are about to exceed the budget. Set thresholds for actual cost, forecasted cost, usage, or for the **coverage** and **utilization** of Reserved Instances and Savings Plans; notifications go out by email or SNS. A **budget action** can be attached (apply an IAM policy, apply an SCP, or target specific EC2/RDS instances), running automatically or after approval; several actions can be attached to the same threshold. Budgets data is updated up to three times a day.
+- **Cost Optimization Hub**: where should costs be cut? Consolidates savings recommendations (rightsizing, deleting idle resources, Savings Plans, Reserved Instances) across accounts and Regions in one place.
+- **Compute Optimizer**: which resource size is right? Recommends suitable configurations for EC2 instances, Auto Scaling groups, EBS volumes, Lambda functions, ECS services on Fargate and other resources.
+
+Choose a ShopViet problem, choose a tool, then run the simulation for one month:
+
+<CostWatchSim client:visible />
+
+<Takeaway>Alerting and automatic action when the budget is exceeded: AWS Budgets with alerts and budget actions (apply an IAM policy, apply an SCP, or target specific EC2/RDS instances; each action is one type, and several actions can be set for the same threshold). Tracking Savings Plans coverage: a Savings Plans coverage budget in AWS Budgets. Identifying unused and oversized resources: Cost Optimization Hub combined with Compute Optimizer. Cost Explorer is for viewing and analyzing costs; alerts on budget thresholds are the job of AWS Budgets.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 2/4" title="Choosing the type of long-term usage commitment" questions={["exam6_q38"]}>
+
+After the launch, ShopViet's load has stabilized. Committing to a fixed amount of spend per hour for 1 or 3 years in exchange for prices lower than on-demand: that is **Savings Plans**. AWS currently offers four types:
+
+- **Compute Savings Plans**: the most flexible, up to 66% off on-demand. Apply to EC2 (any instance family, size, OS, tenancy, Region), Fargate and Lambda.
+- **EC2 Instance Savings Plans**: up to 72% off, but only for one instance family in one Region.
+- **Database Savings Plans**: up to 35% off database services such as Aurora, RDS, DynamoDB, ElastiCache, DocumentDB, Neptune, Keyspaces, Timestream, DMS and OpenSearch Service.
+- **SageMaker AI Savings Plans**: up to 64% off, exclusively for SageMaker AI instances.
+
+ShopViet's requirement: every workload gets a discount, with the fewest plans possible for easy management:
+
+<SavingsPlanSim client:visible />
+
+<Takeaway>EC2 + Fargate + Lambda: one Compute Savings Plan. SageMaker is outside the scope of Compute Savings Plans and needs SageMaker AI Savings Plans; databases have their own Database Savings Plans. EC2 Instance Savings Plans fit only when you are certain to use one instance family in one Region.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 3/4" title="Processing text and speech without an ML team" questions={["exam1_q4", "exam2_q26", "exam5_q32", "exam5_q58"]}>
+
+AWS provides pre-trained AI services that you use through API calls, with no machine learning knowledge required:
+
+- **Amazon Comprehend**: analyzes **text**: sentiment, entities, key phrases. Supports **custom entity recognition** to identify entity types specific to the business. Comprehend supports only certain languages (English, Spanish, French, German, Italian, Portuguese, Japanese, Korean, Hindi, Arabic, Chinese); Vietnamese is not yet on the list.
+- **Amazon Transcribe**: converts **speech** to text and can separate individual speakers.
+- **Amazon Textract**: extracts text, tables and forms from **scanned images and PDFs**; recognizes text in English, French, German, Italian, Portuguese and Spanish.
+
+Each scenario below is a ShopViet processing pipeline; the text sent to Comprehend and Textract is in English (ShopViet's international storefront), because of the language limits above. Send a document and watch the output at each processing step:
+
+<AiPipelineSim client:visible />
+
+Training your own model on SageMaker also meets these requirements, but it needs staff with ML expertise and costs more to operate. When a suitable pre-trained service exists, prefer that service.
+
+<Takeaway>Text → sentiment, entities: Comprehend (custom entity types: custom entity recognition). Speech → text: Transcribe, then query with SQL using Athena. Scanned images, PDFs → text: Textract, then pass to Comprehend. Traffic spikes: put SQS between API Gateway and Lambda; automatically delete data after one year: DynamoDB TTL (expired items are typically deleted within a few days).</Takeaway>
+
+</Scene>
+
+<Scene id="en-s4" label="Part 4/4" title="Batch processing and AWS services in the company's data center" questions={["exam6_q55", "exam1_q27"]}>
+
+ShopViet's last two requirements do not fit the services covered so far. The content team needs to process tens of thousands of images every night (resizing, watermarking), and each job runs longer than the Lambda limit. At the same time, ShopViet has just acquired an e-wallet company: regulations require its data and applications to stay in that company's data center, but the engineering team needs to use EKS, CloudWatch and IAM consistently with the rest of ShopViet.
+
+<ScenarioFlow client:visible height={250} legend={["Recommended option", "Workable but not a good fit"]} scenarios={[
+  { name: "Batch image processing",
+    nodes: [
+      { id: "in", x: 20, y: 60, label: "S3: source images", kind: "store" },
+      { id: "sf", x: 190, y: 60, label: "Step Functions", sub: "orchestrates the steps", kind: "net" },
+      { id: "batch", x: 390, y: 60, label: "AWS Batch", sub: "scales automatically", kind: "edge" },
+      { id: "out", x: 610, y: 60, label: "S3: processed images", kind: "store" },
+      { id: "eks", x: 190, y: 165, label: "EKS, self-managed EC2 nodes", kind: "warn" },
+      { id: "ebs", x: 520, y: 165, label: "EBS", sub: "attached to each node", kind: "store" },
+    ],
+    options: [
+      { name: "Self-managed EKS + EBS", verdict: "bad", hide: ["sf", "batch", "out"],
+        flows: [{ path: ["in", "eks"], tone: "bad" }, { path: ["eks", "ebs"], tone: "bad", label: "scattered files" }],
+        text: "This works, but the operations team must patch and scale the nodes and track the completion or failure of each job themselves. Output files are scattered across the EBS volumes of each node." },
+      { name: "Step Functions + AWS Batch + S3", verdict: "good", hide: ["eks", "ebs"],
+        flows: [{ path: ["in", "sf"], tone: "good" }, { path: ["sf", "batch"], tone: "good", label: "submit job" }, { path: ["batch", "out"], tone: "good" }],
+        text: "**AWS Batch** accepts jobs, automatically provisions enough compute resources (Spot or Fargate can be used) and releases them when done. **Step Functions** manages the order of the steps and the state of each job, and retries automatically on errors. Large output is stored on **S3**." },
+    ] },
+  { name: "Data must stay in the data center",
+    boxes: [
+      { x: 10, y: 10, w: 410, h: 230, label: "E-wallet company's data center", tone: "onprem" },
+      { x: 470, y: 10, w: 280, h: 230, label: "AWS Region", tone: "region" },
+    ],
+    nodes: [
+      { id: "data", x: 30, y: 50, label: "Customer data", kind: "db" },
+      { id: "op", x: 200, y: 115, label: "AWS Outposts rack", sub: "EKS, EC2, EBS on premises", kind: "edge" },
+      { id: "snow", x: 30, y: 175, label: "Snowball Edge", sub: "transport device", kind: "warn" },
+      { id: "aws", x: 500, y: 50, label: "AWS APIs", sub: "CloudWatch, IAM", kind: "net" },
+      { id: "eksr", x: 500, y: 165, label: "EKS in the Region", kind: "ec2" },
+    ],
+    options: [
+      { name: "EKS in the Region + Direct Connect", verdict: "bad", hide: ["op", "snow"],
+        flows: [{ path: ["data", "eksr"], tone: "bad", label: "data leaves the data center" }],
+        text: "A private connection with low latency and good security, but the workloads and data are still in the Region, which violates the regulations." },
+      { name: "Snowball Edge", verdict: "bad", hide: ["op", "eksr"],
+        flows: [{ path: ["data", "snow"], tone: "neutral" }, { path: ["snow", "aws"], tone: "bad", dashed: true, label: "ships data out" }],
+        text: "Snowball Edge is a device with storage and compute for transferring data or processing at the edge, not an AWS-managed platform for running Kubernetes long term. Snowball Edge is no longer available to new customers; for edge computing, AWS points to AWS Outposts." },
+      { name: "AWS Outposts", verdict: "good", hide: ["snow", "eksr"],
+        flows: [{ path: ["data", "op"], tone: "good", label: "stored on premises" }, { path: ["op", "aws"], tone: "good", dashed: true, label: "managed" }],
+        text: "**AWS Outposts** extends AWS infrastructure, services, APIs and tools to the customer's site: AWS installs the Outpost in the data center and operates and monitors this capacity as part of the Region. EKS, EC2 and EBS run on premises, using the same APIs as in the Region. Data is stored and processed on premises." },
+    ] },
+]} />
+
+<Takeaway>Batch processing jobs that scale automatically with no servers to manage: AWS Batch, orchestrated with Step Functions, with output stored on S3. AWS services needed while data and workloads must stay in the company's data center: AWS Outposts.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Sort the tasks by service" questions={["exam6_q22", "exam4_q30", "exam6_q38", "exam5_q58", "exam1_q27"]}>
+
+Sort each ShopViet task into the matching service. On mobile devices: choose a card, then choose the target box.
+
+<SortGame client:visible
+  bins={[
+    { id: "budgets", title: "AWS Budgets", sub: "alerts and automatic actions", hint: "Hint: tasks that need a threshold and an alert." },
+    { id: "opt", title: "Cost Optimization Hub + Compute Optimizer", sub: "finding waste", hint: "Hint: tasks that identify underused resources." },
+    { id: "comprehend", title: "Amazon Comprehend", sub: "text analysis", hint: "Hint: the input is already text." },
+    { id: "transcribe", title: "Amazon Transcribe", sub: "speech → text", hint: "Hint: the input is audio." },
+    { id: "textract", title: "Amazon Textract", sub: "scans, PDFs → text", hint: "Hint: the input is a photo of a document." },
+  ]}
+  cards={[
+    ["Email when forecasted cost exceeds 300 USD", "budgets"], ["Automatically apply DenyAll when a dev account exceeds its budget", "budgets"], ["Alert when Savings Plans coverage drops below 90%", "budgets"],
+    ["Find unused EC2 across all accounts", "opt"], ["Recommend the right instance size", "opt"],
+    ["Determine whether a review is positive or negative", "comprehend"], ["Extract ingredient names from product descriptions", "comprehend"],
+    ["Convert call-center recordings to text", "transcribe"],
+    ["Extract text from scanned paper invoices", "textract"], ["Read multi-column PDF documents", "textract"],
+  ]}
+/>
+
+Check your understanding: as the designer of the ShopViet system, which option fits?
+
+<Quiz client:visible items={[
+  { q: "Each developer has their own AWS account. Requirement: when an account exceeds its budget, creating more resources is blocked automatically, with no code to write and no manual monitoring. Which option meets the requirement?",
+    opts: ["A Lambda function that runs daily, reads the Cost Explorer API and takes action itself", "AWS Budgets with an alert and a budget action that applies a DenyAll IAM policy", "Send each person a Cost Explorer report every day"],
+    a: 1,
+    why: "Budget actions are built into Budgets: when the threshold is exceeded, the action that applies the IAM policy runs automatically (or after approval, depending on the configuration). A self-developed Lambda function must be maintained; a report depends on whether the recipient reads it." },
+  { q: "ShopViet runs EC2, Fargate, Lambda and a SageMaker endpoint with steady load. Requirement: long-term discounts for everything with the fewest plans. Which option fits?",
+    opts: ["Compute Savings Plans + SageMaker AI Savings Plans", "EC2 Instance Savings Plans + Compute Savings Plans", "A Reserved Instance for each EC2 instance"],
+    a: 0,
+    why: "Compute Savings Plans apply to EC2, Fargate and Lambda. SageMaker needs SageMaker AI Savings Plans. EC2 Reserved Instances do not apply to Fargate or Lambda, and changing the instance family of a Convertible RI requires a manual exchange." },
+  { q: "EC2 and RDS costs are higher than actual needs. Requirement: identify unused resources and oversized resources. Which tool fits?",
+    opts: ["Trusted Advisor automatically renews Reserved Instances", "Cost Optimization Hub and Compute Optimizer", "Compute Optimizer automatically buys Reserved Instances"],
+    a: 1,
+    why: "Cost Optimization Hub consolidates recommendations (unused resources, rightsizing…); Compute Optimizer recommends the right size. No tool automatically buys or renews RIs." },
+  { q: "The call center stores recordings of every call in S3. The customer care team needs to write its own SQL to identify customer complaints. Which option fits?",
+    opts: ["Transcribe converts to text, Athena runs SQL queries", "Kinesis Data Streams reads the audio files", "Amazon Quick Sight reads the audio files directly"],
+    a: 0,
+    why: "First, the audio must be converted to text: Transcribe. Athena runs SQL directly on data in S3, with no servers to manage." },
+  { q: "Regulations require e-wallet data to be stored in the data center, but the engineering team needs to use EKS and CloudWatch as on AWS. Which option fits?",
+    opts: ["Snowball Edge", "EKS in the Region over Direct Connect", "AWS Outposts"],
+    a: 2,
+    why: "Outposts extends AWS infrastructure and services to the company's data center; data is stored and processed on premises. With Direct Connect, the workloads still run in the Region." },
+]} />
+
+</Scene>

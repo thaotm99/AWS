@@ -1,4 +1,5 @@
 import PacketSim, { type PLayout, type PScenario } from "../elb/PacketSim";
+import { useLang } from "../../../lib/lang";
 
 // ShopViet's admin site runs on a single EC2 instance, no Auto Scaling group. A CloudWatch
 // alarm with the recover action brings it back on new hardware with the same instance ID
@@ -90,6 +91,91 @@ const SCENARIOS: PScenario[] = [
   },
 ];
 
+function layoutEn(disk: "ebs" | "store", check: string): PLayout {
+  return {
+    viewBox: "0 20 820 230",
+    aria: "A CloudWatch alarm watches one EC2 instance and the instance's storage volume",
+    nodes: [
+      { id: "user", x: 70, y: 160, l1: "Staff", user: true },
+      { id: "ec2", x: 350, y: 160, w: 180, l1: "EC2 admin-1", l2: "host A · 10.0.1.20" },
+      { id: "cw", x: 350, y: 60, w: 230, l1: "CloudWatch alarm", l2: check },
+      { id: "disk", x: 650, y: 160, w: 170, l1: disk === "ebs" ? "EBS volume" : "Instance store", l2: disk === "ebs" ? "independent of the host" : "tied to host A" },
+    ],
+    links: [["user", "ec2"], ["cw", "ec2"], ["ec2", "disk"]],
+  };
+}
+
+const SCENARIOS_EN: PScenario[] = [
+  {
+    name: "Host hardware failure",
+    action: "Simulate host failure",
+    request: "At most 10 minutes of disruption accepted",
+    toggle: { label: "Configure the recover action for the alarm", initial: false },
+    layout: () => layoutEn("ebs", "StatusCheckFailed_System"),
+    run: (recover) => ({
+      steps: [
+        { at: "ec2", state: "block", flash: "no response", msg: "The physical host fails. The **system status check** fails." },
+        recover
+          ? { from: "cw", at: "ec2", state: "change", tag: "RECOVER", relabel: RECOVERED, msg: "The alarm goes into the ALARM state and performs **recover**: the instance moves to another host, keeping the **instance ID, public IPv4, private IP, Elastic IP**, metadata and EBS volumes." }
+          : { from: "cw", at: "ec2", state: "wait", tag: "NOTIFY ONLY", msg: "The alarm only sends an email. You must wait for on-call staff to fix it manually." },
+        ...(recover ? [
+          { at: "disk", state: "pass" as const, msg: "The EBS volume stays attached to the instance. Recovery works like an unplanned reboot, so data in RAM is lost." },
+          { from: "user", at: "ec2", state: "pass" as const, flash: "OK", msg: "Staff reach the admin page again at the same address." },
+        ] : []),
+      ],
+      ok: recover,
+      back: false,
+      result: recover
+        ? "Back after a few minutes, automatically and at low cost, with no Auto Scaling group or complex DR strategy."
+        : "The admin page stays down until it is fixed manually, which can easily exceed 10 minutes.",
+    }),
+  },
+  {
+    name: "Instance with instance store",
+    action: "Simulate host failure",
+    request: "Application data is stored on instance store (m5d.large)",
+    toggle: { label: "Move the data to EBS", initial: false },
+    layout: (ebs) => layoutEn(ebs ? "ebs" : "store", "StatusCheckFailed_System → recover"),
+    run: (ebs) => ({
+      steps: [
+        { at: "ec2", state: "block", flash: "no response", msg: "The physical host fails." },
+        ebs
+          ? { from: "cw", at: "ec2", state: "change", tag: "RECOVER", relabel: RECOVERED, msg: "Recover moves the instance to a new host." }
+          : { from: "cw", at: "ec2", state: "block", tag: "NOT SUPPORTED", msg: "When an instance has instance store, CloudWatch action based recovery supports only the M3, C3, R3, X1, X1e, X2idn and X2iedn instance types; **m5d.large** is not on the list, so the recover action cannot run." },
+        ebs
+          ? { at: "disk", state: "pass", msg: "The data on EBS moves with the instance." }
+          : { from: "ec2", at: "disk", jump: true, state: "block", tag: "LOST", msg: "Data on the instance store is not preserved; even with a supported instance type, recovery loses the data on the instance store." },
+      ],
+      ok: ebs,
+      back: false,
+      result: ebs
+        ? "Data on EBS is kept through recovery; data on the instance store is not."
+        : "Automatic recovery is not possible. Data that must be preserved should be stored on an EBS volume.",
+    }),
+  },
+  {
+    name: "Application hangs",
+    action: "Simulate application hang",
+    request: "The host is healthy, the operating system hangs",
+    toggle: { label: "Add a second alarm with the reboot action", initial: false },
+    layout: (reboot) => layoutEn("ebs", reboot ? "StatusCheckFailed_Instance → reboot" : "StatusCheckFailed_System → recover"),
+    run: (reboot) => ({
+      steps: [
+        { at: "ec2", state: "block", flash: "hung", msg: "The operating system hangs, and the **instance status check** fails. The system status check still passes." },
+        reboot
+          ? { from: "cw", at: "ec2", state: "change", tag: "REBOOT", relabel: { l2: "rebooting" }, msg: "The alarm watches the instance status check and performs the **reboot** action." }
+          : { from: "cw", at: "ec2", state: "skip", tag: "NOT TRIGGERED", msg: "The recover alarm watches `StatusCheckFailed_System` (a problem with the AWS infrastructure). A problem inside the instance does not trigger this alarm." },
+      ],
+      ok: reboot,
+      back: false,
+      result: reboot
+        ? "Recover is for hardware failures on the AWS side. Problems in the operating system need a different mechanism, for example a reboot."
+        : "Recover cannot fix a problem inside the instance.",
+    }),
+  },
+];
+
 export default function Ec2RecoverSim() {
-  return <PacketSim scenarios={SCENARIOS} hint="Chọn một tình huống, sau đó chọn nút chạy. Thay đổi cấu hình và chạy lại để so sánh." />;
+  const L = useLang();
+  return <PacketSim scenarios={L({ vi: SCENARIOS, en: SCENARIOS_EN })} hint={L({ vi: "Chọn một tình huống, sau đó chọn nút chạy. Thay đổi cấu hình và chạy lại để so sánh.", en: "Choose a scenario, then choose the run button. Change the setting and run again to compare." })} />;
 }

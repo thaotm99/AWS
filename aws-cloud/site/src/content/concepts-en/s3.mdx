@@ -1,0 +1,180 @@
+---
+title: "Amazon S3: storage classes, data protection, access control and performance"
+lede: "This lesson covers five topics: choosing storage classes and lifecycle rules for each type of data, protecting invoices from deletion (versioning, Object Lock), controlling bucket access, choosing an encryption method, and optimizing upload speed and the ability to handle traffic peaks."
+minutes: 35
+scenes: 5
+prerequisites: ["iam", "kms"]
+docs:
+  - title: "Amazon S3 storage classes"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-class-intro.html"
+  - title: "Transitioning objects using Amazon S3 Lifecycle"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/lifecycle-transition-general-considerations.html"
+  - title: "Locking objects with Object Lock"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock.html"
+  - title: "Managing access with S3 Access Points"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-points.html"
+  - title: "Protecting data with encryption"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingEncryption.html"
+  - title: "Configuring fast, secure file transfers using Amazon S3 Transfer Acceleration"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/transfer-acceleration.html"
+  - title: "Best practices design patterns: optimizing Amazon S3 performance"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/optimizing-performance.html"
+  - title: "Uploading and copying objects using multipart upload"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html"
+  - title: "Server-side encryption with customer-provided keys (SSE-C)"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerSideEncryptionCustomerKeys.html"
+  - title: "Amazon S3 Storage Lens metrics glossary"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens_metrics_glossary.html"
+  - title: "Amazon Glacier Vault Lock"
+    url: "https://docs.aws.amazon.com/amazonglacier/latest/dev/vault-lock.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import LifecycleValidator from "../../components/scenes/s3/LifecycleValidator.tsx";
+import DeleteGuardSim from "../../components/scenes/s3/DeleteGuardSim.tsx";
+import EncryptionSim from "../../components/scenes/s3/EncryptionSim.tsx";
+import UploadSim from "../../components/scenes/s3/UploadSim.tsx";
+import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#en-s1", label: "1 · Storage classes and lifecycle" },
+  { href: "#en-s2", label: "2 · Protecting data from deletion" },
+  { href: "#en-s3", label: "3 · Access control" },
+  { href: "#en-s4", label: "4 · Managing encryption keys" },
+  { href: "#en-s5", label: "5 · Upload performance and peak load" },
+  { href: "#en-challenge", label: "Exercise" },
+]}>
+ShopViet stores its product images, invoices, promotional videos, logs and analytics data on **Amazon S3**. Each type of data has a different access frequency, retention period and group of users. This lesson analyzes each type of data to determine the right S3 configuration.
+</Story>
+
+<Scene id="en-s1" label="Part 1/5" title="Choosing a storage class for each type of data" questions={["exam1_q8", "exam1_q15", "exam1_q28", "exam5_q49", "exam6_q9", "exam5_q51", "exam6_q28", "exam2_q34", "exam4_q43", "exam1_q19"]}>
+
+S3 cost has two main components: a storage charge per GB and a data retrieval charge. The lower a storage class's storage charge, the higher its retrieval charge or the longer its retrieval time. Choose each type of ShopViet data to see the right storage class:
+
+<RequirementPicker client:visible items={[
+  { need: "Thumbnails that can be regenerated from the original images; accessed heavily in the first week, then less, but must still be retrievable immediately", answer: "Lifecycle to One Zone-IA after 30 days",
+    why: "Because the data can be regenerated, storing it in a single AZ at a lower cost than Standard-IA is acceptable. The data is still retrieved immediately." },
+  { need: "A product video library of hundreds of TB, kept for many years, accessed only about once a quarter, but when accessed the data must be available in milliseconds", answer: "S3 Glacier Instant Retrieval",
+    why: "AWS describes this class as being for long-lived archive data accessed about once a quarter that needs millisecond retrieval. The trade-off: a per-GB retrieval charge and a 90-day minimum storage duration. Glacier Flexible Retrieval and Deep Archive require a restore before reading, which takes from minutes to many hours." },
+  { need: "Intermediate files of the order-processing pipeline, read again constantly", answer: "S3 Standard",
+    why: "For frequently read data, Standard costs the least because the IA classes charge for every data retrieval." },
+  { need: "Product images: best-selling items are accessed constantly, other items are almost never accessed; this cannot be predicted in advance", answer: "S3 Intelligent-Tiering",
+    why: "Automatically moves each object between tiers based on access, with no data retrieval charges; it only charges a small monitoring and automation fee per object." },
+  { need: "Invoices: accessed frequently in the first month, then rarely but must be retrievable immediately; kept for 5 years and then deleted", answer: "Lifecycle to Standard-IA after 30 days + expiration",
+    why: "Standard-IA still retrieves immediately; an expiration rule automatically deletes objects when the retention period ends." },
+  { need: "Raw logs that have already been processed, kept only as a backup, almost never read again", answer: "Lifecycle to Glacier Deep Archive",
+    why: "The lowest-cost storage class for long-term archive data, in exchange for retrieval times of up to many hours." },
+]} />
+
+Lifecycle transitions objects in a waterfall model: one way only, down to lower-cost storage classes. Try a few pairs, for example Intelligent-Tiering → Standard or One Zone-IA → Standard-IA:
+
+<LifecycleValidator client:visible />
+
+<Takeaway>Frequent access: Standard. Unpredictable access patterns: Intelligent-Tiering. Infrequent access that needs immediate retrieval: Standard-IA (One Zone-IA if the data can be regenerated). Long-term archive: the Glacier classes. Lifecycle does not transition objects back up. Standard-IA and One Zone-IA have a 30-day minimum storage duration: an object deleted, overwritten or transitioned earlier is still charged for the full 30 days.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 2/5" title="Protecting invoices from deletion: versioning and Object Lock" questions={["exam1_q20", "exam5_q50", "exam1_q56", "exam4_q64", "exam5_q39"]}>
+
+Regulations require ShopViet to keep invoices for many years. The risk of data loss comes from an employee deleting by mistake, a faulty cleanup script, or an administrator deleting on purpose. Choose how the bucket is protected and who deletes, then see which layer of protection keeps the invoice:
+
+<DeleteGuardSim client:visible />
+
+The retention period (**Retain Until Date**) is set on each object version, so each version can have its own mode and retention period. For data stored in an **Amazon Glacier** vault (a standalone vault service, distinct from the S3 Glacier storage classes and no longer open to new customers), **Vault Lock** works in a similar way: once a Vault Lock policy is locked, it can no longer be changed or deleted.
+
+<Takeaway>Protect against accidental deletes: versioning (a simple delete only adds a delete marker). Require extra authentication for permanent deletes: MFA Delete. No one can delete, including root: Object Lock Compliance mode. Governance mode still lets users with bypass permission delete. Retention with no end date, for example during a dispute: legal hold.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 3/5" title="Controlling bucket access" questions={["exam4_q65", "exam2_q24", "exam4_q8", "exam2_q15", "exam6_q30", "exam6_q3", "exam6_q54"]}>
+
+As the number of teams and partners using the data grows, permissions need to be organized in a compact, clear way. Choose each scenario:
+
+<RequirementPicker client:visible items={[
+  { need: "ShopViet's accounting department and an audit firm (a different AWS account) both read the invoice bucket", answer: "Bucket policy",
+    why: "A bucket policy is a resource-based policy, which can grant permissions to principals in other accounts." },
+  { need: "Three analytics teams (marketing, warehouse, finance); each team may read only one prefix", answer: "S3 Access Points, one access point per team",
+    why: "Each access point has its own policy limited to a prefix, instead of one long bucket policy that is hard to maintain." },
+  { need: "A bucket policy has IpAddress 54.240.143.0/24 and NotIpAddress 54.240.143.188/32. Which addresses are allowed access?", answer: "The whole /24 range except the .188 address",
+    why: "Both conditions must be met at the same time: within the /24 range and not the .188 address." },
+  { need: "The data team's Redshift (another account) UNLOADs files into the bucket, but ShopViet cannot read those files", answer: "Objects belong to the uploading account, not automatically to the bucket owner",
+    why: "This is how legacy ACLs work. New buckets default to Object Ownership = bucket owner enforced: ACLs are disabled and the bucket owner owns every object." },
+  { need: "You need to find the buckets without versioning enabled across the whole company, in every Region and account", answer: "S3 Storage Lens",
+    why: "Provides an aggregated dashboard for the entire Organization. The Versioning-enabled bucket count metric is one of the free metrics; advanced metrics are not needed." },
+  { need: "You need to determine when to transition data from Standard to Standard-IA", answer: "Storage Class Analysis",
+    why: "Analyzes data access patterns and recommends when to transition from Standard to Standard-IA. This feature makes no recommendations for other storage classes." },
+  { need: "Product images may be accessed only through CloudFront", answer: "OAC/OAI + bucket policy", why: "See the CloudFront lesson." },
+]} />
+
+<Takeaway>Grant permissions to another account: bucket policy. Many teams, one prefix each: access points. Organization-wide monitoring: Storage Lens. New buckets use Object Ownership = bucket owner enforced.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s4" label="Part 4/5" title="Managing encryption keys" questions={["exam2_q10", "exam6_q51", "exam3_q24", "exam1_q22", "exam5_q46"]}>
+
+Every encryption method makes data at rest unusable without the key. The differences lie in which component performs the encryption, where the key is stored, and whether each use of the key is logged. Choose a ShopViet requirement, upload three invoices and see where the data becomes encrypted:
+
+<EncryptionSim client:visible />
+
+<Takeaway>Simplest configuration: SSE-S3. Need to audit key usage: SSE-KMS (enable S3 Bucket Key to reduce the cost of KMS calls). Keys must be kept at the company but S3 performs the encryption: SSE-C (since April 2026, SSE-C is blocked by default on new buckets; re-enable it with PutBucketEncryption). Your own encryption algorithm: client-side encryption.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s5" label="Part 5/5" title="Optimizing upload speed and peak-load capacity" questions={["exam4_q14", "exam1_q64", "exam1_q18", "exam1_q40", "exam1_q51", "exam6_q20", "exam5_q21"]}>
+
+This part presents four problems ShopViet ran into as data volume and the number of users grew. Run each scenario, then turn on the matching S3 feature to compare the results:
+
+<UploadSim client:visible />
+
+For distant users who both download videos and upload files, combine both: **CloudFront** for downloads and **S3 Transfer Acceleration** for uploads.
+
+<Takeaway>Large files: multipart upload (required for objects over 5 GB). Distant uploaders: Transfer Acceleration (goes through CloudFront edge locations; can incur additional data transfer charges). Too many requests: spread keys across many prefixes. Only part of a file is needed: byte-range fetch.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Sort the properties: Compliance mode, Governance mode and Legal hold" questions={["exam5_q50", "exam1_q56", "exam1_q19", "exam6_q9", "exam2_q10", "exam1_q51"]}>
+
+Sort each property into the matching lock mechanism. On a mobile device: tap a card, then tap the target box.
+
+<SortGame client:visible
+  bins={[
+    { id: "comp", title: "Compliance mode", sub: "No one can bypass it", hint: "Hint: not even root can delete." },
+    { id: "gov", title: "Governance mode", sub: "Can be bypassed with special permission", hint: "Hint: users with bypass permission can still delete." },
+    { id: "hold", title: "Legal hold", sub: "No end date", hint: "Hint: stays in effect until removed, with no expiration date." },
+  ]}
+  cards={[
+    ["Not even the root user can delete during the retention period", "comp"], ["The retention period cannot be shortened", "comp"],
+    ["Users with s3:BypassGovernanceRetention can still delete", "gov"], ["Test a configuration before applying the real lock", "gov"],
+    ["Keeps the object until the hold is removed", "hold"], ["Does not require a Retain Until Date", "hold"],
+  ]}
+/>
+
+Check question: as the designer of the ShopViet system, which option fits?
+
+<Quiz client:visible items={[
+  { q: "When configuring a lifecycle rule for the image bucket, which transition does S3 NOT support?",
+    opts: ["Standard → Intelligent-Tiering", "Intelligent-Tiering → Standard", "Standard-IA → One Zone-IA"],
+    a: 1,
+    why: "Lifecycle does not transition objects back to Standard. The other two transitions are valid." },
+  { q: "Some product images are accessed heavily, others are not accessed for a long time, and the access pattern cannot be predicted. Which storage class costs the least in the long run?",
+    opts: ["Standard-IA", "Intelligent-Tiering", "One Zone-IA"],
+    a: 1,
+    why: "Intelligent-Tiering automatically moves objects between tiers based on access and has no data retrieval charges." },
+  { q: "Regulations require invoices to be kept for 7 years, and no one, including root, may delete them. Which feature must be enabled on the invoice bucket?",
+    opts: ["Object Lock Governance mode", "Object Lock Compliance mode", "Versioning"],
+    a: 1,
+    why: "Compliance mode lets no one bypass it during the retention period. Governance mode still lets users with bypass permission delete." },
+  { q: "The security department requires the encryption keys to be kept on company servers, but S3 must handle the encryption. Which option fits?",
+    opts: ["SSE-KMS", "SSE-C", "Client-side encryption"],
+    a: 1,
+    why: "With SSE-C, the application sends the key with each request over HTTPS; S3 encrypts the data and does not store the key. On new buckets, SSE-C is blocked by default, so it must be re-enabled with PutBucketEncryption before use." },
+  { q: "During a flash sale, the order-image upload job gets 503 Slow Down errors when it exceeds about 3,500 PUT requests per second to the same prefix. Which fix fits?",
+    opts: ["Create more buckets in several Regions", "Name keys with a separate prefix per shop", "Move to EFS"],
+    a: 1,
+    why: "S3 supports at least 3,500 PUT/COPY/POST/DELETE or 5,500 GET/HEAD requests per second per partitioned prefix; the number of prefixes in a bucket is not limited, so adding prefixes means adding request capacity." },
+]} />
+
+</Scene>

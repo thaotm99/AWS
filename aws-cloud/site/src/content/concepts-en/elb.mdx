@@ -1,0 +1,145 @@
+---
+title: "Elastic Load Balancing: ALB, NLB and how load is distributed"
+lede: "The ShopViet system already has many servers and needs a load balancer in front of them. This lesson covers four topics: choosing an ALB or an NLB for each requirement, working out the share of traffic each target receives, routing requests by URL and domain name on one ALB, and fixing targets that work normally but are marked unhealthy."
+minutes: 20
+scenes: 4
+prerequisites: ["vpc", "ec2"]
+docs:
+  - title: "What is Elastic Load Balancing?"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/what-is-load-balancing.html"
+  - title: "Cross-zone load balancing"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/how-elastic-load-balancing-works.html#cross-zone-load-balancing"
+  - title: "Listener rules for your Application Load Balancer"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/listener-update-rules.html"
+  - title: "SSL certificates for your Application Load Balancer (SNI)"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/https-listener-certificates.html"
+  - title: "Health checks for your target groups"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/target-group-health-checks.html"
+  - title: "Condition types for listener rules (host header)"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/rule-condition-types.html"
+  - title: "Target groups for your Application Load Balancers"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html"
+  - title: "Listeners for your Network Load Balancers"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-listeners.html"
+  - title: "Create an endpoint service (PrivateLink)"
+    url: "https://docs.aws.amazon.com/vpc/latest/privatelink/create-endpoint-service.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import CrossZoneCalc from "../../components/scenes/elb/CrossZoneCalc.tsx";
+import LbTypeSim from "../../components/scenes/elb/LbTypeSim.tsx";
+import AlbRuleSim from "../../components/scenes/elb/AlbRuleSim.tsx";
+import HealthCheckSim from "../../components/scenes/elb/HealthCheckSim.tsx";
+import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#en-s1", label: "1 · Choosing ALB or NLB" },
+  { href: "#en-s2", label: "2 · Cross-zone load balancing" },
+  { href: "#en-s3", label: "3 · Routing by URL and HTTPS" },
+  { href: "#en-s4", label: "4 · Handling unhealthy targets" },
+  { href: "#en-challenge", label: "Exercise" },
+]}>
+ShopViet already runs many EC2 instances across two AZs. Users do not need to know which instance is serving them, so a **load balancer** is needed in front. The next design questions are: which type of load balancer to use, how much load each instance takes, how one load balancer serves many services and many domain names, and why an instance that works normally is removed from the target group.
+</Story>
+
+<Scene id="en-s1" label="Part 1/4" title="Choosing an ALB or an NLB for each requirement" questions={["exam1_q2", "exam1_q48", "exam4_q9", "exam6_q43", "exam1_q39", "exam6_q56", "exam6_q7"]}>
+
+An **Application Load Balancer** (ALB) inspects the content of HTTP requests: path, domain name, headers. A **Network Load Balancer** (NLB) works at layer 4 (TCP, UDP, TLS and QUIC listeners) and does not inspect HTTP content; an NLB has one IP per AZ (which can be an Elastic IP) and can handle millions of requests per second. Try each ShopViet requirement, first with an ALB and then with an NLB:
+
+<LbTypeSim client:visible />
+
+ShopViet plans to expand to a Region in the United States. The question: can one load balancer distribute load across both Regions?
+
+<ScenarioFlow client:visible height={210} scenarios={[
+  { name: "One load balancer for two Regions",
+    boxes: [{ x: 20, y: 20, w: 330, h: 170, label: "us-east-1" }, { x: 410, y: 20, w: 330, h: 170, label: "us-west-1" }],
+    nodes: [
+      { id: "elb", x: 120, y: 60, label: "Load balancer", kind: "net" },
+      { id: "a", x: 50, y: 130, w: 120, label: "2 EC2 in AZ A", kind: "ec2" },
+      { id: "b", x: 210, y: 130, w: 120, label: "2 EC2 in AZ B", kind: "ec2" },
+      { id: "c", x: 500, y: 130, w: 160, label: "2 EC2 in us-west-1", kind: "ec2" },
+    ],
+    options: [
+      { name: "Multiple AZs in one Region", verdict: "good", hide: ["c"],
+        flows: [{ path: ["elb", "a"], tone: "good" }, { path: ["elb", "b"], tone: "good" }],
+        text: "A load balancer spread across multiple AZs **within one Region** is the standard configuration." },
+      { name: "Targets in another Region", verdict: "bad", verdictLabel: "Not suitable",
+        flows: [{ path: ["elb", "a"], tone: "good" }, { path: ["elb", "c"], blocked: true, label: "no instance ID" }],
+        text: "A load balancer is created in one Region, with nodes in the enabled AZs of that Region. Instances in another VPC (including an inter-Region peered VPC) **cannot be registered by instance ID**; an ALB accepts them as targets only by IP address over VPC peering. For a multi-Region architecture, place one load balancer in each Region and use Route 53 or Global Accelerator in front." },
+    ] },
+]} />
+
+<Takeaway>Web applications that need routing by URL or domain name: ALB. Plain TCP/UDP, a fixed IP for partners, PrivateLink: NLB. Servers sit in private subnets; only the load balancer is in public subnets. Multiple Regions: one load balancer per Region, with Route 53 or Global Accelerator in front.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 2/4" title="Share of traffic per target" questions={["exam3_q14", "exam4_q59"]}>
+
+During a sale, ShopViet urgently adds servers in AZ B, while AZ A still has only 1 server. The question: is the single server in AZ A overloaded? Adjust the sliders and turn cross-zone on or off. Try 1 server in AZ A and 4 in AZ B; then 4 and 6.
+
+<CrossZoneCalc client:visible />
+
+<Takeaway>DNS splits traffic evenly between the load balancer nodes in each AZ. With cross-zone on: load is spread evenly across all targets. With cross-zone off: each AZ gets an equal share, which is then spread across the targets in that AZ, so an AZ with fewer servers gets overloaded. Defaults: ALB always has cross-zone on at the load balancer level (it can be turned off at the target group level); NLB and GWLB have it off.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 3/4" title="One ALB for many services and many domain names" questions={["exam1_q48", "exam4_q40", "exam4_q57", "exam2_q17", "exam1_q6"]}>
+
+ShopViet splits its system into an orders service, a products service and promotional microsites, each with its own target group. They all still sit behind **one** ALB. Each request goes through the HTTPS listener: certificate selection (SNI), AWS WAF, then the listener rule whose conditions (path, host) match performs the rule's actions: authentication (if there is an authenticate action), then forward to a target group. Pick a scenario and send a request:
+
+<AlbRuleSim client:visible />
+
+<Takeaway>Listener rules route by path (`/orders/*`) and host (`*.shopviet.vn` matches `khuyenmai.shopviet.vn` but not the apex domain `shopviet.vn`). Multiple HTTPS domain names on one listener: add multiple certificates; the ALB selects a certificate using SNI. The ALB integrates authentication with Cognito and supports associating AWS WAF.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s4" label="Part 4/4" title="Targets that work normally but are marked unhealthy" questions={["exam4_q26", "exam5_q1", "exam2_q18", "exam3_q13"]}>
+
+The ALB marks i-2 as unhealthy, while an engineer who connects to the instance over SSH confirms the application still works. The load balancer relies only on **health check** results: it calls a path on each target periodically (every 30 seconds by default for the instance or ip target type). Follow the health check's path and see where it is blocked:
+
+<HealthCheckSim client:visible />
+
+<Takeaway>Target unhealthy while the application still works: check whether the security group allows traffic from the load balancer and whether the health check path is correct. For the ASG to replace instances the load balancer marks as failed: switch the ASG's health check to the ELB type.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Classify the features: ALB and NLB" questions={["exam3_q14", "exam4_q9", "exam5_q1", "exam4_q40"]}>
+
+Sort each feature into the matching load balancer type. On a mobile device: tap a card, then tap the target box.
+
+<SortGame client:visible
+  bins={[
+    { id: "alb", title: "Application Load Balancer", sub: "Layer 7", hint: "Hint: this feature requires inspecting HTTP content." },
+    { id: "nlb", title: "Network Load Balancer", sub: "Layer 4", hint: "Hint: this feature relates to TCP/UDP and static IPs." },
+  ]}
+  cards={[
+    ["Path-based routing", "alb"], ["Host-based routing", "alb"], ["Authentication with Cognito", "alb"], ["Cross-zone on by default", "alb"],
+    ["Static IP / Elastic IP per AZ", "nlb"], ["UDP support", "nlb"], ["Backend for a PrivateLink endpoint service", "nlb"], ["Cross-zone off by default", "nlb"],
+  ]}
+/>
+
+Check your understanding: as the designer of the ShopViet system, which option fits?
+
+<Quiz client:visible items={[
+  { q: "ShopViet has 1 server in AZ A and 4 servers in AZ B, with cross-zone turned off. What percentage of traffic does the server in AZ A receive?",
+    opts: ["20%", "50%", "12.5%"],
+    a: 1,
+    why: "Each AZ gets 50%; AZ A has only 1 server, so that server receives the whole 50%. With cross-zone on, each server gets 20%." },
+  { q: "A partner bank opens its firewall only to one fixed ShopViet IP. The service must still be fault tolerant and scale to 10 instances. Which architecture fits?",
+    opts: ["ALB + Auto Scaling group", "NLB + Auto Scaling group", "Auto Scaling group with dynamically attached Elastic IPs"],
+    a: 1,
+    why: "An internet-facing NLB lets you choose one Elastic IP per AZ, giving static IPs. ALB IPs are managed by the ALB service; you cannot assign Elastic IPs of your choice." },
+  { q: "The ALB has removed an unresponsive instance from routing, but the Auto Scaling group does not launch a replacement. What is the cause?",
+    opts: ["The ASG is using EC2 health checks", "The ALB does not have cross-zone on", "The instance has no IAM role"],
+    a: 0,
+    why: "EC2 health checks (the default) check that the instance is running and for underlying hardware and software problems; they do not use the load balancer's results. Turn on ELB health checks so the ASG uses the ALB's health check results." },
+  { q: "ShopViet has shopviet.vn, blog.shopviet.vn and shopviet.com.vn, all using HTTPS. Minimal configuration is required. Which option fits?",
+    opts: ["One ALB per domain name", "Multiple certificates on one HTTPS listener, with the ALB choosing by SNI", "Switch to an NLB"],
+    a: 1,
+    why: "SNI lets one HTTPS listener select the certificate that matches the domain name the client requests." },
+]} />
+
+</Scene>

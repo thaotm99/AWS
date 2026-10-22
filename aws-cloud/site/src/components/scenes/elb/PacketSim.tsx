@@ -1,6 +1,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import { flashText, travel, type Pt } from "../../../lib/animate";
 import { rich } from "../diagram";
+import { useLang, type Bi } from "../../../lib/lang";
 import "./packet-sim.css";
 
 // Small engine shared by the ELB, Auto Scaling, container and Lambda simulations.
@@ -82,12 +83,12 @@ interface Props {
   hint?: string;
 }
 
-const TAG: Record<PState, { text: string; cls: string }> = {
-  pass: { text: "QUA", cls: "hit" },
-  block: { text: "CHẶN", cls: "bad" },
-  skip: { text: "BỎ QUA", cls: "info" },
-  change: { text: "XỬ LÝ", cls: "miss" },
-  wait: { text: "CHỜ", cls: "info" },
+const TAG: Record<PState, { text: Bi; cls: string }> = {
+  pass: { text: { vi: "QUA", en: "PASS" }, cls: "hit" },
+  block: { text: { vi: "CHẶN", en: "BLOCKED" }, cls: "bad" },
+  skip: { text: { vi: "BỎ QUA", en: "SKIPPED" }, cls: "info" },
+  change: { text: { vi: "XỬ LÝ", en: "PROCESSED" }, cls: "miss" },
+  wait: { text: { vi: "CHỜ", en: "WAIT" }, cls: "info" },
 };
 
 const size = (n: PNode) => ({ w: n.w ?? 120, h: n.h ?? (n.l2 ? 48 : 38) });
@@ -105,7 +106,8 @@ const d = (pts: Pt[]) => pts.map((p, i) => `${i ? "L" : "M"}${p[0]} ${p[1]}`).jo
 
 type LogLine = { tag?: PState; tagText?: string; ok?: boolean; label?: string; msg: ReactNode };
 
-export default function PacketSim({ scenarios, layout, action = "Gửi request", hint }: Props) {
+export default function PacketSim({ scenarios, layout, action, hint }: Props) {
+  const L = useLang();
   const pk = useRef<SVGGElement>(null);
   const [index, setIndex] = useState(0);
   const sc = scenarios[index];
@@ -113,7 +115,7 @@ export default function PacketSim({ scenarios, layout, action = "Gửi request",
   const own = typeof sc.layout === "function" ? sc.layout(on) : sc.layout;
   const lay = own ?? layout!;
   const byId: Record<string, PNode> = Object.fromEntries(lay.nodes.map((n) => [n.id, n]));
-  const act = sc.action ?? action;
+  const act = sc.action ?? action ?? L({ vi: "Gửi request", en: "Send request" });
   const request = typeof sc.request === "function" ? sc.request(on) : sc.request;
   const [busy, setBusy] = useState(false);
   const [lit, setLit] = useState<Record<string, PState>>({});
@@ -186,7 +188,7 @@ export default function PacketSim({ scenarios, layout, action = "Gửi request",
 
   return (
     <div className="stage pks">
-      <div className="pks-scenarios" role="group" aria-label="Tình huống">
+      <div className="pks-scenarios" role="group" aria-label={L({ vi: "Tình huống", en: "Scenarios" })}>
         {scenarios.map((s, i) => (
           <button key={s.name} className="chip" aria-pressed={i === index} onClick={() => pick(i)} disabled={busy && i !== index}>
             {s.name}
@@ -242,8 +244,8 @@ export default function PacketSim({ scenarios, layout, action = "Gửi request",
       <div className="readout">
         {log.length === 0 ? (
           <p className="pks-hint">
-            {hint ?? <>Nhấn <b>{act}</b> để quan sát từng bước xử lý.</>}
-            {sc.toggle && !hint ? " Thay đổi cấu hình và chạy lại để so sánh kết quả." : ""}
+            {hint ?? L({ vi: <>Nhấn <b>{act}</b> để quan sát từng bước xử lý.</>, en: <>Press <b>{act}</b> to follow each processing step.</> })}
+            {sc.toggle && !hint ? L({ vi: " Thay đổi cấu hình và chạy lại để so sánh kết quả.", en: " Change the configuration and run again to compare the results." }) : ""}
           </p>
         ) : (
           <ul className="log" aria-live="polite">
@@ -252,7 +254,7 @@ export default function PacketSim({ scenarios, layout, action = "Gửi request",
                 <li key={i} className={`pks-result ${e.ok ? "ok" : "bad"}`}>{e.msg}</li>
               ) : (
                 <li key={i}>
-                  <span className={`tag pks-tag ${TAG[e.tag].cls}`}>{e.tagText ?? TAG[e.tag].text}</span>
+                  <span className={`tag pks-tag ${TAG[e.tag].cls}`}>{e.tagText ?? L(TAG[e.tag].text)}</span>
                   <span><b>{e.label}:</b> {e.msg}</span>
                 </li>
               ),

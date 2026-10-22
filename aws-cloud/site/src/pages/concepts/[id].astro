@@ -32,8 +32,9 @@ const ready = new Set((await getCollection("concepts")).map((e) => e.id));
 const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(layers, p)).filter(Boolean);
 const title = entry?.data.title ?? concept.title;
 const titleEn = entryEn?.data.title ?? concept.titleEn;
-// Docs links are the same pages in both languages; the English file may add its own.
-const docs = [...(entry?.data.docs ?? []), ...(entryEn?.data.docs ?? [])].filter((d, i, list) => list.findIndex((x) => x.url === d.url) === i);
+// Each language lists the docs with its own titles; without an English file the Vietnamese list is used.
+const docs = entry?.data.docs ?? [];
+const docsEn = entryEn?.data.docs ?? docs;
 ---
 <BaseLayout title={`${concept.title} · AWS Thực Chiến`} description={entry?.data.lede} current={id}>
   {entry && (
@@ -120,7 +121,8 @@ const docs = [...(entry?.data.docs ?? []), ...(entryEn?.data.docs ?? [])].filter
           </div>
           <div class="next-col">
             <h3><T k="lesson.frame.docs" /></h3>
-            <ul>{docs.map((d) => <li><a href={d.url} target="_blank" rel="noopener">{d.title}</a></li>)}</ul>
+            <ul data-lang="vi">{docs.map((d) => <li><a href={d.url} target="_blank" rel="noopener">{d.title}</a></li>)}</ul>
+            <ul data-lang="en">{docsEn.map((d) => <li><a href={d.url} target="_blank" rel="noopener">{d.title}</a></li>)}</ul>
           </div>
         </div>
       </section>

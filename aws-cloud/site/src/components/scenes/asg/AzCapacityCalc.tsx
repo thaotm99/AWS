@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useLang } from "../../../lib/lang";
 
 // How many instances, in how many AZs, keep the required minimum running after one AZ
 // fails (exam2_q31, exam5_q61).
 export default function AzCapacityCalc() {
+  const L = useLang();
   const [need, setNeed] = useState(4);
   const [azs, setAzs] = useState(2);
   const [down, setDown] = useState(false);
@@ -14,15 +16,15 @@ export default function AzCapacityCalc() {
   return (
     <div className="stage">
       <div className="stage-bar">
-        <label className="label" htmlFor="needN">Số instance tối thiểu: {need}</label>
+        <label className="label" htmlFor="needN">{L({ vi: "Số instance tối thiểu", en: "Minimum instances" })}: {need}</label>
         <input id="needN" type="range" min={2} max={12} value={need} onChange={(e) => setNeed(Number(e.target.value))} />
         <span className="sep" />
-        <span className="label">Số AZ</span>
+        <span className="label">{L({ vi: "Số AZ", en: "AZs" })}</span>
         {[2, 3, 4].map((k) => (
-          <button key={k} className="btn" aria-pressed={k === azs} onClick={() => setAzs(k)}>{k} AZ</button>
+          <button key={k} className="btn" aria-pressed={k === azs} onClick={() => setAzs(k)}>{L({ vi: `${k} AZ`, en: `${k} AZs` })}</button>
         ))}
         <span className="sep" />
-        <button className="btn danger" aria-pressed={down} onClick={() => setDown(!down)}>{down ? "Khôi phục AZ 1" : "Mô phỏng sự cố AZ 1"}</button>
+        <button className="btn danger" aria-pressed={down} onClick={() => setDown(!down)}>{down ? L({ vi: "Khôi phục AZ 1", en: "Restore AZ 1" }) : L({ vi: "Mô phỏng sự cố AZ 1", en: "Simulate AZ 1 failure" })}</button>
       </div>
       <div className="cap-grid">
         {Array.from({ length: azs }, (_, i) => (
@@ -31,18 +33,19 @@ export default function AzCapacityCalc() {
             <div className="cap-insts">
               {Array.from({ length: perAz }, (_, j) => <span key={j} className="cap-inst" aria-hidden="true" />)}
             </div>
-            <span className="count">{perAz} instance</span>
+            <span className="count">{L({ vi: `${perAz} instance`, en: `${perAz} instances` })}</span>
           </div>
         ))}
       </div>
       <div className="readout" aria-live="polite">
         <div className="status">
-          <span className="count">Tổng: {total} instance · còn lại khi mất 1 AZ: {total - perAz}</span>
-          <span className={"pill " + (total === best ? "ok" : "bad")}><i />{total === best ? "Chi phí thấp nhất" : `Chưa tối ưu chi phí (tối thiểu ${best})`}</span>
+          <span className="count">{L({ vi: `Tổng: ${total} instance · còn lại khi mất 1 AZ: ${total - perAz}`, en: `Total: ${total} instances · left after losing 1 AZ: ${total - perAz}` })}</span>
+          <span className={"pill " + (total === best ? "ok" : "bad")}><i />{total === best ? L({ vi: "Chi phí thấp nhất", en: "Lowest cost" }) : L({ vi: `Chưa tối ưu chi phí (tối thiểu ${best})`, en: `Not cost-optimal (minimum ${best})` })}</span>
         </div>
         <p style={{ margin: "8px 0 0" }}>
-          Mỗi AZ cần ⌈{need} ÷ ({azs} − 1)⌉ = {perAz} instance để khi mất một AZ vẫn duy trì đủ {need} instance.
-          So sánh: {options.map((o) => `${o.k} AZ → ${o.total}`).join(", ")}.
+          {L({ vi: `Mỗi AZ cần ⌈${need} ÷ (${azs} − 1)⌉ = ${perAz} instance để khi mất một AZ vẫn duy trì đủ ${need} instance.`,
+            en: `Each AZ needs ⌈${need} ÷ (${azs} − 1)⌉ = ${perAz} instances so that ${need} instances still run after losing one AZ.` })}
+          {" "}{L({ vi: "So sánh", en: "Compare" })}: {options.map((o) => `${o.k} AZ → ${o.total}`).join(", ")}.
         </p>
       </div>
     </div>

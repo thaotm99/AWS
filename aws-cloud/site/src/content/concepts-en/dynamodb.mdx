@@ -1,0 +1,184 @@
+---
+title: "DynamoDB: a low-latency key-value database at any scale"
+lede: "This lesson covers five topics: how DynamoDB retrieves data by key, choosing a capacity mode and handling hot partitions with DAX, processing data changes, recovering data after mistakes, and deploying across multiple Regions."
+minutes: 30
+scenes: 5
+prerequisites: ["rds", "lambda"]
+docs:
+  - title: "What is Amazon DynamoDB?"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html"
+  - title: "In-memory acceleration with DynamoDB Accelerator (DAX)"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DAX.html"
+  - title: "Change data capture for DynamoDB Streams"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html"
+  - title: "Using time to live (TTL) in DynamoDB"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/TTL.html"
+  - title: "Point-in-time recovery for DynamoDB"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/PointInTimeRecovery.html"
+  - title: "Global tables: multi-Region replication for DynamoDB"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GlobalTables.html"
+  - title: "How DynamoDB global tables work"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/V2globaltables_HowItWorks.html"
+  - title: "Understanding Amazon DynamoDB billing for global tables"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/global-tables-billing.html"
+  - title: "Partitions and data distribution"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.Partitions.html"
+  - title: "Designing partition keys to distribute your workload"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-design.html"
+  - title: "DAX and DynamoDB consistency models"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DAX.consistency.html"
+  - title: "Using deletion protection"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithTables.Basics.html"
+  - title: "Using Aurora Global Database"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import KeyAccessSim from "../../components/scenes/dynamodb/KeyAccessSim.tsx";
+import CapacitySim from "../../components/scenes/dynamodb/CapacitySim.tsx";
+import DataFlowSim from "../../components/scenes/dynamodb/DataFlowSim.tsx";
+import RecoverySim from "../../components/scenes/dynamodb/RecoverySim.tsx";
+import MultiRegionSim from "../../components/scenes/dynamodb/MultiRegionSim.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#en-s1", label: "1 · Retrieving data by key" },
+  { href: "#en-s2", label: "2 · Capacity modes and DAX" },
+  { href: "#en-s3", label: "3 · Data flowing in and out" },
+  { href: "#en-s4", label: "4 · Recovering from bad writes and accidental deletes" },
+  { href: "#en-s5", label: "5 · Multi-Region deployment" },
+  { href: "#en-challenge", label: "Exercise" },
+]}>
+ShopViet's order and reporting data is already stored on Aurora. Shopping carts, login sessions and shipper locations are different: a simple data structure, constant reads and writes, and highly variable traffic. **Amazon DynamoDB** is a serverless NoSQL database: there are no servers to manage, it scales out automatically, and it responds in milliseconds at any scale.
+</Story>
+
+<Scene id="en-s1" label="Part 1/5" title="Retrieving data by key" questions={["exam4_q10", "exam2_q29", "exam3_q11", "exam6_q17", "exam4_q23", "exam6_q65"]}>
+
+A **table** contains **items**; each item is a set of **attributes**, and items do not have to share the same structure. Each item has a **primary key**:
+
+- **Partition key**: DynamoDB hashes this value to determine the partition that holds the item.
+- **Sort key** (optional): orders the items that share a partition key, for example by order date.
+
+Data is stored on SSDs and automatically replicated across multiple AZs in the Region. AWS describes DynamoDB as delivering single-digit millisecond performance at any scale, so queries by key do not slow down as the table grows. Try five ShopViet tasks:
+
+<KeyAccessSim client:visible />
+
+Some conclusions:
+
+- To query by an attribute that is not a key: create a **GSI** (global secondary index) with any attribute as the new key; a GSI can be created at any time. An **LSI** shares the table's partition key, differs only in the sort key, and can be created only when the table is created.
+- Large files (videos, images, a job's 20 MB output) are not stored in DynamoDB. The files are stored on S3 or EFS; DynamoDB stores only their path.
+- Relational data that needs JOINs and has fluctuating load: Aurora Serverless v2 (RDS lesson), not DynamoDB.
+
+<Takeaway>Retrieval by key, millisecond latency, serverless, automatic scaling: DynamoDB. Queries on other attributes: GSI. Items are at most 400 KB; large files go on S3. Access from a private subnet: a gateway endpoint (only S3 and DynamoDB support them).</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 2/5" title="Capacity modes, hot partitions and DAX" questions={["exam4_q62", "exam4_q54", "exam1_q1", "exam6_q6", "exam1_q29", "exam6_q47", "exam5_q65", "exam5_q37"]}>
+
+DynamoDB measures read and write capacity in **RCUs** and **WCUs**. 1 RCU is one strongly consistent read per second (or two eventually consistent reads) for an item up to 4 KB. 1 WCU is one write per second for an item up to 1 KB. DynamoDB has two billing models:
+
+- **Provisioned**: you provision RCUs/WCUs in advance and pay by the hour regardless of actual usage. Enable **Auto Scaling** so capacity follows the load, though Auto Scaling needs a few minutes to react.
+- **On-Demand**: billed per request, with no forecasting needed. There are no read or write charges when there are no requests.
+
+Each partition has its own limits: **3,000 RCUs** and **1,000 WCUs**. Choose a load pattern and a capacity mode, then simulate one day of operation:
+
+<CapacitySim client:visible />
+
+**DAX** (DynamoDB Accelerator) is an in-memory cache built for DynamoDB: it cuts latency from milliseconds to **microseconds**, uses the same API so almost no code changes are needed, and writes through to the table. DAX caches only **eventually consistent reads**; strongly consistent read requests go straight to the table. DAX fits when many users read the same data, for example when 90% of reads are concentrated on the home page and best-selling products. Static images on S3 are cached with CloudFront.
+
+DynamoDB itself stores data on SSDs; it is **not** an in-memory database. When you need in-memory storage:
+
+- Data on DynamoDB: DAX.
+- Data on RDS or Aurora, or for a session store, leaderboards or location-based queries: **ElastiCache** (Analytics lesson). Multithreaded caching: Memcached. Sorted sets or geospatial: Valkey or Redis OSS.
+
+<Takeaway>Fluctuating load that at times drops near zero: On-Demand. Steady, predictable load: Provisioned + Auto Scaling. A hot partition caused by repeated reads: DAX, not more RCUs. DAX is for DynamoDB; ElastiCache is for other data sources.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 3/5" title="Data flowing in and out" questions={["exam1_q33", "exam5_q32", "exam5_q35"]}>
+
+When integrating DynamoDB with other components, ShopViet must answer three questions: how data gets in, how old data is deleted, and which component is notified when data changes.
+
+<DataFlowSim client:visible />
+
+- **TTL**: choose a Number attribute that holds the expiration time (Unix epoch, in seconds). DynamoDB automatically deletes expired items without consuming WCUs. Suits sessions, OTPs, abandoned carts and logs kept for N days.
+- **DynamoDB Streams**: records every item-level change, in order, retained for 24 hours. Attach Lambda to process each change. Items deleted by TTL also appear in the stream as service deletions; Lambda reads that record (with OLD_IMAGE) to archive the item's contents to S3 after the item has been removed from the table. TTL typically deletes items within a few days after they expire.
+
+<Takeaway>Deleting old data at no cost: TTL. Event-driven processing of data changes: Streams + Lambda. Sensitive data: sanitize it before writing. Getting data into DynamoDB with a serverless architecture: SQS → Lambda → DynamoDB; Firehose does not write to DynamoDB.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s4" label="Part 4/5" title="Recovering from bad writes and accidental deletes" questions={["exam3_q49", "exam4_q42"]}>
+
+The two most common data incidents come not from hardware but from human actions: a deploy that writes bad data, and an accidental delete. Choose the measure ShopViet put in place, then run the simulation:
+
+<RecoverySim client:visible />
+
+| | Use case | Restore point |
+|---|---|---|
+| **PITR** | Restore to the exact moment before an incident | Any second within 1–35 days, to a new table |
+| **On-demand backup** | Long-term retention, compliance requirements | The exact moment the backup was created |
+| **Deletion protection** | Prevent accidental deletes | Nothing to restore: the delete request is denied |
+
+<Takeaway>Restore to an exact point in time, down to the second: PITR. Prevent accidental deletes with the least operational overhead: deletion protection. Streams and global tables are not backup mechanisms.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s5" label="Part 5/5" title="Expanding to multiple Regions" questions={["exam5_q59", "exam5_q27", "exam2_q5", "exam1_q7"]}>
+
+ShopViet expands into the European and US markets. The application is deployed in each Region; the problem to solve is how to organize the data.
+
+<MultiRegionSim client:visible />
+
+- **Global tables**: each Region has a replica, and every replica supports reads and writes. In the default mode (multi-Region eventual consistency, MREC), DynamoDB replicates asynchronously and automatically, usually within one second; multi-Region strong consistency (MRSC) mode is also available when you need strongly consistent reads across Regions. The application uses the DynamoDB API as before. For steady load, use Provisioned + Auto Scaling to optimize cost; note that writes to a global table are billed as replicated write units (rWCU/rWRU) in every Region that has a replica.
+- **Aurora Global Database**: one Region accepts writes, with up to 10 read-only secondary Regions. Suits applications that already use SQL and JOINs and only need low-latency reads in other Regions. When only one table needs global reach and the other tables are needed only within the Region: split that table out; there is no need to move the whole database.
+
+<Takeaway>Low-latency writes in multiple Regions: DynamoDB global tables. Keep a relational schema and only need reads in the Region near users: Aurora Global Database.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Sort the requirements by DynamoDB feature" questions={["exam4_q62", "exam4_q54", "exam3_q49", "exam4_q42", "exam5_q59", "exam5_q32"]}>
+
+Sort each ShopViet requirement into the feature that meets it. On a mobile device: tap a card, then tap the target box.
+
+<SortGame client:visible
+  bins={[
+    { id: "speed", title: "Capacity and performance", sub: "On-Demand, DAX", hint: "Hint: requirements about load and latency." },
+    { id: "life", title: "Data lifecycle", sub: "TTL, Streams", hint: "Hint: requirements about old items or items that just changed." },
+    { id: "safe", title: "Data protection and multiple Regions", sub: "PITR, deletion protection, global tables", hint: "Hint: requirements about incidents." },
+  ]}
+  cards={[
+    ["Fluctuating load, almost no users at night", "speed"], ["One high-traffic shop overloads a partition", "speed"], ["Reads with microsecond latency", "speed"],
+    ["Automatically delete login sessions after 24 hours", "life"], ["Send an email when a new user signs up", "life"], ["Archive items about to expire to S3", "life"],
+    ["Restore to exactly 14:31:59 yesterday", "safe"], ["No one can delete the Orders table", "safe"], ["Users in Germany write orders right in Frankfurt", "safe"],
+  ]}
+/>
+
+Check question: as the designer of the ShopViet system, which option fits?
+
+<Quiz client:visible items={[
+  { q: "The shipper app runs only during the day; load spikes within minutes without warning. Which capacity mode should the DynamoDB table use?",
+    opts: ["Provisioned + Auto Scaling", "On-Demand", "Provisioned, fixed at the peak level"],
+    a: 1,
+    why: "On-Demand responds immediately to spikes and has no read or write charges when there are no requests. Auto Scaling needs a few minutes to react." },
+  { q: "The table's RCUs have been doubled, but a high-traffic shop's page is still throttled. Which fix fits?",
+    opts: ["Increase RCUs again", "Add DAX in front of the table", "Enable DynamoDB Streams"],
+    a: 1,
+    why: "The 3,000 RCU limit applies per partition. DAX serves repeated reads from its cache, so those requests do not reach the hot partition." },
+  { q: "A faulty deploy has been writing wrong prices since 14:32. The table must be restored to the exact moment before that. Which feature fits?",
+    opts: ["Last night's on-demand backup", "Point-in-time recovery", "A global table replica in another Region"],
+    a: 1,
+    why: "PITR restores to any second within up to 35 days. Last night's backup loses a whole day of valid data; the replica has already received the bad data." },
+  { q: "An engineer nearly deleted a production table. ShopViet must prevent this completely with the least operational overhead. Which feature must be enabled?",
+    opts: ["Deletion protection", "PITR", "EventBridge catches DeleteTable and recreates the table"],
+    a: 0,
+    why: "Deletion protection blocks the delete request up front: while it is on, no one can delete the table. PITR can only restore after the table has been deleted and the application has gone down." },
+  { q: "Users in Europe, the US and Asia all need to write orders with low latency in the nearest Region. Which option fits?",
+    opts: ["Aurora Global Database", "DynamoDB global tables", "RDS cross-Region read replica"],
+    a: 1,
+    why: "Global tables have replicas that support reads and writes in every Region. Aurora Global Database and read replicas have only one Region that accepts writes." },
+]} />
+
+</Scene>

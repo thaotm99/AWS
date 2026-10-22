@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { flashText, travel, type Pt } from "../../../lib/animate";
+import { useLang, type Bi } from "../../../lib/lang";
 
 // Connecting many VPCs: peering is 1:1 and not transitive; Transit Gateway is a hub
 // (exam4_q45, exam5_q14, exam4_q28, exam6_q12, exam3_q16).
@@ -21,7 +22,8 @@ export default function VpcConnectSim() {
   const [n, setN] = useState(5);
   const [chain, setChain] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useState<Bi | null>(null);
+  const L = useLang();
   const pk = useRef<SVGGElement>(null);
   const pts = positions(n);
 
@@ -36,15 +38,15 @@ export default function VpcConnectSim() {
     setMsg(null);
     if (mode === "tgw") {
       await travel(layer, [pts[0], CENTER, pts[2]], 1000, "pkt", 6);
-      setMsg("Transit Gateway hỗ trợ transitive routing: traffic từ A tới C đi qua hub, không cần kết nối trực tiếp A–C.");
+      setMsg({ vi: "Transit Gateway hỗ trợ transitive routing: traffic từ A tới C đi qua hub, không cần kết nối trực tiếp A–C.", en: "Transit Gateway supports transitive routing: traffic from A to C goes through the hub, without a direct A–C connection." });
     } else if (chain) {
       await travel(layer, [pts[0], pts[1]], 600, "pkt", 6);
       await travel(layer, [pts[1], [(pts[1][0] + pts[2][0]) / 2, (pts[1][1] + pts[2][1]) / 2]], 400, "pkt-bad", 6);
       flashText(layer, pts[1][0] + 10, pts[1][1] + 30, "non-transitive", "err-t", 1500);
-      setMsg("VPC peering không hỗ trợ transitive routing: tồn tại A–B và B–C nhưng A vẫn không tới được C. Cần tạo thêm peering A–C hoặc sử dụng Transit Gateway.");
+      setMsg({ vi: "VPC peering không hỗ trợ transitive routing: tồn tại A–B và B–C nhưng A vẫn không tới được C. Cần tạo thêm peering A–C hoặc sử dụng Transit Gateway.", en: "VPC peering does not support transitive routing: A–B and B–C exist, but A still cannot reach C. Create an additional A–C peering or use Transit Gateway." });
     } else {
       await travel(layer, [pts[0], pts[2]], 700, "pkt", 6);
-      setMsg(`Traffic đi trực tiếp qua peering A–C. Tuy nhiên, full mesh ${n} VPC cần ${peeringCount} peering connection, và route table của mỗi VPC phải có route tới từng VPC còn lại.`);
+      setMsg({ vi: `Traffic đi trực tiếp qua peering A–C. Tuy nhiên, full mesh ${n} VPC cần ${peeringCount} peering connection, và route table của mỗi VPC phải có route tới từng VPC còn lại.`, en: `Traffic goes directly over the A–C peering. However, a full mesh of ${n} VPCs needs ${peeringCount} peering connections, and each VPC's route table must have a route to every other VPC.` });
     }
     setBusy(false);
   }
@@ -55,16 +57,16 @@ export default function VpcConnectSim() {
         <button className="btn" aria-pressed={mode === "peering"} onClick={() => { setMode("peering"); setMsg(null); }} disabled={busy}>VPC peering</button>
         <button className="btn" aria-pressed={mode === "tgw"} onClick={() => { setMode("tgw"); setChain(false); setMsg(null); }} disabled={busy}>Transit Gateway</button>
         <span className="sep" />
-        <label className="label" htmlFor="vpcCount">Số VPC: {n}</label>
+        <label className="label" htmlFor="vpcCount">{L({ vi: "Số VPC: ", en: "VPC count: " })}{n}</label>
         <input id="vpcCount" type="range" min={3} max={10} value={n} onChange={(e) => { setN(Number(e.target.value)); setMsg(null); }} disabled={busy} />
         {mode === "peering" && (
-          <button className="btn" aria-pressed={chain} onClick={() => { setChain(!chain); setMsg(null); }} disabled={busy}>Chỉ peering A–B, B–C</button>
+          <button className="btn" aria-pressed={chain} onClick={() => { setChain(!chain); setMsg(null); }} disabled={busy}>{L({ vi: "Chỉ peering A–B, B–C", en: "Only peering A–B, B–C" })}</button>
         )}
         <span className="sep" />
-        <button className="btn primary" onClick={sendAtoC} disabled={busy}>Gửi traffic từ A tới C</button>
+        <button className="btn primary" onClick={sendAtoC} disabled={busy}>{L({ vi: "Gửi traffic từ A tới C", en: "Send traffic from A to C" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 0 760 300" role="img" aria-label={`${n} VPC kết nối bằng ${mode === "tgw" ? "Transit Gateway" : "VPC peering"}`}>
+        <svg viewBox="0 0 760 300" role="img" aria-label={L({ vi: `${n} VPC kết nối bằng ${mode === "tgw" ? "Transit Gateway" : "VPC peering"}`, en: `${n} VPCs connected with ${mode === "tgw" ? "Transit Gateway" : "VPC peering"}` })}>
           {links.map(([i, j]) => (
             <line key={`${i}-${j}`} className="peer-line" x1={pts[i][0]} y1={pts[i][1]} x2={pts[j][0]} y2={pts[j][1]} />
           ))}
@@ -88,14 +90,14 @@ export default function VpcConnectSim() {
         <div className="status">
           <span className="count">
             {mode === "tgw"
-              ? `${n} attachment vào Transit Gateway`
-              : `${peeringCount} peering connection${chain ? " (chuỗi A–B–C)" : ` cho full mesh ${n} VPC`}`}
+              ? L({ vi: `${n} attachment vào Transit Gateway`, en: `${n} Transit Gateway attachments` })
+              : L({ vi: `${peeringCount} peering connection${chain ? " (chuỗi A–B–C)" : ` cho full mesh ${n} VPC`}`, en: `${peeringCount} peering connections${chain ? " (chain A–B–C)" : ` for a full mesh of ${n} VPCs`}` })}
           </span>
         </div>
         <p style={{ margin: "8px 0 0" }}>
-          {msg ?? (mode === "tgw"
-            ? "Mỗi VPC chỉ cần một attachment vào Transit Gateway. Bổ sung VPC thứ 11 chỉ phát sinh thêm 1 kết nối; Transit Gateway cũng kết nối được VPN và Direct Connect."
-            : "Kéo thanh trượt để quan sát tốc độ tăng của số peering connection. VPC peering có chi phí thấp và đơn giản khi số lượng VPC nhỏ.")}
+          {L(msg ?? (mode === "tgw"
+            ? { vi: "Mỗi VPC chỉ cần một attachment vào Transit Gateway. Bổ sung VPC thứ 11 chỉ phát sinh thêm 1 kết nối; Transit Gateway cũng kết nối được VPN và Direct Connect.", en: "Each VPC needs only one Transit Gateway attachment. Adding an 11th VPC adds only 1 connection; Transit Gateway also connects VPN and Direct Connect." }
+            : { vi: "Kéo thanh trượt để quan sát tốc độ tăng của số peering connection. VPC peering có chi phí thấp và đơn giản khi số lượng VPC nhỏ.", en: "Drag the slider to see how fast the number of peering connections grows. VPC peering is low-cost and simple when the number of VPCs is small." }))}
         </p>
       </div>
     </div>

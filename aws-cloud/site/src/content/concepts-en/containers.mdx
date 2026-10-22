@@ -1,0 +1,117 @@
+---
+title: "Containers: Amazon ECS, Amazon EKS and AWS Fargate"
+lede: "ShopViet packages its services as containers. This lesson covers how to choose a runtime environment (EC2 launch type or Fargate, ECS or EKS) and solves five practical requirements: image storage shared between tasks, scheduled jobs, jobs that exceed Lambda's time limit, separate permissions for each Pod, and Pods left pending because the cluster is out of resources."
+minutes: 15
+scenes: 2
+prerequisites: ["ec2", "asg"]
+docs:
+  - title: "Amazon ECS launch types"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/launch_types.html"
+  - title: "AWS Fargate"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html"
+  - title: "Amazon EFS volumes with Amazon ECS"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/efs-volumes.html"
+  - title: "IAM roles for service accounts (EKS)"
+    url: "https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html"
+  - title: "Amazon ECS standalone tasks (scheduled with EventBridge Scheduler)"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/standalone-tasks.html"
+  - title: "Amazon EKS compute options (EC2 and Fargate pricing compared)"
+    url: "https://docs.aws.amazon.com/eks/latest/userguide/eks-compute.html"
+  - title: "Deploy Amazon EKS on-premises with AWS Outposts"
+    url: "https://docs.aws.amazon.com/eks/latest/userguide/eks-outposts.html"
+  - title: "Lambda quotas"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
+import ContainerJobSim from "../../components/scenes/containers/ContainerJobSim.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#en-s1", label: "1 · EC2 launch type and Fargate" },
+  { href: "#en-s2", label: "2 · Five tasks that run in containers" },
+  { href: "#en-challenge", label: "Exercise" },
+]}>
+The ShopViet team has packaged the web application, the workers and the reporting jobs as containers. The first decision: do containers run on servers the team manages itself, or does AWS manage the server layer? Next come the day-to-day operational requirements: file storage, scheduled runs, permissions, and scaling resources for the cluster.
+</Story>
+
+<Scene id="en-s1" label="Part 1/2" title="EC2 launch type and Fargate" questions={["exam1_q14", "exam4_q33", "exam3_q32", "exam2_q1"]}>
+
+**Amazon ECS** and **Amazon EKS** both need compute infrastructure to run containers. There are two options: manage a group of EC2 instances yourself, or use **AWS Fargate** and declare only the vCPU and memory a task needs. Compare the scope of management responsibility and the billing basis:
+
+<ScenarioFlow client:visible height={240} legend={["Low operational cost", "Self-managed servers"]} scenarios={[
+  { name: "Management responsibility and billing basis",
+    boxes: [{ x: 20, y: 20, w: 720, h: 200, label: "ECS cluster" }],
+    nodes: [
+      { id: "task1", x: 60, y: 70, label: "Task: web", sub: "0.5 vCPU · 1 GB", kind: "net" },
+      { id: "task2", x: 60, y: 150, label: "Task: worker", sub: "1 vCPU · 2 GB", kind: "net" },
+      { id: "ec2", x: 330, y: 100, label: "EC2 instance + EBS", sub: "you choose, patch, scale", kind: "ec2" },
+      { id: "far", x: 330, y: 100, label: "Fargate", sub: "AWS manages infrastructure", kind: "edge" },
+      { id: "bill", x: 590, y: 100, label: "Bill", kind: "site" },
+    ],
+    options: [
+      { name: "EC2 launch type", verdict: "bad", hide: ["far"],
+        flows: [{ path: ["task1", "ec2"], tone: "neutral" }, { path: ["task2", "ec2"], tone: "neutral" }, { path: ["ec2", "bill"], tone: "bad", label: "by EC2 + EBS" }],
+        text: "Tasks run on EC2 instances the team manages itself. You pay for the running **EC2 instances and EBS volumes**, even when the instances have spare resources." },
+      { name: "Fargate", verdict: "good", hide: ["ec2"],
+        flows: [{ path: ["task1", "far"], tone: "good" }, { path: ["task2", "far"], tone: "good" }, { path: ["far", "bill"], tone: "good", label: "by task vCPU + memory" }],
+        text: "There are no servers to manage. You pay for the **vCPU and memory** the task requests. When the team does not want to patch and scale EC2, Fargate is the right choice, and it works for both ECS and EKS." },
+    ] },
+]} />
+
+<Takeaway>EC2 launch type: you manage the instances, billed by EC2 + EBS. Fargate: serverless, billed by the task's vCPU + memory. Both ECS and EKS can run on Fargate.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 2/2" title="Five ShopViet tasks that run in containers" questions={["exam3_q32", "exam2_q27", "exam6_q35", "exam1_q5", "exam4_q56", "exam3_q15", "exam1_q27", "exam2_q1"]}>
+
+Pick a task, try it with the simplest option, then turn on the option to apply the matching AWS feature:
+
+<ContainerJobSim client:visible />
+
+Some other ShopViet scenarios:
+
+- An existing worker talks to a message broker over **AMQP** and the team does not want to manage nodes: run the worker on **EKS with Fargate** and move the broker to **Amazon MQ** (a managed broker that supports AMQP).
+- A service on ECS is CPU-bound: turn on **Service Auto Scaling** (based on Application Auto Scaling) to increase the number of tasks based on the service's CPU and memory metrics.
+- A branch's data must be stored on premises, but Amazon EKS is still required: **Amazon EKS on AWS Outposts** placed in the company's data center (extended cluster: control plane in the Region, nodes on the Outpost; local cluster: both control plane and nodes on the Outpost). **EKS Anywhere** is another option that runs on infrastructure the company manages itself, intended for air-gapped environments.
+
+<Takeaway>Durable storage shared between tasks: EFS. Scheduled runs: EventBridge Scheduler starts a Fargate task. Jobs longer than Lambda's time limit (15 minutes for standard functions): containers on Fargate. Separate permissions for each Pod: IRSA. Pods pending because the cluster is out of resources: Cluster Autoscaler.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Classify the features: EC2 launch type and Fargate" questions={["exam1_q14", "exam4_q33", "exam6_q35"]}>
+
+Sort each feature into the matching runtime model. On a mobile device: tap a card, then tap the target box.
+
+<SortGame client:visible
+  bins={[
+    { id: "ec2", title: "EC2 launch type", sub: "Self-managed instances", hint: "Hint: this feature requires managing servers yourself." },
+    { id: "far", title: "Fargate", sub: "Serverless", hint: "Hint: this feature belongs to the model with no servers to manage." },
+  ]}
+  cards={[
+    ["Billed by EC2 instances and EBS", "ec2"], ["You patch the nodes' operating system", "ec2"], ["You scale the number of nodes", "ec2"],
+    ["Billed by the task's vCPU and memory", "far"], ["No servers to patch", "far"], ["Runs for both ECS and EKS", "far"],
+  ]}
+/>
+
+Check your understanding: as the designer of the ShopViet system, which option fits?
+
+<Quiz client:visible items={[
+  { q: "The accounting department needs to explain why this month's ECS bill differs from last month's, after the team moved from the EC2 launch type to Fargate. How has the billing basis changed?",
+    opts: ["Both are billed by the task's vCPU and memory", "Previously billed by EC2 and EBS; now billed by the vCPU and memory the task requests", "Fargate is free; only EC2 is billed"],
+    a: 1,
+    why: "With the EC2 launch type, you pay for the running EC2 instances (and EBS volumes); with Fargate, you pay based on each task's vCPU and memory configuration." },
+  { q: "ShopViet has a service on ECS and a service on EKS; the team no longer wants to manage EC2. Which option fits?",
+    opts: ["Run both on Fargate", "Run both on the EC2 launch type", "Move everything to Elastic Beanstalk"],
+    a: 0,
+    why: "Fargate works for both ECS and EKS; no nodes are left to patch." },
+  { q: "Each ShopViet stream aggregation job runs for about 2 hours and must not require managing servers. Which service should run the processing?",
+    opts: ["AWS Lambda", "ECS on Fargate", "EC2 Spot"],
+    a: 1,
+    why: "A standard Lambda function runs at most 15 minutes per invocation (Lambda Managed Instances: up to 90 minutes for some invocation types), not enough for a 2-hour job. An ECS task on Fargate runs until its process ends, with no servers to manage." },
+]} />
+
+</Scene>

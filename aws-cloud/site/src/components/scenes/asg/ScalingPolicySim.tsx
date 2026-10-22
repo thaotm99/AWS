@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { flashText, prefersReducedMotion } from "../../../lib/animate";
 import { rich } from "../diagram";
+import { useLang, type Bi } from "../../../lib/lang";
 import "./asg-sims.css";
 
 // One day of ShopViet traffic, hour by hour. Bars are how many EC2 instances the load
@@ -16,32 +17,32 @@ const MIN = 2;
 const MAX = 14;
 const HOURS = 24;
 
-const PATTERNS: Record<PatternId, { name: string; about: string; need: number[] }> = {
+const PATTERNS: Record<PatternId, { name: Bi; about: Bi; need: number[] }> = {
   daily: {
-    name: "Ngày bình thường",
-    about: "Lượng truy cập tăng vào buổi trưa và buổi tối, lặp lại hằng ngày.",
+    name: { vi: "Ngày bình thường", en: "Normal day" },
+    about: { vi: "Lượng truy cập tăng vào buổi trưa và buổi tối, lặp lại hằng ngày.", en: "Traffic rises at noon and in the evening, repeating every day." },
     need: [2, 2, 2, 2, 2, 2, 3, 4, 5, 6, 6, 7, 8, 7, 6, 6, 7, 8, 9, 9, 8, 6, 4, 3],
   },
   sale: {
-    name: "Flash sale lúc 20h",
-    about: "Chương trình đã được thông báo trước: mở bán đúng 20h, tải tăng gấp ba trong hai giờ.",
+    name: { vi: "Flash sale lúc 20h", en: "Flash sale at 20:00" },
+    about: { vi: "Chương trình đã được thông báo trước: mở bán đúng 20h, tải tăng gấp ba trong hai giờ.", en: "The sale was announced in advance: it opens at exactly 20:00 and load triples for two hours." },
     need: [2, 2, 2, 2, 2, 2, 3, 3, 4, 4, 4, 4, 5, 4, 4, 4, 4, 5, 5, 6, 12, 12, 8, 4],
   },
   queue: {
-    name: "Đơn hàng dồn vào hàng đợi",
-    about: "Đối tác đẩy một loạt đơn hàng vào SQS lúc 9h. Worker EC2 đọc hàng đợi để xử lý.",
+    name: { vi: "Đơn hàng dồn vào hàng đợi", en: "Orders pile up in a queue" },
+    about: { vi: "Đối tác đẩy một loạt đơn hàng vào SQS lúc 9h. Worker EC2 đọc hàng đợi để xử lý.", en: "A partner pushes a batch of orders into SQS at 9:00. EC2 workers read the queue to process them." },
     need: [2, 2, 2, 2, 2, 2, 2, 2, 2, 9, 10, 10, 8, 6, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2],
   },
   viral: {
-    name: "Lưu lượng đột biến không dự báo",
-    about: "Lúc 14h, một video review lan truyền nhanh mà không được dự báo trước.",
+    name: { vi: "Lưu lượng đột biến không dự báo", en: "Unforecast traffic spike" },
+    about: { vi: "Lúc 14h, một video review lan truyền nhanh mà không được dự báo trước.", en: "At 14:00, a review video goes viral without any warning." },
     need: [3, 3, 3, 3, 3, 3, 3, 4, 4, 5, 5, 5, 5, 5, 11, 11, 10, 7, 5, 5, 4, 4, 3, 3],
   },
 };
 
-const POLICIES: { id: PolicyId; name: string }[] = [
+const POLICIES: { id: PolicyId; name: string | Bi }[] = [
   { id: "tt", name: "Target tracking CPU 50%" },
-  { id: "sqs", name: "Target tracking theo backlog SQS" },
+  { id: "sqs", name: { vi: "Target tracking theo backlog SQS", en: "Target tracking on SQS backlog" } },
   { id: "sched", name: "Scheduled action" },
   { id: "pred", name: "Predictive + target tracking" },
 ];
@@ -88,30 +89,30 @@ function capacity(p: PatternId, pol: PolicyId): number[] {
 
 const BEST: Record<PatternId, PolicyId[]> = { daily: ["pred"], sale: ["sched"], queue: ["sqs"], viral: ["tt", "pred"] };
 
-const NOTE: Record<PatternId, Record<PolicyId, string>> = {
+const NOTE: Record<PatternId, Record<PolicyId, Bi>> = {
   daily: {
-    tt: "Policy phản ứng theo CPU nên luôn **trễ một chu kỳ**: tải tăng rồi mới bổ sung instance. Mỗi buổi sáng có vài giờ người dùng phải chờ.",
-    sqs: "Request web không đi qua hàng đợi, metric backlog không thay đổi nên ASG giữ nguyên ở mức tối thiểu.",
-    sched: "Lịch cấu hình thủ công chỉ phản ánh gần đúng tải thực tế. Những giờ lệch so với lịch dẫn tới thiếu hoặc thừa capacity.",
-    pred: "**Predictive scaling** phân tích chu kỳ của các ngày trước và bổ sung instance **trước** khi tải tăng. Target tracking đi kèm xử lý phần sai lệch.",
+    tt: { vi: "Policy phản ứng theo CPU nên luôn **trễ một chu kỳ**: tải tăng rồi mới bổ sung instance. Mỗi buổi sáng có vài giờ người dùng phải chờ.", en: "The policy reacts to CPU, so it is always **one period behind**: load rises before instances are added. Every morning there are a few hours when users wait." },
+    sqs: { vi: "Request web không đi qua hàng đợi, metric backlog không thay đổi nên ASG giữ nguyên ở mức tối thiểu.", en: "Web requests do not go through a queue, so the backlog metric does not change and the ASG stays at the minimum." },
+    sched: { vi: "Lịch cấu hình thủ công chỉ phản ánh gần đúng tải thực tế. Những giờ lệch so với lịch dẫn tới thiếu hoặc thừa capacity.", en: "A manually configured schedule only approximates the real load. Hours that deviate from the schedule lead to too little or too much capacity." },
+    pred: { vi: "**Predictive scaling** phân tích chu kỳ của các ngày trước và bổ sung instance **trước** khi tải tăng. Target tracking đi kèm xử lý phần sai lệch.", en: "**Predictive scaling** analyzes the cycles of previous days and adds instances **before** load rises. The accompanying target tracking handles deviations." },
   },
   sale: {
-    tt: "Lúc 20h tải tăng đột ngột; target tracking phải chờ metric tăng rồi mới bổ sung instance. Khung giờ mở bán quan trọng nhất lại bị quá tải.",
-    sqs: "Request web không đi qua hàng đợi, metric backlog không thay đổi. ASG không phản ứng.",
-    sched: "Thời điểm mở bán đã biết chính xác, do đó cấu hình **scheduled action** nâng desired capacity lên 12 lúc 19h và hạ xuống sau 22h. Capacity sẵn sàng trước khi lượng truy cập tăng.",
-    pred: "Predictive scaling dự báo từ dữ liệu metric của tối đa 14 ngày trước; dữ liệu đó chưa có đợt khuyến mãi này nên không dự báo được. Chỉ còn target tracking phản ứng sau khi tải tăng.",
+    tt: { vi: "Lúc 20h tải tăng đột ngột; target tracking phải chờ metric tăng rồi mới bổ sung instance. Khung giờ mở bán quan trọng nhất lại bị quá tải.", en: "At 20:00 load jumps suddenly; target tracking must wait for the metric to rise before adding instances. The most important hours of the sale are overloaded." },
+    sqs: { vi: "Request web không đi qua hàng đợi, metric backlog không thay đổi. ASG không phản ứng.", en: "Web requests do not go through a queue, so the backlog metric does not change. The ASG does not react." },
+    sched: { vi: "Thời điểm mở bán đã biết chính xác, do đó cấu hình **scheduled action** nâng desired capacity lên 12 lúc 19h và hạ xuống sau 22h. Capacity sẵn sàng trước khi lượng truy cập tăng.", en: "The sale's start time is known exactly, so a **scheduled action** raises desired capacity to 12 at 19:00 and lowers it after 22:00. Capacity is ready before traffic rises." },
+    pred: { vi: "Predictive scaling dự báo từ dữ liệu metric của tối đa 14 ngày trước; dữ liệu đó chưa có đợt khuyến mãi này nên không dự báo được. Chỉ còn target tracking phản ứng sau khi tải tăng.", en: "Predictive scaling forecasts from up to 14 days of past metric data; that data does not include this sale, so it cannot forecast it. Only target tracking reacts, after load rises." },
   },
   queue: {
-    tt: "Trong mô phỏng này, worker đọc hàng đợi luôn bận ở cùng mức CPU nên CPU không phản ánh **số đơn hàng đang chờ**. ASG bổ sung instance rất chậm, đơn hàng tồn đọng hàng giờ.",
-    sqs: "Đo **số message chờ trên mỗi instance** (backlog per instance) và áp dụng target tracking theo giá trị này, như tài liệu Auto Scaling khuyến nghị. Khi hàng đợi tăng, worker được bổ sung tương ứng.",
-    sched: "Thời điểm đối tác đẩy đơn hàng không được biết trước, do đó lịch cố định không có tác dụng.",
-    pred: "Chu kỳ theo ngày không liên quan tới thời điểm đối tác đẩy đơn hàng. Phần target tracking theo CPU vẫn phản ứng chậm như trước.",
+    tt: { vi: "Trong mô phỏng này, worker đọc hàng đợi luôn bận ở cùng mức CPU nên CPU không phản ánh **số đơn hàng đang chờ**. ASG bổ sung instance rất chậm, đơn hàng tồn đọng hàng giờ.", en: "In this simulation, queue workers are always busy at the same CPU level, so CPU does not reflect **the number of orders waiting**. The ASG adds instances very slowly and orders back up for hours." },
+    sqs: { vi: "Đo **số message chờ trên mỗi instance** (backlog per instance) và áp dụng target tracking theo giá trị này, như tài liệu Auto Scaling khuyến nghị. Khi hàng đợi tăng, worker được bổ sung tương ứng.", en: "Measure **the number of waiting messages per instance** (backlog per instance) and apply target tracking to that value, as the Auto Scaling documentation recommends. As the queue grows, workers are added to match." },
+    sched: { vi: "Thời điểm đối tác đẩy đơn hàng không được biết trước, do đó lịch cố định không có tác dụng.", en: "When the partner pushes orders is not known in advance, so a fixed schedule does not help." },
+    pred: { vi: "Chu kỳ theo ngày không liên quan tới thời điểm đối tác đẩy đơn hàng. Phần target tracking theo CPU vẫn phản ứng chậm như trước.", en: "The daily cycle has nothing to do with when the partner pushes orders. The CPU target tracking part still reacts as slowly as before." },
   },
   viral: {
-    tt: "Tải không được dự báo trước, nhưng target tracking phát hiện CPU tăng và bổ sung instance sau một chu kỳ. Hệ thống chỉ thiếu capacity trong giờ đầu tiên của đợt đột biến.",
-    sqs: "Request web không đi qua hàng đợi, metric backlog không thay đổi. ASG giữ nguyên số instance.",
-    sched: "Lịch cố định không dự liệu được tải đột biến. Hệ thống thiếu capacity trong suốt đợt đột biến.",
-    pred: "Predictive scaling chuẩn bị capacity cho chu kỳ quen thuộc, còn **target tracking** đi kèm xử lý phần tải bất thường. Đây là lý do nên kết hợp cả hai.",
+    tt: { vi: "Tải không được dự báo trước, nhưng target tracking phát hiện CPU tăng và bổ sung instance sau một chu kỳ. Hệ thống chỉ thiếu capacity trong giờ đầu tiên của đợt đột biến.", en: "The load was not forecast, but target tracking detects the CPU rise and adds instances after one period. The system is short of capacity only in the first hour of the spike." },
+    sqs: { vi: "Request web không đi qua hàng đợi, metric backlog không thay đổi. ASG giữ nguyên số instance.", en: "Web requests do not go through a queue, so the backlog metric does not change. The ASG keeps the same number of instances." },
+    sched: { vi: "Lịch cố định không dự liệu được tải đột biến. Hệ thống thiếu capacity trong suốt đợt đột biến.", en: "A fixed schedule cannot anticipate a spike. The system is short of capacity for the whole spike." },
+    pred: { vi: "Predictive scaling chuẩn bị capacity cho chu kỳ quen thuộc, còn **target tracking** đi kèm xử lý phần tải bất thường. Đây là lý do nên kết hợp cả hai.", en: "Predictive scaling prepares capacity for the familiar cycle, while the accompanying **target tracking** handles the unusual load. This is why the two should be combined." },
   },
 };
 
@@ -124,6 +125,7 @@ const y = (v: number) => Y0 + H - (v / MAX) * H;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export default function ScalingPolicySim() {
+  const L = useLang();
   const fx = useRef<SVGGElement>(null);
   const alive = useRef(true);
   const [pattern, setPattern] = useState<PatternId>("daily");
@@ -159,7 +161,7 @@ export default function ScalingPolicySim() {
         const d = h === 0 ? 0 : cap[h] - cap[h - 1];
         const cx = X0 + h * bw + bw / 2;
         if (d) flashText(layer, cx, y(cap[h]) - 8, d > 0 ? `+${d}` : `${d}`, d > 0 ? "sps-flash up" : "sps-flash", 700);
-        else if (need[h] > cap[h]) flashText(layer, cx, y(need[h]) - 8, "thiếu", "sps-flash bad", 500);
+        else if (need[h] > cap[h]) flashText(layer, cx, y(need[h]) - 8, L({ vi: "thiếu", en: "short" }), "sps-flash bad", 500);
       }
       if (!fast) await sleep(170);
     }
@@ -170,10 +172,10 @@ export default function ScalingPolicySim() {
 
   return (
     <div className="stage sps">
-      <div className="sps-row" role="group" aria-label="Dạng tải trong ngày">
+      <div className="sps-row" role="group" aria-label={L({ vi: "Dạng tải trong ngày", en: "Daily load pattern" })}>
         {(Object.keys(PATTERNS) as PatternId[]).map((id) => (
           <button key={id} className="chip" aria-pressed={id === pattern} disabled={busy && id !== pattern} onClick={() => change(() => setPattern(id))}>
-            {PATTERNS[id].name}
+            {L(PATTERNS[id].name)}
           </button>
         ))}
       </div>
@@ -181,14 +183,14 @@ export default function ScalingPolicySim() {
         <span className="label">Scaling policy</span>
         {POLICIES.map((p) => (
           <button key={p.id} className="btn" aria-pressed={p.id === policy} disabled={busy && p.id !== policy} onClick={() => change(() => setPolicy(p.id))}>
-            {p.name}
+            {typeof p.name === "string" ? p.name : L(p.name)}
           </button>
         ))}
-        <button className="btn primary sps-play" onClick={play} disabled={busy}>Chạy một ngày</button>
+        <button className="btn primary sps-play" onClick={play} disabled={busy}>{L({ vi: "Chạy một ngày", en: "Run one day" })}</button>
       </div>
-      <p className="sps-about">{PATTERNS[pattern].about}</p>
+      <p className="sps-about">{L(PATTERNS[pattern].about)}</p>
       <div className="svg-wrap">
-        <svg viewBox="0 0 820 248" role="img" aria-label="Biểu đồ 24 giờ: cột là số instance tải yêu cầu, đường là số instance Auto Scaling group đang chạy">
+        <svg viewBox="0 0 820 248" role="img" aria-label={L({ vi: "Biểu đồ 24 giờ: cột là số instance tải yêu cầu, đường là số instance Auto Scaling group đang chạy", en: "24-hour chart: bars are the instances the load needs, the line is the instances the Auto Scaling group runs" })}>
           {[0, 4, 8, 12].map((v) => (
             <g key={v}>
               <line className="sps-grid" x1={X0} x2={X0 + W} y1={y(v)} y2={y(v)} />
@@ -208,28 +210,28 @@ export default function ScalingPolicySim() {
           ))}
           <g className="sps-legend" transform={`translate(${X0} 240)`}>
             <rect className="sps-bar" x={0} y={-9} width={12} height={10} rx={2} />
-            <text className="ts" x={18} y={0}>nhu cầu (instance)</text>
+            <text className="ts" x={18} y={0}>{L({ vi: "nhu cầu (instance)", en: "demand (instances)" })}</text>
             <rect className="sps-bar over" x={150} y={-9} width={12} height={10} rx={2} />
-            <text className="ts" x={168} y={0}>thiếu capacity</text>
+            <text className="ts" x={168} y={0}>{L({ vi: "thiếu capacity", en: "capacity shortfall" })}</text>
             <line className="sps-cap" x1={330} x2={350} y1={-4} y2={-4} />
-            <text className="ts" x={356} y={0}>số instance ASG đang chạy</text>
+            <text className="ts" x={356} y={0}>{L({ vi: "số instance ASG đang chạy", en: "instances the ASG runs" })}</text>
           </g>
           <g ref={fx} />
         </svg>
       </div>
       <div className="readout" aria-live="polite">
         {shown < 0 ? (
-          <p className="sps-hint">Chọn dạng tải và scaling policy, sau đó nhấn <b>Chạy một ngày</b>.</p>
+          <p className="sps-hint">{L({ vi: <>Chọn dạng tải và scaling policy, sau đó nhấn <b>Chạy một ngày</b>.</>, en: <>Pick a load pattern and a scaling policy, then press <b>Run one day</b>.</> })}</p>
         ) : (
           <>
             <div className="status">
-              <span className="count">Thời điểm {shown}h · {cap[shown]} instance đang chạy</span>
-              <span className={"pill " + (over ? "bad" : "ok")}><i />{over} giờ thiếu capacity</span>
-              <span className="pill sps-idle"><i />{idle} instance-giờ nhàn rỗi</span>
+              <span className="count">{L({ vi: `Thời điểm ${shown}h · ${cap[shown]} instance đang chạy`, en: `Time ${shown}h · ${cap[shown]} instances running` })}</span>
+              <span className={"pill " + (over ? "bad" : "ok")}><i />{L({ vi: `${over} giờ thiếu capacity`, en: `${over} hours short of capacity` })}</span>
+              <span className="pill sps-idle"><i />{L({ vi: `${idle} instance-giờ nhàn rỗi`, en: `${idle} idle instance-hours` })}</span>
             </div>
             {done && (
               <p className={`sps-result ${fits ? "ok" : "bad"}`}>
-                <b>{fits ? "Phù hợp với dạng tải này. " : "Chưa phù hợp. "}</b>{rich(NOTE[pattern][policy])}
+                <b>{fits ? L({ vi: "Phù hợp với dạng tải này. ", en: "Fits this load pattern. " }) : L({ vi: "Chưa phù hợp. ", en: "Not a good fit. " })}</b>{rich(L(NOTE[pattern][policy]))}
               </p>
             )}
           </>

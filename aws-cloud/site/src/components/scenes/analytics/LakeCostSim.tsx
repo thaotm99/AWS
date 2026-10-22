@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { flashText, prefersReducedMotion } from "../../../lib/animate";
 import { rich } from "../diagram";
+import { useLang, type Bi } from "../../../lib/lang";
 import "./lake-cost-sim.css";
 
 // ShopViet's S3 data lake grows 1 TB a day in each zone. Raw data must be kept five
@@ -17,18 +18,18 @@ const TB_PER_MONTH = 30;
 const PARQUET = 0.25;
 const MONTHS = 12;
 
-const RAW: { id: RawId; name: string }[] = [
-  { id: "std", name: "Giữ nguyên S3 Standard" },
-  { id: "deep", name: "Lifecycle → Glacier Deep Archive sau 1 ngày" },
-  { id: "del", name: "Lambda xoá sau 1 ngày" },
+const RAW: { id: RawId; name: Bi }[] = [
+  { id: "std", name: { vi: "Giữ nguyên S3 Standard", en: "Keep in S3 Standard" } },
+  { id: "deep", name: { vi: "Lifecycle → Glacier Deep Archive sau 1 ngày", en: "Lifecycle → Glacier Deep Archive after 1 day" } },
+  { id: "del", name: { vi: "Lambda xoá sau 1 ngày", en: "Lambda deletes after 1 day" } },
 ];
-const REF: { id: RefId; name: string }[] = [
-  { id: "std", name: "S3 Standard" },
-  { id: "deep", name: "Lifecycle → Glacier Deep Archive sau 1 ngày" },
+const REF: { id: RefId; name: Bi }[] = [
+  { id: "std", name: { vi: "S3 Standard", en: "S3 Standard" } },
+  { id: "deep", name: { vi: "Lifecycle → Glacier Deep Archive sau 1 ngày", en: "Lifecycle → Glacier Deep Archive after 1 day" } },
 ];
-const FMT: { id: FmtId; name: string }[] = [
-  { id: "csv", name: "Glue ghi CSV" },
-  { id: "parquet", name: "Glue ghi Parquet nén" },
+const FMT: { id: FmtId; name: Bi }[] = [
+  { id: "csv", name: { vi: "Glue ghi CSV", en: "Glue writes CSV" } },
+  { id: "parquet", name: { vi: "Glue ghi Parquet nén", en: "Glue writes compressed Parquet" } },
 ];
 
 function month(m: number, raw: RawId, ref: RefId, fmt: FmtId) {
@@ -46,9 +47,10 @@ const H = 170;
 const bw = W / MONTHS;
 const y = (v: number) => Y0 + H - (v / MAXV) * H;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-const fmtNum = (n: number) => Math.round(n).toLocaleString("vi-VN");
 
 export default function LakeCostSim() {
+  const L = useLang();
+  const fmtNum = (n: number) => Math.round(n).toLocaleString(L({ vi: "vi-VN", en: "en-US" }));
   const fx = useRef<SVGGElement>(null);
   const alive = useRef(true);
   const [raw, setRaw] = useState<RawId>("std");
@@ -88,34 +90,34 @@ export default function LakeCostSim() {
   }
 
   let note: string;
-  if (!keepsRaw) note = "Xoá raw zone giúp giảm chi phí nhưng vi phạm yêu cầu **lưu giữ dữ liệu gốc 5 năm**.";
-  else if (!athenaOk) note = "Athena **không đọc được** object trong Glacier Deep Archive; phải restore trong nhiều giờ trước. Refined zone được truy vấn hằng ngày nên phải lưu ở storage class truy xuất ngay.";
-  else if (best) note = "Raw zone gần như không được đọc: chuyển sang **Glacier Deep Archive** sau 1 ngày, vẫn lưu giữ đủ 5 năm. Refined zone lưu ở S3 Standard và ghi ở định dạng **Parquet nén**: dung lượng nhỏ hơn nhiều, Athena quét ít dữ liệu hơn nên chi phí truy vấn cũng thấp hơn.";
-  else if (raw === "std") note = "Raw zone chỉ dùng để lưu giữ nhưng lại nằm ở storage class có chi phí cao nhất. Chuyển sang Glacier Deep Archive bằng lifecycle rule.";
-  else note = "Refined zone ghi ở định dạng CSV: dung lượng lớn hơn nhiều lần so với định dạng cột có nén, và Athena phải quét toàn bộ dữ liệu mỗi lần truy vấn. Cấu hình Glue ghi Parquet nén.";
+  if (!keepsRaw) note = L({ vi: "Xoá raw zone giúp giảm chi phí nhưng vi phạm yêu cầu **lưu giữ dữ liệu gốc 5 năm**.", en: "Deleting the raw zone cuts cost but violates the requirement to **keep the original data for 5 years**." });
+  else if (!athenaOk) note = L({ vi: "Athena **không đọc được** object trong Glacier Deep Archive; phải restore trong nhiều giờ trước. Refined zone được truy vấn hằng ngày nên phải lưu ở storage class truy xuất ngay.", en: "Athena **cannot read** objects in Glacier Deep Archive; they must first be restored, which takes many hours. The refined zone is queried daily, so it must be in a storage class with immediate access." });
+  else if (best) note = L({ vi: "Raw zone gần như không được đọc: chuyển sang **Glacier Deep Archive** sau 1 ngày, vẫn lưu giữ đủ 5 năm. Refined zone lưu ở S3 Standard và ghi ở định dạng **Parquet nén**: dung lượng nhỏ hơn nhiều, Athena quét ít dữ liệu hơn nên chi phí truy vấn cũng thấp hơn.", en: "The raw zone is almost never read: transition it to **Glacier Deep Archive** after 1 day, still kept for the full 5 years. The refined zone stays in S3 Standard and is written as **compressed Parquet**: much smaller, and Athena scans less data, so query costs are lower too." });
+  else if (raw === "std") note = L({ vi: "Raw zone chỉ dùng để lưu giữ nhưng lại nằm ở storage class có chi phí cao nhất. Chuyển sang Glacier Deep Archive bằng lifecycle rule.", en: "The raw zone is only for retention, yet it sits in the highest-cost storage class. Transition it to Glacier Deep Archive with a lifecycle rule." });
+  else note = L({ vi: "Refined zone ghi ở định dạng CSV: dung lượng lớn hơn nhiều lần so với định dạng cột có nén, và Athena phải quét toàn bộ dữ liệu mỗi lần truy vấn. Cấu hình Glue ghi Parquet nén.", en: "The refined zone is written as CSV: many times larger than a compressed columnar format, and Athena must scan all the data on every query. Configure Glue to write compressed Parquet." });
 
   return (
     <div className="stage lkc">
       <div className="stage-bar">
         <span className="label">Raw zone</span>
         {RAW.map((o) => (
-          <button key={o.id} className="btn" aria-pressed={o.id === raw} disabled={busy && o.id !== raw} onClick={() => change(() => setRaw(o.id))}>{o.name}</button>
+          <button key={o.id} className="btn" aria-pressed={o.id === raw} disabled={busy && o.id !== raw} onClick={() => change(() => setRaw(o.id))}>{L(o.name)}</button>
         ))}
       </div>
       <div className="stage-bar">
         <span className="label">Refined zone</span>
         {REF.map((o) => (
-          <button key={o.id} className="btn" aria-pressed={o.id === ref} disabled={busy && o.id !== ref} onClick={() => change(() => setRef(o.id))}>{o.name}</button>
+          <button key={o.id} className="btn" aria-pressed={o.id === ref} disabled={busy && o.id !== ref} onClick={() => change(() => setRef(o.id))}>{L(o.name)}</button>
         ))}
         <span className="sep" />
         {FMT.map((o) => (
-          <button key={o.id} className="btn" aria-pressed={o.id === fmt} disabled={busy && o.id !== fmt} onClick={() => change(() => setFmt(o.id))}>{o.name}</button>
+          <button key={o.id} className="btn" aria-pressed={o.id === fmt} disabled={busy && o.id !== fmt} onClick={() => change(() => setFmt(o.id))}>{L(o.name)}</button>
         ))}
-        <button className="btn primary lkc-play" onClick={play} disabled={busy}>Mô phỏng 12 tháng</button>
+        <button className="btn primary lkc-play" onClick={play} disabled={busy}>{L({ vi: "Mô phỏng 12 tháng", en: "Simulate 12 months" })}</button>
       </div>
-      <p className="lkc-about">Mỗi zone tăng thêm 1 TB mỗi ngày. Raw zone phải được lưu giữ 5 năm và gần như không được đọc lại. Refined zone được analyst truy vấn bằng Athena hằng ngày.</p>
+      <p className="lkc-about">{L({ vi: "Mỗi zone tăng thêm 1 TB mỗi ngày. Raw zone phải được lưu giữ 5 năm và gần như không được đọc lại. Refined zone được analyst truy vấn bằng Athena hằng ngày.", en: "Each zone grows by 1 TB a day. The raw zone must be kept for 5 years and is almost never read again. Analysts query the refined zone with Athena every day." })}</p>
       <div className="svg-wrap">
-        <svg viewBox="0 0 820 236" role="img" aria-label="Biểu đồ chi phí lưu trữ S3 mỗi tháng trong 12 tháng, chia theo raw zone và refined zone">
+        <svg viewBox="0 0 820 236" role="img" aria-label={L({ vi: "Biểu đồ chi phí lưu trữ S3 mỗi tháng trong 12 tháng, chia theo raw zone và refined zone", en: "Chart of monthly S3 storage cost over 12 months, split into the raw zone and the refined zone" })}>
           {[0, 0.25, 0.5, 0.75, 1].map((f) => (
             <g key={f}>
               <line className="lkc-grid" x1={X0} x2={X0 + W} y1={y(MAXV * f)} y2={y(MAXV * f)} />
@@ -130,7 +132,7 @@ export default function LakeCostSim() {
               <g key={i} className={ghost ? "lkc-ghost" : ""}>
                 <rect className="lkc-raw" x={x} y={y(c.raw)} width={w} height={y(0) - y(c.raw)} rx={2} />
                 <rect className={"lkc-ref" + (athenaOk ? "" : " bad")} x={x} y={y(c.raw + c.ref)} width={w} height={y(c.raw) - y(c.raw + c.ref)} rx={2} />
-                <text className="ts" x={x + w / 2} y={y(0) + 16} textAnchor="middle">T{i + 1}</text>
+                <text className="ts" x={x + w / 2} y={y(0) + 16} textAnchor="middle">{L({ vi: `T${i + 1}`, en: `M${i + 1}` })}</text>
               </g>
             );
           })}
@@ -139,24 +141,24 @@ export default function LakeCostSim() {
             <text className="ts" x={17} y={0}>raw zone</text>
             <rect className="lkc-ref" x={100} y={-9} width={12} height={10} rx={2} />
             <text className="ts" x={117} y={0}>refined zone</text>
-            <text className="ts" x={230} y={0}>đơn vị chi phí minh hoạ / tháng (giả định, không phải bảng giá AWS)</text>
+            <text className="ts" x={230} y={0}>{L({ vi: "đơn vị chi phí minh hoạ / tháng (giả định, không phải bảng giá AWS)", en: "illustrative cost units / month (assumed, not AWS pricing)" })}</text>
           </g>
           <g ref={fx} />
         </svg>
       </div>
       <div className="readout" aria-live="polite">
         {shown === 0 ? (
-          <p className="lkc-hint">Chọn phương án lưu trữ cho từng zone, sau đó nhấn <b>Mô phỏng 12 tháng</b>. Mô phỏng dùng đơn giá minh hoạ (Deep Archive rẻ hơn nhiều so với S3 Standard) và giả định Parquet nén có dung lượng bằng 1/4 CSV. Giá thực tế xem tại trang S3 pricing.</p>
+          <p className="lkc-hint">{L({ vi: <>Chọn phương án lưu trữ cho từng zone, sau đó nhấn <b>Mô phỏng 12 tháng</b>. Mô phỏng dùng đơn giá minh hoạ (Deep Archive rẻ hơn nhiều so với S3 Standard) và giả định Parquet nén có dung lượng bằng 1/4 CSV. Giá thực tế xem tại trang S3 pricing.</>, en: <>Choose a storage option for each zone, then press <b>Simulate 12 months</b>. The simulation uses illustrative unit prices (Deep Archive is much cheaper than S3 Standard) and assumes compressed Parquet is 1/4 the size of CSV. For actual prices, see the S3 pricing page.</> })}</p>
         ) : (
           <>
             <div className="status">
-              <span className="count">Tháng {shown}: {fmtNum(bars[shown - 1].raw + bars[shown - 1].ref)} đơn vị</span>
-              <span className={"pill " + (keepsRaw ? "ok" : "bad")}><i />{keepsRaw ? "Lưu giữ đủ 5 năm" : "Mất dữ liệu gốc"}</span>
-              <span className={"pill " + (athenaOk ? "ok" : "bad")}><i />{athenaOk ? "Athena đọc được" : "Athena không đọc được"}</span>
+              <span className="count">{L({ vi: `Tháng ${shown}: ${fmtNum(bars[shown - 1].raw + bars[shown - 1].ref)} đơn vị`, en: `Month ${shown}: ${fmtNum(bars[shown - 1].raw + bars[shown - 1].ref)} units` })}</span>
+              <span className={"pill " + (keepsRaw ? "ok" : "bad")}><i />{keepsRaw ? L({ vi: "Lưu giữ đủ 5 năm", en: "Kept for the full 5 years" }) : L({ vi: "Mất dữ liệu gốc", en: "Original data lost" })}</span>
+              <span className={"pill " + (athenaOk ? "ok" : "bad")}><i />{athenaOk ? L({ vi: "Athena đọc được", en: "Athena can read it" }) : L({ vi: "Athena không đọc được", en: "Athena cannot read it" })}</span>
             </div>
             {done && (
               <p className={`lkc-result ${best ? "ok" : "bad"}`}>
-                <b>Cả năm: {Math.round((total / BASE) * 100)}% so với phương án giữ nguyên S3 Standard và CSV. </b>{rich(note)}
+                <b>{L({ vi: `Cả năm: ${Math.round((total / BASE) * 100)}% so với phương án giữ nguyên S3 Standard và CSV. `, en: `Full year: ${Math.round((total / BASE) * 100)}% of the cost of keeping S3 Standard and CSV. ` })}</b>{rich(note)}
               </p>
             )}
           </>

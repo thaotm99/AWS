@@ -1,0 +1,131 @@
+---
+title: "Amazon EC2 Auto Scaling: scaling, AZ fault tolerance and scale in"
+lede: "ShopViet's traffic varies by the hour, by sale event and by the length of the order queue. This lesson covers how the number of instances is adjusted automatically: choosing a scaling policy that fits each load pattern, keeping enough capacity when an AZ is lost, the order in which instances are terminated on scale in, and maintaining instances without Auto Scaling replacing them."
+minutes: 25
+scenes: 4
+prerequisites: ["ec2", "elb"]
+docs:
+  - title: "Target tracking scaling policies"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-scaling-target-tracking.html"
+  - title: "Scaling based on Amazon SQS"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-using-sqs-queue.html"
+  - title: "Predictive scaling"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-predictive-scaling.html"
+  - title: "Configure termination policies"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-termination-policies.html"
+  - title: "Temporarily remove instances (Standby)"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-enter-exit-standby.html"
+  - title: "Suspend and resume Amazon EC2 Auto Scaling processes"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-suspend-resume-processes.html"
+  - title: "Health check grace period"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/health-check-grace-period.html"
+  - title: "Health checks overview"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/health-checks-overview.html"
+  - title: "Cluster Autoscaler (EKS best practices)"
+    url: "https://docs.aws.amazon.com/eks/latest/best-practices/cas.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import ScalingPolicySim from "../../components/scenes/asg/ScalingPolicySim.tsx";
+import TerminationSim from "../../components/scenes/asg/TerminationSim.tsx";
+import AzCapacityCalc from "../../components/scenes/asg/AzCapacityCalc.tsx";
+import MaintenanceSim from "../../components/scenes/asg/MaintenanceSim.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#en-s1", label: "1 · Scaling policy" },
+  { href: "#en-s2", label: "2 · Capacity when an AZ is lost" },
+  { href: "#en-s3", label: "3 · Termination policy on scale in" },
+  { href: "#en-s4", label: "4 · Maintenance and health checks" },
+  { href: "#en-challenge", label: "Exercise" },
+]}>
+At night ShopViet needs only 2 instances; on Friday evening, during a sale, it needs 12. Running 12 instances all day wastes money, while running only 2 increases latency for users. An **Auto Scaling group** (ASG) automatically adjusts the number of EC2 instances to the load. The designer needs to configure when to scale out, the minimum capacity, and which instance is removed on scale in.
+</Story>
+
+<Scene id="en-s1" label="Part 1/4" title="A scaling policy for each load pattern" questions={["exam1_q30", "exam3_q54", "exam6_q52", "exam1_q45", "exam4_q21", "exam3_q15", "exam4_q56", "exam4_q53"]}>
+
+The ShopViet website has dynamic content that changes constantly and a cache cannot absorb all the load, so instances must be added when traffic rises. However, when to scale out depends on the load pattern. Pick a day of ShopViet operations, choose a scaling policy, then run the simulation for the whole day to find the hours when users have to wait:
+
+<ScalingPolicySim client:visible />
+
+Containers scale in a similar way. When an ECS service is CPU-bound, turn on **Service Auto Scaling** to increase the number of tasks. When pods on EKS are pending because the cluster is out of resources, **Cluster Autoscaler** adjusts the desired capacity of the EC2 Auto Scaling group to add nodes (Karpenter is another option described in the EKS documentation).
+
+<Takeaway>Keep a metric at a steady level: target tracking. Queue workers: target tracking on SQS backlog per instance. Peak hours known in advance: scheduled action. Cyclical load: predictive scaling combined with target tracking to handle unusual fluctuations.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 2/4" title="How many instances to tolerate an AZ failure" questions={["exam2_q31", "exam5_q61"]}>
+
+ShopViet must keep at least N instances running, even when one AZ fails. Adjust N, choose the number of AZs, then press "Simulate AZ 1 failure" to check.
+
+<AzCapacityCalc client:visible />
+
+Two common cases. A minimum of 4 instances: 3 AZs × 2 = 6 is the lowest-cost option, because with 2 AZs × 2 = 4, only 2 instances remain after losing an AZ. A minimum of 2 instances but only 2 AZs available: set minimum = 4, with 2 instances in each AZ.
+
+<Takeaway>Each AZ needs ⌈N ÷ (number of AZs − 1)⌉ instances. When the system must tolerate the failure of one AZ, spreading across more AZs usually costs less.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 3/4" title="Scale in: the order in which instances are terminated" questions={["exam4_q16", "exam2_q65", "exam1_q54"]}>
+
+After the sale, the ASG scales in. With the default termination policy, the ASG evaluates in a fixed order. Pick a scenario, predict which instance will be terminated, then follow each step.
+
+<TerminationSim client:visible />
+
+<Takeaway>Default order: the AZ with the most instances → instances with an outdated configuration (launch configuration first, then a launch template other than the current one, then the oldest version of the current template) → if several instances remain: the one closest to the next billing hour (AWS notes this criterion has little effect because most EC2 usage is billed per second). The ASG also automatically rebalances across AZs and replaces unhealthy instances.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s4" label="Part 4/4" title="Maintaining instances without the ASG replacing them" questions={["exam1_q32", "exam5_q1", "exam2_q18", "exam4_q49"]}>
+
+The ASG replaces every instance it determines to be unhealthy. That works when an instance has really failed, but causes problems when an instance is being patched or a new instance has not finished starting. The ELB lesson explained that the ASG needs to use **ELB health checks** to follow the load balancer's results; in this part the ASG is using ELB health checks. Try three maintenance tasks:
+
+<MaintenanceSim client:visible />
+
+On cost: ShopViet always needs at least 2 instances, more at peak hours. Set minimum = 2 and buy **Reserved Instances** for the 2 instances that run continuously; the extra capacity is paid On-Demand.
+
+<Takeaway>Patching an instance: move it to Standby, or suspend ReplaceUnhealthy and then resume it. A new instance needs time to install the application: configure a health check grace period. The ASG replaces instances the load balancer marks as failed: ELB health checks.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Classify the scenarios by scaling policy" questions={["exam2_q31", "exam4_q16", "exam2_q65", "exam3_q54"]}>
+
+Sort each scenario into the scaling policy that fits it best. On a mobile device: tap a card, then tap the target box.
+
+<SortGame client:visible
+  bins={[
+    { id: "tt", title: "Target tracking", sub: "Maintain a target value", hint: "Hint: the load changes constantly and a metric must be kept steady." },
+    { id: "sch", title: "Scheduled", sub: "On a predefined schedule", hint: "Hint: the time when load rises is known exactly." },
+    { id: "pred", title: "Predictive", sub: "Forecast from historical data", hint: "Hint: the load follows a repeating cycle." },
+  ]}
+  cards={[
+    ["Keep CPU at 50%", "tt"], ["Keep the number of messages per instance steady", "tt"],
+    ["10 instances needed at 9 a.m. on the last day of the month", "sch"], ["Every Monday before sales open", "sch"],
+    ["Load repeats daily and weekly; capacity must be prepared in advance", "pred"],
+  ]}
+/>
+
+Check your understanding: as the designer of the ShopViet system, which option fits?
+
+<Quiz client:visible items={[
+  { q: "ShopViet must keep at least 4 instances running even when one AZ fails, at the lowest cost. Which placement fits?",
+    opts: ["2 AZs, 2 instances in each", "3 AZs, 2 instances in each", "2 AZs, 4 instances in each"],
+    a: 1,
+    why: "After losing one AZ, 4 instances remain. The 2×2 option leaves only 2; the 2×4 option meets the requirement but needs 8 instances." },
+  { q: "After a sale, ShopViet's ASG has 3 instances in AZ-A and 4 instances in AZ-B and uses the default termination policy. Which instance is terminated first?",
+    opts: ["A random instance in AZ-A", "The instance with the oldest launch template/configuration in AZ-B", "The newest instance in AZ-B"],
+    a: 1,
+    why: "The ASG picks the AZ with the most instances (AZ-B), then prefers instances with an outdated configuration: a launch configuration, a launch template other than the current one, or the oldest version of the current template." },
+  { q: "A partner pushes thousands of orders into SQS at once, and the EC2 workers cannot keep up. Which metric should drive scaling?",
+    opts: ["Target tracking on SQS backlog per instance", "A scheduled action every hour", "Switch to a larger instance type"],
+    a: 0,
+    why: "AWS recommends the backlog per instance metric (waiting messages divided by the number of instances) to scale in proportion to the work waiting in the queue." },
+  { q: "An engineer needs to patch the operating system of one instance in an ASG without the ASG replacing that instance during patching. Which action fits?",
+    opts: ["Move the instance to Standby", "Turn off the ALB health check", "Set desired capacity = 0"],
+    a: 0,
+    why: "An instance in Standby is deregistered from the target group and the ASG does not health check it. Alternative: suspend ReplaceUnhealthy, then resume it after patching." },
+]} />
+
+</Scene>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { flashText, prefersReducedMotion, travel, type Pt } from "../../../lib/animate";
 import { rich } from "../diagram";
+import { useLang, type Bi } from "../../../lib/lang";
 import "./kinesis-sims.css";
 
 // Build a streaming pipeline for one ShopViet need: pick a service for every stage,
@@ -142,6 +143,133 @@ const NEEDS: Need[] = [
   },
 ];
 
+const NEEDS_EN: Need[] = [
+  {
+    name: "Product recommendations on every click",
+    about: "Every click on the website must be analyzed immediately to recommend products, no click may be lost during traffic spikes, and the results are stored in S3.",
+    source: ["ShopViet web", "clicks"],
+    slots: [
+      { name: "Ingest", opts: [
+        KDS("Takes in thousands of clicks per second and retains the data so it can be reread if the next step fails."),
+        { l1: "EC2 writing to Aurora", l2: "current architecture", ok: false, why: "The servers and the database are the bottleneck; during traffic spikes, clicks are lost." },
+        { l1: "SQS + EC2", l2: "in-house library", ok: false, why: "The analysis on EC2 must be developed in-house; SQS provides no stream analytics tools." },
+      ] },
+      { name: "Analyze", opts: [
+        { l1: "Managed Service for", l2: "Apache Flink (SQL)", ok: true, why: "Formerly Kinesis Data Analytics for Apache Flink: continuous processing on the data stream, with SQL support through Flink Studio or the Table API." },
+        { l1: "Amazon Quick Sight", ok: false, why: "Quick Sight (formerly QuickSight) is for data visualization and building dashboards, not an engine for continuous processing on a stream." },
+        { l1: "Amazon Athena", ok: false, why: "Athena queries files stored in S3; it does not apply to data in transit on a stream." },
+      ] },
+      { name: "Store", opts: [
+        { l1: "Amazon Data Firehose", l2: "→ S3", ok: true, why: "Firehose batches the results and writes them to S3, with no code to write." },
+        { l1: "Lambda writes files", ok: false, why: "This works, but batching, retries and file naming must be handled yourself." },
+      ] },
+    ],
+    result: "Kinesis Data Streams ingests, Managed Service for Apache Flink analyzes (SQL is possible), Firehose stores to S3. No servers to manage.",
+  },
+  {
+    name: "Collect courier locations through a REST API",
+    about: "The courier app sends its location continuously through a REST API. The operations team needs to analyze the data in real time.",
+    source: ["Courier app", "sends location"],
+    slots: [
+      { name: "Entry point", opts: [
+        { l1: "Amazon API Gateway", l2: "→ Kinesis", ok: true, why: "API Gateway integrates directly with AWS services, receives the locations and writes them to the stream (for example, an HTTP API with the Kinesis-PutRecord integration)." },
+        { l1: "Amazon Athena", l2: "+ S3", ok: false, why: "Athena does not receive data over REST and does not process in real time." },
+      ] },
+      { name: "Analyze", opts: [
+        { l1: "Managed Service", l2: "for Apache Flink", ok: true, why: "Computes distance, speed, stationary vehicles… as soon as the data is received." },
+        { l1: "Redshift", l2: "+ Quick Sight", ok: false, why: "A data warehouse and dashboards serve analytical queries and reports; continuous computation on every location event is the job of Managed Service for Apache Flink." },
+      ] },
+    ],
+    result: "API Gateway acts as the REST entry point, and Managed Service for Apache Flink analyzes locations as soon as the data is received.",
+  },
+  {
+    name: "Instant transaction search",
+    about: "The customer care team needs full-text search on transactions that have just occurred and interactive dashboards.",
+    source: ["Payment gateway", "transactions"],
+    slots: [
+      { name: "Ingest", opts: [
+        KDS("Takes in the transaction stream with low latency."),
+        { l1: "App on EC2", ok: false, why: "Scaling and operations must be handled yourself." },
+      ] },
+      { name: "Search", opts: [
+        { l1: "Amazon OpenSearch", l2: "Service", ok: true, why: "Indexes the data and provides full-text search almost as soon as the data is received." },
+        { l1: "Amazon DynamoDB", ok: false, why: "For full-text search on DynamoDB data, AWS provides a zero-ETL integration that moves the data to OpenSearch Service; search is the job of OpenSearch." },
+        { l1: "Amazon Redshift", ok: false, why: "A data warehouse serves analytical queries; full-text search is the job of OpenSearch Service." },
+      ] },
+      { name: "Dashboard", opts: [
+        { l1: "Amazon Quick Sight", ok: true, why: "Data visualization and interactive dashboards for business users (formerly Amazon QuickSight)." },
+        { l1: "CloudWatch dashboard", ok: false, why: "Intended for operational metrics, not business dashboards." },
+      ] },
+    ],
+    result: "Kinesis Data Streams → OpenSearch Service for search → Amazon Quick Sight for dashboards.",
+  },
+  {
+    name: "Move historical logs in S3 into a stream",
+    about: "Years of logs are stored in S3; new changes are written as CDC files in a separate folder. Both the historical data and the new data must be moved into Kinesis as quickly as possible.",
+    source: ["S3", "old logs + CDC files"],
+    slots: [
+      { name: "Move data", opts: [
+        { l1: "AWS DMS", l2: "S3 source, Kinesis target", ok: true, why: "DMS supports S3 as a source and Kinesis Data Streams as a target. A full load moves the files already in the bucket; new changes are moved when they are uploaded as CDC files in the DMS format (CDC00001.csv, CDC00002.csv… in order). No code to write." },
+        { l1: "S3 event → Lambda", ok: false, why: "Handles only newly created files; historical data is not moved, and code must be written." },
+        { l1: "S3 → SNS", ok: false, why: "SNS does not deliver directly to Kinesis Data Streams." },
+      ] },
+      { name: "Target", opts: [KDS("Analytics apps read data from this stream like any other stream.")] },
+    ],
+    result: "AWS DMS moves the S3 data → Kinesis Data Streams (full load + CDC files), with no new code to develop and maintain.",
+  },
+  {
+    name: "Mask card data before storage",
+    about: "The system produces hundreds of thousands of transactions per hour. Several internal apps need to read the original transactions; a copy with sensitive data removed is stored in a document database for low-latency queries.",
+    source: ["ShopViet web", "transactions"],
+    slots: [
+      { name: "Ingest", opts: [
+        KDS("Several internal apps read the original transaction stream."),
+        { l1: "Amazon Data Firehose", ok: false, why: "Firehose delivers data to configured destinations (S3, Redshift, OpenSearch, HTTP endpoint…); the Firehose API has no operation for apps to read data." },
+        { l1: "S3 files in batches", ok: false, why: "Batch processing does not meet the near-real-time requirement." },
+      ] },
+      { name: "Process", opts: [
+        { l1: "AWS Lambda", ok: true, why: "Lambda reads the stream in batches and removes card numbers and phone numbers from each transaction." },
+        { l1: "Rule in DynamoDB", ok: false, why: "Sensitive data must be removed before writing; a processing step that reads the stream is needed, for example Lambda." },
+      ] },
+      { name: "Store", opts: [
+        { l1: "Amazon DynamoDB", ok: true, why: "Supports the document model with low-latency reads." },
+        { l1: "Files in S3", ok: false, why: "Does not support querying individual transactions with low latency." },
+      ] },
+    ],
+    result: "Kinesis Data Streams lets several apps read the original; Lambda removes sensitive data and writes to DynamoDB.",
+  },
+  {
+    name: "Each batch takes 30 minutes to process",
+    about: "Warehouse sensor data arrives continuously; each batch needs a job that runs about 30 minutes. The architecture must be serverless and scale with the data volume.",
+    source: ["Warehouse sensors", "continuous data"],
+    slots: [
+      { name: "Ingest", opts: [
+        KDS("Takes in continuous data and retains it for the processing step to read."),
+        { l1: "AWS DMS", ok: false, why: "DMS moves data between data stores; it is not an entry point for streams from devices." },
+      ] },
+      { name: "Process", opts: [
+        { l1: "ECS on Fargate", ok: true, why: "Serverless containers, not limited to 15 minutes like Lambda, scaling with the number of tasks." },
+        { l1: "Lambda + Step Functions", ok: false, why: "The maximum timeout of a standard Lambda function is 900 seconds (15 minutes); a 30-minute job exceeds the limit." },
+        { l1: "EC2 Auto Scaling", ok: false, why: "This works, but servers must be managed, which does not meet the serverless requirement." },
+      ] },
+    ],
+    result: "Kinesis Data Streams ingests the data, and an ECS task on Fargate runs the long job with no servers to manage.",
+  },
+  {
+    name: "Apps already built for Kafka",
+    about: "The analytics team already has producers and consumers built for Apache Kafka. Requirement: move to AWS, keep the code, and not operate the cluster themselves.",
+    source: ["App", "Kafka producer"],
+    slots: [
+      { name: "Streaming platform", opts: [
+        { l1: "Amazon MSK", l2: "AWS-managed Kafka", ok: true, why: "Amazon MSK is a fully managed Kafka service; apps keep using the Kafka API." },
+        { l1: "Self-managed Kafka", l2: "on EC2", ok: false, why: "Patching, monitoring and scaling the cluster must be done yourself with scripts." },
+        { l1: "Kinesis Data Streams", ok: false, why: "Functionally suitable, but the producers and consumers would have to be rewritten for the Kinesis API." },
+      ] },
+    ],
+    result: "Systems already using Kafka: Amazon MSK, keeping the producers and consumers unchanged.",
+  },
+];
+
 const NODE_W = 168;
 const Y = 100;
 const xs = (n: number) => {
@@ -153,14 +281,15 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const shown = (n: number, by: number) => Array.from({ length: n }, (_, i) => (i + by) % n);
 
 type State = "pass" | "block";
-type LogLine = { state?: State; slot?: string; ok?: boolean; msg: ReactNode };
+type LogLine = { state?: State; slot?: Bi; ok?: boolean; msg: Bi<ReactNode> };
 
 export default function StreamPipelineSim() {
+  const L = useLang();
   const fx = useRef<SVGGElement>(null);
   const alive = useRef(true);
   useEffect(() => () => { alive.current = false; }, []);
   const [ni, setNi] = useState(0);
-  const need = NEEDS[ni];
+  const need = L({ vi: NEEDS[ni], en: NEEDS_EN[ni] });
   const [choice, setChoice] = useState<number[]>(() => need.slots.map(() => -1));
   const [lit, setLit] = useState<Record<number, State>>({});
   const [log, setLog] = useState<LogLine[]>([]);
@@ -196,39 +325,46 @@ export default function StreamPipelineSim() {
     for (let i = 0; i < need.slots.length; i++) {
       if (!alive.current) return;
       const opt = need.slots[i].opts[choice[i]];
+      const ov = NEEDS[ni].slots[i].opts[choice[i]];
+      const oe = NEEDS_EN[ni].slots[i].opts[choice[i]];
+      const slot: Bi = { vi: NEEDS[ni].slots[i].name, en: NEEDS_EN[ni].slots[i].name };
       const next: Pt = [X[i] - NODE_W / 2, Y];
       if (!fast) await travel(layer, [at, next], 420, opt.ok ? "pkt" : "pkt-bad");
       at = [X[i] + NODE_W / 2, Y];
       setLit((s) => ({ ...s, [i]: opt.ok ? "pass" : "block" }));
-      setLog((l) => [...l, { state: opt.ok ? "pass" : "block", slot: need.slots[i].name, msg: rich(`**${[opt.l1, opt.l2].filter(Boolean).join(" ")}**: ${opt.why}`) }]);
+      setLog((l) => [...l, { state: opt.ok ? "pass" : "block", slot, msg: {
+        vi: rich(`**${[ov.l1, ov.l2].filter(Boolean).join(" ")}**: ${ov.why}`),
+        en: rich(`**${[oe.l1, oe.l2].filter(Boolean).join(" ")}**: ${oe.why}`) } }]);
       if (!opt.ok) {
-        flashText(layer, X[i], Y + 46, "không phù hợp", "flash-bad", 900);
+        flashText(layer, X[i], Y + 46, L({ vi: "không phù hợp", en: "not a fit" }), "flash-bad", 900);
         if (!fast) await travel(layer, [next, [60, Y]], 500, "pkt-bad");
-        setLog((l) => [...l, { ok: false, msg: rich(`Pipeline dừng tại bước **${need.slots[i].name}**. Thay đổi lựa chọn và chạy lại.`) }]);
+        setLog((l) => [...l, { ok: false, msg: {
+          vi: rich(`Pipeline dừng tại bước **${slot.vi}**. Thay đổi lựa chọn và chạy lại.`),
+          en: rich(`The pipeline stops at the **${slot.en}** step. Change your choice and run again.`) } }]);
         setBusy(false);
         return;
       }
       await sleep(fast ? 0 : 120);
     }
-    setLog((l) => [...l, { ok: true, msg: rich(need.result) }]);
+    setLog((l) => [...l, { ok: true, msg: { vi: rich(NEEDS[ni].result), en: rich(NEEDS_EN[ni].result) } }]);
     setBusy(false);
   }
 
   return (
     <div className="stage kpb">
-      <div className="kpb-row" role="group" aria-label="Yêu cầu của ShopViet">
-        {NEEDS.map((n, i) => (
-          <button key={n.name} className="chip" aria-pressed={i === ni} onClick={() => pickNeed(i)} disabled={busy && i !== ni}>{n.name}</button>
+      <div className="kpb-row" role="group" aria-label={L({ vi: "Yêu cầu của ShopViet", en: "ShopViet requirements" })}>
+        {L({ vi: NEEDS, en: NEEDS_EN }).map((n, i) => (
+          <button key={i} className="chip" aria-pressed={i === ni} onClick={() => pickNeed(i)} disabled={busy && i !== ni}>{n.name}</button>
         ))}
       </div>
       <p className="kpb-about">{need.about}</p>
       {need.slots.map((s, si) => (
-        <div key={s.name} className="stage-bar kpb-slot" role="group" aria-label={s.name}>
+        <div key={si} className="stage-bar kpb-slot" role="group" aria-label={s.name}>
           <span className="label">{si + 1} · {s.name}</span>
           {shown(s.opts.length, si + ni).map((oi) => {
             const o = s.opts[oi];
             return (
-              <button key={o.l1} className="btn" aria-pressed={choice[si] === oi} disabled={busy} onClick={() => choose(si, oi)}>
+              <button key={oi} className="btn" aria-pressed={choice[si] === oi} disabled={busy} onClick={() => choose(si, oi)}>
                 {[o.l1, o.l2].filter(Boolean).join(" ")}
               </button>
             );
@@ -236,11 +372,11 @@ export default function StreamPipelineSim() {
         </div>
       ))}
       <div className="stage-bar">
-        <span className="kpb-note">{ready ? "Đã chọn dịch vụ cho tất cả các bước." : "Chọn một dịch vụ cho mỗi bước."}</span>
-        <button className="btn primary" onClick={run} disabled={busy || !ready}>Chạy mô phỏng</button>
+        <span className="kpb-note">{ready ? L({ vi: "Đã chọn dịch vụ cho tất cả các bước.", en: "A service is chosen for every step." }) : L({ vi: "Chọn một dịch vụ cho mỗi bước.", en: "Choose one service for each step." })}</span>
+        <button className="btn primary" onClick={run} disabled={busy || !ready}>{L({ vi: "Chạy mô phỏng", en: "Run simulation" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 40 820 120" role="img" aria-label={`Pipeline: ${need.source[0]}, sau đó ${need.slots.map((s) => s.name).join(", ")}`}>
+        <svg viewBox="0 40 820 120" role="img" aria-label={L({ vi: `Pipeline: ${need.source[0]}, sau đó ${need.slots.map((s) => s.name).join(", ")}`, en: `Pipeline: ${need.source[0]}, then ${need.slots.map((s) => s.name).join(", ")}` })}>
           <path className="kss-link" d={`M60 ${Y} H${X[X.length - 1]}`} />
           <g className="kss-src">
             <rect x={10} y={Y - 26} width={110} height={52} rx={8} />
@@ -250,7 +386,7 @@ export default function StreamPipelineSim() {
           {need.slots.map((s, i) => {
             const o = choice[i] >= 0 ? s.opts[choice[i]] : undefined;
             return (
-              <g key={s.name} className={`kpb-node ${lit[i] ?? ""}` + (o ? "" : " empty")}>
+              <g key={i} className={`kpb-node ${lit[i] ?? ""}` + (o ? "" : " empty")}>
                 <text className="kss-l2" x={X[i]} y={Y - 34} textAnchor="middle">{s.name}</text>
                 <rect x={X[i] - NODE_W / 2} y={Y - 26} width={NODE_W} height={52} rx={8} />
                 <text className="kss-l1" x={X[i]} y={o?.l2 ? Y - 3 : Y + 4} textAnchor="middle">{o ? o.l1 : "?"}</text>
@@ -263,16 +399,16 @@ export default function StreamPipelineSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="kss-hint">Chọn dịch vụ cho từng bước, sau đó chọn <b>Chạy mô phỏng</b>.</p>
+          <p className="kss-hint">{L({ vi: <>Chọn dịch vụ cho từng bước, sau đó chọn <b>Chạy mô phỏng</b>.</>, en: <>Choose a service for each step, then choose <b>Run simulation</b>.</> })}</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) =>
               e.state === undefined ? (
-                <li key={i} className={`kss-result ${e.ok ? "ok" : "bad"}`}>{e.msg}</li>
+                <li key={i} className={`kss-result ${e.ok ? "ok" : "bad"}`}>{L(e.msg)}</li>
               ) : (
                 <li key={i}>
-                  <span className={`tag kss-tag ${e.state === "pass" ? "hit" : "bad"}`}>{e.state === "pass" ? "PHÙ HỢP" : "KHÔNG PHÙ HỢP"}</span>
-                  <span><b>{e.slot}:</b> {e.msg}</span>
+                  <span className={`tag kss-tag ${e.state === "pass" ? "hit" : "bad"}`}>{e.state === "pass" ? L({ vi: "PHÙ HỢP", en: "FIT" }) : L({ vi: "KHÔNG PHÙ HỢP", en: "NOT A FIT" })}</span>
+                  <span><b>{e.slot && L(e.slot)}:</b> {L(e.msg)}</span>
                 </li>
               ),
             )}

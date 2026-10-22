@@ -1,0 +1,101 @@
+---
+title: "WAF, Shield, GuardDuty, Macie: protection and detection"
+lede: "The ShopViet system is starting to become a target for attacks. This lesson covers the protection layer in front of the application with AWS WAF, then simulates six real incidents (DDoS, a server infected with cryptocurrency mining software, software vulnerabilities, customer data files stored in the wrong place, a new account missing rules, scattered logs) to identify the service that prevents or detects each incident."
+minutes: 15
+scenes: 2
+prerequisites: ["cloudfront", "vpc"]
+docs:
+  - title: "AWS WAF rules"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/waf-rules.html"
+  - title: "Rate-based rule statement"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-rate-based.html"
+  - title: "AWS Shield Advanced"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/shield-chapter.html"
+  - title: "Rate-based rule high-level settings"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-rate-based-high-level-settings.html"
+  - title: "What is AWS WAF?"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/what-is-aws-waf.html"
+  - title: "Shield Response Team (SRT) support"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/ddos-srt-support.html"
+  - title: "AWS Firewall Manager"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/fms-chapter.html"
+  - title: "GuardDuty EC2 finding types"
+    url: "https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_finding-types-ec2.html"
+  - title: "What is Amazon GuardDuty?"
+    url: "https://docs.aws.amazon.com/guardduty/latest/ug/what-is-guardduty.html"
+  - title: "What is Amazon Macie?"
+    url: "https://docs.aws.amazon.com/macie/latest/user/what-is-macie.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import WafSim from "../../components/scenes/security/WafSim.tsx";
+import IncidentSim from "../../components/scenes/security/IncidentSim.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#en-s1", label: "1 · AWS WAF" },
+  { href: "#en-s2", label: "2 · Detecting security incidents" },
+  { href: "#en-challenge", label: "Exercise" },
+]}>
+The ShopViet system records attack activity: bots probing for SQL injection, one IP scanning continuously and DDoS traffic. This lesson covers the protection layer in front of the application (**AWS WAF**, **Shield**) and the services that **detect** unusual activity inside the account.
+</Story>
+
+<Scene id="en-s1" label="Part 1/2" title="AWS WAF: filtering malicious requests before they reach the application" questions={["exam5_q13", "exam1_q6", "exam5_q45", "exam2_q30", "exam6_q60", "exam5_q57", "exam2_q32"]}>
+
+Five kinds of requests are being sent to ShopViet. Turn on each rule, choose the resource associated with AWS WAF, then send the requests.
+
+<WafSim client:visible />
+
+<Takeaway>SQL injection, XSS: managed rule. Restricting by country: geo match. One malicious IP: IP set. Requests at an unusual rate: rate-based rule (evaluation window of 1, 2, 5 or 10 minutes, 5 minutes by default; minimum threshold of 10 requests). AWS WAF is associated with CloudFront, ALB, API Gateway REST APIs and some other services (AppSync, Cognito, App Runner, Verified Access, Amplify); it is not attached directly to EC2.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 2/2" title="Six security incidents and the matching services" questions={["exam3_q58", "exam6_q4", "exam1_q36", "exam3_q1", "exam6_q14", "exam2_q44"]}>
+
+AWS WAF filters only web requests. Many other incidents happen **inside** the account: a compromised server, a sensitive file stored in the wrong place, a new account missing its configuration. Choose an incident, turn the matching service on or off, then simulate the incident.
+
+<IncidentSim client:visible />
+
+<Takeaway>Large-scale DDoS, with support from the AWS team and reports: Shield Advanced. A compromised server mining cryptocurrency: GuardDuty. Software vulnerabilities on EC2: Inspector. Personal data in S3: Macie. Applying consistent rules across many accounts: Firewall Manager. Centralizing security logs: Security Lake.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Sort the services by function" questions={["exam5_q13", "exam6_q60", "exam3_q1", "exam6_q14"]}>
+
+Sort the services that stop traffic and the services that detect problems. On a mobile device: select a card, then select the target box.
+
+<SortGame client:visible
+  bins={[
+    { id: "protect", title: "Prevent, protect", sub: "Placed in front of the application", hint: "Hint: a service that blocks malicious traffic or manages blocking rules." },
+    { id: "detect", title: "Detect, assess", sub: "Analyzes inside the account", hint: "Hint: a service that detects problems but does not block traffic directly." },
+  ]}
+  cards={[
+    ["AWS WAF", "protect"], ["AWS Shield Advanced", "protect"], ["AWS Firewall Manager", "protect"],
+    ["Amazon GuardDuty", "detect"], ["Amazon Inspector", "detect"], ["Amazon Macie", "detect"], ["Amazon Security Lake", "detect"],
+  ]}
+/>
+
+Check your understanding: as the designer of the ShopViet system, which option is right?
+
+<Quiz client:visible items={[
+  { q: "ShopViet's web application runs on EC2 and is being probed for SQL injection and cross-site scripting. What is the most effective way to stop it?",
+    opts: ["AWS WAF on CloudFront in front of the application", "A security group blocking port 80", "Amazon Inspector"],
+    a: 0,
+    why: "AWS WAF has managed rules for SQLi/XSS. A security group does not inspect request content; Inspector only scans for vulnerabilities." },
+  { q: "Logs show one IP sending more than 100 requests per second, while real users send only a few. Which mechanism can block that IP?",
+    opts: ["WAF rate-based rule", "Add more EC2 instances", "Shield Standard"],
+    a: 0,
+    why: "A rate-based rule blocks IPs that exceed a request-count threshold within a set time window." },
+  { q: "ShopViet needs alerts on malicious activity in S3 and also needs to know which buckets contain personal data. Which pair of services meets the requirement?",
+    opts: ["GuardDuty and Macie", "Inspector and Shield", "WAF and Firewall Manager"],
+    a: 0,
+    why: "GuardDuty detects threats; Macie discovers sensitive data." },
+  { q: "EC2 costs rise unusually, and a server is suspected of running cryptocurrency mining software. Which service can detect this behavior?",
+    opts: ["Amazon GuardDuty", "AWS Config", "Amazon Macie"],
+    a: 0,
+    why: "GuardDuty has a dedicated finding type for cryptocurrency mining activity on EC2." },
+]} />
+
+</Scene>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { flashText, prefersReducedMotion } from "../../../lib/animate";
 import { rich } from "../diagram";
+import { useLang, type Bi } from "../../../lib/lang";
 import "./cost-watch-sim.css";
 
 // One month of a ShopViet cost problem, day by day. Pick the problem, pick the tool the
@@ -12,32 +13,32 @@ import "./cost-watch-sim.css";
 type ProblemId = "dev" | "coverage" | "rightsize";
 
 interface Tool {
-  name: string;
+  name: Bi;
   /** Day index when somebody gets told. */
   alertDay?: number;
-  alertText?: string;
+  alertText?: Bi;
   /** Day index from which the daily value changes. */
   actDay?: number;
-  actText?: string;
+  actText?: Bi;
   after?: number;
   ok: boolean;
-  note: string;
+  note: Bi;
 }
 
 interface Problem {
-  name: string;
-  about: string;
+  name: Bi;
+  about: Bi;
   /** Daily value before any tool acts. */
   base: (d: number) => number;
   cumulative: boolean;
   max: number;
   ticks: number[];
   limit: number;
-  limitLabel: string;
+  limitLabel: Bi;
   /** Bars above the limit are bad, or below it. */
   badWhen: "above" | "below";
   unit: (v: number) => string;
-  summary: (vals: number[]) => string;
+  summary: (vals: number[]) => Bi;
   tools: Tool[];
 }
 
@@ -46,66 +47,78 @@ const usd = (v: number) => `${Math.round(v).toLocaleString("en-US")} USD`;
 
 const PROBLEMS: Record<ProblemId, Problem> = {
   dev: {
-    name: "Account dev không tắt instance",
-    about: "Mỗi lập trình viên có một account riêng, ngân sách 300 USD/tháng. Ngày 8, một lập trình viên khởi chạy một số GPU instance để thử nghiệm rồi nghỉ phép.",
+    name: { vi: "Account dev không tắt instance", en: "Dev account leaves instances running" },
+    about: { vi: "Mỗi lập trình viên có một account riêng, ngân sách 300 USD/tháng. Ngày 8, một lập trình viên khởi chạy một số GPU instance để thử nghiệm rồi nghỉ phép.",
+      en: "Each developer has their own account with a budget of 300 USD/month. On day 8, a developer launches some GPU instances for testing, then goes on leave." },
     base: (d) => (d < 7 ? 6 : 40),
     cumulative: true,
     max: 1000,
     ticks: [0, 300, 600, 900],
     limit: 300,
-    limitLabel: "ngân sách 300 USD",
+    limitLabel: { vi: "ngân sách 300 USD", en: "budget 300 USD" },
     badWhen: "above",
     unit: usd,
-    summary: (v) => `Tổng cả tháng: ${usd(v.reduce((s, x) => s + x, 0))}`,
+    summary: (v) => ({ vi: `Tổng cả tháng: ${usd(v.reduce((s, x) => s + x, 0))}`, en: `Month total: ${usd(v.reduce((s, x) => s + x, 0))}` }),
     tools: [
-      { name: "Cost Explorer", ok: false,
-        note: "Cost Explorer thể hiện rõ chi phí tăng, nhưng **chỉ khi có người truy cập để xem**. Do không ai theo dõi, sự cố chỉ được phát hiện vào cuối tháng." },
-      { name: "AWS Budgets: chỉ cảnh báo", alertDay: 7, alertText: "email", ok: false,
-        note: "Budgets gửi email khi chi phí **dự báo** vượt ngân sách (dữ liệu Budgets được cập nhật tối đa ba lần mỗi ngày). Tuy nhiên, người nhận đang nghỉ phép nên các instance không được tắt." },
-      { name: "AWS Budgets: cảnh báo + action", alertDay: 7, alertText: "email", actDay: 12, actText: "action", after: 2, ok: true,
-        note: "Ngưỡng 80% ngân sách được gắn **hai budget action** chạy tự động: một action gắn IAM policy DenyAll vào role của lập trình viên, một action nhắm vào các EC2 instance đang chạy để stop. Mỗi action thuộc một loại (IAM policy, SCP, hoặc EC2/RDS instance); nhiều action có thể cùng gắn với một ngưỡng. Chi phí ngừng tăng mà không cần giám sát thủ công." },
+      { name: { vi: "Cost Explorer", en: "Cost Explorer" }, ok: false,
+        note: { vi: "Cost Explorer thể hiện rõ chi phí tăng, nhưng **chỉ khi có người truy cập để xem**. Do không ai theo dõi, sự cố chỉ được phát hiện vào cuối tháng.",
+          en: "Cost Explorer clearly shows the cost rising, but **only when someone opens it to look**. Because no one is watching, the problem is discovered only at the end of the month." } },
+      { name: { vi: "AWS Budgets: chỉ cảnh báo", en: "AWS Budgets: alert only" }, alertDay: 7, alertText: { vi: "email", en: "email" }, ok: false,
+        note: { vi: "Budgets gửi email khi chi phí **dự báo** vượt ngân sách (dữ liệu Budgets được cập nhật tối đa ba lần mỗi ngày). Tuy nhiên, người nhận đang nghỉ phép nên các instance không được tắt.",
+          en: "Budgets sends an email when the **forecasted** cost exceeds the budget (Budgets data is updated up to three times a day). However, the recipient is on leave, so the instances are not stopped." } },
+      { name: { vi: "AWS Budgets: cảnh báo + action", en: "AWS Budgets: alert + action" }, alertDay: 7, alertText: { vi: "email", en: "email" }, actDay: 12, actText: { vi: "action", en: "action" }, after: 2, ok: true,
+        note: { vi: "Ngưỡng 80% ngân sách được gắn **hai budget action** chạy tự động: một action gắn IAM policy DenyAll vào role của lập trình viên, một action nhắm vào các EC2 instance đang chạy để stop. Mỗi action thuộc một loại (IAM policy, SCP, hoặc EC2/RDS instance); nhiều action có thể cùng gắn với một ngưỡng. Chi phí ngừng tăng mà không cần giám sát thủ công.",
+          en: "The 80% budget threshold has **two budget actions** that run automatically: one applies a DenyAll IAM policy to the developer's role, and one targets the running EC2 instances to stop them. Each action is of one type (IAM policy, SCP, or EC2/RDS instance); several actions can be attached to the same threshold. The cost stops rising with no manual monitoring." } },
     ],
   },
   coverage: {
-    name: "Độ phủ Savings Plans giảm",
-    about: "ShopViet đã mua Compute Savings Plans. Từ ngày 10, một đội khác chạy thêm nhiều Fargate và Lambda theo giá on-demand nên tỷ lệ được giảm giá (coverage) giảm.",
+    name: { vi: "Độ phủ Savings Plans giảm", en: "Savings Plans coverage drops" },
+    about: { vi: "ShopViet đã mua Compute Savings Plans. Từ ngày 10, một đội khác chạy thêm nhiều Fargate và Lambda theo giá on-demand nên tỷ lệ được giảm giá (coverage) giảm.",
+      en: "ShopViet has bought Compute Savings Plans. From day 10, another team runs a lot more Fargate and Lambda at on-demand prices, so the discounted share (coverage) drops." },
     base: (d) => (d < 9 ? 95 : 74),
     cumulative: false,
     max: 100,
     ticks: [0, 50, 90, 100],
     limit: 90,
-    limitLabel: "ngưỡng 90%",
+    limitLabel: { vi: "ngưỡng 90%", en: "threshold 90%" },
     badWhen: "below",
     unit: (v) => `${Math.round(v)}%`,
-    summary: (v) => `Coverage trung bình: ${Math.round(v.reduce((s, x) => s + x, 0) / v.length)}%`,
+    summary: (v) => ({ vi: `Coverage trung bình: ${Math.round(v.reduce((s, x) => s + x, 0) / v.length)}%`, en: `Average coverage: ${Math.round(v.reduce((s, x) => s + x, 0) / v.length)}%` }),
     tools: [
-      { name: "CloudWatch dashboard tự xây dựng", alertDay: 15, alertText: "alarm", ok: false,
-        note: "Dashboard tự xây dựng đòi hỏi **viết script** thu thập số liệu coverage, tự tính toán và tự cập nhật khi có service mới, trong khi AWS Budgets có sẵn loại Savings Plans coverage budget. Cảnh báo bị trễ và tốn công sức." },
-      { name: "Compute Optimizer", ok: false,
-        note: "Compute Optimizer khuyến nghị **kích thước tài nguyên**. Dịch vụ này không theo dõi coverage của Savings Plans nên không có cảnh báo nào được gửi." },
-      { name: "AWS Budgets: coverage budget", alertDay: 9, alertText: "email", actDay: 12, actText: "mua thêm", after: 94, ok: true,
-        note: "Một **Savings Plans coverage budget** theo ngày, ngưỡng 90%. Khi coverage xuống dưới ngưỡng, Budgets gửi thông báo qua email hoặc SNS sau lần cập nhật dữ liệu kế tiếp (tối đa ba lần mỗi ngày). Đội vận hành mua thêm Savings Plans và coverage tăng trở lại. Không cần viết mã." },
+      { name: { vi: "CloudWatch dashboard tự xây dựng", en: "Custom CloudWatch dashboard" }, alertDay: 15, alertText: { vi: "alarm", en: "alarm" }, ok: false,
+        note: { vi: "Dashboard tự xây dựng đòi hỏi **viết script** thu thập số liệu coverage, tự tính toán và tự cập nhật khi có service mới, trong khi AWS Budgets có sẵn loại Savings Plans coverage budget. Cảnh báo bị trễ và tốn công sức.",
+          en: "A custom dashboard requires **writing scripts** to collect coverage data, calculating it yourself and updating it whenever a new service appears, while AWS Budgets already offers a Savings Plans coverage budget. The alert is late and takes effort." } },
+      { name: { vi: "Compute Optimizer", en: "Compute Optimizer" }, ok: false,
+        note: { vi: "Compute Optimizer khuyến nghị **kích thước tài nguyên**. Dịch vụ này không theo dõi coverage của Savings Plans nên không có cảnh báo nào được gửi.",
+          en: "Compute Optimizer recommends **resource sizes**. It does not track Savings Plans coverage, so no alert is sent." } },
+      { name: { vi: "AWS Budgets: coverage budget", en: "AWS Budgets: coverage budget" }, alertDay: 9, alertText: { vi: "email", en: "email" }, actDay: 12, actText: { vi: "mua thêm", en: "buy more" }, after: 94, ok: true,
+        note: { vi: "Một **Savings Plans coverage budget** theo ngày, ngưỡng 90%. Khi coverage xuống dưới ngưỡng, Budgets gửi thông báo qua email hoặc SNS sau lần cập nhật dữ liệu kế tiếp (tối đa ba lần mỗi ngày). Đội vận hành mua thêm Savings Plans và coverage tăng trở lại. Không cần viết mã.",
+          en: "A daily **Savings Plans coverage budget** with a 90% threshold. When coverage drops below the threshold, Budgets sends a notification by email or SNS after the next data refresh (up to three times a day). The operations team buys more Savings Plans and coverage rises again. No code to write." } },
     ],
   },
   rightsize: {
-    name: "Chi phí cao, chưa xác định điểm cắt giảm",
-    about: "Sau một năm, chi phí EC2, RDS và S3 của ShopViet cao hơn nhu cầu thực tế. Chưa xác định được tài nguyên nào đang dư thừa.",
+    name: { vi: "Chi phí cao, chưa xác định điểm cắt giảm", en: "High cost, no idea where to cut" },
+    about: { vi: "Sau một năm, chi phí EC2, RDS và S3 của ShopViet cao hơn nhu cầu thực tế. Chưa xác định được tài nguyên nào đang dư thừa.",
+      en: "After a year, ShopViet's EC2, RDS and S3 costs are higher than actual needs. No one knows yet which resources are surplus." },
     base: () => 100,
     cumulative: false,
     max: 120,
     ticks: [0, 40, 80, 120],
     limit: 80,
-    limitLabel: "mục tiêu 80 USD/ngày",
+    limitLabel: { vi: "mục tiêu 80 USD/ngày", en: "target 80 USD/day" },
     badWhen: "above",
     unit: usd,
-    summary: (v) => `Tổng cả tháng: ${usd(v.reduce((s, x) => s + x, 0))}`,
+    summary: (v) => ({ vi: `Tổng cả tháng: ${usd(v.reduce((s, x) => s + x, 0))}`, en: `Month total: ${usd(v.reduce((s, x) => s + x, 0))}` }),
     tools: [
-      { name: "Trusted Advisor tự động gia hạn RI", ok: false,
-        note: "Trusted Advisor **kiểm tra và đưa ra khuyến nghị**, không tự động gia hạn Reserved Instance hay thay đổi tài nguyên. Chi phí không thay đổi." },
-      { name: "Compute Optimizer tự động mua RI", ok: false,
-        note: "Compute Optimizer đề xuất **loại và kích thước** instance; dịch vụ này không lựa chọn phương thức mua hay đặt trước Reserved Instance. Chi phí không thay đổi." },
-      { name: "Cost Optimization Hub + Compute Optimizer", alertDay: 2, alertText: "báo cáo", actDay: 7, actText: "−32%", after: 68, ok: true,
-        note: "**Cost Optimization Hub** tổng hợp khuyến nghị của các account và Region tại một nơi: 2 EC2 không được sử dụng (idle), một số instance có kích thước quá lớn (rightsizing). **Compute Optimizer** đề xuất kích thước phù hợp. Xoá instance dư thừa và giảm kích thước instance giúp giảm chi phí." },
+      { name: { vi: "Trusted Advisor tự động gia hạn RI", en: "Trusted Advisor auto-renews RIs" }, ok: false,
+        note: { vi: "Trusted Advisor **kiểm tra và đưa ra khuyến nghị**, không tự động gia hạn Reserved Instance hay thay đổi tài nguyên. Chi phí không thay đổi.",
+          en: "Trusted Advisor **inspects and makes recommendations**; it does not automatically renew Reserved Instances or change resources. The cost does not change." } },
+      { name: { vi: "Compute Optimizer tự động mua RI", en: "Compute Optimizer auto-buys RIs" }, ok: false,
+        note: { vi: "Compute Optimizer đề xuất **loại và kích thước** instance; dịch vụ này không lựa chọn phương thức mua hay đặt trước Reserved Instance. Chi phí không thay đổi.",
+          en: "Compute Optimizer recommends instance **types and sizes**; it does not choose purchase options or reserve Reserved Instances. The cost does not change." } },
+      { name: { vi: "Cost Optimization Hub + Compute Optimizer", en: "Cost Optimization Hub + Compute Optimizer" }, alertDay: 2, alertText: { vi: "báo cáo", en: "report" }, actDay: 7, actText: { vi: "−32%", en: "−32%" }, after: 68, ok: true,
+        note: { vi: "**Cost Optimization Hub** tổng hợp khuyến nghị của các account và Region tại một nơi: 2 EC2 không được sử dụng (idle), một số instance có kích thước quá lớn (rightsizing). **Compute Optimizer** đề xuất kích thước phù hợp. Xoá instance dư thừa và giảm kích thước instance giúp giảm chi phí.",
+          en: "**Cost Optimization Hub** consolidates recommendations across accounts and Regions in one place: 2 unused (idle) EC2 instances and some oversized instances (rightsizing). **Compute Optimizer** recommends the right sizes. Deleting surplus instances and downsizing instances reduces cost." } },
     ],
   },
 };
@@ -126,6 +139,7 @@ function series(p: Problem, t: Tool): number[] {
 }
 
 export default function CostWatchSim() {
+  const L = useLang();
   const fx = useRef<SVGGElement>(null);
   const alive = useRef(true);
   useEffect(() => () => { alive.current = false; }, []);
@@ -139,7 +153,7 @@ export default function CostWatchSim() {
   const vals = series(P, T);
   const daily = series({ ...P, cumulative: false }, T);
   /** What the month looks like if nobody does anything: drawn faintly before playing. */
-  const untouched = series(P, { name: "", ok: false, note: "" });
+  const untouched = series(P, { name: { vi: "", en: "" }, ok: false, note: { vi: "", en: "" } });
   const y = (v: number) => Y0 + H - (Math.min(v, P.max) / P.max) * H;
   const bad = (v: number) => (P.badWhen === "above" ? v > P.limit : v < P.limit);
   const done = shown === DAYS - 1;
@@ -160,8 +174,8 @@ export default function CostWatchSim() {
       setShown(d);
       const layer = fx.current;
       const cx = X0 + d * bw + bw / 2;
-      if (layer && d === T.alertDay) flashText(layer, cx, y(vals[d]) - 10, T.alertText ?? "cảnh báo", "cws-flash alert", 1400);
-      if (layer && d === T.actDay) flashText(layer, cx, y(vals[d]) - 24, T.actText ?? "action", "cws-flash act", 1400);
+      if (layer && d === T.alertDay) flashText(layer, cx, y(vals[d]) - 10, L(T.alertText ?? { vi: "cảnh báo", en: "alert" }), "cws-flash alert", 1400);
+      if (layer && d === T.actDay) flashText(layer, cx, y(vals[d]) - 24, L(T.actText ?? { vi: "action", en: "action" }), "cws-flash act", 1400);
       if (!fast) await sleep(d === T.alertDay || d === T.actDay ? 600 : 110);
     }
     setBusy(false);
@@ -169,23 +183,23 @@ export default function CostWatchSim() {
 
   return (
     <div className="stage cws">
-      <div className="cws-row" role="group" aria-label="Vấn đề chi phí">
+      <div className="cws-row" role="group" aria-label={L({ vi: "Vấn đề chi phí", en: "Cost problems" })}>
         {ORDER.map((id) => (
           <button key={id} className="chip" aria-pressed={id === pid} disabled={busy && id !== pid} onClick={() => change(() => { setPid(id); setTi(0); })}>
-            {PROBLEMS[id].name}
+            {L(PROBLEMS[id].name)}
           </button>
         ))}
       </div>
-      <p className="cws-about">{P.about}</p>
+      <p className="cws-about">{L(P.about)}</p>
       <div className="stage-bar">
-        <span className="label">Công cụ</span>
+        <span className="label">{L({ vi: "Công cụ", en: "Tool" })}</span>
         {P.tools.map((t, i) => (
-          <button key={t.name} className="btn" aria-pressed={i === ti} disabled={busy && i !== ti} onClick={() => change(() => setTi(i))}>{t.name}</button>
+          <button key={i} className="btn" aria-pressed={i === ti} disabled={busy && i !== ti} onClick={() => change(() => setTi(i))}>{L(t.name)}</button>
         ))}
-        <button className="btn primary cws-play" onClick={play} disabled={busy}>Chạy mô phỏng một tháng</button>
+        <button className="btn primary cws-play" onClick={play} disabled={busy}>{L({ vi: "Chạy mô phỏng một tháng", en: "Run one-month simulation" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 0 820 240" role="img" aria-label={`Biểu đồ 30 ngày: ${P.cumulative ? "chi tiêu cộng dồn" : "giá trị mỗi ngày"} so với ${P.limitLabel}`}>
+        <svg viewBox="0 0 820 240" role="img" aria-label={L({ vi: `Biểu đồ 30 ngày: ${P.cumulative ? "chi tiêu cộng dồn" : "giá trị mỗi ngày"} so với ${P.limitLabel.vi}`, en: `30-day chart: ${P.cumulative ? "cumulative spend" : "daily value"} against ${P.limitLabel.en}` })}>
           {P.ticks.map((v) => (
             <g key={v}>
               <line className="cws-grid" x1={X0} x2={X0 + W} y1={y(v)} y2={y(v)} />
@@ -198,7 +212,7 @@ export default function CostWatchSim() {
             return <rect key={d} className={cls} x={X0 + d * bw + 2} y={top} width={bw - 4} height={y(0) - top} rx={2} />;
           })}
           <line className="cws-limit" x1={X0} x2={X0 + W} y1={y(P.limit)} y2={y(P.limit)} />
-          <text className="cws-limit-t" x={X0 + W} y={y(P.limit) - 6} textAnchor="end">{P.limitLabel}</text>
+          <text className="cws-limit-t" x={X0 + W} y={y(P.limit) - 6} textAnchor="end">{L(P.limitLabel)}</text>
           {T.alertDay !== undefined && shown >= T.alertDay && (
             <line className="cws-mark alert" x1={X0 + T.alertDay * bw + bw / 2} x2={X0 + T.alertDay * bw + bw / 2} y1={Y0 - 6} y2={y(0)} />
           )}
@@ -206,25 +220,25 @@ export default function CostWatchSim() {
             <line className="cws-mark act" x1={X0 + T.actDay * bw + bw / 2} x2={X0 + T.actDay * bw + bw / 2} y1={Y0 - 6} y2={y(0)} />
           )}
           {[0, 9, 19, 29].map((d) => (
-            <text key={d} className="ts" x={X0 + d * bw + bw / 2} y={y(0) + 16} textAnchor="middle">ngày {d + 1}</text>
+            <text key={d} className="ts" x={X0 + d * bw + bw / 2} y={y(0) + 16} textAnchor="middle">{L({ vi: "ngày", en: "day" })} {d + 1}</text>
           ))}
-          <text className="ts" x={X0} y={14}>{P.cumulative ? "Cột: chi tiêu cộng dồn từ đầu tháng" : pid === "coverage" ? "Cột: coverage của Savings Plans mỗi ngày" : "Cột: chi phí mỗi ngày"}</text>
+          <text className="ts" x={X0} y={14}>{P.cumulative ? L({ vi: "Cột: chi tiêu cộng dồn từ đầu tháng", en: "Bars: cumulative spend since the start of the month" }) : pid === "coverage" ? L({ vi: "Cột: coverage của Savings Plans mỗi ngày", en: "Bars: daily Savings Plans coverage" }) : L({ vi: "Cột: chi phí mỗi ngày", en: "Bars: daily cost" })}</text>
           <g ref={fx} />
         </svg>
       </div>
       <div className="readout" aria-live="polite">
         {shown < 0 ? (
-          <p className="cws-hint">Chọn công cụ, sau đó chọn <b>Chạy mô phỏng một tháng</b>.</p>
+          <p className="cws-hint">{L({ vi: <>Chọn công cụ, sau đó chọn <b>Chạy mô phỏng một tháng</b>.</>, en: <>Choose a tool, then choose <b>Run one-month simulation</b>.</> })}</p>
         ) : (
           <>
             <div className="status">
-              <span className="count">Ngày {shown + 1} · {P.unit(vals[shown])}</span>
-              <span className={"pill " + (T.alertDay !== undefined && shown >= T.alertDay ? "ok" : "bad")}><i />{T.alertDay !== undefined && shown >= T.alertDay ? `đã cảnh báo ngày ${T.alertDay + 1}` : "chưa có cảnh báo"}</span>
-              {done && <span className="pill cws-sum"><i />{P.summary(daily)}</span>}
+              <span className="count">{L({ vi: "Ngày", en: "Day" })} {shown + 1} · {P.unit(vals[shown])}</span>
+              <span className={"pill " + (T.alertDay !== undefined && shown >= T.alertDay ? "ok" : "bad")}><i />{T.alertDay !== undefined && shown >= T.alertDay ? L({ vi: `đã cảnh báo ngày ${T.alertDay + 1}`, en: `alerted on day ${T.alertDay + 1}` }) : L({ vi: "chưa có cảnh báo", en: "no alert yet" })}</span>
+              {done && <span className="pill cws-sum"><i />{L(P.summary(daily))}</span>}
             </div>
             {done && (
               <p className={"cws-result " + (T.ok ? "ok" : "bad")}>
-                <b>{T.ok ? "Công cụ phù hợp. " : "Chưa giải quyết được vấn đề. "}</b>{rich(T.note)}
+                <b>{T.ok ? L({ vi: "Công cụ phù hợp. ", en: "The right tool. " }) : L({ vi: "Chưa giải quyết được vấn đề. ", en: "The problem is not solved. " })}</b>{rich(L(T.note))}
               </p>
             )}
           </>
