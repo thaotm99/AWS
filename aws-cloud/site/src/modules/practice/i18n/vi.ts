@@ -78,6 +78,14 @@ export const vi = {
     works: "Đáp ứng yêu cầu.",
     fails: "Không đáp ứng yêu cầu.",
   },
+  crash: {
+    title: "Không thể hiển thị trang luyện đề",
+    body: "Đã xảy ra lỗi khi hiển thị nội dung. Hãy tải lại trang; nếu lỗi vẫn còn, có thể xoá tiến độ luyện đề đã lưu trên trình duyệt này để bắt đầu lại.",
+    reload: "Tải lại trang",
+    reset: "Xoá tiến độ đã lưu",
+    confirmReset: "Xoá toàn bộ tiến độ luyện đề đã lưu trên trình duyệt này?",
+    details: "Chi tiết lỗi",
+  },
   topic: {
     crumb: "Kiểm tra",
     title: "Kiểm tra: {title}",

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import PageBoundary from "./PageBoundary";
 import { PracticeApp } from "../app/PracticeApp";
 import QuestionCard from "./QuestionCard";
 import QuestionMap from "./QuestionMap";
@@ -16,7 +17,7 @@ interface Props {
   topic?: { id: string; title: string };
 }
 
-export default function ExamPage({ certId, examId, topic }: Props) {
+function ExamView({ certId, examId, topic }: Props) {
   const app = PracticeApp.get();
   const store = app.exam.store;
   const state = useStore(store);
@@ -107,5 +108,14 @@ export default function ExamPage({ certId, examId, topic }: Props) {
         </>
       )}
     </>
+  );
+}
+
+/** Page entry: a rendering error shows a message with a way out instead of a blank page. */
+export default function ExamPage(props: Props) {
+  return (
+    <PageBoundary>
+      <ExamView {...props} />
+    </PageBoundary>
   );
 }

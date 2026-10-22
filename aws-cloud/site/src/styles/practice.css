@@ -189,3 +189,5 @@
 .pr-illus-verdict.bad { background: var(--bad-soft); }
 .pr-illus-verdict.bad b { color: var(--bad); }
 .pr-illus-head .zoom-btn { margin-left: auto; }
+.pr-crash h2 { font-size: var(--step-1); }
+.pr-crash pre { white-space: pre-wrap; font-size: 0.75rem; max-height: 240px; overflow: auto; background: var(--bg); padding: 10px; border-radius: 6px; }

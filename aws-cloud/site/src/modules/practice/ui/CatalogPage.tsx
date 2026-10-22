@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import PageBoundary from "./PageBoundary";
 import { useStore } from "../../../core/state/useStore";
 import { PracticeApp } from "../app/PracticeApp";
 import { Scoring } from "../domain/Scoring";
@@ -16,7 +17,7 @@ function examStatus(t: PracticeT, exam: ExamSummary, attempt: Attempt | undefine
     : { cls: "fail", text: t("catalog.failed", { percent: s.percent }) };
 }
 
-export default function CatalogPage({ certId }: { certId: string | null }) {
+function CatalogView({ certId }: { certId: string | null }) {
   const app = PracticeApp.get();
   const state = useStore(app.catalog.store);
   const { t } = useT();
@@ -76,5 +77,14 @@ export default function CatalogPage({ certId }: { certId: string | null }) {
         </section>
       )}
     </>
+  );
+}
+
+/** Page entry: a rendering error shows a message with a way out instead of a blank page. */
+export default function CatalogPage(props: { certId: string | null }) {
+  return (
+    <PageBoundary>
+      <CatalogView {...props} />
+    </PageBoundary>
   );
 }
