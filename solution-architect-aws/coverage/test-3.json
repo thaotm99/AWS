@@ -154,8 +154,8 @@
         {
           "keyword": "Mountpoint for Amazon S3",
           "lesson": "storage",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "storage.mdx#s5 / MountpointSim, RequirementPicker"
         }
       ]
     },
@@ -806,8 +806,8 @@
         {
           "keyword": "Amazon FSx for OpenZFS",
           "lesson": "storage",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "storage.mdx#s4 / FsxSim, RequirementPicker"
         },
         {
           "keyword": "Amazon EFS (no Windows support)",

@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 828 (86%) · 🟡 63 (7%) · ❌ 69 (7%).
+Có **960 keyword** khác nhau: ✅ 839 (87%) · 🟡 58 (6%) · ❌ 63 (7%).
 
 ### Theo bài học
 
@@ -32,9 +32,9 @@ Có **960 keyword** khác nhau: ✅ 828 (86%) · 🟡 63 (7%) · ❌ 69 (7%).
 | [elb](#elb) | 42 | 32 | 6 | 4 | 76% |
 | [asg](#asg) | 44 | 44 | 0 | 0 | 100% |
 | [containers](#containers) | 22 | 17 | 2 | 3 | 77% |
-| [lambda](#lambda) | 37 | 28 | 4 | 5 | 76% |
+| [lambda](#lambda) | 37 | 29 | 4 | 4 | 78% |
 | [s3](#s3) | 70 | 70 | 0 | 0 | 100% |
-| [storage](#storage) | 70 | 60 | 5 | 5 | 86% |
+| [storage](#storage) | 70 | 70 | 0 | 0 | 100% |
 | [storage-migration](#storage-migration) | 34 | 31 | 1 | 2 | 91% |
 | [rds](#rds) | 58 | 50 | 3 | 5 | 86% |
 | [dynamodb](#dynamodb) | 23 | 22 | 0 | 1 | 96% |
@@ -50,11 +50,11 @@ Có **960 keyword** khác nhau: ✅ 828 (86%) · 🟡 63 (7%) · ❌ 69 (7%).
 
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
-| Đề 1 | 202 | 11 | 11 |
+| Đề 1 | 205 | 10 | 9 |
 | Đề 2 | 179 | 9 | 10 |
-| Đề 3 | 199 | 9 | 14 |
-| Đề 4 | 206 | 13 | 17 |
-| Đề 5 | 189 | 19 | 13 |
+| Đề 3 | 201 | 9 | 12 |
+| Đề 4 | 210 | 11 | 15 |
+| Đề 5 | 193 | 17 | 11 |
 | Đề 6 | 197 | 5 | 8 |
 
 ## global-infra
@@ -590,7 +590,6 @@ Có **960 keyword** khác nhau: ✅ 828 (86%) · 🟡 63 (7%) · ❌ 69 (7%).
 | [ ] | Lambda container image | ❌ Thiếu | 1 | exam4_q25 |  |
 | [ ] | Lambda ephemeral storage (/tmp) | ❌ Thiếu | 1 | exam3_q32 |  |
 | [ ] | Lambda memory and CPU allocation | ❌ Thiếu | 1 | exam4_q25 |  |
-| [ ] | Lambda mounting EFS | ❌ Thiếu | 1 | exam1_q9 |  |
 | [ ] | API Gateway (no security group or subnet) | 🟡 Một phần | 1 | exam2_q58 | lambda.mdx#s3 |
 | [ ] | API Gateway REST API direct integration with AWS service (Kinesis) | 🟡 Một phần | 1 | exam1_q57 | lambda.mdx#s3 / ApiGatewaySim |
 | [ ] | Lambda deployment package size (cold start) | 🟡 Một phần | 1 | exam4_q25 | lambda.mdx#s2 / LambdaRunSim |
@@ -618,6 +617,7 @@ Có **960 keyword** khác nhau: ✅ 828 (86%) · 🟡 63 (7%) · ❌ 69 (7%).
 | [ ] | Lambda concurrency | ✅ Đã có | 1 | exam5_q3 | lambda.mdx#s2 / LambdaRunSim |
 | [ ] | Lambda ConcurrentExecutions alarm | ✅ Đã có | 1 | exam4_q25 | lambda.mdx#s2 |
 | [ ] | Lambda Layers | ✅ Đã có | 1 | exam4_q25 | lambda.mdx#s2 |
+| [ ] | Lambda mounting EFS | ✅ Đã có | 1 | exam1_q9 | storage.mdx#s3 / StepSim (links to lambda.mdx#s2) |
 | [ ] | Lambda provisioned concurrency | ✅ Đã có | 1 | exam3_q20 | lambda.mdx#s2 / LambdaRunSim |
 | [ ] | Lambda SQS event source | ✅ Đã có | 1 | exam2_q14 | lambda.mdx#s1 / ScenarioFlow |
 | [ ] | Lambda VPC access (NAT gateway) | ✅ Đã có | 1 | exam4_q25 | lambda.mdx#s2 / LambdaRunSim |
@@ -703,23 +703,15 @@ Có **960 keyword** khác nhau: ✅ 828 (86%) · 🟡 63 (7%) · ❌ 69 (7%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | Mountpoint for Amazon S3 | ❌ Thiếu | 3 | exam3_q5, exam4_q24, exam5_q28 |  |
-| [ ] | Amazon FSx for OpenZFS | ❌ Thiếu | 1 | exam3_q26 |  |
-| [ ] | EFS access point | ❌ Thiếu | 1 | exam1_q9 |  |
-| [ ] | EFS One Zone storage class | ❌ Thiếu | 1 | exam4_q55 |  |
-| [ ] | Mountpoint for Amazon S3 (not POSIX) | ❌ Thiếu | 1 | exam5_q47 |  |
-| [ ] | EFS Bursting Throughput mode | 🟡 Một phần ⚠ | 2 | exam3_q11, exam4_q55 | storage.mdx#s3 / RequirementPicker |
-| [ ] | Amazon FSx for NetApp ONTAP (SnapMirror cross-Region) | 🟡 Một phần | 1 | exam5_q47 | storage.mdx#s4 / FsxSim |
-| [ ] | Amazon FSx for NetApp ONTAP volume tiering | 🟡 Một phần | 1 | exam5_q54 | storage.mdx#s4 / FsxSim |
-| [ ] | EBS General Purpose SSD (gp2) burst credits | 🟡 Một phần | 1 | exam4_q15 | iac.mdx#s1 / StackSim; storage.mdx#s2 |
-| [ ] | Relative per-GB price S3 Standard vs EFS vs EBS | 🟡 Một phần | 1 | exam1_q46 | storage.mdx#s1 |
 | [ ] | Amazon FSx for Lustre | ✅ Đã có | 6 | exam1_q65, exam2_q56, exam3_q5, exam3_q43, exam5_q28, exam5_q47 | storage.mdx#s4 / FsxSim |
 | [ ] | Amazon EFS | ✅ Đã có | 3 | exam1_q43, exam1_q51, exam2_q56 | storage.mdx#s1<br>storage.mdx#s1, #s3 |
 | [ ] | Amazon FSx for Windows File Server | ✅ Đã có | 3 | exam1_q24, exam3_q5, exam4_q37 | storage.mdx#s4 / FsxSim<br>storage.mdx#s4 |
 | [ ] | EBS Provisioned IOPS SSD (io1/io2) | ✅ Đã có | 3 | exam1_q43, exam3_q27, exam5_q22 | storage.mdx#s2 / VolumeChooser |
 | [ ] | EBS snapshot | ✅ Đã có | 3 | exam5_q16, exam5_q64, exam6_q15 | storage.mdx#s2 |
 | [ ] | EFS Infrequent Access storage class | ✅ Đã có | 3 | exam2_q60, exam4_q55, exam5_q54 | storage.mdx#s3 / RequirementPicker<br>storage.mdx#s3 |
+| [ ] | Mountpoint for Amazon S3 | ✅ Đã có | 3 | exam3_q5, exam4_q24, exam5_q28 | storage.mdx#s5 / MountpointSim, RequirementPicker |
 | [ ] | EBS General Purpose SSD (gp2/gp3) | ✅ Đã có | 2 | exam3_q27, exam5_q22 | storage.mdx#s2 / VolumeChooser |
+| [ ] | EFS Bursting Throughput mode | ✅ Đã có | 2 | exam3_q11, exam4_q55 | storage.mdx#s3 / RequirementPicker<br>storage.mdx#s3 / BurstCreditSim |
 | [ ] | EFS General Purpose performance mode | ✅ Đã có | 2 | exam2_q64, exam4_q55 | storage.mdx#s3 |
 | [ ] | EFS Provisioned Throughput mode | ✅ Đã có | 2 | exam3_q11, exam4_q55 | storage.mdx#s3 / RequirementPicker<br>storage.mdx#s3 |
 | [ ] | FSx for Windows File Server (SMB) | ✅ Đã có | 2 | exam2_q12, exam3_q56 | storage.mdx#s4 / FsxSim |
@@ -741,6 +733,9 @@ Có **960 keyword** khác nhau: ✅ 828 (86%) · 🟡 63 (7%) · ❌ 69 (7%).
 | [ ] | Amazon FSx for Lustre (S3 integration) | ✅ Đã có | 1 | exam1_q24 | storage.mdx#s4 / FsxSim |
 | [ ] | Amazon FSx for NetApp ONTAP | ✅ Đã có | 1 | exam3_q61 | storage.mdx#s4 / FsxSim |
 | [ ] | Amazon FSx for NetApp ONTAP (NFS + SMB) | ✅ Đã có | 1 | exam3_q26 | storage.mdx#s4 / FsxSim |
+| [ ] | Amazon FSx for NetApp ONTAP (SnapMirror cross-Region) | ✅ Đã có | 1 | exam5_q47 | storage.mdx#s4 / FsxSim, RequirementPicker |
+| [ ] | Amazon FSx for NetApp ONTAP volume tiering | ✅ Đã có | 1 | exam5_q54 | storage.mdx#s4 / RequirementPicker |
+| [ ] | Amazon FSx for OpenZFS | ✅ Đã có | 1 | exam3_q26 | storage.mdx#s4 / FsxSim, RequirementPicker |
 | [ ] | Amazon FSx for Windows File Server (Active Directory integration) | ✅ Đã có | 1 | exam3_q43 | storage.mdx#s4 / FsxSim |
 | [ ] | Amazon FSx for Windows File Server (DFS support) | ✅ Đã có | 1 | exam1_q65 | storage.mdx#s4 / FsxSim |
 | [ ] | Amazon S3 as highly available document store | ✅ Đã có | 1 | exam6_q15 | storage.mdx#s1 / SharedStorageSim |
@@ -748,6 +743,7 @@ Có **960 keyword** khác nhau: ✅ 828 (86%) · 🟡 63 (7%) · ❌ 69 (7%).
 | [ ] | EBS Cold HDD (sc1) | ✅ Đã có | 1 | exam3_q27 | storage.mdx#s2 / VolumeChooser |
 | [ ] | EBS encryption (at rest, in transit, snapshots) | ✅ Đã có | 1 | exam5_q40 | storage.mdx#s2 |
 | [ ] | EBS fast snapshot restore | ✅ Đã có | 1 | exam5_q64 | storage.mdx#s2 |
+| [ ] | EBS General Purpose SSD (gp2) burst credits | ✅ Đã có | 1 | exam4_q15 | storage.mdx#s2 / BurstCreditSim, RequirementPicker |
 | [ ] | EBS gp2/gp3 volume | ✅ Đã có | 1 | exam1_q44 | storage.mdx#s2 / VolumeChooser |
 | [ ] | EBS Multi-Attach | ✅ Đã có | 1 | exam5_q64 | storage.mdx#s2 / VolumeChooser |
 | [ ] | EBS Multi-Attach (io1/io2 only) | ✅ Đã có | 1 | exam6_q24 | storage.mdx#s2 / VolumeChooser |
@@ -760,12 +756,14 @@ Có **960 keyword** khác nhau: ✅ 828 (86%) · 🟡 63 (7%) · ❌ 69 (7%).
 | [ ] | EBS volume single-instance attachment | ✅ Đã có | 1 | exam3_q11 | storage.mdx#s1 / SharedStorageSim |
 | [ ] | EBS volume types (gp2, io1, st1) | ✅ Đã có | 1 | exam5_q43 | storage.mdx#s2 / VolumeChooser |
 | [ ] | EBS volume types (gp3, st1, sc1) | ✅ Đã có | 1 | exam6_q24 | storage.mdx#s2 / VolumeChooser |
+| [ ] | EFS access point | ✅ Đã có | 1 | exam1_q9 | storage.mdx#s3 / RequirementPicker, StepSim |
 | [ ] | EFS cross-account access (file system policy) | ✅ Đã có | 1 | exam1_q9 | storage.mdx#s1 |
 | [ ] | EFS IAM authorization policy | ✅ Đã có | 1 | exam1_q12 | storage.mdx#s3 |
 | [ ] | EFS Infrequent Access / Intelligent-Tiering | ✅ Đã có | 1 | exam3_q26 | storage.mdx#s3 / RequirementPicker |
 | [ ] | EFS lifecycle management (Infrequent Access) | ✅ Đã có | 1 | exam1_q35 | storage.mdx#s3 |
-| [ ] | EFS Max I/O performance mode | ✅ Đã có | 1 | exam2_q64 | storage.mdx#s3 / RequirementPicker |
+| [ ] | EFS Max I/O performance mode | ✅ Đã có | 1 | exam2_q64 | storage.mdx#s3 / RequirementPicker (current guidance + older-material note) |
 | [ ] | EFS mount target | ✅ Đã có | 1 | exam4_q24 | storage.mdx#s3 / RequirementPicker |
+| [ ] | EFS One Zone storage class | ✅ Đã có | 1 | exam4_q55 | storage.mdx#s3 / RequirementPicker |
 | [ ] | EFS security group (mount target) | ✅ Đã có | 1 | exam1_q12 | storage.mdx#s3 |
 | [ ] | EFS Standard pricing (per GB used) | ✅ Đã có | 1 | exam1_q46 | storage.mdx#s1 / SharedStorageSim |
 | [ ] | EFS throughput mode (Bursting, Provisioned) | ✅ Đã có | 1 | exam2_q64 | storage.mdx#s3 / RequirementPicker |
@@ -773,6 +771,8 @@ Có **960 keyword** khác nhau: ✅ 828 (86%) · 🟡 63 (7%) · ❌ 69 (7%).
 | [ ] | FSx for Lustre linked to S3 | ✅ Đã có | 1 | exam3_q61 | storage.mdx#s4 / FsxSim |
 | [ ] | FSx for Windows File Server (DFS/DFSR replacement) | ✅ Đã có | 1 | exam2_q56 | storage.mdx#s4 / FsxSim; storage.mdx#challenge |
 | [ ] | FSx for Windows File Server SMB access from Linux | ✅ Đã có | 1 | exam3_q5 | storage.mdx#s4 / FsxSim |
+| [ ] | Mountpoint for Amazon S3 (not POSIX) | ✅ Đã có | 1 | exam5_q47 | storage.mdx#s5 / MountpointSim |
+| [ ] | Relative per-GB price S3 Standard vs EFS vs EBS | ✅ Đã có | 1 | exam1_q46 | storage.mdx#s1 / StorageBillSim |
 
 ## storage-migration
 

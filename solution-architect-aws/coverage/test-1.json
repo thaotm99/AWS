@@ -275,14 +275,14 @@
         {
           "keyword": "EFS access point",
           "lesson": "storage",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "storage.mdx#s3 / RequirementPicker, StepSim"
         },
         {
           "keyword": "Lambda mounting EFS",
           "lesson": "lambda",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "storage.mdx#s3 / StepSim (links to lambda.mdx#s2)"
         },
         {
           "keyword": "VPC peering",
@@ -1428,8 +1428,8 @@
         {
           "keyword": "Relative per-GB price S3 Standard vs EFS vs EBS",
           "lesson": "storage",
-          "status": "partial",
-          "where": "storage.mdx#s1"
+          "status": "covered",
+          "where": "storage.mdx#s1 / StorageBillSim"
         }
       ]
     },

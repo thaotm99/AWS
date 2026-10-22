@@ -1822,7 +1822,7 @@
           "keyword": "EFS Max I/O performance mode",
           "lesson": "storage",
           "status": "covered",
-          "where": "storage.mdx#s3 / RequirementPicker"
+          "where": "storage.mdx#s3 / RequirementPicker (current guidance + older-material note)"
         },
         {
           "keyword": "EFS throughput mode (Bursting, Provisioned)",

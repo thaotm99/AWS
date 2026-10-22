@@ -474,8 +474,8 @@
         {
           "keyword": "EBS General Purpose SSD (gp2) burst credits",
           "lesson": "storage",
-          "status": "partial",
-          "where": "iac.mdx#s1 / StackSim; storage.mdx#s2"
+          "status": "covered",
+          "where": "storage.mdx#s2 / BurstCreditSim, RequirementPicker"
         },
         {
           "keyword": "CloudFormation (no extra charge)",
@@ -770,8 +770,8 @@
         {
           "keyword": "Mountpoint for Amazon S3",
           "lesson": "storage",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "storage.mdx#s5 / MountpointSim, RequirementPicker"
         }
       ]
     },
@@ -1746,8 +1746,8 @@
         {
           "keyword": "EFS Bursting throughput mode",
           "lesson": "storage",
-          "status": "partial",
-          "where": "storage.mdx#s3 / RequirementPicker"
+          "status": "covered",
+          "where": "storage.mdx#s3 / BurstCreditSim"
         },
         {
           "keyword": "EFS General Purpose performance mode",
@@ -1770,8 +1770,8 @@
         {
           "keyword": "EFS One Zone storage class",
           "lesson": "storage",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "storage.mdx#s3 / RequirementPicker"
         }
       ]
     },

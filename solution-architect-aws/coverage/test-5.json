@@ -884,8 +884,8 @@
         {
           "keyword": "Mountpoint for Amazon S3",
           "lesson": "storage",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "storage.mdx#s5 / MountpointSim, RequirementPicker"
         },
         {
           "keyword": "Amazon FSx for Lustre",
@@ -1443,14 +1443,14 @@
         {
           "keyword": "Amazon FSx for NetApp ONTAP (SnapMirror cross-Region)",
           "lesson": "storage",
-          "status": "partial",
-          "where": "storage.mdx#s4 / FsxSim"
+          "status": "covered",
+          "where": "storage.mdx#s4 / FsxSim, RequirementPicker"
         },
         {
           "keyword": "Mountpoint for Amazon S3 (not POSIX)",
           "lesson": "storage",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "storage.mdx#s5 / MountpointSim"
         }
       ]
     },
@@ -1650,8 +1650,8 @@
         {
           "keyword": "Amazon FSx for NetApp ONTAP volume tiering",
           "lesson": "storage",
-          "status": "partial",
-          "where": "storage.mdx#s4 / FsxSim"
+          "status": "covered",
+          "where": "storage.mdx#s4 / RequirementPicker"
         },
         {
           "keyword": "Amazon FSx for Lustre (HPC)",
