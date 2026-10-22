@@ -1,4 +1,4 @@
-import { FLOW_ARROWS } from "../../data/glossary";
+import { FLOW_ARROWS } from "../../data/glossary-rules";
 
 interface Props {
   flow: string[];

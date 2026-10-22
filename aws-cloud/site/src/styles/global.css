@@ -895,3 +895,46 @@ input[type="checkbox"]:disabled, input[type="range"]:disabled { opacity: .5; cur
   .gl-filter { flex: none; }
   .gl-card { padding: 16px; }
 }
+
+/* Key-terms strip at the top of a lesson scene (components/glossary/KeywordStrip.tsx). */
+.kw-strip { margin: 10px 0 16px; border-radius: 18px; background: linear-gradient(180deg, color-mix(in srgb, var(--edge-soft) 55%, var(--surface)), var(--edge-soft)); border: 1px solid color-mix(in srgb, var(--edge) 22%, var(--line)); overflow: hidden; }
+.kw-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 16px; }
+.kw-ring { position: relative; width: 40px; height: 40px; flex: none; }
+.kw-ring span { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-mono); font-size: 0.68rem; font-weight: 600; }
+.kw-ring-bg, .kw-ring-fg { fill: none; stroke-width: 4; }
+.kw-ring-bg { stroke: color-mix(in srgb, var(--edge) 22%, transparent); }
+.kw-ring-fg { stroke: var(--ok); stroke-linecap: round; transition: stroke-dashoffset .6s cubic-bezier(.3,.8,.2,1); }
+.kw-title { display: flex; flex-direction: column; min-width: 0; line-height: 1.35; }
+.kw-title b { font-size: 0.9rem; }
+.kw-title span { font-size: 0.78rem; color: var(--muted); }
+.kw-chips { display: flex; flex-wrap: wrap; gap: 6px; flex: 1 1 320px; }
+.kw-chip, .kw-more, .kw-review { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 14px; border-radius: 99px; font: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: 1.5px solid color-mix(in srgb, var(--edge) 35%, var(--line)); background: var(--surface); color: var(--ink); transition: background .2s, color .2s, border-color .2s, transform .2s; }
+.kw-chip:hover, .kw-more:hover, .kw-review:hover { transform: translateY(-1px); border-color: var(--edge); }
+.kw-chip[data-known] { background: var(--ok-soft); border-color: color-mix(in srgb, var(--ok) 45%, transparent); color: var(--ok); }
+.kw-chip[data-known] svg { animation: kw-check .35s ease both; }
+.kw-chip[aria-pressed="true"] { background: var(--edge); border-color: var(--edge); color: var(--surface); transform: translateY(-2px); }
+.kw-more { color: var(--edge); }
+.kw-review { margin-left: auto; }
+.kw-panel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 300px); gap: 18px; margin: 0 10px 10px; padding: 16px 18px; border-radius: 14px; background: var(--surface); animation: kw-open .32s ease both; }
+.kw-panel-text { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.kw-panel-text p { margin: 0; max-width: none; }
+.kw-name { font-size: 1.05rem; }
+.kw-panel-text > p:first-of-type { font-size: 0.95rem; line-height: 1.65; }
+.kw-ex { font-size: 0.85rem; color: var(--muted); }
+.kw-ex b { color: var(--edge); }
+.kw-links { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 0.82rem; font-weight: 600; }
+.kw-links a { text-decoration: none; }
+.kw-links a:last-child { color: var(--muted); }
+.kw-panel-side { display: flex; flex-direction: column; gap: 10px; }
+.kw-mark { min-height: 44px; border-radius: 12px; font: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: 1.5px solid var(--ok); background: var(--ok); color: var(--surface); transition: background .2s, color .2s; }
+.kw-mark[aria-pressed="true"] { background: var(--ok-soft); color: var(--ok); }
+.kw-term { font: inherit; color: var(--edge); font-weight: 600; background: none; border: 0; padding: 0 1px; border-radius: 4px; cursor: pointer; text-decoration: underline dotted; text-decoration-thickness: 1.5px; text-underline-offset: 4px; transition: background .2s, color .2s; }
+.kw-term:hover { background: var(--edge-soft); }
+.kw-term.known { color: inherit; font-weight: inherit; text-decoration: none; }
+@keyframes kw-open { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+@keyframes kw-check { 0% { transform: scale(0); } 70% { transform: scale(1.3); } 100% { transform: scale(1); } }
+@media (max-width: 640px) {
+  .kw-panel { grid-template-columns: 1fr; }
+  .kw-chips { flex-basis: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { .kw-panel, .kw-chip[data-known] svg { animation: none; } }

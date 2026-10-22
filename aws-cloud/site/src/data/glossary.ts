@@ -7,7 +7,7 @@
 // acronym such as "AZ" or "EC2") matches with that exact case; any other alias ignores case.
 // Longer aliases win over shorter ones, so "NAT gateway" is not also counted as "gateway".
 //
-// `flow` draws a small figure on the card: boxes joined by the arrow tokens in FLOW_ARROWS.
+// `flow` draws a small figure on the card: boxes joined by the arrow tokens in FLOW_ARROWS (glossary-rules.ts).
 
 export interface GlossaryText {
   /** Definition, following the AWS documentation. */
@@ -33,8 +33,6 @@ export interface GlossaryTerm {
   en: GlossaryText;
 }
 
-/** Tokens in `flow` drawn as connectors rather than boxes. */
-export const FLOW_ARROWS = ["→", "←", "⇄", "⊃", "+", "=", "∩"];
 
 const D = "https://docs.aws.amazon.com/";
 

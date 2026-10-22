@@ -4,15 +4,13 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { LAYERS } from "./curriculum";
 import { GLOSSARY, type GlossaryTerm } from "./glossary";
+import { ACRONYM, spellings } from "./glossary-rules";
 
 export type Lang = "vi" | "en";
 
 const CONTENT_DIR = resolve(process.cwd(), "src/content");
 const LESSON_DIR: Record<Lang, string> = { vi: "concepts", en: "concepts-en" };
 const LESSON_IDS = LAYERS.flatMap((l) => l.ids);
-
-/** An alias in capitals only (optionally a plural "s") is an acronym and matches with its exact case. */
-const ACRONYM = /^[A-Z0-9][A-Z0-9-]*s?$/;
 
 interface Alias {
   text: string;
@@ -24,11 +22,6 @@ let matcher: { regex: RegExp; byKey: Map<string, Alias> } | undefined;
 
 function key(s: string) {
   return s.normalize("NFC").toLowerCase();
-}
-
-/** Every spelling of a term; the display name counts unless it carries brackets or a slash. */
-function spellings(t: GlossaryTerm): string[] {
-  return [...(/[(/]/.test(t.name) ? [] : [t.name]), ...t.aliases];
 }
 
 function getMatcher() {
@@ -98,6 +91,21 @@ export function sceneTerms(lang: Lang, lesson: string, sceneId: string): Glossar
   const part = parts.find((p) => new RegExp(`^<Scene\\s[^>]*\\bid="${sceneId}"`).test(p));
   if (!part) return [];
   return termIdsIn(readable(part)).map((id) => GLOSSARY.find((t) => t.id === id)!);
+}
+
+/**
+ * Terms for a scene's key-terms strip: the terms it uses that no earlier scene of the same lesson
+ * already listed, so each term is introduced once per lesson.
+ */
+export function stripTerms(lang: Lang, lesson: string, sceneId: string): GlossaryTerm[] {
+  const src = lessonSource(lang, lesson);
+  if (!src) return [];
+  const earlier = new Set<string>();
+  for (const m of src.matchAll(/<Scene\s[^>]*\bid="([^"]+)"/g)) {
+    if (m[1] === sceneId) return sceneTerms(lang, lesson, sceneId).filter((t) => !earlier.has(t.id));
+    for (const t of sceneTerms(lang, lesson, m[1])) earlier.add(t.id);
+  }
+  return [];
 }
 
 let usage: Map<string, string[]> | undefined;
