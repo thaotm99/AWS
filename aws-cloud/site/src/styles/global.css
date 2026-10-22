@@ -810,7 +810,8 @@ input[type="checkbox"]:disabled, input[type="range"]:disabled { opacity: .5; cur
 
 .btn { min-height: 36px; display: inline-flex; align-items: center; justify-content: center; }
 .btn.cta { display: inline-flex; }
-.chip { min-height: 32px; display: inline-flex; align-items: center; line-height: 1.4; }
+.chip { min-height: 32px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; line-height: 1.4; }
+.chip code { line-height: 1.2; }
 .zoom-btn, .donate-copy { font-size: 0.8125rem; }
 .hero-actions .btn { min-height: 46px; }
 
