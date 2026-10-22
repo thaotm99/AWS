@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 881 (92%) · 🟡 36 (4%) · ❌ 43 (4%).
+Có **960 keyword** khác nhau: ✅ 886 (92%) · 🟡 34 (4%) · ❌ 40 (4%).
 
 ### Theo bài học
 
@@ -31,7 +31,7 @@ Có **960 keyword** khác nhau: ✅ 881 (92%) · 🟡 36 (4%) · ❌ 43 (4%).
 | [ec2](#ec2) | 57 | 57 | 0 | 0 | 100% |
 | [elb](#elb) | 42 | 42 | 0 | 0 | 100% |
 | [asg](#asg) | 44 | 44 | 0 | 0 | 100% |
-| [containers](#containers) | 22 | 17 | 2 | 3 | 77% |
+| [containers](#containers) | 22 | 22 | 0 | 0 | 100% |
 | [lambda](#lambda) | 37 | 29 | 4 | 4 | 78% |
 | [s3](#s3) | 70 | 70 | 0 | 0 | 100% |
 | [storage](#storage) | 70 | 70 | 0 | 0 | 100% |
@@ -50,11 +50,11 @@ Có **960 keyword** khác nhau: ✅ 881 (92%) · 🟡 36 (4%) · ❌ 43 (4%).
 
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
-| Đề 1 | 209 | 8 | 7 |
-| Đề 2 | 185 | 5 | 8 |
-| Đề 3 | 209 | 5 | 8 |
-| Đề 4 | 221 | 7 | 8 |
-| Đề 5 | 202 | 12 | 7 |
+| Đề 1 | 212 | 6 | 6 |
+| Đề 2 | 186 | 4 | 8 |
+| Đề 3 | 210 | 5 | 7 |
+| Đề 4 | 222 | 7 | 7 |
+| Đề 5 | 203 | 11 | 7 |
 | Đề 6 | 203 | 1 | 6 |
 
 ## global-infra
@@ -559,12 +559,9 @@ Có **960 keyword** khác nhau: ✅ 881 (92%) · 🟡 36 (4%) · ❌ 43 (4%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | AWS App Runner | ❌ Thiếu ⚠ | 2 | exam2_q14, exam3_q20 | security.mdx#s1 Takeaway (name only) |
-| [ ] | Kubernetes Horizontal Pod Autoscaler | ❌ Thiếu | 1 | exam4_q56 |  |
-| [ ] | Kubernetes RBAC | ❌ Thiếu | 1 | exam1_q5 |  |
-| [ ] | Amazon EKS Anywhere | 🟡 Một phần | 2 | exam1_q11, exam1_q27 | containers.mdx#s2 |
-| [ ] | ECS on Fargate (single task does not scale) | 🟡 Một phần | 1 | exam5_q36 | containers.mdx#s1 |
 | [ ] | Amazon ECS EC2 launch type | ✅ Đã có | 2 | exam2_q1, exam4_q33 | containers.mdx#s1 / ScenarioFlow<br>containers.mdx#s1 |
+| [ ] | Amazon EKS Anywhere | ✅ Đã có | 2 | exam1_q11, exam1_q27 | containers.mdx#s4 / EksPlacementSim; containers.mdx#s5 / QuickCompare |
+| [ ] | AWS App Runner | ✅ Đã có | 2 | exam2_q14, exam3_q20 | containers.mdx#s5 / QuickCompare |
 | [ ] | EKS on Fargate | ✅ Đã có | 2 | exam4_q33, exam4_q56 | containers.mdx#s1 |
 | [ ] | Amazon ECS Fargate task (scheduled) | ✅ Đã có | 1 | exam2_q27 | containers.mdx#s2 / ContainerJobSim |
 | [ ] | Amazon ECS on AWS Fargate | ✅ Đã có | 1 | exam1_q11 | containers.mdx#s1 |
@@ -575,12 +572,15 @@ Có **960 keyword** khác nhau: ✅ 881 (92%) · 🟡 36 (4%) · ❌ 43 (4%).
 | [ ] | AWS Fargate with Amazon ECS (long-running jobs) | ✅ Đã có | 1 | exam6_q35 | containers.mdx#s2 / ContainerJobSim; kinesis.mdx#s3 / StreamPipelineSim |
 | [ ] | ECS EC2 launch type pricing (EC2 + EBS) | ✅ Đã có | 1 | exam1_q14 | containers.mdx#s1 |
 | [ ] | ECS on Fargate | ✅ Đã có | 1 | exam4_q33 | containers.mdx#s1 |
+| [ ] | ECS on Fargate (single task does not scale) | ✅ Đã có | 1 | exam5_q36 | containers.mdx#s3 / ScaleLayersSim |
 | [ ] | ECS on Fargate with EFS volume | ✅ Đã có | 1 | exam3_q32 | containers.mdx#s2 / ContainerJobSim |
 | [ ] | ECS Service Auto Scaling (service CPU metric) | ✅ Đã có | 1 | exam3_q15 | containers.mdx#s2 |
 | [ ] | EKS IAM Roles for Service Accounts (IRSA) | ✅ Đã có | 1 | exam1_q5 | containers.mdx#s2 / ContainerJobSim |
 | [ ] | EKS self-managed node group | ✅ Đã có | 1 | exam1_q11 | containers.mdx#s1 |
 | [ ] | Fargate pricing (vCPU and memory) | ✅ Đã có | 1 | exam1_q14 | containers.mdx#s1 |
 | [ ] | Kubernetes Cluster Autoscaler | ✅ Đã có | 1 | exam4_q56 | containers.mdx#s2 / ContainerJobSim; asg.mdx#s1 |
+| [ ] | Kubernetes Horizontal Pod Autoscaler | ✅ Đã có | 1 | exam4_q56 | containers.mdx#s3 / ScaleLayersSim |
+| [ ] | Kubernetes RBAC | ✅ Đã có | 1 | exam1_q5 | containers.mdx#s2 (IRSA vs RBAC); containers.mdx#s5 / QuickCompare |
 
 ## lambda
 

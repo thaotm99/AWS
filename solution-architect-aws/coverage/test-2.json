@@ -492,8 +492,8 @@
         {
           "keyword": "AWS App Runner",
           "lesson": "containers",
-          "status": "partial",
-          "where": "security.mdx#s1 Takeaway (name only)"
+          "status": "covered",
+          "where": "containers.mdx#s5 / QuickCompare"
         }
       ]
     },

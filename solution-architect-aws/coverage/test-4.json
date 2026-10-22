@@ -1793,8 +1793,8 @@
         {
           "keyword": "Kubernetes Horizontal Pod Autoscaler",
           "lesson": "containers",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "containers.mdx#s3 / ScaleLayersSim"
         },
         {
           "keyword": "EKS on Fargate",

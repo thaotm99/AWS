@@ -637,8 +637,8 @@
         {
           "keyword": "AWS App Runner",
           "lesson": "containers",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "containers.mdx#s5 / QuickCompare"
         }
       ]
     },

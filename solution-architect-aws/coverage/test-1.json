@@ -167,8 +167,8 @@
         {
           "keyword": "Kubernetes RBAC",
           "lesson": "containers",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "containers.mdx#s2 (IRSA vs RBAC); containers.mdx#s5 / QuickCompare"
         }
       ]
     },
@@ -379,8 +379,8 @@
         {
           "keyword": "Amazon EKS Anywhere",
           "lesson": "containers",
-          "status": "partial",
-          "where": "containers.mdx#s2"
+          "status": "covered",
+          "where": "containers.mdx#s4 / EksPlacementSim; containers.mdx#s5 / QuickCompare"
         },
         {
           "keyword": "Amazon Lightsail",
@@ -868,8 +868,8 @@
         {
           "keyword": "Amazon EKS Anywhere",
           "lesson": "containers",
-          "status": "partial",
-          "where": "containers.mdx#s2"
+          "status": "covered",
+          "where": "containers.mdx#s4 / EksPlacementSim; containers.mdx#s5 / QuickCompare"
         },
         {
           "keyword": "AWS Local Zones",

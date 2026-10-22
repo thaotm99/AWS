@@ -1133,8 +1133,8 @@
         {
           "keyword": "ECS on Fargate (single task does not scale)",
           "lesson": "containers",
-          "status": "partial",
-          "where": "containers.mdx#s1"
+          "status": "covered",
+          "where": "containers.mdx#s3 / ScaleLayersSim"
         }
       ]
     },
