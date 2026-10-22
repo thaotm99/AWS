@@ -1,1 +1,3 @@
 secret/
+# Temporary git worktrees created by Claude Code agents
+.claude/worktrees/
