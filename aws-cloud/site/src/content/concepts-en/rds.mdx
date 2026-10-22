@@ -233,7 +233,7 @@ Sort each property into the matching feature. On a mobile device: tap a card, th
     { id: "rr", title: "Read Replica", sub: "Read scaling", hint: "Hint: this property serves scaling read capacity." },
   ]}
   cards={[
-    ["Synchronous replication", "maz"], ["The standby (DB instance deployment) does not serve reads", "maz"], ["Automatic failover via CNAME", "maz"], ["Each transaction is written on at least two nodes", "maz"],
+    ["Synchronous replication (DB instance deployment)", "maz"], ["The standby (DB instance deployment) does not serve reads", "maz"], ["Automatic failover via CNAME", "maz"], ["Each transaction is written on at least two nodes", "maz"],
     ["Asynchronous replication", "rr"], ["Has its own read endpoint", "rr"], ["Can be deployed in another Region", "rr"], ["Serves reporting and analytics", "rr"],
   ]}
 />
@@ -241,10 +241,10 @@ Sort each property into the matching feature. On a mobile device: tap a card, th
 Check question: as the designer of the ShopViet system, which option fits?
 
 <Quiz client:visible items={[
-  { q: "Which statement correctly describes the difference between Multi-AZ and Read Replicas?",
+  { q: "Which statement correctly describes the difference between a Multi-AZ DB instance deployment and Read Replicas?",
     opts: ["Multi-AZ is asynchronous, Read Replicas are synchronous", "Multi-AZ is synchronous within one Region; Read Replicas are asynchronous and can be in the same AZ, a different AZ or a different Region", "Both serve reads"],
     a: 1,
-    why: "Multi-AZ provides fault tolerance with synchronous replication; Read Replicas scale reads with asynchronous replication." },
+    why: "A Multi-AZ DB instance deployment provides fault tolerance with synchronous replication, and its standby serves no reads; Read Replicas scale reads with asynchronous replication. A Multi-AZ DB cluster deployment, by contrast, replicates semisynchronously and has two readable standbys." },
   { q: "The primary of the order database (RDS Multi-AZ) has a hardware failure. How does the system respond?",
     opts: ["It must be restored from a snapshot", "The endpoint's CNAME record points to the standby", "The Read Replica becomes the primary on its own"],
     a: 1,

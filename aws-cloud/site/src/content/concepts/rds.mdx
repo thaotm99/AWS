@@ -233,7 +233,7 @@ Phân loại từng đặc tính vào tính năng tương ứng. Trên thiết b
     { id: "rr", title: "Read Replica", sub: "Mở rộng đọc", hint: "Gợi ý: đặc tính này phục vụ mở rộng khả năng đọc." },
   ]}
   cards={[
-    ["Sao chép đồng bộ", "maz"], ["Standby (DB instance deployment) không phục vụ đọc", "maz"], ["Failover tự động bằng CNAME", "maz"], ["Ghi mỗi giao dịch trên ít nhất hai node", "maz"],
+    ["Sao chép đồng bộ (DB instance deployment)", "maz"], ["Standby (DB instance deployment) không phục vụ đọc", "maz"], ["Failover tự động bằng CNAME", "maz"], ["Ghi mỗi giao dịch trên ít nhất hai node", "maz"],
     ["Sao chép bất đồng bộ", "rr"], ["Có endpoint riêng để đọc", "rr"], ["Triển khai được tại Region khác", "rr"], ["Phục vụ báo cáo, analytics", "rr"],
   ]}
 />
@@ -241,10 +241,10 @@ Phân loại từng đặc tính vào tính năng tương ứng. Trên thiết b
 Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "Phát biểu nào mô tả đúng sự khác biệt giữa Multi-AZ và Read Replica?",
+  { q: "Phát biểu nào mô tả đúng sự khác biệt giữa Multi-AZ DB instance deployment và Read Replica?",
     opts: ["Multi-AZ bất đồng bộ, Read Replica đồng bộ", "Multi-AZ đồng bộ trong một Region; Read Replica bất đồng bộ, có thể cùng AZ, khác AZ hoặc khác Region", "Cả hai đều phục vụ đọc"],
     a: 1,
-    why: "Multi-AZ nhằm đảm bảo khả năng chịu lỗi, sao chép đồng bộ; Read Replica nhằm mở rộng đọc, sao chép bất đồng bộ." },
+    why: "Multi-AZ DB instance deployment nhằm đảm bảo khả năng chịu lỗi, sao chép đồng bộ, standby không phục vụ đọc; Read Replica nhằm mở rộng đọc, sao chép bất đồng bộ. Riêng Multi-AZ DB cluster deployment sao chép bán đồng bộ (semisynchronous) và có hai standby phục vụ đọc." },
   { q: "Primary của database đơn hàng (RDS Multi-AZ) gặp lỗi phần cứng. Hệ thống phản ứng như thế nào?",
     opts: ["Phải restore từ snapshot", "Bản ghi CNAME của endpoint trỏ sang standby", "Read Replica tự thành primary"],
     a: 1,
