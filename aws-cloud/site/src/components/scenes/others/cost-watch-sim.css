@@ -1,0 +1,21 @@
+/* One month of a cost problem (others/CostWatchSim) */
+.cws-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
+.cws-about { margin: 8px 16px 10px; font-size: var(--step--1); color: var(--muted); }
+.cws .stage-bar .cws-play { margin-left: auto; }
+.cws-grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
+.cws-bar { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1; transition: fill .2s, stroke .2s, opacity .2s, y .2s, height .2s; }
+.cws-bar.bad { fill: var(--bad-soft); stroke: var(--bad); }
+.cws-bar.ghost { opacity: .2; }
+.cws-limit { stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 6 4; }
+.cws-limit-t { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; fill: var(--ink); font-family: var(--font-body); font-size: 11px; font-weight: 600; }
+.cws-mark { stroke-width: 2; }
+.cws-mark.alert { stroke: var(--edge); stroke-dasharray: 3 3; }
+.cws-mark.act { stroke: var(--ok); }
+.cws-flash { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; font-family: var(--font-mono); font-size: 13px; font-weight: 700; text-anchor: middle; }
+.cws-flash.alert { fill: var(--edge); }
+.cws-flash.act { fill: var(--ok); }
+.cws-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
+.cws-sum { background: var(--bg); color: var(--ink); border: 1px solid var(--line); }
+.cws-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 8px; font-size: var(--step--1); }
+.cws-result.ok { background: var(--ok-soft); }
+.cws-result.bad { background: var(--bad-soft); }

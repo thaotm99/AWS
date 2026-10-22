@@ -1,0 +1,16 @@
+/* Which Savings Plans cover which workload (others/SavingsPlanSim) */
+.sav .stage-bar .sav-play { margin-left: auto; }
+.sav-cap { fill: var(--muted); font-family: var(--font-body); font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+.sav-link { fill: none; stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.sav-node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill .25s, stroke .25s, opacity .25s; }
+.sav-node.plan { opacity: .5; }
+.sav-node.plan.on { opacity: 1; }
+.sav-node.plan.on rect { fill: var(--accent-soft); stroke: var(--accent); }
+.sav-node.ok rect { fill: var(--ok-soft); stroke: var(--ok); }
+.sav-node.bad rect { fill: var(--bad-soft); stroke: var(--bad); }
+.sav-t { fill: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
+.sav-s { fill: var(--muted); font-family: var(--font-body); font-size: 10px; }
+.sav-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
+.sav-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 8px; font-size: var(--step--1); }
+.sav-result.ok { background: var(--ok-soft); }
+.sav-result.bad { background: var(--bad-soft); }
