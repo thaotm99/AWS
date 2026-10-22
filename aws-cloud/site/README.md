@@ -204,6 +204,7 @@ Cấu hình build nằm trong repo:
 | `SITE_USER` | Tên đăng nhập (Basic Auth). |
 | `SITE_PASSWORD` | Mật khẩu. Được giải mã theo UTF-8, nên dùng được ký tự tiếng Việt có dấu. |
 | `SITE_PUBLIC` | Đặt `1` để chủ động mở site public khi không đặt `SITE_USER`/`SITE_PASSWORD`. |
+| `SITE_PROTECT` | Chỉ khoá một số đường dẫn, phân tách bằng dấu phẩy, ví dụ `**/practice/**, **/quiz/**`. Để trống: khoá cả site. `/api/**` luôn bị khoá kèm vì trang Luyện đề tải dữ liệu đề từ đó. |
 | `VERCEL_ENV` | Do Vercel tự đặt (`production`, `preview`, `development`). Không cần khai báo. |
 
 Middleware đóng mặc định (fail closed):
@@ -211,6 +212,10 @@ Middleware đóng mặc định (fail closed):
 - Chỉ đặt một trong hai biến `SITE_USER` / `SITE_PASSWORD`: mọi request trả về 500 "Site auth misconfigured".
 - Không đặt cả hai trên Production (`VERCEL_ENV=production`): cũng trả về 500, trừ khi có `SITE_PUBLIC=1`.
 - Không đặt cả hai trên Preview/Development, hoặc có `SITE_PUBLIC=1`: site public.
-- Đặt đủ cả hai: hỏi tài khoản và mật khẩu (401 nếu sai).
+- Đặt đủ cả hai: hỏi tài khoản và mật khẩu (401 nếu sai). Nếu có `SITE_PROTECT` thì chỉ hỏi ở các đường dẫn khớp, còn lại mở.
+
+Cú pháp `SITE_PROTECT`: `*` khớp trong một đoạn đường dẫn, `**` khớp qua nhiều đoạn. `/practice/**` khoá
+`/practice/` và mọi trang con; `**/quiz/**` khoá `/concepts/<bài>/quiz/`. So khớp không phân biệt hoa thường
+và giải mã `%xx` trước, nên không lách được bằng `/PRACTICE/` hay `/%70ractice/`.
 
 Trình duyệt sẽ hỏi tài khoản và mật khẩu ở lần mở đầu tiên, và nhớ cho các lần sau. Middleware chỉ chạy trên Vercel; `npm run dev` và `npm run preview` ở máy không bị hỏi mật khẩu.
