@@ -552,7 +552,9 @@ html.zoom-rotate .zoom-close { top: auto; right: calc(8px + env(safe-area-inset-
 .flow-t.free { fill: var(--ok); }
 .verdict.ok { color: var(--ok); }
 .verdict.bad { color: var(--edge); }
-.stage-bar + .stage-bar { border-top: 0; padding-top: 0; }
+/* Consecutive bars read as one block: the join has no divider and each half keeps equal padding, so rows stay centred. */
+.stage-bar:has(+ .stage-bar) { border-bottom: 0; padding-bottom: 6px; }
+.stage-bar + .stage-bar { padding-top: 6px; }
 
 @media (max-width: 700px) {
   .picker { grid-template-columns: minmax(0, 1fr); }

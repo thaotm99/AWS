@@ -8,8 +8,13 @@ export class ScrollCue {
 
   start(): void {
     this.scan();
-    // Islands render their own frames after hydration; rescan (once per frame) when the DOM grows.
-    new MutationObserver(() => this.schedule()).observe(document.body, { childList: true, subtree: true });
+    // Islands render their own frames after hydration; rescan (once per frame) when the DOM grows or an island finishes.
+    new MutationObserver(() => this.schedule()).observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["ssr"],
+    });
   }
 
   private schedule(): void {
@@ -23,6 +28,8 @@ export class ScrollCue {
 
   private scan(): void {
     document.querySelectorAll<HTMLElement>(".svg-wrap").forEach((frame) => {
+      // Touching a server-rendered React node before its island hydrates triggers a hydration mismatch warning.
+      if (frame.closest("astro-island[ssr]")) return;
       if (this.seen.has(frame)) return;
       this.seen.add(frame);
       const update = () => this.mark(frame);
