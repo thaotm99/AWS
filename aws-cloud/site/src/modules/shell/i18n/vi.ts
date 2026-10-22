@@ -23,7 +23,6 @@ export const vi = {
     filter: "Lọc theo lớp",
     all: "Tất cả",
     example: "Ở ShopViet:",
-    seenIn: "Xuất hiện trong",
     learnIn: "Học kỹ ở bài {title}",
     docs: "Tài liệu AWS",
     empty: "Không có thuật ngữ phù hợp.",

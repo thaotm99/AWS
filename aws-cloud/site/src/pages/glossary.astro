@@ -4,7 +4,6 @@ import L from "../components/L.astro";
 import T from "../app/T.astro";
 import FlowFigure from "../components/glossary/FlowFigure.tsx";
 import { GLOSSARY } from "../data/glossary";
-import { lessonsUsing } from "../data/glossary-scan";
 import { getCurriculum } from "../data/exam";
 
 const layers = getCurriculum();
@@ -14,16 +13,12 @@ const concept = (id: string) => concepts.find((c) => c.id === id)!;
 /** Lower case without Vietnamese marks, so "do tre" finds "độ trễ"; the page script uses the same rule. */
 const fold = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").replace(/đ/g, "d").replace(/Đ/g, "d").toLowerCase();
 
-/** "Appears in" shows this many lessons before a "+N" button. */
-const SEEN_VISIBLE = 10;
-
 const groups = layers
   .map((layer) => ({
     layer,
     terms: GLOSSARY.filter((t) => concept(t.lesson).layer === layer.n).map((t) => ({
       ...t,
       home: concept(t.lesson),
-      seen: lessonsUsing(t.id).map(concept),
       search: fold([t.name, ...t.aliases, t.vi.def, t.en.def].join(" ")),
     })),
   }))
@@ -58,24 +53,17 @@ const groups = layers
         {g.terms.map((t) => (
           <article class="gl-card" id={t.id} data-layer={String(g.layer.n)} data-search={t.search}>
             <h3><a href={`#${t.id}`}>{t.name}</a></h3>
-            <p class="gl-def"><L vi={t.vi.def} en={t.en.def} /></p>
-            {t.flow && <FlowFigure flow={t.flow} lang="both" />}
-            {t.vi.example && (
-              <p class="gl-ex"><b><T k="shell.glossary.example" /></b> <L vi={t.vi.example} en={t.en.example} /></p>
-            )}
+            <div class="gl-body">
+              <p class="gl-def"><L vi={t.vi.def} en={t.en.def} /></p>
+              {t.flow && <FlowFigure flow={t.flow} lang="both" />}
+              {t.vi.example && (
+                <p class="gl-ex"><b><T k="shell.glossary.example" /></b> <L vi={t.vi.example} en={t.en.example} /></p>
+              )}
+            </div>
             <div class="gl-links">
               <a class="gl-learn" href={`/concepts/${t.lesson}/`}><L vi={`Học kỹ ở bài ${t.home.title}`} en={`Covered in ${t.home.titleEn}`} /> →</a>
               <a class="gl-docs" href={t.docs} target="_blank" rel="noopener"><T k="shell.glossary.docs" /> ↗</a>
             </div>
-            {t.seen.length > 0 && (
-              <p class="gl-seen">
-                <span><T k="shell.glossary.seenIn" /></span>
-                {t.seen.map((c, i) => <a href={`/concepts/${c.id}/`} hidden={i >= SEEN_VISIBLE}><L vi={c.title} en={c.titleEn} /></a>)}
-                {t.seen.length > SEEN_VISIBLE && (
-                  <button type="button" class="gl-seen-more"><L vi={`+${t.seen.length - SEEN_VISIBLE} bài`} en={`+${t.seen.length - SEEN_VISIBLE} lessons`} /></button>
-                )}
-              </p>
-            )}
           </article>
         ))}
       </div>
@@ -152,12 +140,17 @@ const groups = layers
         apply();
       });
     }
-    document.querySelectorAll<HTMLButtonElement>(".gl-seen-more").forEach((button) => {
-      button.addEventListener("click", () => {
-        button.parentElement!.querySelectorAll<HTMLElement>("a[hidden]").forEach((a) => (a.hidden = false));
-        button.remove();
-      });
-    });
+    /** Fade the bottom of a card whose text runs past its fixed height, until it is scrolled to the end. */
+    const fade = (body: HTMLElement) => {
+      body.classList.toggle("scrolls", body.scrollHeight > body.clientHeight + 1);
+      body.classList.toggle("at-end", body.scrollTop + body.clientHeight >= body.scrollHeight - 2);
+    };
+    const bodies = [...document.querySelectorAll<HTMLElement>(".gl-body")];
+    const resized = new ResizeObserver((entries) => entries.forEach((e) => fade(e.target as HTMLElement)));
+    for (const body of bodies) {
+      resized.observe(body);
+      body.addEventListener("scroll", () => fade(body), { passive: true });
+    }
     window.addEventListener("hashchange", reveal);
     apply();
     reveal();
