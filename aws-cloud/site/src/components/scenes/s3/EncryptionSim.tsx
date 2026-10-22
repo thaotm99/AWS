@@ -19,31 +19,31 @@ interface Scenario {
 }
 
 const SCENARIOS: Scenario[] = [
-  { id: "sse-s3", name: "Đơn giản nhất, không quản lý key", method: "SSE-S3",
-    result: () => "Mỗi object được mã hoá bằng một key riêng do S3 tạo và quản lý. Không phải làm gì thêm, nhưng không có log ghi lại từng lần dùng key." },
-  { id: "sse-kms", name: "Kiểm toán muốn biết ai dùng key", method: "SSE-KMS",
-    result: (_on, n) => `S3 xin data key từ KMS cho mỗi object: ${n} lần gọi, ${n} dòng log trong **CloudTrail**. Kiểm soát được ai dùng key bằng key policy.` },
-  { id: "bucket-key", name: "Phí gọi KMS tăng vọt", method: "SSE-KMS + S3 Bucket Key",
+  { id: "sse-s3", name: "Cấu hình đơn giản, không quản lý key", method: "SSE-S3",
+    result: () => "Mỗi object được mã hoá bằng một key riêng do S3 tạo và quản lý. Không yêu cầu cấu hình bổ sung, nhưng không có log ghi lại từng lần sử dụng key." },
+  { id: "sse-kms", name: "Audit việc sử dụng key", method: "SSE-KMS",
+    result: (_on, n) => `S3 yêu cầu data key từ KMS cho mỗi object: ${n} lần gọi, ${n} bản ghi log trong **CloudTrail**. Quyền sử dụng key được kiểm soát bằng key policy.` },
+  { id: "bucket-key", name: "Chi phí gọi KMS tăng đột biến", method: "SSE-KMS + S3 Bucket Key",
     toggle: { label: "Bật S3 Bucket Key", initial: false },
     result: (on, n) => on
-      ? `Chỉ ${n} lần gọi KMS: S3 tạo một **bucket key** ngắn hạn rồi tự sinh data key cho các object sau. Vẫn là SSE-KMS, nhưng số request tới KMS và phí giảm mạnh.`
-      : `${n} lần gọi KMS cho ${n} file. Hàng triệu file mỗi ngày thì phí KMS rất lớn. Bật **S3 Bucket Key** rồi gửi lại để so sánh.` },
-  { id: "sse-c", name: "Key phải ở lại server công ty", method: "SSE-C",
-    result: () => "Key đi kèm từng request (bắt buộc HTTPS). S3 mã hoá xong thì **bỏ key**, không lưu. Lúc đọc phải gửi lại đúng key đó; mất key là mất dữ liệu." },
-  { id: "client", name: "Dùng thuật toán mã hoá riêng", method: "Client-side encryption",
-    result: () => "Ứng dụng tự mã hoá bằng thuật toán và key của mình trước khi gửi. S3 chỉ nhận và lưu dữ liệu đã mã hoá, không bao giờ thấy bản gốc." },
+      ? `Chỉ ${n} lần gọi KMS: S3 tạo một **bucket key** ngắn hạn, sau đó tự sinh data key cho các object tiếp theo. Phương thức vẫn là SSE-KMS, nhưng số request tới KMS và chi phí giảm đáng kể.`
+      : `${n} lần gọi KMS cho ${n} object. Với hàng triệu object mỗi ngày, chi phí KMS rất lớn. Bật **S3 Bucket Key** và tải lên lại để so sánh.` },
+  { id: "sse-c", name: "Key lưu giữ tại máy chủ công ty", method: "SSE-C",
+    result: () => "Key được gửi kèm từng request (bắt buộc HTTPS). Sau khi mã hoá, S3 **loại bỏ key**, không lưu lại. Khi đọc, request phải kèm đúng key đó; mất key đồng nghĩa với mất dữ liệu." },
+  { id: "client", name: "Thuật toán mã hoá riêng", method: "Client-side encryption",
+    result: () => "Ứng dụng tự mã hoá bằng thuật toán và key riêng trước khi gửi. S3 chỉ tiếp nhận và lưu dữ liệu đã mã hoá, không bao giờ tiếp cận dữ liệu gốc." },
 ];
 
 const POS: Record<NodeId, Pt> = {
   app: [100, 120], keys: [100, 212], s3: [410, 120], kms: [410, 38], trail: [700, 38], disk: [700, 120],
 };
 const LABEL: Record<NodeId, { l1: string; l2: string; w: number }> = {
-  app: { l1: "App ShopViet", l2: "upload hoá đơn", w: 140 },
-  keys: { l1: "Kho key công ty", l2: "on-premises", w: 140 },
-  s3: { l1: "Amazon S3", l2: "nhận object", w: 150 },
+  app: { l1: "App ShopViet", l2: "tải lên hoá đơn", w: 140 },
+  keys: { l1: "Kho key nội bộ", l2: "on-premises", w: 140 },
+  s3: { l1: "Amazon S3", l2: "tiếp nhận object", w: 150 },
   kms: { l1: "AWS KMS", l2: "KMS key", w: 150 },
-  trail: { l1: "CloudTrail", l2: "log dùng key", w: 170 },
-  disk: { l1: "Ổ lưu của S3", l2: "object đã mã hoá", w: 170 },
+  trail: { l1: "CloudTrail", l2: "log sử dụng key", w: 170 },
+  disk: { l1: "Lưu trữ S3", l2: "object đã mã hoá", w: 170 },
 };
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -88,22 +88,22 @@ export default function EncryptionSim() {
     if (m === "sse-c" || m === "client") {
       light("keys", "on");
       await travel(L, [POS.keys, POS.app], 450, "pkt-edge", 5);
-      add("KEY", "lock", m === "sse-c" ? "App lấy key từ kho key của công ty. Key không bao giờ lưu trên AWS." : "App lấy key từ kho key của công ty và tự chọn thuật toán.");
+      add("KEY", "lock", m === "sse-c" ? "Ứng dụng lấy key từ kho key nội bộ của công ty. Key không bao giờ được lưu trên AWS." : "Ứng dụng lấy key từ kho key nội bộ của công ty và tự lựa chọn thuật toán.");
     }
     for (let i = 0; i < 3; i++) {
       const fast = i > 0 ? 0.6 : 1;
       const lane = (dy: number): Pt[] => [[POS.app[0] + 70, POS.app[1] + dy], [POS.s3[0] - 75, POS.s3[1] + dy]];
       if (m === "client") {
-        flashText(L, POS.app[0], POS.app[1] - 34, "mã hoá tại app", "s3x-flash-edge", 700);
+        flashText(L, POS.app[0], POS.app[1] - 34, "mã hoá tại ứng dụng", "s3x-flash-edge", 700);
         await wait(250 * fast);
         await travel(L, lane(0), 550 * fast, "pkt-edge");
         light("s3", "on");
-        if (i === 0) add("APP", "miss", "Dữ liệu được mã hoá **ngay trên app**, đi lên S3 đã là bản mã.");
+        if (i === 0) add("APP", "miss", "Dữ liệu được mã hoá **ngay tại ứng dụng**; dữ liệu gửi tới S3 đã ở dạng mã hoá.");
       } else if (m === "sse-c") {
         await Promise.all([travel(L, lane(-7), 550 * fast, "pkt"), travel(L, lane(8), 550 * fast, "pkt-edge", 4)]);
         light("s3", "change");
-        flashText(L, POS.s3[0], POS.s3[1] - 34, "mã hoá, rồi bỏ key", "s3x-flash-edge", 800);
-        if (i === 0) add("S3", "miss", "Request gửi kèm key qua HTTPS. S3 dùng key đó để mã hoá rồi xoá key khỏi bộ nhớ.");
+        flashText(L, POS.s3[0], POS.s3[1] - 34, "mã hoá, loại bỏ key", "s3x-flash-edge", 800);
+        if (i === 0) add("S3", "miss", "Request gửi kèm key qua HTTPS. S3 sử dụng key đó để mã hoá, sau đó xoá key khỏi bộ nhớ.");
         await wait(300 * fast);
       } else {
         await travel(L, lane(0), 550 * fast, "pkt");
@@ -111,7 +111,7 @@ export default function EncryptionSim() {
         const useKms = m === "sse-kms" || (m === "bucket-key" && (!on || i === 0));
         if (m === "sse-s3") {
           flashText(L, POS.s3[0], POS.s3[1] - 34, "key do S3 quản lý", "s3x-flash-edge", 700);
-          if (i === 0) add("S3", "miss", "S3 mã hoá object bằng một key riêng cho object đó. Bạn không thấy và không phải quản lý key.");
+          if (i === 0) add("S3", "miss", "S3 mã hoá object bằng một key riêng cho object đó. Người dùng không truy cập và không phải quản lý key.");
           await wait(300 * fast);
         } else if (useKms) {
           light("kms", "on");
@@ -124,12 +124,12 @@ export default function EncryptionSim() {
             travel(L, [[POS.kms[0] + 75, POS.kms[1]], [POS.trail[0] - 85, POS.trail[1]]], 300 * fast, "pkt-edge", 4),
           ]);
           if (i === 0) {
-            add("KMS", "lock", m === "bucket-key" && on ? "Lần đầu: S3 gọi KMS để tạo **bucket key** cho bucket." : "S3 gọi **KMS** xin data key cho object này.");
-            add("LOG", "hit", "Lần dùng key được ghi vào **CloudTrail**.");
+            add("KMS", "lock", m === "bucket-key" && on ? "Lần đầu tiên: S3 gọi KMS để tạo **bucket key** cho bucket." : "S3 gọi **KMS** để yêu cầu data key cho object này.");
+            add("LOG", "hit", "Lần sử dụng key được ghi vào **CloudTrail**.");
           }
         } else {
-          flashText(L, POS.s3[0], POS.s3[1] - 34, "dùng bucket key", "s3x-flash-edge", 700);
-          if (i === 1) add("S3", "miss", "File sau: S3 tự sinh data key từ **bucket key**, không gọi KMS.");
+          flashText(L, POS.s3[0], POS.s3[1] - 34, "sử dụng bucket key", "s3x-flash-edge", 700);
+          if (i === 1) add("S3", "miss", "Các object tiếp theo: S3 tự sinh data key từ **bucket key**, không gọi KMS.");
           await wait(300 * fast);
         }
       }
@@ -151,7 +151,7 @@ export default function EncryptionSim() {
         <rect x={x - w / 2} y={y - h / 2} width={w} height={h} rx={8} />
         <text className="s3x-t" x={x} y={y - 3} textAnchor="middle">{l1}</text>
         <text className="s3x-s" x={x} y={y + 13} textAnchor="middle">
-          {id === "disk" && stored > 0 ? `${stored}/3 object đã mã hoá` : id === "kms" && calls > 0 ? `đã gọi ${calls} lần` : l2}
+          {id === "disk" && stored > 0 ? `${stored}/3 object đã mã hoá` : id === "kms" && calls > 0 ? `${calls} lần gọi` : l2}
         </text>
       </g>
     );
@@ -172,15 +172,15 @@ export default function EncryptionSim() {
             {sc.toggle.label}
           </label>
         )}
-        <button className="btn primary" onClick={upload} disabled={busy}>Upload 3 hoá đơn</button>
+        <button className="btn primary" onClick={upload} disabled={busy}>Tải lên 3 hoá đơn</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 8 820 236" role="img" aria-label="Hoá đơn đi từ app lên S3 rồi xuống ổ lưu; KMS, CloudTrail và kho key công ty tham gia tuỳ kiểu mã hoá">
+        <svg viewBox="0 8 820 236" role="img" aria-label="Hoá đơn được gửi từ ứng dụng tới S3 rồi tới tầng lưu trữ; KMS, CloudTrail và kho key nội bộ tham gia tuỳ theo phương thức mã hoá">
           <path className="s3x-wire" d={`M170 120 H335 M485 120 H615`} />
           <path className="s3x-wire dash" d={`M410 95 V60 M485 38 H615 M100 190 V145`} />
           {(Object.keys(POS) as NodeId[]).map(node)}
           <circle className="pkt" cx={500} cy={205} r={5} />
-          <text className="s3x-s" x={512} y={209}>dữ liệu gốc (đi trong HTTPS)</text>
+          <text className="s3x-s" x={512} y={209}>dữ liệu gốc (truyền qua HTTPS)</text>
           <circle className="pkt-edge" cx={500} cy={226} r={5} />
           <text className="s3x-s" x={512} y={230}>đã mã hoá / key</text>
           <g ref={pk} />
@@ -188,7 +188,7 @@ export default function EncryptionSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="s3x-hint">Chọn một nhu cầu rồi bấm <b>Upload 3 hoá đơn</b> để xem dữ liệu được mã hoá ở đâu và key nằm ở đâu.</p>
+          <p className="s3x-hint">Chọn một yêu cầu, sau đó nhấn <b>Tải lên 3 hoá đơn</b> để quan sát vị trí mã hoá dữ liệu và nơi lưu trữ key.</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) =>

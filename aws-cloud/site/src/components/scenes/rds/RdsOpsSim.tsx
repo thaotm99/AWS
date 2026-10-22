@@ -51,9 +51,9 @@ const INITIAL: Record<MeterId, { v: number; label: string }> = {
 
 const SCENARIOS: Scenario[] = [
   {
-    name: "Báo cáo cuối tháng làm chậm web",
+    name: "Báo cáo cuối tháng làm chậm website",
     client: ["Web + báo cáo", "kế toán chạy SQL"],
-    toggle: "Có Read Replica cùng Region",
+    toggle: "Bổ sung Read Replica cùng Region",
     shows: (on) => (on ? ["replica"] : []),
     async run({ L, on, log, light, meter }) {
       const orders = Promise.all([0, 1, 2].map(async (i) => { await wait(i * 350); await travel(L, toPrimary, 600, "pkt"); }));
@@ -62,22 +62,22 @@ const SCENARIOS: Scenario[] = [
         meter("cpu", 95, "95%");
         light("primary", "bad");
         flashText(L, PRIMARY[0], PRIMARY[1] - 38, "đơn hàng chậm", "flash-bad", 1200);
-        log("CPU", "bad", "Truy vấn báo cáo nặng chạy chung với đơn hàng trên **primary**: CPU 95%.");
-        return { tone: "bad", msg: "Khách đặt hàng phải chờ lâu. Tách tải đọc của báo cáo sang **Read Replica**." };
+        log("CPU", "bad", "Truy vấn báo cáo tải nặng chạy cùng tác vụ đơn hàng trên **primary**: CPU 95%.");
+        return { tone: "bad", msg: "Thời gian phản hồi khi đặt hàng tăng cao. Cần tách tải đọc của báo cáo sang **Read Replica**." };
       }
       await Promise.all([orders, Promise.all([0, 1, 2].map(async (i) => { await wait(100 + i * 300); await travel(L, toReplica, 700, "pkt-edge", 8); }))]);
       light("replica", "ok");
       light("primary", "ok");
       meter("cpu", 35, "35%");
-      log("ĐỌC", "hit", "Báo cáo trỏ vào **endpoint của Read Replica**; primary chỉ lo đơn hàng.");
-      log("PHÍ", "info", "Replica cùng Region không tính phí truyền dữ liệu replication. Nên dùng cùng cấu hình compute và storage với primary để replica theo kịp.");
-      return { tone: "ok", msg: "Web nhanh trở lại, báo cáo vẫn chạy. Read Replica là cách rẻ nhất để tách tải đọc." };
+      log("ĐỌC", "hit", "Báo cáo kết nối tới **endpoint của Read Replica**; primary chỉ xử lý đơn hàng.");
+      log("PHÍ", "info", "Replica cùng Region không tính phí truyền dữ liệu replication. Replica nên có cùng cấu hình compute và storage với primary để tránh replication lag.");
+      return { tone: "ok", msg: "Hiệu năng website được khôi phục, báo cáo vẫn hoạt động. Read Replica là phương án chi phí thấp nhất để tách tải đọc." };
     },
   },
   {
     name: "Flash sale: 2.000 Lambda mở kết nối",
-    client: ["Lambda × 2.000", "mỗi lần 1 kết nối"],
-    toggle: "Đặt RDS Proxy phía trước",
+    client: ["Lambda × 2.000", "1 kết nối/lần gọi"],
+    toggle: "Triển khai RDS Proxy phía trước",
     shows: () => ["proxy"],
     async run({ L, on, log, light, meter }) {
       const dots = [0, 1, 2, 3, 4, 5, 6, 7];
@@ -92,8 +92,8 @@ const SCENARIOS: Scenario[] = [
             await travel(L, rev(toPrimary), 400, "pkt-bad", 5);
           }
         }));
-        log("KẾT NỐI", "bad", "Mỗi Lambda mở một kết nối mới. Database chạm **max_connections**, kết nối mới bị từ chối.");
-        return { tone: "bad", msg: "Đơn hàng lỗi đúng lúc đông khách nhất. Đặt **RDS Proxy** để gom kết nối." };
+        log("KẾT NỐI", "bad", "Mỗi Lambda mở một kết nối mới. Database đạt giới hạn **max_connections**; các kết nối mới bị từ chối.");
+        return { tone: "bad", msg: "Đơn hàng bị lỗi đúng thời điểm lưu lượng cao nhất. Cần triển khai **RDS Proxy** để gộp kết nối." };
       }
       light("proxy", "on");
       await Promise.all(dots.map(async (i) => { await wait(i * 110); await travel(L, viaProxy, 400, "pkt", 5); }));
@@ -101,13 +101,13 @@ const SCENARIOS: Scenario[] = [
       await Promise.all([0, 1].map(async (i) => { await wait(i * 200); await travel(L, proxyToPrimary, 450, "pkt-back", 6); }));
       meter("conn", 12, "120 / 1.000");
       light("primary", "ok");
-      log("PROXY", "hit", "**RDS Proxy** nhận 2.000 kết nối từ Lambda và dùng chung một nhóm nhỏ kết nối tới database (connection pooling).");
-      return { tone: "ok", msg: "Database chỉ thấy khoảng 120 kết nối. Proxy còn giữ kết nối khi failover, nên ứng dụng ít bị gián đoạn hơn." };
+      log("PROXY", "hit", "**RDS Proxy** tiếp nhận 2.000 kết nối từ Lambda và dùng chung một nhóm nhỏ kết nối tới database (connection pooling).");
+      return { tone: "ok", msg: "Database chỉ tiếp nhận khoảng 120 kết nối. Proxy còn duy trì kết nối khi failover, giúp giảm gián đoạn cho ứng dụng." };
     },
   },
   {
     name: "Ổ đĩa database sắp đầy",
-    client: ["Web bán hàng", "đơn tăng gấp đôi"],
+    client: ["Web bán hàng", "đơn hàng tăng gấp đôi"],
     toggle: "Bật storage auto scaling",
     shows: () => [],
     async run({ L, on, log, light, meter }) {
@@ -120,64 +120,64 @@ const SCENARIOS: Scenario[] = [
         meter("disk", 100, "100% / 500 GB");
         light("primary", "bad");
         flashText(L, PRIMARY[0], PRIMARY[1] - 38, "storage-full", "flash-bad", 1200);
-        log("Ổ ĐĨA", "bad", "Dung lượng cấp phát đã hết, instance chuyển sang trạng thái **storage-full** và không ghi được nữa.");
-        return { tone: "bad", msg: "Không nhận đơn mới cho tới khi có người tăng dung lượng bằng tay. Bật **storage auto scaling** để RDS tự lo." };
+        log("Ổ ĐĨA", "bad", "Dung lượng cấp phát đã hết; instance chuyển sang trạng thái **storage-full** và không thể ghi thêm dữ liệu.");
+        return { tone: "bad", msg: "Hệ thống không tiếp nhận đơn hàng mới cho tới khi dung lượng được tăng thủ công. Bật **storage auto scaling** để RDS tự động xử lý." };
       }
       flashText(L, PRIMARY[0], PRIMARY[1] - 38, "+ dung lượng", "rdx-flash-ok", 1200);
       await wait(500);
       meter("disk", 65, "65% / 750 GB");
       light("primary", "ok");
       await travel(L, toPrimary, 400, "pkt");
-      log("Ổ ĐĨA", "hit", "Gần đầy, RDS **tự tăng dung lượng** tới mức tối đa bạn đặt. Không downtime, không ai phải canh.");
-      return { tone: "ok", msg: "Đơn hàng vẫn ghi bình thường. Đặt maximum storage threshold để giới hạn chi phí." };
+      log("Ổ ĐĨA", "hit", "Khi dung lượng gần đầy, RDS **tự động tăng dung lượng** tới mức tối đa đã cấu hình, không phát sinh downtime và không cần giám sát thủ công.");
+      return { tone: "ok", msg: "Đơn hàng vẫn được ghi bình thường. Cấu hình maximum storage threshold để giới hạn chi phí." };
     },
   },
   {
     name: "Region Singapore gặp sự cố",
-    client: ["Web bán hàng", "khách Đông Nam Á"],
-    toggle: "Có cross-Region Read Replica ở Tokyo",
+    client: ["Web bán hàng", "người dùng Đông Nam Á"],
+    toggle: "Bổ sung cross-Region Read Replica tại Tokyo",
     shows: (on) => (on ? ["tokyo"] : []),
     async run({ L, on, log, light }) {
       if (on) {
         await travel(L, [[PRIMARY[0] + 75, PRIMARY[1] + 10], [TOKYO[0] - 70, TOKYO[1]]], 700, "pkt-edge", 5);
-        log("SAO CHÉP", "info", "Dữ liệu được sao chép **bất đồng bộ** sang replica ở Tokyo, và automated backup được copy sang Tokyo.");
+        log("SAO CHÉP", "info", "Dữ liệu được sao chép **bất đồng bộ** sang replica tại Tokyo, đồng thời automated backup được copy sang Tokyo.");
       }
       light("sg", "down");
       light("primary", "bad");
-      flashText(L, 470, 238, "Region Singapore lỗi", "flash-bad", 1300);
+      flashText(L, 470, 238, "Region Singapore sự cố", "flash-bad", 1300);
       await wait(700);
       if (!on) {
         await travel(L, toPrimary, 600, "pkt-bad");
         await travel(L, rev(toPrimary), 400, "pkt-bad");
-        log("DR", "bad", "Multi-AZ chỉ bảo vệ trong một Region. Không có bản sao nào ở Region khác.");
-        return { tone: "bad", msg: "Web ngừng bán cho tới khi Region hồi lại. Cần **cross-Region Read Replica** và copy backup sang Region khác cho disaster recovery." };
+        log("DR", "bad", "Multi-AZ chỉ bảo vệ trong phạm vi một Region. Không có bản sao nào tại Region khác.");
+        return { tone: "bad", msg: "Website ngừng hoạt động cho tới khi Region phục hồi. Cần **cross-Region Read Replica** và copy backup sang Region khác cho disaster recovery." };
       }
       flashText(L, TOKYO[0], TOKYO[1] - 38, "promote", "rdx-flash-ok", 1100);
       light("tokyo", "ok");
       await travel(L, toTokyo, 900, "pkt");
-      log("DR", "hit", "**Promote** replica ở Tokyo thành database độc lập, đổi ứng dụng sang endpoint mới.");
-      return { tone: "ok", msg: "Web bán lại được từ Tokyo. Mất tối đa phần dữ liệu chưa kịp sao chép (độ trễ replication)." };
+      log("DR", "hit", "**Promote** replica tại Tokyo thành database độc lập và chuyển ứng dụng sang endpoint mới.");
+      return { tone: "ok", msg: "Website hoạt động trở lại từ Tokyo. Lượng dữ liệu mất tối đa là phần chưa kịp sao chép (replication lag)." };
     },
   },
   {
-    name: "Oracle cần cài agent vào OS",
+    name: "Oracle: cài agent vào OS",
     client: ["Đội DBA", "cài agent giám sát"],
-    toggle: "Dùng RDS Custom for Oracle",
+    toggle: "Sử dụng RDS Custom for Oracle",
     shows: () => [],
     primary: (on) => (on ? "RDS Custom · Oracle" : "RDS for Oracle"),
     async run({ L, on, log, light }) {
       if (!on) {
         await travel(L, toPrimary, 600, "pkt-bad");
         light("primary", "bad");
-        flashText(L, PRIMARY[0], PRIMARY[1] - 38, "không vào được OS", "flash-bad", 1200);
+        flashText(L, PRIMARY[0], PRIMARY[1] - 38, "không truy cập được OS", "flash-bad", 1200);
         await travel(L, rev(toPrimary), 400, "pkt-bad");
-        log("OS", "bad", "RDS thường do AWS quản lý hệ điều hành. Không SSH, không cài phần mềm vào máy chủ.");
-        return { tone: "bad", msg: "Muốn sửa OS mà vẫn được AWS lo backup, vá lỗi và Multi-AZ thì dùng **RDS Custom**." };
+        log("OS", "bad", "Với RDS tiêu chuẩn, AWS quản lý hệ điều hành: không hỗ trợ SSH và không cài đặt được phần mềm lên máy chủ.");
+        return { tone: "bad", msg: "Khi cần tuỳ chỉnh OS mà vẫn được AWS quản lý backup, vá lỗi và Multi-AZ, sử dụng **RDS Custom**." };
       }
       await travel(L, toPrimary, 600, "pkt");
       light("primary", "ok");
-      log("OS", "hit", "**RDS Custom** cho truy cập hệ điều hành và môi trường database, vẫn có automated backup và Multi-AZ.");
-      return { tone: "ok", msg: "Đội DBA cài được agent. Không cần sửa OS thì dùng RDS thường, ít việc vận hành hơn." };
+      log("OS", "hit", "**RDS Custom** cho phép truy cập hệ điều hành và môi trường database, đồng thời vẫn hỗ trợ automated backup và Multi-AZ.");
+      return { tone: "ok", msg: "Đội DBA cài đặt được agent. Khi không cần tuỳ chỉnh OS, sử dụng RDS tiêu chuẩn để giảm khối lượng vận hành." };
     },
   },
 ];
@@ -254,13 +254,13 @@ export default function RdsOpsSim() {
         <button className="btn primary" onClick={go} disabled={busy}>Chạy</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 20 820 255" role="img" aria-label="Ứng dụng kết nối database RDS ở Region Singapore; tuỳ tình huống có RDS Proxy, Read Replica hoặc replica ở Tokyo">
+        <svg viewBox="0 20 820 255" role="img" aria-label="Ứng dụng kết nối database RDS tại Region Singapore; tuỳ tình huống có RDS Proxy, Read Replica hoặc replica tại Tokyo">
           <rect className={`rdx-region ${lit.sg === "down" ? "down" : ""}`} x={150} y={30} width={480} height={220} rx={12} />
           <text className="rdx-m" x={162} y={240}>Region Singapore</text>
           <path className="rdx-wire" d="M135 140 H300 V105 H335" />
           {shown.includes("replica") && <path className="rdx-wire dash" d={`M${PRIMARY[0] + 75} 95 L${REPLICA[0] - 65} 72`} />}
-          {node("app", APP, 120, 56, sc.client[0], sc.client[1], "on")}
-          {shown.includes("proxy") && node("proxy", PROXY, 110, 46, "RDS Proxy", on ? "gom kết nối" : "chưa dùng", on ? "" : "off")}
+          {node("app", APP, 136, 56, sc.client[0], sc.client[1], "on")}
+          {shown.includes("proxy") && node("proxy", PROXY, 110, 46, "RDS Proxy", on ? "connection pool" : "chưa sử dụng", on ? "" : "off")}
           {node("primary", PRIMARY, 150, 52, sc.primary?.(on) ?? "Primary", "Multi-AZ · đơn hàng")}
           {shown.includes("replica") && node("replica", REPLICA, 130, 46, "Read Replica", "cùng Region")}
           {METERS.map((m, i) => {
@@ -279,7 +279,7 @@ export default function RdsOpsSim() {
             <g opacity={on ? 1 : 0.4}>
               <rect className="rdx-region" x={645} y={30} width={165} height={220} rx={12} />
               <text className="rdx-m" x={657} y={240}>Region Tokyo</text>
-              {node("tokyo", TOKYO, 140, 52, lit.tokyo === "ok" ? "Primary mới" : "Read Replica", on ? "cross-Region" : "chưa có")}
+              {node("tokyo", TOKYO, 140, 52, lit.tokyo === "ok" ? "Primary mới" : "Read Replica", on ? "cross-Region" : "chưa triển khai")}
             </g>
           )}
           <g ref={pk} />
@@ -287,7 +287,7 @@ export default function RdsOpsSim() {
       </div>
       <div className="readout">
         {log.length === 0 && !result ? (
-          <p className="rdx-hint">Chọn một sự cố, bấm <b>Chạy</b> để xem chuyện gì xảy ra. Sau đó bật công tắc và chạy lại.</p>
+          <p className="rdx-hint">Chọn một sự cố và nhấn <b>Chạy</b> để quan sát hậu quả. Sau đó bật tính năng tương ứng và chạy lại.</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) => (
