@@ -46,8 +46,8 @@ const usd = (v: number) => `${Math.round(v).toLocaleString("en-US")} USD`;
 
 const PROBLEMS: Record<ProblemId, Problem> = {
   dev: {
-    name: "Tài khoản dev quên tắt máy",
-    about: "Mỗi lập trình viên có một tài khoản riêng, ngân sách 300 USD/tháng. Ngày 8, một bạn bật mấy máy GPU để thử rồi đi nghỉ phép.",
+    name: "Account dev không tắt instance",
+    about: "Mỗi lập trình viên có một account riêng, ngân sách 300 USD/tháng. Ngày 8, một lập trình viên khởi chạy một số GPU instance để thử nghiệm rồi nghỉ phép.",
     base: (d) => (d < 7 ? 6 : 40),
     cumulative: true,
     max: 1000,
@@ -56,19 +56,19 @@ const PROBLEMS: Record<ProblemId, Problem> = {
     limitLabel: "ngân sách 300 USD",
     badWhen: "above",
     unit: usd,
-    summary: (v) => `Cả tháng: ${usd(v.reduce((s, x) => s + x, 0))}`,
+    summary: (v) => `Tổng cả tháng: ${usd(v.reduce((s, x) => s + x, 0))}`,
     tools: [
       { name: "Cost Explorer", ok: false,
-        note: "Cost Explorer vẽ rất rõ chi phí tăng, nhưng **chỉ khi có người mở ra xem**. Không ai xem nên cuối tháng mới biết." },
+        note: "Cost Explorer thể hiện rõ chi phí tăng, nhưng **chỉ khi có người truy cập để xem**. Do không ai theo dõi, sự cố chỉ được phát hiện vào cuối tháng." },
       { name: "AWS Budgets: chỉ cảnh báo", alertDay: 7, alertText: "email", ok: false,
-        note: "Budgets gửi email ngay khi **dự báo** vượt ngân sách. Nhưng người nhận đang nghỉ phép, không ai tắt máy." },
+        note: "Budgets gửi email ngay khi chi phí **dự báo** vượt ngân sách. Tuy nhiên, người nhận đang nghỉ phép nên các instance không được tắt." },
       { name: "AWS Budgets: cảnh báo + action", alertDay: 7, alertText: "email", actDay: 12, actText: "action", after: 2, ok: true,
-        note: "Khi chi tiêu chạm 80% ngân sách, **Budgets action** tự gắn IAM policy DenyAll vào role của lập trình viên và stop các EC2 đang chạy. Chi phí dừng lại mà không ai phải trực." },
+        note: "Khi chi phí chạm 80% ngân sách, **Budgets action** tự động gắn IAM policy DenyAll vào role của lập trình viên và stop các EC2 đang chạy. Chi phí ngừng tăng mà không cần giám sát thủ công." },
     ],
   },
   coverage: {
-    name: "Độ phủ Savings Plans tụt",
-    about: "ShopViet đã mua Compute Savings Plans. Từ ngày 10, đội khác chạy thêm nhiều Fargate và Lambda theo giá on-demand nên phần được giảm giá (coverage) tụt.",
+    name: "Độ phủ Savings Plans giảm",
+    about: "ShopViet đã mua Compute Savings Plans. Từ ngày 10, một đội khác chạy thêm nhiều Fargate và Lambda theo giá on-demand nên tỷ lệ được giảm giá (coverage) giảm.",
     base: (d) => (d < 9 ? 95 : 74),
     cumulative: false,
     max: 100,
@@ -79,17 +79,17 @@ const PROBLEMS: Record<ProblemId, Problem> = {
     unit: (v) => `${Math.round(v)}%`,
     summary: (v) => `Coverage trung bình: ${Math.round(v.reduce((s, x) => s + x, 0) / v.length)}%`,
     tools: [
-      { name: "CloudWatch dashboard tự tính", alertDay: 15, alertText: "alarm", ok: false,
-        note: "CloudWatch không có sẵn metric coverage của Savings Plans. Phải **viết script** lấy số liệu, tự tính bằng metric math, rồi tự sửa khi có service mới. Báo trễ và tốn công." },
+      { name: "CloudWatch dashboard tự xây dựng", alertDay: 15, alertText: "alarm", ok: false,
+        note: "CloudWatch không có sẵn metric coverage của Savings Plans. Phải **viết script** thu thập số liệu, tự tính bằng metric math và tự cập nhật khi có service mới. Cảnh báo bị trễ và tốn công sức." },
       { name: "Compute Optimizer", ok: false,
-        note: "Compute Optimizer khuyến nghị **kích cỡ tài nguyên**. Nó không theo dõi coverage của Savings Plans nên không ai được báo." },
+        note: "Compute Optimizer khuyến nghị **kích thước tài nguyên**. Dịch vụ này không theo dõi coverage của Savings Plans nên không có cảnh báo nào được gửi." },
       { name: "AWS Budgets: coverage budget", alertDay: 9, alertText: "email", actDay: 12, actText: "mua thêm", after: 94, ok: true,
-        note: "Một **Savings Plans coverage budget** theo ngày, ngưỡng 90%. Ngay ngày đầu tụt, Budgets gửi email/SNS. Đội vận hành mua thêm Savings Plans, coverage lên lại. Không phải viết dòng code nào." },
+        note: "Một **Savings Plans coverage budget** theo ngày, ngưỡng 90%. Ngay trong ngày đầu tiên coverage giảm, Budgets gửi thông báo qua email/SNS. Đội vận hành mua thêm Savings Plans và coverage tăng trở lại. Không cần viết mã." },
     ],
   },
   rightsize: {
-    name: "Hoá đơn cao, không biết cắt chỗ nào",
-    about: "Sau một năm, hoá đơn EC2, RDS và S3 của ShopViet cao hơn nhu cầu thật. Không ai biết máy nào đang thừa.",
+    name: "Chi phí cao, chưa xác định điểm cắt giảm",
+    about: "Sau một năm, chi phí EC2, RDS và S3 của ShopViet cao hơn nhu cầu thực tế. Chưa xác định được tài nguyên nào đang dư thừa.",
     base: () => 100,
     cumulative: false,
     max: 120,
@@ -98,14 +98,14 @@ const PROBLEMS: Record<ProblemId, Problem> = {
     limitLabel: "mục tiêu 80 USD/ngày",
     badWhen: "above",
     unit: usd,
-    summary: (v) => `Cả tháng: ${usd(v.reduce((s, x) => s + x, 0))}`,
+    summary: (v) => `Tổng cả tháng: ${usd(v.reduce((s, x) => s + x, 0))}`,
     tools: [
-      { name: "Trusted Advisor tự gia hạn RI", ok: false,
-        note: "Trusted Advisor **kiểm tra và khuyến nghị**, nó không tự gia hạn Reserved Instance hay sửa gì. Hoá đơn giữ nguyên." },
-      { name: "Compute Optimizer mua RI giúp", ok: false,
-        note: "Compute Optimizer gợi ý **loại và kích cỡ** instance. Nó không chọn cách mua hay đặt chỗ Reserved Instance. Hoá đơn giữ nguyên." },
+      { name: "Trusted Advisor tự động gia hạn RI", ok: false,
+        note: "Trusted Advisor **kiểm tra và đưa ra khuyến nghị**, không tự động gia hạn Reserved Instance hay thay đổi tài nguyên. Chi phí không thay đổi." },
+      { name: "Compute Optimizer tự động mua RI", ok: false,
+        note: "Compute Optimizer đề xuất **loại và kích thước** instance; dịch vụ này không lựa chọn phương thức mua hay đặt trước Reserved Instance. Chi phí không thay đổi." },
       { name: "Cost Optimization Hub + Compute Optimizer", alertDay: 2, alertText: "báo cáo", actDay: 7, actText: "−32%", after: 68, ok: true,
-        note: "**Cost Optimization Hub** gom khuyến nghị của mọi tài khoản và Region vào một chỗ: 2 EC2 không ai dùng, vài máy quá lớn. **Compute Optimizer** chỉ ra kích cỡ vừa đủ. Xoá máy thừa, đổi máy nhỏ hơn, hoá đơn giảm." },
+        note: "**Cost Optimization Hub** tổng hợp khuyến nghị của mọi account và Region tại một nơi: 2 EC2 không được sử dụng, một số instance có kích thước quá lớn. **Compute Optimizer** đề xuất kích thước phù hợp. Xoá instance dư thừa và giảm kích thước instance giúp giảm chi phí." },
     ],
   },
 };
@@ -160,7 +160,7 @@ export default function CostWatchSim() {
       setShown(d);
       const layer = fx.current;
       const cx = X0 + d * bw + bw / 2;
-      if (layer && d === T.alertDay) flashText(layer, cx, y(vals[d]) - 10, T.alertText ?? "báo", "cws-flash alert", 1400);
+      if (layer && d === T.alertDay) flashText(layer, cx, y(vals[d]) - 10, T.alertText ?? "cảnh báo", "cws-flash alert", 1400);
       if (layer && d === T.actDay) flashText(layer, cx, y(vals[d]) - 24, T.actText ?? "action", "cws-flash act", 1400);
       if (!fast) await sleep(d === T.alertDay || d === T.actDay ? 600 : 110);
     }
@@ -182,7 +182,7 @@ export default function CostWatchSim() {
         {P.tools.map((t, i) => (
           <button key={t.name} className="btn" aria-pressed={i === ti} disabled={busy && i !== ti} onClick={() => change(() => setTi(i))}>{t.name}</button>
         ))}
-        <button className="btn primary cws-play" onClick={play} disabled={busy}>Chạy một tháng</button>
+        <button className="btn primary cws-play" onClick={play} disabled={busy}>Chạy mô phỏng một tháng</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 0 820 240" role="img" aria-label={`Biểu đồ 30 ngày: ${P.cumulative ? "chi tiêu cộng dồn" : "giá trị mỗi ngày"} so với ${P.limitLabel}`}>
@@ -214,17 +214,17 @@ export default function CostWatchSim() {
       </div>
       <div className="readout" aria-live="polite">
         {shown < 0 ? (
-          <p className="cws-hint">Chọn công cụ rồi bấm <b>Chạy một tháng</b>.</p>
+          <p className="cws-hint">Chọn công cụ, sau đó chọn <b>Chạy mô phỏng một tháng</b>.</p>
         ) : (
           <>
             <div className="status">
               <span className="count">Ngày {shown + 1} · {P.unit(vals[shown])}</span>
-              <span className={"pill " + (T.alertDay !== undefined && shown >= T.alertDay ? "ok" : "bad")}><i />{T.alertDay !== undefined && shown >= T.alertDay ? `đã báo ngày ${T.alertDay + 1}` : "chưa ai được báo"}</span>
+              <span className={"pill " + (T.alertDay !== undefined && shown >= T.alertDay ? "ok" : "bad")}><i />{T.alertDay !== undefined && shown >= T.alertDay ? `đã cảnh báo ngày ${T.alertDay + 1}` : "chưa có cảnh báo"}</span>
               {done && <span className="pill cws-sum"><i />{P.summary(daily)}</span>}
             </div>
             {done && (
               <p className={"cws-result " + (T.ok ? "ok" : "bad")}>
-                <b>{T.ok ? "Đúng công cụ. " : "Chưa giải quyết được. "}</b>{rich(T.note)}
+                <b>{T.ok ? "Công cụ phù hợp. " : "Chưa giải quyết được vấn đề. "}</b>{rich(T.note)}
               </p>
             )}
           </>

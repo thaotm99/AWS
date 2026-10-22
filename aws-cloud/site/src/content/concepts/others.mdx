@@ -1,6 +1,6 @@
 ---
-title: "Chi phí, AI có sẵn và vài service khác"
-lede: "ShopViet đã lớn: hoá đơn AWS bắt đầu đáng lo, dữ liệu khách nhiều tới mức không ai đọc hết. Bài này giữ chi phí trong tầm kiểm soát bằng AWS Budgets, Cost Optimization Hub, Compute Optimizer và Savings Plans, dùng Comprehend, Transcribe, Textract khi không có đội ML, rồi gặp AWS Batch và AWS Outposts."
+title: "Quản lý chi phí, AI services và các dịch vụ khác"
+lede: "Quy mô ShopViet tăng lên: chi phí AWS cần được kiểm soát chặt chẽ, và lượng dữ liệu từ người dùng vượt quá khả năng xử lý thủ công. Bài học trình bày cách kiểm soát chi phí bằng AWS Budgets, Cost Optimization Hub, Compute Optimizer và Savings Plans; sử dụng Comprehend, Transcribe, Textract khi không có đội ngũ ML; và giới thiệu AWS Batch cùng AWS Outposts."
 minutes: 20
 scenes: 4
 prerequisites: ["iam", "ec2", "lambda", "containers"]
@@ -33,161 +33,161 @@ import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
-  { href: "#s1", label: "1 · Giữ hoá đơn trong tầm" },
+  { href: "#s1", label: "1 · Kiểm soát chi phí" },
   { href: "#s2", label: "2 · Savings Plans" },
-  { href: "#s3", label: "3 · AI có sẵn" },
+  { href: "#s3", label: "3 · AI services dựng sẵn" },
   { href: "#s4", label: "4 · AWS Batch và Outposts" },
-  { href: "#challenge", label: "Thử thách" },
+  { href: "#challenge", label: "Bài tập" },
 ]}>
-ShopViet giờ có nhiều tài khoản AWS, nhiều đội, và một hoá đơn mỗi tháng một to. Cùng lúc đó, mỗi ngày có hàng nghìn đánh giá, cuộc gọi tổng đài và giấy tờ scan mà không ai đọc hết. ShopViet không có chuyên gia machine learning. Bài này gom những service giải quyết các việc đó: công cụ chi phí, AI dựng sẵn, và hai service cho những chỗ đặc biệt.
+ShopViet hiện có nhiều AWS account, nhiều đội kỹ thuật, và chi phí hằng tháng liên tục tăng. Đồng thời, mỗi ngày phát sinh hàng nghìn đánh giá, cuộc gọi tổng đài và tài liệu scan vượt quá khả năng xử lý thủ công, trong khi ShopViet không có chuyên gia machine learning. Bài học tổng hợp các dịch vụ đáp ứng những nhu cầu này: công cụ quản lý chi phí, AI services dựng sẵn, và hai dịch vụ cho các yêu cầu đặc thù.
 </Story>
 
-<Scene id="s1" label="Cảnh 1/4" title="Giữ hoá đơn trong tầm kiểm soát" questions={["exam6_q22", "exam6_q1", "exam4_q30"]}>
+<Scene id="s1" label="Phần 1/4" title="Kiểm soát chi phí AWS" questions={["exam6_q22", "exam6_q1", "exam4_q30"]}>
 
-Mỗi công cụ chi phí trả lời một câu hỏi khác nhau:
+Mỗi công cụ quản lý chi phí trả lời một câu hỏi khác nhau:
 
-- **Cost Explorer**: tiền đã đi đâu? Xem biểu đồ, lọc theo service, theo tài khoản.
-- **AWS Budgets**: báo cho tôi khi sắp vượt. Đặt ngưỡng cho chi phí thật, chi phí dự báo, hoặc cho **coverage** và **utilization** của Savings Plans. Có thể kèm **budget action** tự làm một việc khi chạm ngưỡng.
-- **Cost Optimization Hub**: nên cắt chỗ nào? Gom khuyến nghị tiết kiệm của mọi tài khoản và Region vào một chỗ.
-- **Compute Optimizer**: máy này nên to cỡ nào? Gợi ý loại và kích cỡ vừa đủ cho EC2 và các tài nguyên compute khác.
+- **Cost Explorer**: chi phí phát sinh ở đâu? Hiển thị biểu đồ, lọc theo service và theo account.
+- **AWS Budgets**: cảnh báo khi chi phí sắp vượt ngân sách. Đặt ngưỡng cho chi phí thực tế, chi phí dự báo, hoặc cho **coverage** và **utilization** của Savings Plans. Có thể kèm **budget action** để tự động thực hiện một thao tác khi chạm ngưỡng.
+- **Cost Optimization Hub**: cần cắt giảm ở đâu? Tổng hợp khuyến nghị tiết kiệm của mọi account và Region tại một nơi.
+- **Compute Optimizer**: kích thước tài nguyên nào là phù hợp? Đề xuất loại và kích thước phù hợp cho EC2 và các tài nguyên compute khác.
 
-Chọn một vấn đề của ShopViet, chọn công cụ, rồi chạy cả tháng:
+Chọn một vấn đề của ShopViet, chọn công cụ, sau đó chạy mô phỏng trong một tháng:
 
 <CostWatchSim client:visible />
 
-<Takeaway>Muốn được báo và tự xử lý khi vượt ngân sách: AWS Budgets với alert và budget action (gắn IAM policy, SCP, hoặc stop EC2/RDS). Muốn theo dõi độ phủ của Savings Plans: coverage budget trong AWS Budgets. Muốn tìm máy thừa và máy quá to: Cost Optimization Hub cùng Compute Optimizer. Cost Explorer chỉ để xem, không tự báo ai.</Takeaway>
+<Takeaway>Cảnh báo và tự động xử lý khi vượt ngân sách: AWS Budgets với alert và budget action (gắn IAM policy, SCP, hoặc stop EC2/RDS). Theo dõi độ phủ của Savings Plans: coverage budget trong AWS Budgets. Xác định tài nguyên không sử dụng và tài nguyên quá khổ: Cost Optimization Hub kết hợp Compute Optimizer. Cost Explorer chỉ dùng để phân tích, không tự gửi cảnh báo.</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Cảnh 2/4" title="Mua cam kết dài hạn đúng loại" questions={["exam6_q38"]}>
+<Scene id="s2" label="Phần 2/4" title="Lựa chọn loại cam kết sử dụng dài hạn" questions={["exam6_q38"]}>
 
-Sau đợt ra mắt, tải của ShopViet đã ổn định. Cam kết dùng một mức chi phí mỗi giờ trong 1 hoặc 3 năm thì được giá rẻ hơn on-demand: đó là **Savings Plans**. Có ba loại:
+Sau đợt ra mắt, tải của ShopViet đã ổn định. Cam kết sử dụng một mức chi phí mỗi giờ trong 1 hoặc 3 năm để nhận mức giá thấp hơn on-demand: đó là **Savings Plans**. Có ba loại:
 
-- **Compute Savings Plans**: linh hoạt nhất. Áp cho EC2 (mọi họ instance, mọi Region), Fargate và Lambda.
-- **EC2 Instance Savings Plans**: giảm sâu hơn nhưng chỉ cho một họ instance trong một Region.
-- **SageMaker Savings Plans**: riêng cho SageMaker.
+- **Compute Savings Plans**: linh hoạt nhất. Áp dụng cho EC2 (mọi instance family, mọi Region), Fargate và Lambda.
+- **EC2 Instance Savings Plans**: mức giảm lớn hơn nhưng chỉ áp dụng cho một instance family trong một Region.
+- **SageMaker Savings Plans**: dành riêng cho SageMaker.
 
-ShopViet muốn mọi workload đều được giảm giá, với ít plan nhất để dễ quản lý:
+Yêu cầu của ShopViet: mọi workload đều được giảm giá, với số lượng plan tối thiểu để thuận tiện quản lý:
 
 <SavingsPlanSim client:visible />
 
-<Takeaway>EC2 + Fargate + Lambda: một Compute Savings Plans. SageMaker không nằm trong Compute Savings Plans, cần SageMaker Savings Plans. EC2 Instance Savings Plans chỉ hợp khi chắc chắn dùng một họ instance trong một Region.</Takeaway>
+<Takeaway>EC2 + Fargate + Lambda: một Compute Savings Plans. SageMaker không thuộc phạm vi Compute Savings Plans, cần SageMaker Savings Plans. EC2 Instance Savings Plans chỉ phù hợp khi chắc chắn sử dụng một instance family trong một Region.</Takeaway>
 
 </Scene>
 
-<Scene id="s3" label="Cảnh 3/4" title="Hiểu chữ và giọng nói mà không cần đội ML" questions={["exam1_q4", "exam2_q26", "exam5_q32", "exam5_q58"]}>
+<Scene id="s3" label="Phần 3/4" title="Xử lý văn bản và giọng nói không cần đội ngũ ML" questions={["exam1_q4", "exam2_q26", "exam5_q32", "exam5_q58"]}>
 
-AWS có những service AI đã train sẵn. Gọi API là dùng được, không cần biết machine learning:
+AWS cung cấp các AI service đã được huấn luyện sẵn, sử dụng thông qua lệnh gọi API mà không cần kiến thức machine learning:
 
-- **Amazon Comprehend**: hiểu **văn bản**. Cảm xúc (sentiment), thực thể (entity), cụm từ khoá. Có **custom entity recognition** để nhận ra loại thực thể riêng của bạn.
-- **Amazon Transcribe**: chuyển **giọng nói** thành văn bản, tách được từng người nói.
-- **Amazon Textract**: lấy chữ, bảng, form từ **ảnh scan và PDF**.
+- **Amazon Comprehend**: phân tích **văn bản**: cảm xúc (sentiment), thực thể (entity), cụm từ khoá. Hỗ trợ **custom entity recognition** để nhận diện loại thực thể riêng của doanh nghiệp.
+- **Amazon Transcribe**: chuyển **giọng nói** thành văn bản, có khả năng phân tách từng người nói.
+- **Amazon Textract**: trích xuất văn bản, bảng, form từ **ảnh scan và PDF**.
 
-Mỗi tình huống dưới đây là một luồng xử lý của ShopViet. Gửi một tài liệu qua và xem mỗi trạm biến nó thành gì:
+Mỗi tình huống dưới đây là một luồng xử lý của ShopViet. Gửi một tài liệu và quan sát kết quả đầu ra tại từng bước xử lý:
 
 <AiPipelineSim client:visible />
 
-Tự train model trên SageMaker cũng làm được những việc trên, nhưng cần người biết ML và tốn công vận hành. Khi đã có service dựng sẵn thì dùng service đó.
+Tự huấn luyện model trên SageMaker cũng đáp ứng được các yêu cầu trên, nhưng cần nhân sự có chuyên môn ML và chi phí vận hành cao hơn. Khi đã có service dựng sẵn phù hợp, nên ưu tiên sử dụng service đó.
 
-<Takeaway>Văn bản → cảm xúc, thực thể: Comprehend (loại thực thể riêng: custom entity recognition). Giọng nói → văn bản: Transcribe, rồi truy vấn SQL bằng Athena. Ảnh scan, PDF → văn bản: Textract, rồi đưa sang Comprehend. Lượng dữ liệu tới dồn dập: đặt SQS giữa API Gateway và Lambda; giữ đúng một năm: TTL của DynamoDB.</Takeaway>
+<Takeaway>Văn bản → cảm xúc, thực thể: Comprehend (loại thực thể riêng: custom entity recognition). Giọng nói → văn bản: Transcribe, sau đó truy vấn SQL bằng Athena. Ảnh scan, PDF → văn bản: Textract, sau đó chuyển sang Comprehend. Lưu lượng dữ liệu tăng đột biến: đặt SQS giữa API Gateway và Lambda; lưu giữ đúng một năm: TTL của DynamoDB.</Takeaway>
 
 </Scene>
 
-<Scene id="s4" label="Cảnh 4/4" title="Job hàng loạt, và AWS trong data center của mình" questions={["exam6_q55", "exam1_q27"]}>
+<Scene id="s4" label="Phần 4/4" title="Xử lý batch và dịch vụ AWS trong data center của doanh nghiệp" questions={["exam6_q55", "exam1_q27"]}>
 
-Hai nhu cầu cuối của ShopViet không hợp với những gì đã học. Đội nội dung cần xử lý hàng chục nghìn ảnh mỗi đêm (đổi kích cỡ, đóng watermark), mỗi job chạy lâu hơn giới hạn của Lambda. Và ShopViet vừa mua lại một công ty ví điện tử: quy định bắt dữ liệu và ứng dụng phải nằm trong data center của công ty đó, nhưng đội kỹ thuật muốn dùng EKS, CloudWatch, IAM giống phần còn lại của ShopViet.
+Hai yêu cầu cuối của ShopViet không phù hợp với các dịch vụ đã trình bày. Đội nội dung cần xử lý hàng chục nghìn ảnh mỗi đêm (thay đổi kích thước, gắn watermark), mỗi job chạy lâu hơn giới hạn của Lambda. Đồng thời, ShopViet vừa mua lại một công ty ví điện tử: quy định bắt buộc dữ liệu và ứng dụng phải nằm trong data center của công ty này, nhưng đội kỹ thuật cần sử dụng EKS, CloudWatch, IAM thống nhất với phần còn lại của ShopViet.
 
-<ScenarioFlow client:visible height={250} legend={["Nên chọn", "Chạy được nhưng chưa hợp"]} scenarios={[
-  { name: "Xử lý ảnh hàng loạt",
+<ScenarioFlow client:visible height={250} legend={["Phương án khuyến nghị", "Khả thi nhưng chưa phù hợp"]} scenarios={[
+  { name: "Xử lý ảnh theo batch",
     nodes: [
       { id: "in", x: 20, y: 60, label: "S3: ảnh gốc", kind: "store" },
-      { id: "sf", x: 190, y: 60, label: "Step Functions", sub: "thứ tự các bước", kind: "net" },
-      { id: "batch", x: 390, y: 60, label: "AWS Batch", sub: "tự thêm, bớt máy", kind: "edge" },
+      { id: "sf", x: 190, y: 60, label: "Step Functions", sub: "điều phối các bước", kind: "net" },
+      { id: "batch", x: 390, y: 60, label: "AWS Batch", sub: "tự động co giãn", kind: "edge" },
       { id: "out", x: 610, y: 60, label: "S3: ảnh đã xử lý", kind: "store" },
       { id: "eks", x: 190, y: 165, label: "EKS, node EC2 tự quản lý", kind: "warn" },
-      { id: "ebs", x: 520, y: 165, label: "EBS", sub: "gắn vào từng máy", kind: "store" },
+      { id: "ebs", x: 520, y: 165, label: "EBS", sub: "gắn vào từng node", kind: "store" },
     ],
     options: [
       { name: "EKS tự quản lý + EBS", verdict: "bad", hide: ["sf", "batch", "out"],
-        flows: [{ path: ["in", "eks"], tone: "bad" }, { path: ["eks", "ebs"], tone: "bad", label: "file nằm rải rác" }],
-        text: "Chạy được, nhưng đội phải tự vá và scale node, tự theo dõi job nào xong, job nào lỗi. File kết quả nằm trên ổ EBS của từng máy." },
+        flows: [{ path: ["in", "eks"], tone: "bad" }, { path: ["eks", "ebs"], tone: "bad", label: "file phân tán" }],
+        text: "Phương án khả thi, nhưng đội vận hành phải tự vá và scale node, tự theo dõi trạng thái hoàn tất hoặc lỗi của từng job. File kết quả phân tán trên EBS volume của từng node." },
       { name: "Step Functions + AWS Batch + S3", verdict: "good", hide: ["eks", "ebs"],
         flows: [{ path: ["in", "sf"], tone: "good" }, { path: ["sf", "batch"], tone: "good", label: "gửi job" }, { path: ["batch", "out"], tone: "good" }],
-        text: "**AWS Batch** nhận job, tự bật đủ máy (có thể dùng Spot hoặc Fargate) rồi tắt khi xong. **Step Functions** giữ thứ tự các bước, trạng thái từng job và tự thử lại khi lỗi. Kết quả lớn để ở **S3**." },
+        text: "**AWS Batch** tiếp nhận job, tự động cấp phát đủ tài nguyên compute (có thể dùng Spot hoặc Fargate) và giải phóng khi hoàn tất. **Step Functions** quản lý thứ tự các bước, trạng thái từng job và tự động retry khi gặp lỗi. Kết quả dung lượng lớn được lưu trên **S3**." },
     ] },
-  { name: "Dữ liệu phải ở lại data center",
+  { name: "Dữ liệu bắt buộc lưu tại data center",
     boxes: [
       { x: 10, y: 10, w: 410, h: 230, label: "Data center của công ty ví", tone: "onprem" },
       { x: 470, y: 10, w: 280, h: 230, label: "AWS Region", tone: "region" },
     ],
     nodes: [
-      { id: "data", x: 30, y: 50, label: "Dữ liệu khách", kind: "db" },
+      { id: "data", x: 30, y: 50, label: "Dữ liệu khách hàng", kind: "db" },
       { id: "op", x: 200, y: 115, label: "AWS Outposts rack", sub: "EKS, EC2, EBS tại chỗ", kind: "edge" },
-      { id: "snow", x: 30, y: 175, label: "Snowball Edge", sub: "thiết bị gửi tới", kind: "warn" },
+      { id: "snow", x: 30, y: 175, label: "Snowball Edge", sub: "thiết bị vận chuyển", kind: "warn" },
       { id: "aws", x: 500, y: 50, label: "API của AWS", sub: "CloudWatch, IAM", kind: "net" },
       { id: "eksr", x: 500, y: 165, label: "EKS trong Region", kind: "ec2" },
     ],
     options: [
-      { name: "EKS ở Region + Direct Connect", verdict: "bad", hide: ["op", "snow"],
+      { name: "EKS tại Region + Direct Connect", verdict: "bad", hide: ["op", "snow"],
         flows: [{ path: ["data", "eksr"], tone: "bad", label: "dữ liệu rời data center" }],
-        text: "Đường truyền riêng thì nhanh và an toàn, nhưng workload và dữ liệu vẫn chạy trong Region. Vi phạm quy định." },
+        text: "Kết nối riêng có độ trễ thấp và an toàn, nhưng workload và dữ liệu vẫn nằm trong Region, vi phạm quy định." },
       { name: "Snowball Edge", verdict: "bad", hide: ["op", "eksr"],
-        flows: [{ path: ["data", "snow"], tone: "neutral" }, { path: ["snow", "aws"], tone: "bad", dashed: true, label: "gửi dữ liệu đi" }],
-        text: "Snowball Edge dùng để chuyển dữ liệu offline hoặc tính toán ở nơi thiếu mạng. Không phải chỗ chạy Kubernetes lâu dài có AWS quản lý." },
+        flows: [{ path: ["data", "snow"], tone: "neutral" }, { path: ["snow", "aws"], tone: "bad", dashed: true, label: "chuyển dữ liệu đi" }],
+        text: "Snowball Edge dùng để chuyển dữ liệu offline hoặc xử lý tại nơi có kết nối mạng hạn chế, không phải nền tảng vận hành Kubernetes lâu dài do AWS quản lý." },
       { name: "AWS Outposts", verdict: "good", hide: ["snow", "eksr"],
-        flows: [{ path: ["data", "op"], tone: "good", label: "ở lại tại chỗ" }, { path: ["op", "aws"], tone: "good", dashed: true, label: "quản lý" }],
-        text: "**AWS Outposts** là rack phần cứng do AWS lắp đặt và quản lý, đặt trong data center của bạn. Chạy EKS, EC2, EBS ngay tại chỗ, dùng cùng API, CloudWatch, IAM như trong Region. Dữ liệu không rời data center." },
+        flows: [{ path: ["data", "op"], tone: "good", label: "lưu tại chỗ" }, { path: ["op", "aws"], tone: "good", dashed: true, label: "quản lý" }],
+        text: "**AWS Outposts** là rack phần cứng do AWS lắp đặt và quản lý, đặt trong data center của doanh nghiệp. EKS, EC2, EBS chạy ngay tại chỗ, sử dụng cùng API, CloudWatch, IAM như trong Region. Dữ liệu không rời khỏi data center." },
     ] },
 ]} />
 
-<Takeaway>Job xử lý hàng loạt, tự scale, không muốn quản lý server: AWS Batch, điều phối bằng Step Functions, kết quả để ở S3. Cần dịch vụ AWS mà dữ liệu và workload phải ở lại data center của mình: AWS Outposts.</Takeaway>
+<Takeaway>Job xử lý batch, tự động scale, không quản lý máy chủ: AWS Batch, điều phối bằng Step Functions, kết quả lưu trên S3. Cần dịch vụ AWS trong khi dữ liệu và workload bắt buộc nằm tại data center của doanh nghiệp: AWS Outposts.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="Ai lo việc nào?" questions={["exam6_q22", "exam4_q30", "exam6_q38", "exam5_q58", "exam1_q27"]}>
+<Scene id="challenge" label="Bài tập" title="Phân loại tác vụ theo dịch vụ" questions={["exam6_q22", "exam4_q30", "exam6_q38", "exam5_q58", "exam1_q27"]}>
 
-Xếp từng việc của ShopViet vào đúng service. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
+Phân loại từng tác vụ của ShopViet vào service tương ứng. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
 <SortGame client:visible
   bins={[
-    { id: "budgets", title: "AWS Budgets", sub: "báo và tự xử lý khi vượt", hint: "Gợi ý: việc này cần một ngưỡng và một lời cảnh báo." },
-    { id: "opt", title: "Cost Optimization Hub + Compute Optimizer", sub: "tìm chỗ thừa", hint: "Gợi ý: việc này là tìm tài nguyên dùng chưa hết." },
-    { id: "comprehend", title: "Amazon Comprehend", sub: "hiểu văn bản", hint: "Gợi ý: đầu vào đã là chữ." },
-    { id: "transcribe", title: "Amazon Transcribe", sub: "giọng nói → chữ", hint: "Gợi ý: đầu vào là âm thanh." },
-    { id: "textract", title: "Amazon Textract", sub: "scan, PDF → chữ", hint: "Gợi ý: đầu vào là ảnh chụp giấy tờ." },
+    { id: "budgets", title: "AWS Budgets", sub: "cảnh báo và tự động xử lý", hint: "Gợi ý: tác vụ cần một ngưỡng và một cảnh báo." },
+    { id: "opt", title: "Cost Optimization Hub + Compute Optimizer", sub: "xác định lãng phí", hint: "Gợi ý: tác vụ xác định tài nguyên chưa được sử dụng hết." },
+    { id: "comprehend", title: "Amazon Comprehend", sub: "phân tích văn bản", hint: "Gợi ý: đầu vào đã ở dạng văn bản." },
+    { id: "transcribe", title: "Amazon Transcribe", sub: "giọng nói → văn bản", hint: "Gợi ý: đầu vào là âm thanh." },
+    { id: "textract", title: "Amazon Textract", sub: "scan, PDF → văn bản", hint: "Gợi ý: đầu vào là ảnh chụp tài liệu." },
   ]}
   cards={[
-    ["Email khi chi phí dự báo vượt 300 USD", "budgets"], ["Tự gắn DenyAll khi tài khoản dev tiêu quá tay", "budgets"], ["Báo khi coverage Savings Plans dưới 90%", "budgets"],
-    ["Tìm EC2 không ai dùng ở mọi tài khoản", "opt"], ["Gợi ý kích cỡ instance vừa đủ", "opt"],
-    ["Đánh giá này tích cực hay tiêu cực?", "comprehend"], ["Trích tên thành phần từ mô tả sản phẩm", "comprehend"],
-    ["Ghi âm cuộc gọi tổng đài thành văn bản", "transcribe"],
-    ["Lấy chữ từ hoá đơn giấy đã scan", "textract"], ["Đọc bài báo PDF nhiều cột", "textract"],
+    ["Email khi chi phí dự báo vượt 300 USD", "budgets"], ["Tự động gắn DenyAll khi account dev vượt ngân sách", "budgets"], ["Báo khi coverage Savings Plans dưới 90%", "budgets"],
+    ["Tìm EC2 không được sử dụng trên mọi account", "opt"], ["Đề xuất kích thước instance phù hợp", "opt"],
+    ["Xác định đánh giá tích cực hay tiêu cực", "comprehend"], ["Trích xuất tên thành phần từ mô tả sản phẩm", "comprehend"],
+    ["Chuyển ghi âm cuộc gọi tổng đài thành văn bản", "transcribe"],
+    ["Trích xuất văn bản từ hoá đơn giấy đã scan", "textract"], ["Đọc tài liệu PDF nhiều cột", "textract"],
   ]}
 />
 
-Nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "Mỗi lập trình viên có một tài khoản AWS riêng. ShopViet muốn khi một tài khoản vượt ngân sách thì tự động chặn tạo thêm tài nguyên, không phải viết code hay trực. Làm gì?",
-    opts: ["Lambda chạy mỗi ngày đọc Cost Explorer API rồi tự xử lý", "AWS Budgets với alert và budget action gắn IAM policy DenyAll", "Gửi báo cáo Cost Explorer cho từng người mỗi ngày"],
+  { q: "Mỗi lập trình viên có một AWS account riêng. Yêu cầu: khi một account vượt ngân sách, việc tạo thêm tài nguyên bị chặn tự động, không cần viết mã hay giám sát thủ công. Phương án nào đáp ứng yêu cầu?",
+    opts: ["Lambda chạy hằng ngày đọc Cost Explorer API và tự xử lý", "AWS Budgets với alert và budget action gắn IAM policy DenyAll", "Gửi báo cáo Cost Explorer cho từng người hằng ngày"],
     a: 1,
-    why: "Budget action chạy ngay khi chạm ngưỡng, có sẵn trong Budgets. Lambda tự viết thì phải tự bảo trì; báo cáo thì phụ thuộc vào việc có người đọc." },
-  { q: "ShopViet chạy EC2, Fargate, Lambda và một endpoint SageMaker, tải đều. Muốn giảm giá dài hạn cho tất cả với ít plan nhất. Mua gì?",
+    why: "Budget action được thực thi ngay khi chạm ngưỡng và có sẵn trong Budgets. Lambda tự phát triển phải tự bảo trì; báo cáo phụ thuộc vào việc người nhận có đọc hay không." },
+  { q: "ShopViet chạy EC2, Fargate, Lambda và một endpoint SageMaker với tải ổn định. Yêu cầu: giảm giá dài hạn cho toàn bộ với số plan tối thiểu. Phương án nào phù hợp?",
     opts: ["Compute Savings Plans + SageMaker Savings Plans", "EC2 Instance Savings Plans + Compute Savings Plans", "Reserved Instance cho từng EC2"],
     a: 0,
-    why: "Compute Savings Plans phủ EC2, Fargate, Lambda. SageMaker cần plan riêng. Reserved Instance chỉ cho EC2 và phải quản lý từng cái." },
-  { q: "Hoá đơn EC2 và RDS cao hơn nhu cầu. ShopViet muốn biết máy nào không dùng, máy nào quá to. Dùng gì?",
-    opts: ["Trusted Advisor tự gia hạn Reserved Instance", "Cost Optimization Hub và Compute Optimizer", "Compute Optimizer mua Reserved Instance giúp"],
+    why: "Compute Savings Plans áp dụng cho EC2, Fargate, Lambda. SageMaker cần plan riêng. Reserved Instance chỉ áp dụng cho EC2 và phải được quản lý riêng lẻ." },
+  { q: "Chi phí EC2 và RDS cao hơn nhu cầu thực tế. Yêu cầu: xác định tài nguyên không được sử dụng và tài nguyên có kích thước quá lớn. Công cụ nào phù hợp?",
+    opts: ["Trusted Advisor tự động gia hạn Reserved Instance", "Cost Optimization Hub và Compute Optimizer", "Compute Optimizer tự động mua Reserved Instance"],
     a: 1,
-    why: "Cost Optimization Hub gom các khuyến nghị (máy không dùng, đổi kích cỡ…); Compute Optimizer gợi ý kích cỡ vừa đủ. Không công cụ nào tự mua hay gia hạn RI." },
-  { q: "Tổng đài ghi âm mọi cuộc gọi vào S3. Đội CSKH muốn tự viết SQL để tìm khách phàn nàn chuyện gì. Làm gì?",
-    opts: ["Transcribe chuyển thành văn bản, Athena truy vấn SQL", "Kinesis Data Streams đọc file âm thanh", "QuickSight đọc thẳng file âm thanh"],
+    why: "Cost Optimization Hub tổng hợp các khuyến nghị (tài nguyên không sử dụng, thay đổi kích thước…); Compute Optimizer đề xuất kích thước phù hợp. Không công cụ nào tự động mua hay gia hạn RI." },
+  { q: "Tổng đài lưu ghi âm mọi cuộc gọi vào S3. Đội chăm sóc khách hàng cần tự viết SQL để xác định nội dung phàn nàn của khách hàng. Phương án nào phù hợp?",
+    opts: ["Transcribe chuyển thành văn bản, Athena truy vấn SQL", "Kinesis Data Streams đọc file âm thanh", "QuickSight đọc trực tiếp file âm thanh"],
     a: 0,
-    why: "Phải có chữ trước: Transcribe. Athena chạy SQL trực tiếp trên dữ liệu trong S3, không phải quản lý server." },
-  { q: "Quy định bắt dữ liệu ví điện tử ở lại data center, nhưng đội muốn dùng EKS và CloudWatch như trên AWS. Chọn gì?",
+    why: "Trước tiên cần chuyển âm thanh thành văn bản: Transcribe. Athena thực thi SQL trực tiếp trên dữ liệu trong S3, không cần quản lý máy chủ." },
+  { q: "Quy định bắt buộc dữ liệu ví điện tử lưu tại data center, nhưng đội kỹ thuật cần sử dụng EKS và CloudWatch như trên AWS. Phương án nào phù hợp?",
     opts: ["Snowball Edge", "EKS trong Region qua Direct Connect", "AWS Outposts"],
     a: 2,
-    why: "Outposts mang phần cứng và dịch vụ AWS vào data center của bạn; dữ liệu không rời đi. Direct Connect vẫn đưa workload lên Region." },
+    why: "Outposts đưa phần cứng và dịch vụ AWS vào data center của doanh nghiệp; dữ liệu không rời khỏi data center. Với Direct Connect, workload vẫn chạy trong Region." },
 ]} />
 
 </Scene>

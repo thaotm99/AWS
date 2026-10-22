@@ -1,6 +1,6 @@
 ---
-title: "CloudFormation và Elastic Beanstalk: hạ tầng thành code"
-lede: "ShopViet có nhiều người mới và nhiều account hơn, và việc click tay trong console bắt đầu gây sự cố. Bài này đi qua ba việc: mô tả hạ tầng bằng template CloudFormation rồi tạo, sửa, rollback qua stack; đưa cùng một chuẩn tới mọi account và Region bằng StackSets; và làm instance mới của Elastic Beanstalk lên trong 2 phút."
+title: "CloudFormation và Elastic Beanstalk: Infrastructure as Code"
+lede: "Số lượng nhân sự mới và số account của ShopViet tăng lên, và các thao tác thủ công trên console bắt đầu gây sự cố. Bài học trình bày ba nội dung: mô tả hạ tầng bằng template CloudFormation và quản lý việc tạo, cập nhật, rollback thông qua stack; áp dụng cùng một tiêu chuẩn cho mọi account và Region bằng StackSets; và rút ngắn thời gian khởi động instance mới của Elastic Beanstalk xuống 2 phút."
 minutes: 15
 scenes: 3
 prerequisites: ["ec2", "vpc", "rds"]
@@ -26,83 +26,83 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#s1", label: "1 · Template và stack" },
-  { href: "#s2", label: "2 · Nhiều account, nhiều Region" },
-  { href: "#s3", label: "3 · Beanstalk lên nhanh" },
-  { href: "#challenge", label: "Thử thách" },
+  { href: "#s2", label: "2 · Triển khai đa account, đa Region" },
+  { href: "#s3", label: "3 · Thời gian khởi động trên Elastic Beanstalk" },
+  { href: "#challenge", label: "Bài tập" },
 ]}>
-Tuần trước một bạn mới vào ShopViet tạo database bằng console, quên bật Multi-AZ và backup. Database hỏng, đơn hàng mất nửa ngày. Bài học: hạ tầng nên được **viết ra** như code, review như code, và tạo lại y hệt bao nhiêu lần cũng được. **CloudFormation** làm việc đó cho mọi loại tài nguyên; **Elastic Beanstalk** lo phần chạy ứng dụng web cho người không muốn tự ghép từng mảnh.
+Tuần trước, một nhân sự mới của ShopViet tạo database bằng console nhưng không bật Multi-AZ và backup. Khi database gặp sự cố, dữ liệu đơn hàng của nửa ngày bị mất. Từ sự cố này, hạ tầng cần được **định nghĩa bằng mã nguồn**, được review như mã nguồn và có thể tái tạo chính xác với số lần bất kỳ. **CloudFormation** đáp ứng yêu cầu này cho mọi loại tài nguyên; **Elastic Beanstalk** đảm nhiệm việc vận hành ứng dụng web cho các nhóm không muốn tự kết hợp từng thành phần hạ tầng.
 </Story>
 
-<Scene id="s1" label="Cảnh 1/3" title="Một template thay cho click tay" questions={["exam4_q47", "exam4_q15", "exam4_q17"]}>
+<Scene id="s1" label="Phần 1/3" title="Template thay thế thao tác thủ công" questions={["exam4_q47", "exam4_q15", "exam4_q17"]}>
 
-**Template** là một file YAML hoặc JSON mô tả tài nguyên cần có. CloudFormation đọc template và tạo một **stack**: nhóm tài nguyên được tạo, sửa và xoá cùng nhau. Muốn đổi gì thì sửa template rồi **update stack**; **change set** cho xem trước CloudFormation sẽ đổi những gì. Chạy ba tình huống của ShopViet:
+**Template** là một file YAML hoặc JSON mô tả các tài nguyên cần tạo. CloudFormation đọc template và tạo một **stack**: nhóm tài nguyên được tạo, cập nhật và xoá cùng nhau. Để thay đổi hạ tầng, cập nhật template và thực hiện **update stack**; **change set** cho phép xem trước các thay đổi CloudFormation sẽ áp dụng. Chạy ba tình huống của ShopViet:
 
 <StackSim client:visible />
 
-Đọc được template cũng quan trọng như viết. Đây là security group của nhóm web trong template của ShopViet. Gửi thử từng kết nối để xem mỗi rule làm gì:
+Khả năng đọc hiểu template quan trọng tương đương khả năng viết template. Dưới đây là security group của nhóm web trong template của ShopViet. Gửi từng kết nối thử nghiệm để xem tác dụng của mỗi rule:
 
 <SgRuleSim client:visible />
 
-<Takeaway>Muốn mọi người tạo tài nguyên theo cùng chuẩn: đưa chuẩn vào template CloudFormation, chỉ để người dùng chọn tham số trong danh sách cho phép. Sửa hạ tầng bằng cách sửa template rồi update stack. Tạo lỗi giữa chừng thì stack tự rollback. CloudFormation không tính phí riêng. SecurityGroupIngress là inbound rule của security group, chỉ có rule cho phép.</Takeaway>
+<Takeaway>Đảm bảo mọi tài nguyên được tạo theo cùng tiêu chuẩn: đưa tiêu chuẩn vào template CloudFormation, chỉ cho phép người dùng chọn tham số trong danh sách được phép. Thay đổi hạ tầng bằng cách cập nhật template và update stack. Khi quá trình tạo gặp lỗi giữa chừng, stack tự động rollback. CloudFormation không tính phí riêng. SecurityGroupIngress là inbound rule của security group và chỉ hỗ trợ rule cho phép.</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Cảnh 2/3" title="Cùng một chuẩn cho mọi account và Region" questions={["exam3_q36"]}>
+<Scene id="s2" label="Phần 2/3" title="Áp dụng một tiêu chuẩn cho mọi account và Region" questions={["exam3_q36"]}>
 
-ShopViet giờ có nhiều account trong **AWS Organizations**: production, dev, data, và sắp có chi nhánh Nhật. Mỗi account chạy ở nhiều Region. Mọi nơi phải dùng đúng kiểu EC2 đã duyệt và IAM role chuẩn cho Lambda. Thử triển khai template baseline bằng ba cách, rồi thêm một account mới:
+ShopViet hiện có nhiều account trong **AWS Organizations**: production, dev, data, và sắp bổ sung chi nhánh tại Nhật Bản. Mỗi account hoạt động ở nhiều Region. Mọi môi trường phải sử dụng đúng loại EC2 đã được phê duyệt và IAM role tiêu chuẩn cho Lambda. Triển khai template baseline bằng ba phương án, sau đó bổ sung một account mới:
 
 <StackSetSim client:visible />
 
-<Takeaway>Một template, nhiều account và nhiều Region, một thao tác: CloudFormation StackSets. Bật automatic deployment để account mới vào OU tự nhận stack. AWS RAM chỉ chia sẻ tài nguyên có sẵn, không triển khai template.</Takeaway>
+<Takeaway>Một template, nhiều account và nhiều Region, một thao tác: CloudFormation StackSets. Bật automatic deployment để account mới gia nhập OU tự động nhận stack. AWS RAM chỉ chia sẻ tài nguyên hiện có, không triển khai template.</Takeaway>
 
 </Scene>
 
-<Scene id="s3" label="Cảnh 3/3" title="Elastic Beanstalk: instance mới lên trong 2 phút" questions={["exam4_q1"]}>
+<Scene id="s3" label="Phần 3/3" title="Elastic Beanstalk: khởi động instance mới trong 2 phút" questions={["exam4_q1"]}>
 
-Trang web chính của ShopViet chạy trên **Elastic Beanstalk**: đội chỉ tải code lên, Beanstalk tự dựng EC2, load balancer, Auto Scaling group và theo dõi health. Đội vẫn xem và chỉnh được các tài nguyên bên dưới. Vấn đề là ứng dụng cài mất 45 phút: lúc đông khách, Beanstalk thêm máy nhưng máy mới gần một tiếng sau mới phục vụ được. Cho bốn cách khởi động chạy đua:
+Website chính của ShopViet chạy trên **Elastic Beanstalk**: đội phát triển chỉ cần tải mã nguồn lên, Beanstalk tự động tạo EC2, load balancer, Auto Scaling group và giám sát health. Đội vẫn có thể xem và điều chỉnh các tài nguyên bên dưới. Vấn đề là quá trình cài đặt ứng dụng mất 45 phút: khi lưu lượng tăng, Beanstalk bổ sung instance nhưng instance mới phải gần một giờ sau mới phục vụ được request. So sánh thời gian của bốn phương án khởi động:
 
 <BootTimeSim client:visible />
 
-<Takeaway>Cài lâu làm instance mới lên chậm: đưa phần tĩnh vào golden AMI (Beanstalk cho dùng custom AMI), để user data chỉ sinh phần động lúc khởi động.</Takeaway>
+<Takeaway>Thời gian cài đặt dài làm chậm quá trình khởi động instance mới: đưa phần tĩnh vào golden AMI (Beanstalk hỗ trợ custom AMI), để user data chỉ tạo phần động khi khởi động.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="Làm ở đâu cho đúng?" questions={["exam3_q36", "exam4_q1", "exam4_q47"]}>
+<Scene id="challenge" label="Bài tập" title="Phân loại tác vụ theo công cụ triển khai" questions={["exam3_q36", "exam4_q1", "exam4_q47"]}>
 
-Xếp từng việc vào nơi nên làm. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
+Phân loại từng tác vụ vào công cụ phù hợp. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
 <SortGame client:visible
   bins={[
-    { id: "template", title: "Template CloudFormation", sub: "một stack", hint: "Gợi ý: việc này là mô tả và sửa tài nguyên trong một account, một Region." },
-    { id: "stackset", title: "StackSets", sub: "nhiều account, Region", hint: "Gợi ý: việc này cần lặp lại ở nhiều account hoặc nhiều Region." },
-    { id: "boot", title: "Golden AMI + user data", sub: "lúc khởi động", hint: "Gợi ý: việc này nói về điều xảy ra khi một instance khởi động." },
+    { id: "template", title: "Template CloudFormation", sub: "một stack", hint: "Gợi ý: tác vụ mô tả và cập nhật tài nguyên trong một account, một Region." },
+    { id: "stackset", title: "StackSets", sub: "nhiều account, Region", hint: "Gợi ý: tác vụ cần lặp lại ở nhiều account hoặc nhiều Region." },
+    { id: "boot", title: "Golden AMI + user data", sub: "khi khởi động", hint: "Gợi ý: tác vụ liên quan tới quá trình khởi động của instance." },
   ]}
   cards={[
-    ["Database luôn Multi-AZ và mã hoá", "template"], ["Đổi io1 sang gp2 qua update stack", "template"], ["Xem trước thay đổi bằng change set", "template"],
-    ["Baseline IAM cho mọi account", "stackset"], ["Account mới vào OU tự có baseline", "stackset"], ["Cùng cấu hình ở 3 Region", "stackset"],
-    ["Cài sẵn phần mềm nặng", "boot"], ["Sinh file cấu hình theo từng instance", "boot"],
+    ["Database luôn bật Multi-AZ và mã hoá", "template"], ["Đổi io1 sang gp2 qua update stack", "template"], ["Xem trước thay đổi bằng change set", "template"],
+    ["Baseline IAM cho mọi account", "stackset"], ["Account mới gia nhập OU tự động nhận baseline", "stackset"], ["Cùng cấu hình ở 3 Region", "stackset"],
+    ["Cài đặt sẵn phần mềm dung lượng lớn", "boot"], ["Tạo file cấu hình riêng cho từng instance", "boot"],
   ]}
 />
 
-Kiểm tra nhanh: nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "Người mới hay cấu hình sai RDS. ShopViet muốn mọi database đều theo đúng các thiết lập an toàn, dùng lại được cho cả công ty. Làm gì?",
-    opts: ["Gửi email nhắc nhở mỗi khi thấy database sai", "Quản lý RDS bằng template CloudFormation chứa sẵn các thiết lập chuẩn", "Cấm người mới tạo RDS"],
+  { q: "Nhân sự mới thường cấu hình sai RDS. Yêu cầu: mọi database tuân thủ các thiết lập an toàn và có thể tái sử dụng trong toàn công ty. Phương án nào đáp ứng yêu cầu?",
+    opts: ["Gửi email nhắc nhở mỗi khi phát hiện database cấu hình sai", "Quản lý RDS bằng template CloudFormation chứa sẵn các thiết lập chuẩn", "Không cho phép nhân sự mới tạo RDS"],
     a: 1,
-    why: "Template biến chuẩn thành code: ai tạo cũng ra cùng cấu hình, và template được review như code." },
-  { q: "Các phòng ban dùng account riêng ở nhiều Region. Cần mỗi nơi dùng cùng kiểu EC2 và IAM role chuẩn. Dùng gì?",
+    why: "Template chuyển tiêu chuẩn thành mã nguồn: mọi lần tạo đều cho ra cùng cấu hình, và template được review như mã nguồn." },
+  { q: "Các phòng ban sử dụng account riêng tại nhiều Region. Mọi môi trường cần dùng cùng loại EC2 và IAM role tiêu chuẩn. Dịch vụ nào phù hợp?",
     opts: ["Một stack CloudFormation", "CloudFormation StackSets", "AWS RAM"],
     a: 1,
-    why: "StackSets tạo stack từ một template trong nhiều account và Region bằng một thao tác. Stack thường chỉ ở một nơi; RAM chỉ chia sẻ tài nguyên." },
-  { q: "Ổ io1 chiếm phần lớn chi phí, CloudWatch cho thấy chỉ thỉnh thoảng mới có I/O cao. Hạ tầng quản lý bằng CloudFormation. Giảm chi phí thế nào?",
-    opts: ["Bỏ CloudFormation vì nó tính phí cao", "Đổi ổ sang gp2 trong template rồi update stack", "Giữ io1 và đổi EC2 sang cỡ nhỏ hơn"],
+    why: "StackSets tạo stack từ một template trong nhiều account và Region bằng một thao tác. Một stack thông thường chỉ thuộc một account và một Region; RAM chỉ chia sẻ tài nguyên." },
+  { q: "EBS volume io1 chiếm phần lớn chi phí, trong khi CloudWatch cho thấy I/O chỉ tăng cao không thường xuyên. Hạ tầng được quản lý bằng CloudFormation. Phương án nào giảm chi phí?",
+    opts: ["Ngừng sử dụng CloudFormation do chi phí cao", "Đổi volume sang gp2 trong template rồi update stack", "Giữ io1 và đổi EC2 sang kích thước nhỏ hơn"],
     a: 1,
-    why: "gp2 có burst cho những lúc I/O cao và rẻ hơn io1 nhiều. CloudFormation không tính phí riêng; EC2 chỉ chiếm phần nhỏ chi phí." },
-  { q: "Ứng dụng trên Elastic Beanstalk cài mất 45 phút, gồm phần tĩnh và phần phải sinh lúc khởi động. Muốn instance mới chạy trong dưới 2 phút. Làm gì?",
-    opts: ["Để file cài trên S3", "Golden AMI có sẵn phần tĩnh, user data sinh phần động", "User data cài toàn bộ khi khởi động"],
+    why: "gp2 hỗ trợ burst cho các thời điểm I/O cao và có chi phí thấp hơn io1 đáng kể. CloudFormation không tính phí riêng; EC2 chỉ chiếm phần nhỏ chi phí." },
+  { q: "Ứng dụng trên Elastic Beanstalk mất 45 phút để cài đặt, gồm phần tĩnh và phần phải tạo khi khởi động. Yêu cầu: instance mới sẵn sàng trong vòng dưới 2 phút. Phương án nào phù hợp?",
+    opts: ["Lưu bộ cài đặt trên S3", "Golden AMI chứa sẵn phần tĩnh, user data tạo phần động", "User data cài đặt toàn bộ khi khởi động"],
     a: 1,
-    why: "Phần tốn thời gian là cài đặt, nên phải cài sẵn vào AMI. Phần thay đổi theo instance thì để user data làm lúc khởi động." },
+    why: "Phần tốn thời gian là cài đặt, do đó cần cài sẵn vào AMI. Phần thay đổi theo từng instance được user data xử lý khi khởi động." },
 ]} />
 
 </Scene>

@@ -51,75 +51,75 @@ const tok = (id: string, place: Place = "q", kind?: Kind): Tok => ({ id, label: 
 function attempt(n: number, t: number): Frame[] {
   return [
     { t, who: "Worker", tag: "LỖI", tone: "bad", set: { "#7": { place: "w1", note: `lần ${n}` } }, w: { w1: "busy" },
-      msg: n === 1 ? "Nhận **#7** (lần 1). Đơn có mã tỉnh sai, code ném lỗi và không xoá message." : `Nhận #7 lần ${n}, lại lỗi.` },
+      msg: n === 1 ? "Nhận **#7** (lần 1). Đơn hàng chứa mã tỉnh không hợp lệ; mã xử lý phát sinh exception và không xoá message." : `Nhận #7 lần ${n}; xử lý tiếp tục thất bại.` },
     { t: t + 30, who: "Queue", tag: "HIỆN LẠI", tone: "edge", set: { "#7": { place: "q", note: "hiện lại" } }, w: { w1: "idle" },
-      msg: "Hết visibility timeout (30 s), #7 hiện lại trong queue." },
+      msg: "Visibility timeout (30 s) kết thúc; #7 hiển thị lại trong queue." },
   ];
 }
 
 const SCENARIOS: MScenario[] = [
   {
-    name: "Máy Spot bị thu hồi giữa chừng",
-    request: "3 đơn trong queue · visibility timeout 60 s",
+    name: "Spot Instance bị thu hồi khi đang xử lý",
+    request: "3 message trong queue · visibility timeout 60 s",
     run: () => ({
       q: "Queue đơn hàng · visibility timeout 60 s",
       workers: { w1: "Worker 1 · Spot", w2: "Worker 2 · Spot" },
       init: [tok("#1"), tok("#2"), tok("#3")],
       frames: [
         { t: 0, who: "Worker 1", tag: "NHẬN", tone: "info", set: { "#1": { place: "w1", note: "ẩn 60 s" } }, w: { w1: "busy" },
-          msg: "Nhận **#1**. SQS chưa xoá message, chỉ ẩn nó trong **visibility timeout** để worker khác không lấy trùng." },
+          msg: "Nhận **#1**. SQS chưa xoá message mà chỉ ẩn message trong khoảng **visibility timeout** để worker khác không nhận trùng." },
         { t: 1, who: "Worker 2", tag: "NHẬN", tone: "info", set: { "#2": { place: "w2", note: "ẩn 60 s" } }, w: { w2: "busy" },
-          msg: "Nhận #2, cũng bị ẩn 60 s." },
-        { t: 20, who: "Worker 1", tag: "MẤT MÁY", tone: "bad", w: { w1: "dead" },
-          msg: "AWS thu hồi máy Spot khi #1 đang làm dở. Worker chưa kịp gọi `DeleteMessage`." },
+          msg: "Nhận #2; message cũng bị ẩn trong 60 s." },
+        { t: 20, who: "Worker 1", tag: "THU HỒI", tone: "bad", w: { w1: "dead" },
+          msg: "AWS thu hồi Spot Instance khi #1 đang được xử lý. Worker chưa gọi `DeleteMessage`." },
         { t: 35, who: "Worker 2", tag: "XOÁ", tone: "ok", set: { "#2": { place: "done", note: "" } }, w: { w2: "idle" },
-          msg: "Xử lý xong #2 rồi mới gọi `DeleteMessage`. Lúc này #2 mới rời queue." },
+          msg: "Worker hoàn tất #2 và gọi `DeleteMessage`. Chỉ tại thời điểm này #2 mới bị xoá khỏi queue." },
         { t: 36, who: "Worker 2", tag: "NHẬN", tone: "info", set: { "#3": { place: "w2", note: "ẩn 60 s" } }, w: { w2: "busy" },
           msg: "Nhận #3." },
         { t: 60, who: "Queue", tag: "HIỆN LẠI", tone: "edge", set: { "#1": { place: "q", note: "hiện lại" } },
-          msg: "Hết 60 s mà không ai xoá #1, SQS cho nó hiện lại trong queue." },
+          msg: "Sau 60 s, #1 chưa bị xoá; SQS cho message hiển thị lại trong queue." },
         { t: 70, who: "Worker 2", tag: "XOÁ", tone: "ok", set: { "#3": { place: "done", note: "" }, "#1": { place: "w2", note: "lần 2" } },
-          msg: "Xong #3, nhận tiếp #1 (lần nhận thứ 2)." },
+          msg: "Hoàn tất #3, tiếp tục nhận #1 (lần nhận thứ 2)." },
         { t: 105, who: "Worker 2", tag: "XOÁ", tone: "ok", set: { "#1": { place: "done", note: "" } }, w: { w1: "idle", w2: "idle" },
-          msg: "Xong #1. Trong lúc đó Auto Scaling group đã thay máy Spot bị thu hồi." },
+          msg: "Hoàn tất #1. Trong thời gian này, Auto Scaling group đã thay thế Spot Instance bị thu hồi." },
       ],
       ok: true,
-      result: "Ba đơn đều xong dù một máy chết giữa chừng. Message chỉ biến mất khi worker xoá nó, nên worker đọc SQS chạy trên **Spot Instances** vẫn an toàn mà rẻ: việc dở dang tự được làm lại.",
+      result: "Cả ba message đều được xử lý dù một instance bị thu hồi giữa chừng. Message chỉ bị xoá khi worker gọi lệnh xoá, do đó chạy worker đọc SQS trên **Spot Instances** vừa an toàn vừa tiết kiệm chi phí: tác vụ chưa hoàn tất được tự động xử lý lại.",
     }),
   },
   {
-    name: "Một đơn lỗi mãi",
-    request: "#7 có dữ liệu hỏng · visibility timeout 30 s",
-    toggle: { label: "Gắn dead-letter queue (maxReceiveCount = 3)", initial: false },
+    name: "Message xử lý thất bại liên tục",
+    request: "#7 chứa dữ liệu lỗi · visibility timeout 30 s",
+    toggle: { label: "Cấu hình dead-letter queue (maxReceiveCount = 3)", initial: false },
     run: (dlq) => ({
       q: "Queue đơn hàng",
-      q2: { label: dlq ? "Dead-letter queue" : "chưa có dead-letter queue", kind: "dlq", ghost: !dlq },
+      q2: { label: dlq ? "Dead-letter queue" : "chưa cấu hình dead-letter queue", kind: "dlq", ghost: !dlq },
       workers: { w1: "Worker" },
       init: [tok("#7", "q", "bad"), tok("#8"), tok("#9")],
       frames: dlq
         ? [
             ...attempt(1, 0), ...attempt(2, 31),
-            { t: 62, who: "Worker", tag: "LỖI", tone: "bad", set: { "#7": { place: "w1", note: "lần 3" } }, w: { w1: "busy" }, msg: "Nhận #7 lần 3, lại lỗi." },
+            { t: 62, who: "Worker", tag: "LỖI", tone: "bad", set: { "#7": { place: "w1", note: "lần 3" } }, w: { w1: "busy" }, msg: "Nhận #7 lần 3; xử lý tiếp tục thất bại." },
             { t: 92, who: "Queue", tag: "DLQ", tone: "edge", set: { "#7": { place: "q2", note: "" } }, w: { w1: "idle" },
-              msg: "#7 đã bị nhận quá **maxReceiveCount** (3) mà chưa ai xoá: SQS chuyển nó sang **dead-letter queue**." },
-            { t: 93, who: "Worker", tag: "NHẬN", tone: "info", set: { "#8": { place: "w1" } }, w: { w1: "busy" }, msg: "Worker rảnh tay cho đơn khác: nhận #8." },
-            { t: 95, who: "Worker", tag: "XOÁ", tone: "ok", set: { "#8": { place: "done" }, "#9": { place: "w1" } }, msg: "Xong #8, nhận #9." },
-            { t: 97, who: "Worker", tag: "XOÁ", tone: "ok", set: { "#9": { place: "done" } }, w: { w1: "idle" }, msg: "Xong #9." },
+              msg: "#7 đã được nhận đủ **maxReceiveCount** (3) lần mà chưa bị xoá: SQS chuyển message sang **dead-letter queue**." },
+            { t: 93, who: "Worker", tag: "NHẬN", tone: "info", set: { "#8": { place: "w1" } }, w: { w1: "busy" }, msg: "Worker được giải phóng để xử lý message khác: nhận #8." },
+            { t: 95, who: "Worker", tag: "XOÁ", tone: "ok", set: { "#8": { place: "done" }, "#9": { place: "w1" } }, msg: "Hoàn tất #8, nhận #9." },
+            { t: 97, who: "Worker", tag: "XOÁ", tone: "ok", set: { "#9": { place: "done" } }, w: { w1: "idle" }, msg: "Hoàn tất #9." },
           ]
         : [
             ...attempt(1, 0), ...attempt(2, 31), ...attempt(3, 62),
             { t: 93, who: "Worker", tag: "LỖI", tone: "bad", set: { "#7": { place: "w1", note: "lần 4" } }, w: { w1: "busy" },
-              msg: "Lần 4, 5, 6… Worker mất thời gian cho một đơn không bao giờ xử lý được, #8 và #9 phải chờ." },
+              msg: "Lần 4, 5, 6… Worker tiêu tốn thời gian cho một message không thể xử lý thành công; #8 và #9 phải chờ." },
           ],
       ok: dlq,
       result: dlq
-        ? "#7 nằm riêng trong DLQ để đội dev xem vì sao lỗi, các đơn khác chạy bình thường. Đặt CloudWatch alarm trên số message trong DLQ để biết ngay."
-        : "#7 cứ quay vòng cho tới khi hết **retention period** (mặc định 4 ngày) rồi bị xoá, không ai biết vì sao. Gắn một **dead-letter queue** để tách nó ra.",
+        ? "#7 được cô lập trong DLQ để đội phát triển phân tích nguyên nhân lỗi; các message khác được xử lý bình thường. Cấu hình CloudWatch alarm trên số message trong DLQ để nhận cảnh báo ngay."
+        : "#7 liên tục quay lại queue cho tới khi hết **retention period** (mặc định 4 ngày) rồi bị xoá mà không để lại thông tin về nguyên nhân lỗi. Cần cấu hình **dead-letter queue** để cô lập message này.",
     }),
   },
   {
-    name: "Ban đêm queue gần như rỗng",
-    request: "2h sáng · 1 đơn trong 15 giây",
+    name: "Queue gần như rỗng vào ban đêm",
+    request: "2h sáng · 1 message trong 15 giây",
     toggle: { label: "Long polling (WaitTimeSeconds = 20)", initial: false },
     run: (long) => ({
       q: "Queue đơn hàng",
@@ -129,30 +129,30 @@ const SCENARIOS: MScenario[] = [
       frames: long
         ? [
             { t: 0, who: "Worker", tag: "CHỜ", tone: "info", w: { w1: "wait" }, calls: [1, 0],
-              msg: "`ReceiveMessage` với **WaitTimeSeconds = 20**: SQS giữ kết nối, chờ tối đa 20 s cho tới khi có message." },
-            { t: 14, who: "Web", tag: "GỬI", tone: "info", set: { "#1": { place: "q" } }, msg: "Khách đặt một đơn." },
+              msg: "`ReceiveMessage` với **WaitTimeSeconds = 20**: SQS giữ kết nối và chờ tối đa 20 s cho tới khi có message." },
+            { t: 14, who: "Web", tag: "GỬI", tone: "info", set: { "#1": { place: "q" } }, msg: "Người dùng tạo một đơn hàng." },
             { t: 14, who: "Worker", tag: "NHẬN", tone: "ok", set: { "#1": { place: "w1" } }, w: { w1: "busy" }, calls: [1, 0],
-              msg: "SQS trả #1 ngay khi có, không đợi hết 20 s." },
-            { t: 15, who: "Worker", tag: "XOÁ", tone: "ok", set: { "#1": { place: "done" } }, w: { w1: "idle" }, msg: "Xong #1." },
+              msg: "SQS trả về #1 ngay khi message xuất hiện, không chờ hết 20 s." },
+            { t: 15, who: "Worker", tag: "XOÁ", tone: "ok", set: { "#1": { place: "done" } }, w: { w1: "idle" }, msg: "Hoàn tất #1." },
           ]
         : [
-            { t: 0, who: "Worker", tag: "RỖNG", tone: "bad", calls: [1, 1], msg: "`ReceiveMessage` trả về rỗng ngay lập tức (**short polling**, mặc định)." },
-            { t: 1, who: "Worker", tag: "RỖNG", tone: "bad", calls: [2, 2], msg: "Gọi lại, vẫn rỗng." },
+            { t: 0, who: "Worker", tag: "RỖNG", tone: "bad", calls: [1, 1], msg: "`ReceiveMessage` trả về kết quả rỗng ngay lập tức (**short polling**, chế độ mặc định)." },
+            { t: 1, who: "Worker", tag: "RỖNG", tone: "bad", calls: [2, 2], msg: "Gọi lại; kết quả vẫn rỗng." },
             { t: 2, who: "Worker", tag: "RỖNG", tone: "bad", calls: [3, 3],
-              msg: "Short polling chỉ hỏi một phần server của SQS, nên đôi khi trả rỗng dù queue có message." },
-            { t: 14, who: "Web", tag: "GỬI", tone: "info", set: { "#1": { place: "q" } }, calls: [15, 15], msg: "Khách đặt một đơn. Worker đã gọi rỗng 15 lần." },
-            { t: 15, who: "Worker", tag: "NHẬN", tone: "ok", set: { "#1": { place: "w1" } }, w: { w1: "busy" }, calls: [16, 15], msg: "Lần gọi thứ 16 mới lấy được #1." },
-            { t: 16, who: "Worker", tag: "XOÁ", tone: "ok", set: { "#1": { place: "done" } }, w: { w1: "idle" }, msg: "Xong #1." },
+              msg: "Short polling chỉ truy vấn một tập con các server của SQS, do đó có thể trả về rỗng ngay cả khi queue có message." },
+            { t: 14, who: "Web", tag: "GỬI", tone: "info", set: { "#1": { place: "q" } }, calls: [15, 15], msg: "Người dùng tạo một đơn hàng. Worker đã thực hiện 15 lệnh gọi trả về rỗng." },
+            { t: 15, who: "Worker", tag: "NHẬN", tone: "ok", set: { "#1": { place: "w1" } }, w: { w1: "busy" }, calls: [16, 15], msg: "Lệnh gọi thứ 16 mới nhận được #1." },
+            { t: 16, who: "Worker", tag: "XOÁ", tone: "ok", set: { "#1": { place: "done" } }, w: { w1: "idle" }, msg: "Hoàn tất #1." },
           ],
       ok: long,
       result: long
-        ? "1 lần gọi thay vì 16. **Long polling** bớt các lần gọi rỗng nên bớt tiền, vì SQS tính tiền theo số request."
-        : "16 lần gọi, 15 lần rỗng, cho một đơn. Lần gọi rỗng vẫn tính tiền. Cả đêm là hàng chục nghìn request vô ích. Bật **long polling**.",
+        ? "1 lệnh gọi thay vì 16. **Long polling** giảm số lệnh gọi rỗng và do đó giảm chi phí, vì SQS tính phí theo số request."
+        : "16 lệnh gọi, trong đó 15 lệnh trả về rỗng, cho một message. Lệnh gọi rỗng vẫn bị tính phí; trong cả đêm, số request không cần thiết lên tới hàng chục nghìn. Cần bật **long polling**.",
     }),
   },
   {
-    name: "Kho cần vài giây để cập nhật",
-    request: "Đơn mới · hệ thống kho cần ~8 s",
+    name: "Hệ thống kho cần vài giây để cập nhật",
+    request: "Đơn hàng mới · hệ thống kho cần ~8 s",
     toggle: { label: "Delay queue (DelaySeconds = 10)", initial: false },
     run: (delay) => ({
       q: delay ? "Queue giao hàng · delay 10 s" : "Queue giao hàng",
@@ -161,29 +161,29 @@ const SCENARIOS: MScenario[] = [
       frames: delay
         ? [
             { t: 0, who: "Web", tag: "HOÃN", tone: "edge", set: { "#12": { place: "q", dim: true, note: "hoãn 10 s" } },
-              msg: "Đơn #12 vào **delay queue**: bị ẩn 10 s ngay từ lúc gửi, chưa worker nào thấy." },
-            { t: 10, who: "Queue", tag: "HIỆN", tone: "info", set: { "#12": { dim: false, note: "" } }, msg: "Hết 10 s, #12 hiện ra. Kho đã cập nhật xong." },
-            { t: 10, who: "Worker", tag: "NHẬN", tone: "info", set: { "#12": { place: "w1" } }, w: { w1: "busy" }, msg: "Nhận #12." },
-            { t: 11, who: "Worker", tag: "XOÁ", tone: "ok", set: { "#12": { place: "done" } }, w: { w1: "idle" }, msg: "Tạo vận đơn thành công ngay lần đầu." },
+              msg: "Đơn #12 được gửi vào **delay queue**: message bị ẩn 10 s ngay từ thời điểm gửi, chưa worker nào nhìn thấy." },
+            { t: 10, who: "Queue", tag: "HIỆN", tone: "info", set: { "#12": { dim: false, note: "" } }, msg: "Sau 10 s, #12 hiển thị trong queue. Hệ thống kho đã cập nhật xong." },
+            { t: 10, who: "Worker", tag: "NHẬN", tone: "info", set: { "#12": { place: "w1" } }, w: { w1: "busy" }, msg: "Worker nhận #12." },
+            { t: 11, who: "Worker", tag: "XOÁ", tone: "ok", set: { "#12": { place: "done" } }, w: { w1: "idle" }, msg: "Vận đơn được tạo thành công ngay ở lần xử lý đầu tiên." },
           ]
         : [
-            { t: 0, who: "Web", tag: "GỬI", tone: "info", set: { "#12": { place: "q" } }, msg: "Đơn #12 vào queue." },
-            { t: 0, who: "Worker", tag: "NHẬN", tone: "info", set: { "#12": { place: "w1" } }, w: { w1: "busy" }, msg: "Worker nhận ngay." },
-            { t: 1, who: "Worker", tag: "LỖI", tone: "bad", set: { "#12": { note: "lỗi" } }, msg: "Kho chưa trừ tồn xong, worker không tìm thấy hàng để giao." },
+            { t: 0, who: "Web", tag: "GỬI", tone: "info", set: { "#12": { place: "q" } }, msg: "Đơn #12 được gửi vào queue." },
+            { t: 0, who: "Worker", tag: "NHẬN", tone: "info", set: { "#12": { place: "w1" } }, w: { w1: "busy" }, msg: "Worker nhận message ngay lập tức." },
+            { t: 1, who: "Worker", tag: "LỖI", tone: "bad", set: { "#12": { note: "lỗi" } }, msg: "Hệ thống kho chưa cập nhật tồn kho xong; worker không tìm thấy hàng để tạo vận đơn." },
             { t: 31, who: "Queue", tag: "HIỆN LẠI", tone: "edge", set: { "#12": { place: "q", note: "hiện lại" } }, w: { w1: "idle" },
-              msg: "30 s sau (visibility timeout) #12 hiện lại." },
-            { t: 32, who: "Worker", tag: "XOÁ", tone: "ok", set: { "#12": { place: "done", note: "" } }, msg: "Lần 2 mới xong." },
+              msg: "Sau 30 s (visibility timeout), #12 hiển thị lại." },
+            { t: 32, who: "Worker", tag: "XOÁ", tone: "ok", set: { "#12": { place: "done", note: "" } }, msg: "Lần xử lý thứ 2 mới thành công." },
           ],
       ok: delay,
       result: delay
-        ? "**Delay queue** hoãn message **lúc vừa gửi vào**. Khác với visibility timeout: cái đó ẩn message **sau khi** một worker đã nhận nó."
-        : "Đơn nào cũng lỗi một lần rồi mới xong, chậm thêm 30 s và log đầy lỗi giả. Cần hoãn message ngay từ lúc gửi: **delay queue**.",
+        ? "**Delay queue** trì hoãn message **ngay khi được gửi vào queue**. Điểm khác biệt với visibility timeout: visibility timeout ẩn message **sau khi** một worker đã nhận message."
+        : "Mọi đơn hàng đều thất bại một lần trước khi thành công, tăng thêm 30 s độ trễ và tạo nhiều log lỗi không thực chất. Cần trì hoãn message ngay từ thời điểm gửi: **delay queue**.",
     }),
   },
   {
-    name: "Ảnh của khách Pro phải xong trước",
-    request: "3 ảnh Lite gửi trước, 1 ảnh Pro gửi sau",
-    toggle: { label: "Tách hai queue: Pro và Lite", initial: false },
+    name: "Ưu tiên xử lý ảnh của người dùng Pro",
+    request: "3 ảnh Lite được gửi trước, 1 ảnh Pro được gửi sau",
+    toggle: { label: "Tách thành hai queue: Pro và Lite", initial: false },
     run: (two) => {
       const lite = ["L1", "L2", "L3"];
       const order = two ? ["P1", ...lite] : [...lite, "P1"];
@@ -192,20 +192,20 @@ const SCENARIOS: MScenario[] = [
         set: { [id]: { place: "w1" }, ...(i ? { [order[i - 1]]: { place: "done" } } : {}) },
         w: { w1: "busy" },
         msg: id === "P1"
-          ? two ? "Worker luôn hỏi **queue Pro** trước, có ảnh Pro là làm ngay." : "Tới lượt ảnh Pro, sau khi đã làm hết 3 ảnh Lite."
-          : two && i === 1 ? "Queue Pro rỗng mới hỏi sang queue Lite." : `Làm ảnh ${id}.`,
+          ? two ? "Worker luôn poll **queue Pro** trước; ảnh Pro được xử lý ngay khi xuất hiện." : "Ảnh Pro chỉ được xử lý sau khi hoàn tất cả 3 ảnh Lite."
+          : two && i === 1 ? "Chỉ khi queue Pro rỗng, worker mới poll queue Lite." : `Xử lý ảnh ${id}.`,
       }));
-      frames.push({ t: order.length * 20, who: "Worker", tag: "XOÁ", tone: "ok", set: { [order[order.length - 1]]: { place: "done" } }, w: { w1: "idle" }, msg: "Xong cả 4 ảnh." });
+      frames.push({ t: order.length * 20, who: "Worker", tag: "XOÁ", tone: "ok", set: { [order[order.length - 1]]: { place: "done" } }, w: { w1: "idle" }, msg: "Hoàn tất cả 4 ảnh." });
       return {
-        q: two ? "Queue Pro" : "Queue ảnh (chung)",
+        q: two ? "Queue Pro" : "Queue ảnh (dùng chung)",
         q2: two ? { label: "Queue Lite", kind: "queue" as const } : undefined,
         workers: { w1: "Worker EC2" },
         init: two ? [tok("P1", "q", "pro"), ...lite.map((id) => tok(id, "q2"))] : [...lite.map((id) => tok(id)), tok("P1", "q", "pro")],
         frames,
         ok: two,
         result: two
-          ? "Hai **queue standard** riêng, worker ưu tiên đọc queue Pro. Ảnh Pro không phải xếp sau ảnh Lite nữa."
-          : "Khách Pro chờ 3 lượt. Một queue không có độ ưu tiên; đổi visibility timeout hay kiểu polling cũng không đổi được thứ tự này.",
+          ? "Hai **queue standard** riêng biệt, worker ưu tiên đọc queue Pro. Ảnh Pro không còn phải chờ sau ảnh Lite."
+          : "Người dùng Pro phải chờ 3 lượt xử lý. Một queue không hỗ trợ độ ưu tiên; thay đổi visibility timeout hoặc chế độ polling cũng không thay đổi được thứ tự này.",
       };
     },
   },
@@ -230,7 +230,7 @@ function positions(toks: Tok[]): Record<string, { x: number; y: number }> {
   return out;
 }
 
-const W_TEXT: Record<WState, string> = { idle: "rảnh", busy: "đang xử lý", dead: "bị thu hồi", wait: "đang chờ message" };
+const W_TEXT: Record<WState, string> = { idle: "sẵn sàng", busy: "đang xử lý", dead: "bị thu hồi", wait: "đang chờ message" };
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 type LogLine = { tag?: string; tone?: Tone; who?: string; t?: number; ok?: boolean; msg: ReactNode };
@@ -312,13 +312,13 @@ export default function MessageLifeSim() {
             {sc.toggle.label}
           </label>
         )}
-        <button className="btn primary" onClick={play} disabled={busy}>Chạy</button>
+        <button className="btn primary" onClick={play} disabled={busy}>Chạy mô phỏng</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 30 820 220" role="img" aria-label="Message đi từ web vào queue SQS, tới worker, rồi bị xoá hoặc chuyển sang queue khác">
+        <svg viewBox="0 30 820 220" role="img" aria-label="Message được gửi từ web vào queue SQS, chuyển tới worker, sau đó bị xoá hoặc chuyển sang queue khác">
           <text className="mls-clock" x={14} y={50}>t = {clock} s</text>
           {setup.counter && (
-            <text className="mls-counter" x={14} y={240}>ReceiveMessage: {calls[0]} lần · {calls[1]} lần rỗng</text>
+            <text className="mls-counter" x={14} y={240}>ReceiveMessage: {calls[0]} lệnh gọi · {calls[1]} lệnh rỗng</text>
           )}
           <path className="mls-link" d={`M${SRC[0] + 40} ${LANE_Y.q} H180 M480 ${LANE_Y.q} H${552 - 30}`} />
           {workers.includes("w2") && <path className="mls-link" d={`M500 ${LANE_Y.q} V${W_Y.w2} H522`} />}
@@ -362,7 +362,7 @@ export default function MessageLifeSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="mls-hint">Bấm <b>Chạy</b> để xem từng bước.{sc.toggle ? " Đổi công tắc rồi chạy lại để so sánh." : ""}</p>
+          <p className="mls-hint">Chọn <b>Chạy mô phỏng</b> để xem từng bước.{sc.toggle ? " Thay đổi cấu hình và chạy lại để so sánh." : ""}</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) =>

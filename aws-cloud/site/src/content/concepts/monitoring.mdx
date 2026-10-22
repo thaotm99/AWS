@@ -1,6 +1,6 @@
 ---
 title: "Giám sát và vận hành: CloudWatch, CloudTrail, Config, Systems Manager"
-lede: "ShopViet đã chạy thật, giờ cần biết hệ thống đang ra sao và ai đã làm gì. Bài này đi qua năm việc: đặt alarm đủ nhanh để kịp phản ứng, để alarm tự sửa máy hỏng, giữ log khi máy bị thay, tra lại ai đổi gì và cấu hình có đúng chuẩn không, rồi vá hàng trăm máy mà không làm khách gặp lỗi."
+lede: "Hệ thống ShopViet đã vận hành trong môi trường production và cần khả năng quan sát trạng thái hệ thống cũng như truy vết thao tác. Bài học trình bày năm nội dung: cấu hình alarm với độ trễ phát hiện đủ thấp, dùng alarm action để tự động khôi phục instance, bảo toàn log khi instance bị thay thế, truy vết thay đổi và đánh giá mức tuân thủ cấu hình, và vá hàng trăm instance mà không gây lỗi cho người dùng."
 minutes: 30
 scenes: 5
 prerequisites: ["ec2", "asg", "iam"]
@@ -36,144 +36,144 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#s1", label: "1 · Metric và alarm" },
-  { href: "#s2", label: "2 · Alarm tự sửa máy" },
-  { href: "#s3", label: "3 · Log không mất" },
-  { href: "#s4", label: "4 · Ai làm gì, cấu hình ra sao" },
-  { href: "#s5", label: "5 · Vá máy bằng Systems Manager" },
-  { href: "#challenge", label: "Thử thách" },
+  { href: "#s2", label: "2 · Tự động khôi phục bằng alarm action" },
+  { href: "#s3", label: "3 · Bảo toàn log" },
+  { href: "#s4", label: "4 · Truy vết API và tuân thủ cấu hình" },
+  { href: "#s5", label: "5 · Vá instance bằng Systems Manager" },
+  { href: "#challenge", label: "Bài tập" },
 ]}>
-ShopViet đã có load balancer, Auto Scaling group, container và Lambda. Hệ thống chạy được rồi, nhưng đội vận hành vẫn hay hỏi: CPU đang bao nhiêu, ai vừa xoá cái security group kia, log của máy hôm qua đâu rồi, bao giờ vá máy? Bốn dịch vụ trả lời bốn kiểu câu hỏi đó: **CloudWatch** (số đo, log, alarm), **CloudTrail** (ai gọi API nào), **AWS Config** (cấu hình và mức tuân thủ), **Systems Manager** (thao tác trên chính các máy).
+Hệ thống ShopViet đã có load balancer, Auto Scaling group, container và Lambda. Hệ thống đã vận hành ổn định, nhưng đội vận hành thường xuyên cần trả lời các câu hỏi: mức sử dụng CPU hiện tại là bao nhiêu, ai vừa xoá security group, log của instance ngày hôm trước được lưu ở đâu, khi nào thực hiện vá hệ điều hành. Bốn dịch vụ tương ứng với bốn nhóm câu hỏi này: **CloudWatch** (metric, log, alarm), **CloudTrail** (ai đã gọi API nào), **AWS Config** (cấu hình và mức tuân thủ), **Systems Manager** (thao tác trực tiếp trên các instance).
 </Story>
 
-<Scene id="s1" label="Cảnh 1/5" title="Alarm có kịp bật không?" questions={["exam5_q20", "exam4_q25", "exam3_q15"]}>
+<Scene id="s1" label="Phần 1/5" title="Độ trễ phát hiện của alarm" questions={["exam5_q20", "exam4_q25", "exam3_q15"]}>
 
-Mỗi dịch vụ AWS gửi **metric** lên CloudWatch: CPU của EC2, số lần chạy của Lambda, CPU của một ECS service. Một **alarm** theo dõi một metric, so với ngưỡng, và khi vượt ngưỡng đủ lâu thì chạy **action**: gửi SNS, scale một nhóm, hay thao tác trên EC2.
+Mỗi dịch vụ AWS gửi **metric** lên CloudWatch: CPU của EC2, số lần gọi của Lambda, CPU của một ECS service. Một **alarm** theo dõi một metric, so sánh với ngưỡng, và khi metric vượt ngưỡng trong khoảng thời gian đủ dài thì thực thi **action**: gửi thông báo qua SNS, scale một nhóm tài nguyên, hoặc thao tác trên EC2.
 
-Điều ít người để ý: EC2 mặc định chỉ gửi metric **mỗi 5 phút** (basic monitoring). Chạy tình huống livestream hai lần, một lần tắt và một lần bật detailed monitoring:
+Một điểm thường bị bỏ qua: theo mặc định, EC2 chỉ gửi metric **mỗi 5 phút** (basic monitoring). Chạy tình huống livestream hai lần, một lần tắt và một lần bật detailed monitoring:
 
 <MetricAlarmSim client:visible />
 
-Chọn đúng metric cũng quan trọng như chọn ngưỡng. Service ECS scale theo CPU của chính service đó. Lambda scale rất nhanh, nên đặt alarm trên `ConcurrentExecutions` hoặc `Invocations` để biết sớm khi có gì bất thường.
+Lựa chọn metric phù hợp quan trọng tương đương lựa chọn ngưỡng. ECS service scale theo CPU của chính service đó. Lambda scale rất nhanh, do đó nên đặt alarm trên `ConcurrentExecutions` hoặc `Invocations` để phát hiện sớm hành vi bất thường.
 
-<Takeaway>Cần thấy dữ liệu mỗi phút trên EC2: bật detailed monitoring, không cần dựng gì thêm. Alarm = metric + ngưỡng + số datapoint + action. ECS scale theo CPU của service; Lambda nên có alarm trên ConcurrentExecutions.</Takeaway>
+<Takeaway>Yêu cầu dữ liệu metric theo chu kỳ 1 phút trên EC2: bật detailed monitoring, không cần triển khai thêm thành phần nào. Alarm = metric + ngưỡng + số datapoint + action. ECS scale theo CPU của service; Lambda nên có alarm trên ConcurrentExecutions.</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Cảnh 2/5" title="Để alarm tự sửa máy hỏng" questions={["exam3_q38", "exam3_q57", "exam5_q19", "exam4_q16"]}>
+<Scene id="s2" label="Phần 2/5" title="Tự động khôi phục instance bằng alarm action" questions={["exam3_q38", "exam3_q57", "exam5_q19", "exam4_q16"]}>
 
-Trang quản lý kho của ShopViet chạy trên **một** EC2, chưa đáng dựng Auto Scaling group. Máy thỉnh thoảng hỏng, và không ai muốn dậy lúc 3h sáng để bấm restart. Alarm của CloudWatch gọi thẳng được bốn action của EC2: **stop**, **terminate**, **reboot**, **recover**. Không cần Lambda hay script.
+Trang quản lý kho của ShopViet chạy trên **một** EC2 instance, quy mô chưa cần tới Auto Scaling group. Instance thỉnh thoảng gặp sự cố và việc khởi động lại thủ công ngoài giờ làm việc (ví dụ lúc 3h sáng) là không mong muốn. CloudWatch alarm có thể gọi trực tiếp bốn action của EC2: **stop**, **terminate**, **reboot**, **recover**, không cần Lambda hay script.
 
-EC2 có hai loại status check. **Instance status check** hỏng khi lỗi nằm trong máy (OS treo, hết RAM). **System status check** hỏng khi host vật lý của AWS có vấn đề. Mỗi loại cần một action khác nhau:
+EC2 có hai loại status check. **Instance status check** thất bại khi lỗi nằm bên trong instance (hệ điều hành bị treo, cạn bộ nhớ). **System status check** thất bại khi host vật lý của AWS gặp sự cố. Mỗi loại cần một action khác nhau:
 
 <AlarmActionSim client:visible />
 
-<Takeaway>Lỗi trong máy (instance status check): action reboot. Lỗi host (system status check): action recover, chỉ cho instance dùng EBS. Recover giữ instance ID, private IP, Elastic IP, public IPv4, metadata; mất dữ liệu trong RAM; instance đã terminate thì không recover được. Alarm scale in: ASG bớt máy ở AZ đông nhất, rồi chọn máy có launch template cũ nhất.</Takeaway>
+<Takeaway>Lỗi bên trong instance (instance status check): action reboot. Lỗi host (system status check): action recover, chỉ áp dụng cho instance sử dụng EBS. Recover giữ nguyên instance ID, private IP, Elastic IP, public IPv4 và metadata; dữ liệu trong RAM bị mất; instance đã terminate thì không thể recover. Alarm scale in: ASG giảm instance tại AZ có nhiều instance nhất, sau đó chọn instance có launch template cũ nhất.</Takeaway>
 
 </Scene>
 
-<Scene id="s3" label="Cảnh 3/5" title="Log không mất khi máy bị thay" questions={["exam5_q33", "exam1_q61", "exam1_q27"]}>
+<Scene id="s3" label="Phần 3/5" title="Bảo toàn log khi instance bị thay thế" questions={["exam5_q33", "exam1_q61", "exam1_q27"]}>
 
-Auto Scaling group của ShopViet scale rất nhanh, gần như ngày nào cũng thay máy mới. Hôm nay có khách báo lỗi thanh toán từ hôm kia, nhưng máy đó đã bị terminate. Và một đêm khác, ai đó dùng access key bị lộ gọi API liên tục. Hai chuyện, cùng một lời giải: đưa log ra khỏi máy, rồi để CloudWatch đọc nó.
+Auto Scaling group của ShopViet scale với tần suất cao, gần như mỗi ngày đều có instance mới thay thế. Một người dùng báo lỗi thanh toán xảy ra hai ngày trước, nhưng instance liên quan đã bị terminate. Trong một sự cố khác, một access key bị lộ được dùng để gọi API liên tục vào ban đêm. Hai sự cố có chung giải pháp: chuyển log ra khỏi instance và để CloudWatch xử lý log.
 
 <LogPipelineSim client:visible />
 
-Một chuyện khác về nơi chạy. ShopViet mở thêm mảng ví điện tử, và quy định buộc dữ liệu cùng workload phải nằm trong data center của công ty. Đội vẫn muốn Kubernetes do AWS quản lý, IAM và CloudWatch như trên cloud. Lời giải là **AWS Outposts**: AWS đặt rack của mình ngay trong data center, chạy EC2 và Amazon EKS tại chỗ, dùng cùng API và công cụ. Direct Connect hay Local Zone vẫn đặt workload trên hạ tầng của AWS; Snowball Edge là thiết bị chuyển dữ liệu và xử lý tại biên, không phải nền tảng chạy lâu dài.
+Một yêu cầu khác liên quan tới vị trí triển khai: ShopViet mở rộng sang mảng ví điện tử, và quy định bắt buộc dữ liệu cùng workload phải nằm trong data center của công ty. Đội kỹ thuật vẫn cần Kubernetes do AWS quản lý, cùng IAM và CloudWatch như trên cloud. Giải pháp là **AWS Outposts**: AWS lắp đặt rack trong data center của khách hàng, chạy EC2 và Amazon EKS tại chỗ với cùng API và công cụ. Direct Connect và Local Zone vẫn đặt workload trên hạ tầng của AWS; Snowball Edge là thiết bị chuyển dữ liệu và xử lý tại biên, không phải nền tảng vận hành lâu dài.
 
-<Takeaway>Log phải rời máy ngay khi được ghi: cài CloudWatch agent. Muốn cảnh báo gần thời gian thực về API call bất thường: CloudTrail gửi vào CloudWatch Logs, metric filter đếm lỗi, alarm báo qua SNS. Dữ liệu bắt buộc ở lại tại chỗ mà vẫn muốn dịch vụ AWS: Outposts.</Takeaway>
+<Takeaway>Log phải được chuyển ra khỏi instance ngay khi được ghi: cài đặt CloudWatch agent. Cảnh báo gần thời gian thực về API call bất thường: CloudTrail gửi vào CloudWatch Logs, metric filter đếm lỗi, alarm gửi thông báo qua SNS. Dữ liệu bắt buộc lưu tại chỗ nhưng vẫn cần dịch vụ AWS: Outposts.</Takeaway>
 
 </Scene>
 
-<Scene id="s4" label="Cảnh 4/5" title="Ai đã làm gì, cấu hình có đúng chuẩn không" questions={["exam1_q16", "exam3_q29", "exam2_q43", "exam2_q9"]}>
+<Scene id="s4" label="Phần 4/5" title="Truy vết thao tác và đánh giá tuân thủ cấu hình" questions={["exam1_q16", "exam3_q29", "exam2_q43", "exam2_q9"]}>
 
-Sau một sự cố, đội ShopViet có cả loạt câu hỏi. Mỗi câu chỉ một dịch vụ trả lời được. Chọn từng câu và gửi đi:
+Sau một sự cố, đội vận hành ShopViet cần trả lời nhiều câu hỏi; mỗi câu hỏi chỉ một dịch vụ cung cấp được câu trả lời. Chọn từng câu hỏi và gửi truy vấn:
 
 <WhoAnswersSim client:visible />
 
-**CloudTrail** là nhật ký: mỗi API call là một event. **AWS Config** là cuốn album: mỗi lần tài nguyên đổi, Config chụp lại một **configuration item**, và **Config rule** chấm nó đúng hay sai chuẩn. Hai thứ đi cùng nhau rất hợp. Bấm từng mốc trong tuần của security group `sg-web`:
+**CloudTrail** là nhật ký hoạt động: mỗi API call được ghi thành một event. **AWS Config** lưu lịch sử cấu hình: mỗi khi tài nguyên thay đổi, Config ghi lại một **configuration item**, và **Config rule** đánh giá cấu hình đó tuân thủ hay không tuân thủ. Hai dịch vụ bổ trợ cho nhau. Chọn từng mốc thời gian trong tuần của security group `sg-web`:
 
 <ConfigTimelineSim client:visible />
 
-Thấy vi phạm là một chuyện; chặn hoặc tự sửa là chuyện khác. Ba hàng rào ShopViet dựng cho các account của mình:
+Phát hiện vi phạm khác với ngăn chặn hoặc tự động khắc phục vi phạm. Ba lớp guardrail ShopViet áp dụng cho các account:
 
 <GuardrailSim client:visible />
 
-<Takeaway>Ai gọi API gì, lúc nào: CloudTrail (bật để ghi mọi IAM action). Tài nguyên trông thế nào theo thời gian, có đúng chuẩn không: AWS Config. Giữ trail chạy cả khi dev là root: SCP. Chứng chỉ import vào ACM không tự gia hạn: managed rule acm-certificate-expiration-check báo trước. Config rule gắn remediation để tự sửa.</Takeaway>
+<Takeaway>Ai gọi API nào, vào thời điểm nào: CloudTrail (bật để ghi lại mọi IAM action). Cấu hình tài nguyên theo thời gian và mức tuân thủ: AWS Config. Đảm bảo trail luôn hoạt động kể cả khi developer có quyền root: SCP. Chứng chỉ import vào ACM không được tự động gia hạn: managed rule acm-certificate-expiration-check cảnh báo trước. Config rule kết hợp remediation để tự động khắc phục.</Takeaway>
 
 </Scene>
 
-<Scene id="s5" label="Cảnh 5/5" title="Vá hàng trăm máy mà khách không biết" questions={["exam3_q6", "exam5_q34"]}>
+<Scene id="s5" label="Phần 5/5" title="Vá hàng trăm instance mà không gián đoạn dịch vụ" questions={["exam3_q6", "exam5_q34"]}>
 
-ShopViet có hơn 200 EC2. Mỗi tháng có bản vá bảo mật cho hệ điều hành. **Systems Manager** làm việc này qua **SSM Agent** chạy trên máy: Patch Manager vá theo lịch, Run Command chạy lệnh trên cả nhóm, Automation chạy runbook nhiều bước. Việc đầu tiên là cho agent quyền nói chuyện với Systems Manager. Các máy đã có IAM role riêng để đọc RDS và Secrets Manager:
+ShopViet có hơn 200 EC2 instance; mỗi tháng đều có bản vá bảo mật cho hệ điều hành. **Systems Manager** thực hiện việc này thông qua **SSM Agent** chạy trên instance: Patch Manager vá theo lịch, Run Command thực thi lệnh trên cả nhóm instance, Automation thực thi runbook nhiều bước. Bước đầu tiên là cấp quyền để agent giao tiếp với Systems Manager. Các instance đã có IAM role riêng để truy cập RDS và Secrets Manager:
 
-<ScenarioFlow client:visible height={230} legend={["Ít việc, không làm gián đoạn app", "Nhiều việc hoặc làm gián đoạn app"]} scenarios={[
-  { name: "Đưa 200 EC2 vào Systems Manager",
+<ScenarioFlow client:visible height={230} legend={["Ít thao tác, không gián đoạn ứng dụng", "Nhiều thao tác hoặc gây gián đoạn ứng dụng"]} scenarios={[
+  { name: "Quản lý 200 EC2 bằng Systems Manager",
     nodes: [
       { id: "ssm", x: 20, y: 70, w: 170, label: "Systems Manager", sub: "Patch Manager", kind: "net" },
-      { id: "ec2", x: 290, y: 70, w: 190, label: "200 EC2", sub: "role app: RDS, Secrets", kind: "ec2" },
-      { id: "role", x: 560, y: 10, w: 170, label: "Role mới thay role app", kind: "warn" },
+      { id: "ec2", x: 290, y: 70, w: 190, label: "200 EC2", sub: "role ứng dụng: RDS, Secrets", kind: "ec2" },
+      { id: "role", x: 560, y: 10, w: 170, label: "Role mới (gộp quyền)", kind: "warn" },
       { id: "dhmc", x: 550, y: 170, w: 170, label: "Default Host Management", sub: "Quick Setup", kind: "edge" },
     ],
     options: [
-      { name: "Cài agent, cron từng máy", verdict: "bad", hide: ["role", "dhmc"],
-        flows: [{ path: ["ec2", "ssm"], tone: "bad", label: "không có báo cáo chung" }],
-        text: "Mỗi máy tự vá theo lịch riêng, 200 lịch cron phải tự theo dõi. Không biết máy nào đã vá, máy nào chưa." },
-      { name: "Thay IAM role của máy", verdict: "bad", hide: ["dhmc"],
-        flows: [{ path: ["role", "ec2"], tone: "bad", label: "gỡ role đang chạy" }, { path: ["ssm", "ec2"], tone: "neutral" }],
-        text: "Gỡ role cũ, gắn role mới gộp quyền: làm từng máy, và app có thể mất quyền đọc Secrets Manager trong lúc đổi." },
+      { name: "Cài agent, cron trên từng instance", verdict: "bad", hide: ["role", "dhmc"],
+        flows: [{ path: ["ec2", "ssm"], tone: "bad", label: "không tập trung" }],
+        text: "Mỗi instance tự vá theo lịch riêng, 200 lịch cron phải được theo dõi thủ công. Không xác định được instance nào đã được vá và instance nào chưa." },
+      { name: "Thay IAM role của instance", verdict: "bad", hide: ["dhmc"],
+        flows: [{ path: ["role", "ec2"], tone: "bad", label: "gỡ role hiện tại" }, { path: ["ssm", "ec2"], tone: "neutral" }],
+        text: "Gỡ role cũ và gắn role mới có quyền gộp: thao tác trên từng instance, và ứng dụng có thể mất quyền đọc Secrets Manager trong quá trình thay đổi." },
       { name: "Bật Default Host Management", verdict: "good", hide: ["role"],
         flows: [{ path: ["dhmc", "ec2"], tone: "good", label: "quyền cho SSM Agent" }, { path: ["ssm", "ec2"], tone: "good", label: "vá theo lịch" }],
-        text: "**Default Host Management Configuration** (bật trong Quick Setup) cấp quyền cho SSM Agent ở cấp account và Region, **không đụng vào role của instance**. Mọi EC2 thành managed node, vá theo lịch, có báo cáo tuân thủ chung." },
+        text: "**Default Host Management Configuration** (bật trong Quick Setup) cấp quyền cho SSM Agent ở cấp account và Region, **không thay đổi role của instance**. Mọi EC2 instance trở thành managed node, được vá theo lịch và có báo cáo tuân thủ tập trung." },
     ] },
 ]} />
 
-Lần vá trước, mọi bản vá đều báo thành công, vậy mà khách gặp lỗi và timeout. Vì máy reboot trong khi ALB vẫn gửi request vào. So sánh hai cách vá trong cùng một **Maintenance Window**:
+Trong đợt vá trước, mọi bản vá đều báo thành công nhưng người dùng vẫn gặp lỗi và timeout, do instance reboot trong khi ALB vẫn tiếp tục định tuyến request tới. So sánh hai phương án vá trong cùng một **Maintenance Window**:
 
 <PatchWindowSim client:visible />
 
-<Takeaway>Cho Systems Manager quản lý mọi EC2 mà không sửa role của máy: Default Host Management Configuration. Vá máy đứng sau load balancer: Automation runbook AWSEC2-PatchLoadBalancerInstance (gỡ khỏi target group, vá, đăng ký lại), chạy trong Maintenance Window.</Takeaway>
+<Takeaway>Quản lý mọi EC2 instance bằng Systems Manager mà không thay đổi role của instance: Default Host Management Configuration. Vá instance phía sau load balancer: Automation runbook AWSEC2-PatchLoadBalancerInstance (gỡ khỏi target group, vá, đăng ký lại), thực thi trong Maintenance Window.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="Hỏi đúng dịch vụ" questions={["exam1_q16", "exam3_q29", "exam5_q20", "exam1_q61", "exam3_q38", "exam5_q34"]}>
+<Scene id="challenge" label="Bài tập" title="Phân loại tác vụ theo dịch vụ giám sát" questions={["exam1_q16", "exam3_q29", "exam5_q20", "exam1_q61", "exam3_q38", "exam5_q34"]}>
 
-Xếp từng việc của ShopViet vào dịch vụ làm được việc đó. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
+Phân loại từng tác vụ của ShopViet vào dịch vụ đáp ứng tác vụ đó. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
 <SortGame client:visible
   bins={[
-    { id: "cw", title: "CloudWatch", sub: "metric, log, alarm", hint: "Gợi ý: việc này là đo, đọc log hoặc tự phản ứng khi vượt ngưỡng." },
-    { id: "trail", title: "CloudTrail", sub: "API call", hint: "Gợi ý: việc này cần biết ai đã gọi API nào." },
-    { id: "config", title: "AWS Config", sub: "cấu hình, tuân thủ", hint: "Gợi ý: việc này cần biết tài nguyên trông thế nào hoặc có đúng chuẩn không." },
+    { id: "cw", title: "CloudWatch", sub: "metric, log, alarm", hint: "Gợi ý: tác vụ liên quan tới đo lường, xử lý log hoặc tự động phản ứng khi vượt ngưỡng." },
+    { id: "trail", title: "CloudTrail", sub: "API call", hint: "Gợi ý: tác vụ cần xác định ai đã gọi API nào." },
+    { id: "config", title: "AWS Config", sub: "cấu hình, tuân thủ", hint: "Gợi ý: tác vụ cần xác định cấu hình của tài nguyên hoặc mức tuân thủ." },
   ]}
   cards={[
-    ["Metric mỗi 1 phút cho EC2", "cw"], ["Tự reboot máy khi status check hỏng", "cw"], ["Gom log của mọi instance", "cw"],
+    ["Metric chu kỳ 1 phút cho EC2", "cw"], ["Tự động reboot instance khi status check thất bại", "cw"], ["Tập trung log của mọi instance", "cw"],
     ["Ai đã xoá security group", "trail"], ["Ghi mọi IAM action của admin mới", "trail"], ["Nguồn event cho metric filter AccessDenied", "trail"],
-    ["Security group trông thế nào tuần trước", "config"], ["Chứng chỉ import sắp hết hạn", "config"], ["Tự đóng cổng SSH mở ra Internet", "config"],
+    ["Cấu hình security group tại tuần trước", "config"], ["Chứng chỉ import sắp hết hạn", "config"], ["Tự động đóng cổng SSH mở ra Internet", "config"],
   ]}
 />
 
-Kiểm tra nhanh: nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "Trang quản lý kho chạy trên một EC2 (ổ EBS). Thỉnh thoảng host bên dưới hỏng. Cần tự hồi phục trong vài phút, rẻ nhất có thể. Làm thế nào?",
-    opts: ["Dựng Auto Scaling group 1 máy", "CloudWatch alarm trên system status check với action recover", "Lambda chạy mỗi 5 phút để kiểm tra và khởi động lại"],
+  { q: "Trang quản lý kho chạy trên một EC2 instance (EBS volume). Host vật lý thỉnh thoảng gặp sự cố. Yêu cầu: tự động khôi phục trong vài phút với chi phí thấp nhất. Phương án nào đáp ứng yêu cầu?",
+    opts: ["Tạo Auto Scaling group 1 instance", "CloudWatch alarm trên system status check với action recover", "Lambda chạy mỗi 5 phút để kiểm tra và khởi động lại"],
     a: 1,
-    why: "Action recover chuyển instance sang host khác, giữ instance ID, IP và Elastic IP. Không cần thêm dịch vụ nào." },
-  { q: "Một bug khiến app trên EC2 treo vài ngày một lần, máy vẫn chạy. Trong lúc chờ bản sửa, cách gọn nhất là gì?",
-    opts: ["Alarm trên instance status check với action reboot", "Alarm trên system status check với action recover", "EventBridge gọi Lambda reboot máy mỗi 5 phút"],
+    why: "Action recover chuyển instance sang host khác, giữ nguyên instance ID, IP và Elastic IP. Không cần bổ sung dịch vụ nào." },
+  { q: "Một lỗi phần mềm khiến ứng dụng trên EC2 bị treo vài ngày một lần trong khi instance vẫn chạy. Trong thời gian chờ bản sửa lỗi, phương án nào đơn giản nhất?",
+    opts: ["Alarm trên instance status check với action reboot", "Alarm trên system status check với action recover", "EventBridge gọi Lambda reboot instance mỗi 5 phút"],
     a: 0,
-    why: "Lỗi nằm trong máy thì reboot là đủ, và alarm tự gọi được action reboot. Reboot định kỳ thì làm gián đoạn cả khi máy không lỗi." },
-  { q: "Đội vận hành cần xem số đo EC2 với khoảng cách tối đa 2 phút trong đợt livestream, làm nhanh, ít bảo trì. Chọn gì?",
+    why: "Với lỗi bên trong instance, reboot là đủ, và alarm có thể gọi trực tiếp action reboot. Reboot định kỳ gây gián đoạn ngay cả khi instance không gặp lỗi." },
+  { q: "Đội vận hành cần metric EC2 với chu kỳ tối đa 2 phút trong đợt livestream, triển khai nhanh và ít bảo trì. Phương án nào phù hợp?",
     opts: ["Cài CloudWatch agent gửi custom metric độ phân giải cao", "Bật detailed monitoring cho các EC2", "Đẩy system log sang OpenSearch"],
     a: 1,
-    why: "Detailed monitoring đổi chu kỳ metric của EC2 từ 5 phút xuống 1 phút, chỉ là một công tắc." },
-  { q: "Developer là root trong account riêng của mình (trong AWS Organizations). Làm sao để trail bắt buộc không bị sửa hay tắt?",
+    why: "Detailed monitoring giảm chu kỳ metric của EC2 từ 5 phút xuống 1 phút và chỉ cần bật một tuỳ chọn cấu hình." },
+  { q: "Developer có quyền root trong account riêng (thuộc AWS Organizations). Cơ chế nào đảm bảo trail bắt buộc không bị sửa đổi hoặc vô hiệu hoá?",
     opts: ["Gắn IAM policy Deny vào root user", "SCP chặn mọi hành động sửa CloudTrail, gắn vào các account developer", "Bật Config rule kiểm tra trail"],
     a: 1,
-    why: "SCP giới hạn cả root user của account thành viên. IAM policy không gắn được vào root. Config rule chỉ phát hiện sau khi đã sửa." },
-  { q: "Máy web đứng sau ALB, vá xong vẫn có lỗi 502 trong lúc vá. Sửa thế nào cho chắc chắn?",
-    opts: ["Đổi target group sang kiểu instance ID", "Automation runbook AWSEC2-PatchLoadBalancerInstance trong Maintenance Window", "Xem Logs Insights rồi gỡ máy khỏi ALB bằng tay"],
+    why: "SCP giới hạn quyền của cả root user trong account thành viên. IAM policy không thể gắn vào root user. Config rule chỉ phát hiện sau khi thay đổi đã xảy ra." },
+  { q: "Các web instance phía sau ALB phát sinh lỗi 502 trong quá trình vá. Phương án nào khắc phục triệt để?",
+    opts: ["Đổi target group sang kiểu instance ID", "Automation runbook AWSEC2-PatchLoadBalancerInstance trong Maintenance Window", "Phân tích bằng Logs Insights rồi gỡ instance khỏi ALB thủ công"],
     a: 1,
-    why: "Runbook gỡ máy khỏi target group, chờ request xong, vá, reboot, đăng ký lại. Maintenance Window chạy nó đúng giờ, từng máy một." },
+    why: "Runbook gỡ instance khỏi target group, chờ các request đang xử lý hoàn tất, vá, reboot và đăng ký lại. Maintenance Window thực thi runbook đúng lịch, lần lượt từng instance." },
 ]} />
 
 </Scene>

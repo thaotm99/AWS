@@ -16,15 +16,15 @@ const NEW_ACCOUNT = "shopviet-japan";
 const REGIONS = ["ap-southeast-1", "us-east-1", "ap-northeast-1"];
 
 const MODES: { id: Mode; name: string }[] = [
-  { id: "stack", name: "Một stack thường" },
+  { id: "stack", name: "Một stack thông thường" },
   { id: "stackset", name: "StackSet" },
   { id: "ram", name: "AWS RAM" },
 ];
 
 const NOTE: Record<Mode, string> = {
-  stack: "Một **stack** chỉ nằm trong một account, một Region. Muốn phủ 9 chỗ thì phải đăng nhập 9 lần và tạo tay, rất dễ lệch nhau.",
-  stackset: "**StackSet** dùng một template, tạo stack trong mọi account và Region đã chọn bằng một thao tác. Sửa template một lần, mọi stack con cập nhật theo.",
-  ram: "**AWS RAM** chia sẻ tài nguyên đã có (subnet, Transit Gateway…) cho account khác dùng. Nó không triển khai template nào cả.",
+  stack: "Một **stack** chỉ thuộc một account và một Region. Để triển khai tới 9 vị trí, phải đăng nhập 9 lần và tạo thủ công, dễ dẫn tới sai lệch cấu hình.",
+  stackset: "**StackSet** sử dụng một template để tạo stack trong mọi account và Region đã chọn bằng một thao tác. Khi template được cập nhật một lần, mọi stack instance được cập nhật theo.",
+  ram: "**AWS RAM** chia sẻ tài nguyên hiện có (subnet, Transit Gateway…) cho account khác sử dụng; dịch vụ này không triển khai template.",
 };
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -93,8 +93,8 @@ export default function StackSetSim() {
 
   return (
     <div className="stage sts">
-      <div className="stage-bar" role="group" aria-label="Cách triển khai">
-        <span className="label">Triển khai bằng</span>
+      <div className="stage-bar" role="group" aria-label="Phương án triển khai">
+        <span className="label">Phương án triển khai</span>
         {MODES.map((m) => (
           <button key={m.id} className="btn" aria-pressed={m.id === mode} disabled={busy && m.id !== mode} onClick={() => pick(m.id)}>{m.name}</button>
         ))}
@@ -102,7 +102,7 @@ export default function StackSetSim() {
       </div>
       {ran && (
         <div className="stage-bar">
-          <span className="label">Tháng sau</span>
+          <span className="label">Tháng tiếp theo</span>
           {mode === "stackset" && (
             <label className="sts-toggle">
               <input type="checkbox" checked={auto} disabled={busy || joined} onChange={(e) => setAuto(e.target.checked)} />
@@ -113,7 +113,7 @@ export default function StackSetSim() {
         </div>
       )}
       <div className="svg-wrap">
-        <svg viewBox={`0 0 ${X0 + REGIONS.length * CW + 10} ${h}`} role="img" aria-label="Bảng account và Region, ô sáng lên khi có stack của template baseline">
+        <svg viewBox={`0 0 ${X0 + REGIONS.length * CW + 10} ${h}`} role="img" aria-label="Bảng account và Region, ô được đánh dấu khi có stack của template baseline">
           {REGIONS.map((r, j) => (
             <text key={r} className="sts-head" x={X0 + j * CW + CW / 2} y={30} textAnchor="middle">{r}</text>
           ))}
@@ -126,7 +126,7 @@ export default function StackSetSim() {
                   <g key={r} className={"sts-cell " + (st ?? "")}>
                     <rect x={X0 + j * CW + 6} y={Y0 + i * RH + 4} width={CW - 12} height={RH - 8} rx={7} />
                     <text x={X0 + j * CW + CW / 2} y={Y0 + i * RH + RH / 2 + 4} textAnchor="middle">
-                      {st === "done" ? "baseline ✓" : st === "busy" ? "đang tạo…" : "trống"}
+                      {st === "done" ? "baseline ✓" : st === "busy" ? "đang tạo…" : "chưa có"}
                     </text>
                   </g>
                 );
@@ -137,21 +137,21 @@ export default function StackSetSim() {
       </div>
       <div className="readout" aria-live="polite">
         {!ran && !busy ? (
-          <p className="sts-hint">Chọn cách triển khai rồi bấm nút. Template baseline quy định kiểu EC2 được dùng và IAM role chuẩn cho Lambda.</p>
+          <p className="sts-hint">Chọn phương án triển khai, sau đó chọn nút triển khai. Template baseline quy định loại EC2 được phép sử dụng và IAM role tiêu chuẩn cho Lambda.</p>
         ) : (
           <>
             <div className="status">
-              <span className="count">{count}/{accounts.length * REGIONS.length} chỗ có baseline</span>
-              <span className={"pill " + (count === accounts.length * REGIONS.length ? "ok" : "bad")}><i />{count === accounts.length * REGIONS.length ? "Đồng nhất" : "Còn chỗ thiếu"}</span>
+              <span className="count">{count}/{accounts.length * REGIONS.length} vị trí có baseline</span>
+              <span className={"pill " + (count === accounts.length * REGIONS.length ? "ok" : "bad")}><i />{count === accounts.length * REGIONS.length ? "Đồng nhất" : "Chưa đầy đủ"}</span>
             </div>
             {ran && <p className={"sts-result " + (mode === "stackset" ? "ok" : "bad")}>{rich(NOTE[mode])}</p>}
             {joined && !busy && (
               <p className={"sts-result " + (mode === "stackset" && auto ? "ok" : "bad")}>
                 {rich(mode === "stackset" && auto
-                  ? "Account mới vào OU là StackSet tự tạo stack ở mọi Region đã chọn. Không ai phải nhớ."
+                  ? "Ngay khi account mới gia nhập OU, StackSet tự động tạo stack tại mọi Region đã chọn mà không cần thao tác thủ công."
                   : mode === "stackset"
-                    ? "Tắt automatic deployment thì phải tự thêm account mới vào StackSet."
-                    : "Account mới trống trơn, phải có người nhớ mà dựng lại.")}
+                    ? "Khi tắt automatic deployment, account mới phải được thêm vào StackSet thủ công."
+                    : "Account mới không có baseline; việc triển khai lại phụ thuộc vào thao tác thủ công.")}
               </p>
             )}
           </>
