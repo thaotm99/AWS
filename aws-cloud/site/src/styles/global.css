@@ -525,3 +525,8 @@ input[type="range"] { accent-color: var(--accent); }
 .lc-list .picker-item { display: grid; gap: 1px; }
 .lc-list .picker-item.lc-ok:not([aria-pressed="true"]) { border-color: var(--ok); }
 @media (max-width: 560px) { .lc-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* RDS lesson */
+.sync-line { stroke: var(--ok); stroke-width: 3; fill: none; }
+.async-line { stroke: var(--edge); stroke-width: 2.5; stroke-dasharray: 6 5; fill: none; }
+.conn-line { stroke: var(--muted); stroke-width: 1.5; fill: none; }
