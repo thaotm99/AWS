@@ -1339,8 +1339,8 @@
         {
           "keyword": "RDS read replica sized same as source",
           "lesson": "rds",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "rds.mdx#s5 / ReplicaLab"
         },
         {
           "keyword": "RDS Multi-AZ standby (not readable)",
@@ -1439,8 +1439,8 @@
         {
           "keyword": "RDS Multi-AZ backups taken from standby",
           "lesson": "rds",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "rds.mdx#s1 / MultiAzSim"
         }
       ]
     },

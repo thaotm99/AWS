@@ -207,8 +207,8 @@
         {
           "keyword": "Aurora cross-Region read replica",
           "lesson": "rds",
-          "status": "partial",
-          "where": "route53.mdx#challenge / Quiz"
+          "status": "covered",
+          "where": "rds.mdx#s3 / AuroraSim + RequirementPicker"
         },
         {
           "keyword": "RDS Multi-AZ (same Region only)",
@@ -1330,8 +1330,8 @@
         {
           "keyword": "RDS read replica encryption follows source",
           "lesson": "rds",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "rds.mdx#s5 / ReplicaLab"
         }
       ]
     },

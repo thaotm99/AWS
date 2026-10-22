@@ -1289,14 +1289,14 @@
         {
           "keyword": "Aurora database cloning (Aurora only)",
           "lesson": "rds",
-          "status": "partial",
-          "where": "rds.mdx#s3"
+          "status": "covered",
+          "where": "rds.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "RDS Provisioned IOPS storage",
           "lesson": "rds",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "rds.mdx#s6 / QuickCompare"
         }
       ]
     },

@@ -843,8 +843,8 @@
         {
           "keyword": "Amazon Aurora machine learning",
           "lesson": "rds",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "rds.mdx#s6 / QuickCompare"
         }
       ]
     },

@@ -51,8 +51,8 @@
         {
           "keyword": "Aurora cluster storage (no gp2/io1/magnetic volume choice)",
           "lesson": "rds",
-          "status": "partial",
-          "where": "rds.mdx#s3 / AuroraSim"
+          "status": "covered",
+          "where": "rds.mdx#s6 / QuickCompare"
         }
       ]
     },

@@ -1,8 +1,8 @@
 ---
 title: "RDS + Aurora: tính sẵn sàng cao, mở rộng đọc và triển khai nhiều Region"
-lede: "Bài học trình bày bốn nội dung: so sánh Multi-AZ và Read Replica trong các tình huống ghi, đọc, sự cố và bảo trì; xử lý các sự cố vận hành RDS thường gặp; triển khai Aurora cho tải đọc lớn và nhiều Region; và mã hoá một database đang vận hành."
-minutes: 30
-scenes: 4
+lede: "Bài học trình bày sáu nội dung: so sánh Multi-AZ và Read Replica trong các tình huống ghi, đọc, sự cố, bảo trì và backup; xử lý các sự cố vận hành RDS thường gặp; triển khai Aurora cho tải đọc lớn và nhiều Region; mã hoá một database đang vận hành; cấu hình bản sao cho báo cáo và DR; và phân biệt các tính năng dễ nhầm lẫn."
+minutes: 38
+scenes: 6
 prerequisites: ["vpc", "kms"]
 docs:
   - title: "Multi-AZ DB instance deployments"
@@ -33,6 +33,24 @@ docs:
     url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/share-encrypted-snapshot.html"
   - title: "Multi-AZ deployment for RDS Custom for Oracle"
     url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/custom-oracle-multiaz.html"
+  - title: "Working with MySQL read replicas"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_MySQL.Replication.ReadReplicas.html"
+  - title: "Amazon RDS FAQs (backups in Multi-AZ deployments)"
+    url: "https://aws.amazon.com/rds/faqs/"
+  - title: "Replicating automated backups to another AWS Region"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReplicateBackups.html"
+  - title: "Amazon RDS DB instance storage"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html"
+  - title: "Cloning a volume for an Aurora DB cluster"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Managing.Clone.html"
+  - title: "Replicating Aurora MySQL DB clusters across AWS Regions"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Replication.CrossRegion.html"
+  - title: "Using Amazon Aurora machine learning"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-ml.html"
+  - title: "Using Aurora machine learning with Aurora PostgreSQL"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/postgresql-ml.html"
+  - title: "Amazon Redshift ML"
+    url: "https://docs.aws.amazon.com/redshift/latest/dg/machine_learning.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -40,6 +58,8 @@ import Story from "../../components/lessons/global-infra/Story.astro";
 import MultiAzSim from "../../components/scenes/rds/MultiAzSim.tsx";
 import RdsOpsSim from "../../components/scenes/rds/RdsOpsSim.tsx";
 import AuroraSim from "../../components/scenes/rds/AuroraSim.tsx";
+import ReplicaLab from "../../components/scenes/rds/ReplicaLab.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import StepSim from "../../components/scenes/StepSim.tsx";
 import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
@@ -50,22 +70,24 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s2", label: "2 · Sự cố vận hành RDS" },
   { href: "#s3", label: "3 · Amazon Aurora" },
   { href: "#s4", label: "4 · Mã hoá database đang vận hành" },
+  { href: "#s5", label: "5 · Bản sao cho báo cáo và DR" },
+  { href: "#s6", label: "6 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
 Database đơn hàng của ShopViet phải đáp ứng ba yêu cầu: không mất dữ liệu, không gián đoạn dịch vụ, và không suy giảm hiệu năng khi phòng kế toán chạy báo cáo. **Amazon RDS** và **Amazon Aurora** giải quyết ba yêu cầu này bằng các cơ chế khác nhau; nắm rõ sự khác biệt giữa các cơ chế là cơ sở để lựa chọn cấu hình phù hợp.
 </Story>
 
-<Scene id="s1" label="Phần 1/4" title="Khác biệt giữa Multi-AZ và Read Replica" questions={["exam1_q52", "exam5_q25", "exam6_q49", "exam2_q25", "exam3_q63", "exam3_q41"]}>
+<Scene id="s1" label="Phần 1/6" title="Khác biệt giữa Multi-AZ và Read Replica" questions={["exam1_q52", "exam5_q25", "exam6_q49", "exam2_q25", "exam3_q63", "exam3_q41"]}>
 
-Ghi một đơn hàng, chạy báo cáo, sau đó mô phỏng sự cố primary và thử hai loại bảo trì:
+Ghi một đơn hàng, chạy báo cáo, chạy automated backup, sau đó mô phỏng sự cố primary và thử hai loại bảo trì:
 
 <MultiAzSim client:visible />
 
-<Takeaway>Multi-AZ: sao chép đồng bộ, một standby không phục vụ đọc, nhằm đảm bảo khả năng chịu lỗi; failover bằng cách cập nhật CNAME. Read Replica: sao chép bất đồng bộ, phục vụ đọc, nhằm giảm tải đọc. Bảo trì OS được áp dụng cho standby trước; nâng cấp engine được áp dụng cho cả hai cùng lúc (riêng RDS for SQL Server dùng rolling upgrade). Failover Multi-AZ thường mất 60–120 giây.</Takeaway>
+<Takeaway>Multi-AZ: sao chép đồng bộ, một standby không phục vụ đọc, nhằm đảm bảo khả năng chịu lỗi; failover bằng cách cập nhật CNAME. Read Replica: sao chép bất đồng bộ, phục vụ đọc, nhằm giảm tải đọc. Bảo trì OS được áp dụng cho standby trước; nâng cấp engine được áp dụng cho cả hai cùng lúc (riêng RDS for SQL Server dùng rolling upgrade). Automated backup và snapshot lấy từ standby, nên I/O trên primary không bị tạm dừng. Failover Multi-AZ thường mất 60–120 giây.</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/4" title="Năm sự cố vận hành của database đơn hàng" questions={["exam2_q13", "exam6_q19", "exam6_q46", "exam4_q19", "exam1_q3", "exam1_q55", "exam2_q63", "exam4_q47", "exam5_q42", "exam2_q62"]}>
+<Scene id="s2" label="Phần 2/6" title="Năm sự cố vận hành của database đơn hàng" questions={["exam2_q13", "exam6_q19", "exam6_q46", "exam4_q19", "exam1_q3", "exam1_q55", "exam2_q63", "exam4_q47", "exam5_q42", "exam2_q62"]}>
 
 Khi quy mô ShopViet tăng, database phát sinh nhiều vấn đề hơn: báo cáo làm chậm website, Lambda mở quá nhiều kết nối, ổ đĩa đầy, sự cố cấp Region. Chọn từng sự cố, chạy để quan sát hậu quả, sau đó bật tính năng RDS tương ứng và chạy lại:
 
@@ -77,7 +99,7 @@ Hai biện pháp bổ sung giúp giảm tải cho đội vận hành. Hệ thố
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/4" title="Aurora: replica, Global Database và Serverless" questions={["exam5_q3", "exam2_q52", "exam3_q50", "exam2_q5", "exam1_q7", "exam2_q61", "exam6_q23", "exam6_q17", "exam2_q53", "exam4_q2", "exam6_q5", "exam5_q7"]}>
+<Scene id="s3" label="Phần 3/6" title="Aurora: replica, Global Database và Serverless" questions={["exam5_q3", "exam2_q52", "exam3_q50", "exam2_q5", "exam1_q7", "exam2_q61", "exam6_q23", "exam6_q17", "exam2_q53", "exam4_q2", "exam6_q5", "exam5_q7", "exam2_q6", "exam5_q42"]}>
 
 Read Replica của RDS MySQL bắt đầu có replication lag vài phút vào giờ cao điểm, do đó ShopViet chuyển sang **Aurora MySQL**. Khác biệt lớn nhất: mọi instance dùng chung một **cluster volume**, nên replica không phải sao chép lại dữ liệu. Thử lần lượt các thao tác:
 
@@ -87,7 +109,11 @@ Một số quyết định khác của ShopViet liên quan tới Aurora:
 
 <RequirementPicker client:visible items={[
   { need: "Team phát triển cần một database có dữ liệu giống production để kiểm thử tính năng mới", answer: "Restore từ automated backup của Aurora (hoặc tạo clone)",
-    why: "Tạo cluster riêng từ backup, không ảnh hưởng tới cluster production." },
+    why: "Tạo cluster riêng từ backup, không ảnh hưởng tới cluster production. Aurora cloning nhanh hơn và tiết kiệm dung lượng hơn restore snapshot: clone dùng chung data page với cluster gốc theo cơ chế copy-on-write, chỉ cấp phát thêm storage khi một bên thay đổi dữ liệu. Cloning là tính năng của Aurora; với RDS DB instance, dùng restore snapshot hoặc point-in-time recovery." },
+  { need: "Khách hàng tại châu Âu phản ánh thời gian tải trang chậm; Aurora cluster đang ở Singapore", answer: "Aurora read replica tại Region châu Âu (secondary cluster của Global Database, hoặc cross-Region read replica với Aurora MySQL)",
+    why: "Người dùng đọc dữ liệu tại Region gần nhất. Multi-AZ và Aurora Replica chỉ nằm trong các AZ của một Region, không giảm độ trễ cho người dùng ở Region khác." },
+  { need: "Đội vận hành muốn chọn gp2, io1 hoặc Magnetic cho Aurora để tăng IOPS khi có sự kiện", answer: "Không có lựa chọn này: Aurora dùng cluster volume",
+    why: "Dữ liệu Aurora nằm trong cluster volume dùng SSD, tự động tăng dung lượng khi dữ liệu tăng; không chọn loại volume hay cấp phát IOPS. Lựa chọn duy nhất ở tầng storage là cấu hình Aurora Standard hoặc Aurora I/O-Optimized." },
   { need: "Bảng tỷ giá dùng chung cho mọi quốc gia, trong khi bảng đơn hàng chỉ dùng trong từng Region", answer: "Aurora Global Database cho bảng dùng chung, Aurora tiêu chuẩn cho phần còn lại",
     why: "Chỉ dữ liệu cần đọc trên phạm vi toàn cầu mới phát sinh chi phí sao chép giữa các Region." },
   { need: "Ứng dụng nội bộ mới, tải biến động không dự đoán trước được", answer: "Aurora Serverless v2",
@@ -100,7 +126,7 @@ Một số quyết định khác của ShopViet liên quan tới Aurora:
 
 </Scene>
 
-<Scene id="s4" label="Phần 4/4" title="Mã hoá database đang vận hành" questions={["exam2_q45", "exam4_q31", "exam4_q39", "exam2_q57"]}>
+<Scene id="s4" label="Phần 4/6" title="Mã hoá database đang vận hành" questions={["exam2_q45", "exam4_q31", "exam4_q39", "exam2_q57"]}>
 
 Đợt kiểm tra bảo mật phát hiện database đơn hàng chưa được mã hoá. RDS chỉ cho phép bật encryption khi tạo DB instance, không bật được sau khi instance đã tạo. Cách thông dụng là thực hiện thông qua snapshot (ngoài ra có thể dùng blue/green deployment với green environment được mã hoá):
 
@@ -128,7 +154,52 @@ Mã hoá ổ đĩa chỉ là một phần. Các yêu cầu bảo mật khác c�
   { need: "Chia sẻ bản sao database đã mã hoá cho account của team phân tích", answer: "Share snapshot + cấp quyền sử dụng KMS key", why: "Snapshot phải được mã hoá bằng customer managed key (không share được snapshot mã hoá bằng KMS key mặc định của account), và account nhận phải có quyền sử dụng key đó. Xem bài KMS." },
 ]} />
 
-<Takeaway>Mã hoá database đang vận hành: snapshot → copy có mã hoá → restore. Mã hoá khi truyền: SSL/TLS. Xác thực không dùng mật khẩu: IAM DB authentication.</Takeaway>
+Hai cách nghe hợp lý nhưng không mã hoá được database: tạo Read Replica có mã hoá (không tạo được replica mã hoá từ instance chưa mã hoá) và bật Multi-AZ (encryption chỉ bật được khi tạo instance). Phần 5 cho phép thử trực tiếp hai cách này.
+
+<Takeaway>Mã hoá database đang vận hành: snapshot → copy có mã hoá → restore. Trạng thái mã hoá của Read Replica luôn theo source. Mã hoá khi truyền: SSL/TLS. Xác thực không dùng mật khẩu: IAM DB authentication.</Takeaway>
+
+</Scene>
+
+<Scene id="s5" label="Phần 5/6" title="Cấu hình bản sao cho báo cáo và DR" questions={["exam6_q46", "exam2_q45", "exam5_q42", "exam6_q49"]}>
+
+Phòng kế toán cần một bản sao của database đơn hàng (RDS for MySQL, chưa mã hoá) để chạy báo cáo. Để tiết kiệm chi phí, có đề xuất tạo replica nhỏ bằng một nửa, hoặc tận dụng standby của Multi-AZ; đội bảo mật muốn nhân dịp này mã hoá bản sao. Thử từng cấu hình và quan sát kết quả:
+
+<ReplicaLab client:visible />
+
+Với DR, ShopViet kết hợp hai cơ chế ở Region khác: **cross-Region read replica** (promote thành DB instance độc lập khi Region chính gặp sự cố) và **cross-Region automated backups** (RDS sao chép snapshot và transaction log sang Region đích ngay khi chúng sẵn sàng). Loại storage, ví dụ Provisioned IOPS, chỉ quyết định hiệu năng I/O và không phải biện pháp DR.
+
+<Takeaway>Báo cáo: Read Replica cùng Region, cùng compute và storage như source (khi scale source thì scale cả replica). Mã hoá của replica theo source. Standby Multi-AZ không phục vụ đọc và chỉ ở cùng Region, nhưng là nơi lấy automated backup và snapshot. DR cho RDS: cross-Region read replica và cross-Region automated backups.</Takeaway>
+
+</Scene>
+
+<Scene id="s6" label="Phần 6/6" title="Phân biệt nhanh: các tính năng RDS và Aurora dễ nhầm lẫn" questions={["exam1_q26", "exam5_q42", "exam4_q2"]}>
+
+Một số tính năng có tên gần với nhu cầu thực tế nhưng giải quyết vấn đề khác. Chọn từng tính năng để xem trường hợp sử dụng, lý do không phù hợp trong tình huống ShopViet tương ứng, và phương án nên chọn:
+
+<QuickCompare client:visible items={[
+  { name: "Aurora machine learning",
+    use: "Gọi dịch vụ ML từ câu lệnh SQL trong **Aurora MySQL hoặc Aurora PostgreSQL**: Amazon Bedrock, Amazon Comprehend, hoặc endpoint SageMaker AI đã được triển khai sẵn (ví dụ hàm `aws_sagemaker.invoke_endpoint`). Phù hợp để bổ sung dự đoán vào ứng dụng giao dịch.",
+    notHere: "Đội phân tích cần data warehouse MPP, serverless, và tự xây dựng, huấn luyện model bằng SQL trên dữ liệu bán hàng nhiều năm. Aurora ML là tính năng của Aurora DB cluster và chỉ gọi model đã có; Aurora và RDS for PostgreSQL là database giao dịch, không phải data warehouse MPP.",
+    instead: "**Amazon Redshift Serverless** + **Amazon Redshift ML**: lệnh `CREATE MODEL` dùng SageMaker AI để huấn luyện, sau đó đăng ký hàm dự đoán dạng SQL function trong Redshift." },
+  { name: "RDS Provisioned IOPS (io1, io2 Block Express)",
+    use: "Storage SSD cho tải OLTP cần độ trễ I/O thấp và thông lượng ổn định; chỉ định mức IOPS khi tạo DB instance. AWS khuyến nghị loại này cho production, ưu tiên io2 Block Express (tối đa 256.000 IOPS). General Purpose (gp2, gp3) phù hợp nhiều loại tải với chi phí thấp hơn.",
+    notHere: "Yêu cầu là khả năng khôi phục database đơn hàng khi xảy ra sự cố. Loại storage chỉ thay đổi hiệu năng I/O, không tạo bản sao dữ liệu ở nơi khác.",
+    instead: "**Cross-Region read replica** và **cross-Region automated backups** (phần 2 và phần 5)." },
+  { name: "Database cloning",
+    use: "Tính năng **chỉ có ở Aurora**: tạo cluster mới dùng chung data page với cluster gốc theo copy-on-write, nhanh và tiết kiệm dung lượng hơn restore snapshot; phù hợp dựng môi trường test từ dữ liệu production.",
+    notHere: "Database đơn hàng là RDS for PostgreSQL DB instance, không phải Aurora cluster, nên không có tính năng clone. Ngoài ra không tạo được clone ở Region khác với cluster gốc, nên clone không phải cơ chế DR cấp Region.",
+    instead: "DR cho RDS: cross-Region read replica, cross-Region automated backups. Bản sao để test: restore snapshot." },
+  { name: "gp2, io1, Magnetic cho Aurora",
+    use: "Các loại storage của **RDS DB instance** (Magnetic đã ngừng cung cấp cho DB instance mới).",
+    notHere: "Aurora không dùng các loại volume này: dữ liệu nằm trong cluster volume tự động tăng dung lượng, không cấp phát IOPS thủ công. Tải đột biến của Aurora Serverless v2 không cần chọn loại volume.",
+    instead: "Chọn cấu hình **Aurora I/O-Optimized** (không tính phí I/O, chi phí dự đoán được, phù hợp khi chi phí I/O từ 25% tổng chi phí Aurora trở lên) hoặc **Aurora Standard**." },
+  { name: "Multi-AZ standby",
+    use: "Bản sao đồng bộ ở một AZ khác trong cùng Region để tự động failover; nơi lấy automated backup và snapshot.",
+    notHere: "Không phục vụ đọc, không đặt ở Region khác, và không phải cách mã hoá database.",
+    instead: "Đọc: Read Replica hoặc Aurora Replica. Region khác: cross-Region read replica hoặc Aurora Global Database. Mã hoá: snapshot → copy có mã hoá → restore." },
+]} />
+
+<Takeaway>Aurora ML gọi model có sẵn từ SQL trong Aurora; huấn luyện model bằng SQL trên data warehouse MPP là Redshift ML. Provisioned IOPS là hiệu năng, không phải DR. Cloning và cấu hình I/O-Optimized chỉ có ở Aurora; Aurora không có lựa chọn gp2, io1 hay Magnetic.</Takeaway>
 
 </Scene>
 
@@ -170,6 +241,14 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Bật encryption trong cấu hình instance", "Snapshot, copy có mã hoá, restore instance mới", "Bật SSL"],
     a: 1,
     why: "RDS chỉ bật encryption khi tạo instance. Copy snapshot với encryption rồi restore là cách thực hiện; blue/green deployment là một phương án khác được AWS hỗ trợ." },
+  { q: "Phòng kế toán cần chạy báo cáo trên bản sao của database RDS for MySQL. Cấu hình nào vừa tiết kiệm vừa đúng khuyến nghị?",
+    opts: ["Read Replica cùng Region, compute và storage bằng một nửa source", "Read Replica cùng Region, cùng compute và storage như source", "Bật Multi-AZ và chạy báo cáo trên standby"],
+    a: 1,
+    why: "AWS khuyến nghị mỗi read replica có cùng compute và storage như source để replication hoạt động hiệu quả. Standby Multi-AZ không phục vụ đọc." },
+  { q: "Database đơn hàng chạy Multi-AZ. Điều gì xảy ra với primary trong backup window?",
+    opts: ["I/O trên primary bị tạm dừng trong lúc backup", "Automated backup lấy từ standby nên I/O trên primary không bị tạm dừng", "Backup bị bỏ qua khi bật Multi-AZ"],
+    a: 1,
+    why: "Với Multi-AZ, automated backup và DB snapshot được lấy từ standby." },
 ]} />
 
 </Scene>

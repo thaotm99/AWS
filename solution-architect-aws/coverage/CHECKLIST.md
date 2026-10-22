@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 886 (92%) · 🟡 34 (4%) · ❌ 40 (4%).
+Có **960 keyword** khác nhau: ✅ 894 (93%) · 🟡 31 (3%) · ❌ 35 (4%).
 
 ### Theo bài học
 
@@ -36,7 +36,7 @@ Có **960 keyword** khác nhau: ✅ 886 (92%) · 🟡 34 (4%) · ❌ 40 (4%).
 | [s3](#s3) | 70 | 70 | 0 | 0 | 100% |
 | [storage](#storage) | 70 | 70 | 0 | 0 | 100% |
 | [storage-migration](#storage-migration) | 34 | 31 | 1 | 2 | 91% |
-| [rds](#rds) | 58 | 50 | 3 | 5 | 86% |
+| [rds](#rds) | 58 | 58 | 0 | 0 | 100% |
 | [dynamodb](#dynamodb) | 23 | 22 | 0 | 1 | 96% |
 | [analytics](#analytics) | 47 | 37 | 5 | 5 | 79% |
 | [messaging](#messaging) | 50 | 47 | 3 | 0 | 94% |
@@ -50,12 +50,12 @@ Có **960 keyword** khác nhau: ✅ 886 (92%) · 🟡 34 (4%) · ❌ 40 (4%).
 
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
-| Đề 1 | 212 | 6 | 6 |
-| Đề 2 | 186 | 4 | 8 |
+| Đề 1 | 213 | 6 | 5 |
+| Đề 2 | 188 | 3 | 7 |
 | Đề 3 | 210 | 5 | 7 |
-| Đề 4 | 222 | 7 | 7 |
-| Đề 5 | 203 | 11 | 7 |
-| Đề 6 | 203 | 1 | 6 |
+| Đề 4 | 223 | 6 | 7 |
+| Đề 5 | 205 | 10 | 6 |
+| Đề 6 | 205 | 1 | 4 |
 
 ## global-infra
 
@@ -817,14 +817,6 @@ Có **960 keyword** khác nhau: ✅ 886 (92%) · 🟡 34 (4%) · ❌ 40 (4%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | Amazon Aurora machine learning | ❌ Thiếu | 1 | exam1_q26 |  |
-| [ ] | RDS Multi-AZ backups taken from standby | ❌ Thiếu | 1 | exam6_q49 |  |
-| [ ] | RDS Provisioned IOPS storage | ❌ Thiếu | 1 | exam5_q42 |  |
-| [ ] | RDS read replica encryption follows source | ❌ Thiếu | 1 | exam2_q45 |  |
-| [ ] | RDS read replica sized same as source | ❌ Thiếu | 1 | exam6_q46 |  |
-| [ ] | Aurora cluster storage (no gp2/io1/magnetic volume choice) | 🟡 Một phần | 1 | exam4_q2 | rds.mdx#s3 / AuroraSim |
-| [ ] | Aurora cross-Region read replica | 🟡 Một phần | 1 | exam2_q6 | route53.mdx#challenge / Quiz |
-| [ ] | Aurora database cloning (Aurora only) | 🟡 Một phần | 1 | exam5_q42 | rds.mdx#s3 |
 | [ ] | RDS Multi-AZ standby (not readable) | ✅ Đã có | 6 | exam2_q13, exam3_q41, exam4_q13, exam4_q50, exam6_q19, exam6_q46 | rds.mdx#s1 / MultiAzSim<br>rds.mdx#s1 |
 | [ ] | Aurora Global Database | ✅ Đã có | 4 | exam1_q7, exam1_q47, exam2_q5, exam4_q12 | rds.mdx#s3<br>rds.mdx#s3 / AuroraSim |
 | [ ] | Aurora Serverless v2 | ✅ Đã có | 4 | exam2_q53, exam4_q2, exam4_q12, exam6_q17 | rds.mdx#s3 / RequirementPicker<br>rds.mdx#s3 |
@@ -839,10 +831,14 @@ Có **960 keyword** khác nhau: ✅ 886 (92%) · 🟡 34 (4%) · ❌ 40 (4%).
 | [ ] | RDS Multi-AZ deployment | ✅ Đã có | 2 | exam1_q3, exam6_q53 | rds.mdx#s1<br>rds.mdx#s1 / MultiAzSim |
 | [ ] | RDS Proxy | ✅ Đã có | 2 | exam1_q39, exam4_q50 | rds.mdx#s2 / RdsOpsSim<br>rds.mdx#s2 |
 | [ ] | RDS read replica for reporting | ✅ Đã có | 2 | exam3_q41, exam6_q46 | rds.mdx#s1 / MultiAzSim; rds.mdx#s2 |
+| [ ] | Amazon Aurora machine learning | ✅ Đã có | 1 | exam1_q26 | rds.mdx#s6 / QuickCompare |
 | [ ] | Amazon RDS Custom for Oracle | ✅ Đã có | 1 | exam1_q3 | rds.mdx#s2 / RdsOpsSim |
 | [ ] | Aurora Auto Scaling | ✅ Đã có | 1 | exam3_q50 | rds.mdx#s3 / AuroraSim |
+| [ ] | Aurora cluster storage (no gp2/io1/magnetic volume choice) | ✅ Đã có | 1 | exam4_q2 | rds.mdx#s6 / QuickCompare |
+| [ ] | Aurora cross-Region read replica | ✅ Đã có | 1 | exam2_q6 | rds.mdx#s3 / AuroraSim + RequirementPicker |
 | [ ] | Aurora cross-Region read replica (manual promotion) | ✅ Đã có | 1 | exam6_q23 | backup-dr.mdx#s2 |
 | [ ] | Aurora cross-Region read replica (read-only) | ✅ Đã có | 1 | exam1_q55 | rds.mdx#s3 |
+| [ ] | Aurora database cloning (Aurora only) | ✅ Đã có | 1 | exam5_q42 | rds.mdx#s6 / QuickCompare |
 | [ ] | Aurora failover (replica promotion, no standby instance) | ✅ Đã có | 1 | exam5_q3 | rds.mdx#s3 / AuroraSim |
 | [ ] | Aurora Global Database (managed failover) | ✅ Đã có | 1 | exam6_q23 | backup-dr.mdx#s2 / DataFailoverSim; rds.mdx#s3 |
 | [ ] | Aurora Global Database (RPO seconds, RTO minute) | ✅ Đã có | 1 | exam2_q61 | rds.mdx#s3 / AuroraSim; backup-dr.mdx |
@@ -861,10 +857,12 @@ Có **960 keyword** khác nhau: ✅ 886 (92%) · 🟡 34 (4%) · ❌ 40 (4%).
 | [ ] | RDS encryption via encrypted snapshot copy and restore | ✅ Đã có | 1 | exam2_q45 | rds.mdx#s4 / StepSim |
 | [ ] | RDS Multi-AZ (same Region only) | ✅ Đã có | 1 | exam2_q6 | rds.mdx#s1 / MultiAzSim |
 | [ ] | RDS Multi-AZ automatic failover | ✅ Đã có | 1 | exam6_q49 | rds.mdx#s1 / MultiAzSim |
+| [ ] | RDS Multi-AZ backups taken from standby | ✅ Đã có | 1 | exam6_q49 | rds.mdx#s1 / MultiAzSim |
 | [ ] | RDS Multi-AZ engine upgrade (both instances, downtime) | ✅ Đã có | 1 | exam2_q25 | rds.mdx#s1 / MultiAzSim |
 | [ ] | RDS Multi-AZ failover (CNAME flip to standby) | ✅ Đã có | 1 | exam5_q25 | rds.mdx#s1 / MultiAzSim |
 | [ ] | RDS Multi-AZ OS maintenance on standby first | ✅ Đã có | 1 | exam6_q49 | rds.mdx#s1 / MultiAzSim |
 | [ ] | RDS MySQL read replica replication lag | ✅ Đã có | 1 | exam3_q50 | rds.mdx#s3 |
+| [ ] | RDS Provisioned IOPS storage | ✅ Đã có | 1 | exam5_q42 | rds.mdx#s6 / QuickCompare |
 | [ ] | RDS Proxy (connection pooling) | ✅ Đã có | 1 | exam1_q55 | rds.mdx#s2 / RdsOpsSim |
 | [ ] | RDS read replica (not for HA) | ✅ Đã có | 1 | exam6_q53 | rds.mdx#s1 / MultiAzSim |
 | [ ] | RDS read replica (same Region, no replication transfer charge) | ✅ Đã có | 1 | exam6_q19 | rds.mdx#s2 / RdsOpsSim; global-infra.mdx#s6 |
@@ -872,7 +870,9 @@ Có **960 keyword** khác nhau: ✅ 886 (92%) · 🟡 34 (4%) · ❌ 40 (4%).
 | [ ] | RDS read replica asynchronous replication | ✅ Đã có | 1 | exam3_q63 | rds.mdx#s1 / MultiAzSim |
 | [ ] | RDS read replica asynchronous replication (cross-Region) | ✅ Đã có | 1 | exam1_q52 | rds.mdx#s1 / challenge |
 | [ ] | RDS read replica data transfer charges (cross-Region only) | ✅ Đã có | 1 | exam2_q62 | rds.mdx#s2 Takeaway; global-infra.mdx#s6 / CostPatterns |
+| [ ] | RDS read replica encryption follows source | ✅ Đã có | 1 | exam2_q45 | rds.mdx#s5 / ReplicaLab |
 | [ ] | RDS read replica for SQL Server | ✅ Đã có | 1 | exam2_q52 | rds.mdx#s1 |
+| [ ] | RDS read replica sized same as source | ✅ Đã có | 1 | exam6_q46 | rds.mdx#s5 / ReplicaLab |
 | [ ] | RDS SSL/TLS in transit | ✅ Đã có | 1 | exam4_q31 | rds.mdx#s4; kms.mdx#s3 |
 | [ ] | RDS storage auto scaling | ✅ Đã có | 1 | exam2_q63 | rds.mdx#s2 / RdsOpsSim |
 
