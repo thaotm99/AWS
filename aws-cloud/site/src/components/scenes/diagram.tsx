@@ -120,7 +120,7 @@ export function Nodes({ nodes, hidden = [], pop = [] }: { nodes: DNode[]; hidden
   );
 }
 
-export function Flows({ id, nodes, flows }: { id: string; nodes: Record<string, DNode>; flows: DFlow[] }) {
+export function Flows({ id, nodes, flows, part = "lines" }: { id: string; nodes: Record<string, DNode>; flows: DFlow[]; part?: "lines" | "labels" }) {
   return (
     <>
       {flows.map((f, i) => {
@@ -132,19 +132,28 @@ export function Flows({ id, nodes, flows }: { id: string; nodes: Record<string, 
           cross = [p[0] + (q[0] - p[0]) * 0.66, p[1] + (q[1] - p[1]) * 0.66];
           pts = [...pts.slice(0, -1), cross];
         }
-        const d = "M" + pts.map((p) => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" L");
         const tone = f.blocked ? "bad" : f.tone ?? "neutral";
-        const [a, b] = [pts[0], pts[1]];
-        const horizontal = Math.abs(b[0] - a[0]) >= Math.abs(b[1] - a[1]);
+        if (part === "labels") {
+          if (!f.label) return null;
+          // Label the longest segment so it sits clear of the boxes at either end.
+          let best = 0, len = -1;
+          for (let k = 0; k < pts.length - 1; k++) {
+            const l = Math.hypot(pts[k + 1][0] - pts[k][0], pts[k + 1][1] - pts[k][1]);
+            if (l > len) { len = l; best = k; }
+          }
+          const [a, b] = [pts[best], pts[best + 1]];
+          const horizontal = Math.abs(b[0] - a[0]) >= Math.abs(b[1] - a[1]);
+          return (
+            <text key={i} className={`flow-t tone-${tone}`} x={(a[0] + b[0]) / 2 + (horizontal ? 0 : 8)} y={(a[1] + b[1]) / 2 - (horizontal ? 8 : 0)}
+              textAnchor={horizontal ? "middle" : "start"}>{f.label}</text>
+          );
+        }
+        const d = "M" + pts.map((p) => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" L");
         return (
           <g key={i}>
             <path className={`flow tone-${tone}${f.heavy ? " heavy" : ""}${f.dashed || f.blocked ? " still" : ""}`} d={d}
               markerEnd={cross ? undefined : `url(#${id}-${tone})`} />
             {cross && <text className="block-x" x={cross[0]} y={cross[1] + 6} textAnchor="middle">✕</text>}
-            {f.label && (
-              <text className={`flow-t tone-${tone}`} x={(a[0] + b[0]) / 2 + (horizontal ? 0 : 8)} y={(a[1] + b[1]) / 2 - (horizontal ? 8 : 0)}
-                textAnchor={horizontal ? "middle" : "start"}>{f.label}</text>
-            )}
           </g>
         );
       })}

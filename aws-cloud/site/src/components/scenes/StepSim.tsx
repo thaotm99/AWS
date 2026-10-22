@@ -62,6 +62,7 @@ export default function StepSim({ nodes, boxes = [], initial, intro, steps, heig
           <Boxes boxes={boxes} />
           <g key={done}><Flows id={uid} nodes={byId} flows={flows} /></g>
           <Nodes nodes={nodes} hidden={nodes.filter((n) => !visible.has(n.id)).map((n) => n.id)} pop={justShown} />
+          <g key={"l" + done}><Flows id={uid} nodes={byId} flows={flows} part="labels" /></g>
           <g ref={pk} />
         </svg>
       </div>

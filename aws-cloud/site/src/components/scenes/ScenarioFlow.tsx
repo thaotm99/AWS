@@ -56,6 +56,7 @@ export default function ScenarioFlow({ scenarios, height = 260, legend = ["Đề
           <Boxes boxes={s.boxes ?? []} />
           <g key={`${si}-${oi}`}><Flows id={uid} nodes={byId} flows={o.flows} /></g>
           <Nodes nodes={s.nodes} hidden={o.hide} />
+          <g key={"l" + `${si}-${oi}`}><Flows id={uid} nodes={byId} flows={o.flows} part="labels" /></g>
         </svg>
       </div>
       <div className="readout" aria-live="polite">

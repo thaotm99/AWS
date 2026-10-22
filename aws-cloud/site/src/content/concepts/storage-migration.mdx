@@ -44,9 +44,9 @@ Storage Gateway là một máy ảo đặt tại văn phòng, giả làm ổ đ�
     nodes: [
       { id: "app", x: 40, y: 60, label: "Ứng dụng cũ", sub: "NFS / SMB / iSCSI / băng từ", kind: "site" },
       { id: "gw", x: 200, y: 130, label: "Gateway", sub: "cache tại chỗ", kind: "net" },
-      { id: "s3", x: 470, y: 60, label: "S3", kind: "store" },
-      { id: "snap", x: 470, y: 140, label: "EBS snapshot", kind: "edge" },
-      { id: "glacier", x: 620, y: 140, w: 110, label: "Glacier", sub: "tape archive", kind: "store" },
+      { id: "s3", x: 470, y: 45, label: "S3", kind: "store" },
+      { id: "snap", x: 470, y: 150, label: "EBS snapshot", kind: "edge" },
+      { id: "glacier", x: 620, y: 95, w: 110, label: "Glacier", sub: "tape archive", kind: "store" },
     ],
     options: [
       { name: "S3 File Gateway", verdict: "good", verdictLabel: "File share NFS/SMB",
@@ -99,9 +99,9 @@ Di chuyển máy chủ ảo lên AWS bằng **Application Migration Service (MGN
   boxes={[{ x: 20, y: 20, w: 300, h: 180, label: "Văn phòng", tone: "onprem" }, { x: 380, y: 20, w: 360, h: 180, label: "AWS" }]}
   nodes={[
     { id: "vm", x: 50, y: 90, label: "Máy ảo nguồn", sub: "cài Replication Agent", kind: "site" },
-    { id: "stage", x: 410, y: 60, label: "Staging area", sub: "nhận dữ liệu liên tục", kind: "net" },
-    { id: "test", x: 590, y: 50, w: 130, label: "Test instance", kind: "ec2" },
-    { id: "cut", x: 590, y: 130, w: 130, label: "Cutover instance", kind: "ec2" },
+    { id: "stage", x: 400, y: 85, label: "Staging area", sub: "nhận dữ liệu", kind: "net" },
+    { id: "test", x: 600, y: 35, w: 130, label: "Test instance", kind: "ec2" },
+    { id: "cut", x: 600, y: 145, w: 130, label: "Cutover instance", kind: "ec2" },
   ]}
   initial={["vm"]}
   steps={[
