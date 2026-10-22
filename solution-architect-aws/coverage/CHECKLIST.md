@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **963 keyword** khác nhau: ✅ 963 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
+Có **965 keyword** khác nhau: ✅ 962 (100%) · 🟡 2 (0%) · ❌ 1 (0%).
 
 ### Theo bài học
 
@@ -31,16 +31,16 @@ Có **963 keyword** khác nhau: ✅ 963 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 | [ec2](#ec2) | 57 | 57 | 0 | 0 | 100% |
 | [elb](#elb) | 42 | 42 | 0 | 0 | 100% |
 | [asg](#asg) | 44 | 44 | 0 | 0 | 100% |
-| [containers](#containers) | 22 | 22 | 0 | 0 | 100% |
+| [containers](#containers) | 23 | 23 | 0 | 0 | 100% |
 | [lambda](#lambda) | 37 | 37 | 0 | 0 | 100% |
-| [s3](#s3) | 70 | 70 | 0 | 0 | 100% |
+| [s3](#s3) | 70 | 69 | 1 | 0 | 99% |
 | [storage](#storage) | 70 | 70 | 0 | 0 | 100% |
 | [storage-migration](#storage-migration) | 34 | 34 | 0 | 0 | 100% |
 | [rds](#rds) | 58 | 58 | 0 | 0 | 100% |
 | [dynamodb](#dynamodb) | 23 | 23 | 0 | 0 | 100% |
-| [analytics](#analytics) | 47 | 47 | 0 | 0 | 100% |
+| [analytics](#analytics) | 48 | 47 | 0 | 1 | 98% |
 | [messaging](#messaging) | 50 | 50 | 0 | 0 | 100% |
-| [kinesis](#kinesis) | 27 | 27 | 0 | 0 | 100% |
+| [kinesis](#kinesis) | 27 | 26 | 1 | 0 | 96% |
 | [monitoring](#monitoring) | 34 | 34 | 0 | 0 | 100% |
 | [iac](#iac) | 9 | 9 | 0 | 0 | 100% |
 | [backup-dr](#backup-dr) | 13 | 13 | 0 | 0 | 100% |
@@ -50,7 +50,7 @@ Có **963 keyword** khác nhau: ✅ 963 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
-| Đề 1 | 224 | 0 | 0 |
+| Đề 1 | 223 | 2 | 1 |
 | Đề 2 | 198 | 0 | 0 |
 | Đề 3 | 222 | 0 | 0 |
 | Đề 4 | 236 | 0 | 0 |
@@ -157,7 +157,7 @@ Có **963 keyword** khác nhau: ✅ 963 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 | [ ] | Route 53 private hosted zone (enableDnsHostnames, enableDnsSupport) | ✅ Đã có | 1 | exam2_q20 | vpc.mdx#confuse / VpcMythsSim; route53.mdx#s4 |
 | [ ] | Route table prefix-list route to gateway endpoint | ✅ Đã có | 1 | exam5_q24 | vpc.mdx#s4 / EndpointSim |
 | [ ] | Security group (no deny rules) | ✅ Đã có | 1 | exam2_q30 | vpc.mdx#challenge / SortGame |
-| [ ] | Security group (no geo filtering) | ✅ Đã có | 1 | exam1_q6 | vpc.mdx#s1 |
+| [ ] | Security group (no geo filtering) | ✅ Đã có | 1 | exam1_q6 | vpc.mdx#compare (geo blocking needs AWS WAF geo match; NACL rules take CIDR only) / vpc.mdx#s1 |
 | [ ] | Security group (stateful, allow only) | ✅ Đã có | 1 | exam4_q17 | vpc.mdx#s1; vpc.mdx#challenge |
 | [ ] | Security group (stateful, allow-only) | ✅ Đã có | 1 | exam2_q28 | vpc.mdx#s1 / PacketPath; vpc.mdx#challenge |
 | [ ] | Security group and network ACL | ✅ Đã có | 1 | exam5_q10 | vpc.mdx#s1 / PacketPath |
@@ -567,6 +567,7 @@ Có **963 keyword** khác nhau: ✅ 963 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 | [ ] | Amazon ECS on AWS Fargate | ✅ Đã có | 1 | exam1_q11 | containers.mdx#s1 |
 | [ ] | Amazon EKS | ✅ Đã có | 1 | exam3_q32 | containers.mdx#s1 |
 | [ ] | Amazon EKS on AWS Fargate | ✅ Đã có | 1 | exam2_q1 | containers.mdx#s1 / ScenarioFlow; containers.mdx#s2 |
+| [ ] | Amazon EKS on Outposts local cluster | ✅ Đã có | 1 | exam1_q27 | containers.mdx#s4 / EksPlacementSim |
 | [ ] | Amazon EKS self-managed EC2 nodes (vs Fargate) | ✅ Đã có | 1 | exam6_q55 | containers.mdx#s1 |
 | [ ] | AWS Fargate | ✅ Đã có | 1 | exam3_q20 | containers.mdx#s1 |
 | [ ] | AWS Fargate with Amazon ECS (long-running jobs) | ✅ Đã có | 1 | exam6_q35 | containers.mdx#s2 / ContainerJobSim; kinesis.mdx#s3 / StreamPipelineSim |
@@ -628,6 +629,7 @@ Có **963 keyword** khác nhau: ✅ 963 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
+| [ ] | S3 Lifecycle minimum 30 days before transition to IA | 🟡 Một phần | 1 | exam1_q8 | s3.mdx#s1 / LifecycleValidator (teaches only the 30-day minimum storage charge in IA; validator accepts Standard→IA after 7 days; neither the old 30-day transition rule nor its July 2026 removal is mentioned) |
 | [ ] | S3 Transfer Acceleration | ✅ Đã có | 9 | exam1_q18, exam1_q64, exam2_q12, exam3_q37, exam4_q18, exam4_q29, exam5_q21, exam5_q48, exam6_q58 | s3.mdx#s5 / UploadSim<br>s3.mdx#s5 |
 | [ ] | S3 One Zone-IA | ✅ Đã có | 5 | exam1_q8, exam4_q43, exam5_q49, exam5_q51, exam6_q28 | s3.mdx#s1<br>s3.mdx#s1 / LifecycleValidator |
 | [ ] | S3 Standard-IA | ✅ Đã có | 5 | exam1_q15, exam4_q43, exam5_q51, exam6_q26, exam6_q28 | s3.mdx#s1 / messaging.mdx#s4<br>s3.mdx#s1 |
@@ -636,7 +638,7 @@ Có **963 keyword** khác nhau: ✅ 963 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 | [ ] | S3 Intelligent-Tiering | ✅ Đã có | 4 | exam1_q15, exam5_q49, exam5_q54, exam6_q9 | s3.mdx#s1<br>s3.mdx#s1 / LifecycleValidator |
 | [ ] | S3 Lifecycle rule | ✅ Đã có | 4 | exam1_q8, exam1_q35, exam4_q43, exam6_q3 | s3.mdx#s1 / LifecycleValidator<br>s3.mdx#s1 |
 | [ ] | S3 bucket policy | ✅ Đã có | 3 | exam2_q4, exam4_q8, exam6_q54 | s3.mdx#s3 / RequirementPicker<br>s3.mdx#s3 |
-| [ ] | S3 Cross-Region Replication | ✅ Đã có | 3 | exam1_q62, exam2_q46, exam6_q58 | analytics.mdx#s4<br>analytics.mdx (CRR paragraph); kms.mdx#s1 / S3EncryptSim |
+| [ ] | S3 Cross-Region Replication | ✅ Đã có | 3 | exam1_q62, exam2_q46, exam6_q58 | s3.mdx#s7 / analytics.mdx#s4<br>analytics.mdx (CRR paragraph); kms.mdx#s1 / S3EncryptSim |
 | [ ] | S3 multipart upload | ✅ Đã có | 3 | exam1_q18, exam1_q64, exam4_q14 | s3.mdx#s5 / UploadSim |
 | [ ] | Amazon S3 static website hosting | ✅ Đã có | 2 | exam2_q2, exam4_q53 | cloudfront.mdx#s2 / RequirementPicker<br>s3.mdx#s6 / WebsiteEndpointSim |
 | [ ] | S3 Access Points | ✅ Đã có | 2 | exam1_q9, exam5_q24 | s3.mdx#s3 |
@@ -665,7 +667,6 @@ Có **963 keyword** khác nhau: ✅ 963 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 | [ ] | S3 Glacier storage classes | ✅ Đã có | 1 | exam5_q52 | s3.mdx#s1 / LifecycleValidator |
 | [ ] | S3 Glacier Vault Lock policy | ✅ Đã có | 1 | exam5_q39 | s3.mdx#s2 |
 | [ ] | S3 Lifecycle (not a compliance control) | ✅ Đã có | 1 | exam5_q39 | s3.mdx#s1 / LifecycleValidator |
-| [ ] | S3 Lifecycle minimum 30 days before transition to IA | ✅ Đã có | 1 | exam1_q8 | s3.mdx#s1 / LifecycleValidator |
 | [ ] | S3 Lifecycle rule (transition + expiration) | ✅ Đã có | 1 | exam6_q28 | s3.mdx#s1 / RequirementPicker |
 | [ ] | S3 Lifecycle rule prefix filter | ✅ Đã có | 1 | exam4_q43 | s3.mdx#s1 / LifecycleFilterSim |
 | [ ] | S3 Lifecycle rule to Glacier Deep Archive | ✅ Đã có | 1 | exam2_q34 | s3.mdx#s1; analytics.mdx / LakeCostSim |
@@ -908,6 +909,7 @@ Có **963 keyword** khác nhau: ✅ 963 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
+| [ ] | Amazon Athena ML (SageMaker inference from SQL) | ❌ Thiếu | 1 | exam1_q26 |  |
 | [ ] | Amazon Athena | ✅ Đã có | 10 | exam1_q26, exam1_q53, exam1_q57, exam2_q34, exam4_q22, exam5_q6, exam5_q11, exam5_q12, exam5_q58, exam6_q26 | analytics.mdx#s3 / DataJobSim<br>analytics.mdx#s3 |
 | [ ] | Amazon EMR | ✅ Đã có | 5 | exam1_q24, exam1_q26, exam4_q33, exam5_q12, exam6_q18 | analytics.mdx#s3<br>analytics.mdx#s3 / DataJobSim |
 | [ ] | Amazon Neptune | ✅ Đã có | 5 | exam1_q29, exam2_q53, exam4_q10, exam4_q11, exam5_q59 | analytics.mdx#s3 / DataJobSim<br>analytics.mdx#s1 Takeaway |
@@ -1015,6 +1017,7 @@ Có **963 keyword** khác nhau: ✅ 963 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
+| [ ] | Kinesis Data Firehose destinations (no DynamoDB) | 🟡 Một phần | 1 | exam1_q33 | kinesis.mdx#s3 (destinations listed only as examples "như S3, Redshift, OpenSearch, Splunk, HTTP endpoint"; never says DynamoDB is not a destination) |
 | [ ] | Kinesis Data Streams | ✅ Đã có | 7 | exam3_q10, exam3_q39, exam3_q46, exam4_q22, exam4_q51, exam5_q6, exam6_q35 | kinesis.mdx#s1 / ShardStreamSim<br>kinesis.mdx#s1 |
 | [ ] | Amazon Data Firehose | ✅ Đã có | 3 | exam2_q47, exam3_q10, exam4_q22 | kinesis.mdx / StreamPipelineSim<br>kinesis.mdx#s3 |
 | [ ] | Amazon Managed Service for Apache Flink (Kinesis Data Analytics) | ✅ Đã có | 3 | exam3_q46, exam4_q22, exam5_q58 | kinesis.mdx#s3<br>kinesis.mdx#s3 / StreamPipelineSim |
@@ -1025,7 +1028,6 @@ Có **963 keyword** khác nhau: ✅ 963 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 | [ ] | Amazon MSK (vs self-managed Kafka on EC2) | ✅ Đã có | 1 | exam6_q31 | kinesis.mdx#s3; kinesis.mdx#s4 |
 | [ ] | Amazon QuickSight | ✅ Đã có | 1 | exam4_q22 | kinesis.mdx#s3 / StreamPipelineSim |
 | [ ] | AWS DMS (S3 source, Kinesis target) | ✅ Đã có | 1 | exam4_q27 | kinesis.mdx#s3 / StreamPipelineSim; storage-migration.mdx#s3 |
-| [ ] | Kinesis Data Firehose destinations (no DynamoDB) | ✅ Đã có | 1 | exam1_q33 | kinesis.mdx#s3 |
 | [ ] | Kinesis Data Streams (consumer, shard provisioning) | ✅ Đã có | 1 | exam1_q33 | kinesis.mdx#s1 / ShardStreamSim |
 | [ ] | Kinesis Data Streams enhanced fan-out | ✅ Đã có | 1 | exam5_q38 | kinesis.mdx#s2 / ShardThroughputSim |
 | [ ] | Kinesis Data Streams multiple consumers | ✅ Đã có | 1 | exam5_q35 | kinesis.mdx#s3 / StreamPipelineSim |

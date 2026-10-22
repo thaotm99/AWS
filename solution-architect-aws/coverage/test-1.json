@@ -204,7 +204,7 @@
           "keyword": "Security group (no geo filtering)",
           "lesson": "vpc",
           "status": "covered",
-          "where": "vpc.mdx#s1"
+          "where": "vpc.mdx#compare (geo blocking needs AWS WAF geo match; NACL rules take CIDR only) / vpc.mdx#s1"
         }
       ]
     },
@@ -246,8 +246,8 @@
         {
           "keyword": "S3 Lifecycle minimum 30 days before transition to IA",
           "lesson": "s3",
-          "status": "covered",
-          "where": "s3.mdx#s1 / LifecycleValidator"
+          "status": "partial",
+          "where": "s3.mdx#s1 / LifecycleValidator (teaches only the 30-day minimum storage charge in IA; validator accepts Standard→IA after 7 days; neither the old 30-day transition rule nor its July 2026 removal is mentioned)"
         },
         {
           "keyword": "S3 Lifecycle rule",
@@ -845,6 +845,12 @@
           "lesson": "rds",
           "status": "covered",
           "where": "rds.mdx#s6 / QuickCompare"
+        },
+        {
+          "keyword": "Amazon Athena ML (SageMaker inference from SQL)",
+          "lesson": "analytics",
+          "status": "missing",
+          "where": ""
         }
       ]
     },
@@ -888,6 +894,12 @@
           "lesson": "vpc",
           "status": "covered",
           "where": "vpc.mdx#s6"
+        },
+        {
+          "keyword": "Amazon EKS on Outposts local cluster",
+          "lesson": "containers",
+          "status": "covered",
+          "where": "containers.mdx#s4 / EksPlacementSim"
         }
       ]
     },
@@ -1048,8 +1060,8 @@
         {
           "keyword": "Kinesis Data Firehose destinations (no DynamoDB)",
           "lesson": "kinesis",
-          "status": "covered",
-          "where": "kinesis.mdx#s3"
+          "status": "partial",
+          "where": "kinesis.mdx#s3 (destinations listed only as examples \"như S3, Redshift, OpenSearch, Splunk, HTTP endpoint\"; never says DynamoDB is not a destination)"
         },
         {
           "keyword": "Kinesis Data Streams (consumer, shard provisioning)",
@@ -1900,7 +1912,7 @@
           "keyword": "S3 Cross-Region Replication",
           "lesson": "s3",
           "status": "covered",
-          "where": "analytics.mdx#s4"
+          "where": "s3.mdx#s7 / analytics.mdx#s4"
         },
         {
           "keyword": "S3 static website hosting (static content only)",
