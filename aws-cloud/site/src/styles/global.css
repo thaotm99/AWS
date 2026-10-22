@@ -117,6 +117,12 @@ body:has(.with-toc) .topbar-inner { max-width: 1520px; }
 @media (prefers-reduced-motion: reduce) { .toc-bar i, .read-bar i, .ltoc ol a { transition: none; } }
 
 /* Sidebar roadmap */
+.course-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; }
+.course-progress-text { margin: 4px 0 8px; font-weight: 600; font-size: 0.875rem; }
+.course-progress { display: flex; align-items: center; gap: 10px; }
+.course-bar { flex: 1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.course-bar i { display: block; height: 100%; background: var(--ok); border-radius: 3px; transition: width 0.3s; }
+.course-percent { font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600; color: var(--ok); }
 .sidebar { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 76px); align-self: start; max-height: calc(100vh - 96px); overflow-y: auto; padding-right: 4px; }
 .side-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
 .filter { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 6px; }

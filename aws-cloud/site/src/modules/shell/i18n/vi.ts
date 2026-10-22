@@ -32,7 +32,8 @@ export const vi = {
     jump: "chuyển phần",
   },
   roadmap: {
-    title: "Lộ trình SAA-C03",
+    title: "Lộ trình học",
+    progress: "Đã hoàn thành {done}/{total} bài học",
     note: "Biểu tượng bên phải thể hiện mức độ quan trọng của chủ đề trong thiết kế hệ thống trên AWS.",
     ready: "Đã có bài",
     soon: "Sắp có",

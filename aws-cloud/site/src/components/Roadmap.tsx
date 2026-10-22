@@ -30,9 +30,22 @@ export default function Roadmap({ layers, current, ready }: Props) {
     setOpen(next);
   }
 
+  const total = ready.length;
+  const finished = ready.filter((id) => done.has(id)).length;
+  const percent = total ? Math.round((finished / total) * 100) : 0;
+
   return (
     <>
-      <div className="side-label">{t("shell.roadmap.title")}</div>
+      <div className="course-card">
+        <div className="side-label">{t("shell.roadmap.title")}</div>
+        <p className="course-progress-text">{t("shell.roadmap.progress", { done: finished, total })}</p>
+        <div className="course-progress">
+          <span className="course-bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} aria-label={t("shell.roadmap.title")}>
+            <i style={{ width: `${percent}%` }} />
+          </span>
+          <span className="course-percent">{percent}%</span>
+        </div>
+      </div>
       <p className="filter-note">{t("shell.roadmap.note")}</p>
       <ul className="layers">
         {layers.map((layer) => (

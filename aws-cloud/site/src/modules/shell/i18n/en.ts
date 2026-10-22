@@ -34,7 +34,8 @@ export const en: Messages<typeof vi> = {
     jump: "to jump",
   },
   roadmap: {
-    title: "SAA-C03 study path",
+    title: "Study path",
+    progress: "{done} of {total} lessons completed",
     note: "Bars on the right: how important this is when you build on AWS.",
     ready: "Lesson ready",
     soon: "Coming soon",
