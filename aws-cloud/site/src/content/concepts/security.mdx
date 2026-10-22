@@ -1,0 +1,102 @@
+---
+title: "WAF, Shield, GuardDuty, Macie: bảo vệ và phát hiện"
+lede: "Bài viết từ 14 câu đề. Chọn đúng loại rule WAF và chỗ gắn WAF, rồi phân biệt nhóm dịch vụ bảo mật đề hay đặt cạnh nhau: Shield Advanced, Firewall Manager, GuardDuty, Inspector, Macie, Security Lake."
+minutes: 15
+scenes: 2
+prerequisites: ["cloudfront", "vpc"]
+docs:
+  - title: "AWS WAF rules"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/waf-rules.html"
+  - title: "Rate-based rule statement"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-rate-based.html"
+  - title: "AWS Shield Advanced"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/shield-chapter.html"
+  - title: "What is Amazon GuardDuty?"
+    url: "https://docs.aws.amazon.com/guardduty/latest/ug/what-is-guardduty.html"
+  - title: "What is Amazon Macie?"
+    url: "https://docs.aws.amazon.com/macie/latest/user/what-is-macie.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import WafSim from "../../components/scenes/security/WafSim.tsx";
+import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#s1", label: "1 · AWS WAF" },
+  { href: "#s2", label: "2 · Dịch vụ bảo mật khác" },
+  { href: "#challenge", label: "Thử thách" },
+]}>
+ShopViet bắt đầu bị tấn công: bot dò SQL injection, một IP quét liên tục, có cả lưu lượng DDoS. Bài này là hàng rào phía trước ứng dụng (**AWS WAF**, **Shield**) và các dịch vụ **phát hiện** chuyện bất thường bên trong account.
+</Story>
+
+<Scene id="s1" label="Cảnh 1/2" title="AWS WAF: chặn request xấu trước khi tới ứng dụng" questions={["exam5_q13", "exam1_q6", "exam5_q45", "exam2_q30", "exam6_q60", "exam5_q57", "exam2_q32"]}>
+
+Năm loại request đang gõ cửa ShopViet. Bật từng rule, chọn chỗ gắn WAF, rồi gửi.
+
+<WafSim client:visible />
+
+<Takeaway>SQL injection, XSS: managed rule. Theo quốc gia: geo match. Một IP xấu: IP set. Request dồn dập: rate-based rule. WAF gắn vào CloudFront, ALB, API Gateway, không gắn thẳng vào EC2.</Takeaway>
+
+</Scene>
+
+<Scene id="s2" label="Cảnh 2/2" title="Dịch vụ nào cho việc nào?" questions={["exam3_q58", "exam6_q4", "exam1_q36", "exam3_q1", "exam6_q14", "exam2_q44"]}>
+
+Đề hay đặt các dịch vụ này làm đáp án nhiễu cho nhau. Chọn yêu cầu để xem đề chọn dịch vụ nào:
+
+<RequirementPicker client:visible items={[
+  { need: "Chống DDoS chủ động, có đội AWS hỗ trợ khi bị tấn công, có báo cáo", answer: "AWS Shield Advanced",
+    why: "Shield Advanced bảo vệ DDoS nâng cao, có DDoS Response Team (DRT), báo cáo và log chi tiết. Shield Standard miễn phí nhưng không có các phần này.", refs: ["exam3_q58"] },
+  { need: "Quản lý tập trung rule bảo mật cho nhiều account", answer: "AWS Firewall Manager",
+    why: "Áp rule cho AWS WAF, Shield Advanced và security group trên toàn Organizations.", refs: ["exam6_q4"] },
+  { need: "Phát hiện hoạt động độc hại (S3, EC2 bị dùng đào coin)", answer: "Amazon GuardDuty",
+    why: "Phân tích log (CloudTrail, VPC Flow Logs, DNS) để phát hiện mối đe dọa.", refs: ["exam1_q36", "exam3_q1", "exam6_q14"] },
+  { need: "Tìm lỗ hổng phần mềm trên EC2", answer: "Amazon Inspector",
+    why: "Quét lỗ hổng và mức độ phơi nhiễm của workload.", refs: ["exam1_q36"] },
+  { need: "Tìm dữ liệu nhạy cảm (thông tin cá nhân) trong S3", answer: "Amazon Macie",
+    why: "Dùng machine learning để phát hiện và phân loại dữ liệu nhạy cảm trên S3.", refs: ["exam3_q1"] },
+  { need: "Gom log bảo mật từ nhiều account và nguồn vào một chỗ, ít code", answer: "Amazon Security Lake",
+    why: "Tự thu thập log và sự kiện bảo mật thành data lake trên S3.", refs: ["exam2_q44"] },
+]} />
+
+<Takeaway>WAF: lọc request web. Shield Advanced: DDoS + DRT. Firewall Manager: quản lý rule tập trung. GuardDuty: phát hiện đe dọa. Inspector: lỗ hổng EC2. Macie: dữ liệu nhạy cảm S3. Security Lake: gom log bảo mật.</Takeaway>
+
+</Scene>
+
+<Scene id="challenge" label="Thử thách" title="Ghép dịch vụ với việc của nó">
+
+<SortGame client:visible
+  bins={[
+    { id: "protect", title: "Chặn, bảo vệ", sub: "Đứng trước ứng dụng", hint: "Gợi ý: dịch vụ này chặn traffic xấu hoặc quản lý rule chặn." },
+    { id: "detect", title: "Phát hiện, đánh giá", sub: "Phân tích bên trong account", hint: "Gợi ý: dịch vụ này tìm ra vấn đề, không đứng chặn traffic." },
+  ]}
+  cards={[
+    ["AWS WAF", "protect"], ["AWS Shield Advanced", "protect"], ["AWS Firewall Manager", "protect"],
+    ["Amazon GuardDuty", "detect"], ["Amazon Inspector", "detect"], ["Amazon Macie", "detect"], ["Amazon Security Lake", "detect"],
+  ]}
+/>
+
+Các câu dưới đây viết lại theo đúng dạng câu trong đề (mã câu hiện sau khi trả lời).
+
+<Quiz client:visible items={[
+  { q: "Ứng dụng chạy trên EC2 bị dò SQL injection và cross-site scripting. Cách hiệu quả nhất?",
+    opts: ["AWS WAF gắn vào CloudFront đặt trước ứng dụng", "Security group chặn cổng 80", "Amazon Inspector"],
+    a: 0, ref: "exam5_q13",
+    why: "WAF có managed rule cho SQLi/XSS. Security group không đọc nội dung request; Inspector chỉ quét lỗ hổng." },
+  { q: "Kẻ tấn công gửi hơn 100 request/giây từ cùng IP, người dùng thường chỉ vài request. Chặn thế nào?",
+    opts: ["WAF rate-based rule", "Tăng số EC2", "Shield Standard"],
+    a: 0, ref: "exam6_q60",
+    why: "Rate-based rule chặn IP vượt ngưỡng số request trong khoảng thời gian." },
+  { q: "Cần giám sát S3 khỏi hoạt động độc hại và tìm dữ liệu nhạy cảm trong S3. Chọn hai dịch vụ nào?",
+    opts: ["GuardDuty và Macie", "Inspector và Shield", "WAF và Firewall Manager"],
+    a: 0, ref: "exam3_q1",
+    why: "GuardDuty phát hiện mối đe dọa; Macie tìm dữ liệu nhạy cảm." },
+  { q: "EC2 đang chạy phần mềm đào coin không được phép. Dịch vụ nào phát hiện được hành vi này về sau?",
+    opts: ["Amazon GuardDuty", "AWS Config", "Amazon Macie"],
+    a: 0, ref: "exam6_q14",
+    why: "GuardDuty có finding riêng cho hoạt động đào tiền mã hóa trên EC2." },
+]} />
+
+</Scene>

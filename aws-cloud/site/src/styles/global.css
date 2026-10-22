@@ -475,3 +475,5 @@ input[type="range"] { accent-color: var(--accent); }
   .policy-json, .eval-inputs { border-right: 0; border-bottom: 1px solid var(--line); }
 }
 .flow-t { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+.waf-gate { fill: var(--edge-soft); stroke: var(--edge); stroke-width: 2; }
+.waf-gate.off { fill: var(--bg); stroke: var(--muted); stroke-dasharray: 5 4; }
