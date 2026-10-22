@@ -25,9 +25,13 @@ function ExamView({ certId, examId, topic }: Props) {
   const { t, locale } = useT();
 
   const set = topic ? { kind: "topic" as const, id: topic.id } : { kind: "exam" as const, id: examId! };
-  useEffect(() => app.dispatch({ type: "exam/open", certId, set, locale }), [certId, set.kind, set.id]);
+  useEffect(() => {
+    app.dispatch({ type: "exam/open", certId, set, locale });
+  }, [certId, set.kind, set.id]);
   // Switching VI/EN reloads only the question text; progress stays.
-  useEffect(() => app.dispatch({ type: "exam/language", locale }), [locale]);
+  useEffect(() => {
+    app.dispatch({ type: "exam/language", locale });
+  }, [locale]);
 
   // Keyboard: letters pick options, Enter submits or moves on.
   useEffect(() => {
@@ -52,7 +56,11 @@ function ExamView({ certId, examId, topic }: Props) {
   }, [cert, exam, t]);
 
   // Each new question or the result starts at the top of the page.
-  useEffect(() => window.scrollTo({ top: 0 }), [index, view]);
+  // Block body on purpose: newer browsers return a Promise from scrollTo, and an effect may only
+  // return a cleanup function (React calls anything else on the next run and the page crashes).
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [index, view]);
 
   if (state.status === "error" && state.error) {
     return (

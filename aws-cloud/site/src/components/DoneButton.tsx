@@ -5,7 +5,9 @@ import { useI18n } from "../app/i18n";
 export default function DoneButton({ id }: { id: string }) {
   const [on, setOn] = useState(false);
   const { t } = useI18n();
-  useEffect(() => setOn(getDone().has(id)), [id]);
+  useEffect(() => {
+    setOn(getDone().has(id));
+  }, [id]);
 
   function toggle() {
     setDone(id, !on);
