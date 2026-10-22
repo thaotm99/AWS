@@ -24,7 +24,9 @@ export default function SortGame({ bins, cards }: Props) {
   const { t } = useI18n();
 
   // Shuffle after hydration so server and client render the same first frame.
-  useEffect(() => setOrder((o) => [...o].sort(() => Math.random() - 0.5)), []);
+  useEffect(() => {
+    setOrder((o) => [...o].sort(() => Math.random() - 0.5));
+  }, []);
 
   const answer = Object.fromEntries(cards);
   const placedCount = Object.keys(placed).length;

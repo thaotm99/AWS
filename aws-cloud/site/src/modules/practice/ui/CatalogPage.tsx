@@ -21,7 +21,9 @@ function CatalogView({ certId }: { certId: string | null }) {
   const app = PracticeApp.get();
   const state = useStore(app.catalog.store);
   const { t } = useT();
-  useEffect(() => app.dispatch({ type: "catalog/open", certId }), [certId]);
+  useEffect(() => {
+    app.dispatch({ type: "catalog/open", certId });
+  }, [certId]);
 
   if (state.status === "error" && state.error) return <p className="pr-error">{errorText(t, state.error)}</p>;
   const cert = state.selected;
