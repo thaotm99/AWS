@@ -18,15 +18,15 @@ const SEQ: Record<Mode, Phase[]> = {
 };
 
 const PHASE_TEXT: Record<Phase, string> = {
-  serve: "đang nhận khách",
-  drain: "rời target group, chờ request xong",
-  patch: "đang cài bản vá",
+  serve: "đang phục vụ request",
+  drain: "rời target group, chờ request",
+  patch: "đang cài đặt bản vá",
   reboot: "đang khởi động lại",
   rejoin: "đăng ký lại, chờ healthy",
 };
 
 const MODES: { id: Mode; name: string; doc: string }[] = [
-  { id: "direct", name: "Run Command vá thẳng", doc: "AWS-RunPatchBaseline" },
+  { id: "direct", name: "Run Command vá trực tiếp", doc: "AWS-RunPatchBaseline" },
   { id: "runbook", name: "Automation runbook", doc: "AWSEC2-PatchLoadBalancerInstance" },
 ];
 
@@ -111,22 +111,22 @@ export default function PatchWindowSim() {
 
   return (
     <div className="stage pws">
-      <div className="stage-bar" role="group" aria-label="Cách vá">
-        <span className="label">Cách vá</span>
+      <div className="stage-bar" role="group" aria-label="Phương án vá">
+        <span className="label">Phương án vá</span>
         {MODES.map((m) => (
           <button key={m.id} className="btn" aria-pressed={m.id === mode} disabled={busy && m.id !== mode} onClick={() => pick(m.id)}>{m.name}</button>
         ))}
-        <button className="btn primary pws-play" onClick={play} disabled={busy}>Mở maintenance window</button>
+        <button className="btn primary pws-play" onClick={play} disabled={busy}>Mở Maintenance Window</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 0 820 264" role="img" aria-label="ALB gửi khách tới ba EC2 trong lúc Systems Manager vá từng máy">
+        <svg viewBox="0 0 820 264" role="img" aria-label="ALB định tuyến request tới ba EC2 instance trong khi Systems Manager vá lần lượt từng instance">
           <rect className="dbox dbox-region" x={490} y={12} width={318} height={242} rx={10} />
-          <text className="ts" x={502} y={32}>Maintenance Window · CN 02:00 · mỗi lần 1 máy</text>
+          <text className="ts" x={502} y={32}>Maintenance Window · CN 02:00 · 1 instance/lượt</text>
           <text className="pws-clock" x={20} y={30}>{tick < 0 ? "01:59" : `02:${String(tick).padStart(2, "0")}`}</text>
           <text className="ts" x={20} y={48}>{doc}</text>
           <circle cx={USERS[0]} cy={USERS[1] - 10} r={7} className="pws-user" />
           <path d={`M${USERS[0] - 13} ${USERS[1] + 12} a13 13 0 0 1 26 0 z`} className="pws-user" />
-          <text className="pws-l2" x={USERS[0]} y={USERS[1] + 32} textAnchor="middle">Khách mua đêm</text>
+          <text className="pws-l2" x={USERS[0]} y={USERS[1] + 32} textAnchor="middle">Người dùng</text>
           <path className="pws-link" d={`M${USERS[0] + 16} ${ALB[1]} H${ALB[0] - 60}`} />
           {Array.from({ length: N }, (_, i) => {
             const [x, y] = INST(i);
@@ -155,7 +155,7 @@ export default function PatchWindowSim() {
       </div>
       <div className="readout" aria-live="polite">
         {tick < 0 ? (
-          <p className="pws-hint">Chọn cách vá rồi bấm <b>Mở maintenance window</b>. Khách vẫn mua hàng lúc 2h sáng.</p>
+          <p className="pws-hint">Chọn phương án vá, sau đó chọn <b>Mở Maintenance Window</b>. Người dùng vẫn mua hàng lúc 2h sáng.</p>
         ) : (
           <>
             <div className="status">
@@ -166,8 +166,8 @@ export default function PatchWindowSim() {
             {done && (
               <p className={`pws-result ${fail ? "bad" : "ok"}`}>
                 {rich(mode === "direct"
-                  ? "Bản vá cài thành công trên cả ba máy, nhưng mỗi máy reboot trong khi ALB **vẫn gửi khách vào**. Khách gặp 502 và timeout. Vá thành công chưa có nghĩa là vá an toàn."
-                  : "Không request nào lỗi. Runbook `AWSEC2-PatchLoadBalancerInstance` gỡ máy khỏi target group, chờ request đang chạy xong, vá, reboot, đăng ký lại và chờ healthy rồi mới sang máy kế. **Maintenance Window** chạy runbook đúng giờ ít khách, từng máy một.")}
+                  ? "Bản vá được cài đặt thành công trên cả ba instance, nhưng mỗi instance reboot trong khi ALB **vẫn định tuyến request tới**. Người dùng gặp lỗi 502 và timeout. Vá thành công không đồng nghĩa với vá an toàn."
+                  : "Không có request nào lỗi. Runbook `AWSEC2-PatchLoadBalancerInstance` gỡ instance khỏi target group, chờ các request đang xử lý hoàn tất, vá, reboot, đăng ký lại và chờ trạng thái healthy trước khi chuyển sang instance tiếp theo. **Maintenance Window** thực thi runbook vào khung giờ ít người dùng, lần lượt từng instance.")}
               </p>
             )}
           </>

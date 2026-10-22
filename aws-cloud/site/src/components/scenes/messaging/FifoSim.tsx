@@ -83,13 +83,13 @@ export default function FifoSim() {
         await wait(650);
         if (fifo) {
           setFlag((f) => ({ ...f, [m.id]: "trùng" }));
-          setLog((l) => [...l, { tag: "BỎ TRÙNG", cls: "edge", who: "FIFO queue",
-            msg: rich("App gửi lại **A +100** vì timeout mạng. Cùng **deduplication ID** trong 5 phút nên SQS nhận nhưng không giao lần nữa.") }]);
+          setLog((l) => [...l, { tag: "LOẠI TRÙNG", cls: "edge", who: "FIFO queue",
+            msg: rich("Ứng dụng gửi lại **A +100** do timeout mạng. Message có cùng **deduplication ID** trong khoảng 5 phút nên SQS chấp nhận request nhưng không phân phối lại.") }]);
           await wait(650);
           setGone((g) => ({ ...g, [m.id]: true }));
         } else {
           setLog((l) => [...l, { tag: "TRÙNG", cls: "bad", who: "Standard queue",
-            msg: rich("App gửi lại **A +100** vì timeout mạng. Standard queue nhận như một message mới.") }]);
+            msg: rich("Ứng dụng gửi lại **A +100** do timeout mạng. Standard queue tiếp nhận như một message mới.") }]);
         }
       }
       await wait(450);
@@ -109,10 +109,10 @@ export default function FifoSim() {
         const m = byId[id];
         const who = c === "c1" ? "Consumer 1" : "Consumer 2";
         if (m.amt < 0 && bal[m.cust] + m.amt < 0) {
-          setLog((l) => [...l, { tag: "TỪ CHỐI", cls: "bad", who, msg: rich(`**${label(m)}** tới trước khoản nạp: số dư ${m.cust} = ${bal[m.cust]}, giao dịch bị từ chối.`) }]);
+          setLog((l) => [...l, { tag: "TỪ CHỐI", cls: "bad", who, msg: rich(`**${label(m)}** được xử lý trước lệnh nạp tiền: số dư ${m.cust} = ${bal[m.cust]}, giao dịch bị từ chối.`) }]);
         } else {
           bal[m.cust] += m.amt;
-          const dupNote = m.dup ? " Đây là bản **gửi lặp**: khách được cộng tiền hai lần." : "";
+          const dupNote = m.dup ? " Đây là **message trùng lặp**: tài khoản của người dùng được cộng tiền hai lần." : "";
           setLog((l) => [...l, { tag: m.dup ? "LẶP" : "XỬ LÝ", cls: m.dup ? "bad" : "hit", who, msg: rich(`**${label(m)}** → số dư ${m.cust} = ${bal[m.cust]}.${dupNote}`) }]);
         }
       }
@@ -120,17 +120,17 @@ export default function FifoSim() {
       setBusyC({});
       if (fifo && !groups) {
         setLog((l) => [...l, { tag: "CHỜ", cls: "info", who: wave[0][1] === "c1" ? "Consumer 2" : "Consumer 1",
-          msg: rich("Rảnh nhưng không nhận được gì: mọi message chung **một message group**, message sau chỉ được giao khi message trước đã xử lý xong.") }]);
+          msg: rich("Consumer sẵn sàng nhưng không nhận được message: mọi message thuộc **cùng một message group**, message tiếp theo chỉ được phân phối khi message trước đã xử lý xong.") }]);
       }
       await wait(400);
     }
     setBalance({ ...bal });
     const right = bal.A === EXPECT.A && bal.B === EXPECT.B;
     const result = !fifo
-      ? "Standard queue giao **ít nhất một lần** và **không giữ đúng thứ tự**. Ví của khách A sai. Cần FIFO queue."
+      ? "Standard queue phân phối **at-least-once** và **không đảm bảo thứ tự**. Số dư ví của người dùng A bị sai. Cần sử dụng FIFO queue."
       : groups
-        ? `Đúng số dư, xong sau ${n} lượt. **Message Group ID** = mã khách: trong một group vẫn đúng thứ tự, các group khác nhau chạy song song.`
-        : `Đúng số dư nhưng mất ${n} lượt: một consumer luôn ngồi chờ. Đặt **Message Group ID** theo mã khách để xử lý song song.`;
+        ? `Số dư chính xác, hoàn tất sau ${n} lượt. **Message Group ID** = mã người dùng: thứ tự được đảm bảo trong từng group, các group khác nhau được xử lý song song.`
+        : `Số dư chính xác nhưng cần ${n} lượt: tại mỗi thời điểm luôn có một consumer ở trạng thái chờ. Cần đặt **Message Group ID** theo mã người dùng để xử lý song song.`;
     setLog((l) => [...l, { ok: right && (!fifo || groups), msg: rich(result) }]);
     setBusy(false);
   }
@@ -153,17 +153,17 @@ export default function FifoSim() {
         ))}
         <label className="ffs-toggle">
           <input type="checkbox" checked={groups} disabled={busy || type === "standard"} onChange={(e) => { setGroups(e.target.checked); reset(); }} />
-          Message Group ID = mã khách
+          Message Group ID = mã người dùng
         </label>
         <button className="btn primary" onClick={run} disabled={busy}>Gửi 5 message</button>
       </div>
-      <p className="ffs-about">Khách A nạp 100 rồi trả 80. Khách B nạp 50 rồi trả 30. Khoản nạp của A bị app gửi lại một lần do timeout mạng. Số dư đúng: A = 20, B = 20.</p>
+      <p className="ffs-about">Người dùng A nạp 100, sau đó thanh toán 80. Người dùng B nạp 50, sau đó thanh toán 30. Lệnh nạp của A bị ứng dụng gửi lại một lần do timeout mạng. Số dư chính xác: A = 20, B = 20.</p>
       <div className="svg-wrap">
-        <svg viewBox="0 30 820 200" role="img" aria-label="Năm message đi từ app ví vào queue rồi tới hai consumer">
+        <svg viewBox="0 30 820 200" role="img" aria-label="Năm message được gửi từ ứng dụng ví vào queue, sau đó tới hai consumer">
           <path className="mls-link" d={`M100 ${LANE} H150 M530 ${LANE} H550 V${C_Y.c1} H560 M550 ${LANE} V${C_Y.c2} H560`} />
           <g className="mls-src">
             <rect x={20} y={LANE - 24} width={80} height={48} rx={8} />
-            <text x={60} y={LANE - 3} textAnchor="middle">App ví</text>
+            <text x={60} y={LANE - 3} textAnchor="middle">Ứng dụng ví</text>
             <text className="mls-l2" x={60} y={LANE + 13} textAnchor="middle">producer</text>
           </g>
           <g className="mls-lane">
@@ -174,7 +174,7 @@ export default function FifoSim() {
             <g key={c} className={"mls-worker " + (busyC[c] !== undefined ? "busy" : "idle")}>
               <rect x={560} y={C_Y[c] - 26} width={200} height={52} rx={8} />
               <text className="mls-l1" x={700} y={C_Y[c] - 3} textAnchor="middle">Consumer {c === "c1" ? 1 : 2}</text>
-              <text className="mls-l2" x={700} y={C_Y[c] + 13} textAnchor="middle">{busyC[c] !== undefined ? "đang xử lý" : "rảnh"}</text>
+              <text className="mls-l2" x={700} y={C_Y[c] + 13} textAnchor="middle">{busyC[c] !== undefined ? "đang xử lý" : "sẵn sàng"}</text>
             </g>
           ))}
           {MSGS.map((m, i) => {
@@ -194,7 +194,7 @@ export default function FifoSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="mls-hint">Chọn loại queue rồi bấm <b>Gửi 5 message</b>. Thử cả ba: Standard, FIFO, FIFO + Message Group ID.</p>
+          <p className="mls-hint">Chọn loại queue, sau đó chọn <b>Gửi 5 message</b>. So sánh cả ba cấu hình: Standard, FIFO, FIFO + Message Group ID.</p>
         ) : (
           <>
             <ul className="log" aria-live="polite">
@@ -212,7 +212,7 @@ export default function FifoSim() {
             {balance && (
               <div className="status ffs-balance">
                 {(["A", "B"] as const).map((k) => (
-                  <span key={k} className={"pill " + (balance[k] === EXPECT[k] ? "ok" : "bad")}><i />Số dư {k}: {balance[k]} (đúng là {EXPECT[k]})</span>
+                  <span key={k} className={"pill " + (balance[k] === EXPECT[k] ? "ok" : "bad")}><i />Số dư {k}: {balance[k]} (giá trị đúng: {EXPECT[k]})</span>
                 ))}
                 <span className="count">{rounds} lượt xử lý</span>
               </div>

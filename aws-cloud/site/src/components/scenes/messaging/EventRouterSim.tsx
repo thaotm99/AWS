@@ -10,66 +10,66 @@ const Y = 148;
 
 const SCENARIOS: PScenario[] = [
   {
-    name: "Một đơn, ba bộ phận cần biết",
-    action: "Đặt đơn",
-    request: "Đơn #2045 vừa thanh toán",
-    toggle: { label: "Dùng SNS topic + SQS (fan-out)", initial: false },
+    name: "Một sự kiện đơn hàng, ba dịch vụ nhận",
+    action: "Tạo đơn hàng",
+    request: "Đơn #2045 đã thanh toán",
+    toggle: { label: "Sử dụng SNS topic + SQS (fan-out)", initial: false },
     layout: (fan): PLayout => fan
       ? {
           viewBox: VB,
-          aria: "Dịch vụ đơn hàng publish một lần lên SNS topic, topic gửi tới ba SQS queue, mỗi queue có một dịch vụ đọc",
+          aria: "Dịch vụ đơn hàng publish một lần lên SNS topic, topic phân phối tới ba SQS queue, mỗi queue có một dịch vụ tiêu thụ",
           nodes: [
             { id: "web", x: 75, y: Y, w: 120, l1: "Dịch vụ đơn hàng" },
             { id: "sns", x: 245, y: Y, w: 130, l1: "SNS topic", l2: "don-hang-moi" },
             { id: "q1", x: 450, y: 78, w: 130, l1: "SQS email" },
             { id: "q2", x: 450, y: Y, w: 130, l1: "SQS kho" },
             { id: "q3", x: 450, y: 218, w: 130, l1: "SQS phân tích" },
-            { id: "s1", x: 690, y: 78, w: 140, l1: "Gửi email" },
-            { id: "s2", x: 690, y: Y, w: 140, l1: "Kho", l2: "đang bảo trì" },
-            { id: "s3", x: 690, y: 218, w: 140, l1: "Phân tích" },
+            { id: "s1", x: 690, y: 78, w: 140, l1: "Dịch vụ email" },
+            { id: "s2", x: 690, y: Y, w: 140, l1: "Dịch vụ kho", l2: "đang bảo trì" },
+            { id: "s3", x: 690, y: 218, w: 140, l1: "Dịch vụ phân tích" },
           ],
           links: [["web", "sns"], ["sns", "q1"], ["sns", "q2"], ["sns", "q3"], ["q1", "s1"], ["q2", "s2"], ["q3", "s3"]],
         }
       : {
           viewBox: VB,
-          aria: "Dịch vụ đơn hàng gọi thẳng ba dịch vụ khác",
+          aria: "Dịch vụ đơn hàng gọi trực tiếp ba dịch vụ khác",
           nodes: [
             { id: "web", x: 110, y: Y, w: 140, l1: "Dịch vụ đơn hàng" },
-            { id: "s1", x: 650, y: 78, w: 160, l1: "Gửi email" },
-            { id: "s2", x: 650, y: Y, w: 160, l1: "Kho", l2: "đang bảo trì" },
-            { id: "s3", x: 650, y: 218, w: 160, l1: "Phân tích" },
+            { id: "s1", x: 650, y: 78, w: 160, l1: "Dịch vụ email" },
+            { id: "s2", x: 650, y: Y, w: 160, l1: "Dịch vụ kho", l2: "đang bảo trì" },
+            { id: "s3", x: 650, y: 218, w: 160, l1: "Dịch vụ phân tích" },
           ],
           links: [["web", "s1"], ["web", "s2"], ["web", "s3"]],
         },
     run: (fan) => fan
       ? { back: false, steps: [
-            { at: "sns", state: "pass", msg: "Publish **một lần** lên topic. Dịch vụ đơn hàng không cần biết ai đang nghe." },
-            { at: "q1", state: "pass", msg: "Topic đẩy một bản sao vào queue email." },
-            { at: "s1", state: "pass", msg: "Gửi email xác nhận." },
-            { at: "q2", from: "sns", state: "pass", msg: "Một bản sao vào queue kho." },
-            { at: "s2", state: "wait", msg: "Kho đang bảo trì. Message nằm an toàn trong queue, kho chạy lại sẽ xử lý." },
-            { at: "q3", from: "sns", state: "pass", msg: "Một bản sao vào queue phân tích." },
-            { at: "s3", state: "pass", msg: "Cập nhật báo cáo doanh thu." },
+            { at: "sns", state: "pass", msg: "Publish **một lần** lên topic. Dịch vụ đơn hàng không cần biết các subscriber." },
+            { at: "q1", state: "pass", msg: "Topic gửi một bản sao vào queue email." },
+            { at: "s1", state: "pass", msg: "Email xác nhận được gửi." },
+            { at: "q2", from: "sns", state: "pass", msg: "Một bản sao được gửi vào queue kho." },
+            { at: "s2", state: "wait", msg: "Dịch vụ kho đang bảo trì. Message được lưu giữ trong queue và sẽ được xử lý khi dịch vụ hoạt động trở lại." },
+            { at: "q3", from: "sns", state: "pass", msg: "Một bản sao được gửi vào queue phân tích." },
+            { at: "s3", state: "pass", msg: "Báo cáo doanh thu được cập nhật." },
           ], ok: true,
-          result: "Fan-out: **SNS topic → nhiều SQS queue**. Mỗi bên đọc theo tốc độ của mình, một bên hỏng không kéo đơn hỏng theo. Thêm bên thứ tư chỉ cần thêm một subscription." }
+          result: "Fan-out: **SNS topic → nhiều SQS queue**. Mỗi dịch vụ đọc theo tốc độ riêng; sự cố tại một dịch vụ không làm đơn hàng thất bại. Bổ sung dịch vụ thứ tư chỉ cần thêm một subscription." }
       : { steps: [
-            { at: "s1", state: "pass", roundTrip: true, msg: "Gọi API email, chờ trả lời: OK." },
-            { at: "s2", state: "block", flash: "503", msg: "Kho đang bảo trì, gọi thẳng thì lỗi." },
+            { at: "s1", state: "pass", roundTrip: true, msg: "Gọi API email và chờ phản hồi: OK." },
+            { at: "s2", state: "block", flash: "503", msg: "Dịch vụ kho đang bảo trì; lệnh gọi trực tiếp trả về lỗi." },
           ], ok: false,
-          result: "Dịch vụ đơn hàng phải gọi và chờ từng bên; một bên lỗi là cả đơn lỗi. Thêm bên mới là phải sửa code." },
+          result: "Dịch vụ đơn hàng phải gọi và chờ từng dịch vụ; lỗi tại một dịch vụ làm toàn bộ đơn hàng thất bại. Bổ sung dịch vụ mới đòi hỏi thay đổi mã nguồn." },
   },
   {
-    name: "CRM báo có khách mới",
-    action: "Khách đăng ký",
-    request: "CRM (SaaS): khách mới đăng ký",
-    toggle: { label: "Dùng EventBridge (partner event source)", initial: false },
+    name: "CRM phát sự kiện khách hàng mới",
+    action: "Đăng ký khách hàng",
+    request: "CRM (SaaS): khách hàng mới đăng ký",
+    toggle: { label: "Sử dụng EventBridge (partner event source)", initial: false },
     layout: (eb): PLayout => ({
       viewBox: VB,
-      aria: "Sự kiện từ phần mềm CRM tới ShopViet qua EventBridge hoặc qua script tự viết",
+      aria: "Sự kiện từ phần mềm CRM được chuyển tới ShopViet qua EventBridge hoặc qua script tự phát triển",
       nodes: [
         { id: "crm", x: 80, y: Y, w: 120, l1: "CRM (SaaS)", l2: "đối tác" },
-        { id: "mid", x: 280, y: Y, w: 170, l1: eb ? "EventBridge" : "Script trên EC2", l2: eb ? "partner event bus" : "gọi API CRM 5 phút/lần" },
-        { id: "rule", x: 480, y: Y, w: 150, l1: "Rule", l2: eb ? "khớp mẫu sự kiện" : "(tự viết if/else)" },
+        { id: "mid", x: 280, y: Y, w: 170, l1: eb ? "EventBridge" : "Script trên EC2", l2: eb ? "partner event bus" : "poll API CRM mỗi 5 phút" },
+        { id: "rule", x: 480, y: Y, w: 150, l1: "Rule", l2: eb ? "khớp event pattern" : "(logic if/else tự viết)" },
         { id: "fn", x: 700, y: 92, w: 170, l1: "Lambda", l2: "tặng voucher" },
         { id: "q", x: 700, y: 205, w: 170, l1: "SQS", l2: "email chào mừng" },
       ],
@@ -77,29 +77,29 @@ const SCENARIOS: PScenario[] = [
     }),
     run: (eb) => eb
       ? { back: false, steps: [
-            { at: "mid", state: "pass", msg: "CRM là **đối tác SaaS** của EventBridge: sự kiện tự vào partner event bus, không phải viết code lấy dữ liệu." },
-            { at: "rule", state: "pass", msg: "Rule so mẫu JSON (`detail-type: Khách mới`) và gửi tới hai target." },
-            { at: "fn", state: "pass", msg: "Tặng voucher ngay." },
-            { at: "q", from: "rule", state: "pass", msg: "Đưa vào queue gửi email." },
+            { at: "mid", state: "pass", msg: "CRM là **đối tác SaaS** của EventBridge: sự kiện được chuyển trực tiếp vào partner event bus, không cần phát triển mã nguồn để lấy dữ liệu." },
+            { at: "rule", state: "pass", msg: "Rule đối chiếu event pattern JSON (`detail-type: Khách hàng mới`) và định tuyến tới hai target." },
+            { at: "fn", state: "pass", msg: "Voucher được cấp ngay lập tức." },
+            { at: "q", from: "rule", state: "pass", msg: "Sự kiện được đưa vào queue gửi email." },
           ], ok: true,
-          result: "Sự kiện từ ứng dụng SaaS hay từ dịch vụ AWS: **EventBridge**. Rule lọc theo nội dung, mỗi rule gửi tới nhiều target." }
+          result: "Sự kiện từ ứng dụng SaaS hoặc từ dịch vụ AWS: **EventBridge**. Rule lọc theo nội dung sự kiện; mỗi rule có thể định tuyến tới nhiều target." }
       : { back: false, steps: [
-            { at: "mid", state: "wait", msg: "Script hỏi API CRM 5 phút một lần, tự lo token, retry, phân trang." },
-            { at: "rule", state: "change", tag: "TỰ VIẾT", msg: "Tự viết code chọn nơi gửi cho từng loại sự kiện." },
-            { at: "fn", state: "pass", msg: "Voucher tới trễ vài phút." },
+            { at: "mid", state: "wait", msg: "Script poll API CRM mỗi 5 phút và tự xử lý token, retry, phân trang." },
+            { at: "rule", state: "change", tag: "TỰ VIẾT", msg: "Logic định tuyến cho từng loại sự kiện phải tự phát triển." },
+            { at: "fn", state: "pass", msg: "Voucher được cấp với độ trễ vài phút." },
           ], ok: false,
-          result: "Chạy được nhưng chậm, và có thêm một server cùng một đống code phải tự vận hành." },
+          result: "Giải pháp hoạt động nhưng có độ trễ cao, đồng thời phát sinh thêm một máy chủ và một lượng lớn mã nguồn phải tự vận hành." },
   },
   {
-    name: "Job đối soát 30 phút mỗi đêm",
-    action: "Tới 2h sáng",
-    request: "cron(0 2 * * ? *) · script đối soát chạy ~30 phút",
-    toggle: { label: "Chạy job trên Fargate (thay vì Lambda)", initial: false },
+    name: "Tác vụ đối soát 30 phút mỗi đêm",
+    action: "Kích hoạt lúc 2h",
+    request: "cron(0 2 * * ? *) · script đối soát thực thi ~30 phút",
+    toggle: { label: "Thực thi tác vụ trên Fargate (thay vì Lambda)", initial: false },
     layout: (fg): PLayout => ({
       viewBox: VB,
-      aria: "EventBridge Scheduler chạy job đối soát theo lịch",
+      aria: "EventBridge Scheduler kích hoạt tác vụ đối soát theo lịch",
       nodes: [
-        { id: "sch", x: 120, y: Y, w: 180, l1: "EventBridge Scheduler", l2: "mỗi đêm 2h" },
+        { id: "sch", x: 120, y: Y, w: 180, l1: "EventBridge Scheduler", l2: "2h hằng đêm" },
         { id: "job", x: 420, y: Y, w: 200, l1: fg ? "ECS task trên Fargate" : "Lambda", l2: fg ? "container chứa script" : "script đối soát" },
         { id: "db", x: 700, y: Y, w: 160, l1: "Database đơn hàng" },
       ],
@@ -107,20 +107,20 @@ const SCENARIOS: PScenario[] = [
     }),
     run: (fg) => fg
       ? { steps: [
-            { at: "job", state: "pass", msg: "Scheduler chạy ECS task trên **Fargate**: dùng nguyên container của script, không giới hạn 15 phút, không quản lý server." },
-            { at: "db", state: "pass", flash: "30 phút", msg: "Đối soát xong." },
+            { at: "job", state: "pass", msg: "Scheduler khởi chạy ECS task trên **Fargate**: sử dụng nguyên container của script, không bị giới hạn 15 phút, không cần quản lý máy chủ." },
+            { at: "db", state: "pass", flash: "30 phút", msg: "Đối soát hoàn tất." },
           ], ok: true,
-          result: "Việc định kỳ ngắn (vài phút): EventBridge gọi Lambda. Việc dài hơn 15 phút: EventBridge Scheduler chạy Fargate task." }
+          result: "Tác vụ định kỳ ngắn (vài phút): EventBridge kích hoạt Lambda. Tác vụ dài hơn 15 phút: EventBridge Scheduler khởi chạy Fargate task." }
       : { steps: [
-            { at: "job", state: "block", flash: "15 phút", msg: "Một lần chạy Lambda tối đa **15 phút**. Script 30 phút bị dừng giữa chừng." },
+            { at: "job", state: "block", flash: "15 phút", msg: "Thời gian thực thi tối đa của một lần gọi Lambda là **15 phút**. Script 30 phút bị dừng giữa chừng." },
           ], ok: false,
-          result: "Lịch thì đúng, nơi chạy thì sai. Job dài cần container trên Fargate." },
+          result: "Lịch thực thi phù hợp nhưng môi trường thực thi không phù hợp. Tác vụ dài cần chạy container trên Fargate." },
   },
   {
-    name: "Video sản phẩm qua nhiều bước",
+    name: "Xử lý video sản phẩm nhiều bước",
     action: "Tải video lên",
     request: "s3://shopviet-video/ao-khoac.mov",
-    toggle: { label: "State machine có Retry cho bước chuyển mã", initial: false },
+    toggle: { label: "Cấu hình Retry cho bước chuyển mã trong state machine", initial: false },
     layout: {
       viewBox: VB,
       aria: "Step Functions điều phối: kiểm tra, chuyển mã bằng AWS Batch, lưu S3, thông báo",
@@ -130,61 +130,61 @@ const SCENARIOS: PScenario[] = [
         { id: "check", x: 255, y: Y + 6, w: 130, l1: "Kiểm tra", l2: "Lambda" },
         { id: "batch", x: 410, y: Y + 6, w: 140, l1: "Chuyển mã", l2: "AWS Batch" },
         { id: "save", x: 565, y: Y + 6, w: 130, l1: "Lưu kết quả", l2: "S3" },
-        { id: "notify", x: 720, y: Y + 6, w: 130, l1: "Báo người bán", l2: "SNS" },
+        { id: "notify", x: 720, y: Y + 6, w: 130, l1: "Thông báo", l2: "SNS" },
       ],
       links: [["s3", "check"], ["check", "batch"], ["batch", "save"], ["save", "notify"]],
     },
     run: (retry) => retry
       ? { back: false, steps: [
             { at: "check", state: "pass", msg: "Video hợp lệ." },
-            { at: "batch", state: "change", tag: "THỬ LẠI", flash: "lỗi", msg: "Lần 1 lỗi: máy Spot của Batch bị thu hồi. Bước này có **Retry** (2 lần, chờ tăng dần) nên chạy lại." },
-            { at: "batch", state: "pass", jump: true, msg: "Lần 2 xong. Step Functions chờ Batch job kết thúc rồi mới đi tiếp." },
-            { at: "save", state: "pass", msg: "Lưu video đã chuyển mã." },
-            { at: "notify", state: "pass", msg: "Báo người bán video đã sẵn sàng." },
+            { at: "batch", state: "change", tag: "THỬ LẠI", flash: "lỗi", msg: "Lần thực thi 1 thất bại: Spot Instance của Batch bị thu hồi. Bước này được cấu hình **Retry** (2 lần, backoff tăng dần) nên được thực thi lại." },
+            { at: "batch", state: "pass", jump: true, msg: "Lần thực thi 2 thành công. Step Functions chờ Batch job kết thúc trước khi chuyển sang bước tiếp theo." },
+            { at: "save", state: "pass", msg: "Video đã chuyển mã được lưu trữ." },
+            { at: "notify", state: "pass", msg: "Người bán nhận thông báo video đã sẵn sàng." },
           ], ok: true,
-          result: "**Step Functions** giữ trạng thái từng bước, tự retry, gọi AWS Batch và chờ job xong. Không phải tự viết code điều phối hay tự quản lý server." }
+          result: "**Step Functions** lưu trạng thái từng bước, tự động retry, gọi AWS Batch và chờ job hoàn tất. Không cần tự phát triển logic điều phối hay quản lý máy chủ." }
       : { back: false, steps: [
             { at: "check", state: "pass", msg: "Video hợp lệ." },
-            { at: "batch", state: "block", flash: "Failed", msg: "Máy Spot của Batch bị thu hồi. Không có Retry nên cả execution dừng ở trạng thái **Failed**." },
+            { at: "batch", state: "block", flash: "Failed", msg: "Spot Instance của Batch bị thu hồi. Do không cấu hình Retry, toàn bộ execution kết thúc ở trạng thái **Failed**." },
           ], ok: false,
-          result: "Một lỗi tạm thời làm hỏng cả luồng. Thêm Retry (và Catch cho lỗi thật) vào state machine." },
+          result: "Một lỗi tạm thời làm toàn bộ quy trình thất bại. Cần bổ sung Retry (và Catch cho lỗi không thể phục hồi) vào state machine." },
   },
   {
-    name: "App kho cũ dùng RabbitMQ",
+    name: "Ứng dụng kho cũ sử dụng RabbitMQ",
     action: "Gửi message",
     request: "AMQP publish → exchange giao-van",
     toggle: { label: "Chuyển broker sang Amazon MQ", initial: false },
     layout: (mq): PLayout => ({
       viewBox: VB,
-      aria: "App kho gửi message qua broker tới app giao vận",
+      aria: "Ứng dụng kho gửi message qua broker tới ứng dụng giao vận",
       nodes: [
-        { id: "app", x: 110, y: Y, w: 150, l1: "App kho", l2: "nói AMQP" },
+        { id: "app", x: 110, y: Y, w: 150, l1: "Ứng dụng kho", l2: "giao thức AMQP" },
         { id: "broker", x: 410, y: Y, w: 200, l1: mq ? "Amazon MQ" : "Amazon SQS", l2: mq ? "broker RabbitMQ do AWS quản lý" : "API riêng của SQS" },
-        { id: "cons", x: 700, y: Y, w: 150, l1: "App giao vận", l2: "nói AMQP" },
+        { id: "cons", x: 700, y: Y, w: 150, l1: "Ứng dụng giao vận", l2: "giao thức AMQP" },
       ],
       links: [["app", "broker"], ["broker", "cons"]],
     }),
     run: (mq) => mq
       ? { steps: [
-            { at: "broker", state: "pass", msg: "**Amazon MQ** chạy broker ActiveMQ hoặc RabbitMQ do AWS quản lý, nói các giao thức chuẩn: AMQP, MQTT, STOMP, JMS…" },
-            { at: "cons", state: "pass", msg: "App giao vận nhận như trước." },
+            { at: "broker", state: "pass", msg: "**Amazon MQ** vận hành broker ActiveMQ hoặc RabbitMQ do AWS quản lý, hỗ trợ các giao thức chuẩn: AMQP, MQTT, STOMP, JMS…" },
+            { at: "cons", state: "pass", msg: "Ứng dụng giao vận nhận message như trước." },
           ], ok: true,
-          result: "Dời lên cloud mà gần như không sửa code, AWS lo vá và chạy broker. App viết mới thì vẫn nên dùng SQS và SNS." }
+          result: "Di chuyển lên cloud gần như không cần thay đổi mã nguồn; AWS chịu trách nhiệm vá lỗi và vận hành broker. Với ứng dụng phát triển mới, SQS và SNS vẫn là lựa chọn được khuyến nghị." }
       : { steps: [
-            { at: "broker", state: "block", flash: "AMQP?", msg: "SQS không nói AMQP. Phải viết lại cả hai app bằng SDK của SQS." },
+            { at: "broker", state: "block", flash: "AMQP?", msg: "SQS không hỗ trợ AMQP. Cả hai ứng dụng phải được viết lại bằng SDK của SQS." },
           ], ok: false,
-          result: "SQS rẻ và đơn giản, nhưng không giữ được giao thức cũ. Muốn ít sửa code: Amazon MQ." },
+          result: "SQS có chi phí thấp và đơn giản nhưng không hỗ trợ giao thức hiện có. Để hạn chế thay đổi mã nguồn: Amazon MQ." },
   },
   {
-    name: "Chứng chỉ nhập từ ngoài sắp hết hạn",
-    action: "Kiểm tra hôm nay",
-    request: "Chứng chỉ của shopviet.vn còn 29 ngày",
-    toggle: { label: "Bật AWS Config managed rule + SNS", initial: false },
+    name: "Chứng chỉ import sắp hết hạn",
+    action: "Chạy đánh giá",
+    request: "Chứng chỉ của shopviet.vn còn hiệu lực 29 ngày",
+    toggle: { label: "Kích hoạt AWS Config managed rule + SNS", initial: false },
     layout: {
       viewBox: VB,
-      aria: "AWS Config kiểm tra chứng chỉ trong ACM rồi báo qua SNS tới đội bảo mật",
+      aria: "AWS Config đánh giá chứng chỉ trong ACM và gửi thông báo qua SNS tới đội bảo mật",
       nodes: [
-        { id: "cert", x: 90, y: Y, w: 140, l1: "Chứng chỉ SSL", l2: "nhập vào ACM" },
+        { id: "cert", x: 90, y: Y, w: 140, l1: "Chứng chỉ SSL/TLS", l2: "import vào ACM" },
         { id: "cfg", x: 330, y: Y, w: 220, l1: "AWS Config rule", l2: "acm-certificate-expiration-check" },
         { id: "sns", x: 560, y: Y, w: 120, l1: "SNS topic" },
         { id: "team", x: 740, y: Y, l1: "Đội bảo mật", user: true },
@@ -193,19 +193,19 @@ const SCENARIOS: PScenario[] = [
     },
     run: (on) => on
       ? { back: false, steps: [
-            { at: "cfg", state: "change", tag: "KHÔNG ĐẠT", msg: "Managed rule thấy chứng chỉ còn dưới 30 ngày (tham số `daysToExpiration` = 30)." },
-            { at: "sns", state: "pass", msg: "Kết quả kiểm tra được gửi tới SNS topic." },
-            { at: "team", state: "pass", msg: "Email tới đội bảo mật, còn cả tháng để thay." },
+            { at: "cfg", state: "change", tag: "KHÔNG ĐẠT", msg: "Managed rule phát hiện chứng chỉ còn hiệu lực dưới 30 ngày (tham số `daysToExpiration` = 30)." },
+            { at: "sns", state: "pass", msg: "Kết quả đánh giá được gửi tới SNS topic." },
+            { at: "team", state: "pass", msg: "Đội bảo mật nhận email thông báo, còn khoảng một tháng để thay thế chứng chỉ." },
           ], ok: true,
-          result: "Không viết script nào. ACM tự gia hạn chứng chỉ **do ACM cấp**; chứng chỉ **nhập từ ngoài** thì phải tự theo dõi như thế này." }
+          result: "Không cần phát triển script. ACM tự động gia hạn chứng chỉ **do ACM cấp**; với chứng chỉ **import từ bên ngoài**, việc theo dõi phải được thiết lập như trên." }
       : { back: false, steps: [
-            { at: "cfg", state: "skip", msg: "Chưa có rule nào theo dõi. ACM không tự gia hạn chứng chỉ nhập từ ngoài." },
-            { at: "team", state: "block", flash: "hết hạn", msg: "Không ai được báo. Tới ngày hết hạn, trình duyệt cảnh báo khách." },
+            { at: "cfg", state: "skip", msg: "Chưa có rule nào giám sát. ACM không tự động gia hạn chứng chỉ import từ bên ngoài." },
+            { at: "team", state: "block", flash: "hết hạn", msg: "Không có thông báo nào được gửi. Khi chứng chỉ hết hạn, trình duyệt hiển thị cảnh báo cho người dùng." },
           ], ok: false,
-          result: "Bật managed rule của AWS Config và gửi kết quả qua SNS." },
+          result: "Cần kích hoạt managed rule của AWS Config và gửi kết quả đánh giá qua SNS." },
   },
 ];
 
 export default function EventRouterSim() {
-  return <PacketSim scenarios={SCENARIOS} hint="Chọn tình huống, bấm nút để phát sự kiện. Đổi công tắc rồi chạy lại để so sánh." />;
+  return <PacketSim scenarios={SCENARIOS} hint="Chọn tình huống, sau đó chọn nút để phát sự kiện. Thay đổi cấu hình và chạy lại để so sánh." />;
 }

@@ -49,7 +49,7 @@ const ramp = (pts: [number, number][]) => {
 const SCENARIOS: Record<ScenarioId, Scenario> = {
   ec2: {
     name: "Livestream bán hàng",
-    about: "Phút thứ 10, idol của ShopViet lên sóng. CPU của nhóm web tăng vọt khoảng 10 phút rồi hạ.",
+    about: "Tại phút thứ 10, phiên livestream của ShopViet bắt đầu. CPU của nhóm web tăng đột biến trong khoảng 10 phút rồi giảm.",
     metric: "CPUUtilization (EC2, trung bình nhóm web)",
     unit: "%",
     max: 100,
@@ -62,14 +62,14 @@ const SCENARIOS: Record<ScenarioId, Scenario> = {
     canBasic: true,
     note: (fired, detailed) =>
       detailed
-        ? `Có datapoint mỗi phút nên alarm bật ở phút ${fired}, chỉ 2 phút sau khi tải tăng. Instance mới vào kịp, CPU hạ xuống. **Detailed monitoring** của EC2 gửi metric mỗi 1 phút thay vì 5 phút.`
+        ? `Do có datapoint mỗi phút, alarm chuyển sang trạng thái ALARM tại phút ${fired}, chỉ 2 phút sau khi tải tăng. Instance mới được bổ sung kịp thời và CPU giảm. **Detailed monitoring** của EC2 gửi metric mỗi 1 phút thay vì 5 phút.`
         : fired === null
-          ? "Mỗi 5 phút mới có một datapoint là giá trị trung bình, nên đợt tăng bị làm phẳng. Alarm chưa kịp bật thì livestream đã xong."
-          : `Mặc định EC2 chỉ gửi metric **mỗi 5 phút**. Alarm phải chờ 2 datapoint 5 phút nên tới phút ${fired} mới bật, khi đợt cao điểm đã gần hết. Bật **detailed monitoring** để có dữ liệu mỗi phút.`,
+          ? "Mỗi 5 phút mới có một datapoint là giá trị trung bình, do đó đợt tăng tải bị làm phẳng. Livestream đã kết thúc trước khi alarm chuyển sang trạng thái ALARM."
+          : `Theo mặc định, EC2 chỉ gửi metric **mỗi 5 phút**. Alarm phải chờ 2 datapoint chu kỳ 5 phút nên tới phút ${fired} mới chuyển sang ALARM, khi đợt cao điểm gần kết thúc. Cần bật **detailed monitoring** để có dữ liệu theo chu kỳ 1 phút.`,
   },
   lambda: {
-    name: "Lambda bị gọi dồn dập",
-    about: "Một lỗi khiến function xử lý ảnh tự gọi lại chính nó. Số lần chạy cùng lúc tăng dần về giới hạn của account.",
+    name: "Lambda bị gọi với tần suất bất thường",
+    about: "Một lỗi khiến function xử lý ảnh tự gọi lại chính nó. Số lần thực thi đồng thời tăng dần tới giới hạn của account.",
     metric: "ConcurrentExecutions (Lambda)",
     unit: "",
     max: 1000,
@@ -77,15 +77,15 @@ const SCENARIOS: Record<ScenarioId, Scenario> = {
     base: ramp([[0, 60], [6, 80], [12, 400], [18, 760], [24, 960], [29, 990]]).map((v) => Math.min(1000, Math.max(0, v))),
     after: null,
     lag: 0,
-    action: "SNS gửi email và tin nhắn cho đội trực",
+    action: "SNS gửi email và SMS tới đội trực",
     flash: "ALARM → SNS",
     canBasic: false,
     note: (fired) =>
-      `Lambda scale rất nhanh nên lỗi kiểu này đốt tiền và chiếm hết concurrency của các function khác. Alarm trên **ConcurrentExecutions** (hoặc **Invocations**) bật ở phút ${fired ?? "?"} và báo qua **SNS**. Alarm chỉ báo, không tự sửa: đội trực vào tắt trigger hoặc đặt reserved concurrency.`,
+      `Lambda scale rất nhanh nên lỗi loại này làm tăng chi phí và chiếm toàn bộ concurrency của các function khác. Alarm trên **ConcurrentExecutions** (hoặc **Invocations**) chuyển sang ALARM tại phút ${fired ?? "?"} và gửi thông báo qua **SNS**. Alarm chỉ thông báo, không tự khắc phục: đội trực cần vô hiệu hoá trigger hoặc đặt reserved concurrency.`,
   },
   ecs: {
-    name: "Service ECS quá tải",
-    about: "Service đặt hàng chạy trên ECS sau một ALB. Buổi trưa khách vào nhiều, các task bắt đầu chậm.",
+    name: "ECS service quá tải",
+    about: "Service đặt hàng chạy trên ECS phía sau một ALB. Vào buổi trưa, lưu lượng người dùng tăng và thời gian phản hồi của các task bắt đầu tăng.",
     metric: "CPUUtilization (ECS service order-api)",
     unit: "%",
     max: 100,
@@ -97,7 +97,7 @@ const SCENARIOS: Record<ScenarioId, Scenario> = {
     flash: "ALARM → +2 task",
     canBasic: false,
     note: (fired) =>
-      `Metric đúng là **CPU của chính ECS service** (namespace AWS/ECS, theo ClusterName và ServiceName). Alarm bật ở phút ${fired ?? "?"}, **Service Auto Scaling** thêm task, CPU trung bình hạ lại. ALB không có metric CPU để scale theo.`,
+      `Metric phù hợp là **CPU của chính ECS service** (namespace AWS/ECS, theo ClusterName và ServiceName). Alarm chuyển sang ALARM tại phút ${fired ?? "?"}, **Service Auto Scaling** bổ sung task, CPU trung bình giảm. ALB không có metric CPU để làm cơ sở scale.`,
   },
 };
 
@@ -195,7 +195,7 @@ export default function MetricAlarmSim() {
             Detailed monitoring (1 phút)
           </label>
         )}
-        <button className="btn primary mas-play" onClick={play} disabled={busy}>Chạy 30 phút</button>
+        <button className="btn primary mas-play" onClick={play} disabled={busy}>Chạy mô phỏng 30 phút</button>
       </div>
       <p className="mas-about">{sc.about}</p>
       <div className="svg-wrap">
@@ -225,9 +225,9 @@ export default function MetricAlarmSim() {
           {shown >= 0 && shown < MINUTES - 1 && <line className="mas-now" x1={px(shown)} x2={px(shown)} y1={Y0} y2={Y0 + H} />}
           <g className="mas-legend" transform={`translate(${X0} 240)`}>
             <line className="mas-raw" x1={0} x2={20} y1={-4} y2={-4} />
-            <text className="ts" x={26} y={0}>giá trị thật</text>
+            <text className="ts" x={26} y={0}>giá trị thực tế</text>
             <circle className="mas-pt" cx={130} cy={-4} r={4.5} />
-            <text className="ts" x={140} y={0}>datapoint CloudWatch nhận</text>
+            <text className="ts" x={140} y={0}>datapoint CloudWatch nhận được</text>
             <line className="mas-threshold" x1={330} x2={350} y1={-4} y2={-4} />
             <text className="ts" x={356} y={0}>ngưỡng</text>
           </g>
@@ -236,7 +236,7 @@ export default function MetricAlarmSim() {
       </div>
       <div className="readout" aria-live="polite">
         {shown < 0 ? (
-          <p className="mas-hint">Chọn tình huống rồi bấm <b>Chạy 30 phút</b>.{sc.canBasic ? " Chạy một lần khi tắt detailed monitoring, một lần khi bật." : ""}</p>
+          <p className="mas-hint">Chọn tình huống, sau đó chọn <b>Chạy mô phỏng 30 phút</b>.{sc.canBasic ? " Chạy một lần khi tắt detailed monitoring và một lần khi bật để so sánh." : ""}</p>
         ) : (
           <>
             <div className="status">

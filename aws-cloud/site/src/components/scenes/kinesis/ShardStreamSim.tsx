@@ -18,7 +18,7 @@ const RECS: Rec[] = [
   { id: "A2", k: "A" }, { id: "B2", k: "B" }, { id: "A3", k: "A" },
 ];
 const SHARD_OF: Record<Key, 0 | 1> = { A: 0, B: 1, C: 0 };
-const APPS = ["Bảng xếp hạng", "Gợi ý sản phẩm", "Chống gian lận"];
+const APPS = ["Bảng xếp hạng", "Gợi ý sản phẩm", "Phát hiện gian lận"];
 const APP_Y = [62, 142, 222];
 const LANE_Y = [96, 190];
 const Q_Y = 142;
@@ -96,15 +96,15 @@ export default function ShardStreamSim() {
       setSent(i + 1);
       if (i < 3) {
         setLog((l) => [...l, mode === "kds"
-          ? { tag: "GHI", cls: "info", msg: rich(`**${r.id}** (partition key \`${r.k}\`) → **shard ${SHARD_OF[r.k] + 1}**. Cùng key thì luôn vào cùng shard.`) }
-          : { tag: "GỬI", cls: "info", msg: rich(`**${r.id}** vào queue.`) }]);
+          ? { tag: "GHI", cls: "info", msg: rich(`**${r.id}** (partition key \`${r.k}\`) → **shard ${SHARD_OF[r.k] + 1}**. Các record cùng key luôn được ghi vào cùng một shard.`) }
+          : { tag: "GỬI", cls: "info", msg: rich(`**${r.id}** được gửi vào queue.`) }]);
       }
       await sleep(fast ? 40 : 480);
     }
     if (mode === "kds") {
-      setLog((l) => [...l, { tag: "ĐỌC", cls: "hit", msg: rich("Ba app đọc **song song**, mỗi app giữ **vị trí đọc riêng** trong từng shard. Đọc xong bản ghi vẫn nằm trong stream.") }]);
+      setLog((l) => [...l, { tag: "ĐỌC", cls: "hit", msg: rich("Ba ứng dụng đọc **song song**, mỗi ứng dụng quản lý **vị trí đọc riêng** trong từng shard. Sau khi được đọc, record vẫn được lưu trong stream.") }]);
       await readAll([0, 1, 2], fast);
-      setLog((l) => [...l, { ok: true, msg: rich("Cả ba app đều thấy đủ 6 sự kiện, và trong mỗi shard đúng thứ tự gửi: A1 → A2 → A3. Đó là lý do bảng xếp hạng, gợi ý và chống gian lận dùng chung **một stream**.") }]);
+      setLog((l) => [...l, { ok: true, msg: rich("Cả ba ứng dụng đều nhận đủ 6 sự kiện, và trong mỗi shard thứ tự gửi được giữ nguyên: A1 → A2 → A3. Đây là lý do bảng xếp hạng, gợi ý sản phẩm và phát hiện gian lận sử dụng chung **một stream**.") }]);
     } else {
       for (let i = 0; i < RECS.length; i++) {
         if (!alive.current) return;
@@ -112,10 +112,10 @@ export default function ShardStreamSim() {
         const app = i % 3;
         setTaken((t) => ({ ...t, [r.id]: app }));
         setSeen((sn) => sn.map((row, a) => (a === app ? [...row, r.id] : row)));
-        if (i < 3) setLog((l) => [...l, { tag: "NHẬN + XOÁ", cls: "bad", msg: rich(`**${APPS[app]}** nhận ${r.id} rồi xoá. Hai app kia không bao giờ thấy ${r.id}.`) }]);
+        if (i < 3) setLog((l) => [...l, { tag: "NHẬN + XOÁ", cls: "bad", msg: rich(`**${APPS[app]}** nhận ${r.id} và xoá message. Hai ứng dụng còn lại không nhận được ${r.id}.`) }]);
         await sleep(fast ? 40 : 520);
       }
-      setLog((l) => [...l, { ok: false, msg: rich("Mỗi app chỉ thấy 2/6 sự kiện. Queue **chia việc** cho nhiều worker; muốn nhiều app **cùng đọc** một dữ liệu, theo đúng thứ tự, thì dùng **Kinesis Data Streams**.") }]);
+      setLog((l) => [...l, { ok: false, msg: rich("Mỗi ứng dụng chỉ nhận 2/6 sự kiện. Queue **phân phối tác vụ** cho nhiều worker; khi nhiều ứng dụng cần **cùng đọc** một luồng dữ liệu theo đúng thứ tự, cần sử dụng **Kinesis Data Streams**.") }]);
     }
     setRan(true);
     setBusy(false);
@@ -126,30 +126,30 @@ export default function ShardStreamSim() {
     setBusy(true);
     setPtr((p) => p.map((row, a) => (a === 2 ? [0, 0] : row)));
     setSeen((sn) => sn.map((row, a) => (a === 2 ? [] : row)));
-    setLog((l) => [...l, { tag: "ĐỌC LẠI", cls: "edge", msg: rich("App chống gian lận vừa sửa lỗi, cho vị trí đọc quay về đầu stream. Bản ghi vẫn còn: mặc định giữ **24 giờ**, tăng được tới **365 ngày**.") }]);
+    setLog((l) => [...l, { tag: "ĐỌC LẠI", cls: "edge", msg: rich("Ứng dụng phát hiện gian lận vừa được sửa lỗi và đặt lại vị trí đọc về đầu stream. Record vẫn được lưu giữ: mặc định **24 giờ**, có thể tăng tới **365 ngày**.") }]);
     await sleep(prefersReducedMotion() ? 0 : 500);
     await readAll([2], prefersReducedMotion());
-    setLog((l) => [...l, { ok: true, msg: rich("Đọc lại xong 6/6 bản ghi, đúng thứ tự cũ. Hai app kia không bị ảnh hưởng.") }]);
+    setLog((l) => [...l, { ok: true, msg: rich("Đã đọc lại 6/6 record theo đúng thứ tự ban đầu. Hai ứng dụng còn lại không bị ảnh hưởng.") }]);
     setBusy(false);
   }
 
   return (
     <div className="stage kss">
       <div className="stage-bar">
-        <span className="label">Đưa sự kiện vào</span>
+        <span className="label">Đích nhận sự kiện</span>
         {(["sqs", "kds"] as const).map((m) => (
           <button key={m} className="btn" aria-pressed={m === mode} disabled={busy} onClick={() => { setMode(m); reset(); }}>
             {m === "sqs" ? "SQS queue" : "Kinesis Data Streams"}
           </button>
         ))}
         <button className="btn primary kss-run" onClick={run} disabled={busy}>Gửi 6 sự kiện</button>
-        {mode === "kds" && <button className="btn" onClick={replay} disabled={busy || !ran}>Đọc lại từ đầu</button>}
+        {mode === "kds" && <button className="btn" onClick={replay} disabled={busy || !ran}>Đọc lại từ đầu stream</button>}
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 20 820 240" role="img" aria-label={mode === "kds" ? "Sự kiện đi vào hai shard theo partition key, ba app cùng đọc" : "Sự kiện đi vào một queue, ba app tranh nhau nhận"}>
+        <svg viewBox="0 20 820 240" role="img" aria-label={mode === "kds" ? "Sự kiện được ghi vào hai shard theo partition key, ba ứng dụng cùng đọc" : "Sự kiện được gửi vào một queue, ba ứng dụng cạnh tranh nhận message"}>
           <g className="kss-src">
             <rect x={SRC.x - 48} y={SRC.y - 24} width={96} height={48} rx={8} />
-            <text className="kss-l1" x={SRC.x} y={SRC.y - 3} textAnchor="middle">App ShopViet</text>
+            <text className="kss-l1" x={SRC.x} y={SRC.y - 3} textAnchor="middle">Ứng dụng</text>
             <text className="kss-l2" x={SRC.x} y={SRC.y + 13} textAnchor="middle">producer</text>
           </g>
           {mode === "kds" ? (
@@ -181,7 +181,7 @@ export default function ShardStreamSim() {
             <g key={name} className={`kss-app c${a}`}>
               <rect x={560} y={APP_Y[a] - 25} width={250} height={50} rx={8} />
               <text className="kss-l1" x={630} y={APP_Y[a] - 4}>{name}</text>
-              <text className="kss-l2" x={630} y={APP_Y[a] + 13}>{seen[a].length ? `${seen[a].length}/6 · ${seen[a].join(" ")}` : "chưa nhận gì"}</text>
+              <text className="kss-l2" x={630} y={APP_Y[a] + 13}>{seen[a].length ? `${seen[a].length}/6 · ${seen[a].join(" ")}` : "chưa nhận dữ liệu"}</text>
             </g>
           ))}
           {RECS.map((r, i) => {
@@ -199,7 +199,7 @@ export default function ShardStreamSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="kss-hint">Chọn nơi nhận sự kiện rồi bấm <b>Gửi 6 sự kiện</b>. Thử cả hai để thấy khác biệt.</p>
+          <p className="kss-hint">Chọn đích nhận sự kiện, sau đó chọn <b>Gửi 6 sự kiện</b>. So sánh kết quả của cả hai phương án.</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) =>

@@ -7,43 +7,43 @@ import PacketSim, { type PScenario } from "../elb/PacketSim";
 
 const SCENARIOS: PScenario[] = [
   {
-    name: "Tìm log của máy đã bị thay",
-    action: "Đi tìm log",
-    request: "Lỗi thanh toán lúc 14:02 hôm kia, trên i-web3",
-    toggle: { label: "Cài CloudWatch agent trên mọi instance", initial: false },
+    name: "Truy xuất log của instance đã bị thay thế",
+    action: "Truy xuất log",
+    request: "Lỗi thanh toán lúc 14:02 hai ngày trước, trên i-web3",
+    toggle: { label: "Cài đặt CloudWatch agent trên mọi instance", initial: false },
     layout: {
       viewBox: "0 34 820 220",
-      aria: "Kỹ sư đi tìm log trên một EC2 đã bị terminate hoặc trong CloudWatch Logs",
+      aria: "Kỹ sư truy xuất log trên một EC2 instance đã bị terminate hoặc trong CloudWatch Logs",
       boxes: [{ x: 300, y: 44, w: 230, h: 196, label: "Auto Scaling group" }],
       nodes: [
         { id: "dev", x: 70, y: 145, l1: "Kỹ sư", user: true },
         { id: "i3", x: 415, y: 100, w: 170, l1: "i-web3", l2: "đã terminate hôm qua" },
-        { id: "i9", x: 415, y: 195, w: 170, l1: "i-web9", l2: "máy mới, không có lỗi" },
+        { id: "i9", x: 415, y: 195, w: 170, l1: "i-web9", l2: "instance mới, không có lỗi" },
         { id: "logs", x: 690, y: 145, w: 190, l1: "CloudWatch Logs", l2: "log group /shopviet/web" },
       ],
       links: [["dev", "i3"], ["i3", "logs"], ["i9", "logs"], ["dev", "logs"]],
     },
     run: (agent) => agent
       ? { steps: [
-            { at: "logs", from: "i3", state: "pass", tag: "GỬI LOG", label: "CloudWatch agent", msg: "Hôm kia, agent trên i-web3 đẩy từng dòng log lên log group gần như ngay lập tức." },
-            { at: "i3", jump: true, state: "skip", msg: "Máy đã bị terminate, nhưng log đã ở ngoài máy." },
-            { at: "logs", from: "dev", state: "pass", flash: "tìm thấy", msg: "**Logs Insights** lọc `ERROR` quanh 14:02 trong log stream của i-web3." }],
+            { at: "logs", from: "i3", state: "pass", tag: "GỬI LOG", label: "CloudWatch agent", msg: "Hai ngày trước, agent trên i-web3 đã gửi từng dòng log lên log group gần như ngay lập tức." },
+            { at: "i3", jump: true, state: "skip", msg: "Instance đã bị terminate, nhưng log đã được lưu bên ngoài instance." },
+            { at: "logs", from: "dev", state: "pass", flash: "tìm thấy", msg: "**Logs Insights** lọc `ERROR` quanh thời điểm 14:02 trong log stream của i-web3." }],
           ok: true,
-          result: "Tìm ra lỗi mà không cần SSH. Fleet thay máy mỗi ngày cũng không mất log." }
+          result: "Xác định được lỗi mà không cần SSH. Fleet thay thế instance hằng ngày cũng không làm mất log." }
       : { steps: [
-            { at: "i3", state: "block", flash: "mất", msg: "ASG đã terminate i-web3. Log nằm trên ổ của máy nên mất theo." },
-            { at: "i9", from: "dev", state: "skip", msg: "Máy mới không có log của hôm kia." }],
+            { at: "i3", state: "block", flash: "mất", msg: "ASG đã terminate i-web3. Log được lưu trên ổ đĩa của instance nên bị mất theo." },
+            { at: "i9", from: "dev", state: "skip", msg: "Instance mới không có log của hai ngày trước." }],
           ok: false,
-          result: "Không còn dấu vết. Tắt scale in hay chụp snapshot trước khi terminate đều là chữa cháy. Cài **CloudWatch agent** để log rời máy ngay khi được ghi." },
+          result: "Không còn dữ liệu để truy vết. Tắt scale in hoặc tạo snapshot trước khi terminate chỉ là biện pháp tạm thời. Cần cài đặt **CloudWatch agent** để log được chuyển ra khỏi instance ngay khi được ghi." },
   },
   {
-    name: "Ai đó gọi API trái phép",
+    name: "Lệnh gọi API trái phép",
     action: "Gọi API",
-    request: "2h sáng: 300 lời gọi bị AccessDenied trong 10 phút",
-    toggle: { label: "Có metric filter + alarm", initial: false },
+    request: "2h sáng: 300 lệnh gọi bị AccessDenied trong 10 phút",
+    toggle: { label: "Cấu hình metric filter + alarm", initial: false },
     layout: {
       viewBox: "0 26 820 244",
-      aria: "CloudTrail ghi lời gọi API vào CloudWatch Logs, metric filter đếm lỗi, alarm gửi SNS tới đội bảo mật",
+      aria: "CloudTrail ghi lệnh gọi API vào CloudWatch Logs, metric filter đếm lỗi, alarm gửi thông báo qua SNS tới đội bảo mật",
       nodes: [
         { id: "x", x: 60, y: 80, l1: "Access key bị lộ", user: true },
         { id: "api", x: 230, y: 80, w: 130, l1: "AWS API", l2: "AccessDenied" },
@@ -58,25 +58,25 @@ const SCENARIOS: PScenario[] = [
     },
     run: (on) => on
       ? { steps: [
-            { at: "api", state: "block", tag: "TỪ CHỐI", msg: "IAM chặn từng lời gọi, nhưng kẻ gọi vẫn đang thử." },
-            { at: "trail", state: "pass", msg: "Mỗi lời gọi thành một event: ai gọi, gọi gì, từ IP nào, lỗi gì." },
+            { at: "api", state: "block", tag: "TỪ CHỐI", msg: "IAM từ chối từng lệnh gọi, nhưng bên tấn công vẫn tiếp tục thử." },
+            { at: "trail", state: "pass", msg: "Mỗi lệnh gọi được ghi thành một event: danh tính, API được gọi, địa chỉ IP nguồn, mã lỗi." },
             { at: "logs", state: "pass", msg: "Trail gửi event vào **CloudWatch Logs**." },
-            { at: "filter", state: "change", tag: "ĐẾM", flash: "+300", msg: "Biến các dòng có `AccessDenied` thành một metric đếm." },
-            { at: "alarm", state: "pass", flash: "ALARM", tag: "ALARM", msg: "Metric vượt ngưỡng, alarm bật." },
+            { at: "filter", state: "change", tag: "ĐẾM", flash: "+300", msg: "Chuyển các dòng chứa `AccessDenied` thành một metric đếm." },
+            { at: "alarm", state: "pass", flash: "ALARM", tag: "ALARM", msg: "Metric vượt ngưỡng, alarm chuyển sang trạng thái ALARM." },
             { at: "sns", state: "pass", msg: "Gửi thông báo qua **SNS**." },
-            { at: "team", state: "pass", msg: "Có cảnh báo sau vài phút, đêm hôm vẫn biết." }],
+            { at: "team", state: "pass", msg: "Cảnh báo được gửi sau vài phút, kể cả ngoài giờ làm việc." }],
           ok: true, back: false,
-          result: "Gần thời gian thực và không phải viết code. Đội bảo mật vô hiệu hoá access key ngay trong đêm." }
+          result: "Cảnh báo gần thời gian thực, không cần viết mã. Đội bảo mật vô hiệu hoá access key ngay trong đêm." }
       : { steps: [
-            { at: "api", state: "block", tag: "TỪ CHỐI", msg: "IAM chặn từng lời gọi." },
+            { at: "api", state: "block", tag: "TỪ CHỐI", msg: "IAM từ chối từng lệnh gọi." },
             { at: "trail", state: "pass", msg: "CloudTrail vẫn ghi đầy đủ." },
-            { at: "logs", state: "pass", msg: "Event nằm trong log, nhưng không ai đếm." },
+            { at: "logs", state: "pass", msg: "Event được lưu trong log nhưng không được thống kê." },
             { at: "filter", state: "skip", msg: "Chưa có metric filter." }],
           ok: false, back: false,
-          result: "Cuối tuần đọc báo cáo mới thấy. Query bằng Athena hay vẽ dashboard đều là xem lại sau, không phải cảnh báo." },
+          result: "Sự cố chỉ được phát hiện khi xem báo cáo cuối tuần. Truy vấn bằng Athena hoặc dashboard chỉ phục vụ phân tích sau sự cố, không phải cơ chế cảnh báo." },
   },
 ];
 
 export default function LogPipelineSim() {
-  return <PacketSim scenarios={SCENARIOS} hint="Chọn tình huống rồi bấm nút chạy. Bật công tắc và chạy lại để so sánh." />;
+  return <PacketSim scenarios={SCENARIOS} hint="Chọn tình huống, sau đó chọn nút chạy. Thay đổi cấu hình và chạy lại để so sánh." />;
 }

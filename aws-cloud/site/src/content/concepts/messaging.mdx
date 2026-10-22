@@ -1,6 +1,6 @@
 ---
-title: "SQS, SNS, EventBridge, Step Functions: cho các phần nói chuyện với nhau"
-lede: "ShopViet lớn dần thành nhiều dịch vụ nhỏ: đặt hàng, thanh toán, kho, email, phân tích. Bài này nối chúng lại sao cho flash sale không làm mất đơn, đơn lỗi không làm nghẽn cả hệ thống, ví điện tử không bị trừ sai, và mỗi sự kiện tới đúng nơi cần biết."
+title: "SQS, SNS, EventBridge, Step Functions: giao tiếp giữa các thành phần"
+lede: "Bài học trình bày cách kết nối các dịch vụ của ShopViet (đặt hàng, thanh toán, kho, email, phân tích) bằng cơ chế truyền message: hấp thụ tải đột biến khi flash sale mà không mất đơn hàng, cô lập message lỗi để không gây tắc nghẽn hệ thống, đảm bảo thứ tự và tính duy nhất cho giao dịch ví điện tử, và định tuyến mỗi sự kiện tới đúng các thành phần cần nhận."
 minutes: 25
 scenes: 4
 prerequisites: ["lambda", "asg"]
@@ -37,140 +37,140 @@ import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
-  { href: "#s1", label: "1 · Hàng đợi chống flash sale" },
-  { href: "#s2", label: "2 · Đời một message" },
-  { href: "#s3", label: "3 · Đúng thứ tự: FIFO" },
-  { href: "#s4", label: "4 · Báo tin và điều phối" },
-  { href: "#challenge", label: "Thử thách" },
+  { href: "#s1", label: "1 · Hàng đợi hấp thụ tải đột biến" },
+  { href: "#s2", label: "2 · Vòng đời của message" },
+  { href: "#s3", label: "3 · Đảm bảo thứ tự: FIFO queue" },
+  { href: "#s4", label: "4 · Phân phối sự kiện và điều phối quy trình" },
+  { href: "#challenge", label: "Bài tập" },
 ]}>
-Lúc còn nhỏ, web ShopViet gọi thẳng mọi thứ: đặt đơn xong thì gọi thanh toán, gọi kho, gửi email, chờ từng bên trả lời. Giờ ShopViet chạy flash sale mỗi tuần và có cả chục dịch vụ. Một bên chậm là cả chuỗi chậm, một bên hỏng là đơn hỏng. Cách sửa: để các phần **gửi message cho nhau** thay vì gọi và chờ.
+Ở giai đoạn đầu, ứng dụng web của ShopViet gọi đồng bộ tới mọi thành phần: sau khi tạo đơn hàng, ứng dụng lần lượt gọi dịch vụ thanh toán, dịch vụ kho, dịch vụ email và chờ từng phản hồi. Hiện hệ thống tổ chức flash sale hằng tuần và gồm hàng chục dịch vụ; một thành phần chậm làm tăng độ trễ của toàn bộ chuỗi, một thành phần lỗi làm đơn hàng thất bại. Giải pháp là để các thành phần **giao tiếp bất đồng bộ qua message** thay vì gọi đồng bộ và chờ phản hồi.
 </Story>
 
-<Scene id="s1" label="Cảnh 1/4" title="Đặt hàng đợi giữa hai tầng" questions={["exam2_q47", "exam3_q39", "exam1_q55", "exam5_q26", "exam3_q54", "exam6_q52", "exam5_q60", "exam1_q33", "exam2_q14", "exam5_q32", "exam3_q7"]}>
+<Scene id="s1" label="Phần 1/4" title="Đặt hàng đợi giữa hai tầng xử lý" questions={["exam2_q47", "exam3_q39", "exam1_q55", "exam5_q26", "exam3_q54", "exam6_q52", "exam5_q60", "exam1_q33", "exam2_q14", "exam5_q32", "exam3_q7"]}>
 
-20h, flash sale mở. Web tier nhận đơn rất nhanh, còn tầng xử lý (thanh toán, trừ kho) thì chậm hơn nhiều. Chạy thử ba cách nối hai tầng này:
+Flash sale bắt đầu lúc 20h. Web tier tiếp nhận đơn hàng với tốc độ cao, trong khi tầng xử lý (thanh toán, trừ tồn kho) có thông lượng thấp hơn nhiều. Mô phỏng dưới đây so sánh ba phương án kết nối hai tầng này:
 
 <QueueBufferSim client:visible />
 
-**Amazon SQS** là hàng đợi do AWS quản lý. Bên gửi (producer) bỏ message vào và đi làm việc khác. Bên nhận (consumer) tự hỏi queue để lấy việc, làm nhanh hay chậm tuỳ sức. Tầng nhanh không phải chờ tầng chậm; đó là **decouple**.
+**Amazon SQS** là dịch vụ hàng đợi được AWS quản lý. Bên gửi (producer) đưa message vào queue và tiếp tục xử lý tác vụ khác; bên nhận (consumer) chủ động poll queue để lấy message và xử lý theo năng lực của mình. Tầng có thông lượng cao không phải chờ tầng có thông lượng thấp; mô hình này gọi là **decoupling**.
 
-Muốn worker tự tăng giảm theo lượng việc, đừng scale theo CPU: worker đọc queue lúc nào cũng bận như nhau. Đo **số message chờ trên mỗi instance** (`ApproximateNumberOfMessagesVisible` chia cho số instance), rồi dùng **target tracking** giữ con số đó quanh mức chấp nhận được.
+Để nhóm worker tự động co giãn theo khối lượng công việc, không nên scale theo CPU, vì worker đọc queue luôn có mức sử dụng CPU tương đương nhau. Chỉ số phù hợp là **backlog per instance** (`ApproximateNumberOfMessagesVisible` chia cho số instance), kết hợp **target tracking** để duy trì chỉ số này quanh giá trị chấp nhận được.
 
-Vài cách ShopViet nối queue vào hệ thống:
+Một số kiến trúc tích hợp queue vào hệ thống ShopViet:
 
-<RequirementPicker client:visible label="ShopViet dùng" items={[
-  { need: "Ảnh sản phẩm cần xử lý ngay khi người bán tải lên, rẻ, không có server",
+<RequirementPicker client:visible label="Kiến trúc áp dụng" items={[
+  { need: "Ảnh sản phẩm cần được xử lý ngay khi người bán tải lên, chi phí thấp, không quản lý máy chủ",
     answer: "S3 event → SQS → Lambda",
-    why: "S3 Event Notification bỏ một message vào queue cho mỗi ảnh mới. Lambda đọc queue theo batch, chỉ tính tiền lúc chạy. Queue giữ việc lại khi ảnh đổ về dồn dập." },
-  { need: "Form góp ý của khách thỉnh thoảng tăng vọt hàng nghìn lượt một giờ",
+    why: "S3 Event Notification gửi một message vào queue cho mỗi ảnh mới. Lambda đọc queue theo batch và chỉ tính phí trong thời gian thực thi. Queue lưu giữ tác vụ khi lượng ảnh tải lên tăng đột biến." },
+  { need: "Lượng phản hồi từ người dùng qua biểu mẫu góp ý có lúc tăng đột biến tới hàng nghìn lượt mỗi giờ",
     answer: "API Gateway → SQS → Lambda",
-    why: "API Gateway ghi thẳng vào SQS rồi trả lời khách ngay. Lambda xử lý dần (ví dụ phân tích cảm xúc bằng Amazon Comprehend) rồi lưu DynamoDB." },
-  { need: "Dữ liệu cảm biến kho, không muốn tự đặt capacity",
+    why: "API Gateway ghi trực tiếp vào SQS và phản hồi người dùng ngay lập tức. Lambda xử lý dần (ví dụ phân tích cảm xúc bằng Amazon Comprehend) và lưu kết quả vào DynamoDB." },
+  { need: "Dữ liệu cảm biến tại kho, không muốn tự cấp phát capacity",
     answer: "SQS standard → Lambda → DynamoDB",
-    why: "Cả ba đều tự scale theo lượng dữ liệu. Không có EC2 hay shard nào phải tự chỉnh." },
-  { need: "Hai bước: nhận đơn rất nhanh, đóng gói rất chậm, hai nhóm EC2 riêng",
-    answer: "Hai queue, mỗi nhóm scale theo queue của nó",
-    why: "Một queue giữa web và bước nhận, một queue giữa bước nhận và bước đóng gói. Mỗi Auto Scaling group theo dõi số message trong queue của mình. Máy bị tắt khi scale in cũng không làm mất đơn." },
-  { need: "Worker đọc queue cả ngày, lượng việc lên xuống thất thường",
-    answer: "Reserved Instances cho mức nền + Spot cho phần tăng",
-    why: "Phần tải luôn có thì mua Reserved Instances. Phần tăng đột biến dùng Spot trong Auto Scaling group: máy Spot bị thu hồi thì message tự quay lại queue (cảnh 2)." },
-  { need: "Server trong private subnet gọi SQS mà không đi ra internet",
+    why: "Cả ba dịch vụ tự động co giãn theo lưu lượng dữ liệu; không có EC2 instance hay shard nào cần điều chỉnh thủ công." },
+  { need: "Hai bước xử lý: tiếp nhận đơn rất nhanh, đóng gói rất chậm, chạy trên hai nhóm EC2 riêng biệt",
+    answer: "Hai queue, mỗi nhóm scale theo queue tương ứng",
+    why: "Một queue đặt giữa web tier và bước tiếp nhận, một queue đặt giữa bước tiếp nhận và bước đóng gói. Mỗi Auto Scaling group theo dõi số message trong queue của mình. Instance bị terminate khi scale in không làm mất đơn hàng." },
+  { need: "Worker đọc queue liên tục trong ngày, khối lượng công việc biến động không đều",
+    answer: "Reserved Instances cho mức tải nền + Spot cho phần tải tăng thêm",
+    why: "Phần tải thường trực sử dụng Reserved Instances. Phần tải đột biến sử dụng Spot Instances trong Auto Scaling group: khi Spot Instance bị thu hồi, message tự động hiển thị lại trong queue (Phần 2)." },
+  { need: "Máy chủ trong private subnet gọi SQS mà không đi qua internet",
     answer: "Interface VPC endpoint cho SQS",
-    why: "Endpoint chạy bằng AWS PrivateLink, có private IP trong subnet. Không cần internet gateway, NAT hay VPN." },
-  { need: "Database bị timeout giờ cao điểm, không muốn đổi database",
+    why: "Endpoint hoạt động dựa trên AWS PrivateLink và có địa chỉ private IP trong subnet; không cần internet gateway, NAT hay VPN." },
+  { need: "Database bị timeout vào giờ cao điểm, không muốn thay đổi database",
     answer: "SQS + worker Auto Scaling, RDS Proxy trước Aurora",
-    why: "Đơn vào queue để xử lý dần thay vì đập thẳng vào database. RDS Proxy gom và dùng lại kết nối nên Aurora không bị ngộp kết nối." },
+    why: "Đơn hàng được đưa vào queue để xử lý dần thay vì gửi trực tiếp tới database. RDS Proxy gộp và tái sử dụng kết nối nên Aurora không bị quá tải số lượng kết nối." },
 ]} />
 
-<Takeaway>Tầng nhanh và tầng chậm nối bằng SQS: không mất việc, mỗi bên chạy theo tốc độ của mình. Worker scale theo backlog per instance bằng target tracking. Từ private subnet: interface VPC endpoint.</Takeaway>
+<Takeaway>Kết nối tầng có thông lượng cao với tầng có thông lượng thấp bằng SQS: tác vụ không bị mất và mỗi tầng xử lý theo tốc độ riêng. Worker scale theo backlog per instance bằng target tracking. Truy cập SQS từ private subnet: interface VPC endpoint.</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Cảnh 2/4" title="Đời của một message" questions={["exam4_q46", "exam5_q44", "exam3_q34", "exam6_q37", "exam6_q32", "exam6_q16"]}>
+<Scene id="s2" label="Phần 2/4" title="Vòng đời của một message" questions={["exam4_q46", "exam5_q44", "exam3_q34", "exam6_q37", "exam6_q32", "exam6_q16"]}>
 
-Worker nhận một message thì message **chưa bị xoá**. Nó chỉ bị ẩn đi một lúc, gọi là **visibility timeout**. Worker làm xong phải tự gọi `DeleteMessage`. Nếu worker chết giữa chừng, message hiện lại cho worker khác làm. Mọi tính năng của SQS xoay quanh vòng đời này. Chọn từng chuyện của ShopViet và chạy thử:
+Khi worker nhận một message, message **chưa bị xoá** khỏi queue mà chỉ bị ẩn trong một khoảng thời gian gọi là **visibility timeout**. Sau khi xử lý xong, worker phải gọi `DeleteMessage`. Nếu worker gặp sự cố trong quá trình xử lý, message hiển thị trở lại để worker khác xử lý. Các tính năng của SQS đều xoay quanh vòng đời này. Chọn từng tình huống của ShopViet và chạy mô phỏng:
 
 <MessageLifeSim client:visible />
 
-Thêm một kiểu nữa: app hỏi phí ship và **chờ câu trả lời** (request-response). Tạo một queue thật cho mỗi lần hỏi thì tốn thời gian và tiền. **Temporary queue** (dùng Temporary Queue Client) tạo các queue ảo ngay trong app, gộp lên một queue SQS thật, và tự dọn khi xong.
+Một mô hình khác: ứng dụng gửi yêu cầu tính phí vận chuyển và **chờ phản hồi** (request-response). Việc tạo một queue thực cho mỗi yêu cầu tốn thời gian và chi phí. **Temporary queue** (thông qua Temporary Queue Client) tạo các virtual queue ngay trong ứng dụng, ghép chúng lên một queue SQS thực và tự động dọn dẹp khi hoàn tất.
 
-<Takeaway>Visibility timeout: ẩn message khi đang xử lý. Dead-letter queue: tách message lỗi nhiều lần. Long polling: bớt lần gọi rỗng, bớt tiền. Delay queue: hoãn message mới gửi. Ưu tiên: hai queue, đọc queue quan trọng trước. Request-response: temporary queue.</Takeaway>
+<Takeaway>Visibility timeout: ẩn message trong thời gian xử lý. Dead-letter queue: cô lập message xử lý lỗi nhiều lần. Long polling: giảm số lần nhận rỗng và giảm chi phí. Delay queue: trì hoãn việc phân phối message mới gửi. Ưu tiên xử lý: hai queue, đọc queue ưu tiên cao trước. Request-response: temporary queue.</Takeaway>
 
 </Scene>
 
-<Scene id="s3" label="Cảnh 3/4" title="Đúng thứ tự, đúng một lần: FIFO queue" questions={["exam1_q13", "exam1_q34", "exam3_q2", "exam2_q42"]}>
+<Scene id="s3" label="Phần 3/4" title="Đảm bảo thứ tự và xử lý đúng một lần: FIFO queue" questions={["exam1_q13", "exam1_q34", "exam3_q2", "exam2_q42"]}>
 
-Queue mặc định là **standard**: rất nhanh, nhưng một message có thể tới **hơn một lần** và **không chắc đúng thứ tự**. Với đơn hàng thì worker có thể tự kiểm tra trùng. Với ví điện tử của ShopViet thì không được: nạp trước, trả sau, mỗi lệnh đúng một lần. Thử ba cách:
+Loại queue mặc định là **standard**: thông lượng rất cao, nhưng một message có thể được phân phối **nhiều hơn một lần** và **không đảm bảo thứ tự**. Với đơn hàng, worker có thể tự kiểm tra trùng lặp. Với ví điện tử của ShopViet, điều này không được chấp nhận: lệnh nạp tiền phải được xử lý trước lệnh thanh toán, và mỗi lệnh chỉ được xử lý đúng một lần. Mô phỏng dưới đây so sánh ba phương án:
 
 <FifoSim client:visible />
 
-**FIFO queue** giữ đúng thứ tự và bỏ message trùng (theo deduplication ID trong 5 phút). Cái giá phải trả là giới hạn tốc độ. Khi chưa bật high throughput mode, FIFO queue nhận **300 lần gọi mỗi giây**; gom tối đa 10 message mỗi lần gọi thì được **3.000 message mỗi giây**. Kéo thử:
+**FIFO queue** đảm bảo thứ tự và loại bỏ message trùng lặp (theo deduplication ID trong khoảng 5 phút). Đổi lại, thông lượng bị giới hạn. Khi chưa bật high throughput mode, FIFO queue hỗ trợ **300 lệnh gọi API mỗi giây**; với batch tối đa 10 message mỗi lệnh gọi, thông lượng đạt **3.000 message mỗi giây**. Điều chỉnh để kiểm tra:
 
 <FifoBatchCalc client:visible />
 
-Chuyển một queue standard đang chạy sang FIFO? Không đổi được. Phải **tạo queue FIFO mới**, tên kết thúc bằng `.fifo`, rồi chuyển producer và consumer sang.
+Một queue standard đang vận hành không thể chuyển đổi sang FIFO. Cần **tạo queue FIFO mới** với tên kết thúc bằng `.fifo`, sau đó chuyển producer và consumer sang queue mới.
 
-<Takeaway>Cần đúng thứ tự và không trùng: FIFO queue (tên có .fifo, tạo mới chứ không đổi từ standard). Song song mà vẫn đúng thứ tự trong từng nhóm: Message Group ID. Không high throughput: 300 lần gọi/s, batch 10 thì 3.000 message/s.</Takeaway>
+<Takeaway>Yêu cầu đúng thứ tự và không trùng lặp: FIFO queue (tên kết thúc bằng .fifo, phải tạo mới, không chuyển đổi từ standard). Xử lý song song nhưng vẫn giữ thứ tự trong từng nhóm: Message Group ID. Không bật high throughput mode: 300 lệnh gọi/s; với batch 10 message: 3.000 message/s.</Takeaway>
 
 </Scene>
 
-<Scene id="s4" label="Cảnh 4/4" title="Báo cho nhiều nơi, điều phối nhiều bước" questions={["exam4_q35", "exam3_q30", "exam2_q27", "exam6_q55", "exam1_q15", "exam4_q51", "exam6_q61", "exam2_q1", "exam2_q9", "exam1_q61", "exam1_q50", "exam5_q17"]}>
+<Scene id="s4" label="Phần 4/4" title="Phân phối sự kiện tới nhiều đích và điều phối quy trình nhiều bước" questions={["exam4_q35", "exam3_q30", "exam2_q27", "exam6_q55", "exam1_q15", "exam4_q51", "exam6_q61", "exam2_q1", "exam2_q9", "exam1_q61", "exam1_q50", "exam5_q17"]}>
 
-Queue là một-gửi-một-nhận. Nhiều khi ShopViet cần thứ khác: một sự kiện mà nhiều bên cần biết, sự kiện tới từ phần mềm bên ngoài, một việc chạy theo giờ, một quy trình nhiều bước, hay một app cũ nói giao thức riêng. Chọn tình huống, bật công tắc để so sánh:
+Queue hoạt động theo mô hình một bên gửi, một bên nhận. ShopViet còn có các nhu cầu khác: một sự kiện cần thông báo tới nhiều thành phần, sự kiện phát sinh từ phần mềm bên ngoài, tác vụ chạy theo lịch, quy trình nhiều bước, hoặc ứng dụng cũ sử dụng giao thức riêng. Chọn tình huống và thay đổi cấu hình để so sánh:
 
 <EventRouterSim client:visible />
 
-Mấy điều ShopViet gặp thêm khi chạy thật:
+Một số vấn đề ShopViet gặp phải khi vận hành thực tế:
 
-- **SNS gọi Lambda** để đẩy thông báo: mùa sale, lượng gửi tăng gấp 50 thì một phần thông báo không tới. SNS không nghẽn, mà Lambda chạm **concurrency quota** của account trong Region. Xin tăng quota (bài Lambda).
-- Có ai gọi API trái phép hàng loạt? Đưa log CloudTrail vào CloudWatch Logs, tạo **metric filter** đếm mã lỗi, đặt **alarm** theo metric đó, alarm gửi tới **SNS topic** của đội bảo mật.
-- Topic SNS, queue SQS có resource policy. Muốn biết cái nào đang mở cho account ngoài: **IAM Access Analyzer** đọc các policy đó và chỉ ra.
-- Báo cáo kiểm toán chạy bằng Step Functions, mỗi năm đọc dữ liệu hai lần: state machine đã có retry, nên dữ liệu để **S3 Standard-IA** là đủ (vẫn đọc tức thì, rẻ hơn Standard).
+- **SNS kích hoạt Lambda** để gửi thông báo: trong mùa khuyến mãi, khi lượng gửi tăng gấp 50 lần, một phần thông báo không được phân phối. Nguyên nhân không nằm ở SNS mà do Lambda chạm **concurrency quota** của account trong Region. Giải pháp là yêu cầu tăng quota (xem bài Lambda).
+- Phát hiện các lệnh gọi API trái phép hàng loạt: chuyển log CloudTrail vào CloudWatch Logs, tạo **metric filter** đếm mã lỗi, đặt **alarm** trên metric đó, và cấu hình alarm gửi thông báo tới **SNS topic** của đội bảo mật.
+- SNS topic và SQS queue đều có resource policy. Để xác định tài nguyên nào đang cho phép account bên ngoài truy cập, **IAM Access Analyzer** phân tích các policy này và báo cáo kết quả.
+- Báo cáo kiểm toán chạy bằng Step Functions và đọc dữ liệu hai lần mỗi năm: do state machine đã có cơ chế retry, lưu dữ liệu ở **S3 Standard-IA** là đủ (vẫn truy xuất tức thì, chi phí thấp hơn S3 Standard).
 
-<Takeaway>Một sự kiện, nhiều nơi nhận: SNS fan-out ra nhiều SQS queue. Sự kiện từ SaaS hoặc dịch vụ AWS, lọc theo nội dung: EventBridge. Chạy theo lịch: EventBridge (Lambda cho việc ngắn, Fargate cho việc dài). Nhiều bước có retry: Step Functions. App cũ dùng AMQP, MQTT, RabbitMQ: Amazon MQ.</Takeaway>
+<Takeaway>Một sự kiện, nhiều đích nhận: SNS fan-out tới nhiều SQS queue. Sự kiện từ SaaS hoặc dịch vụ AWS, lọc theo nội dung: EventBridge. Tác vụ theo lịch: EventBridge (Lambda cho tác vụ ngắn, Fargate cho tác vụ dài). Quy trình nhiều bước có retry: Step Functions. Ứng dụng cũ sử dụng AMQP, MQTT, RabbitMQ: Amazon MQ.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="ShopViet chọn gì?" questions={["exam5_q44", "exam3_q34", "exam2_q42", "exam4_q35", "exam3_q30", "exam6_q61"]}>
+<Scene id="challenge" label="Bài tập" title="Phân loại tính năng theo dịch vụ" questions={["exam5_q44", "exam3_q34", "exam2_q42", "exam4_q35", "exam3_q30", "exam6_q61"]}>
 
-Xếp từng tính năng vào dịch vụ có nó. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
+Phân loại từng tính năng vào dịch vụ cung cấp tính năng đó. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
 <SortGame client:visible
   bins={[
-    { id: "sqs", title: "Amazon SQS", sub: "Hàng đợi", hint: "Gợi ý: tính năng này nói về cách message chờ và được lấy ra." },
-    { id: "sns", title: "Amazon SNS", sub: "Pub/sub", hint: "Gợi ý: tính năng này đẩy một tin tới nhiều nơi cùng lúc." },
-    { id: "eb", title: "Amazon EventBridge", sub: "Event bus", hint: "Gợi ý: tính năng này nói về sự kiện, mẫu lọc hoặc lịch chạy." },
+    { id: "sqs", title: "Amazon SQS", sub: "Hàng đợi", hint: "Gợi ý: tính năng liên quan tới cách message được lưu giữ và lấy ra khỏi queue." },
+    { id: "sns", title: "Amazon SNS", sub: "Pub/sub", hint: "Gợi ý: tính năng phân phối một message tới nhiều đích đồng thời." },
+    { id: "eb", title: "Amazon EventBridge", sub: "Event bus", hint: "Gợi ý: tính năng liên quan tới sự kiện, event pattern hoặc lịch thực thi." },
   ]}
   cards={[
     ["Visibility timeout", "sqs"], ["Dead-letter queue", "sqs"], ["Long polling", "sqs"], ["Delay queue", "sqs"], ["Message Group ID", "sqs"],
-    ["Topic với nhiều subscription", "sns"], ["Fan-out ra nhiều queue", "sns"], ["Nhận alarm của CloudWatch", "sns"],
-    ["Partner event source (SaaS)", "eb"], ["Rule lọc theo mẫu JSON", "eb"], ["Scheduler chạy theo cron", "eb"],
+    ["Topic với nhiều subscription", "sns"], ["Fan-out tới nhiều queue", "sns"], ["Nhận thông báo từ CloudWatch alarm", "sns"],
+    ["Partner event source (SaaS)", "eb"], ["Rule lọc theo event pattern JSON", "eb"], ["Scheduler chạy theo biểu thức cron", "eb"],
   ]}
 />
 
-Nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "Vài đơn có dữ liệu hỏng, worker lần nào cũng lỗi và đơn cứ quay lại queue. ShopViet muốn tách chúng ra để xem sau.",
-    opts: ["Tăng visibility timeout", "Gắn dead-letter queue với maxReceiveCount", "Bật long polling"],
+  { q: "Một số đơn hàng chứa dữ liệu lỗi; worker xử lý thất bại ở mọi lần và message liên tục quay lại queue. Yêu cầu: tách các message này ra để phân tích sau. Cấu hình nào đáp ứng yêu cầu?",
+    opts: ["Tăng visibility timeout", "Cấu hình dead-letter queue với maxReceiveCount", "Bật long polling"],
     a: 1,
-    why: "Message bị nhận quá maxReceiveCount lần mà chưa bị xoá sẽ được chuyển sang DLQ." },
-  { q: "Hoá đơn SQS cao vì worker hỏi queue liên tục, phần lớn nhận về rỗng. Đổi gì?",
-    opts: ["Long polling (WaitTimeSeconds tới 20)", "Delay queue", "Chuyển sang FIFO queue"],
+    why: "Message được nhận vượt quá maxReceiveCount lần mà chưa bị xoá sẽ được chuyển sang DLQ." },
+  { q: "Chi phí SQS cao do worker poll queue liên tục và phần lớn lệnh nhận trả về rỗng. Cần thay đổi cấu hình nào?",
+    opts: ["Long polling (WaitTimeSeconds tối đa 20)", "Delay queue", "Chuyển sang FIFO queue"],
     a: 0,
-    why: "Long polling chờ tới khi có message mới trả lời, nên bớt hẳn số request rỗng phải trả tiền." },
-  { q: "Ví ShopViet: lệnh của mỗi khách phải đúng thứ tự, nhưng các khách khác nhau nên chạy song song.",
-    opts: ["Standard queue, nhiều consumer", "FIFO queue, Message Group ID = mã khách", "FIFO queue, một consumer"],
+    why: "Với long polling, SQS chỉ phản hồi khi có message hoặc hết thời gian chờ, do đó giảm đáng kể số request rỗng bị tính phí." },
+  { q: "Ví điện tử ShopViet: các lệnh của cùng một người dùng phải được xử lý đúng thứ tự, trong khi lệnh của các người dùng khác nhau cần được xử lý song song. Phương án nào phù hợp?",
+    opts: ["Standard queue, nhiều consumer", "FIFO queue, Message Group ID = mã người dùng", "FIFO queue, một consumer"],
     a: 1,
-    why: "Trong một message group, FIFO giữ đúng thứ tự; các group khác nhau được giao song song." },
-  { q: "Phần mềm CRM (SaaS) của ShopViet cần báo cho vài dịch vụ nội bộ mỗi khi có khách mới, ít code nhất.",
+    why: "Trong cùng một message group, FIFO queue đảm bảo thứ tự; các group khác nhau được phân phối song song." },
+  { q: "Phần mềm CRM (SaaS) của ShopViet cần thông báo tới một số dịch vụ nội bộ mỗi khi có khách hàng mới, với lượng mã nguồn tối thiểu. Dịch vụ nào phù hợp?",
     opts: ["Amazon EventBridge", "Một SQS queue", "Elastic Load Balancing"],
     a: 0,
-    why: "EventBridge nhận sự kiện trực tiếp từ đối tác SaaS và dùng rule để gửi tới nhiều target." },
-  { q: "Đội vận hành có một cụm RabbitMQ tự dựng hay trục trặc, muốn lên AWS mà không viết lại app.",
+    why: "EventBridge nhận sự kiện trực tiếp từ đối tác SaaS và sử dụng rule để định tuyến tới nhiều target." },
+  { q: "Đội vận hành quản lý một cụm RabbitMQ tự triển khai thường xuyên gặp sự cố và cần chuyển lên AWS mà không viết lại ứng dụng. Dịch vụ nào phù hợp?",
     opts: ["Amazon SQS FIFO", "Amazon SNS", "Amazon MQ"],
     a: 2,
-    why: "Amazon MQ chạy broker RabbitMQ (hoặc ActiveMQ) do AWS quản lý; app giữ nguyên giao thức." },
+    why: "Amazon MQ vận hành broker RabbitMQ (hoặc ActiveMQ) do AWS quản lý; ứng dụng giữ nguyên giao thức hiện tại." },
 ]} />
 
 </Scene>

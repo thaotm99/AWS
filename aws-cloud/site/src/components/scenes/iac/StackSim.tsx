@@ -35,7 +35,7 @@ const RDS_TEMPLATE: Scenario["template"] = [
   { line: "    Type: String", },
   { line: "    AllowedValues: [db.t3.medium, db.r6g.large]", mark: "key" },
   { line: "Resources:" },
-  { line: "  DbSecurityGroup:  # chỉ nhận 5432 từ sg-app" },
+  { line: "  DbSecurityGroup:  # chỉ cho phép 5432 từ sg-app" },
   { line: "  DbSubnetGroup:    # hai private subnet, hai AZ" },
   { line: "  Database:" },
   { line: "    Type: AWS::RDS::DBInstance" },
@@ -57,7 +57,7 @@ const DB_RES: Res[] = [
 
 const SCENARIOS: Scenario[] = [
   {
-    name: "Tạo database đúng chuẩn",
+    name: "Tạo database theo tiêu chuẩn",
     action: "Create stack",
     stack: "orders-db",
     template: RDS_TEMPLATE,
@@ -68,14 +68,14 @@ const SCENARIOS: Scenario[] = [
       { res: "DbSecurityGroup", status: "done", text: "CREATE_COMPLETE" },
       { res: "DbSubnetGroup", status: "progress", text: "CREATE_IN_PROGRESS" },
       { res: "DbSubnetGroup", status: "done", text: "CREATE_COMPLETE" },
-      { res: "Database", status: "progress", text: "CREATE_IN_PROGRESS", reason: "Ref tới security group và subnet group, nên chờ hai cái đó xong trước" },
+      { res: "Database", status: "progress", text: "CREATE_IN_PROGRESS", reason: "Ref tới security group và subnet group, do đó chờ hai tài nguyên này được tạo xong" },
       { res: "Database", status: "done", text: "CREATE_COMPLETE" },
     ],
     ok: true,
-    result: "Ai tạo database cũng ra cùng một cấu hình: Multi-AZ, mã hoá, backup 7 ngày, không xoá nhầm được. Người mới chỉ chọn cỡ máy trong danh sách cho phép. Template nằm trong Git, review như code.",
+    result: "Mọi database được tạo đều có cùng cấu hình: Multi-AZ, mã hoá, backup 7 ngày, có bảo vệ chống xoá nhầm. Nhân sự mới chỉ chọn instance class trong danh sách cho phép. Template được lưu trong Git và review như mã nguồn.",
   },
   {
-    name: "Đổi ổ io1 sang gp2 cho rẻ",
+    name: "Đổi volume io1 sang gp2 để giảm chi phí",
     action: "Update stack",
     stack: "report-server",
     template: [
@@ -95,19 +95,19 @@ const SCENARIOS: Scenario[] = [
       { id: "DataVolume", type: "AWS::EC2::Volume" },
     ],
     start: "done",
-    changeSet: "Change set: **Modify** `DataVolume` (VolumeType, Iops) · Replacement: **False**. `ReportServer` không đổi.",
+    changeSet: "Change set: **Modify** `DataVolume` (VolumeType, Iops) · Replacement: **False**. `ReportServer` không thay đổi.",
     events: [
-      { res: "DataVolume", status: "updating", text: "UPDATE_IN_PROGRESS", reason: "Elastic Volumes đổi loại ổ khi volume vẫn đang gắn" },
+      { res: "DataVolume", status: "updating", text: "UPDATE_IN_PROGRESS", reason: "Elastic Volumes thay đổi loại volume trong khi volume vẫn đang được gắn" },
       { res: "DataVolume", status: "done", text: "UPDATE_COMPLETE" },
     ],
     ok: true,
-    result: "Ổ io1 chiếm 90% chi phí mà CloudWatch cho thấy chỉ thỉnh thoảng mới có I/O cao. gp2 tích burst credit cho những lúc đó. Sửa trong template rồi update stack, không sửa tay, để template vẫn đúng với thực tế. Bản thân CloudFormation không tính phí, chỉ tính tài nguyên nó tạo.",
+    result: "Volume io1 chiếm 90% chi phí trong khi CloudWatch cho thấy I/O chỉ tăng cao không thường xuyên. gp2 tích luỹ burst credit cho các thời điểm đó. Thay đổi được thực hiện trong template và áp dụng qua update stack, không chỉnh sửa thủ công, để template luôn phản ánh đúng hạ tầng thực tế. Bản thân CloudFormation không tính phí; chỉ tài nguyên được tạo mới bị tính phí.",
   },
   {
-    name: "Lỗi giữa chừng",
+    name: "Lỗi trong quá trình tạo",
     action: "Create stack",
     stack: "orders-db-test",
-    template: RDS_TEMPLATE.map((l) => (l.line.includes("DBInstanceClass") ? { line: "      DBInstanceClass: db.x9.huge  # gõ nhầm", mark: "bad" as const } : l)),
+    template: RDS_TEMPLATE.map((l) => (l.line.includes("DBInstanceClass") ? { line: "      DBInstanceClass: db.x9.huge  # nhập sai", mark: "bad" as const } : l)),
     resources: DB_RES,
     start: "none",
     events: [
@@ -123,7 +123,7 @@ const SCENARIOS: Scenario[] = [
       { res: "DbSecurityGroup", status: "deleted", text: "DELETE_COMPLETE" },
     ],
     ok: false,
-    result: "Stack về ROLLBACK_COMPLETE: CloudFormation xoá những gì đã tạo, không để lại nửa hệ thống. Sửa template rồi tạo lại.",
+    result: "Stack chuyển về ROLLBACK_COMPLETE: CloudFormation xoá các tài nguyên đã tạo, không để lại hệ thống ở trạng thái dở dang. Cần sửa template và tạo lại.",
   },
 ];
 
@@ -131,7 +131,7 @@ const STATUS_CLASS: Record<Status, string> = {
   none: "", progress: "progress", done: "done", failed: "failed", deleting: "progress", deleted: "deleted", updating: "progress",
 };
 const STATUS_TEXT: Record<Status, string> = {
-  none: "chưa có", progress: "đang tạo", done: "xong", failed: "lỗi", deleting: "đang xoá", deleted: "đã xoá", updating: "đang cập nhật",
+  none: "chưa tạo", progress: "đang tạo", done: "hoàn tất", failed: "lỗi", deleting: "đang xoá", deleted: "đã xoá", updating: "đang cập nhật",
 };
 const TAG: Record<Status, string> = {
   none: "info", progress: "info", done: "hit", failed: "bad", deleting: "miss", deleted: "miss", updating: "info",
@@ -202,7 +202,7 @@ export default function StackSim() {
         ))}
       </pre>
       <div className="svg-wrap">
-        <svg viewBox="0 0 820 150" role="img" aria-label={`Các resource trong stack ${sc.stack} và trạng thái của từng cái`}>
+        <svg viewBox="0 0 820 150" role="img" aria-label={`Các resource trong stack ${sc.stack} và trạng thái của từng resource`}>
           <rect className="sks-stack" x={10} y={10} width={800} height={130} rx={12} />
           <text className="sks-stack-label" x={24} y={30}>Stack {sc.stack}</text>
           {sc.resources.map((r, i) => {
@@ -222,7 +222,7 @@ export default function StackSim() {
       <div className="readout" aria-live="polite">
         {sc.changeSet && <p className="sks-change">{rich(sc.changeSet)}</p>}
         {shown < 0 ? (
-          <p className="sks-hint">Bấm <b>{sc.action}</b> để xem stack events lần lượt.</p>
+          <p className="sks-hint">Chọn <b>{sc.action}</b> để xem lần lượt các stack event.</p>
         ) : (
           <ul className="log">
             {sc.events.slice(0, shown + 1).map((e, i) => (
