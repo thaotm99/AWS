@@ -67,7 +67,7 @@ export default function TtlSim() {
         </div>
         <p style={{ margin: "8px 0 0" }}>
           Record đã đổi ngay trên Route 53, nhưng mỗi client vẫn dùng câu trả lời cũ đang nằm trong cache cho tới khi hết TTL.
-          Vì vậy khi đề kể "đã cập nhật DNS mà người dùng vẫn vào load balancer cũ", nguyên nhân là TTL vẫn còn hiệu lực.
+          Vì vậy khi đã cập nhật DNS mà khách vẫn vào load balancer cũ, nguyên nhân là TTL của câu trả lời cũ vẫn còn hiệu lực.
           TTL càng dài, thời gian chuyển càng lâu.
         </p>
       </div>

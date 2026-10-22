@@ -20,7 +20,7 @@ const NOTES: Record<Step, ReactNode> = {
   1: <>Snapshot chụp lại ổ đĩa EBS của <code>web-1</code>. Snapshot là tài nguyên cấp Region: nó chỉ có mặt ở Singapore.</>,
   2: <>AMI là "khuôn" để tạo server, bên dưới nó trỏ tới snapshot. AMI cũng là tài nguyên cấp Region.</>,
   3: <>Copy AMI sang Tokyo. AWS <b>tự tạo thêm một snapshot ở Tokyo</b>, vì AMI luôn cần snapshot nằm cùng Region với nó.</>,
-  4: <>Launch <code>web-1b</code> từ AMI ở Tokyo. Region Tokyo giờ có <b>1 EC2, 1 AMI và 1 snapshot</b>. Đây chính là dạng câu đề hay hỏi.</>,
+  4: <>Launch <code>web-1b</code> từ AMI ở Tokyo. Region Tokyo giờ có <b>1 EC2, 1 AMI và 1 snapshot</b>.</>,
 };
 
 export default function AmiCopySim() {

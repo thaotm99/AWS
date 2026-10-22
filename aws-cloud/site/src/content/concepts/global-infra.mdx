@@ -1,6 +1,6 @@
 ---
 title: "Global Infrastructure: Region, Availability Zone và Edge location"
-lede: "Bài nền cho SAA-C03. Chỉ gồm những gì 6 đề luyện thi thực sự hỏi về Region, AZ và Edge: tài nguyên nào bị giới hạn trong Region, thiết kế chịu lỗi AZ, chọn CloudFront hay Global Accelerator, và dữ liệu đi đâu thì tốn tiền."
+lede: "ShopViet bắt đầu có khách ở nhiều nước. Bài này giúp bạn quyết định đặt tài nguyên ở đâu: thứ gì nằm gọn trong một Region, làm sao để một AZ sập không kéo cả shop sập, khi nào dùng CloudFront hay Global Accelerator, và dữ liệu chạy đường nào thì tốn tiền."
 minutes: 20
 scenes: 6
 prerequisites: []
@@ -21,13 +21,13 @@ docs:
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
 import Story from "../../components/lessons/global-infra/Story.astro";
-import Confusions from "../../components/lessons/global-infra/Confusions.astro";
 import AmiCopySim from "../../components/scenes/AmiCopySim.tsx";
 import ScopeExplorer from "../../components/scenes/ScopeExplorer.tsx";
 import AzFailureSim from "../../components/scenes/AzFailureSim.tsx";
 import EdgeCacheDemo from "../../components/scenes/EdgeCacheDemo.tsx";
 import GlobalAcceleratorSim from "../../components/scenes/GlobalAcceleratorSim.tsx";
-import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
+import EdgeChoiceSim from "../../components/scenes/global-infra/EdgeChoiceSim.tsx";
+import GlobalMythsSim from "../../components/scenes/global-infra/GlobalMythsSim.tsx";
 import CostPatterns from "../../components/scenes/CostPatterns.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
@@ -41,7 +41,7 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s6", label: "6 · Phí data transfer" },
   { href: "#challenge", label: "Thử thách" },
 ]}>
-Bạn là kỹ sư của **ShopViet**, một shop online có khách ở nhiều nước. Mỗi cảnh dưới đây là một quyết định kiến trúc, và mỗi quyết định đều là một dạng câu hỏi có trong đề SAA-C03 (mã câu ghi ở đầu cảnh).
+Bạn là kỹ sư của **ShopViet**, một shop online đang có khách ở nhiều nước. Mỗi cảnh dưới đây là một quyết định bạn phải đưa ra khi dựng hạ tầng. Thử từng cách trên mô phỏng, xem cách nào chạy và cách nào hỏng.
 </Story>
 
 <Scene id="s1" label="Cảnh 1/6" title="Region là ranh giới: tài nguyên không tự sang Region khác" questions={["exam1_q41", "exam4_q5"]}>
@@ -50,7 +50,7 @@ Bạn là kỹ sư của **ShopViet**, một shop online có khách ở nhiều 
 
 <AmiCopySim client:visible />
 
-<Takeaway>AMI và snapshot là tài nguyên cấp Region. Muốn dùng ở Region khác thì phải copy, và khi copy AMI, AWS tự tạo snapshot đi kèm ở Region đích. Chiến lược DR hay gặp trong đề: copy sẵn AMI sang các Region cần khôi phục.</Takeaway>
+<Takeaway>AMI và snapshot là tài nguyên cấp Region. Muốn dùng ở Region khác thì phải copy, và khi copy AMI, AWS tự tạo snapshot đi kèm ở Region đích. Muốn khôi phục nhanh ở Region khác thì copy sẵn AMI sang Region đó.</Takeaway>
 
 </Scene>
 
@@ -70,7 +70,7 @@ ShopViet có 2 web server EC2 phía sau một Load Balancer. Mỗi chấm là m�
 
 <AzFailureSim client:visible />
 
-<Takeaway>Đáp án high availability chuẩn trong đề: EC2 trong Auto Scaling group trải ít nhất 2 AZ, đứng sau Load Balancer. Hai server cùng một AZ vẫn sập cùng nhau.</Takeaway>
+<Takeaway>Cách bố trí chịu lỗi chuẩn: EC2 trong Auto Scaling group trải ít nhất 2 AZ, đứng sau Load Balancer. Hai server cùng một AZ vẫn sập cùng nhau.</Takeaway>
 
 </Scene>
 
@@ -80,48 +80,29 @@ ShopViet có 2 web server EC2 phía sau một Load Balancer. Mỗi chấm là m�
 
 <EdgeCacheDemo client:visible />
 
-Chiều ngược lại, khi khách ở xa **upload** file lớn vào S3, đề chọn **S3 Transfer Acceleration**: dữ liệu vào edge location gần người upload rồi chạy trên mạng AWS tới bucket, thường đi kèm **multipart upload**.
+Chiều ngược lại, khi nhà cung cấp ở xa **upload** file lớn vào S3, dùng **S3 Transfer Acceleration**: dữ liệu vào edge location gần người upload rồi chạy trên mạng AWS tới bucket, thường đi kèm **multipart upload**.
 
 <Takeaway>Người dùng ở xa xem nội dung chậm: CloudFront (kể cả khi backend phải ở lại nơi cũ). Upload file lớn vào S3 chậm: S3 Transfer Acceleration và multipart upload. Cần cả hai chiều: dùng cả hai.</Takeaway>
 
 </Scene>
 
-<Scene id="s5" label="Cảnh 5/6" title="Global Accelerator: IP tĩnh, TCP/UDP và failover giữa Region" questions={["exam1_q59", "exam2_q7", "exam2_q22", "exam3_q8", "exam3_q45", "exam4_q58", "exam5_q4", "exam5_q30", "exam5_q55"]}>
+<Scene id="s5" label="Cảnh 5/6" title="Global Accelerator: IP tĩnh, TCP/UDP và failover giữa Region" questions={["exam1_q59", "exam2_q7", "exam2_q22", "exam3_q8", "exam3_q45", "exam4_q58", "exam5_q4", "exam5_q30", "exam5_q55", "exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
 
-**AWS Global Accelerator** cũng dùng edge location nhưng không cache. Nó cấp **2 IP tĩnh anycast**, nhận traffic TCP/UDP ở edge gần khách nhất rồi đưa qua mạng riêng của AWS tới endpoint khỏe gần nhất (ALB, NLB, EC2) ở một hoặc nhiều Region. Đề hỏi dịch vụ này 9 lần trong 6 đề. So sánh với cách chỉ dùng DNS:
+**AWS Global Accelerator** cũng dùng edge location nhưng không cache. Nó cấp **2 IP tĩnh anycast**, nhận traffic TCP/UDP ở edge gần khách nhất rồi đưa qua mạng riêng của AWS tới endpoint khỏe gần nhất (ALB, NLB, EC2) ở một hoặc nhiều Region. Trước hết, so sánh với cách chỉ dùng DNS khi một Region sập:
 
 <GlobalAcceleratorSim client:visible />
 
-Khi đọc đề, tìm từ khóa trong yêu cầu để chọn dịch vụ:
+Ba dịch vụ cùng dùng edge location nhưng giải ba bài toán khác nhau. Chọn một tình huống của ShopViet, thử lần lượt từng dịch vụ rồi bấm **Gửi traffic** để xem dịch vụ nào làm được.
 
-<RequirementPicker client:visible items={[
-  { need: "Giao thức UDP hoặc TCP không phải HTTP (game, IoT, VoIP)", answer: "Global Accelerator",
-    why: "CloudFront chỉ phục vụ HTTP/HTTPS. Global Accelerator nhận cả TCP và UDP rồi đưa vào mạng AWS.",
-    refs: ["exam1_q59", "exam3_q8", "exam5_q4"] },
-  { need: "Cần IP tĩnh để khách hàng whitelist trên firewall", answer: "Global Accelerator",
-    why: "Global Accelerator cấp 2 IP tĩnh anycast đứng trước các ALB/NLB ở nhiều Region. IP của ALB thì thay đổi.",
-    refs: ["exam4_q58", "exam3_q45"] },
-  { need: "Failover nhanh sang Region khác, không chờ DNS cache", answer: "Global Accelerator",
-    why: "Global Accelerator tự chuyển traffic sang endpoint khỏe ở Region khác mà client không phải phân giải DNS lại.",
-    refs: ["exam1_q59", "exam5_q55", "exam2_q22"] },
-  { need: "API HTTPS ở một Region, khách khắp thế giới gọi bị chậm", answer: "Global Accelerator",
-    why: "Khách vào mạng AWS ở edge gần nhất thay vì đi đường dài trên internet công cộng tới Region.",
-    refs: ["exam5_q30", "exam2_q7"] },
-  { need: "Tăng tốc tải trang, ảnh, video cho người dùng ở xa", answer: "CloudFront",
-    why: "CloudFront cache nội dung tại edge location. Origin có thể là S3, ALB, hoặc server on-premises.",
-    refs: ["exam1_q62", "exam6_q5", "exam6_q58"] },
-  { need: "Upload file lớn vào S3 từ nhiều nơi trên thế giới", answer: "S3 Transfer Acceleration",
-    why: "Dữ liệu đi vào edge location gần người upload rồi chạy trên mạng AWS tới bucket. Thường đi kèm multipart upload.",
-    refs: ["exam1_q18", "exam3_q37", "exam6_q58"] },
-]} />
+<EdgeChoiceSim client:visible />
 
-<Takeaway>Thấy UDP, IP tĩnh để whitelist, failover nhanh giữa Region, hay DNS cache trên điện thoại: chọn Global Accelerator. Thấy cache nội dung HTTP: chọn CloudFront.</Takeaway>
+<Takeaway>Cần UDP, IP tĩnh để đối tác whitelist, hay chuyển Region mà không chờ DNS: Global Accelerator. Cần cache trang, ảnh, video: CloudFront. Cần upload file lớn vào S3: S3 Transfer Acceleration.</Takeaway>
 
 </Scene>
 
 <Scene id="s6" label="Cảnh 6/6" title="Dữ liệu đi đâu thì tốn tiền?" questions={["exam2_q62", "exam3_q47", "exam5_q2"]}>
 
-Đề không hỏi bảng giá, mà hỏi **phương án nào rẻ hơn**. Ba dạng dưới đây đều có trong đề. Chọn dạng đề, rồi so sánh hai phương án.
+Hoá đơn AWS của ShopViet tăng thường không phải vì giá đắt, mà vì dữ liệu chạy sai đường. Dưới đây là ba chỗ hay tốn tiền. Chọn một tình huống, rồi so sánh hai cách làm.
 
 <CostPatterns client:visible />
 
@@ -129,11 +110,17 @@ Khi đọc đề, tìm từ khóa trong yêu cầu để chọn dịch vụ:
 
 </Scene>
 
-<Scene id="confuse" label="Dễ nhầm" title="Bốn chỗ đáp án sai hay gài" questions={["exam1_q42", "exam3_q62", "exam6_q58", "exam3_q22"]}>
-  <Confusions />
+<Scene id="confuse" label="Dễ nhầm" title="Bốn chỗ dễ làm sai khi mở rộng ra nhiều nơi" questions={["exam1_q42", "exam3_q62", "exam6_q58", "exam3_q22"]}>
+
+Bốn việc nghe thì đơn giản nhưng rất dễ làm sai khi ShopViet mở rộng. Chọn tình huống, thử cách làm quen tay trước, rồi so với cách đúng.
+
+<GlobalMythsSim client:visible />
+
+<Takeaway>EFS dùng được từ Region khác qua inter-region VPC peering, không cần copy. NAT gateway đặt ở public subnet; egress-only IGW chỉ cho IPv6. Muốn cùng AZ với account khác: dùng AZ ID. Tăng tốc cả xem lẫn upload: CloudFront và S3 Transfer Acceleration cùng lúc.</Takeaway>
+
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="Xếp tài nguyên vào đúng phạm vi">
+<Scene id="challenge" label="Thử thách" title="Xếp tài nguyên vào đúng phạm vi" questions={["exam1_q41", "exam1_q59", "exam2_q62", "exam3_q47", "exam3_q62"]}>
 
 Kéo thẻ vào đúng ô. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
 
@@ -150,28 +137,28 @@ Kéo thẻ vào đúng ô. Trên điện thoại: chạm vào thẻ rồi chạm
   ]}
 />
 
-Các câu dưới đây viết lại theo đúng dạng câu trong đề (mã câu hiện sau khi trả lời).
+Kiểm tra nhanh: nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
 
 <Quiz client:visible items={[
-  { q: "Bạn tạo AMI từ snapshot của một EC2 ở Region A, copy AMI sang Region B, rồi launch một EC2 từ AMI đó ở Region B. Lúc này Region B có những gì?",
+  { q: "ShopViet tạo AMI từ snapshot của web server ở Singapore, copy AMI sang Tokyo, rồi launch một EC2 từ AMI đó ở Tokyo. Lúc này Tokyo có những gì?",
     opts: ["1 EC2 và 1 AMI", "1 EC2, 1 AMI và 1 snapshot", "1 EC2 và 1 snapshot"],
-    a: 1, ref: "exam1_q41",
-    why: "Copy AMI sang Region B sẽ tự tạo snapshot đi kèm ở Region B, cộng với AMI và EC2 vừa launch." },
-  { q: "Game online dùng UDP, người chơi ở nhiều châu lục, cần failover nhanh khi một Region sập. Chọn dịch vụ nào?",
+    a: 1,
+    why: "Copy AMI sang Tokyo tự tạo snapshot đi kèm ở Tokyo, cộng với AMI và EC2 vừa launch." },
+  { q: "ShopViet làm minigame khuyến mãi dùng UDP, người chơi ở nhiều châu lục, và game phải chuyển Region thật nhanh khi một Region sập. Chọn dịch vụ nào?",
     opts: ["Amazon CloudFront", "AWS Global Accelerator", "S3 Transfer Acceleration"],
-    a: 1, ref: "exam1_q59",
+    a: 1,
     why: "CloudFront chỉ phục vụ HTTP/HTTPS. Global Accelerator hỗ trợ UDP và tự chuyển sang endpoint khỏe ở Region khác." },
-  { q: "Phát biểu nào đúng về phí data transfer khi dùng RDS Read Replica?",
+  { q: "ShopViet thêm RDS Read Replica cho phần báo cáo. Điều nào đúng về phí data transfer?",
     opts: ["Replicate trong cùng Region bị tính phí", "Replicate giữa hai Region bị tính phí", "Replicate giữa hai Region miễn phí"],
-    a: 1, ref: "exam2_q62",
+    a: 1,
     why: "Replication tới Read Replica trong cùng Region không tính phí data transfer; Cross-Region Read Replica thì có." },
-  { q: "EC2 ở private subnet đọc ghi rất nhiều dữ liệu với S3 cùng Region, hiện đi qua NAT gateway. Cách nào giảm chi phí tốt nhất?",
+  { q: "Worker của ShopViet ở private subnet đọc ghi rất nhiều ảnh với S3 cùng Region, hiện đi qua NAT gateway. Hoá đơn NAT gateway rất cao. Làm sao giảm?",
     opts: ["Thêm một NAT gateway nữa", "Tạo S3 gateway endpoint và cập nhật route table", "Chuyển EC2 sang public subnet"],
-    a: 1, ref: "exam3_q47",
+    a: 1,
     why: "Gateway endpoint cho S3 không tính phí thêm, traffic không còn đi qua NAT gateway nên hết phí xử lý dữ liệu của NAT." },
-  { q: "VPC có public và private subnet ở 3 AZ. Private subnet cần ra internet để tải bản cập nhật, phải chịu được lỗi một AZ. Thiết kế nào đúng?",
+  { q: "VPC của ShopViet có public và private subnet ở 3 AZ. Server ở private subnet cần ra internet tải bản cập nhật, kể cả khi một AZ sập. Bố trí thế nào?",
     opts: ["Một NAT gateway dùng chung cho cả 3 AZ", "Mỗi AZ một NAT gateway trong public subnet, mỗi AZ một route table riêng", "Mỗi AZ một NAT gateway trong private subnet"],
-    a: 1, ref: "exam3_q62",
+    a: 1,
     why: "NAT gateway phải nằm ở public subnet và là tài nguyên cấp AZ, nên mỗi AZ cần một cái, với route table riêng trỏ tới NAT cùng AZ." },
 ]} />
 
@@ -181,7 +168,7 @@ Các câu dưới đây viết lại theo đúng dạng câu trong đề (mã c�
   <details class="deep">
     <summary>AWS Outposts</summary>
     <div class="deep-body">
-      <p><b>AWS Outposts</b> là phần cứng AWS lắp trong data center của chính bạn, chạy dịch vụ AWS với cùng API và công cụ. Đề chọn Outposts khi quy định bắt buộc dữ liệu và workload phải nằm on-premises nhưng vẫn muốn dùng dịch vụ do AWS quản lý.</p>
+      <p><b>AWS Outposts</b> là phần cứng AWS lắp trong data center của chính bạn, chạy dịch vụ AWS với cùng API và công cụ. Dùng Outposts khi quy định bắt buộc dữ liệu và workload phải nằm on-premises nhưng vẫn muốn dùng dịch vụ do AWS quản lý.</p>
     </div>
   </details>
 </Scene>

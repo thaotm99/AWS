@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1020 470" width="1020" height="470" role="img" aria-labelledby="title desc">
+<title id="title">Định tuyến API</title>
+<desc id="desc">Hôm nay CompositeApiClient chia yêu cầu cho StaticApiClient và LocalApiClient; khi có server chỉ cần thay bằng HttpApiClient.</desc>
+<style>
+.bg{fill:#f6f8f9}
+.band{fill:#ebf1f3}
+.panel{fill:#ffffff;stroke:#d8e1e5}
+.box{fill:#ffffff;stroke:#c3d0d6;stroke-width:1.2}
+.box.core{fill:#eef4f6}
+.chip{fill:#eef4f6;stroke:#d0dce2}
+.t{font:600 13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:#14212b}
+.tc{font:500 11.5px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:#14212b}
+.s{font:12px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;fill:#586973}
+.h{font:600 14px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;fill:#14212b}
+.lbl{font:700 10.5px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;letter-spacing:.08em;fill:#586973}
+.n{font:700 11px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;fill:#ffffff}
+.wire{fill:none;stroke:#9fb2bc;stroke-width:1.5}
+.wire.back{stroke:#2b7a4b;stroke-dasharray:5 4;opacity:.7}
+.flow{fill:none;stroke:#0a6a85;stroke-width:1.6;stroke-dasharray:6 5;animation:dash 1.2s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-11}}
+.arrow{fill:#9fb2bc}
+.arrow.a{fill:#0a6a85}
+.tok{fill:#0a6a85;stroke:#ffffff;stroke-width:2}
+.tok.ok{fill:#2b7a4b}
+.tok.edge{fill:#b46c0c}
+.hl{fill:none;stroke:#0a6a85;stroke-width:2.5}
+.hl.ok{stroke:#2b7a4b}
+.stepbg{fill:#dfeff3}
+.stepbg.ok{fill:#e1f2e7}
+.num{fill:#0a6a85}
+.num.ok{fill:#2b7a4b}
+.pill{fill:#e1f2e7;stroke:#2b7a4b}
+.pilltext{font:700 12px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;fill:#2b7a4b}
+.db{fill:#f7ead6;stroke:#b46c0c}
+@media (prefers-color-scheme: dark){
+.bg{fill:#0e161b}.band{fill:#131e25}.panel{fill:#152129;stroke:#26353e}
+.box{fill:#152129;stroke:#33454f}.box.core{fill:#14252e}.chip{fill:#1a2a33;stroke:#2c3d47}
+.t,.tc,.h{fill:#e2eaee}.s,.lbl{fill:#91a3ad}
+.wire{stroke:#4b5f69}.arrow{fill:#4b5f69}.flow{stroke:#52b6d1}.arrow.a{fill:#52b6d1}
+.tok{fill:#52b6d1;stroke:#0e161b}.tok.ok{fill:#63c48f}.tok.edge{fill:#e3a14c}
+.hl{stroke:#52b6d1}.hl.ok{stroke:#63c48f}.stepbg{fill:#143140}.stepbg.ok{fill:#173426}
+.num{fill:#52b6d1}.num.ok{fill:#63c48f}.n{fill:#0e161b}
+.pill{fill:#173426;stroke:#63c48f}.pilltext{fill:#63c48f}.db{fill:#3a2a14;stroke:#e3a14c}
+.wire.back{stroke:#63c48f}
+}
+@media (prefers-reduced-motion: reduce){.flow{animation:none}}
+</style>
+<defs>
+  <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrow" d="M0,0 L10,5 L0,10 z"/></marker>
+  <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrow a" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<rect class="bg" width="1020" height="470" rx="12"/>
+
+<rect class="box" x="20" y="96" width="170" height="48" rx="8"/><text class="t" x="105" y="124" text-anchor="middle">CatalogService</text>
+<rect class="box" x="20" y="206" width="170" height="48" rx="8"/><text class="t" x="105" y="234" text-anchor="middle">AttemptService</text>
+<rect class="box" x="20" y="316" width="170" height="48" rx="8"/><text class="t" x="105" y="344" text-anchor="middle">PreferenceService</text>
+<rect class="hl" x="17" y="93" width="176" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.012;0.024;0.07;0.082;1"/></rect><rect class="hl" x="17" y="203" width="176" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.188;0.2;0.26;0.272;1"/></rect><rect class="hl" x="17" y="313" width="176" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.408;0.42;0.48;0.492;1"/></rect>
+<rect class="hl" x="17" y="93" width="176" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.648;0.66;0.7;0.712;1"/></rect><rect class="hl" x="17" y="203" width="176" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.688;0.7;0.74;0.752;1"/></rect><rect class="hl" x="17" y="313" width="176" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.728;0.74;0.78;0.792;1"/></rect>
+<g opacity="1"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="1;1;0;0;1" keyTimes="0;0.62;0.632;0.988;1"/>
+<rect class="box core" x="230" y="155" width="170" height="150" rx="8"/>
+<text class="t" x="315" y="184" text-anchor="middle">CompositeApiClient</text>
+<text class="s" x="315" y="212" text-anchor="middle">/attempts/**, /preferences</text>
+<text class="s" x="315" y="228" text-anchor="middle">→ LocalApiClient</text>
+<text class="s" x="315" y="256" text-anchor="middle">còn lại</text>
+<text class="s" x="315" y="272" text-anchor="middle">→ StaticApiClient</text>
+<path class="wire" d="M190,120 L210,120 L210,200 L228,200" marker-end="url(#arr)"/>
+<path class="wire" d="M190,230 L228,230" marker-end="url(#arr)"/>
+<path class="wire" d="M190,340 L210,340 L210,260 L228,260" marker-end="url(#arr)"/>
+<path class="wire" d="M400,200 L420,200 L420,120 L438,120" marker-end="url(#arr)"/>
+<path class="wire" d="M400,260 L420,260 L420,285 L438,285" marker-end="url(#arr)"/>
+<path class="wire" d="M610,120 L638,120" marker-end="url(#arr)"/>
+<path class="wire" d="M610,285 L630,285 L630,250 L643,250" marker-end="url(#arr)"/>
+<path class="wire" d="M630,285 L630,320 L643,320" marker-end="url(#arr)"/>
+<path class="wire" d="M835,250 L850,250 L850,285 L873,285" marker-end="url(#arr)"/>
+<path class="wire" d="M835,320 L850,320 L850,285" marker-end="url(#arr)"/>
+<rect class="box" x="440" y="96" width="170" height="48" rx="8"/><text class="t" x="525" y="116" text-anchor="middle">StaticApiClient</text><text class="s" x="525" y="133" text-anchor="middle">chỉ GET</text>
+<rect class="box" x="640" y="96" width="200" height="48" rx="8"/><text class="t" x="740" y="116" text-anchor="middle">/api/…/exams/1.json</text><text class="s" x="740" y="133" text-anchor="middle">build từ file đề</text>
+<rect class="box" x="440" y="261" width="170" height="48" rx="8"/><text class="t" x="525" y="281" text-anchor="middle">LocalApiClient</text><text class="s" x="525" y="298" text-anchor="middle">server giả</text>
+<rect class="box" x="645" y="226" width="190" height="48" rx="8"/><text class="t" x="740" y="254" text-anchor="middle">AttemptResource</text>
+<rect class="box" x="645" y="296" width="190" height="48" rx="8"/><text class="t" x="740" y="324" text-anchor="middle">PreferenceResource</text>
+<path class="db" d="M875,263 a60,8 0 0,1 120,0 v44 a60,8 0 0,1 -120,0 z"/>
+<path class="db" fill="none" d="M875,263 a60,8 0 0,0 120,0"/>
+<text class="t" x="935" y="289" text-anchor="middle">IndexedDB</text>
+<rect class="hl" x="437" y="93" width="176" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.018;0.03;0.2;0.212;1"/></rect><rect class="hl" x="637" y="93" width="206" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.018;0.03;0.2;0.212;1"/></rect><rect class="hl" x="227" y="152" width="176" height="156" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.018;0.03;0.2;0.212;1"/></rect><circle class="tok" r="7" opacity="0">
+  <animateMotion dur="12s" repeatCount="indefinite" calcMode="linear" path="M190,120 L210,120 L210,200 L420,200 L420,120 L640,120 L740,120" keyPoints="0;0;1;1" keyTimes="0;0.03;0.18;1"/>
+  <animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.018;0.03;0.19;0.202;1"/>
+</circle>
+<rect class="hl" x="437" y="258" width="176" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.208;0.22;0.42;0.432;1"/></rect><rect class="hl" x="642" y="223" width="196" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.208;0.22;0.42;0.432;1"/></rect><rect class="hl" x="227" y="152" width="176" height="156" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.208;0.22;0.42;0.432;1"/></rect><circle class="tok" r="7" opacity="0">
+  <animateMotion dur="12s" repeatCount="indefinite" calcMode="linear" path="M190,230 L315,230 L315,260 L420,260 L420,285 L630,285 L630,250 L850,250 L850,285 L935,285" keyPoints="0;0;1;1" keyTimes="0;0.22;0.4;1"/>
+  <animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.208;0.22;0.41;0.422;1"/>
+</circle>
+<rect class="hl" x="437" y="258" width="176" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.428;0.44;0.62;0.632;1"/></rect><rect class="hl" x="642" y="293" width="196" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.428;0.44;0.62;0.632;1"/></rect><rect class="hl" x="227" y="152" width="176" height="156" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.428;0.44;0.62;0.632;1"/></rect><circle class="tok" r="7" opacity="0">
+  <animateMotion dur="12s" repeatCount="indefinite" calcMode="linear" path="M190,340 L210,340 L210,260 L420,260 L420,285 L630,285 L630,320 L850,320 L850,285 L935,285" keyPoints="0;0;1;1" keyTimes="0;0.44;0.6;1"/>
+  <animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.428;0.44;0.61;0.622;1"/>
+</circle>
+<text class="tc" x="20" y="420" text-anchor="start" opacity="0">GET /certifications/saa-c03/exams/1 → StaticApiClient → file JSON<animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.018;0.03;0.21;0.222;1"/></text>
+<text class="tc" x="20" y="420" text-anchor="start" opacity="0">PUT /attempts/:id/answers/:q → LocalApiClient → AttemptResource → IndexedDB<animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.208;0.22;0.43;0.442;1"/></text>
+<text class="tc" x="20" y="420" text-anchor="start" opacity="0">PATCH /preferences {locale} → LocalApiClient → PreferenceResource → IndexedDB<animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.428;0.44;0.63;0.642;1"/></text>
+<text class="h" x="20" y="44">Hôm nay</text>
+<text class="s" x="96" y="44">Nội dung đề đọc từ JSON tĩnh, dữ liệu người học trả lời ngay trong trình duyệt.</text>
+</g>
+<g opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.648;0.66;0.976;0.988;1"/>
+<rect class="box core" x="230" y="155" width="380" height="150" rx="8"/>
+<text class="t" x="420" y="200" text-anchor="middle">HttpApiClient({ baseUrl })</text>
+<text class="s" x="420" y="224" text-anchor="middle">gọi fetch() tới server thật</text>
+<text class="s" x="420" y="244" text-anchor="middle">headers(): gắn token đăng nhập</text>
+<rect class="box" x="665" y="155" width="330" height="150" rx="8"/>
+<text class="t" x="830" y="200" text-anchor="middle">Server REST</text>
+<text class="s" x="830" y="224" text-anchor="middle">cùng đường dẫn: /certifications,</text>
+<text class="s" x="830" y="242" text-anchor="middle">/attempts, /preferences</text>
+<text class="s" x="830" y="264" text-anchor="middle">dữ liệu lưu ở database của server</text>
+<path class="wire" d="M190,120 L210,120 L210,200 L228,200" marker-end="url(#arr)"/>
+<path class="wire" d="M190,230 L228,230" marker-end="url(#arr)"/>
+<path class="wire" d="M190,340 L210,340 L210,260 L228,260" marker-end="url(#arr)"/>
+<path class="wire" d="M610,200 L663,200" marker-end="url(#arr)"/><path class="wire" d="M610,230 L663,230" marker-end="url(#arr)"/><path class="wire" d="M610,260 L663,260" marker-end="url(#arr)"/>
+<rect class="hl" x="227" y="152" width="386" height="156" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.668;0.68;0.9;0.912;1"/></rect><rect class="hl" x="662" y="152" width="336" height="156" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.708;0.72;0.92;0.932;1"/></rect>
+<circle class="tok" r="7" opacity="0">
+  <animateMotion dur="12s" repeatCount="indefinite" calcMode="linear" path="M190,120 L210,120 L210,200 L800,200" keyPoints="0;0;1;1" keyTimes="0;0.68;0.8;1"/>
+  <animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.668;0.68;0.81;0.822;1"/>
+</circle>
+<circle class="tok" r="7" opacity="0">
+  <animateMotion dur="12s" repeatCount="indefinite" calcMode="linear" path="M190,230 L800,230" keyPoints="0;0;1;1" keyTimes="0;0.72;0.84;1"/>
+  <animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.708;0.72;0.85;0.862;1"/>
+</circle>
+<circle class="tok" r="7" opacity="0">
+  <animateMotion dur="12s" repeatCount="indefinite" calcMode="linear" path="M190,340 L210,340 L210,260 L800,260" keyPoints="0;0;1;1" keyTimes="0;0.76;0.88;1"/>
+  <animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.748;0.76;0.89;0.902;1"/>
+</circle>
+<text class="s" x="20" y="420" text-anchor="start" opacity="0">Chỉ đổi một chỗ: app/api.ts trả về HttpApiClient. Service, controller, UI giữ nguyên.<animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.668;0.68;0.976;0.988;1"/></text>
+<text class="h" x="20" y="44">Khi có server</text>
+<text class="s" x="128" y="44">Thay ApiClient, các tầng trên không biết gì thay đổi.</text>
+</g>
+<text class="s" x="20" y="454">Service luôn gọi cùng một kiểu: api.get / post / put / patch. Ai trả lời phía sau là việc của app/api.ts.</text>
+
+</svg>

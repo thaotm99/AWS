@@ -13,7 +13,6 @@ export interface FlowOption {
 
 export interface Scenario {
   name: string;
-  refs: string[];
   boxes?: DBox[];
   nodes: DNode[];
   options: FlowOption[];
@@ -26,7 +25,7 @@ interface Props {
 }
 
 /** Compare answer options on one architecture diagram, scenario by scenario. */
-export default function ScenarioFlow({ scenarios, height = 260, legend = ["Đề chọn", "Đáp án sai hay gặp"] }: Props) {
+export default function ScenarioFlow({ scenarios, height = 260, legend = ["Nên chọn", "Cách hay chọn nhầm"] }: Props) {
   const [si, setSi] = useState(0);
   const [oi, setOi] = useState(0);
   const uid = useId().replace(/:/g, "");
@@ -37,8 +36,8 @@ export default function ScenarioFlow({ scenarios, height = 260, legend = ["Đề
   return (
     <div className="stage">
       {scenarios.length > 1 && (
-        <div className="stage-bar" role="group" aria-label="Chọn dạng câu hỏi">
-          <span className="label">Dạng đề</span>
+        <div className="stage-bar" role="group" aria-label="Chọn tình huống">
+          <span className="label">Tình huống</span>
           {scenarios.map((x, i) => (
             <button key={x.name} className="btn" aria-pressed={i === si} onClick={() => { setSi(i); setOi(0); }}>{x.name}</button>
           ))}
@@ -64,7 +63,6 @@ export default function ScenarioFlow({ scenarios, height = 260, legend = ["Đề
           {o.name} · <span className={o.verdict === "good" ? "verdict ok" : "verdict bad"}>{o.verdictLabel ?? (o.verdict === "good" ? legend[0] : legend[1])}</span>
         </strong>
         {rich(o.text)}
-        <p className="exam-refs" style={{ marginTop: 8 }}><span>Đề hỏi ở</span>{s.refs.map((r) => <code key={r}>{r}</code>)}</p>
       </div>
     </div>
   );

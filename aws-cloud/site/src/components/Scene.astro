@@ -13,8 +13,5 @@ assertListed(questions, `Scene "${id}"`);
 ---
 <section class="scene prose" id={id}>
   <div class="scene-head"><span class="scene-no">{label}</span><h2>{title}</h2></div>
-  {questions.length > 0 && (
-    <p class="exam-refs"><span>Đề hỏi ở</span>{questions.map((q) => <code>{q}</code>)}</p>
-  )}
   <slot />
 </section>

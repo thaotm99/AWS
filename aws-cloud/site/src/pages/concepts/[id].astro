@@ -3,6 +3,8 @@ import { getCollection, render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Scene from "../../components/Scene.astro";
 import DoneButton from "../../components/DoneButton.tsx";
+import Importance from "../../components/Importance.astro";
+import T from "../../app/T.astro";
 import { findConcept } from "../../data/curriculum";
 import { getCurriculum } from "../../data/exam";
 
@@ -34,8 +36,8 @@ const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(layers,
   {entry && <p class="lede">{entry.data.lede}</p>}
   <dl class="meta-row">
     <div>
-      <dt>Câu đề liên quan</dt>
-      <dd>{concept.exact ? `${concept.questions} câu trong 6 đề` : `khoảng ${concept.questions} câu (ước lượng)`}</dd>
+      <dt><T k="shell.importance.label" /></dt>
+      <dd><Importance level={concept.importance} hint /></dd>
     </div>
     {entry && (
       <>
@@ -70,8 +72,8 @@ const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(layers,
             </ul>
           </div>
           <div class="next-col">
-            <h3>Luyện đề</h3>
-            <ul><li>Làm các câu trong <code>solution-architect-aws/{id}/list_qa.md</code></li></ul>
+            <h3>Tự kiểm tra</h3>
+            <ul><li><a href="/on-tap/">Làm bài ở trang Ôn tập</a></li></ul>
           </div>
           <div class="next-col">
             <h3>AWS docs gốc</h3>
@@ -82,7 +84,7 @@ const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(layers,
     </>
   ) : (
     <div class="placeholder">
-      <p>Bài này chưa viết. Nội dung sẽ được dựng từ các câu đề trong <code>solution-architect-aws/{id}/list_qa.md</code> và đối chiếu với AWS docs, theo cùng cách học với bài Global Infrastructure.</p>
+      <p>Bài này đang được viết. Trong lúc chờ, bạn có thể bắt đầu từ bài nền Global Infrastructure.</p>
       <a class="btn cta" href="/concepts/global-infra/">Học bài Global Infrastructure</a>
     </div>
   )}

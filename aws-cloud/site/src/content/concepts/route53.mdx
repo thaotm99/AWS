@@ -1,6 +1,6 @@
 ---
 title: "Route 53: bản ghi, TTL, routing policy và DNS lai"
-lede: "Bài viết từ 14 câu đề về Route 53. Chọn Alias hay CNAME, vì sao đổi DNS mà khách vẫn vào chỗ cũ, routing policy nào cho yêu cầu nào, và cách VPC với on-premises phân giải tên miền của nhau."
+lede: "ShopViet cần khách gõ shopviet.vn là vào đúng chỗ. Bài này dựng DNS cho shop: chọn Alias hay CNAME, vì sao đổi DNS mà khách vẫn vào chỗ cũ, routing policy nào cho từng nhu cầu, và cách VPC với văn phòng phân giải tên miền của nhau."
 minutes: 20
 scenes: 4
 prerequisites: ["vpc"]
@@ -19,11 +19,11 @@ docs:
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
 import Story from "../../components/lessons/global-infra/Story.astro";
-import Confusions from "../../components/lessons/route53/Confusions.astro";
 import TtlSim from "../../components/scenes/route53/TtlSim.tsx";
 import RoutingPolicySim from "../../components/scenes/route53/RoutingPolicySim.tsx";
 import HybridDnsSim from "../../components/scenes/route53/HybridDnsSim.tsx";
-import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
+import AliasCnameSim from "../../components/scenes/route53/AliasCnameSim.tsx";
+import Route53MythsSim from "../../components/scenes/route53/Route53MythsSim.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
@@ -37,18 +37,11 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 ShopViet đã có VPC và ALB. Giờ khách cần gõ **shopviet.vn** là vào được, khách ở châu Âu được phục vụ từ Region gần họ, và khi ALB hỏng thì hiện trang báo lỗi thay vì trang trắng. Tất cả đều làm bằng **Amazon Route 53**.
 </Story>
 
-<Scene id="s1" label="Cảnh 1/4" title="Alias hay CNAME?" questions={["exam2_q2", "exam3_q19", "exam3_q64"]}>
+<Scene id="s1" label="Cảnh 1/4" title="Trỏ tên miền: Alias hay CNAME?" questions={["exam2_q2", "exam3_q19", "exam3_q64"]}>
 
-Cả hai đều trỏ một tên tới một tên khác. Khác biệt đề hay hỏi: **CNAME không đặt được ở zone apex** (tên gốc như `shopviet.vn`), còn **Alias** thì được, và Alias trỏ thẳng tới tài nguyên AWS như CloudFront, ALB, S3 website, miễn phí truy vấn với các tài nguyên AWS đó.
+ShopViet cần bốn record: tên miền chính trỏ tới CloudFront, tên miền chính đi theo www, www trỏ tới ALB, và blog trỏ tới trang WordPress bên ngoài. Cả **Alias** và **CNAME** đều trỏ một tên tới một đích khác, nhưng không phải lúc nào cũng tạo được. Chọn từng record, chọn loại, rồi bấm tạo để xem Route 53 trả lời thế nào.
 
-<RequirementPicker client:visible items={[
-  { need: "Static website S3 + CloudFront, trỏ tên miền chính tới CloudFront", answer: "Alias record",
-    why: "Alias trỏ thẳng tới CloudFront distribution, dùng được ở zone apex, không tính phí truy vấn tới tài nguyên AWS.", refs: ["exam2_q2"] },
-  { need: "Chuyển mọi truy cập shopviet.vn sang www.shopviet.vn, rẻ nhất", answer: "Alias record ở apex trỏ tới www",
-    why: "shopviet.vn là zone apex nên không đặt CNAME được. Alias trỏ được tới một record khác trong cùng hosted zone.", refs: ["exam3_q19"] },
-  { need: "Cho www.shopviet.vn trỏ tới ứng dụng", answer: "CNAME record",
-    why: "www là subdomain, không phải apex, nên CNAME dùng được. Đây là đáp án của dạng câu này.", refs: ["exam3_q64"] },
-]} />
+<AliasCnameSim client:visible />
 
 <Takeaway>Zone apex: chỉ Alias. Trỏ tới CloudFront, ALB, S3 website: Alias (miễn phí truy vấn). Subdomain trỏ tới một tên khác: CNAME dùng được.</Takeaway>
 
@@ -74,7 +67,7 @@ ShopViet chạy ALB ở Singapore, Frankfurt và N. Virginia. Chọn một routi
 
 </Scene>
 
-<Scene id="s4" label="Cảnh 4/4" title="DNS lai: VPC và on-premises hỏi tên của nhau" questions={["exam1_q63", "exam3_q35", "exam2_q20", "exam6_q63"]}>
+<Scene id="s4" label="Cảnh 4/4" title="DNS lai: VPC và văn phòng hỏi tên của nhau" questions={["exam1_q63", "exam3_q35", "exam2_q20", "exam6_q63"]}>
 
 Server trong VPC cần tìm database ở văn phòng (`db.corp.local`), còn hệ thống ở văn phòng cần gọi API nội bộ trong VPC (`api.shopviet.internal`, nằm trong private hosted zone). **Route 53 Resolver** có hai loại endpoint cho hai chiều này.
 
@@ -84,11 +77,17 @@ Server trong VPC cần tìm database ở văn phòng (`db.corp.local`), còn h�
 
 </Scene>
 
-<Scene id="confuse" label="Dễ nhầm" title="Bốn chỗ đáp án sai hay gài" questions={["exam4_q59", "exam5_q56", "exam1_q38", "exam4_q61"]}>
-  <Confusions />
+<Scene id="confuse" label="Dễ nhầm" title="Bốn cấu hình DNS dễ làm sai" questions={["exam4_q59", "exam5_q56", "exam1_q38", "exam4_q61"]}>
+
+Bốn tình huống ShopViet gặp khi vận hành DNS. Thử cách làm đầu tiên nghĩ tới, rồi đổi sang cách khác để so sánh.
+
+<Route53MythsSim client:visible />
+
+<Takeaway>NLB tắt cross-zone: mỗi node chỉ chia cho target cùng AZ, nên AZ ít target thì mỗi target gánh nhiều hơn. Trang báo lỗi khi hỏng: failover active-passive, không dùng weighted. Đổi kích thước vùng: geoproximity với bias. Chặn theo quốc gia: Route 53 geolocation ở tầng DNS, CloudFront geo restriction ở tầng phân phối.</Takeaway>
+
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="Chọn đúng loại record">
+<Scene id="challenge" label="Thử thách" title="Chọn đúng loại record" questions={["exam2_q6", "exam4_q61", "exam5_q56", "exam4_q3"]}>
 
 Xếp từng tình huống vào loại record phù hợp. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
 
@@ -104,24 +103,24 @@ Xếp từng tình huống vào loại record phù hợp. Trên điện thoại:
   ]}
 />
 
-Các câu dưới đây viết lại theo đúng dạng câu trong đề (mã câu hiện sau khi trả lời).
+Kiểm tra nhanh: nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
 
 <Quiz client:visible items={[
-  { q: "Ứng dụng chạy ở us-east-1, khách châu Âu than chậm. Bạn dựng thêm web tier ở eu-west-1. Dùng routing policy nào để mỗi khách vào Region nhanh nhất với họ?",
+  { q: "ShopViet chạy ở us-east-1, khách châu Âu than chậm. Bạn dựng thêm web tier ở eu-west-1. Dùng routing policy nào để mỗi khách vào Region nhanh nhất với họ?",
     opts: ["Weighted", "Latency", "Geoproximity"],
-    a: 1, ref: "exam2_q6",
-    why: "Latency routing trả về Region có độ trễ thấp nhất tới khách. Đáp án đầy đủ của câu này còn kèm Aurora read replica ở eu-west-1." },
-  { q: "Bạn muốn mở rộng hoặc thu hẹp vùng địa lý mà Route 53 gửi traffic tới một tài nguyên. Dùng tính năng nào?",
+    a: 1,
+    why: "Latency routing trả về Region có độ trễ thấp nhất tới khách. Để phần đọc database cũng nhanh, thêm Aurora read replica ở eu-west-1." },
+  { q: "ShopViet muốn Region Singapore nhận thêm khách ở các nước lân cận, tức là nới rộng vùng địa lý mà Route 53 gửi tới Singapore. Dùng gì?",
     opts: ["Geolocation routing", "Geoproximity routing với bias", "Multivalue answer"],
-    a: 1, ref: "exam4_q61",
+    a: 1,
     why: "Bias của geoproximity nới rộng hoặc thu hẹp vùng phục vụ của tài nguyên." },
-  { q: "Khi ALB hỏng, khách phải thấy trang báo lỗi tĩnh trên S3, thay đổi ít nhất. Cấu hình nào?",
+  { q: "Khi ALB của ShopViet hỏng, khách phải thấy trang báo lỗi tĩnh trên S3 thay vì trang trắng, và bạn muốn sửa ít nhất. Cấu hình nào?",
     opts: ["Failover routing active-passive, secondary là S3", "Weighted routing, S3 nhận trọng số nhỏ", "Latency routing trỏ tới S3"],
-    a: 0, ref: "exam5_q56",
+    a: 0,
     why: "Health check thấy ALB hỏng thì Route 53 trả về record secondary là trang lỗi trên S3." },
-  { q: "Đã đổi record trỏ sang load balancer mới nhưng nhiều người dùng vẫn vào load balancer cũ. Vì sao?",
+  { q: "ShopViet đã đổi record trỏ sang load balancer mới, nhưng một giờ sau nhiều khách vẫn vào load balancer cũ. Vì sao?",
     opts: ["Load balancer mới chưa có target", "TTL của record cũ vẫn còn hiệu lực", "Phải xóa hosted zone và tạo lại"],
-    a: 1, ref: "exam4_q3",
+    a: 1,
     why: "Client và resolver giữ câu trả lời cũ trong cache cho tới khi hết TTL." },
 ]} />
 

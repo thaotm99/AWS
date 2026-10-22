@@ -50,7 +50,6 @@ export default function VolumeChooser() {
         <strong className="picker-service" style={{ display: "block", margin: "2px 0 6px" }}>{pick}</strong>
         <p style={{ margin: 0 }}>{why}</p>
         {hddForBoot && <p className="note-small" style={{ color: "var(--bad)" }}>st1 và sc1 không dùng làm boot volume được, nên với boot volume chỉ chọn SSD.</p>}
-        <p className="exam-refs" style={{ marginTop: 8 }}><span>Đề hỏi ở</span><code>exam3_q27</code><code>exam5_q22</code><code>exam1_q44</code><code>exam6_q24</code><code>exam4_q15</code></p>
       </div>
     </div>
   );

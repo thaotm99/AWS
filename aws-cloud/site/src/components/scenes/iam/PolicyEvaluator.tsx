@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-// Which layers must allow a request, as the tests ask it: SCPs (exam3_q59), permissions
+// Which layers must allow a request, for a real request: SCPs (exam3_q59), permissions
 // boundaries (exam1_q25, exam2_q39) and cross-account resource policies (exam2_q16).
 type Principal = "user" | "root" | "slr";
 type Tri = "allow" | "deny" | "none";

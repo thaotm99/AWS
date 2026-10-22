@@ -76,7 +76,7 @@ export default function GlobalAcceleratorSim() {
         ? "Global Accelerator kiểm tra sức khỏe endpoint và chuyển khách châu Á sang Frankfurt. Khách vẫn gọi đúng 2 IP tĩnh cũ, không cần đổi DNS, nên không bị ảnh hưởng bởi DNS cache trên điện thoại."
         : "Khách đi vào mạng AWS ở Edge location gần nhất, rồi chạy trên mạng riêng của AWS tới Region gần nhất. Mọi khách dùng chung 2 IP tĩnh (anycast). Thử bấm \"Sự cố Region Singapore\"."
       : down
-        ? "Chỉ dùng DNS: dù đã đổi bản ghi DNS, nhiều client vẫn giữ địa chỉ cũ trong cache tới khi hết TTL, nên tiếp tục gọi vào Region đang sự cố. Đây là lý do đề chọn Global Accelerator khi cần failover nhanh."
+        ? "Chỉ dùng DNS: dù đã đổi bản ghi DNS, nhiều client vẫn giữ địa chỉ cũ trong cache tới khi hết TTL, nên tiếp tục gọi vào Region đang sự cố. Vì vậy khi cần failover nhanh giữa Region, dùng Global Accelerator."
         : "Chỉ dùng DNS: khách đi qua internet công cộng thẳng tới Region. Thử gây sự cố để so sánh với Global Accelerator.";
 
   return (

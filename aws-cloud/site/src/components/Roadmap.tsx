@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
-import type { Layer } from "../data/curriculum";
+import { IMPORTANCE_NAMES, type RoadmapLayer } from "../data/curriculum";
 import { getDone, PROGRESS_EVENT } from "../lib/progress";
+import { useI18n } from "../app/i18n";
 
 interface Props {
-  layers: Layer[];
+  layers: RoadmapLayer[];
   current?: string;
   ready: string[];
 }
 
 export default function Roadmap({ layers, current, ready }: Props) {
+  const { t } = useI18n();
   const currentLayer = layers.find((l) => l.concepts.some((c) => c.id === current))?.n ?? 0;
   const [done, setDoneState] = useState<Set<string>>(new Set());
   const [open, setOpen] = useState<Set<number>>(new Set([currentLayer]));
@@ -30,8 +32,8 @@ export default function Roadmap({ layers, current, ready }: Props) {
 
   return (
     <>
-      <div className="side-label">Lộ trình SAA-C03</div>
-      <p className="filter-note">Số bên phải: số câu trong 6 đề luyện thi. Dấu ~ là ước lượng.</p>
+      <div className="side-label">{t("shell.roadmap.title")}</div>
+      <p className="filter-note">{t("shell.roadmap.note")}</p>
       <ul className="layers">
         {layers.map((layer) => (
           <li className="layer" key={layer.n}>
@@ -48,7 +50,9 @@ export default function Roadmap({ layers, current, ready }: Props) {
                     <a className={cls} href={`/concepts/${c.id}/`} aria-current={c.id === current ? "page" : undefined}>
                       <span className="dot" aria-hidden="true" />
                       <span>{c.title}</span>
-                      <span className="q-count">{c.exact ? "" : "~"}{c.questions}</span>
+                      <span className={`imp imp-${c.importance}`} title={t(`shell.importance.${IMPORTANCE_NAMES[c.importance]}`)}>
+                        <i /><i /><i />
+                      </span>
                     </a>
                   </li>
                 );
@@ -58,9 +62,9 @@ export default function Roadmap({ layers, current, ready }: Props) {
         ))}
       </ul>
       <div className="legend">
-        <span><i className="r" />Có bài</span>
-        <span><i />Sắp có</span>
-        <span><i className="d" />Đã học</span>
+        <span><i className="r" />{t("shell.roadmap.ready")}</span>
+        <span><i />{t("shell.roadmap.soon")}</span>
+        <span><i className="d" />{t("shell.roadmap.done")}</span>
       </div>
     </>
   );

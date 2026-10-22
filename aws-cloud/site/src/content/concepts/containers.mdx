@@ -1,6 +1,6 @@
 ---
 title: "Containers: ECS, EKS và Fargate"
-lede: "Bài viết từ 15 câu đề. EC2 launch type khác Fargate ở đâu (kể cả cách tính tiền), khi nào dùng ECS hay EKS, lưu trữ bền cho container, chạy container theo lịch, và quyền truy cập cho từng Pod."
+lede: "ShopViet đóng gói các service thành container. Bài này chọn nơi chạy chúng (EC2 launch type hay Fargate, ECS hay EKS) và giải quyết năm việc thật: ảnh dùng chung giữa các task, job chạy theo lịch, job dài hơn giới hạn của Lambda, quyền riêng cho từng Pod, và Pod phải chờ vì cluster hết chỗ."
 minutes: 15
 scenes: 2
 prerequisites: ["ec2", "asg"]
@@ -18,22 +18,24 @@ import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
 import Story from "../../components/lessons/global-infra/Story.astro";
 import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
-import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
+import ContainerJobSim from "../../components/scenes/containers/ContainerJobSim.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#s1", label: "1 · EC2 launch type hay Fargate" },
-  { href: "#s2", label: "2 · Các dạng đề container" },
+  { href: "#s2", label: "2 · Năm việc chạy bằng container" },
   { href: "#challenge", label: "Thử thách" },
 ]}>
-Team ShopViet đóng gói dịch vụ thành container. Còn một câu hỏi: container chạy trên server do mình quản lý, hay để AWS lo phần server?
+Team ShopViet đã đóng gói web, worker và các job báo cáo thành container. Câu hỏi đầu tiên: container chạy trên server do mình quản lý, hay để AWS lo phần server? Sau đó là những việc thật hằng ngày: lưu file, chạy theo lịch, phân quyền, thêm chỗ cho cluster.
 </Story>
 
 <Scene id="s1" label="Cảnh 1/2" title="EC2 launch type hay Fargate?" questions={["exam1_q14", "exam4_q33", "exam3_q32", "exam2_q1"]}>
 
+**Amazon ECS** và **Amazon EKS** đều cần chỗ để chạy container. Có hai lựa chọn: tự quản lý một nhóm EC2, hoặc dùng **AWS Fargate** và chỉ khai báo task cần bao nhiêu vCPU, bao nhiêu RAM. Xem ai quản lý gì và hoá đơn tính theo gì:
+
 <ScenarioFlow client:visible height={240} legend={["Ít vận hành", "Phải tự quản lý server"]} scenarios={[
-  { name: "Ai quản lý gì, trả tiền cho gì", refs: ["exam1_q14", "exam4_q33"],
+  { name: "Ai quản lý gì, trả tiền cho gì",
     boxes: [{ x: 20, y: 20, w: 720, h: 200, label: "Cluster ECS" }],
     nodes: [
       { id: "task1", x: 60, y: 70, label: "Task: web", sub: "0,5 vCPU · 1 GB", kind: "net" },
@@ -48,7 +50,7 @@ Team ShopViet đóng gói dịch vụ thành container. Còn một câu hỏi: c
         text: "Task chạy trên các EC2 instance bạn tự quản lý. Tiền tính theo **EC2 instance và EBS volume** đang chạy, kể cả khi instance còn trống." },
       { name: "Fargate", verdict: "good", hide: ["ec2"],
         flows: [{ path: ["task1", "far"], tone: "good" }, { path: ["task2", "far"], tone: "good" }, { path: ["far", "bill"], tone: "good", label: "theo vCPU + RAM của task" }],
-        text: "Không có server để quản lý. Tiền tính theo **vCPU và bộ nhớ** mà task yêu cầu. Đề chọn Fargate khi nhấn mạnh **không muốn quản lý EC2**, cho cả ECS lẫn EKS." },
+        text: "Không có server để quản lý. Tiền tính theo **vCPU và bộ nhớ** mà task yêu cầu. Team không muốn vá và scale EC2 thì chọn Fargate, dùng được cho cả ECS lẫn EKS." },
     ] },
 ]} />
 
@@ -56,28 +58,25 @@ Team ShopViet đóng gói dịch vụ thành container. Còn một câu hỏi: c
 
 </Scene>
 
-<Scene id="s2" label="Cảnh 2/2" title="Các dạng đề về container" questions={["exam3_q32", "exam2_q27", "exam6_q35", "exam1_q5", "exam4_q56", "exam3_q15", "exam1_q27", "exam2_q1"]}>
+<Scene id="s2" label="Cảnh 2/2" title="Năm việc ShopViet chạy bằng container" questions={["exam3_q32", "exam2_q27", "exam6_q35", "exam1_q5", "exam4_q56", "exam3_q15", "exam1_q27", "exam2_q1"]}>
 
-<RequirementPicker client:visible items={[
-  { need: "Container trên Fargate cần lưu trữ bền, dùng chung giữa các task", answer: "Amazon EFS mount vào task",
-    why: "EFS là file system dùng chung, bền, mount được vào task Fargate.", refs: ["exam3_q32"] },
-  { need: "Chạy script đóng gói thành container theo lịch cron, không quản lý server", answer: "EventBridge Scheduler gọi task ECS trên Fargate",
-    why: "Scheduler định nghĩa lịch cron, mỗi lần chạy khởi động một task Fargate.", refs: ["exam2_q27"] },
-  { need: "Xử lý dữ liệu stream, mỗi job chạy khoảng 30 phút, serverless", answer: "Kinesis Data Streams + ECS trên Fargate",
-    why: "Lambda giới hạn 15 phút mỗi lần chạy, nên job 30 phút cần container trên Fargate.", refs: ["exam6_q35"] },
-  { need: "Container đang dùng message broker AMQP, không muốn quản lý node", answer: "EKS trên Fargate + Amazon MQ",
-    why: "Fargate bỏ việc quản lý node; Amazon MQ là broker managed hỗ trợ AMQP.", refs: ["exam2_q1"] },
-  { need: "Mỗi Pod chỉ được truy cập đúng dịch vụ của nó", answer: "IAM Roles for Service Accounts (IRSA)", why: "Map service account của Kubernetes tới IAM role riêng.", refs: ["exam1_q5"] },
-  { need: "Pod đang chờ vì cluster EKS hết tài nguyên", answer: "Cluster Autoscaler + EC2 Auto Scaling group", why: "Tự thêm node khi có Pod chờ.", refs: ["exam4_q56"] },
-  { need: "ECS service quá tải CPU", answer: "Service Auto Scaling", why: "Tăng số task theo CPU.", refs: ["exam3_q15"] },
-  { need: "Dữ liệu phải ở on-premises nhưng muốn Kubernetes do AWS hỗ trợ", answer: "EKS Anywhere trên AWS Outposts", why: "Chạy tại data center của bạn, cùng API của AWS.", refs: ["exam1_q27"] },
-]} />
+Chọn một việc, chạy thử với cách làm đơn giản nhất, rồi bật công tắc để dùng đúng tính năng của AWS:
 
-<Takeaway>Không quản lý server: Fargate. Lưu trữ bền: EFS. Theo lịch: EventBridge Scheduler. Job dài hơn 15 phút: container thay vì Lambda.</Takeaway>
+<ContainerJobSim client:visible />
+
+Vài chuyện khác ShopViet cũng gặp:
+
+- Worker cũ nói chuyện với message broker qua **AMQP** và team không muốn quản lý node: chạy worker trên **EKS với Fargate**, chuyển broker sang **Amazon MQ** (broker managed, hỗ trợ AMQP).
+- Service trên ECS quá tải CPU: bật **Service Auto Scaling** để tăng số task.
+- Dữ liệu của một chi nhánh bắt buộc nằm tại chỗ nhưng vẫn muốn Kubernetes do AWS hỗ trợ: **EKS Anywhere** trên **AWS Outposts** đặt trong data center của mình.
+
+<Takeaway>Lưu trữ bền, dùng chung giữa các task: EFS. Chạy theo lịch: EventBridge Scheduler gọi task Fargate. Job dài hơn 15 phút: container thay vì Lambda. Quyền riêng cho từng Pod: IRSA. Pod chờ vì hết chỗ: Cluster Autoscaler.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="EC2 launch type hay Fargate?">
+<Scene id="challenge" label="Thử thách" title="EC2 launch type hay Fargate?" questions={["exam1_q14", "exam4_q33", "exam6_q35"]}>
+
+Xếp từng đặc điểm vào đúng cách chạy. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
 
 <SortGame client:visible
   bins={[
@@ -90,19 +89,21 @@ Team ShopViet đóng gói dịch vụ thành container. Còn một câu hỏi: c
   ]}
 />
 
+Kiểm tra nhanh: nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
+
 <Quiz client:visible items={[
-  { q: "Điều gì đúng về cách tính tiền của ECS EC2 launch type so với Fargate?",
-    opts: ["Cả hai tính theo vCPU và RAM của task", "EC2 launch type tính theo EC2 và EBS; Fargate tính theo vCPU và RAM của task", "Fargate miễn phí, chỉ trả tiền EC2"],
-    a: 1, ref: "exam1_q14",
+  { q: "Kế toán hỏi vì sao hoá đơn ECS tháng này khác tháng trước, sau khi team chuyển từ EC2 launch type sang Fargate. Cách tính tiền đã đổi thế nào?",
+    opts: ["Cả hai đều tính theo vCPU và RAM của task", "Trước tính theo EC2 và EBS; giờ tính theo vCPU và RAM mà task yêu cầu", "Fargate miễn phí, chỉ trả tiền EC2"],
+    a: 1,
     why: "Với EC2 launch type bạn trả cho hạ tầng đang chạy; với Fargate bạn trả cho tài nguyên task yêu cầu." },
-  { q: "Đội vận hành muốn chạy container mà không quản lý EC2. Chọn hai cách?",
-    opts: ["ECS trên Fargate và EKS trên Fargate", "ECS trên EC2 và EKS trên EC2", "Lambda và Elastic Beanstalk"],
-    a: 0, ref: "exam4_q33",
-    why: "Fargate dùng được cho cả ECS và EKS." },
-  { q: "Mỗi job xử lý stream chạy 30 phút, cần serverless. Phần xử lý dùng gì?",
+  { q: "Team ShopViet có service trên ECS và service trên EKS, không ai muốn quản lý EC2 nữa. Làm thế nào?",
+    opts: ["Chạy cả hai trên Fargate", "Chạy cả hai trên EC2 launch type", "Chuyển hết sang Elastic Beanstalk"],
+    a: 0,
+    why: "Fargate dùng được cho cả ECS và EKS, không còn node nào để vá." },
+  { q: "Mỗi job tổng hợp dữ liệu stream của ShopViet chạy khoảng 30 phút, và team muốn serverless. Chạy phần xử lý ở đâu?",
     opts: ["AWS Lambda", "ECS trên Fargate", "EC2 Spot"],
-    a: 1, ref: "exam6_q35",
-    why: "Lambda tối đa 15 phút mỗi lần chạy; Fargate không giới hạn như vậy." },
+    a: 1,
+    why: "Lambda tối đa 15 phút mỗi lần chạy; task Fargate không giới hạn như vậy." },
 ]} />
 
 </Scene>

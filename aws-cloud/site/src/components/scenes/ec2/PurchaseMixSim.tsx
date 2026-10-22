@@ -16,7 +16,7 @@ const STRATEGIES: Record<Strategy, { label: string; verdict: "good" | "bad"; tex
   riOd: { label: "RI cho nền + On-Demand", verdict: "good",
     text: "Phần nền luôn chạy nên mua Reserved Instances. Phần đỉnh dùng On-Demand: rẻ hơn hẳn mà không bị gián đoạn. Hợp khi phần đỉnh không chịu được gián đoạn." },
   riSpot: { label: "RI cho nền + Spot", verdict: "good",
-    text: "Rẻ nhất mà vẫn an toàn: nền dùng RI, phần đỉnh là công việc chịu được gián đoạn (batch, worker đọc queue) nên dùng Spot. Đây là dạng đáp án đề chọn nhiều nhất." },
+    text: "Rẻ nhất mà vẫn an toàn: nền dùng RI, phần đỉnh là công việc chịu được gián đoạn (batch, worker đọc queue) nên dùng Spot. Đây là cách phối hợp phổ biến nhất trong thực tế." },
   spot: { label: "Toàn bộ Spot", verdict: "bad",
     text: "Rẻ nhất trên giấy, nhưng Spot có thể bị thu hồi với thông báo 2 phút. Phần nền bắt buộc luôn chạy mà nằm trên Spot thì có lúc mất cả hệ thống." },
 };

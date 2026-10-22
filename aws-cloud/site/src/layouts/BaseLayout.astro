@@ -3,24 +3,56 @@ import "../styles/global.css";
 import Roadmap from "../components/Roadmap.tsx";
 import { getCollection } from "astro:content";
 import { getCurriculum } from "../data/exam";
+import T from "../app/T.astro";
+import type { SiteMessageKey } from "../app/i18n";
+import type { MessageParams } from "../core/i18n/types";
+import LanguageSwitch from "../modules/shell/ui/LanguageSwitch.astro";
+import ThemeToggle from "../modules/shell/ui/ThemeToggle.astro";
+import { DEFAULT_LOCALE } from "../core/i18n/types";
+import { DEFAULT_THEME, THEMES } from "../core/theme/types";
 
 interface Props {
   title: string;
   description?: string;
   current?: string;
+  /** Top-nav section this page belongs to. */
+  section?: "theory" | "practice";
+  /** Practice pages have no lesson roadmap. */
+  sidebar?: boolean;
+  /** Translated <title>; `title` stays as the default-language text. */
+  titleKey?: SiteMessageKey;
+  titleParams?: MessageParams;
 }
 
-const { title, description = "Ôn thi AWS Solutions Architect Associate (SAA-C03) qua hình minh họa và mô phỏng tương tác, bám theo câu hỏi đề thi.", current } = Astro.props;
+const {
+  title,
+  description = "Học AWS qua hình minh họa và mô phỏng tương tác, đi từ những tình huống thực tế của một cửa hàng online.",
+  current,
+  section = "theory",
+  sidebar = true,
+  titleKey,
+  titleParams,
+} = Astro.props;
+// Runs before first paint, before any bundle: apply the saved theme (no flash of the
+// wrong colors) and hide translatable text until the saved language is applied.
+// Keys match the preference fields in modules/shell (localStorage "theme", "locale").
+const earlyPreferences = `(function(){var h=document.documentElement,t=${JSON.stringify(DEFAULT_THEME)};try{var s=localStorage.getItem("theme");if(${JSON.stringify(THEMES)}.indexOf(s)>=0)t=s;var l=localStorage.getItem("locale");if(l&&l!==${JSON.stringify(DEFAULT_LOCALE)}){h.lang=l;h.classList.add("i18n-pending");setTimeout(function(){h.classList.remove("i18n-pending")},2000)}}catch(e){}h.dataset.theme=t})();`;
 const ready = (await getCollection("concepts")).map((e) => e.id);
-const layers = getCurriculum();
+// Only what the roadmap shows reaches the browser.
+const layers = getCurriculum().map(({ n, name, concepts }) => ({
+  n,
+  name,
+  concepts: concepts.map(({ id, title, importance }) => ({ id, title, importance })),
+}));
 ---
 <!doctype html>
-<html lang="vi">
+<html lang="vi" data-i18n-title={titleKey} data-i18n-params={titleParams ? JSON.stringify(titleParams) : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content={description} />
     <title>{title}</title>
+    <script is:inline set:html={earlyPreferences} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -31,23 +63,27 @@ const layers = getCurriculum();
       <div class="topbar-inner">
         <a class="brand" href="/">
           <span class="brand-mark" aria-hidden="true">
-            <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="9" width="14" height="5" rx="1" fill="#fff"/><rect x="3" y="4" width="10" height="4" rx="1" fill="#fff" opacity=".75"/><rect x="5" y="1" width="6" height="2" rx="1" fill="#fff" opacity=".5"/></svg>
+            <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="9" width="14" height="5" rx="1" fill="currentColor"/><rect x="3" y="4" width="10" height="4" rx="1" fill="currentColor" opacity=".75"/><rect x="5" y="1" width="6" height="2" rx="1" fill="currentColor" opacity=".5"/></svg>
           </span>
-          AWS Từ Nền
+          <span class="brand-text">AWS Từ Nền</span>
         </a>
-        <nav class="topnav" aria-label="Chính">
-          <a href="/" aria-current="page">Lý thuyết</a>
-          <a href="#" class="soon" data-soon="Trang Tình huống">Tình huống</a>
-          <a href="#" class="soon" data-soon="Trang Ôn tập">Ôn tập</a>
+        <nav class="topnav" aria-label="Chính" data-i18n-attr="aria-label:shell.nav.main">
+          <a href="/" aria-current={section === "theory" ? "page" : undefined}><T k="shell.nav.theory" /></a>
+          <a href="#" class="soon" data-soon="shell.nav.scenarios"><T k="shell.nav.scenarios" /></a>
+          <a href="/on-tap/" aria-current={section === "practice" ? "page" : undefined}><T k="shell.nav.practice" /></a>
         </nav>
-        <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="sidebar">Lộ trình học</button>
+        <LanguageSwitch />
+        <ThemeToggle />
+        {sidebar && <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="sidebar"><T k="shell.nav.roadmap" /></button>}
       </div>
     </header>
 
-    <div class="shell">
-      <aside class="sidebar" id="sidebar" aria-label="Lộ trình học">
-        <Roadmap client:load layers={layers} current={current} ready={ready} />
-      </aside>
+    <div class:list={["shell", { single: !sidebar }]}>
+      {sidebar && (
+        <aside class="sidebar" id="sidebar" aria-label="Lộ trình học" data-i18n-attr="aria-label:shell.nav.roadmap">
+          <Roadmap client:load layers={layers} current={current} ready={ready} />
+        </aside>
+      )}
       <main class="article">
         <slot />
       </main>
@@ -55,22 +91,11 @@ const layers = getCurriculum();
     <div class="toast" id="toast" hidden></div>
 
     <script>
-      const menuBtn = document.getElementById("menuBtn")!;
-      menuBtn.addEventListener("click", () => {
-        const open = document.getElementById("sidebar")!.classList.toggle("open");
-        menuBtn.setAttribute("aria-expanded", String(open));
-      });
-      let timer: ReturnType<typeof setTimeout>;
-      document.querySelectorAll<HTMLAnchorElement>("[data-soon]").forEach((a) =>
-        a.addEventListener("click", (e) => {
-          e.preventDefault();
-          const t = document.getElementById("toast")!;
-          t.textContent = `${a.dataset.soon} đang được xây dựng.`;
-          t.hidden = false;
-          clearTimeout(timer);
-          timer = setTimeout(() => (t.hidden = true), 2400);
-        }),
-      );
+      import { i18n } from "../app/i18n";
+      import { theme } from "../app/theme";
+      import { ShellController } from "../modules/shell/ui/ShellController";
+
+      new ShellController(i18n, theme).start();
     </script>
   </body>
 </html>

@@ -1,0 +1,13 @@
+---
+// Renders a message in the default language and marks it so the browser can swap languages.
+import type { MessageParams } from "../core/i18n/types";
+import { i18n, type SiteMessageKey } from "./i18n";
+
+interface Props {
+  k: SiteMessageKey;
+  params?: MessageParams;
+}
+
+const { k, params } = Astro.props;
+---
+<span data-i18n={k} data-i18n-params={params ? JSON.stringify(params) : undefined}>{i18n.translator().t(k, params)}</span>

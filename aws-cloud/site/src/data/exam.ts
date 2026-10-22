@@ -2,7 +2,7 @@
 // practice-test questions. Never import this from a client component.
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { EXTRA_TITLES, LAYERS, type Layer } from "./curriculum";
+import { EXTRA_TITLES, importanceOf, LAYERS, type Layer } from "./curriculum";
 
 const STUDY_DIR = resolve(process.cwd(), "../../solution-architect-aws");
 const QUESTION_ID = /^exam[1-6]_q\d{1,2}$/;
@@ -47,9 +47,8 @@ export function getCurriculum(): Layer[] {
       const title = EXTRA_TITLES[id] ?? row?.title;
       if (!title) throw new Error(`curriculum: "${id}" is neither in overview.md nor EXTRA_TITLES`);
       const listed = readListQa(id);
-      return listed
-        ? { id, title, questions: listed.length, exact: true }
-        : { id, title, questions: row?.estimate ?? 0, exact: false };
+      const questions = listed ? listed.length : (row?.estimate ?? 0);
+      return { id, title, importance: importanceOf(questions), questions, exact: Boolean(listed) };
     }),
   }));
   return cached;

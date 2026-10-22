@@ -22,11 +22,10 @@ interface Props {
   intro: string;
   steps: SimStep[];
   height?: number;
-  refs?: string[];
 }
 
 /** Build an architecture or a procedure step by step. */
-export default function StepSim({ nodes, boxes = [], initial, intro, steps, height = 260, refs = [] }: Props) {
+export default function StepSim({ nodes, boxes = [], initial, intro, steps, height = 260 }: Props) {
   const [done, setDone] = useState(0);
   const [busy, setBusy] = useState(false);
   const pk = useRef<SVGGElement>(null);
@@ -68,7 +67,6 @@ export default function StepSim({ nodes, boxes = [], initial, intro, steps, heig
       </div>
       <div className="readout" aria-live="polite">
         {rich(done ? steps[done - 1].note : intro)}
-        {refs.length > 0 && <p className="exam-refs" style={{ marginTop: 8 }}><span>Đề hỏi ở</span>{refs.map((r) => <code key={r}>{r}</code>)}</p>}
       </div>
     </div>
   );
