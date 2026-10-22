@@ -90,13 +90,20 @@ export default function middleware(request: Request): Response {
     return misconfigured();
   }
 
-  if (!isProtected(new URL(request.url).pathname, protectedPaths())) return next();
+  const rules = protectedPaths();
+  if (!isProtected(new URL(request.url).pathname, rules)) return next();
 
   const given = credentials(request);
   if (given && same(given.user, user) && same(given.password, password)) return next();
 
   return new Response("Cần đăng nhập để xem AWS Thực Chiến.", {
     status: 401,
-    headers: { "WWW-Authenticate": REALM, "Content-Type": "text/plain; charset=utf-8" },
+    headers: {
+      "WWW-Authenticate": REALM,
+      "Content-Type": "text/plain; charset=utf-8",
+      // Says whether SITE_PROTECT reached this deployment, and from which commit it was built
+      // (VERCEL_GIT_COMMIT_SHA is a Vercel system variable). No secrets: only the rule count.
+      "X-Site-Auth": `${rules ? `paths(${rules.length - 1})` : "all"}; build=${(process.env.VERCEL_GIT_COMMIT_SHA ?? "unknown").slice(0, 7)}`,
+    },
   });
 }
