@@ -21,6 +21,10 @@ docs:
     url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/dedicated-hosts-overview.html"
   - title: "Spot Instance requests"
     url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-requests.html"
+  - title: "Spot request status"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-request-status.html"
+  - title: "Cancel a Spot Instance request"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-spot-instances-cancel.html"
   - title: "Savings Plans types"
     url: "https://docs.aws.amazon.com/savingsplans/latest/userguide/plan-types.html"
   - title: "Use encryption with EBS-backed AMIs"
@@ -106,7 +110,7 @@ import Ec2LifecycleSim from "../../components/scenes/ec2/Ec2LifecycleSim.tsx";
 ShopViet's server tier runs on EC2 instances. The challenge is not launching an instance but the design decisions: which purchasing option optimizes cost, how long a launch takes, whether to place instances close together or spread them out, where to keep temporary data, and how instances recover on their own when something fails.
 </Story>
 
-<Scene id="en-s1" label="Part 1/6" title="Optimizing cost while keeping availability" questions={["exam2_q33", "exam2_q35", "exam4_q49", "exam5_q60", "exam1_q21", "exam4_q46", "exam2_q49", "exam6_q18", "exam2_q23", "exam6_q21", "exam6_q33", "exam6_q38", "exam4_q30", "exam3_q30", "exam4_q60", "exam6_q2"]}>
+<Scene id="en-s1" label="Part 1/6" title="Optimizing cost while keeping availability" questions={["exam2_q33", "exam2_q35", "exam4_q49", "exam5_q60", "exam1_q21", "exam4_q46", "exam2_q49", "exam6_q18", "exam2_q23", "exam6_q21", "exam6_q33", "exam6_q38", "exam4_q30", "exam3_q30", "exam4_q60", "exam6_q2", "exam3_q51"]}>
 
 ShopViet needs 80 instances running continuously 24/7; during the day it also needs extra workers that process images from a queue (interruption-tolerant). Choose a purchasing strategy:
 
@@ -120,7 +124,7 @@ Before the 11.11 sale, ShopViet must be **certain to have capacity** for 40 C-fa
 
 Two older purchasing options are retired: **Scheduled Reserved Instances** (capacity reserved on a daily, weekly or monthly schedule) can no longer be purchased, and AWS has no capacity or plans to offer them again; **Spot blocks** (Spot Instances with a defined duration of 1 to 6 hours) have not been available to new customers since July 1, 2021. Instead: to reserve capacity, use On-Demand Capacity Reservations; for lower prices, use Savings Plans; interruption-tolerant work uses Spot Instances without a defined duration.
 
-<Takeaway>Baseline load running 24/7: Reserved Instances or Savings Plans. Interruption-tolerant tasks: Spot (a persistent request or Spot Fleet to keep processing). Variable load that cannot tolerate interruption: On-Demand. Single-tenant hardware, with no need to control the host and no per-socket or per-core licenses: Dedicated Instances (billed per instance); per-socket or per-core licenses: Dedicated Hosts (billed per host). A discount that covers EC2, Fargate and Lambda: Compute Savings Plan. Guaranteed capacity in one AZ: On-Demand Capacity Reservation (On-Demand rate, no performance gain). Scheduled Reserved Instances and Spot blocks are retired.</Takeaway>
+<Takeaway>Baseline load running 24/7: Reserved Instances or Savings Plans. Interruption-tolerant tasks: Spot (a persistent request or Spot Fleet to keep processing). A persistent request opens again after the Spot Instance is interrupted; if you stop the instance, the request is disabled and opens only after you start it; canceling a request does not terminate the instance. Variable load that cannot tolerate interruption: On-Demand. Single-tenant hardware, with no need to control the host and no per-socket or per-core licenses: Dedicated Instances (billed per instance); per-socket or per-core licenses: Dedicated Hosts (billed per host). A discount that covers EC2, Fargate and Lambda: Compute Savings Plan. Guaranteed capacity in one AZ: On-Demand Capacity Reservation (On-Demand rate, no performance gain). Scheduled Reserved Instances and Spot blocks are retired.</Takeaway>
 
 </Scene>
 
@@ -246,7 +250,7 @@ Sort each statement into True or False. On a mobile device: tap a card, then tap
   ]}
   cards={[
     ["Spot is reclaimed with a 2-minute notice", "true"], ["A persistent Spot request is reopened after an interruption", "true"],
-    ["Canceling a Spot request does not terminate running instances", "true"], ["A Spot Fleet can include On-Demand", "true"],
+    ["Canceling a Spot request does not terminate running instances", "true"], ["A persistent Spot request reopens as soon as you stop the Spot Instance", "false"], ["A Spot Fleet can include On-Demand", "true"],
     ["Instance store keeps data when the instance stops", "false"], ["Instance store can be detached and attached to another instance", "false"],
     ["Canceling a Spot request automatically terminates the instances", "false"],
     ["Instance store data is included in an AMI created from the instance", "false"], ["Instance store volumes can be added after launch", "false"],

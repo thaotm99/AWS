@@ -21,6 +21,10 @@ docs:
     url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/dedicated-hosts-overview.html"
   - title: "Spot Instance requests"
     url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-requests.html"
+  - title: "Spot request status"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-request-status.html"
+  - title: "Cancel a Spot Instance request"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-spot-instances-cancel.html"
   - title: "Savings Plans types"
     url: "https://docs.aws.amazon.com/savingsplans/latest/userguide/plan-types.html"
   - title: "Use encryption with EBS-backed AMIs"
@@ -106,7 +110,7 @@ import Ec2LifecycleSim from "../../components/scenes/ec2/Ec2LifecycleSim.tsx";
 Tầng máy chủ của ShopViet chạy trên các EC2 instance. Thách thức không nằm ở việc khởi chạy một instance, mà ở các quyết định thiết kế: tuỳ chọn mua nào tối ưu chi phí, thời gian khởi tạo bao lâu, bố trí các instance gần nhau hay phân tán, lưu dữ liệu tạm ở đâu, và cơ chế tự phục hồi khi xảy ra sự cố.
 </Story>
 
-<Scene id="s1" label="Phần 1/6" title="Tối ưu chi phí mà vẫn đảm bảo tính sẵn sàng" questions={["exam2_q33", "exam2_q35", "exam4_q49", "exam5_q60", "exam1_q21", "exam4_q46", "exam2_q49", "exam6_q18", "exam2_q23", "exam6_q21", "exam6_q33", "exam6_q38", "exam4_q30", "exam3_q30", "exam4_q60", "exam6_q2"]}>
+<Scene id="s1" label="Phần 1/6" title="Tối ưu chi phí mà vẫn đảm bảo tính sẵn sàng" questions={["exam2_q33", "exam2_q35", "exam4_q49", "exam5_q60", "exam1_q21", "exam4_q46", "exam2_q49", "exam6_q18", "exam2_q23", "exam6_q21", "exam6_q33", "exam6_q38", "exam4_q30", "exam3_q30", "exam4_q60", "exam6_q2", "exam3_q51"]}>
 
 ShopViet cần 80 instance chạy liên tục 24/7; vào ban ngày cần bổ sung worker xử lý ảnh từ hàng đợi (chịu được gián đoạn). Chọn chiến lược mua:
 
@@ -120,7 +124,7 @@ Trước đợt khuyến mãi 11/11, ShopViet cần **chắc chắn có đủ ca
 
 Hai tuỳ chọn mua cũ đã ngừng: **Scheduled Reserved Instances** (đặt trước capacity theo lịch ngày, tuần, tháng) không còn mua được, AWS không có capacity và không có kế hoạch cung cấp lại; **Spot block** (Spot Instance với defined duration 1 đến 6 giờ) đã ngừng cung cấp cho khách hàng mới từ 1/7/2021. Thay thế: cần giữ capacity thì dùng On-Demand Capacity Reservation, cần giá thấp hơn thì dùng Savings Plans; tác vụ chịu được gián đoạn dùng Spot Instance không đặt duration.
 
-<Takeaway>Tải nền chạy 24/7: Reserved Instances hoặc Savings Plans. Tác vụ chịu được gián đoạn: Spot (persistent request hoặc Spot Fleet để tiếp tục xử lý). Tải biến động không chịu được gián đoạn: On-Demand. Phần cứng single-tenant, không cần kiểm soát host và không có license theo socket, core: Dedicated Instances (tính phí theo instance); license theo socket, core: Dedicated Hosts (tính phí theo host). Chiết khấu áp dụng cho cả EC2, Fargate và Lambda: Compute Savings Plan. Bảo đảm có capacity trong một AZ: On-Demand Capacity Reservation (giá On-Demand, không tăng hiệu năng). Scheduled Reserved Instances và Spot block đã ngừng.</Takeaway>
+<Takeaway>Tải nền chạy 24/7: Reserved Instances hoặc Savings Plans. Tác vụ chịu được gián đoạn: Spot (persistent request hoặc Spot Fleet để tiếp tục xử lý). Persistent request mở lại sau khi Spot Instance bị gián đoạn; nếu bạn stop instance, request ở trạng thái disabled và chỉ mở lại sau khi start; huỷ request không terminate instance. Tải biến động không chịu được gián đoạn: On-Demand. Phần cứng single-tenant, không cần kiểm soát host và không có license theo socket, core: Dedicated Instances (tính phí theo instance); license theo socket, core: Dedicated Hosts (tính phí theo host). Chiết khấu áp dụng cho cả EC2, Fargate và Lambda: Compute Savings Plan. Bảo đảm có capacity trong một AZ: On-Demand Capacity Reservation (giá On-Demand, không tăng hiệu năng). Scheduled Reserved Instances và Spot block đã ngừng.</Takeaway>
 
 </Scene>
 
@@ -248,7 +252,7 @@ Phân loại từng nhận định vào ô Đúng hoặc Sai. Trên thiết bị
     ["Spot bị thu hồi với thông báo 2 phút", "true"], ["Spot request persistent được mở lại sau khi bị gián đoạn", "true"],
     ["Hủy Spot request không terminate instance đang chạy", "true"], ["Spot Fleet có thể gồm cả On-Demand", "true"],
     ["Instance store giữ dữ liệu khi stop instance", "false"], ["Instance store có thể tách ra và gắn sang instance khác", "false"],
-    ["Hủy Spot request sẽ tự động terminate instance", "false"],
+    ["Hủy Spot request sẽ tự động terminate instance", "false"], ["Persistent Spot request mở lại ngay khi bạn stop Spot Instance", "false"],
     ["Dữ liệu instance store được đưa vào AMI tạo từ instance", "false"], ["Có thể gắn thêm instance store volume sau khi launch", "false"],
     ["Dữ liệu instance store vẫn còn sau khi reboot", "true"], ["Instance đã terminate có thể recover nếu cấu hình từ lúc launch", "false"],
     ["Khách hàng mới vẫn mua được Spot block 1 đến 6 giờ", "false"], ["Partition placement group phù hợp cho cụm Kafka hoặc Cassandra", "true"],

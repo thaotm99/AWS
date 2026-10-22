@@ -1607,8 +1607,8 @@
         {
           "keyword": "Persistent Spot request with a stopped instance (reopens only after start)",
           "lesson": "ec2",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "ec2.mdx#s1 / Ec2CostSim (Spot worker reclaimed, persistent) + Takeaway; ec2.mdx#challenge / SortGame"
         }
       ]
     },

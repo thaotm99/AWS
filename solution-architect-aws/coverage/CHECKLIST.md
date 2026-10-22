@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **983 keyword** khác nhau: ✅ 966 (98%) · 🟡 10 (1%) · ❌ 7 (1%).
+Có **983 keyword** khác nhau: ✅ 967 (98%) · 🟡 10 (1%) · ❌ 6 (1%).
 
 ### Theo bài học
 
@@ -28,7 +28,7 @@ Có **983 keyword** khác nhau: ✅ 966 (98%) · 🟡 10 (1%) · ❌ 7 (1%).
 | [kms](#kms) | 21 | 21 | 0 | 0 | 100% |
 | [security](#security) | 27 | 26 | 1 | 0 | 96% |
 | [cognito](#cognito) | 15 | 15 | 0 | 0 | 100% |
-| [ec2](#ec2) | 58 | 57 | 0 | 1 | 98% |
+| [ec2](#ec2) | 58 | 58 | 0 | 0 | 100% |
 | [elb](#elb) | 43 | 42 | 0 | 1 | 98% |
 | [asg](#asg) | 47 | 47 | 0 | 0 | 100% |
 | [containers](#containers) | 23 | 23 | 0 | 0 | 100% |
@@ -52,7 +52,7 @@ Có **983 keyword** khác nhau: ✅ 966 (98%) · 🟡 10 (1%) · ❌ 7 (1%).
 |---|---:|---:|---:|
 | Đề 1 | 223 | 2 | 1 |
 | Đề 2 | 202 | 0 | 2 |
-| Đề 3 | 223 | 2 | 2 |
+| Đề 3 | 224 | 2 | 1 |
 | Đề 4 | 235 | 1 | 1 |
 | Đề 5 | 220 | 5 | 1 |
 | Đề 6 | 217 | 0 | 0 |
@@ -404,7 +404,6 @@ Có **983 keyword** khác nhau: ✅ 966 (98%) · 🟡 10 (1%) · ❌ 7 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | Persistent Spot request with a stopped instance (reopens only after start) | ❌ Thiếu | 1 | exam3_q51 |  |
 | [ ] | EC2 Spot Instance | ✅ Đã có | 8 | exam1_q21, exam2_q23, exam2_q33, exam2_q49, exam3_q51, exam4_q20, exam4_q46, exam5_q36 | ec2.mdx#s1 / Ec2CostSim<br>ec2.mdx#s1 / PurchaseMixSim |
 | [ ] | EC2 Reserved Instance | ✅ Đã có | 6 | exam1_q21, exam2_q14, exam2_q35, exam4_q46, exam6_q33, exam6_q38 | ec2.mdx#s1 / PurchaseMixSim<br>ec2.mdx#s1 / PurchaseMixSim; ec2.mdx#challenge / Quiz |
 | [ ] | EC2 Dedicated Instance | ✅ Đã có | 5 | exam2_q23, exam3_q21, exam4_q60, exam6_q21, exam6_q33 | ec2.mdx#s1 / Ec2CostSim<br>ec2.mdx#s1; ec2.mdx#challenge |
@@ -458,6 +457,7 @@ Có **983 keyword** khác nhau: ✅ 966 (98%) · 🟡 10 (1%) · ❌ 7 (1%).
 | [ ] | Instance store cannot be detached/reattached | ✅ Đã có | 1 | exam6_q42 | ec2.mdx#s4 / Ec2OpsSim; ec2.mdx#challenge |
 | [ ] | Instance store data not preserved in AMI | ✅ Đã có | 1 | exam6_q42 | ec2.mdx#s6 / Ec2LifecycleSim |
 | [ ] | Instance store specified only at launch | ✅ Đã có | 1 | exam6_q42 | ec2.mdx#s6 / Ec2LifecycleSim |
+| [ ] | Persistent Spot request with a stopped instance (reopens only after start) | ✅ Đã có | 1 | exam3_q51 | ec2.mdx#s1 / Ec2CostSim (Spot worker reclaimed, persistent) + Takeaway; ec2.mdx#challenge / SortGame |
 | [ ] | Private IP for intra-VPC traffic (data transfer cost) | ✅ Đã có | 1 | exam6_q59 | ec2.mdx#s3 / Ec2NetSim |
 | [ ] | Spot Fleet (maintains target capacity) | ✅ Đã có | 1 | exam3_q51 | ec2.mdx#s1 / Ec2CostSim |
 | [ ] | Spot request persistent vs one-time | ✅ Đã có | 1 | exam3_q51 | ec2.mdx#s1 / Ec2CostSim |
