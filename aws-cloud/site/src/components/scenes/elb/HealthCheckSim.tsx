@@ -22,55 +22,55 @@ function layout(asgCheck: "EC2" | "ELB"): PLayout {
   };
 }
 
-const SG_OK: PStep = { at: "sg", state: "pass", msg: "Inbound rule cho phép **security group của ALB** vào cổng 80." };
+const SG_OK: PStep = { at: "sg", state: "pass", msg: "Inbound rule cho phép traffic từ **security group của ALB** tới cổng 80." };
 
 const SCENARIOS: PScenario[] = [
   {
-    name: "Server chạy tốt mà vẫn unhealthy",
+    name: "Instance hoạt động nhưng unhealthy",
     request: "GET /health  (ALB → i-2, mỗi 30 giây)",
-    toggle: { label: "Security group cho phép ALB vào", initial: false },
+    toggle: { label: "Security group cho phép traffic từ ALB", initial: false },
     layout: () => layout("ELB"),
     run: (open) => open
-      ? { steps: [SG_OK, { at: "i2", state: "pass", flash: "200", roundTrip: true, msg: "App trả 200 OK." }],
-          ok: true, result: "i-2 healthy, ALB gửi khách vào bình thường." }
+      ? { steps: [SG_OK, { at: "i2", state: "pass", flash: "200", roundTrip: true, msg: "Ứng dụng trả về 200 OK." }],
+          ok: true, result: "i-2 ở trạng thái healthy; ALB định tuyến request của người dùng tới i-2 bình thường." }
       : { steps: [
-            { at: "sg", state: "block", flash: "timeout", msg: "Inbound rule chỉ mở cổng 80 cho IP văn phòng, không có ALB. Health check không tới được app." },
-            { at: "i2", jump: true, state: "block", tag: "UNHEALTHY", msg: "Hết giờ nhiều lần liên tiếp nên ALB đánh dấu i-2 unhealthy, dù app vẫn chạy." }],
-          ok: false, result: "Khách không được gửi vào i-2. Thêm inbound rule nguồn là security group của ALB." },
+            { at: "sg", state: "block", flash: "timeout", msg: "Inbound rule chỉ mở cổng 80 cho IP văn phòng, không bao gồm ALB. Health check không tới được ứng dụng." },
+            { at: "i2", jump: true, state: "block", tag: "UNHEALTHY", msg: "Timeout liên tiếp nhiều lần nên ALB đánh dấu i-2 là unhealthy, dù ứng dụng vẫn hoạt động." }],
+          ok: false, result: "Request của người dùng không được định tuyến tới i-2. Cần thêm inbound rule với nguồn là security group của ALB." },
   },
   {
-    name: "Sai đường dẫn health check",
+    name: "Sai health check path",
     request: "GET /healthz  (ALB → i-2)",
-    toggle: { label: "Sửa health check path thành /health", initial: false },
+    toggle: { label: "Đổi health check path thành /health", initial: false },
     layout: () => layout("ELB"),
     run: (fixed) => fixed
-      ? { steps: [SG_OK, { at: "i2", state: "pass", flash: "200", roundTrip: true, msg: "`/health` có trong app, trả 200 OK." }],
-          ok: true, result: "i-2 healthy trở lại." }
-      : { steps: [SG_OK, { at: "i2", state: "block", flash: "404", msg: "App không có đường dẫn `/healthz`, trả 404. ALB coi 404 là hỏng." }],
-          ok: false, result: "Target unhealthy dù server không có lỗi gì. Kiểm tra path và mã trả về mong đợi của health check." },
+      ? { steps: [SG_OK, { at: "i2", state: "pass", flash: "200", roundTrip: true, msg: "Ứng dụng có path `/health`, trả về 200 OK." }],
+          ok: true, result: "i-2 trở lại trạng thái healthy." }
+      : { steps: [SG_OK, { at: "i2", state: "block", flash: "404", msg: "Ứng dụng không có path `/healthz`, trả về 404. ALB xem 404 là health check thất bại." }],
+          ok: false, result: "Target unhealthy dù máy chủ không có lỗi. Cần kiểm tra path và mã phản hồi kỳ vọng (success codes) của health check." },
   },
   {
-    name: "ALB loại server nhưng không ai thay",
-    request: "i-2: app bị treo, máy vẫn chạy",
-    toggle: { label: "ASG dùng ELB health check", initial: false },
+    name: "ALB loại instance nhưng không được thay thế",
+    request: "i-2: ứng dụng không phản hồi, instance vẫn chạy",
+    toggle: { label: "ASG sử dụng ELB health check", initial: false },
     layout: (elb) => layout(elb ? "ELB" : "EC2"),
     run: (elb) => ({
       steps: [
         SG_OK,
-        { at: "i2", state: "block", flash: "timeout", msg: "App treo, không trả lời health check. ALB đánh dấu unhealthy và ngừng gửi khách vào." },
+        { at: "i2", state: "block", flash: "timeout", msg: "Ứng dụng không phản hồi health check. ALB đánh dấu unhealthy và ngừng định tuyến request tới instance." },
         elb
-          ? { from: "asg", at: "i2", state: "change", tag: "THAY", label: "Auto Scaling", relabel: { l1: "i-4", l2: "mới" }, msg: "ASG dùng **ELB health check** nên nghe theo ALB: terminate i-2 và launch i-4." }
-          : { from: "asg", at: "i2", state: "wait", tag: "VẪN CHẠY", label: "Auto Scaling", msg: "ASG dùng **EC2 health check**: chỉ xem máy còn chạy. Máy vẫn chạy nên ASG không làm gì." },
+          ? { from: "asg", at: "i2", state: "change", tag: "THAY THẾ", label: "Auto Scaling", relabel: { l1: "i-4", l2: "mới" }, msg: "ASG sử dụng **ELB health check** nên dựa theo kết quả của ALB: terminate i-2 và launch i-4." }
+          : { from: "asg", at: "i2", state: "wait", tag: "VẪN CHẠY", label: "Auto Scaling", msg: "ASG sử dụng **EC2 health check**: chỉ kiểm tra trạng thái chạy của instance. Instance vẫn chạy nên ASG không thực hiện thay thế." },
       ],
       ok: elb,
       back: false,
       result: elb
-        ? "Nhóm tự lành: i-4 vào target group, lại đủ 3 server."
-        : "ALB đã loại i-2 nhưng ASG vẫn giữ nó. ShopViet chạy thiếu một server cho tới khi có người vào sửa.",
+        ? "Nhóm tự phục hồi: i-4 được đăng ký vào target group, khôi phục đủ 3 instance."
+        : "ALB đã loại i-2 nhưng ASG vẫn giữ instance này. ShopViet vận hành thiếu một instance cho tới khi có can thiệp thủ công.",
     }),
   },
   {
-    name: "NLB gửi tới IP nào?",
+    name: "Địa chỉ IP đích của NLB",
     action: "Gửi request",
     request: "Target đăng ký bằng instance ID: i-7",
     layout: () => ({
@@ -78,7 +78,7 @@ const SCENARIOS: PScenario[] = [
       aria: "NLB gửi traffic tới primary private IP của network interface chính của EC2",
       boxes: [{ x: 420, y: 60, w: 380, h: 176, label: "EC2 i-7 có hai network interface" }],
       nodes: [
-        { id: "c", x: 60, y: 148, l1: "Khách", user: true },
+        { id: "c", x: 60, y: 148, l1: "Người dùng", user: true },
         { id: "nlb", x: 230, y: 148, w: 140, l1: "NLB", l2: "target: i-7" },
         { id: "eth0", x: 610, y: 108, w: 300, l1: "eth0 (chính): 10.0.1.15", l2: "primary private IP" },
         { id: "eth1", x: 610, y: 190, w: 300, l1: "eth1: 10.0.2.40", l2: "ENI phụ" },
@@ -87,16 +87,16 @@ const SCENARIOS: PScenario[] = [
     }),
     run: () => ({
       steps: [
-        { at: "nlb", state: "pass", msg: "Listener TCP nhận kết nối." },
-        { at: "eth1", jump: true, state: "skip", msg: "ENI phụ không được dùng." },
-        { at: "eth0", state: "pass", msg: "Đăng ký bằng instance ID thì NLB gửi tới **primary private IP** của **network interface chính** (eth0)." },
+        { at: "nlb", state: "pass", msg: "Listener TCP tiếp nhận kết nối." },
+        { at: "eth1", jump: true, state: "skip", msg: "ENI phụ không được sử dụng." },
+        { at: "eth0", state: "pass", msg: "Khi target được đăng ký bằng instance ID, NLB gửi traffic tới **primary private IP** của **primary network interface** (eth0)." },
       ],
       ok: true,
-      result: "Muốn gửi tới IP khác thì đăng ký target bằng địa chỉ IP (target type `ip`).",
+      result: "Để gửi traffic tới IP khác, cần đăng ký target bằng địa chỉ IP (target type `ip`).",
     }),
   },
 ];
 
 export default function HealthCheckSim() {
-  return <PacketSim scenarios={SCENARIOS} action="Chạy health check" hint="Chọn một tình huống rồi bấm nút chạy. Bật công tắc để sửa lỗi và chạy lại." />;
+  return <PacketSim scenarios={SCENARIOS} action="Chạy health check" hint="Chọn một tình huống, sau đó nhấn nút chạy. Bật cấu hình khắc phục và chạy lại để so sánh kết quả." />;
 }

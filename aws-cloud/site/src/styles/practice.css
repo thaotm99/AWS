@@ -1,4 +1,4 @@
-/* Ôn tập: certification picker, exam list, one-question runner, result. Classes are prefixed pr- to stay clear of lesson scenes. */
+/* Luyện đề: certification picker, exam list, one-question runner, result. Classes are prefixed pr- to stay clear of lesson scenes. */
 .pr-muted { color: var(--muted); font-size: var(--step--1); margin: 0; }
 .pr-error { color: var(--bad); background: var(--bad-soft); border-radius: 8px; padding: 10px 14px; margin: 12px 0 0; max-width: none; }
 .pr-empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 10px; padding: 24px; color: var(--muted); max-width: none; }
@@ -110,3 +110,9 @@
   .pr-exam-no { display: none; }
   .pr-card { padding: 16px; }
 }
+
+/* Translated questions: compare with the English original */
+.pr-lang { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: -2px 0 10px; }
+.pr-lang-btn { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 2px 10px; font-size: var(--step--1); color: var(--muted); cursor: pointer; }
+.pr-lang-btn:hover { color: var(--ink); border-color: var(--accent); }
+.pr-lang-btn[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }

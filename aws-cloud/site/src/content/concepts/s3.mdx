@@ -1,6 +1,6 @@
 ---
-title: "Amazon S3: lớp lưu trữ, bảo vệ, truy cập và hiệu năng"
-lede: "ShopViet cất ảnh sản phẩm, hoá đơn, video và log trên S3. Bài này chọn storage class và lifecycle cho từng loại dữ liệu, khoá hoá đơn để không ai xoá được, cấp quyền cho đúng người, chọn cách mã hoá, và giữ cho upload nhanh, không lỗi lúc đông khách."
+title: "Amazon S3: storage class, bảo vệ dữ liệu, kiểm soát truy cập và hiệu năng"
+lede: "Bài học trình bày năm nội dung: lựa chọn storage class và lifecycle theo từng loại dữ liệu, bảo vệ hoá đơn khỏi thao tác xoá (versioning, Object Lock), kiểm soát truy cập bucket, lựa chọn phương thức mã hoá, và tối ưu tốc độ tải lên cũng như khả năng chịu tải khi lưu lượng tăng cao."
 minutes: 35
 scenes: 5
 prerequisites: ["iam", "kms"]
@@ -34,141 +34,141 @@ import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
-  { href: "#s1", label: "1 · Storage class, lifecycle" },
-  { href: "#s2", label: "2 · Không ai xoá được hoá đơn" },
-  { href: "#s3", label: "3 · Cấp quyền" },
-  { href: "#s4", label: "4 · Ai giữ key mã hoá" },
-  { href: "#s5", label: "5 · Upload nhanh, chịu tải" },
-  { href: "#challenge", label: "Thử thách" },
+  { href: "#s1", label: "1 · Storage class và lifecycle" },
+  { href: "#s2", label: "2 · Bảo vệ dữ liệu khỏi thao tác xoá" },
+  { href: "#s3", label: "3 · Kiểm soát truy cập" },
+  { href: "#s4", label: "4 · Quản lý key mã hoá" },
+  { href: "#s5", label: "5 · Hiệu năng tải lên và khả năng chịu tải" },
+  { href: "#challenge", label: "Bài tập" },
 ]}>
-Ảnh sản phẩm, hoá đơn, video quảng cáo, log và dữ liệu phân tích của ShopViet đều nằm trên **S3**. Mỗi loại dữ liệu được mở với tần suất khác nhau, phải giữ trong thời gian khác nhau và do những người khác nhau dùng. Bài này đi qua từng loại để cấu hình S3 cho đúng.
+Ảnh sản phẩm, hoá đơn, video quảng cáo, log và dữ liệu phân tích của ShopViet đều được lưu trên **Amazon S3**. Mỗi loại dữ liệu có tần suất truy cập, thời hạn lưu giữ và nhóm người sử dụng khác nhau. Bài học phân tích từng loại dữ liệu để xác định cấu hình S3 phù hợp.
 </Story>
 
-<Scene id="s1" label="Cảnh 1/5" title="Mỗi loại dữ liệu một storage class" questions={["exam1_q8", "exam1_q15", "exam1_q28", "exam5_q49", "exam6_q9", "exam5_q51", "exam6_q28", "exam2_q34", "exam4_q43", "exam1_q19"]}>
+<Scene id="s1" label="Phần 1/5" title="Lựa chọn storage class theo loại dữ liệu" questions={["exam1_q8", "exam1_q15", "exam1_q28", "exam5_q49", "exam6_q9", "exam5_q51", "exam6_q28", "exam2_q34", "exam4_q43", "exam1_q19"]}>
 
-Tiền S3 gồm hai phần chính: phí lưu theo GB và phí lấy dữ liệu ra. Lớp càng rẻ để lưu thì lấy ra càng đắt hoặc càng chậm. Chọn từng loại dữ liệu của ShopViet để xem nên để ở đâu:
+Chi phí S3 gồm hai thành phần chính: phí lưu trữ tính theo GB và phí truy xuất dữ liệu. Storage class có phí lưu trữ càng thấp thì phí truy xuất càng cao hoặc thời gian truy xuất càng dài. Chọn từng loại dữ liệu của ShopViet để xem storage class phù hợp:
 
 <RequirementPicker client:visible items={[
-  { need: "Thumbnail tạo lại được từ ảnh gốc. Tuần đầu xem nhiều, sau đó ít nhưng vẫn phải mở được ngay", answer: "Lifecycle sang One Zone-IA sau 30 ngày",
-    why: "Tạo lại được nên chấp nhận lưu ở một AZ để rẻ hơn Standard-IA. Dữ liệu vẫn lấy ra ngay." },
-  { need: "Kho video sản phẩm hàng trăm TB, mỗi năm chỉ mở vài lần, nhưng mở là phải có trong mili giây", answer: "S3 Standard-IA",
-    why: "Rẻ hơn Standard mà vẫn lấy ngay. Glacier Deep Archive rẻ hơn nữa nhưng phải chờ nhiều giờ mới lấy được." },
-  { need: "File trung gian của pipeline xử lý đơn hàng, được đọc lại liên tục", answer: "S3 Standard",
-    why: "Đọc thường xuyên thì Standard rẻ nhất, vì các lớp IA tính phí mỗi lần lấy dữ liệu." },
-  { need: "Ảnh sản phẩm: mẫu bán chạy được xem liên tục, mẫu khác nằm im, không đoán trước được", answer: "S3 Intelligent-Tiering",
-    why: "Tự chuyển từng object giữa các tầng theo mức truy cập, không tính phí lấy dữ liệu, không cần ai theo dõi." },
-  { need: "Hoá đơn: tháng đầu mở thường xuyên, sau đó ít nhưng phải mở ngay, giữ 5 năm rồi xoá", answer: "Lifecycle sang Standard-IA sau 30 ngày + expiration",
-    why: "Standard-IA vẫn lấy ngay; rule expiration tự xoá khi hết thời gian lưu." },
-  { need: "Log thô đã xử lý xong, chỉ giữ cho chắc, gần như không bao giờ đọc lại", answer: "Lifecycle sang Glacier Deep Archive",
-    why: "Lớp rẻ nhất cho dữ liệu lưu trữ dài hạn. Chấp nhận chờ nhiều giờ khi cần lấy." },
+  { need: "Thumbnail có thể tạo lại từ ảnh gốc; truy cập nhiều trong tuần đầu, sau đó giảm nhưng vẫn phải truy xuất được ngay", answer: "Lifecycle sang One Zone-IA sau 30 ngày",
+    why: "Do dữ liệu có thể tạo lại, việc lưu tại một AZ để có chi phí thấp hơn Standard-IA là chấp nhận được. Dữ liệu vẫn được truy xuất ngay." },
+  { need: "Kho video sản phẩm hàng trăm TB, chỉ được truy cập vài lần mỗi năm nhưng khi truy cập phải có dữ liệu trong mili giây", answer: "S3 Standard-IA",
+    why: "Chi phí thấp hơn Standard mà vẫn truy xuất ngay. Glacier Deep Archive có chi phí thấp hơn nữa nhưng thời gian truy xuất lên tới nhiều giờ." },
+  { need: "Tệp trung gian của pipeline xử lý đơn hàng, được đọc lại liên tục", answer: "S3 Standard",
+    why: "Với dữ liệu đọc thường xuyên, Standard có chi phí thấp nhất vì các lớp IA tính phí cho mỗi lần truy xuất dữ liệu." },
+  { need: "Ảnh sản phẩm: mẫu bán chạy được truy cập liên tục, các mẫu khác hầu như không được truy cập; không dự đoán trước được", answer: "S3 Intelligent-Tiering",
+    why: "Tự động chuyển từng object giữa các tầng theo mức độ truy cập, không tính phí truy xuất dữ liệu và không yêu cầu giám sát thủ công." },
+  { need: "Hoá đơn: truy cập thường xuyên trong tháng đầu, sau đó ít nhưng phải truy xuất được ngay; lưu giữ 5 năm rồi xoá", answer: "Lifecycle sang Standard-IA sau 30 ngày + expiration",
+    why: "Standard-IA vẫn truy xuất ngay; rule expiration tự động xoá object khi hết thời hạn lưu giữ." },
+  { need: "Log thô đã xử lý xong, chỉ lưu giữ để dự phòng, gần như không được đọc lại", answer: "Lifecycle sang Glacier Deep Archive",
+    why: "Storage class có chi phí thấp nhất cho dữ liệu lưu trữ dài hạn, đổi lại thời gian truy xuất lên tới nhiều giờ." },
 ]} />
 
-Lifecycle chỉ chuyển theo một chiều, xuống các lớp rẻ hơn. Thử vài cặp, ví dụ Intelligent-Tiering → Standard hay One Zone-IA → Standard-IA:
+Lifecycle chỉ chuyển object theo một chiều, xuống các storage class có chi phí thấp hơn. Thử một số cặp, ví dụ Intelligent-Tiering → Standard hoặc One Zone-IA → Standard-IA:
 
 <LifecycleValidator client:visible />
 
-<Takeaway>Mở thường xuyên: Standard. Không đoán được: Intelligent-Tiering. Ít mở nhưng cần ngay: Standard-IA (tạo lại được thì One Zone-IA). Lưu trữ lâu: các lớp Glacier. Lifecycle không đi ngược lên, và phải đủ 30 ngày mới sang Standard-IA/One Zone-IA.</Takeaway>
+<Takeaway>Truy cập thường xuyên: Standard. Mẫu truy cập không dự đoán được: Intelligent-Tiering. Truy cập ít nhưng cần truy xuất ngay: Standard-IA (One Zone-IA nếu dữ liệu tạo lại được). Lưu trữ dài hạn: các lớp Glacier. Lifecycle không chuyển ngược lên, và object phải được lưu đủ 30 ngày mới chuyển được sang Standard-IA/One Zone-IA.</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Cảnh 2/5" title="Không ai xoá được hoá đơn: versioning, Object Lock" questions={["exam1_q20", "exam5_q50", "exam1_q56", "exam4_q64", "exam5_q39"]}>
+<Scene id="s2" label="Phần 2/5" title="Bảo vệ hoá đơn khỏi thao tác xoá: versioning và Object Lock" questions={["exam1_q20", "exam5_q50", "exam1_q56", "exam4_q64", "exam5_q39"]}>
 
-Luật yêu cầu ShopViet giữ hoá đơn nhiều năm. Có người bấm xoá nhầm, có script dọn dẹp viết sai, có khi chính admin muốn xoá. Chọn cách bảo vệ bucket, chọn người xoá, rồi xem lớp nào giữ lại hoá đơn:
+Quy định pháp lý yêu cầu ShopViet lưu giữ hoá đơn trong nhiều năm. Rủi ro mất dữ liệu đến từ thao tác xoá nhầm của nhân viên, script dọn dẹp bị lỗi, hoặc chính quản trị viên chủ động xoá. Chọn cơ chế bảo vệ bucket và chủ thể thực hiện xoá, sau đó quan sát lớp bảo vệ nào giữ lại hoá đơn:
 
 <DeleteGuardSim client:visible />
 
-Hạn lưu (**Retain Until Date**) đặt cho từng phiên bản của object, nên mỗi phiên bản có thể có mode và hạn lưu riêng. Với dữ liệu lưu trữ trong S3 Glacier vault, **Glacier Vault Lock** làm việc tương tự: đã khoá vault lock policy thì không ai sửa được nữa.
+Thời hạn lưu giữ (**Retain Until Date**) được đặt cho từng phiên bản object, do đó mỗi phiên bản có thể có mode và thời hạn lưu giữ riêng. Với dữ liệu lưu trong S3 Glacier vault, **Glacier Vault Lock** hoạt động theo cơ chế tương tự: sau khi vault lock policy được khoá, không ai có thể thay đổi policy đó.
 
-<Takeaway>Chống xoá nhầm: versioning (xoá thường chỉ thêm delete marker). Xoá hẳn phải xác thực thêm: MFA Delete. Không ai xoá được, kể cả root: Object Lock Compliance mode. Governance mode vẫn cho người có quyền bypass. Giữ không thời hạn, ví dụ khi có tranh chấp: legal hold.</Takeaway>
+<Takeaway>Chống xoá nhầm: versioning (thao tác xoá thông thường chỉ thêm delete marker). Yêu cầu xác thực bổ sung khi xoá vĩnh viễn: MFA Delete. Không ai xoá được, kể cả root: Object Lock Compliance mode. Governance mode vẫn cho phép người có quyền bypass thực hiện xoá. Lưu giữ không thời hạn, ví dụ khi có tranh chấp: legal hold.</Takeaway>
 
 </Scene>
 
-<Scene id="s3" label="Cảnh 3/5" title="Ai được đọc bucket nào?" questions={["exam4_q65", "exam2_q24", "exam4_q8", "exam2_q15", "exam6_q30", "exam6_q3", "exam6_q54"]}>
+<Scene id="s3" label="Phần 3/5" title="Kiểm soát truy cập bucket" questions={["exam4_q65", "exam2_q24", "exam4_q8", "exam2_q15", "exam6_q30", "exam6_q3", "exam6_q54"]}>
 
-Càng nhiều team và đối tác dùng dữ liệu, ShopViet càng cần cấp quyền gọn và rõ. Chọn từng tình huống:
+Khi số lượng team và đối tác sử dụng dữ liệu tăng lên, việc cấp quyền cần được tổ chức gọn và rõ ràng. Chọn từng tình huống:
 
 <RequirementPicker client:visible items={[
-  { need: "Kế toán của ShopViet và công ty kiểm toán (account AWS khác) cùng đọc bucket hoá đơn", answer: "Bucket policy",
-    why: "Bucket policy là resource policy, cấp quyền được cho principal ở account khác." },
-  { need: "Ba team phân tích (marketing, kho, tài chính), mỗi team chỉ được đọc một prefix", answer: "S3 Access Points, mỗi team một access point",
-    why: "Mỗi access point có policy riêng giới hạn theo prefix, thay vì một bucket policy dài và khó sửa." },
-  { need: "Bucket policy có IpAddress 54.240.143.0/24 và NotIpAddress 54.240.143.188/32. Ai vào được?", answer: "Cả dải /24, trừ đúng địa chỉ .188",
-    why: "Hai điều kiện phải cùng đúng: nằm trong dải /24 và không phải .188." },
-  { need: "Redshift của team dữ liệu (account khác) UNLOAD file vào bucket, nhưng ShopViet không đọc được file đó", answer: "Object thuộc account đã upload, không tự thuộc chủ bucket",
-    why: "Đây là cách ACL kiểu cũ hoạt động. Bucket mới mặc định Object Ownership = bucket owner enforced: ACL bị tắt và chủ bucket sở hữu mọi object." },
-  { need: "Cần biết bucket nào trong cả công ty, ở mọi Region và account, chưa bật versioning", answer: "S3 Storage Lens (advanced metrics)",
-    why: "Dashboard tổng hợp cho toàn Organization." },
-  { need: "Muốn biết khi nào nên chuyển dữ liệu từ Standard sang Standard-IA", answer: "Storage Class Analysis",
-    why: "Phân tích cách dữ liệu được truy cập rồi gợi ý thời điểm chuyển từ Standard sang Standard-IA. Nó không gợi ý các lớp khác." },
-  { need: "Ảnh sản phẩm chỉ được tải qua CloudFront", answer: "OAC/OAI + bucket policy", why: "Xem bài CloudFront." },
+  { need: "Bộ phận kế toán của ShopViet và công ty kiểm toán (AWS account khác) cùng đọc bucket hoá đơn", answer: "Bucket policy",
+    why: "Bucket policy là resource-based policy, cho phép cấp quyền cho principal thuộc account khác." },
+  { need: "Ba team phân tích (marketing, kho, tài chính); mỗi team chỉ được đọc một prefix", answer: "S3 Access Points, mỗi team một access point",
+    why: "Mỗi access point có policy riêng giới hạn theo prefix, thay cho một bucket policy dài và khó bảo trì." },
+  { need: "Bucket policy có IpAddress 54.240.143.0/24 và NotIpAddress 54.240.143.188/32. Địa chỉ nào được phép truy cập?", answer: "Toàn bộ dải /24, trừ địa chỉ .188",
+    why: "Hai điều kiện phải được thoả mãn đồng thời: thuộc dải /24 và không phải địa chỉ .188." },
+  { need: "Redshift của team dữ liệu (account khác) UNLOAD tệp vào bucket, nhưng ShopViet không đọc được các tệp đó", answer: "Object thuộc account đã tải lên, không mặc nhiên thuộc chủ sở hữu bucket",
+    why: "Đây là cơ chế của ACL kiểu cũ. Bucket mới mặc định Object Ownership = bucket owner enforced: ACL bị vô hiệu hoá và chủ sở hữu bucket sở hữu mọi object." },
+  { need: "Cần xác định các bucket chưa bật versioning trong toàn công ty, trên mọi Region và account", answer: "S3 Storage Lens (advanced metrics)",
+    why: "Cung cấp dashboard tổng hợp cho toàn bộ Organization." },
+  { need: "Cần xác định thời điểm nên chuyển dữ liệu từ Standard sang Standard-IA", answer: "Storage Class Analysis",
+    why: "Phân tích mẫu truy cập dữ liệu và đề xuất thời điểm chuyển từ Standard sang Standard-IA. Tính năng này không đề xuất cho các storage class khác." },
+  { need: "Ảnh sản phẩm chỉ được truy cập thông qua CloudFront", answer: "OAC/OAI + bucket policy", why: "Xem bài CloudFront." },
 ]} />
 
-<Takeaway>Cho account khác: bucket policy. Nhiều team, mỗi team một prefix: access points. Theo dõi cả tổ chức: Storage Lens. Bucket mới để Object Ownership = bucket owner enforced.</Takeaway>
+<Takeaway>Cấp quyền cho account khác: bucket policy. Nhiều team, mỗi team một prefix: access point. Giám sát toàn tổ chức: Storage Lens. Bucket mới sử dụng Object Ownership = bucket owner enforced.</Takeaway>
 
 </Scene>
 
-<Scene id="s4" label="Cảnh 4/5" title="Ai giữ key mã hoá?" questions={["exam2_q10", "exam6_q51", "exam3_q24", "exam1_q22", "exam5_q46"]}>
+<Scene id="s4" label="Phần 4/5" title="Quản lý key mã hoá" questions={["exam2_q10", "exam6_q51", "exam3_q24", "exam1_q22", "exam5_q46"]}>
 
-Kiểu mã hoá nào cũng làm dữ liệu trên đĩa vô dụng nếu không có key. Khác nhau ở chỗ ai mã hoá, key nằm ở đâu, và mỗi lần dùng key có được ghi log hay không. Chọn nhu cầu của ShopViet, upload ba hoá đơn và để ý chấm dữ liệu đổi màu ở đâu:
+Mọi phương thức mã hoá đều khiến dữ liệu lưu trên đĩa không thể sử dụng nếu không có key. Điểm khác biệt nằm ở thành phần thực hiện mã hoá, nơi lưu trữ key, và việc mỗi lần sử dụng key có được ghi log hay không. Chọn yêu cầu của ShopViet, tải lên ba hoá đơn và quan sát vị trí dữ liệu chuyển sang trạng thái mã hoá:
 
 <EncryptionSim client:visible />
 
-<Takeaway>Đơn giản nhất: SSE-S3. Cần audit việc dùng key: SSE-KMS (bật S3 Bucket Key để giảm phí gọi KMS). Key phải ở lại công ty nhưng để S3 mã hoá: SSE-C. Thuật toán riêng: client-side encryption.</Takeaway>
+<Takeaway>Cấu hình đơn giản nhất: SSE-S3. Cần audit việc sử dụng key: SSE-KMS (bật S3 Bucket Key để giảm chi phí gọi KMS). Key phải được lưu giữ tại công ty nhưng S3 thực hiện mã hoá: SSE-C. Thuật toán mã hoá riêng: client-side encryption.</Takeaway>
 
 </Scene>
 
-<Scene id="s5" label="Cảnh 5/5" title="Upload nhanh và chịu tải lúc đông khách" questions={["exam4_q14", "exam1_q64", "exam1_q18", "exam1_q40", "exam1_q51", "exam6_q20", "exam5_q21"]}>
+<Scene id="s5" label="Phần 5/5" title="Tối ưu tốc độ tải lên và khả năng chịu tải cao điểm" questions={["exam4_q14", "exam1_q64", "exam1_q18", "exam1_q40", "exam1_q51", "exam6_q20", "exam5_q21"]}>
 
-Bốn sự cố ShopViet gặp khi dữ liệu lớn dần và khách đông dần. Chạy thử từng tình huống, rồi bật tính năng S3 tương ứng để xem khác biệt:
+Phần này trình bày bốn sự cố ShopViet gặp phải khi khối lượng dữ liệu và số lượng người dùng tăng lên. Chạy từng tình huống, sau đó bật tính năng S3 tương ứng để so sánh kết quả:
 
 <UploadSim client:visible />
 
-Khách ở xa vừa tải video về vừa upload lên thì dùng cả hai: **CloudFront** cho chiều tải về, **S3 Transfer Acceleration** cho chiều tải lên.
+Với người dùng ở xa vừa tải video xuống vừa tải tệp lên, cần kết hợp cả hai: **CloudFront** cho chiều tải xuống và **S3 Transfer Acceleration** cho chiều tải lên.
 
-<Takeaway>File lớn: multipart upload (bắt buộc khi trên 5 GB). Người upload ở xa: Transfer Acceleration, không nhanh hơn thì không tính phí. Quá nhiều request: chia key ra nhiều prefix. Chỉ cần một đoạn file: byte-range fetch.</Takeaway>
+<Takeaway>Tệp dung lượng lớn: multipart upload (bắt buộc với object trên 5 GB). Người tải lên ở xa: Transfer Acceleration, không tính phí nếu không cải thiện tốc độ. Số lượng request quá lớn: phân bổ key ra nhiều prefix. Chỉ cần một phần của tệp: byte-range fetch.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="Compliance, Governance hay Legal hold?" questions={["exam5_q50", "exam1_q56", "exam1_q19", "exam6_q9", "exam2_q10", "exam1_q51"]}>
+<Scene id="challenge" label="Bài tập" title="Phân loại đặc tính: Compliance mode, Governance mode và Legal hold" questions={["exam5_q50", "exam1_q56", "exam1_q19", "exam6_q9", "exam2_q10", "exam1_q51"]}>
 
-Xếp từng đặc điểm vào đúng kiểu khoá. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
+Phân loại từng đặc tính vào cơ chế khoá tương ứng. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
 <SortGame client:visible
   bins={[
     { id: "comp", title: "Compliance mode", sub: "Không ai bỏ qua được", hint: "Gợi ý: kể cả root cũng không xoá được." },
-    { id: "gov", title: "Governance mode", sub: "Có quyền đặc biệt thì bỏ qua được", hint: "Gợi ý: người có quyền bypass vẫn xoá được." },
-    { id: "hold", title: "Legal hold", sub: "Không có thời hạn", hint: "Gợi ý: giữ cho tới khi được gỡ, không có ngày hết hạn." },
+    { id: "gov", title: "Governance mode", sub: "Bỏ qua được với quyền đặc biệt", hint: "Gợi ý: người có quyền bypass vẫn xoá được." },
+    { id: "hold", title: "Legal hold", sub: "Không có thời hạn", hint: "Gợi ý: có hiệu lực tới khi được gỡ, không có ngày hết hạn." },
   ]}
   cards={[
-    ["Root user cũng không xoá được trong thời hạn", "comp"], ["Không rút ngắn được thời hạn lưu", "comp"],
-    ["Người có s3:BypassGovernanceRetention vẫn xoá được", "gov"], ["Thử nghiệm cấu hình trước khi khoá thật", "gov"],
-    ["Giữ object cho tới khi gỡ hold", "hold"], ["Không cần Retain Until Date", "hold"],
+    ["Root user cũng không xoá được trong thời hạn lưu giữ", "comp"], ["Không rút ngắn được thời hạn lưu giữ", "comp"],
+    ["Người có s3:BypassGovernanceRetention vẫn xoá được", "gov"], ["Kiểm thử cấu hình trước khi áp dụng khoá chính thức", "gov"],
+    ["Giữ object cho tới khi hold được gỡ", "hold"], ["Không yêu cầu Retain Until Date", "hold"],
   ]}
 />
 
-Kiểm tra nhanh: nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "Bạn viết lifecycle rule cho bucket ảnh. Transition nào S3 KHÔNG cho phép?",
+  { q: "Khi cấu hình lifecycle rule cho bucket ảnh, transition nào S3 KHÔNG hỗ trợ?",
     opts: ["Standard → Intelligent-Tiering", "Intelligent-Tiering → Standard", "Standard-IA → One Zone-IA"],
     a: 1,
-    why: "Lifecycle không chuyển ngược về Standard. Hai cặp còn lại hợp lệ." },
-  { q: "Ảnh sản phẩm có mẫu xem nhiều, có mẫu để lâu không ai xem, và không đoán trước được. Lớp nào rẻ nhất về lâu dài?",
+    why: "Lifecycle không chuyển ngược về Standard. Hai transition còn lại hợp lệ." },
+  { q: "Một số ảnh sản phẩm được truy cập nhiều, một số khác lâu không được truy cập, và mẫu truy cập không dự đoán trước được. Storage class nào có chi phí thấp nhất về dài hạn?",
     opts: ["Standard-IA", "Intelligent-Tiering", "One Zone-IA"],
     a: 1,
-    why: "Intelligent-Tiering tự chuyển theo mức truy cập và không tính phí lấy dữ liệu." },
-  { q: "Luật yêu cầu giữ hoá đơn 7 năm, không ai được xoá, kể cả root. Bật gì cho bucket hoá đơn?",
+    why: "Intelligent-Tiering tự động chuyển tầng theo mức độ truy cập và không tính phí truy xuất dữ liệu." },
+  { q: "Quy định pháp lý yêu cầu lưu giữ hoá đơn 7 năm, không ai được xoá, kể cả root. Cần bật tính năng nào cho bucket hoá đơn?",
     opts: ["Object Lock Governance mode", "Object Lock Compliance mode", "Versioning"],
     a: 1,
-    why: "Compliance mode không ai bỏ qua được trong thời gian lưu. Governance vẫn cho người có quyền bypass xoá." },
-  { q: "Bộ phận bảo mật yêu cầu key mã hoá phải ở lại server của công ty, nhưng muốn S3 lo việc mã hoá. Chọn gì?",
+    why: "Compliance mode không cho phép bất kỳ ai bỏ qua trong thời hạn lưu giữ. Governance mode vẫn cho phép người có quyền bypass thực hiện xoá." },
+  { q: "Bộ phận bảo mật yêu cầu key mã hoá phải được lưu giữ trên máy chủ của công ty, nhưng S3 đảm nhận việc mã hoá. Phương án nào phù hợp?",
     opts: ["SSE-KMS", "SSE-C", "Client-side encryption"],
     a: 1,
-    why: "Với SSE-C, app gửi key theo từng request; S3 mã hoá rồi bỏ key, không lưu." },
-  { q: "Ngày flash sale, upload ảnh đơn hàng bị lỗi 503 khi vượt 5.000 request/giây vào cùng một prefix. Sửa thế nào?",
-    opts: ["Tạo thêm bucket ở nhiều Region", "Đặt key theo prefix riêng cho từng shop", "Chuyển sang EFS"],
+    why: "Với SSE-C, ứng dụng gửi key kèm theo từng request; S3 mã hoá dữ liệu rồi loại bỏ key, không lưu lại." },
+  { q: "Trong đợt flash sale, tác vụ tải lên ảnh đơn hàng gặp lỗi 503 khi vượt 5.000 request/giây vào cùng một prefix. Cách khắc phục nào phù hợp?",
+    opts: ["Tạo thêm bucket tại nhiều Region", "Đặt key theo prefix riêng cho từng shop", "Chuyển sang EFS"],
     a: 1,
-    why: "Giới hạn request tính theo từng prefix; thêm prefix là thêm năng lực." },
+    why: "Giới hạn request được tính theo từng prefix; bổ sung prefix đồng nghĩa với tăng khả năng xử lý request." },
 ]} />
 
 </Scene>

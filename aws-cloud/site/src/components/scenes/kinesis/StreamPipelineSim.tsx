@@ -17,128 +17,128 @@ const KDS = (why: string): Opt => ({ l1: "Kinesis Data Streams", ok: true, why }
 
 const NEEDS: Need[] = [
   {
-    name: "Gợi ý theo từng click",
-    about: "Mỗi click trên web phải được phân tích ngay để gợi ý sản phẩm, không mất click nào khi tải tăng vọt, và lưu lại vào S3.",
+    name: "Gợi ý sản phẩm theo từng click",
+    about: "Mỗi click trên web phải được phân tích ngay để gợi ý sản phẩm, không được mất click khi tải tăng đột biến, và kết quả được lưu vào S3.",
     source: ["Web ShopViet", "click"],
     slots: [
-      { name: "Thu dữ liệu", opts: [
-        KDS("Nhận hàng nghìn click mỗi giây, giữ dữ liệu để đọc lại nếu bước sau lỗi."),
-        { l1: "EC2 ghi vào Aurora", l2: "như hiện tại", ok: false, why: "Server và database là điểm nghẽn; tải tăng vọt là mất click." },
-        { l1: "SQS + EC2", l2: "thư viện tự viết", ok: false, why: "Phải tự viết phần phân tích trên EC2; SQS không có công cụ phân tích stream." },
+      { name: "Thu thập", opts: [
+        KDS("Tiếp nhận hàng nghìn click mỗi giây, lưu giữ dữ liệu để đọc lại khi bước tiếp theo gặp lỗi."),
+        { l1: "EC2 ghi vào Aurora", l2: "kiến trúc hiện tại", ok: false, why: "Máy chủ và database là điểm nghẽn; khi tải tăng đột biến, click bị mất." },
+        { l1: "SQS + EC2", l2: "thư viện tự phát triển", ok: false, why: "Phần phân tích trên EC2 phải tự phát triển; SQS không cung cấp công cụ phân tích stream." },
       ] },
       { name: "Phân tích", opts: [
-        { l1: "Managed Service for", l2: "Apache Flink (SQL)", ok: true, why: "Tên cũ là Kinesis Data Analytics: chạy truy vấn liên tục trên dữ liệu đang chảy." },
-        { l1: "Amazon QuickSight", ok: false, why: "QuickSight vẽ dashboard, không chạy truy vấn liên tục trên stream." },
-        { l1: "Amazon Athena", ok: false, why: "Athena truy vấn file đã nằm trong S3, không phải dữ liệu đang chảy." },
+        { l1: "Managed Service for", l2: "Apache Flink (SQL)", ok: true, why: "Tên cũ là Kinesis Data Analytics: thực thi truy vấn liên tục trên luồng dữ liệu." },
+        { l1: "Amazon QuickSight", ok: false, why: "QuickSight dùng để xây dựng dashboard, không thực thi truy vấn liên tục trên stream." },
+        { l1: "Amazon Athena", ok: false, why: "Athena truy vấn file đã lưu trong S3, không áp dụng cho luồng dữ liệu đang truyền." },
       ] },
-      { name: "Lưu lại", opts: [
-        { l1: "Amazon Data Firehose", l2: "→ S3", ok: true, why: "Firehose gom kết quả theo lô rồi ghi vào S3, không cần code." },
-        { l1: "Lambda tự ghi file", ok: false, why: "Chạy được nhưng phải tự gom, tự retry, tự đặt tên file." },
+      { name: "Lưu trữ", opts: [
+        { l1: "Amazon Data Firehose", l2: "→ S3", ok: true, why: "Firehose gộp kết quả theo batch và ghi vào S3, không cần viết mã." },
+        { l1: "Lambda tự ghi file", ok: false, why: "Phương án hoạt động được nhưng phải tự xử lý gộp dữ liệu, retry và đặt tên file." },
       ] },
     ],
-    result: "Kinesis Data Streams nhận, Flink (Kinesis Data Analytics) phân tích bằng SQL, Firehose lưu vào S3. Không có server nào phải quản lý.",
+    result: "Kinesis Data Streams tiếp nhận, Flink (Kinesis Data Analytics) phân tích bằng SQL, Firehose lưu vào S3. Không có máy chủ cần quản lý.",
   },
   {
-    name: "Vị trí shipper qua REST API",
-    about: "App của shipper gửi vị trí liên tục qua một REST API. Đội vận hành cần xem phân tích theo thời gian thực.",
-    source: ["App shipper", "gửi vị trí"],
+    name: "Thu thập vị trí shipper qua REST API",
+    about: "Ứng dụng của shipper gửi vị trí liên tục qua một REST API. Đội vận hành cần phân tích dữ liệu theo thời gian thực.",
+    source: ["Ứng dụng shipper", "gửi vị trí"],
     slots: [
-      { name: "Cổng vào", opts: [
-        { l1: "Amazon API Gateway", l2: "→ Kinesis", ok: true, why: "REST API nhận vị trí rồi ghi thẳng vào stream." },
-        { l1: "Amazon Athena", l2: "+ S3", ok: false, why: "Athena không nhận dữ liệu qua REST và không chạy thời gian thực." },
+      { name: "Điểm tiếp nhận", opts: [
+        { l1: "Amazon API Gateway", l2: "→ Kinesis", ok: true, why: "REST API tiếp nhận vị trí và ghi trực tiếp vào stream." },
+        { l1: "Amazon Athena", l2: "+ S3", ok: false, why: "Athena không tiếp nhận dữ liệu qua REST và không xử lý theo thời gian thực." },
       ] },
       { name: "Phân tích", opts: [
-        { l1: "Kinesis Data Analytics", l2: "(Apache Flink)", ok: true, why: "Tính quãng đường, tốc độ, xe đứng yên… ngay khi dữ liệu tới." },
-        { l1: "Redshift", l2: "+ QuickSight", ok: false, why: "Hợp báo cáo, nhưng dữ liệu phải nạp vào kho trước, không theo thời gian thực." },
+        { l1: "Kinesis Data Analytics", l2: "(Apache Flink)", ok: true, why: "Tính quãng đường, tốc độ, phương tiện đứng yên… ngay khi dữ liệu được tiếp nhận." },
+        { l1: "Redshift", l2: "+ QuickSight", ok: false, why: "Phù hợp cho báo cáo, nhưng dữ liệu phải được nạp vào kho trước, không đáp ứng thời gian thực." },
       ] },
     ],
-    result: "API Gateway làm cổng REST, Kinesis Data Analytics phân tích vị trí ngay khi tới.",
+    result: "API Gateway đóng vai trò điểm tiếp nhận REST, Kinesis Data Analytics phân tích vị trí ngay khi dữ liệu được tiếp nhận.",
   },
   {
-    name: "Tìm giao dịch tức thì",
-    about: "Bộ phận chăm sóc khách cần tìm kiếm full-text trên giao dịch vừa xảy ra và xem dashboard tương tác.",
+    name: "Tìm kiếm giao dịch tức thời",
+    about: "Bộ phận chăm sóc khách hàng cần tìm kiếm full-text trên các giao dịch vừa phát sinh và sử dụng dashboard tương tác.",
     source: ["Cổng thanh toán", "giao dịch"],
     slots: [
-      { name: "Thu dữ liệu", opts: [
-        KDS("Nhận stream giao dịch với độ trễ thấp."),
-        { l1: "EC2 tự viết", ok: false, why: "Phải tự lo scale và vận hành." },
+      { name: "Thu thập", opts: [
+        KDS("Tiếp nhận luồng giao dịch với độ trễ thấp."),
+        { l1: "Ứng dụng trên EC2", ok: false, why: "Phải tự xử lý việc scale và vận hành." },
       ] },
       { name: "Tìm kiếm", opts: [
-        { l1: "Amazon OpenSearch", l2: "Service", ok: true, why: "Đánh chỉ mục, tìm full-text gần như ngay khi dữ liệu tới." },
-        { l1: "Amazon DynamoDB", ok: false, why: "Không có tìm kiếm full-text." },
-        { l1: "Amazon Redshift", ok: false, why: "Kho dữ liệu để phân tích, không làm tìm kiếm full-text tức thì." },
+        { l1: "Amazon OpenSearch", l2: "Service", ok: true, why: "Đánh chỉ mục và tìm kiếm full-text gần như ngay khi dữ liệu được tiếp nhận." },
+        { l1: "Amazon DynamoDB", ok: false, why: "Không hỗ trợ tìm kiếm full-text." },
+        { l1: "Amazon Redshift", ok: false, why: "Data warehouse phục vụ phân tích, không đáp ứng tìm kiếm full-text tức thời." },
       ] },
       { name: "Dashboard", opts: [
         { l1: "Amazon QuickSight", ok: true, why: "Dashboard tương tác cho người dùng nghiệp vụ." },
         { l1: "CloudWatch dashboard", ok: false, why: "Dành cho metric vận hành, không phải dashboard nghiệp vụ." },
       ] },
     ],
-    result: "Kinesis Data Streams → OpenSearch Service để tìm kiếm → QuickSight để vẽ dashboard.",
+    result: "Kinesis Data Streams → OpenSearch Service cho tìm kiếm → QuickSight cho dashboard.",
   },
   {
-    name: "Đưa log cũ trong S3 vào stream",
-    about: "Log nhiều năm nằm trong S3, và file mới vẫn được ghi thêm. Cần đẩy cả dữ liệu cũ lẫn phần mới vào Kinesis, nhanh nhất có thể.",
+    name: "Chuyển log lịch sử trong S3 vào stream",
+    about: "Log nhiều năm được lưu trong S3 và file mới vẫn tiếp tục được ghi thêm. Cần chuyển cả dữ liệu lịch sử lẫn dữ liệu mới vào Kinesis trong thời gian ngắn nhất.",
     source: ["S3", "log cũ + file mới"],
     slots: [
-      { name: "Cầu nối", opts: [
-        { l1: "AWS DMS", l2: "nguồn S3, đích Kinesis", ok: true, why: "DMS đọc S3 làm nguồn, ghi vào Kinesis Data Streams làm đích, cả dữ liệu có sẵn lẫn thay đổi mới. Không viết code." },
-        { l1: "S3 event → Lambda", ok: false, why: "Chỉ bắt file mới tạo; dữ liệu cũ không được đẩy, và phải viết code." },
-        { l1: "S3 → SNS", ok: false, why: "SNS không giao thẳng vào Kinesis Data Streams." },
+      { name: "Chuyển dữ liệu", opts: [
+        { l1: "AWS DMS", l2: "nguồn S3, đích Kinesis", ok: true, why: "DMS sử dụng S3 làm nguồn và Kinesis Data Streams làm đích, chuyển cả dữ liệu hiện có lẫn thay đổi mới. Không cần viết mã." },
+        { l1: "S3 event → Lambda", ok: false, why: "Chỉ xử lý file mới được tạo; dữ liệu lịch sử không được chuyển, đồng thời phải viết mã." },
+        { l1: "S3 → SNS", ok: false, why: "SNS không phân phối trực tiếp vào Kinesis Data Streams." },
       ] },
-      { name: "Đích", opts: [KDS("Các app phân tích đọc từ đây như mọi stream khác.")] },
+      { name: "Đích", opts: [KDS("Các ứng dụng phân tích đọc dữ liệu từ stream này như mọi stream khác.")] },
     ],
-    result: "AWS DMS làm cầu nối S3 → Kinesis Data Streams, không phải viết và duy trì code mới.",
+    result: "AWS DMS chuyển dữ liệu S3 → Kinesis Data Streams, không cần phát triển và duy trì mã nguồn mới.",
   },
   {
-    name: "Che thông tin thẻ rồi lưu",
-    about: "Hàng trăm nghìn giao dịch mỗi giờ. Nhiều app nội bộ cần đọc giao dịch gốc; bản đã xoá thông tin nhạy cảm thì lưu vào database dạng document để tra nhanh.",
+    name: "Ẩn thông tin thẻ trước khi lưu trữ",
+    about: "Hệ thống phát sinh hàng trăm nghìn giao dịch mỗi giờ. Nhiều ứng dụng nội bộ cần đọc giao dịch gốc; bản đã loại bỏ thông tin nhạy cảm được lưu vào document database để truy vấn với độ trễ thấp.",
     source: ["Web ShopViet", "giao dịch"],
     slots: [
-      { name: "Thu dữ liệu", opts: [
-        KDS("Nhiều app nội bộ cùng đọc stream giao dịch gốc."),
-        { l1: "Amazon Data Firehose", ok: false, why: "App không đọc được dữ liệu từ Firehose; Firehose chỉ giao tới đích như S3, Redshift, OpenSearch." },
-        { l1: "File S3 theo lô", ok: false, why: "Theo lô, không gần thời gian thực." },
+      { name: "Thu thập", opts: [
+        KDS("Nhiều ứng dụng nội bộ cùng đọc luồng giao dịch gốc."),
+        { l1: "Amazon Data Firehose", ok: false, why: "Ứng dụng không thể đọc dữ liệu từ Firehose; Firehose chỉ phân phối tới đích như S3, Redshift, OpenSearch." },
+        { l1: "File S3 theo batch", ok: false, why: "Xử lý theo batch, không đáp ứng yêu cầu gần thời gian thực." },
       ] },
       { name: "Xử lý", opts: [
-        { l1: "AWS Lambda", ok: true, why: "Lambda đọc stream theo batch, xoá số thẻ và số điện thoại trong từng giao dịch." },
-        { l1: "Rule trong DynamoDB", ok: false, why: "DynamoDB không có rule nào tự sửa dữ liệu khi ghi." },
+        { l1: "AWS Lambda", ok: true, why: "Lambda đọc stream theo batch, loại bỏ số thẻ và số điện thoại trong từng giao dịch." },
+        { l1: "Rule trong DynamoDB", ok: false, why: "DynamoDB không có cơ chế rule tự động chỉnh sửa dữ liệu khi ghi." },
       ] },
-      { name: "Lưu", opts: [
-        { l1: "Amazon DynamoDB", ok: true, why: "Database dạng document, đọc với độ trễ thấp." },
-        { l1: "File trong S3", ok: false, why: "Không tra nhanh được từng giao dịch." },
+      { name: "Lưu trữ", opts: [
+        { l1: "Amazon DynamoDB", ok: true, why: "Hỗ trợ mô hình document, đọc với độ trễ thấp." },
+        { l1: "File trong S3", ok: false, why: "Không hỗ trợ truy vấn từng giao dịch với độ trễ thấp." },
       ] },
     ],
-    result: "Kinesis Data Streams cho nhiều app cùng đọc bản gốc; Lambda làm sạch rồi ghi DynamoDB.",
+    result: "Kinesis Data Streams cho phép nhiều ứng dụng cùng đọc bản gốc; Lambda loại bỏ dữ liệu nhạy cảm và ghi vào DynamoDB.",
   },
   {
-    name: "Mỗi lô cần xử lý 30 phút",
-    about: "Dữ liệu cảm biến kho đổ về liên tục, mỗi lô cần một job chạy khoảng 30 phút. Cần serverless và scale theo lượng dữ liệu.",
+    name: "Mỗi batch cần xử lý 30 phút",
+    about: "Dữ liệu cảm biến tại kho được gửi về liên tục; mỗi batch cần một tác vụ chạy khoảng 30 phút. Yêu cầu kiến trúc serverless và scale theo lượng dữ liệu.",
     source: ["Cảm biến kho", "dữ liệu liên tục"],
     slots: [
-      { name: "Thu dữ liệu", opts: [
-        KDS("Nhận dữ liệu liên tục, giữ lại cho bước xử lý đọc."),
-        { l1: "AWS DMS", ok: false, why: "DMS chuyển dữ liệu giữa các kho dữ liệu, không phải cổng nhận stream từ thiết bị." },
+      { name: "Thu thập", opts: [
+        KDS("Tiếp nhận dữ liệu liên tục và lưu giữ cho bước xử lý đọc."),
+        { l1: "AWS DMS", ok: false, why: "DMS chuyển dữ liệu giữa các kho dữ liệu, không phải điểm tiếp nhận stream từ thiết bị." },
       ] },
       { name: "Xử lý", opts: [
-        { l1: "ECS trên Fargate", ok: true, why: "Container serverless, chạy bao lâu cũng được, scale theo số task." },
-        { l1: "Lambda + Step Functions", ok: false, why: "Mỗi lần chạy Lambda tối đa 15 phút; job 30 phút không vừa." },
-        { l1: "EC2 Auto Scaling", ok: false, why: "Chạy được nhưng phải quản lý server, không phải serverless." },
+        { l1: "ECS trên Fargate", ok: true, why: "Container serverless, không giới hạn thời gian thực thi, scale theo số task." },
+        { l1: "Lambda + Step Functions", ok: false, why: "Thời gian thực thi tối đa của Lambda là 15 phút; tác vụ 30 phút vượt quá giới hạn." },
+        { l1: "EC2 Auto Scaling", ok: false, why: "Phương án hoạt động được nhưng phải quản lý máy chủ, không đáp ứng yêu cầu serverless." },
       ] },
     ],
-    result: "Kinesis Data Streams nhận dữ liệu, ECS task trên Fargate chạy job dài mà không có server để quản lý.",
+    result: "Kinesis Data Streams tiếp nhận dữ liệu, ECS task trên Fargate thực thi tác vụ dài mà không cần quản lý máy chủ.",
   },
   {
-    name: "Đội đã viết app cho Kafka",
-    about: "Đội phân tích đã có producer và consumer viết cho Apache Kafka. Muốn lên AWS, giữ nguyên code, không tự vận hành cluster.",
-    source: ["App ShopViet", "Kafka producer"],
+    name: "Ứng dụng đã phát triển cho Kafka",
+    about: "Đội phân tích đã có producer và consumer phát triển cho Apache Kafka. Yêu cầu: chuyển lên AWS, giữ nguyên mã nguồn, không tự vận hành cluster.",
+    source: ["Ứng dụng", "Kafka producer"],
     slots: [
-      { name: "Nền tảng stream", opts: [
-        { l1: "Amazon MSK", l2: "Kafka do AWS quản lý", ok: true, why: "App giữ nguyên Kafka API; AWS lo broker, vá lỗi và thay máy hỏng." },
-        { l1: "Kafka tự dựng", l2: "trên EC2", ok: false, why: "Phải tự vá, tự theo dõi, tự scale cluster bằng script." },
-        { l1: "Kinesis Data Streams", ok: false, why: "Dùng tốt, nhưng phải viết lại producer và consumer theo API của Kinesis." },
+      { name: "Nền tảng streaming", opts: [
+        { l1: "Amazon MSK", l2: "Kafka do AWS quản lý", ok: true, why: "Ứng dụng giữ nguyên Kafka API; AWS quản lý broker, vá lỗi và thay thế node gặp sự cố." },
+        { l1: "Kafka tự triển khai", l2: "trên EC2", ok: false, why: "Phải tự vá lỗi, tự giám sát và tự scale cluster bằng script." },
+        { l1: "Kinesis Data Streams", ok: false, why: "Đáp ứng được về chức năng, nhưng phải viết lại producer và consumer theo API của Kinesis." },
       ] },
     ],
-    result: "Đã dùng Kafka thì Amazon MSK. Viết mới từ đầu và muốn ít vận hành nhất thì Kinesis Data Streams.",
+    result: "Hệ thống đã sử dụng Kafka: Amazon MSK. Phát triển mới và yêu cầu chi phí vận hành thấp nhất: Kinesis Data Streams.",
   },
 ];
 
@@ -202,9 +202,9 @@ export default function StreamPipelineSim() {
       setLit((s) => ({ ...s, [i]: opt.ok ? "pass" : "block" }));
       setLog((l) => [...l, { state: opt.ok ? "pass" : "block", slot: need.slots[i].name, msg: rich(`**${[opt.l1, opt.l2].filter(Boolean).join(" ")}**: ${opt.why}`) }]);
       if (!opt.ok) {
-        flashText(layer, X[i], Y + 46, "không hợp", "flash-bad", 900);
+        flashText(layer, X[i], Y + 46, "không phù hợp", "flash-bad", 900);
         if (!fast) await travel(layer, [next, [60, Y]], 500, "pkt-bad");
-        setLog((l) => [...l, { ok: false, msg: rich(`Dừng ở bước **${need.slots[i].name}**. Đổi lựa chọn rồi chạy lại.`) }]);
+        setLog((l) => [...l, { ok: false, msg: rich(`Pipeline dừng tại bước **${need.slots[i].name}**. Thay đổi lựa chọn và chạy lại.`) }]);
         setBusy(false);
         return;
       }
@@ -216,7 +216,7 @@ export default function StreamPipelineSim() {
 
   return (
     <div className="stage kpb">
-      <div className="kpb-row" role="group" aria-label="Nhu cầu của ShopViet">
+      <div className="kpb-row" role="group" aria-label="Yêu cầu của ShopViet">
         {NEEDS.map((n, i) => (
           <button key={n.name} className="chip" aria-pressed={i === ni} onClick={() => pickNeed(i)} disabled={busy && i !== ni}>{n.name}</button>
         ))}
@@ -236,11 +236,11 @@ export default function StreamPipelineSim() {
         </div>
       ))}
       <div className="stage-bar">
-        <span className="kpb-note">{ready ? "Đã chọn đủ các bước." : "Chọn một dịch vụ cho mỗi bước."}</span>
-        <button className="btn primary" onClick={run} disabled={busy || !ready}>Chạy thử</button>
+        <span className="kpb-note">{ready ? "Đã chọn dịch vụ cho tất cả các bước." : "Chọn một dịch vụ cho mỗi bước."}</span>
+        <button className="btn primary" onClick={run} disabled={busy || !ready}>Chạy mô phỏng</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 40 820 120" role="img" aria-label={`Pipeline: ${need.source[0]} rồi ${need.slots.map((s) => s.name).join(", ")}`}>
+        <svg viewBox="0 40 820 120" role="img" aria-label={`Pipeline: ${need.source[0]}, sau đó ${need.slots.map((s) => s.name).join(", ")}`}>
           <path className="kss-link" d={`M60 ${Y} H${X[X.length - 1]}`} />
           <g className="kss-src">
             <rect x={10} y={Y - 26} width={110} height={52} rx={8} />
@@ -263,7 +263,7 @@ export default function StreamPipelineSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="kss-hint">Chọn dịch vụ cho từng bước rồi bấm <b>Chạy thử</b>.</p>
+          <p className="kss-hint">Chọn dịch vụ cho từng bước, sau đó chọn <b>Chạy mô phỏng</b>.</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) =>
@@ -271,7 +271,7 @@ export default function StreamPipelineSim() {
                 <li key={i} className={`kss-result ${e.ok ? "ok" : "bad"}`}>{e.msg}</li>
               ) : (
                 <li key={i}>
-                  <span className={`tag kss-tag ${e.state === "pass" ? "hit" : "bad"}`}>{e.state === "pass" ? "HỢP" : "KHÔNG HỢP"}</span>
+                  <span className={`tag kss-tag ${e.state === "pass" ? "hit" : "bad"}`}>{e.state === "pass" ? "PHÙ HỢP" : "KHÔNG PHÙ HỢP"}</span>
                   <span><b>{e.slot}:</b> {e.msg}</span>
                 </li>
               ),

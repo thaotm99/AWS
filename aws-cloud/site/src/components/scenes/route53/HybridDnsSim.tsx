@@ -28,21 +28,21 @@ export default function HybridDnsSim() {
       if (!support) {
         await travel(layer, [EC2, RESOLVER], 600, "pkt-bad", 6);
         flashText(layer, RESOLVER[0] - 6, RESOLVER[1] - 30, "✕", "err-t", 1500);
-        setMsg(<>enableDnsSupport đang tắt nên instance không dùng được Route 53 Resolver của VPC. Mọi truy vấn DNS đều thất bại.</>);
+        setMsg(<>enableDnsSupport đang tắt nên instance không sử dụng được Route 53 Resolver của VPC. Mọi truy vấn DNS đều thất bại.</>);
       } else {
         await travel(layer, [EC2, RESOLVER, OUTBOUND, ONPREM_DNS], 1600, "pkt", 6);
         await travel(layer, [ONPREM_DNS, OUTBOUND, RESOLVER, EC2], 1400, "pkt-back", 6);
-        setMsg(<>EC2 hỏi <code>db.corp.local</code>. Forwarding rule của Resolver chuyển truy vấn ra <b>outbound endpoint</b> tới DNS server on-premises. Dùng khi workload trong VPC cần phân giải tên miền nội bộ ở văn phòng.</>);
+        setMsg(<>EC2 truy vấn <code>db.corp.local</code>. Forwarding rule của Resolver chuyển truy vấn qua <b>outbound endpoint</b> tới DNS server on-premises. Cấu hình này áp dụng khi workload trong VPC cần phân giải tên miền nội bộ của văn phòng.</>);
       }
     } else {
       await travel(layer, [ONPREM_DNS, INBOUND, RESOLVER], 1200, "pkt", 6);
       if (!support || !hostnames) {
         await travel(layer, [RESOLVER, PHZ], 500, "pkt-bad", 6);
         flashText(layer, PHZ[0] - 6, PHZ[1] - 26, "✕", "err-t", 1500);
-        setMsg(<>Private hosted zone chỉ hoạt động khi VPC bật <b>cả</b> enableDnsHostnames và enableDnsSupport. Thiếu một trong hai cờ là private hosted zone không phân giải được.</>);
+        setMsg(<>Private hosted zone chỉ hoạt động khi VPC bật <b>cả</b> enableDnsHostnames và enableDnsSupport. Khi thiếu một trong hai thuộc tính, private hosted zone không phân giải được.</>);
       } else {
         await travel(layer, [RESOLVER, PHZ, RESOLVER, INBOUND, ONPREM_DNS], 1800, "pkt-back", 6);
-        setMsg(<>DNS server on-premises chuyển truy vấn <code>api.shopviet.internal</code> tới <b>inbound endpoint</b>. Resolver trả lời từ private hosted zone. Dùng khi hệ thống ở văn phòng cần phân giải tên miền trong VPC.</>);
+        setMsg(<>DNS server on-premises chuyển truy vấn <code>api.shopviet.internal</code> tới <b>inbound endpoint</b>. Resolver phản hồi từ private hosted zone. Cấu hình này áp dụng khi hệ thống tại văn phòng cần phân giải tên miền trong VPC.</>);
       }
     }
     setBusy(false);
@@ -59,8 +59,8 @@ export default function HybridDnsSim() {
         </button>
       </div>
       <div className="stage-bar">
-        <button className="btn primary" onClick={() => ask("toOnPrem")} disabled={busy}>EC2 hỏi db.corp.local</button>
-        <button className="btn primary" onClick={() => ask("fromOnPrem")} disabled={busy}>On-premises hỏi api.shopviet.internal</button>
+        <button className="btn primary" onClick={() => ask("toOnPrem")} disabled={busy}>EC2 truy vấn db.corp.local</button>
+        <button className="btn primary" onClick={() => ask("fromOnPrem")} disabled={busy}>On-premises truy vấn api.shopviet.internal</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 0 760 310" role="img" aria-label="VPC với Route 53 Resolver, inbound endpoint, outbound endpoint và DNS server on-premises">
@@ -80,7 +80,7 @@ export default function HybridDnsSim() {
         </svg>
       </div>
       <div className="readout" aria-live="polite">
-        {msg ?? <>Thử hai chiều truy vấn, rồi tắt một trong hai cờ DNS của VPC và thử lại.</>}
+        {msg ?? <>Thực hiện truy vấn theo cả hai chiều, sau đó tắt một trong hai thuộc tính DNS của VPC và thử lại.</>}
       </div>
     </div>
   );

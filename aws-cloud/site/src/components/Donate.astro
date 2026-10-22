@@ -1,0 +1,60 @@
+---
+import QRCode from "qrcode";
+import T from "../app/T.astro";
+import { DONATE } from "../data/donate";
+import { vietQrPayload } from "../lib/vietqr";
+
+const qr = await QRCode.toString(vietQrPayload(DONATE), { type: "svg", margin: 1, errorCorrectionLevel: "M" });
+const fields = [
+  { key: "bank", value: DONATE.bank },
+  { key: "account", value: DONATE.account, copy: true },
+  { key: "holder", value: DONATE.holder },
+  { key: "note", value: DONATE.note, copy: true, strong: true },
+] as const;
+---
+<aside class="donate" aria-labelledby="donate-title">
+  <div class="donate-text">
+    <h2 id="donate-title"><span aria-hidden="true">☕</span> <T k="shell.donate.title" /></h2>
+    <p><T k="shell.donate.body" /></p>
+    <dl class="donate-fields">
+      {fields.map((f) => (
+        <div class:list={["donate-field", { strong: "strong" in f && f.strong }]}>
+          <dt><T k={`shell.donate.${f.key}`} /></dt>
+          <dd>
+            <span class="donate-value">{f.value}</span>
+            {"copy" in f && f.copy && (
+              <button type="button" class="donate-copy" data-copy={f.value}><T k="shell.donate.copy" /></button>
+            )}
+          </dd>
+        </div>
+      ))}
+    </dl>
+    <p class="donate-hint"><T k="shell.donate.hint" /></p>
+  </div>
+  <figure class="donate-qr">
+    <div class="donate-qr-code" set:html={qr} />
+    <figcaption><T k="shell.donate.scan" /></figcaption>
+  </figure>
+  <span class="donate-copied" hidden><T k="shell.donate.copied" /></span>
+</aside>
+
+<script>
+  for (const box of document.querySelectorAll<HTMLElement>(".donate")) {
+    box.addEventListener("click", async (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-copy]");
+      if (!btn) return;
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copy!);
+      } catch {
+        return;
+      }
+      const label = btn.innerHTML;
+      btn.textContent = box.querySelector(".donate-copied")?.textContent ?? "✓";
+      btn.classList.add("done");
+      setTimeout(() => {
+        btn.innerHTML = label;
+        btn.classList.remove("done");
+      }, 1600);
+    });
+  }
+</script>

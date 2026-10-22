@@ -1,6 +1,6 @@
 ---
-title: "EC2: mua, khởi động, nối mạng và vận hành instance"
-lede: "Server của ShopViet là các EC2 instance. Bài này đi qua những việc người vận hành gặp mỗi tuần: mua server sao cho rẻ, cho server mới sẵn sàng trong vài phút, nối mạng giữa các server, và xử lý khi phần cứng hỏng, app treo hay dữ liệu tạm biến mất."
+title: "Amazon EC2: tuỳ chọn mua, khởi tạo, kết nối mạng và vận hành instance"
+lede: "Tầng máy chủ của ShopViet chạy trên các EC2 instance. Bài học trình bày các tác vụ vận hành thường gặp: lựa chọn tuỳ chọn mua để tối ưu chi phí, rút ngắn thời gian khởi tạo instance xuống vài phút, cấu hình mạng giữa các instance, và xử lý sự cố phần cứng, ứng dụng không phản hồi hoặc mất dữ liệu tạm."
 minutes: 30
 scenes: 4
 prerequisites: ["vpc", "iam"]
@@ -30,117 +30,117 @@ import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
-  { href: "#s1", label: "1 · Mua server cho rẻ" },
-  { href: "#s2", label: "2 · Khởi động nhanh" },
-  { href: "#s3", label: "3 · Mạng giữa các server" },
-  { href: "#s4", label: "4 · Khi server gặp chuyện" },
-  { href: "#challenge", label: "Thử thách" },
+  { href: "#s1", label: "1 · Tối ưu chi phí mua" },
+  { href: "#s2", label: "2 · Rút ngắn thời gian khởi tạo" },
+  { href: "#s3", label: "3 · Kết nối mạng giữa các instance" },
+  { href: "#s4", label: "4 · Xử lý sự cố instance" },
+  { href: "#challenge", label: "Bài tập" },
 ]}>
-Server của ShopViet là các EC2 instance. Việc khó không phải là bật một server, mà là: mua kiểu gì cho rẻ, khởi động bao lâu, đặt các server gần nhau hay xa nhau, lưu dữ liệu tạm ở đâu, và tự đứng dậy thế nào khi hỏng.
+Tầng máy chủ của ShopViet chạy trên các EC2 instance. Thách thức không nằm ở việc khởi chạy một instance, mà ở các quyết định thiết kế: tuỳ chọn mua nào tối ưu chi phí, thời gian khởi tạo bao lâu, bố trí các instance gần nhau hay phân tán, lưu dữ liệu tạm ở đâu, và cơ chế tự phục hồi khi xảy ra sự cố.
 </Story>
 
-<Scene id="s1" label="Cảnh 1/4" title="Mua server cho rẻ mà không sập" questions={["exam2_q33", "exam2_q35", "exam4_q49", "exam5_q60", "exam1_q21", "exam4_q46", "exam2_q49", "exam6_q18", "exam2_q23", "exam6_q21", "exam6_q33", "exam6_q38", "exam4_q30"]}>
+<Scene id="s1" label="Phần 1/4" title="Tối ưu chi phí mà vẫn đảm bảo tính sẵn sàng" questions={["exam2_q33", "exam2_q35", "exam4_q49", "exam5_q60", "exam1_q21", "exam4_q46", "exam2_q49", "exam6_q18", "exam2_q23", "exam6_q21", "exam6_q33", "exam6_q38", "exam4_q30"]}>
 
-ShopViet cần 80 instance chạy suốt ngày đêm, ban ngày cần thêm worker xử lý ảnh từ hàng đợi (chịu được gián đoạn). Chọn chiến lược mua:
+ShopViet cần 80 instance chạy liên tục 24/7; vào ban ngày cần bổ sung worker xử lý ảnh từ hàng đợi (chịu được gián đoạn). Chọn chiến lược mua:
 
 <PurchaseMixSim client:visible />
 
-Biểu đồ trên là bức tranh tổng. Trong thực tế còn nhiều tình huống nhỏ hơn: Spot bị thu hồi giữa đêm, đối tác đòi phần cứng riêng, license tính theo socket, hoá đơn có cả Fargate và Lambda. Chọn từng tình huống, bật tắt công tắc, rồi bấm Chạy:
+Biểu đồ trên thể hiện bức tranh tổng thể. Thực tế còn nhiều tình huống cụ thể hơn: Spot Instance bị thu hồi lúc nửa đêm, đối tác yêu cầu phần cứng riêng, license tính theo socket, hoá đơn bao gồm cả Fargate và Lambda. Chọn từng tình huống, thay đổi cấu hình, sau đó nhấn Chạy:
 
 <Ec2CostSim client:visible />
 
-<Takeaway>Nền chạy 24/7: Reserved Instances hoặc Savings Plans. Việc chịu được gián đoạn: Spot (persistent request hoặc Spot Fleet để chạy tiếp). Phần biến động không chịu gián đoạn: On-Demand. Single-tenant rẻ nhất: Dedicated Instances; license theo socket: Dedicated Hosts. Giảm giá cả EC2, Fargate, Lambda: Compute Savings Plan.</Takeaway>
+<Takeaway>Tải nền chạy 24/7: Reserved Instances hoặc Savings Plans. Tác vụ chịu được gián đoạn: Spot (persistent request hoặc Spot Fleet để tiếp tục xử lý). Tải biến động không chịu được gián đoạn: On-Demand. Single-tenant với chi phí thấp nhất: Dedicated Instances; license theo socket: Dedicated Hosts. Chiết khấu áp dụng cho cả EC2, Fargate và Lambda: Compute Savings Plan.</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Cảnh 2/4" title="Khởi động nhanh: golden AMI và user data" questions={["exam4_q1", "exam2_q19", "exam6_q11", "exam2_q51", "exam3_q55"]}>
+<Scene id="s2" label="Phần 2/4" title="Rút ngắn thời gian khởi tạo: golden AMI và user data" questions={["exam4_q1", "exam2_q19", "exam6_q11", "exam2_q51", "exam3_q55"]}>
 
-Cài đặt đầy đủ một server ShopViet mất 45 phút. Auto Scaling cần instance mới sẵn sàng trong vài phút.
+Quá trình cài đặt đầy đủ một máy chủ ShopViet mất 45 phút, trong khi Auto Scaling yêu cầu instance mới sẵn sàng trong vài phút.
 
 <StepSim client:visible height={230}
-  intro="Phần mềm gồm phần tĩnh (runtime, thư viện, agent) giống nhau mọi máy, và phần động (cấu hình theo môi trường) khác nhau mỗi lần chạy."
+  intro="Phần mềm gồm phần tĩnh (runtime, thư viện, agent) giống nhau trên mọi instance, và phần động (cấu hình theo môi trường) thay đổi theo từng lần khởi chạy."
   nodes={[
     { id: "base", x: 30, y: 30, label: "AMI gốc của AWS", kind: "site" },
     { id: "golden", x: 280, y: 30, label: "Golden AMI", sub: "đã cài phần tĩnh", kind: "net" },
-    { id: "ud", x: 280, y: 150, label: "User data", sub: "chạy lúc boot", kind: "edge" },
+    { id: "ud", x: 280, y: 150, label: "User data", sub: "thực thi khi boot", kind: "edge" },
     { id: "ec2", x: 560, y: 90, label: "EC2 mới", sub: "sẵn sàng sau vài phút", kind: "ec2" },
   ]}
   initial={["base"]}
   steps={[
-    { button: "1. Cài phần tĩnh rồi tạo AMI", show: ["golden"], flows: [{ path: ["base", "golden"], tone: "good", label: "cài 1 lần" }],
-      note: "Cài phần tĩnh một lần rồi tạo **golden AMI**. Mọi instance sau đó khởi động từ AMI này, khỏi cài lại." },
-    { button: "2. Phần động để user data lo", show: ["ud"],
-      note: "**User data** là script chạy lúc boot: lấy cấu hình theo môi trường, gắn vào cluster. Mặc định nó **chỉ chạy ở lần boot đầu tiên** và chạy với **quyền root**." },
+    { button: "1. Cài phần tĩnh và tạo AMI", show: ["golden"], flows: [{ path: ["base", "golden"], tone: "good", label: "cài 1 lần" }],
+      note: "Phần tĩnh được cài đặt một lần, sau đó tạo **golden AMI**. Mọi instance tiếp theo khởi động từ AMI này mà không cần cài đặt lại." },
+    { button: "2. Xử lý phần động bằng user data", show: ["ud"],
+      note: "**User data** là script thực thi khi boot: lấy cấu hình theo môi trường và đăng ký instance vào cluster. Theo mặc định, user data **chỉ thực thi ở lần boot đầu tiên** và chạy với **quyền root**." },
     { button: "3. Launch", show: ["ec2"], flows: [{ path: ["golden", "ec2"], tone: "good" }, { path: ["ud", "ec2"], tone: "good" }],
-      note: "Golden AMI + user data: nhanh như dùng AMI, linh hoạt như cài lúc boot. Hai cách này **đi cùng nhau**, không thay thế nhau." },
+      note: "Golden AMI + user data: thời gian khởi tạo ngắn như khi dùng AMI, đồng thời linh hoạt như cài đặt khi boot. Hai cơ chế này **được sử dụng kết hợp**, không thay thế nhau." },
   ]} />
 
-Golden AMI còn dùng được ở nơi khác. Khi ShopViet mở thêm Region, **copy AMI** sang Region đó. Khi đội khác cần dùng, **share AMI** cho account của họ. AMI tạo từ snapshot đã mã hoá thì bản copy cũng phải mã hoá, không copy thành bản không mã hoá được.
+Golden AMI có thể được tái sử dụng ở phạm vi rộng hơn. Khi ShopViet mở rộng sang Region mới, **copy AMI** sang Region đó. Khi nhóm khác cần sử dụng, **share AMI** với account của nhóm đó. AMI tạo từ snapshot đã mã hoá thì bản copy cũng phải được mã hoá; không thể copy thành bản không mã hoá.
 
-<Takeaway>Khởi động nhanh: golden AMI cho phần cố định + user data cho phần thay đổi. AMI copy được sang Region khác và share được cho account khác. Muốn giữ trạng thái RAM khi tắt máy: Hibernate (cảnh 4).</Takeaway>
+<Takeaway>Rút ngắn thời gian khởi tạo: golden AMI cho phần cố định + user data cho phần thay đổi. AMI có thể copy sang Region khác và share với account khác. Duy trì trạng thái RAM khi dừng instance: Hibernate (phần 4).</Takeaway>
 
 </Scene>
 
-<Scene id="s3" label="Cảnh 3/4" title="Mạng giữa các server" questions={["exam1_q23", "exam4_q20", "exam4_q60", "exam6_q36", "exam6_q57", "exam6_q59"]}>
+<Scene id="s3" label="Phần 3/4" title="Kết nối mạng giữa các instance" questions={["exam1_q23", "exam4_q20", "exam4_q60", "exam6_q36", "exam6_q57", "exam6_q59"]}>
 
-Server nằm đâu và nói chuyện với nhau bằng đường nào quyết định tốc độ, chi phí và độ an toàn. Chọn một tình huống, bật tắt công tắc, rồi gửi traffic:
+Vị trí đặt instance và đường truyền giữa chúng quyết định độ trễ, chi phí và mức độ bảo mật. Chọn một tình huống, thay đổi cấu hình, sau đó gửi traffic:
 
 <Ec2NetSim client:visible />
 
-<Takeaway>Mạng nhanh nhất giữa các node: cluster placement group (+ EFA cho HPC). Traffic giữa server trong VPC: dùng private IP. SSH bằng key tạm: EC2 Instance Connect. Bastion luôn sẵn sàng: NLB + Auto Scaling group.</Takeaway>
+<Takeaway>Độ trễ mạng thấp nhất giữa các node: cluster placement group (+ EFA cho HPC). Traffic giữa các instance trong VPC: sử dụng private IP. SSH bằng key tạm thời: EC2 Instance Connect. Bastion host có tính sẵn sàng cao: NLB + Auto Scaling group.</Takeaway>
 
 </Scene>
 
-<Scene id="s4" label="Cảnh 4/4" title="Khi server gặp chuyện" questions={["exam1_q43", "exam5_q43", "exam5_q52", "exam6_q42", "exam3_q38", "exam3_q57", "exam5_q19", "exam5_q20", "exam5_q31", "exam6_q56"]}>
+<Scene id="s4" label="Phần 4/4" title="Xử lý sự cố instance" questions={["exam1_q43", "exam5_q43", "exam5_q52", "exam6_q42", "exam3_q38", "exam3_q57", "exam5_q19", "exam5_q20", "exam5_q31", "exam6_q56"]}>
 
-Phần cứng hỏng lúc 3 giờ sáng, app treo, dữ liệu tạm biến mất sau khi stop. Cho từng sự cố xảy ra, rồi bật tính năng EC2 phù hợp và chạy lại:
+Các sự cố thường gặp: lỗi phần cứng lúc 3 giờ sáng, ứng dụng không phản hồi, dữ liệu tạm bị mất sau khi stop. Mô phỏng từng sự cố, sau đó kích hoạt tính năng EC2 tương ứng và chạy lại:
 
 <Ec2OpsSim client:visible />
 
-<Takeaway>Hỏng phần cứng: alarm recover (giữ ID, IP). App treo: alarm reboot. Instance store nhanh nhất nhưng mất dữ liệu khi stop, chỉ để file tạm. Tắt mà giữ RAM: Hibernate. Một instance tự thay, giữ IP: ASG min = max = 1 + Elastic IP gắn bằng user data. Metric từng phút: detailed monitoring.</Takeaway>
+<Takeaway>Lỗi phần cứng: alarm action recover (giữ nguyên instance ID, IP). Ứng dụng không phản hồi: alarm action reboot. Instance store có hiệu năng cao nhất nhưng mất dữ liệu khi stop, chỉ phù hợp cho tệp tạm. Dừng instance và giữ trạng thái RAM: Hibernate. Tự động thay thế một instance và giữ nguyên IP: ASG min = max = 1 + Elastic IP gắn bằng user data. Metric chu kỳ 1 phút: detailed monitoring.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="Spot và instance store: đúng hay sai?" questions={["exam3_q51", "exam6_q2", "exam6_q42", "exam2_q35", "exam1_q23", "exam4_q1", "exam3_q38", "exam6_q21"]}>
+<Scene id="challenge" label="Bài tập" title="Spot Instance và instance store: nhận định đúng hay sai?" questions={["exam3_q51", "exam6_q2", "exam6_q42", "exam2_q35", "exam1_q23", "exam4_q1", "exam3_q38", "exam6_q21"]}>
 
-Xếp từng câu vào ô Đúng hoặc Sai. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
+Phân loại từng nhận định vào ô Đúng hoặc Sai. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
 <SortGame client:visible
   bins={[
-    { id: "true", title: "Đúng", sub: "Theo tài liệu AWS", hint: "Gợi ý: câu này đúng với Spot hoặc instance store." },
-    { id: "false", title: "Sai", sub: "Hiểu nhầm phổ biến", hint: "Gợi ý: câu này nghe hợp lý nhưng sai, nhiều người nhầm." },
+    { id: "true", title: "Đúng", sub: "Theo tài liệu AWS", hint: "Gợi ý: nhận định này đúng với Spot Instance hoặc instance store." },
+    { id: "false", title: "Sai", sub: "Nhầm lẫn phổ biến", hint: "Gợi ý: nhận định này có vẻ hợp lý nhưng không chính xác." },
   ]}
   cards={[
     ["Spot bị thu hồi với thông báo 2 phút", "true"], ["Spot request persistent được mở lại sau khi bị gián đoạn", "true"],
     ["Hủy Spot request không terminate instance đang chạy", "true"], ["Spot Fleet có thể gồm cả On-Demand", "true"],
-    ["Instance store giữ dữ liệu khi stop instance", "false"], ["Instance store tháo ra gắn sang instance khác được", "false"],
-    ["Hủy Spot request tự terminate instance", "false"],
+    ["Instance store giữ dữ liệu khi stop instance", "false"], ["Instance store có thể tách ra và gắn sang instance khác", "false"],
+    ["Hủy Spot request sẽ tự động terminate instance", "false"],
   ]}
 />
 
-Kiểm tra nhanh: nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "ShopViet cần 100 instance: 70 chạy liên tục, 30 xử lý batch có thể chạy trễ. Cách mua rẻ nhất?",
+  { q: "ShopViet cần 100 instance: 70 instance chạy liên tục, 30 instance xử lý batch có thể trì hoãn. Phương án mua nào có chi phí thấp nhất?",
     opts: ["100 On-Demand", "70 Reserved Instances + 30 Spot", "100 Spot"],
     a: 1,
-    why: "Phần chạy liên tục dùng RI, phần batch chịu được gián đoạn dùng Spot." },
-  { q: "Mô phỏng tồn kho chạy trên nhiều node cần độ trễ mạng thấp nhất giữa chúng. Đặt các instance thế nào?",
+    why: "Tải chạy liên tục sử dụng RI; tải batch chịu được gián đoạn sử dụng Spot." },
+  { q: "Tác vụ mô phỏng tồn kho chạy trên nhiều node và yêu cầu độ trễ mạng thấp nhất giữa các node. Các instance cần được bố trí như thế nào?",
     opts: ["Spread placement group", "Cluster placement group", "Trải instance qua 3 AZ"],
     a: 1,
-    why: "Cluster đặt các instance sát nhau trong một AZ để mạng nhanh nhất." },
-  { q: "Cài server ShopViet mất 45 phút, Auto Scaling cần instance mới sẵn sàng nhanh, còn cấu hình thì đổi theo môi trường. Làm thế nào?",
-    opts: ["Golden AMI cho phần tĩnh và user data cho phần động", "Chỉ dùng user data cài toàn bộ", "Dùng instance lớn hơn"],
+    why: "Cluster placement group đặt các instance gần nhau trong một AZ để đạt độ trễ mạng thấp nhất." },
+  { q: "Cài đặt máy chủ ShopViet mất 45 phút; Auto Scaling cần instance mới sẵn sàng nhanh, trong khi cấu hình thay đổi theo môi trường. Giải pháp nào phù hợp?",
+    opts: ["Golden AMI cho phần tĩnh và user data cho phần động", "Chỉ dùng user data cài toàn bộ", "Sử dụng instance type lớn hơn"],
     a: 0,
-    why: "AMI rút ngắn thời gian cài; user data xử lý phần thay đổi lúc boot." },
-  { q: "Server shop-api chịu được tối đa 10 phút downtime. Cách tự phục hồi rẻ nhất khi phần cứng hỏng?",
-    opts: ["CloudWatch alarm recover instance (instance dùng EBS)", "Chạy thêm một instance dự phòng 24/7", "Dùng instance store"],
+    why: "AMI rút ngắn thời gian cài đặt; user data xử lý phần thay đổi khi boot." },
+  { q: "Máy chủ shop-api chấp nhận tối đa 10 phút downtime. Cơ chế tự phục hồi nào có chi phí thấp nhất khi xảy ra lỗi phần cứng?",
+    opts: ["CloudWatch alarm recover instance (instance dùng EBS)", "Chạy thêm một instance dự phòng 24/7", "Sử dụng instance store"],
     a: 0,
-    why: "Recover đưa instance sang phần cứng khác, giữ nguyên ID và IP; cần instance dùng EBS." },
-  { q: "Đối tác ngân hàng yêu cầu server thanh toán chạy trên phần cứng single-tenant, không có license đặc biệt. Cách rẻ nhất?",
+    why: "Recover chuyển instance sang phần cứng khác, giữ nguyên instance ID và IP; yêu cầu instance sử dụng EBS." },
+  { q: "Đối tác ngân hàng yêu cầu máy chủ thanh toán chạy trên phần cứng single-tenant, không có yêu cầu license đặc biệt. Phương án nào có chi phí thấp nhất?",
     opts: ["Dedicated Hosts", "Dedicated Instances", "Cluster placement group"],
     a: 1,
-    why: "Dedicated Instances đủ yêu cầu single-tenant và rẻ hơn thuê nguyên host." },
+    why: "Dedicated Instances đáp ứng yêu cầu single-tenant với chi phí thấp hơn thuê toàn bộ host." },
 ]} />
 
 </Scene>

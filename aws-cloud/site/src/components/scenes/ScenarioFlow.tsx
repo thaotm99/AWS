@@ -25,7 +25,7 @@ interface Props {
 }
 
 /** Compare answer options on one architecture diagram, scenario by scenario. */
-export default function ScenarioFlow({ scenarios, height = 260, legend = ["Nên chọn", "Cách hay chọn nhầm"] }: Props) {
+export default function ScenarioFlow({ scenarios, height = 260, legend = ["Giải pháp đề xuất", "Giải pháp không phù hợp"] }: Props) {
   const [si, setSi] = useState(0);
   const [oi, setOi] = useState(0);
   const uid = useId().replace(/:/g, "");

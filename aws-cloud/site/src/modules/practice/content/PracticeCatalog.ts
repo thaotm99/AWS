@@ -1,7 +1,7 @@
 // Build-time only (uses fs). Never import from a client component.
 // Serves the content behind the static /api/certifications… endpoints.
 import { resolve } from "node:path";
-import type { Certification, CertificationDetail, Exam } from "../domain/types";
+import type { Certification, CertificationDetail, ContentLocale, Exam } from "../domain/types";
 import type { ExamSource } from "./ExamSource";
 import { QuizHtmlSource } from "./QuizHtmlSource";
 
@@ -30,9 +30,13 @@ export class PracticeCatalog {
 
   constructor(private readonly configs: CertificationConfig[]) {}
 
-  private examsOf(config: CertificationConfig): Exam[] {
-    let exams = this.exams.get(config.id);
-    if (!exams) this.exams.set(config.id, (exams = config.source.readExams(config.id)));
+  /** Content languages every exam is published in; "en" is the original. */
+  static readonly LOCALES: ContentLocale[] = ["vi", "en"];
+
+  private examsOf(config: CertificationConfig, locale: ContentLocale = "en"): Exam[] {
+    const key = `${config.id}/${locale}`;
+    let exams = this.exams.get(key);
+    if (!exams) this.exams.set(key, (exams = config.source.readExams(config.id, locale)));
     return exams;
   }
 
@@ -50,11 +54,15 @@ export class PracticeCatalog {
     const config = this.config(certId);
     const { source, ...cert } = config;
     const exams = this.examsOf(config);
-    return { ...cert, examCount: exams.length, exams: exams.map(({ questions, ...summary }) => summary) };
+    return {
+      ...cert,
+      examCount: exams.length,
+      exams: exams.map(({ questions, locale, translatedCount, ...summary }) => summary),
+    };
   }
 
-  getExam(certId: string, examId: string): Exam {
-    const exam = this.examsOf(this.config(certId)).find((e) => e.id === examId);
+  getExam(certId: string, examId: string, locale: ContentLocale = "en"): Exam {
+    const exam = this.examsOf(this.config(certId), locale).find((e) => e.id === examId);
     if (!exam) throw new Error(`Không có đề ${certId}/${examId}`);
     return exam;
   }
@@ -62,6 +70,11 @@ export class PracticeCatalog {
   /** Every (certId, examId) pair, for getStaticPaths. */
   examPaths(): Array<{ cert: string; exam: string }> {
     return this.configs.flatMap((c) => this.examsOf(c).map((e) => ({ cert: c.id, exam: e.id })));
+  }
+
+  /** Every (certId, examId, lang) triple, for the exam content endpoint. */
+  examContentPaths(): Array<{ cert: string; exam: string; lang: ContentLocale }> {
+    return this.examPaths().flatMap((p) => PracticeCatalog.LOCALES.map((lang) => ({ ...p, lang })));
   }
 }
 

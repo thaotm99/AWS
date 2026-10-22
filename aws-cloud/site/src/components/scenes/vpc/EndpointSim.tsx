@@ -18,19 +18,19 @@ const MODES: Record<Mode, { label: string; target: string; path: Pt[]; cls: stri
     label: "Không có endpoint (qua NAT)", target: "S3", cls: "pkt-edge",
     path: [EC2, [160, 80], NAT, IGW, [600, 40], S3],
     routes: [["10.0.0.0/16", "local"], ["0.0.0.0/0", "nat-0a1b (NAT gateway)"]],
-    text: <>Traffic tới S3 đi qua NAT gateway ra endpoint public của S3. Mỗi GB đều bị tính <b>phí xử lý của NAT gateway</b>, và dữ liệu rời khỏi mạng riêng của VPC.</>,
+    text: <>Traffic tới S3 đi qua NAT gateway tới public endpoint của S3. Mỗi GB dữ liệu đều bị tính <b>phí xử lý của NAT gateway</b>, và dữ liệu rời khỏi mạng riêng của VPC.</>,
   },
   gateway: {
     label: "Gateway endpoint cho S3", target: "S3", cls: "pkt",
     path: [EC2, GW, S3],
     routes: [["10.0.0.0/16", "local"], ["0.0.0.0/0", "nat-0a1b (NAT gateway)"], ["pl-6fa54006 (S3)", "vpce-0c9d (gateway endpoint)"]],
-    text: <>Gateway endpoint <b>chỉ dành cho S3 và DynamoDB</b>, không tính phí. Nó thêm một route trỏ prefix list của S3 tới endpoint, nên traffic S3 không còn qua NAT. Có thể gắn endpoint policy để giới hạn bucket được truy cập.</>,
+    text: <>Gateway endpoint <b>chỉ dành cho S3 và DynamoDB</b>, không tính phí. Endpoint bổ sung một route trỏ prefix list của S3 tới endpoint, nên traffic tới S3 không còn đi qua NAT gateway. Có thể gắn endpoint policy để giới hạn các bucket được phép truy cập.</>,
   },
   interface: {
     label: "Interface endpoint cho SQS", target: "SQS", cls: "pkt",
     path: [EC2, ENI, SQS],
     routes: [["10.0.0.0/16", "local"], ["0.0.0.0/0", "nat-0a1b (NAT gateway)"]],
-    text: <>Interface endpoint (PrivateLink) tạo một <b>ENI có private IP</b> ngay trong subnet. Không thêm route: DNS của <code>sqs.ap-southeast-1.amazonaws.com</code> trỏ về IP riêng của ENI. Dùng cho các dịch vụ không có gateway endpoint, như SQS. Có tính phí theo giờ và theo GB.</>,
+    text: <>Interface endpoint (PrivateLink) tạo một <b>ENI có private IP</b> trong subnet. Không bổ sung route: bản ghi DNS của <code>sqs.ap-southeast-1.amazonaws.com</code> phân giải tới private IP của ENI. Loại endpoint này dùng cho các dịch vụ không hỗ trợ gateway endpoint, như SQS. Tính phí theo giờ và theo GB.</>,
   },
 };
 
@@ -54,11 +54,11 @@ export default function EndpointSim() {
           <button key={k} className="btn" aria-pressed={k === mode} onClick={() => setMode(k)} disabled={busy}>{MODES[k].label}</button>
         ))}
         <span className="sep" />
-        <button className="btn primary" onClick={send} disabled={busy}>EC2 gọi {m.target}</button>
+        <button className="btn primary" onClick={send} disabled={busy}>EC2 gửi request tới {m.target}</button>
       </div>
       <div className="endpoint-grid">
         <div className="svg-wrap">
-          <svg viewBox="0 0 760 300" role="img" aria-label={`EC2 trong private subnet gọi ${m.target}: ${m.label}`}>
+          <svg viewBox="0 0 760 300" role="img" aria-label={`EC2 trong private subnet gửi request tới ${m.target}: ${m.label}`}>
             <path className="cloud" d="M340 60 a18 18 0 0 1 10 -32 a24 24 0 0 1 44 -6 a18 18 0 0 1 26 22 a14 14 0 0 1 -6 16 z" />
             <rect className="region" x={30} y={60} width={470} height={230} rx={12} />
             <text className="t" x={46} y={286}>VPC</text>

@@ -39,7 +39,7 @@ const SCENARIOS: Scenario[] = [
   {
     name: "Video quảng cáo 8 GB",
     src: "Văn phòng HCM",
-    toggle: "Dùng multipart upload",
+    toggle: "Sử dụng multipart upload",
     prefixes: () => ["videos/", null],
     request: (on) => (on ? "CreateMultipartUpload → UploadPart × 4 → Complete" : "PUT videos/tet-2027.mp4 (8 GB)"),
     async run({ L, on, log, row }) {
@@ -47,11 +47,11 @@ const SCENARIOS: Scenario[] = [
         await travel(L, toRow("r1"), 1300, "pkt-bad", 11);
         row("r1", "bad");
         flashText(L, 700, 62, "EntityTooLarge", "flash-bad", 1100);
-        log("PUT", "bad", "Một lệnh PUT chỉ nhận object tối đa **5 GB**. File 8 GB bị từ chối.");
+        log("PUT", "bad", "Một request PUT chỉ chấp nhận object tối đa **5 GB**. Tệp 8 GB bị từ chối.");
         await travel(L, back("r1"), 600, "pkt-bad", 6);
-        return { tone: "bad", msg: "Không upload được. File lớn hơn 5 GB bắt buộc dùng **multipart upload**; AWS khuyên dùng từ khoảng 100 MB." };
+        return { tone: "bad", msg: "Tải lên thất bại. Tệp lớn hơn 5 GB bắt buộc sử dụng **multipart upload**; AWS khuyến nghị sử dụng từ khoảng 100 MB." };
       }
-      log("CHIA", "info", "Chia file thành 4 phần, upload **song song**.");
+      log("CHIA", "info", "Tệp được chia thành 4 phần và tải lên **song song**.");
       await Promise.all([0, 1, 2, 3].map(async (i) => {
         await wait(i * 140);
         const dy = (i - 1.5) * 9;
@@ -65,16 +65,16 @@ const SCENARIOS: Scenario[] = [
           await travel(L, toRow("r1", dy), 800, "pkt");
         }
       }));
-      log("LỖI", "bad", "Phần 3 rớt mạng giữa chừng: **chỉ gửi lại phần 3**, không phải upload lại cả 8 GB.");
+      log("LỖI", "bad", "Phần 3 bị gián đoạn kết nối: **chỉ gửi lại phần 3**, không cần tải lên lại toàn bộ 8 GB.");
       row("r1", "ok");
       flashText(L, 700, 62, "Complete", "s3x-flash-ok", 1000);
-      log("GHÉP", "hit", "Gửi lệnh Complete, S3 ghép 4 phần thành một object.");
-      return { tone: "ok", msg: "Upload xong nhanh hơn nhờ chạy song song, và lỗi mạng chỉ làm gửi lại một phần nhỏ." };
+      log("GHÉP", "hit", "Sau request Complete, S3 ghép 4 phần thành một object.");
+      return { tone: "ok", msg: "Thời gian tải lên giảm nhờ xử lý song song; lỗi mạng chỉ yêu cầu gửi lại một phần nhỏ." };
     },
   },
   {
-    name: "Nhà cung cấp ở Đức gửi video",
-    src: "Đối tác ở Đức",
+    name: "Nhà cung cấp tại Đức gửi video",
+    src: "Đối tác tại Đức",
     toggle: "Bật S3 Transfer Acceleration",
     prefixes: () => ["supplier-videos/", null],
     request: (on) => (on ? "PUT shopviet-media.s3-accelerate.amazonaws.com/…" : "PUT shopviet-media.s3.ap-southeast-1.amazonaws.com/…"),
@@ -82,22 +82,22 @@ const SCENARIOS: Scenario[] = [
       if (!on) {
         await travel(L, [OUT, [220, 170], [270, 110], [320, 190], [380, 105], [430, 185], [480, 120], [540, 95], ROW.r1], 2300, "pkt");
         row("r1", "ok");
-        log("INTERNET", "info", "Gói tin đi qua **Internet công cộng** nhiều chặng, từ Đức tới Region Singapore. Tốc độ lên xuống thất thường.");
-        return { tone: "warn", msg: "Upload được nhưng chậm. Bật **S3 Transfer Acceleration** rồi gửi lại để so sánh." };
+        log("INTERNET", "info", "Gói tin đi qua nhiều chặng trên **Internet công cộng**, từ Đức tới Region Singapore. Thông lượng không ổn định.");
+        return { tone: "warn", msg: "Tải lên thành công nhưng chậm. Bật **S3 Transfer Acceleration** và chạy lại để so sánh." };
       }
       edge("pass");
       await travel(L, [OUT, [EDGE[0] - 75, EDGE[1]]], 350, "pkt");
-      log("EDGE", "hit", "Vào **edge location** gần Frankfurt.");
+      log("EDGE", "hit", "Dữ liệu đi vào **edge location** gần Frankfurt.");
       await travel(L, [[EDGE[0] + 75, EDGE[1]], [540, EDGE[1]], [540, ROW.r1[1]], ROW.r1], 650, "pkt-edge");
       row("r1", "ok");
-      log("AWS", "hit", "Đi tiếp trên **mạng riêng của AWS** tới bucket ở Singapore.");
-      return { tone: "ok", msg: "Nhanh và ổn định hơn. Lần upload nào không nhanh hơn đi thường thì **không tính phí** tăng tốc. File lớn thì dùng thêm multipart upload." };
+      log("AWS", "hit", "Dữ liệu tiếp tục truyền qua **mạng backbone của AWS** tới bucket tại Singapore.");
+      return { tone: "ok", msg: "Tốc độ cao và ổn định hơn. Lần tải lên nào không nhanh hơn đường truyền thông thường thì **không tính phí** tăng tốc. Với tệp lớn, kết hợp thêm multipart upload." };
     },
   },
   {
-    name: "Flash sale: 6.000 ảnh đơn mỗi giây",
+    name: "Flash sale: 6.000 ảnh đơn hàng mỗi giây",
     src: "Web bán hàng",
-    toggle: "Chia key theo prefix của từng shop",
+    toggle: "Phân bổ key theo prefix của từng shop",
     prefixes: (on) => (on ? ["shop-a/orders/", "shop-b/orders/"] : ["orders/", null]),
     request: (on) => (on ? "PUT shop-a/orders/… · PUT shop-b/orders/…" : "PUT orders/… × 6.000/giây"),
     async run({ L, on, log, row }) {
@@ -113,8 +113,8 @@ const SCENARIOS: Scenario[] = [
             await travel(L, back("r1"), 500, "pkt-bad", 5);
           }
         }));
-        log("PREFIX", "bad", "Mọi key nằm chung prefix `orders/`. Mỗi prefix chịu khoảng **3.500 PUT** và **5.500 GET** mỗi giây.");
-        return { tone: "bad", msg: "Phần vượt giới hạn nhận lỗi 503 Slow Down, đơn hàng upload thất bại lúc đông khách nhất." };
+        log("PREFIX", "bad", "Mọi key thuộc chung prefix `orders/`. Mỗi prefix hỗ trợ khoảng **3.500 PUT** và **5.500 GET** mỗi giây.");
+        return { tone: "bad", msg: "Các request vượt giới hạn nhận lỗi 503 Slow Down; tác vụ tải lên đơn hàng thất bại đúng thời điểm lưu lượng cao nhất." };
       }
       await Promise.all(dots.map(async (i) => {
         await wait(i * 160);
@@ -122,29 +122,29 @@ const SCENARIOS: Scenario[] = [
         await travel(L, toRow(r, (Math.floor(i / 2) - 1) * 7), 700, "pkt");
         row(r, "ok");
       }));
-      log("PREFIX", "hit", "Hai prefix, mỗi prefix khoảng 3.000 PUT/giây, đều dưới giới hạn. Thêm prefix là thêm năng lực.");
-      return { tone: "ok", msg: "Không còn lỗi 503. Giới hạn tính theo từng prefix, nên chia key theo shop, theo ngày… là cách tăng tổng throughput." };
+      log("PREFIX", "hit", "Hai prefix, mỗi prefix khoảng 3.000 PUT/giây, đều dưới giới hạn. Bổ sung prefix đồng nghĩa với tăng khả năng xử lý.");
+      return { tone: "ok", msg: "Không còn lỗi 503. Giới hạn được tính theo từng prefix, do đó phân bổ key theo shop, theo ngày… là cách tăng tổng throughput." };
     },
   },
   {
-    name: "Đọc 200 byte đầu của 100.000 file",
+    name: "Đọc 200 byte đầu của 100.000 tệp",
     src: "Job phân tích",
-    toggle: "Dùng byte-range fetch",
+    toggle: "Sử dụng byte-range fetch",
     prefixes: () => ["logs/", null],
-    request: (on) => (on ? "GET logs/…  Range: bytes=0-199" : "GET logs/… (cả file 50 MB)"),
+    request: (on) => (on ? "GET logs/…  Range: bytes=0-199" : "GET logs/… (toàn bộ tệp 50 MB)"),
     async run({ L, on, log, row }) {
       await travel(L, toRow("r1"), 600, "pkt", 4);
       row("r1", "pass");
       if (!on) {
         flashText(L, 700, 62, "50 MB", "s3x-flash-edge", 1000);
         await travel(L, back("r1"), 1500, "pkt-edge", 11);
-        log("GET", "miss", "Tải cả file 50 MB chỉ để đọc phần header 200 byte.");
-        return { tone: "warn", msg: "Chạy được nhưng tốn băng thông và thời gian. Gửi header **Range** để chỉ lấy đúng đoạn cần đọc." };
+        log("GET", "miss", "Tải toàn bộ tệp 50 MB chỉ để đọc phần header 200 byte.");
+        return { tone: "warn", msg: "Tác vụ hoàn thành nhưng tiêu tốn băng thông và thời gian. Gửi header **Range** để chỉ truy xuất đúng đoạn dữ liệu cần đọc." };
       }
       flashText(L, 700, 62, "200 byte", "s3x-flash-ok", 1000);
       await travel(L, back("r1"), 450, "pkt-back", 3);
-      log("RANGE", "hit", "S3 chỉ trả **200 byte** được yêu cầu.");
-      return { tone: "ok", msg: "Nhanh và rẻ hơn rất nhiều. Byte-range fetch cũng dùng để tải song song nhiều đoạn của một file lớn." };
+      log("RANGE", "hit", "S3 chỉ trả về **200 byte** được yêu cầu.");
+      return { tone: "ok", msg: "Thời gian và chi phí giảm đáng kể. Byte-range fetch cũng được dùng để tải song song nhiều đoạn của một tệp lớn." };
     },
   },
 ];
@@ -210,7 +210,7 @@ export default function UploadSim() {
         <button className="btn primary" onClick={go} disabled={busy}>Chạy</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 20 820 225" role="img" aria-label="Dữ liệu đi từ nơi gửi qua Internet hoặc edge location tới các prefix trong bucket S3">
+        <svg viewBox="0 20 820 225" role="img" aria-label="Dữ liệu được truyền từ nguồn qua Internet hoặc edge location tới các prefix trong bucket S3">
           <path className={`s3x-wire${accel && on ? " dash" : ""}`} d={`M170 125 H540 V95 H600 M540 125 V167 H600`} />
           <text className="s3x-m" x={355} y={145} textAnchor="middle">Internet</text>
           {accel && (
@@ -236,7 +236,7 @@ export default function UploadSim() {
             return (
               <g key={r} className={`s3x-node ${p ? rows[r] ?? "" : "off"}`}>
                 <rect x={ROW[r][0]} y={ROW[r][1] - 24} width={195} height={48} rx={7} />
-                <text className="s3x-t" x={ROW[r][0] + 97} y={ROW[r][1] - 4} textAnchor="middle">{p ?? "(chưa dùng)"}</text>
+                <text className="s3x-t" x={ROW[r][0] + 97} y={ROW[r][1] - 4} textAnchor="middle">{p ?? "(chưa sử dụng)"}</text>
                 <text className="s3x-s" x={ROW[r][0] + 97} y={ROW[r][1] + 13} textAnchor="middle">prefix · ~3.500 PUT/giây</text>
               </g>
             );
@@ -246,7 +246,7 @@ export default function UploadSim() {
       </div>
       <div className="readout">
         {log.length === 0 && !result ? (
-          <p className="s3x-hint">Chọn tình huống, bấm <b>Chạy</b>. Sau đó bật công tắc và chạy lại để so sánh.</p>
+          <p className="s3x-hint">Chọn tình huống và nhấn <b>Chạy</b>. Sau đó bật tính năng tương ứng và chạy lại để so sánh kết quả.</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) => (

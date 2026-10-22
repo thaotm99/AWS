@@ -1,6 +1,6 @@
 ---
-title: "Auto Scaling: co giãn, chịu lỗi AZ và scale in"
-lede: "Lượng khách của ShopViet lên xuống theo giờ, theo đợt sale, theo cả hàng đợi đơn hàng. Bài này cho ShopViet tự thêm bớt server: chọn scaling policy hợp với từng kiểu tải, giữ đủ máy khi mất một AZ, hiểu máy nào bị xoá khi thu nhỏ, và vá máy mà Auto Scaling không thay mất."
+title: "Amazon EC2 Auto Scaling: co giãn, chịu lỗi AZ và scale in"
+lede: "Lượng truy cập của ShopViet biến động theo giờ, theo đợt khuyến mãi và theo độ dài hàng đợi đơn hàng. Bài học trình bày cơ chế tự động điều chỉnh số lượng instance: lựa chọn scaling policy phù hợp với từng dạng tải, duy trì đủ capacity khi mất một AZ, thứ tự lựa chọn instance bị terminate khi scale in, và bảo trì instance mà không bị Auto Scaling thay thế."
 minutes: 25
 scenes: 4
 prerequisites: ["ec2", "elb"]
@@ -28,96 +28,96 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#s1", label: "1 · Scaling policy" },
-  { href: "#s2", label: "2 · Đủ instance khi mất AZ" },
-  { href: "#s3", label: "3 · Scale in xóa ai" },
-  { href: "#s4", label: "4 · Bảo trì, health check" },
-  { href: "#challenge", label: "Thử thách" },
+  { href: "#s2", label: "2 · Capacity khi mất một AZ" },
+  { href: "#s3", label: "3 · Termination policy khi scale in" },
+  { href: "#s4", label: "4 · Bảo trì và health check" },
+  { href: "#challenge", label: "Bài tập" },
 ]}>
-Ban đêm ShopViet chỉ cần 2 server, tối thứ Sáu có sale thì cần 12. Bật sẵn 12 máy cả ngày thì tốn tiền, chỉ bật 2 thì khách phải chờ. **Auto Scaling group** (ASG) tự thêm bớt EC2 theo tải. Việc của bạn là nói cho nó biết: thêm khi nào, giữ ít nhất bao nhiêu, và bớt máy nào.
+Ban đêm ShopViet chỉ cần 2 instance; tối thứ Sáu có chương trình khuyến mãi thì cần 12. Duy trì 12 instance cả ngày gây lãng phí chi phí, trong khi chỉ duy trì 2 instance làm tăng độ trễ cho người dùng. **Auto Scaling group** (ASG) tự động điều chỉnh số EC2 instance theo tải. Người thiết kế cần cấu hình: thời điểm scale out, capacity tối thiểu, và instance nào bị loại khi scale in.
 </Story>
 
-<Scene id="s1" label="Cảnh 1/4" title="Mỗi kiểu tải một scaling policy" questions={["exam1_q30", "exam3_q54", "exam6_q52", "exam1_q45", "exam4_q21", "exam3_q15", "exam4_q56", "exam4_q53"]}>
+<Scene id="s1" label="Phần 1/4" title="Scaling policy theo từng dạng tải" questions={["exam1_q30", "exam3_q54", "exam6_q52", "exam1_q45", "exam4_q21", "exam3_q15", "exam4_q56", "exam4_q53"]}>
 
-Trang web của ShopViet có nội dung động thay đổi liên tục, cache không gánh hết được, nên phải thêm server khi đông khách. Nhưng "khi nào thêm" thì tuỳ kiểu tải. Chọn một ngày của ShopViet, chọn scaling policy, rồi chạy cả ngày để xem giờ nào khách phải chờ:
+Website ShopViet có nội dung động thay đổi liên tục, cache không thể tiếp nhận toàn bộ tải, do đó cần bổ sung instance khi lượng truy cập tăng. Tuy nhiên, thời điểm scale out phụ thuộc vào dạng tải. Chọn một ngày vận hành của ShopViet, chọn scaling policy, sau đó chạy mô phỏng cả ngày để xác định các khung giờ người dùng phải chờ:
 
 <ScalingPolicySim client:visible />
 
-Container cũng scale theo cách tương tự. ECS service quá tải CPU thì bật **Service Auto Scaling** để tăng số task. Pod trên EKS nằm chờ vì cluster hết chỗ thì **Cluster Autoscaler** tăng số node trong EC2 Auto Scaling group.
+Container được scale theo cơ chế tương tự. Khi ECS service quá tải CPU, kích hoạt **Service Auto Scaling** để tăng số task. Khi pod trên EKS ở trạng thái chờ do cluster hết tài nguyên, **Cluster Autoscaler** tăng số node trong EC2 Auto Scaling group.
 
-<Takeaway>Muốn giữ một metric ổn định: target tracking. Worker đọc hàng đợi: target tracking theo backlog SQS trên mỗi instance. Biết trước giờ cao điểm: scheduled action. Tải có chu kỳ: predictive kèm target tracking để bắt phần bất ngờ.</Takeaway>
+<Takeaway>Duy trì một metric ở mức ổn định: target tracking. Worker xử lý hàng đợi: target tracking theo backlog SQS trên mỗi instance. Giờ cao điểm xác định trước: scheduled action. Tải có tính chu kỳ: predictive scaling kết hợp target tracking để xử lý biến động bất thường.</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Cảnh 2/4" title="Bao nhiêu instance để vẫn đủ khi mất một AZ?" questions={["exam2_q31", "exam5_q61"]}>
+<Scene id="s2" label="Phần 2/4" title="Số instance cần thiết để chịu được sự cố một AZ" questions={["exam2_q31", "exam5_q61"]}>
 
-ShopViet cần luôn có ít nhất N server, kể cả khi một AZ mất điện. Kéo N, chọn số AZ, rồi bấm "Sập AZ 1" để kiểm tra.
+ShopViet cần duy trì tối thiểu N instance, kể cả khi một AZ gặp sự cố. Điều chỉnh N, chọn số AZ, sau đó nhấn "Mô phỏng sự cố AZ 1" để kiểm tra.
 
 <AzCapacityCalc client:visible />
 
-Hai trường hợp hay gặp. Cần luôn có 4 server: 3 AZ × 2 = 6 là rẻ nhất, vì 2 AZ × 2 = 4 sẽ chỉ còn 2 khi mất một AZ. Cần 2 server nhưng chỉ dùng được 2 AZ: đặt minimum = 4, mỗi AZ 2 server.
+Hai trường hợp thường gặp. Yêu cầu tối thiểu 4 instance: 3 AZ × 2 = 6 là phương án có chi phí thấp nhất, vì với 2 AZ × 2 = 4, hệ thống chỉ còn 2 instance khi mất một AZ. Yêu cầu tối thiểu 2 instance nhưng chỉ sử dụng được 2 AZ: đặt minimum = 4, mỗi AZ 2 instance.
 
-<Takeaway>Mỗi AZ cần ⌈N ÷ (số AZ − 1)⌉ instance. Trải ra nhiều AZ hơn thường rẻ hơn khi phải chịu được mất một AZ.</Takeaway>
+<Takeaway>Mỗi AZ cần ⌈N ÷ (số AZ − 1)⌉ instance. Khi yêu cầu chịu được sự cố một AZ, phân bổ trên nhiều AZ hơn thường có chi phí thấp hơn.</Takeaway>
 
 </Scene>
 
-<Scene id="s3" label="Cảnh 3/4" title="Scale in: instance nào bị xóa?" questions={["exam4_q16", "exam2_q65", "exam1_q54"]}>
+<Scene id="s3" label="Phần 3/4" title="Scale in: thứ tự lựa chọn instance bị terminate" questions={["exam4_q16", "exam2_q65", "exam1_q54"]}>
 
-Hết đợt sale, ASG thu nhỏ lại. Với default termination policy, ASG xét theo một thứ tự cố định. Chọn kịch bản, đoán máy bị xóa, rồi xem từng bước.
+Sau đợt khuyến mãi, ASG thực hiện scale in. Với default termination policy, ASG đánh giá theo một thứ tự cố định. Chọn kịch bản, dự đoán instance bị terminate, sau đó quan sát từng bước.
 
 <TerminationSim client:visible />
 
-<Takeaway>Thứ tự mặc định: AZ nhiều instance nhất → instance dùng launch configuration trước launch template, cũ nhất trước → gần giờ tính tiền nhất. ASG cũng tự cân bằng lại các AZ và thay instance unhealthy.</Takeaway>
+<Takeaway>Thứ tự mặc định: AZ có nhiều instance nhất → instance dùng launch configuration trước launch template, phiên bản cũ nhất trước → gần giờ tính phí tiếp theo nhất. ASG cũng tự động cân bằng lại giữa các AZ và thay thế instance unhealthy.</Takeaway>
 
 </Scene>
 
-<Scene id="s4" label="Cảnh 4/4" title="Bảo trì mà không bị thay mất máy" questions={["exam1_q32", "exam5_q1", "exam2_q18", "exam4_q49"]}>
+<Scene id="s4" label="Phần 4/4" title="Bảo trì instance mà không bị ASG thay thế" questions={["exam1_q32", "exam5_q1", "exam2_q18", "exam4_q49"]}>
 
-ASG thay mọi máy nó thấy unhealthy. Điều đó tốt khi máy hỏng thật, nhưng gây rắc rối khi bạn chỉ đang vá máy, hoặc khi máy mới chưa khởi động xong. Bài ELB đã cho thấy ASG cần dùng **ELB health check** để nghe theo load balancer; ở đây ASG đang dùng ELB health check. Thử ba việc bảo trì:
+ASG thay thế mọi instance được xác định là unhealthy. Cơ chế này phù hợp khi instance thực sự lỗi, nhưng gây vấn đề khi instance đang được vá lỗi hoặc instance mới chưa hoàn tất khởi động. Bài ELB đã trình bày việc ASG cần sử dụng **ELB health check** để dựa theo kết quả của load balancer; trong phần này ASG đang sử dụng ELB health check. Thử ba tác vụ bảo trì:
 
 <MaintenanceSim client:visible />
 
-Một chuyện về chi phí: ShopViet luôn cần tối thiểu 2 server, đỉnh thì nhiều hơn. Đặt minimum = 2 và mua **Reserved Instances** cho 2 máy chạy liên tục đó; phần tăng thêm trả theo On-Demand.
+Về chi phí: ShopViet luôn cần tối thiểu 2 instance, nhiều hơn vào giờ cao điểm. Đặt minimum = 2 và mua **Reserved Instances** cho 2 instance chạy liên tục; phần capacity tăng thêm thanh toán theo On-Demand.
 
-<Takeaway>Vá máy: đưa vào Standby, hoặc suspend ReplaceUnhealthy rồi resume. Máy mới cần thời gian cài app: đặt health check grace period. Muốn ASG thay máy mà load balancer báo hỏng: ELB health check.</Takeaway>
+<Takeaway>Vá lỗi instance: chuyển sang Standby, hoặc suspend ReplaceUnhealthy rồi resume. Instance mới cần thời gian cài đặt ứng dụng: cấu hình health check grace period. ASG thay thế instance mà load balancer đánh dấu lỗi: ELB health check.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="Scaling policy nào?" questions={["exam2_q31", "exam4_q16", "exam2_q65", "exam3_q54"]}>
+<Scene id="challenge" label="Bài tập" title="Phân loại tình huống theo scaling policy" questions={["exam2_q31", "exam4_q16", "exam2_q65", "exam3_q54"]}>
 
-Xếp từng tình huống vào scaling policy hợp nhất. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
+Phân loại từng tình huống vào scaling policy phù hợp nhất. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
 <SortGame client:visible
   bins={[
-    { id: "tt", title: "Target tracking", sub: "Bám một giá trị mục tiêu", hint: "Gợi ý: tải thay đổi liên tục, muốn giữ metric ổn định." },
-    { id: "sch", title: "Scheduled", sub: "Theo giờ biết trước", hint: "Gợi ý: biết chính xác lúc nào tải tăng." },
-    { id: "pred", title: "Predictive", sub: "Học từ lịch sử", hint: "Gợi ý: tải có chu kỳ lặp lại." },
+    { id: "tt", title: "Target tracking", sub: "Duy trì giá trị mục tiêu", hint: "Gợi ý: tải thay đổi liên tục, cần duy trì metric ổn định." },
+    { id: "sch", title: "Scheduled", sub: "Theo lịch xác định trước", hint: "Gợi ý: thời điểm tải tăng được biết chính xác." },
+    { id: "pred", title: "Predictive", sub: "Dự báo từ dữ liệu lịch sử", hint: "Gợi ý: tải có chu kỳ lặp lại." },
   ]}
   cards={[
     ["Giữ CPU ở 50%", "tt"], ["Giữ số message trên mỗi instance ổn định", "tt"],
     ["Ngày cuối tháng 9 giờ sáng cần 10 instance", "sch"], ["Mỗi thứ Hai trước giờ mở bán", "sch"],
-    ["Tải lặp lại theo ngày và tuần, muốn chuẩn bị trước", "pred"],
+    ["Tải lặp lại theo ngày và tuần, cần chuẩn bị capacity trước", "pred"],
   ]}
 />
 
-Kiểm tra nhanh: nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "ShopViet cần luôn có ít nhất 4 server kể cả khi một AZ hỏng, và muốn rẻ nhất. Bố trí thế nào?",
+  { q: "ShopViet cần duy trì tối thiểu 4 instance kể cả khi một AZ gặp sự cố, với chi phí thấp nhất. Phương án bố trí nào phù hợp?",
     opts: ["2 AZ, mỗi AZ 2 instance", "3 AZ, mỗi AZ 2 instance", "2 AZ, mỗi AZ 4 instance"],
     a: 1,
-    why: "Mất một AZ vẫn còn 4. Cách 2×2 chỉ còn 2; cách 2×4 đủ nhưng tốn 8 instance." },
-  { q: "Hết sale, ASG của ShopViet có 3 máy ở AZ-A và 4 máy ở AZ-B, dùng termination policy mặc định. Máy nào bị xoá trước?",
-    opts: ["Một máy ngẫu nhiên ở AZ-A", "Máy dùng launch template/configuration cũ nhất ở AZ-B", "Máy mới nhất ở AZ-B"],
+    why: "Khi mất một AZ vẫn còn 4 instance. Phương án 2×2 chỉ còn 2; phương án 2×4 đáp ứng yêu cầu nhưng cần 8 instance." },
+  { q: "Sau đợt khuyến mãi, ASG của ShopViet có 3 instance tại AZ-A và 4 instance tại AZ-B, sử dụng default termination policy. Instance nào bị terminate trước?",
+    opts: ["Một instance ngẫu nhiên tại AZ-A", "Instance dùng launch template/configuration cũ nhất tại AZ-B", "Instance mới nhất tại AZ-B"],
     a: 1,
-    why: "ASG chọn AZ nhiều máy nhất (AZ-B), rồi chọn máy cũ nhất." },
-  { q: "Đối tác đẩy cả nghìn đơn vào SQS cùng lúc, worker EC2 xử lý không kịp. Scale theo gì?",
-    opts: ["Target tracking theo backlog SQS trên mỗi instance", "Scheduled action mỗi giờ", "Đổi sang instance lớn hơn"],
+    why: "ASG chọn AZ có nhiều instance nhất (AZ-B), sau đó chọn instance cũ nhất." },
+  { q: "Đối tác đẩy hàng nghìn đơn hàng vào SQS cùng lúc, worker EC2 không xử lý kịp. Cần scale theo metric nào?",
+    opts: ["Target tracking theo backlog SQS trên mỗi instance", "Scheduled action mỗi giờ", "Chuyển sang instance type lớn hơn"],
     a: 0,
-    why: "Số message chờ trên mỗi instance phản ánh đúng lượng việc. CPU của worker thì gần như không đổi." },
-  { q: "Kỹ sư cần vá hệ điều hành cho một máy trong ASG mà ASG không thay máy đó trong lúc vá. Làm gì?",
-    opts: ["Đưa máy vào Standby", "Tắt health check của ALB", "Đặt desired capacity = 0"],
+    why: "Số message chờ trên mỗi instance phản ánh chính xác khối lượng công việc. CPU của worker hầu như không thay đổi." },
+  { q: "Kỹ sư cần vá hệ điều hành cho một instance trong ASG mà ASG không thay thế instance đó trong quá trình vá. Thao tác nào phù hợp?",
+    opts: ["Chuyển instance sang Standby", "Tắt health check của ALB", "Đặt desired capacity = 0"],
     a: 0,
-    why: "Standby rút máy khỏi phục vụ và ASG không thay nó. Cách khác là suspend ReplaceUnhealthy rồi resume sau khi vá." },
+    why: "Standby tạm rút instance khỏi việc phục vụ và ASG không thay thế instance đó. Phương án khác: suspend ReplaceUnhealthy, sau khi vá xong thì resume." },
 ]} />
 
 </Scene>

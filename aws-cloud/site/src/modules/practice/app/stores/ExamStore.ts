@@ -1,4 +1,4 @@
-import type { Attempt, CertificationDetail, Exam, OptionKey, Question } from "../../domain/types";
+import type { Attempt, CertificationDetail, ContentLocale, Exam, OptionKey, Question } from "../../domain/types";
 import type { PracticeError } from "../errors";
 import { Store, type LoadStatus } from "../../../../core/state/Store";
 
@@ -10,6 +10,9 @@ export interface ExamState {
   error: PracticeError | null;
   cert: CertificationDetail | null;
   exam: Exam | null;
+  /** English original, loaded alongside a translation so a question can be compared with it. */
+  original: Exam | null;
+  locale: ContentLocale;
   attempt: Attempt | null;
   view: ExamView;
   /** Index of the question on screen. */
@@ -21,7 +24,7 @@ export interface ExamState {
 
 export class ExamStore extends Store<ExamState> {
   constructor() {
-    super({ status: "idle", error: null, cert: null, exam: null, attempt: null, view: "question", index: 0, selection: [], saving: false });
+    super({ status: "idle", error: null, cert: null, exam: null, original: null, locale: "vi", attempt: null, view: "question", index: 0, selection: [], saving: false });
   }
 
   get question(): Question | null {
@@ -39,6 +42,11 @@ export class ExamStore extends Store<ExamState> {
 
   loading(): void {
     this.setState({ status: "loading", error: null });
+  }
+
+  /** The same exam's text in another language; attempt, position and selection are unchanged. */
+  content(exam: Exam, original: Exam | null): void {
+    this.setState({ exam, original, locale: exam.locale });
   }
 
   loaded(cert: CertificationDetail, exam: Exam, attempt: Attempt, view: ExamView): void {

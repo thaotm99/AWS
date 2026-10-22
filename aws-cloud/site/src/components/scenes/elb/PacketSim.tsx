@@ -86,7 +86,7 @@ const TAG: Record<PState, { text: string; cls: string }> = {
   pass: { text: "QUA", cls: "hit" },
   block: { text: "CHẶN", cls: "bad" },
   skip: { text: "BỎ QUA", cls: "info" },
-  change: { text: "ĐỔI", cls: "miss" },
+  change: { text: "XỬ LÝ", cls: "miss" },
   wait: { text: "CHỜ", cls: "info" },
 };
 
@@ -242,8 +242,8 @@ export default function PacketSim({ scenarios, layout, action = "Gửi request",
       <div className="readout">
         {log.length === 0 ? (
           <p className="pks-hint">
-            {hint ?? <>Bấm <b>{act}</b> để xem từng bước.</>}
-            {sc.toggle && !hint ? " Đổi công tắc rồi chạy lại để so sánh." : ""}
+            {hint ?? <>Nhấn <b>{act}</b> để quan sát từng bước xử lý.</>}
+            {sc.toggle && !hint ? " Thay đổi cấu hình và chạy lại để so sánh kết quả." : ""}
           </p>
         ) : (
           <ul className="log" aria-live="polite">

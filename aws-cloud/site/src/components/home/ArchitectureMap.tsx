@@ -32,12 +32,12 @@ const N: Record<string, MapNode> = {
   tS3: { x: 1117, y: 440, w: 100, l: "S3", s: "bản sao CRR", c: "dat", lesson: "backup-dr" },
 };
 const BAND: [string, string, string, string][] = [
-  ["iam", "IAM", "ai được làm gì", "iam"],
-  ["kms", "KMS", "mã hoá dữ liệu", "kms"],
-  ["cw", "CloudWatch", "số liệu, cảnh báo", "monitoring"],
-  ["ct", "CloudTrail", "ai đã gọi API nào", "monitoring"],
-  ["cfg", "Config", "cấu hình đúng chuẩn", "monitoring"],
-  ["bak", "AWS Backup", "sao lưu tự động", "backup-dr"],
+  ["iam", "IAM", "kiểm soát truy cập", "iam"],
+  ["kms", "KMS", "quản lý khoá mã hoá", "kms"],
+  ["cw", "CloudWatch", "metric, log và alarm", "monitoring"],
+  ["ct", "CloudTrail", "nhật ký lời gọi API", "monitoring"],
+  ["cfg", "Config", "tuân thủ cấu hình", "monitoring"],
+  ["bak", "AWS Backup", "sao lưu tập trung", "backup-dr"],
 ];
 BAND.forEach(([id, l, s, lesson], i) => (N[id] = { x: 115 + i * 190, y: 672, w: 168, l, s, c: "sec", lesson }));
 
@@ -58,44 +58,44 @@ interface Step { path?: Pt[]; on: string[]; text: string; back?: boolean; alert?
 interface Flow { name: string; dr?: boolean; steps: Step[] }
 
 const FLOWS: Flow[] = [
-  { name: "Xem ảnh sản phẩm", steps: [
-    { path: [[95, 300], [120, 300], [120, 130], [151, 130]], on: ["route53"], text: "Khách mở shopviet.vn. Route 53 trả về địa chỉ CloudFront." },
-    { path: [[210, 150], [210, 280]], on: ["cf"], text: "Request tới edge location gần khách. AWS WAF lọc request xấu ngay tại đây." },
-    { path: [[269, 300], [285, 300], [285, 62], [700, 62], [700, 90]], on: ["s3", "kms"], text: "Lần đầu chưa có trong cache: CloudFront lấy ảnh từ S3. Bucket private, dữ liệu mã hoá bằng KMS." },
-    { path: [[700, 90], [700, 62], [285, 62], [285, 300], [95, 300]], on: ["cf"], back: true, text: "Ảnh được lưu ở edge. Lần sau khách gần đó nhận ngay từ cache." },
+  { name: "Phân phối nội dung tĩnh", steps: [
+    { path: [[95, 300], [120, 300], [120, 130], [151, 130]], on: ["route53"], text: "Trình duyệt phân giải shopviet.vn; Route 53 trả về bản ghi Alias trỏ tới CloudFront distribution." },
+    { path: [[210, 150], [210, 280]], on: ["cf"], text: "Request được định tuyến tới edge location có độ trễ thấp nhất; AWS WAF đánh giá request trước khi xử lý." },
+    { path: [[269, 300], [285, 300], [285, 62], [700, 62], [700, 90]], on: ["s3", "kms"], text: "Cache miss: CloudFront truy xuất object từ origin S3 thông qua OAC. Bucket ở chế độ private, dữ liệu được mã hoá bằng KMS key." },
+    { path: [[700, 90], [700, 62], [285, 62], [285, 300], [95, 300]], on: ["cf"], back: true, text: "Object được lưu tại edge cache theo TTL; các request tiếp theo trong khu vực được phục vụ trực tiếp từ cache." },
   ] },
-  { name: "Đặt hàng", steps: [
-    { path: [[95, 300], [151, 300]], on: ["cf"], text: "Khách bấm Đặt hàng. Request động đi qua CloudFront." },
-    { path: [[269, 300], [285, 300], [285, 150], [411, 150]], on: ["alb"], text: "Application Load Balancer chọn một EC2 khỏe ở một trong 2 AZ." },
-    { path: [[470, 170], [470, 250]], on: ["ec2"], text: "EC2 trong Auto Scaling group xử lý đơn. Đông khách thì tự thêm máy." },
-    { path: [[430, 290], [400, 290], [400, 370]], on: ["cache"], text: "Đọc giá và tồn kho từ ElastiCache, không phải hỏi database." },
-    { path: [[400, 370], [400, 290], [510, 290], [540, 290], [540, 370]], on: ["aurora", "kms"], text: "Ghi đơn vào Aurora: bản chính ở AZ a, bản sao ở AZ b. Dữ liệu mã hoá bằng KMS." },
-    { path: [[540, 370], [540, 290], [630, 290], [630, 250], [641, 250]], on: ["sqs"], text: "Việc gửi email, trừ kho được đẩy vào SQS để trang trả lời ngay." },
-    { path: [[759, 250], [776, 250], [894, 250], [911, 250]], on: ["lOrder", "sns"], text: "Lambda xử lý từng message. SNS báo cho khách, kho và kế toán cùng lúc." },
-    { path: [[411, 150], [285, 150], [285, 300], [95, 300]], on: ["cw"], back: true, text: "Khách thấy \"Đặt hàng thành công\". CloudWatch ghi lại thời gian xử lý." },
+  { name: "Xử lý đơn hàng", steps: [
+    { path: [[95, 300], [151, 300]], on: ["cf"], text: "Request đặt hàng (nội dung động) được CloudFront chuyển tiếp tới origin mà không cache." },
+    { path: [[269, 300], [285, 300], [285, 150], [411, 150]], on: ["alb"], text: "Application Load Balancer phân phối request tới một target healthy thuộc một trong hai Availability Zone." },
+    { path: [[470, 170], [470, 250]], on: ["ec2"], text: "Instance trong Auto Scaling group xử lý request; scaling policy điều chỉnh số instance theo tải." },
+    { path: [[430, 290], [400, 290], [400, 370]], on: ["cache"], text: "Giá và tồn kho được đọc từ ElastiCache theo mô hình cache-aside, giảm tải truy vấn cho database." },
+    { path: [[400, 370], [400, 290], [510, 290], [540, 290], [540, 370]], on: ["aurora", "kms"], text: "Đơn hàng được ghi vào Aurora; dữ liệu được sao chép đồng bộ sang AZ thứ hai và mã hoá khi lưu trữ bằng KMS." },
+    { path: [[540, 370], [540, 290], [630, 290], [630, 250], [641, 250]], on: ["sqs"], text: "Các tác vụ hậu xử lý (gửi email, cập nhật tồn kho) được đưa vào hàng đợi SQS, tách khỏi luồng request đồng bộ." },
+    { path: [[759, 250], [776, 250], [894, 250], [911, 250]], on: ["lOrder", "sns"], text: "Lambda tiêu thụ message từ hàng đợi; SNS phát sự kiện tới các hệ thống kho, kế toán và thông báo khách hàng (fan-out)." },
+    { path: [[411, 150], [285, 150], [285, 300], [95, 300]], on: ["cw"], back: true, text: "Response được trả về cho người dùng; CloudWatch ghi nhận metric độ trễ và số lỗi của request." },
   ] },
-  { name: "Đăng ảnh mới", steps: [
-    { path: [[95, 300], [120, 300], [120, 62], [700, 62], [700, 90]], on: ["s3", "iam"], text: "Nhân viên tải ảnh sản phẩm mới lên S3 bằng presigned URL, quyền do IAM cấp." },
-    { path: [[759, 110], [776, 110]], on: ["lImg"], text: "S3 Event Notification gọi Lambda tạo 3 cỡ ảnh." },
-    { path: [[894, 110], [911, 110]], on: ["rekog"], text: "Rekognition gắn nhãn \"áo thun\", \"màu xanh\" để khách tìm được." },
-    { path: [[970, 130], [970, 160], [700, 160], [700, 130]], on: ["s3"], back: true, text: "Ảnh đã xử lý lưu lại S3. CloudFront phục vụ ngay từ lần mở sau." },
+  { name: "Xử lý ảnh theo sự kiện", steps: [
+    { path: [[95, 300], [120, 300], [120, 62], [700, 62], [700, 90]], on: ["s3", "iam"], text: "Ảnh sản phẩm được tải trực tiếp lên S3 qua presigned URL; quyền ghi được giới hạn bởi IAM policy." },
+    { path: [[759, 110], [776, 110]], on: ["lImg"], text: "S3 Event Notification kích hoạt Lambda để tạo các phiên bản ảnh theo nhiều kích thước." },
+    { path: [[894, 110], [911, 110]], on: ["rekog"], text: "Amazon Rekognition phân tích ảnh và sinh nhãn (label) phục vụ tìm kiếm sản phẩm." },
+    { path: [[970, 130], [970, 160], [700, 160], [700, 130]], on: ["s3"], back: true, text: "Ảnh đã xử lý được lưu lại S3 và phân phối qua CloudFront." },
   ] },
-  { name: "App thêm vào giỏ", steps: [
-    { path: [[95, 300], [120, 300], [120, 470], [151, 470]], on: ["apigw"], text: "App di động gọi API Gateway. Cognito kiểm tra token đăng nhập." },
-    { path: [[269, 470], [300, 470], [300, 545], [630, 545], [630, 400], [641, 400]], on: ["lApi", "iam"], text: "Lambda chạy cho từng request, không có server phải quản lý. IAM role cho phép ghi DynamoDB." },
-    { path: [[759, 400], [776, 400]], on: ["ddb"], text: "Giỏ hàng lưu trong DynamoDB, đọc ghi vài mili giây theo key." },
-    { path: [[776, 400], [759, 400], [641, 400], [630, 400], [630, 545], [300, 545], [300, 470], [269, 470]], on: ["apigw"], back: true, text: "App cập nhật giỏ hàng ngay." },
+  { name: "API serverless", steps: [
+    { path: [[95, 300], [120, 300], [120, 470], [151, 470]], on: ["apigw"], text: "Ứng dụng di động gọi API Gateway; Cognito user pool authorizer xác thực JWT trong request." },
+    { path: [[269, 470], [300, 470], [300, 545], [630, 545], [630, 400], [641, 400]], on: ["lApi", "iam"], text: "Lambda xử lý request theo mô hình serverless; execution role cấp quyền ghi vào bảng DynamoDB." },
+    { path: [[759, 400], [776, 400]], on: ["ddb"], text: "Giỏ hàng được lưu trong DynamoDB với độ trễ đọc ghi ở mức mili giây theo partition key." },
+    { path: [[776, 400], [759, 400], [641, 400], [630, 400], [630, 545], [300, 545], [300, 470], [269, 470]], on: ["apigw"], back: true, text: "Response được trả về ứng dụng và trạng thái giỏ hàng được cập nhật." },
   ] },
-  { name: "Phân tích hành vi", steps: [
-    { path: [[530, 270], [630, 270], [630, 590], [641, 590]], on: ["ec2", "kinesis"], text: "Mỗi lượt xem và bấm của khách được đẩy vào Kinesis Data Streams." },
-    { path: [[759, 590], [776, 590]], on: ["firehose"], text: "Firehose gom dữ liệu, ghi file Parquet vào S3 data lake." },
-    { path: [[894, 590], [911, 590]], on: ["athena"], text: "Sáng ra, Athena chạy SQL thẳng trên S3 cho báo cáo bán hàng." },
+  { name: "Phân tích clickstream", steps: [
+    { path: [[530, 270], [630, 270], [630, 590], [641, 590]], on: ["ec2", "kinesis"], text: "Sự kiện clickstream được ghi vào Kinesis Data Streams theo thời gian thực." },
+    { path: [[759, 590], [776, 590]], on: ["firehose"], text: "Amazon Data Firehose gom lô dữ liệu, chuyển đổi sang Parquet và ghi vào S3 data lake." },
+    { path: [[894, 590], [911, 590]], on: ["athena"], text: "Athena thực thi truy vấn SQL trực tiếp trên dữ liệu S3 để lập báo cáo kinh doanh." },
   ] },
-  { name: "Mất cả Region", dr: true, steps: [
-    { path: [[210, 110], [210, 22], [1117, 22], [1117, 360]], on: ["route53", "tAurora", "tS3"], alert: true, text: "Region Singapore gặp sự cố. Route 53 health check phát hiện và chuyển khách sang Tokyo." },
-    { path: [[1117, 360], [1117, 22], [210, 22], [210, 110]], on: ["tAurora", "tS3", "bak"], back: true, text: "Aurora Global Database và S3 Cross-Region Replication đã có sẵn dữ liệu: ShopViet chạy lại sau vài phút." },
+  { name: "Khôi phục sau thảm hoạ", dr: true, steps: [
+    { path: [[210, 110], [210, 22], [1117, 22], [1117, 360]], on: ["route53", "tAurora", "tS3"], alert: true, text: "Region Singapore gặp sự cố; Route 53 health check phát hiện lỗi và failover routing chuyển traffic sang Region Tokyo." },
+    { path: [[1117, 360], [1117, 22], [210, 22], [210, 110]], on: ["tAurora", "tS3", "bak"], back: true, text: "Aurora Global Database và S3 Cross-Region Replication đã duy trì bản sao dữ liệu; hệ thống phục hồi với RPO tính bằng giây và RTO tính bằng phút." },
   ] },
-  { name: "Nền tảng an toàn", steps: BAND.map(([id, l, s]) => ({ on: [id], text: `${l}: ${s}. Áp dụng cho mọi dịch vụ phía trên.` })) },
+  { name: "Bảo mật và vận hành", steps: BAND.map(([id, l, s]) => ({ on: [id], text: `${l}: ${s}. Áp dụng xuyên suốt cho mọi dịch vụ trong kiến trúc.` })) },
 ];
 
 const d = (pts: Pt[]) => "M" + pts.map((p) => p.join(",")).join(" L");
@@ -182,7 +182,7 @@ export default function ArchitectureMap({ titles }: { titles: Record<string, str
           <g transform="translate(70 300)" aria-hidden="true">
             <circle className="amap-user" cy={-10} r={8} />
             <path className="amap-user" d="M-15 15 a15 15 0 0 1 30 0 z" />
-            <text className="amap-ft" y={38} textAnchor="middle">Khách</text>
+            <text className="amap-ft" y={38} textAnchor="middle">Người dùng</text>
           </g>
           {Object.entries(N).map(([id, n]) => {
             const w = n.w ?? 118, h = 40;
@@ -200,11 +200,11 @@ export default function ArchitectureMap({ titles }: { titles: Record<string, str
         </svg>
       </div>
       <div className="amap-legend">
-        <span className="cat-net"><i />Mạng & phân phối</span>
+        <span className="cat-net"><i />Mạng và phân phối nội dung</span>
         <span className="cat-cmp"><i />Tính toán</span>
-        <span className="cat-dat"><i />Lưu trữ & dữ liệu</span>
-        <span className="cat-int"><i />Tích hợp & phân tích</span>
-        <span className="cat-sec"><i />Bảo mật & vận hành</span>
+        <span className="cat-dat"><i />Lưu trữ và cơ sở dữ liệu</span>
+        <span className="cat-int"><i />Tích hợp và phân tích</span>
+        <span className="cat-sec"><i />Bảo mật và vận hành</span>
       </div>
       <div className="amap-caption" aria-live="polite">
         <span className="amap-step">{caption.step}</span>

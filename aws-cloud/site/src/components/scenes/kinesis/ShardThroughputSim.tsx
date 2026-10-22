@@ -22,12 +22,12 @@ interface Scenario {
 }
 
 const SCENARIOS: Scenario[] = [
-  { name: "App gửi từng sự kiện một", view: "write", request: "2.400 sự kiện/s · mỗi sự kiện 0,2 KB · 2 shard",
-    toggle: "Gom sự kiện trước khi gửi (KPL aggregation + PutRecords)" },
-  { name: "Ra mắt sản phẩm, lượt xem tăng vọt", view: "chart", request: "Lưu lượng ghi theo từng giây · trước giờ ra mắt 2 shard",
+  { name: "Ứng dụng gửi từng sự kiện riêng lẻ", view: "write", request: "2.400 sự kiện/s · mỗi sự kiện 0,2 KB · 2 shard",
+    toggle: "Gộp sự kiện trước khi gửi (KPL aggregation + PutRecords)" },
+  { name: "Lượt xem tăng đột biến khi ra mắt sản phẩm", view: "chart", request: "Lưu lượng ghi theo từng giây · trước thời điểm ra mắt: 2 shard",
     toggle: "On-demand capacity mode" },
-  { name: "Bốn app cùng đọc một stream", view: "read", request: "2 shard · mỗi shard ghi 0,8 MB/s · 4 app đọc",
-    toggle: "Enhanced fan-out cho cả 4 app" },
+  { name: "Bốn ứng dụng cùng đọc một stream", view: "read", request: "2 shard · mỗi shard ghi 0,8 MB/s · 4 ứng dụng đọc",
+    toggle: "Enhanced fan-out cho cả 4 ứng dụng" },
 ];
 
 const TICKS = 10;
@@ -35,7 +35,7 @@ const EVENTS = 2400;
 const AGG = 10;
 const TRAFFIC = [0.8, 0.9, 1.1, 3.2, 4, 4.2, 3.6, 2.4, 1.4, 1];
 const WRITE_MB = 0.8;
-const APPS = ["Bảng xếp hạng", "Gợi ý sản phẩm", "Chống gian lận", "Báo cáo"];
+const APPS = ["Bảng xếp hạng", "Gợi ý sản phẩm", "Phát hiện gian lận", "Báo cáo"];
 
 const nf = (v: number, d = 0) => v.toLocaleString("vi-VN", { maximumFractionDigits: d, minimumFractionDigits: d });
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -139,14 +139,14 @@ export default function ShardThroughputSim() {
 
   const result = (() => {
     if (sc.view === "write") return on
-      ? { ok: true, text: `Gom ${AGG} sự kiện vào một record: mỗi shard chỉ còn ${nf(writeShard(true).rec)} records/s. Không cần thêm shard, nên **không tốn thêm tiền**.` }
-      : { ok: false, text: `Mỗi shard nhận ${nf(writeShard(false).rec)} records/s, quá giới hạn **1.000 records/s**. Lỗi **ProvisionedThroughput\u200BExceededException**. Thêm shard thì hết lỗi nhưng tốn tiền; retry với backoff chỉ hoãn lỗi. Gom sự kiện trước khi gửi là rẻ nhất.` };
+      ? { ok: true, text: `Gộp ${AGG} sự kiện vào một record: mỗi shard chỉ còn ${nf(writeShard(true).rec)} records/s. Không cần bổ sung shard, do đó **không phát sinh thêm chi phí**.` }
+      : { ok: false, text: `Mỗi shard nhận ${nf(writeShard(false).rec)} records/s, vượt giới hạn **1.000 records/s**, phát sinh lỗi **ProvisionedThroughput\u200BExceededException**. Bổ sung shard khắc phục được lỗi nhưng tăng chi phí; retry với backoff chỉ trì hoãn lỗi. Gộp sự kiện trước khi gửi là phương án có chi phí thấp nhất.` };
     if (sc.view === "chart") return on
-      ? { ok: rejected === 0, text: "**On-demand capacity mode**: stream tự nâng capacity ghi theo lưu lượng (ngay lập tức tới gấp đôi đỉnh gần nhất), không phải đoán trước hay chia shard bằng tay. Hợp với tải khó đoán; trả tiền theo lượng dữ liệu." }
-      : { ok: false, text: `Provisioned 2 shard chỉ ghi được 2 MB/s. Lúc cao điểm ${nf(rejected / 1000, 1)} MB bị từ chối. Muốn tự chia shard thì phải đoán trước và theo dõi liên tục.` };
+      ? { ok: rejected === 0, text: "**On-demand capacity mode**: stream tự động tăng capacity ghi theo lưu lượng (tức thời tới gấp đôi mức đỉnh gần nhất), không cần dự đoán trước hay chia shard thủ công. Phù hợp với tải khó dự đoán; chi phí tính theo lượng dữ liệu." }
+      : { ok: false, text: `Chế độ provisioned với 2 shard chỉ ghi được 2 MB/s. Tại thời điểm cao điểm, ${nf(rejected / 1000, 1)} MB bị từ chối. Việc tự chia shard đòi hỏi dự đoán trước và giám sát liên tục.` };
     return on
-      ? { ok: true, text: "**Enhanced fan-out**: mỗi app đăng ký làm consumer riêng, được **2 MB/s mỗi shard cho riêng mình**, dữ liệu được đẩy tới (khoảng 70 ms). App thêm vào không làm app khác chậm." }
-      : { ok: false, text: `Mỗi shard chỉ cho đọc **2 MB/s, chia chung** cho mọi app. 4 app mỗi app chỉ được ${nf(r.got, 1)} MB/s trong khi dữ liệu vào ${nf(WRITE_MB, 1)} MB/s: càng chạy càng chậm, sau một giờ chậm khoảng ${nf(r.behindPerSec * 60)} phút.` };
+      ? { ok: true, text: "**Enhanced fan-out**: mỗi ứng dụng đăng ký làm consumer riêng, có thông lượng **2 MB/s trên mỗi shard dành riêng**, dữ liệu được đẩy tới consumer (độ trễ khoảng 70 ms). Bổ sung ứng dụng không làm giảm thông lượng của ứng dụng khác." }
+      : { ok: false, text: `Mỗi shard chỉ cung cấp thông lượng đọc **2 MB/s, chia sẻ chung** cho mọi ứng dụng. Với 4 ứng dụng, mỗi ứng dụng chỉ đọc được ${nf(r.got, 1)} MB/s trong khi dữ liệu ghi vào là ${nf(WRITE_MB, 1)} MB/s: độ trễ tăng dần theo thời gian, sau một giờ độ trễ khoảng ${nf(r.behindPerSec * 60)} phút.` };
   })();
 
   return (
@@ -162,7 +162,7 @@ export default function ShardThroughputSim() {
           <input type="checkbox" checked={on} disabled={busy} onChange={(e) => { setOn(e.target.checked); setT(-1); }} />
           {sc.toggle}
         </label>
-        <button className="btn primary" onClick={run} disabled={busy}>Chạy 10 giây</button>
+        <button className="btn primary" onClick={run} disabled={busy}>Chạy mô phỏng 10 giây</button>
       </div>
       <div className="svg-wrap">
         {sc.view === "write" && <WriteView fx={fx} agg={on} live={t >= 0} />}
@@ -171,22 +171,22 @@ export default function ShardThroughputSim() {
       </div>
       <div className="readout" aria-live="polite">
         {t < 0 ? (
-          <p className="kts-hint">Bấm <b>Chạy 10 giây</b>, rồi đổi công tắc và chạy lại để so sánh.</p>
+          <p className="kts-hint">Chọn <b>Chạy mô phỏng 10 giây</b>, sau đó thay đổi cấu hình và chạy lại để so sánh.</p>
         ) : (
           <>
             <div className="status">
               <span className="count">giây {t + 1}/{TICKS}</span>
               {sc.view === "write" && <>
-                <span className="pill ok"><i />{nf(ok)} sự kiện ghi được</span>
+                <span className="pill ok"><i />{nf(ok)} sự kiện được ghi</span>
                 <span className={"pill " + (rejected ? "bad" : "ok")}><i />{nf(rejected)} bị từ chối</span>
               </>}
               {sc.view === "chart" && <>
-                <span className="pill ok"><i />{nf(ok / 1000, 1)} MB ghi được</span>
+                <span className="pill ok"><i />{nf(ok / 1000, 1)} MB được ghi</span>
                 <span className={"pill " + (rejected ? "bad" : "ok")}><i />{nf(rejected / 1000, 1)} MB bị từ chối</span>
                 <span className="count">capacity giây này: {nf(capacityAt(on, t), 1)} MB/s</span>
               </>}
               {sc.view === "read" && (
-                <span className={"pill " + (on ? "ok" : "bad")}><i />mỗi app chậm {on ? "~70 ms" : `${nf(lag, 1)} s và đang tăng`}</span>
+                <span className={"pill " + (on ? "ok" : "bad")}><i />độ trễ mỗi ứng dụng {on ? "~70 ms" : `${nf(lag, 1)} s và đang tăng`}</span>
               )}
             </div>
             {done && <p className={`kts-result ${result.ok ? "ok" : "bad"}`}>{rich(result.text)}</p>}
@@ -212,12 +212,12 @@ function Bar({ x, y, w, use }: { x: number; y: number; w: number; use: number })
 function WriteView({ fx, agg, live }: { fx: RefObject<SVGGElement>; agg: boolean; live: boolean }) {
   const w = writeShard(agg);
   return (
-    <svg viewBox="0 20 820 230" role="img" aria-label="App gửi sự kiện vào hai shard; thanh cho biết mỗi shard dùng bao nhiêu phần giới hạn ghi">
+    <svg viewBox="0 20 820 230" role="img" aria-label="Ứng dụng gửi sự kiện vào hai shard; thanh thể hiện mức sử dụng giới hạn ghi của mỗi shard">
       <path className="kss-link" d="M130 138 H170 V92 H300 M170 138 V184 H300" />
       <g className="kss-src">
         <rect x={20} y={110} width={110} height={56} rx={8} />
-        <text className="kss-l1" x={75} y={134} textAnchor="middle">App di động</text>
-        <text className="kss-l2" x={75} y={151} textAnchor="middle">{agg ? "gom 10 sự kiện/record" : "1 sự kiện = 1 record"}</text>
+        <text className="kss-l1" x={75} y={134} textAnchor="middle">Ứng dụng di động</text>
+        <text className="kss-l2" x={75} y={151} textAnchor="middle">{agg ? "gộp 10 sự kiện/record" : "1 sự kiện = 1 record"}</text>
       </g>
       {[0, 1].map((s) => {
         const y = 92 + s * 92;
@@ -270,7 +270,7 @@ function ChartView({ fx, onDemand, shown }: { fx: RefObject<SVGGElement>; onDema
       {shown >= 0 && <path className="kts-cap" d={line} />}
       <g transform={`translate(${X0} 246)`}>
         <rect className="kts-col" x={0} y={-9} width={12} height={10} rx={2} />
-        <text className="ts" x={18} y={0}>ghi được</text>
+        <text className="ts" x={18} y={0}>được ghi</text>
         <rect className="kts-col over" x={110} y={-9} width={12} height={10} rx={2} />
         <text className="ts" x={128} y={0}>bị throttle</text>
         <line className="kts-cap" x1={240} x2={262} y1={-4} y2={-4} />
@@ -284,7 +284,7 @@ function ChartView({ fx, onDemand, shown }: { fx: RefObject<SVGGElement>; onDema
 function ReadView({ fx, efo, live, lag }: { fx: RefObject<SVGGElement>; efo: boolean; live: boolean; lag: number }) {
   const r = readApp(efo);
   return (
-    <svg viewBox="0 20 820 230" role="img" aria-label="Hai shard và bốn app đọc; thanh cho biết mỗi app đọc được bao nhiêu so với lượng dữ liệu vào">
+    <svg viewBox="0 20 820 230" role="img" aria-label="Hai shard và bốn ứng dụng đọc; thanh thể hiện thông lượng đọc của mỗi ứng dụng so với lượng dữ liệu ghi vào">
       <g className="kss-shard">
         <rect x={20} y={92} width={185} height={92} rx={8} />
         <text x={26} y={86}>Stream · 2 shard</text>
@@ -303,7 +303,7 @@ function ReadView({ fx, efo, live, lag }: { fx: RefObject<SVGGElement>; efo: boo
           </g>
         </>
       )}
-      {efo && <text className="kss-l2" x={340} y={128} textAnchor="middle">SubscribeToShard · 2 MB/s riêng mỗi app</text>}
+      {efo && <text className="kss-l2" x={340} y={128} textAnchor="middle">SubscribeToShard · 2 MB/s mỗi consumer</text>}
       {APPS.map((name, a) => {
         const y = 62 + a * 52;
         return (
@@ -312,7 +312,7 @@ function ReadView({ fx, efo, live, lag }: { fx: RefObject<SVGGElement>; efo: boo
             <g className="kss-app">
               <rect x={540} y={y - 22} width={270} height={44} rx={8} />
               <text className="kss-l1" x={552} y={y - 3}>{name}</text>
-              <text className="kss-l2" x={552} y={y + 13}>{live ? `đọc ${nf(r.got, 1)} / cần ${nf(WRITE_MB, 1)} MB/s` : "chưa chạy"}</text>
+              <text className="kss-l2" x={552} y={y + 13}>{live ? `đọc ${nf(r.got, 1)} / cần ${nf(WRITE_MB, 1)} MB/s` : "chưa chạy mô phỏng"}</text>
             </g>
             <g className="kts-bar">
               <rect className="kts-track" x={700} y={y - 7} width={96} height={14} rx={7} />
@@ -321,7 +321,7 @@ function ReadView({ fx, efo, live, lag }: { fx: RefObject<SVGGElement>; efo: boo
           </g>
         );
       })}
-      {live && <text className={"kts-lag" + (efo ? "" : " bad")} x={20} y={218}>{efo ? "chậm ~70 ms" : `chậm ${nf(lag, 1)} s`}</text>}
+      {live && <text className={"kts-lag" + (efo ? "" : " bad")} x={20} y={218}>{efo ? "độ trễ ~70 ms" : `độ trễ ${nf(lag, 1)} s`}</text>}
       <g ref={fx} />
     </svg>
   );

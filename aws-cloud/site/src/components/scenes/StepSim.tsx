@@ -52,7 +52,7 @@ export default function StepSim({ nodes, boxes = [], initial, intro, steps, heig
       <div className="stage-bar">
         {done < steps.length
           ? <button className="btn primary" onClick={next} disabled={busy}>{steps[done].button}</button>
-          : <button className="btn" onClick={() => setDone(0)}>Làm lại</button>}
+          : <button className="btn" onClick={() => setDone(0)}>Đặt lại</button>}
         <span className="count">Bước {Math.min(done, steps.length)}/{steps.length}</span>
       </div>
       <div className="svg-wrap">

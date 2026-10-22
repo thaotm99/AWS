@@ -27,7 +27,7 @@ const ITEMS: Item[] = [
     usedBy: "i-web1, i-web2",
     compliant: true,
     event: "CreateSecurityGroup\nAuthorizeSecurityGroupIngress\nuser: role/cloudformation",
-    note: "Security group được tạo, chỉ mở HTTPS. Config ghi configuration item đầu tiên.",
+    note: "Security group được tạo, chỉ cho phép HTTPS. Config ghi configuration item đầu tiên.",
   },
   {
     day: "Thứ Ba", time: "14:20",
@@ -35,7 +35,7 @@ const ITEMS: Item[] = [
     usedBy: "i-web1, i-web2",
     compliant: true,
     event: "AuthorizeSecurityGroupIngress\nuser: minh (console)\nIP: 203.0.113.25",
-    note: "Mở SSH cho đúng một IP của văn phòng. Rule `restricted-ssh` vẫn COMPLIANT.",
+    note: "Mở SSH cho duy nhất một địa chỉ IP của văn phòng. Rule `restricted-ssh` vẫn ở trạng thái COMPLIANT.",
   },
   {
     day: "Thứ Năm", time: "02:10",
@@ -43,7 +43,7 @@ const ITEMS: Item[] = [
     usedBy: "i-web1, i-web2",
     compliant: false,
     event: "AuthorizeSecurityGroupIngress\nuser: dev-tam (CLI)\nIP: 113.161.x.x",
-    note: "Ai đó mở SSH cho cả Internet lúc nửa đêm. Config đánh dấu **NON_COMPLIANT**; CloudTrail cho biết đó là `dev-tam` dùng CLI.",
+    note: "SSH bị mở cho toàn bộ Internet vào ban đêm. Config đánh dấu **NON_COMPLIANT**; CloudTrail xác định người thực hiện là `dev-tam` thông qua CLI.",
   },
   {
     day: "Thứ Năm", time: "09:05",
@@ -51,7 +51,7 @@ const ITEMS: Item[] = [
     usedBy: "i-web1, i-web2",
     compliant: true,
     event: "RevokeSecurityGroupIngress\nuser: an (console)",
-    note: "Sáng ra An gỡ rule. Trở lại COMPLIANT. Lịch sử vẫn giữ cả 7 tiếng cổng 22 bị mở.",
+    note: "Buổi sáng, An gỡ rule; tài nguyên trở lại trạng thái COMPLIANT. Lịch sử vẫn lưu lại toàn bộ 7 giờ cổng 22 bị mở.",
   },
   {
     day: "Thứ Sáu", time: "16:40",
@@ -59,7 +59,7 @@ const ITEMS: Item[] = [
     usedBy: "i-web1, i-web2, i-web4",
     compliant: true,
     event: "RunInstances (i-web4)\nuser: autoscaling",
-    note: "Instance mới dùng sg-web. Config ghi cả **quan hệ** giữa tài nguyên: security group nào gắn vào instance nào.",
+    note: "Instance mới sử dụng sg-web. Config ghi lại cả **quan hệ** giữa các tài nguyên: security group nào được gắn vào instance nào.",
   },
 ];
 
@@ -94,7 +94,7 @@ export default function ConfigTimelineSim() {
         <code>sg-web</code>
         <span className="label">Rule</span>
         <code>restricted-ssh</code>
-        <button className="btn primary cts-play" onClick={play} disabled={busy}>Xem cả tuần</button>
+        <button className="btn primary cts-play" onClick={play} disabled={busy}>Xem toàn bộ tuần</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 0 820 120" role="img" aria-label="Dòng thời gian cấu hình của sg-web trong một tuần">
@@ -124,14 +124,14 @@ export default function ConfigTimelineSim() {
         </div>
         <div className="cts-panels">
           <div className="cts-panel">
-            <h4>AWS Config: trông thế nào</h4>
+            <h4>AWS Config: trạng thái cấu hình</h4>
             <ul className="cts-rules">
               {it.rules.map((r) => <li key={r.text} className={r.mark}>{r.mark === "add" ? "+ " : r.mark === "gone" ? "− " : r.mark === "risk" ? "! " : "  "}{r.text}</li>)}
             </ul>
-            <p className="cts-note">Đang gắn vào: <code>{it.usedBy}</code></p>
+            <p className="cts-note">Đang được gắn vào: <code>{it.usedBy}</code></p>
           </div>
           <div className="cts-panel">
-            <h4>CloudTrail: ai đã đổi</h4>
+            <h4>CloudTrail: người thực hiện thay đổi</h4>
             <p className="cts-event">{it.event}</p>
           </div>
         </div>

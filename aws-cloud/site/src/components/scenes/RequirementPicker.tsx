@@ -9,13 +9,13 @@ export interface Requirement {
 }
 
 /** Requirement → answer lookup, the way the practice tests frame a choice. */
-export default function RequirementPicker({ items, label = "Nên chọn" }: { items: Requirement[]; label?: string }) {
+export default function RequirementPicker({ items, label = "Giải pháp đề xuất" }: { items: Requirement[]; label?: string }) {
   const [active, setActive] = useState(0);
   const item = items[active];
   return (
     <div className="stage">
       <div className="picker">
-        <div className="picker-list" role="group" aria-label="Chọn một nhu cầu">
+        <div className="picker-list" role="group" aria-label="Chọn một yêu cầu">
           {items.map((n, i) => (
             <button key={i} className="picker-item" aria-pressed={i === active} onClick={() => setActive(i)}>
               {n.need}

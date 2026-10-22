@@ -1,6 +1,6 @@
 ---
-title: "RDS + Aurora: sẵn sàng cao, đọc nhiều và nhiều Region"
-lede: "Database đơn hàng của ShopViet không được mất dữ liệu, không được sập và không được chậm khi kế toán chạy báo cáo. Bài này so sánh Multi-AZ với Read Replica khi ghi, đọc, hỏng và bảo trì; xử lý các sự cố vận hành RDS hằng ngày; dựng Aurora cho đọc nhiều và nhiều Region; và mã hoá một database đang chạy."
+title: "RDS + Aurora: tính sẵn sàng cao, mở rộng đọc và triển khai nhiều Region"
+lede: "Bài học trình bày bốn nội dung: so sánh Multi-AZ và Read Replica trong các tình huống ghi, đọc, sự cố và bảo trì; xử lý các sự cố vận hành RDS thường gặp; triển khai Aurora cho tải đọc lớn và nhiều Region; và mã hoá một database đang vận hành."
 minutes: 30
 scenes: 4
 prerequisites: ["vpc", "kms"]
@@ -32,64 +32,64 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 <Story toc={[
   { href: "#s1", label: "1 · Multi-AZ và Read Replica" },
   { href: "#s2", label: "2 · Sự cố vận hành RDS" },
-  { href: "#s3", label: "3 · Aurora" },
-  { href: "#s4", label: "4 · Mã hoá DB đang chạy" },
-  { href: "#challenge", label: "Thử thách" },
+  { href: "#s3", label: "3 · Amazon Aurora" },
+  { href: "#s4", label: "4 · Mã hoá database đang vận hành" },
+  { href: "#challenge", label: "Bài tập" },
 ]}>
-Database đơn hàng của ShopViet không được mất dữ liệu, không được sập, và không được chậm khi phòng kế toán chạy báo cáo. **RDS** và **Aurora** giải ba bài toán đó bằng những cơ chế khác nhau. Hiểu đúng chỗ khác nhau ấy là chọn được cấu hình đúng.
+Database đơn hàng của ShopViet phải đáp ứng ba yêu cầu: không mất dữ liệu, không gián đoạn dịch vụ, và không suy giảm hiệu năng khi phòng kế toán chạy báo cáo. **Amazon RDS** và **Amazon Aurora** giải quyết ba yêu cầu này bằng các cơ chế khác nhau; nắm rõ sự khác biệt giữa các cơ chế là cơ sở để lựa chọn cấu hình phù hợp.
 </Story>
 
-<Scene id="s1" label="Cảnh 1/4" title="Multi-AZ và Read Replica khác nhau ở đâu?" questions={["exam1_q52", "exam5_q25", "exam6_q49", "exam2_q25", "exam3_q63", "exam3_q41"]}>
+<Scene id="s1" label="Phần 1/4" title="Khác biệt giữa Multi-AZ và Read Replica" questions={["exam1_q52", "exam5_q25", "exam6_q49", "exam2_q25", "exam3_q63", "exam3_q41"]}>
 
-Ghi một đơn hàng, chạy báo cáo, rồi cho primary sập và thử hai kiểu bảo trì:
+Ghi một đơn hàng, chạy báo cáo, sau đó mô phỏng sự cố primary và thử hai loại bảo trì:
 
 <MultiAzSim client:visible />
 
-<Takeaway>Multi-AZ: đồng bộ, một standby không đọc được, để chịu lỗi; failover bằng cách đổi CNAME. Read Replica: bất đồng bộ, đọc được, để giảm tải đọc. Bảo trì OS làm standby trước; nâng cấp engine thì cả hai cùng lúc.</Takeaway>
+<Takeaway>Multi-AZ: sao chép đồng bộ, một standby không phục vụ đọc, nhằm đảm bảo khả năng chịu lỗi; failover bằng cách cập nhật CNAME. Read Replica: sao chép bất đồng bộ, phục vụ đọc, nhằm giảm tải đọc. Bảo trì OS được áp dụng cho standby trước; nâng cấp engine được áp dụng cho cả hai cùng lúc.</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Cảnh 2/4" title="Năm sự cố của database đơn hàng" questions={["exam2_q13", "exam6_q19", "exam6_q46", "exam4_q19", "exam1_q3", "exam1_q55", "exam2_q63", "exam4_q47", "exam5_q42", "exam2_q62"]}>
+<Scene id="s2" label="Phần 2/4" title="Năm sự cố vận hành của database đơn hàng" questions={["exam2_q13", "exam6_q19", "exam6_q46", "exam4_q19", "exam1_q3", "exam1_q55", "exam2_q63", "exam4_q47", "exam5_q42", "exam2_q62"]}>
 
-ShopViet càng lớn, database càng gặp nhiều chuyện: báo cáo làm chậm web, Lambda mở quá nhiều kết nối, ổ đĩa đầy, cả Region gặp sự cố. Chọn từng sự cố, chạy để thấy hậu quả, rồi bật tính năng RDS tương ứng và chạy lại:
+Khi quy mô ShopViet tăng, database phát sinh nhiều vấn đề hơn: báo cáo làm chậm website, Lambda mở quá nhiều kết nối, ổ đĩa đầy, sự cố cấp Region. Chọn từng sự cố, chạy để quan sát hậu quả, sau đó bật tính năng RDS tương ứng và chạy lại:
 
 <RdsOpsSim client:visible />
 
-Hai việc nữa giúp đội vận hành ngủ ngon. Hệ thống kế toán chạy SQL Server thì dùng **RDS for SQL Server Multi-AZ**: AWS lo standby và failover. Và để mọi database mới đều đúng chuẩn (Multi-AZ, backup, mã hoá), tạo chúng từ cùng một **template CloudFormation** đã được kiểm tra.
+Hai biện pháp bổ sung giúp giảm tải cho đội vận hành. Hệ thống kế toán chạy SQL Server sử dụng **RDS for SQL Server Multi-AZ**: AWS quản lý standby và failover. Để mọi database mới tuân thủ cùng tiêu chuẩn (Multi-AZ, backup, mã hoá), các database được tạo từ cùng một **CloudFormation template** đã được kiểm định.
 
-<Takeaway>Báo cáo làm chậm web: Read Replica cùng Region (không tính phí replication). Quá nhiều kết nối: RDS Proxy. Ổ đĩa có thể đầy: storage auto scaling. Region hỏng: cross-Region Read Replica + copy backup sang Region khác. Cần vào OS: RDS Custom.</Takeaway>
+<Takeaway>Báo cáo làm chậm website: Read Replica cùng Region (không tính phí replication). Quá nhiều kết nối: RDS Proxy. Nguy cơ đầy ổ đĩa: storage auto scaling. Sự cố cấp Region: cross-Region Read Replica + copy backup sang Region khác. Cần truy cập OS: RDS Custom.</Takeaway>
 
 </Scene>
 
-<Scene id="s3" label="Cảnh 3/4" title="Aurora: replica, Global Database, Serverless" questions={["exam5_q3", "exam2_q52", "exam3_q50", "exam2_q5", "exam1_q7", "exam2_q61", "exam6_q23", "exam6_q17", "exam2_q53", "exam4_q2", "exam6_q5", "exam5_q7"]}>
+<Scene id="s3" label="Phần 3/4" title="Aurora: replica, Global Database và Serverless" questions={["exam5_q3", "exam2_q52", "exam3_q50", "exam2_q5", "exam1_q7", "exam2_q61", "exam6_q23", "exam6_q17", "exam2_q53", "exam4_q2", "exam6_q5", "exam5_q7"]}>
 
-Read Replica của RDS MySQL bắt đầu trễ vài phút vào giờ cao điểm. ShopViet chuyển sang **Aurora MySQL**. Khác biệt lớn nhất: mọi instance dùng chung một **cluster volume**, nên replica không phải chép lại dữ liệu. Thử lần lượt các thao tác:
+Read Replica của RDS MySQL bắt đầu có replication lag vài phút vào giờ cao điểm, do đó ShopViet chuyển sang **Aurora MySQL**. Khác biệt lớn nhất: mọi instance dùng chung một **cluster volume**, nên replica không phải sao chép lại dữ liệu. Thử lần lượt các thao tác:
 
 <AuroraSim client:visible />
 
-Vài quyết định Aurora khác của ShopViet:
+Một số quyết định khác của ShopViet liên quan tới Aurora:
 
 <RequirementPicker client:visible items={[
-  { need: "Dev cần một database có dữ liệu giống production để thử tính năng mới", answer: "Restore từ automated backup của Aurora (hoặc tạo clone)",
-    why: "Tạo cluster riêng từ backup, không ảnh hưởng cluster production." },
-  { need: "Bảng tỷ giá dùng chung cho mọi nước, còn bảng đơn hàng chỉ dùng trong từng Region", answer: "Aurora Global Database cho bảng dùng chung, Aurora thường cho phần còn lại",
-    why: "Chỉ dữ liệu cần đọc toàn cầu mới phải trả thêm cho sao chép giữa Region." },
-  { need: "Ứng dụng nội bộ mới, tải lên xuống thất thường, không đoán trước được", answer: "Aurora Serverless v2",
-    why: "Tự co giãn năng lực (ACU) theo tải từng giây, trả theo mức dùng." },
-  { need: "Database đọc ghi rất nhiều, phí I/O chiếm phần lớn hoá đơn, muốn chi phí dự đoán được", answer: "Aurora I/O-Optimized",
-    why: "Không tính phí theo từng I/O; trả giá instance và storage cao hơn một chút." },
+  { need: "Team phát triển cần một database có dữ liệu giống production để kiểm thử tính năng mới", answer: "Restore từ automated backup của Aurora (hoặc tạo clone)",
+    why: "Tạo cluster riêng từ backup, không ảnh hưởng tới cluster production." },
+  { need: "Bảng tỷ giá dùng chung cho mọi quốc gia, trong khi bảng đơn hàng chỉ dùng trong từng Region", answer: "Aurora Global Database cho bảng dùng chung, Aurora tiêu chuẩn cho phần còn lại",
+    why: "Chỉ dữ liệu cần đọc trên phạm vi toàn cầu mới phát sinh chi phí sao chép giữa các Region." },
+  { need: "Ứng dụng nội bộ mới, tải biến động không dự đoán trước được", answer: "Aurora Serverless v2",
+    why: "Tự động co giãn năng lực (ACU) theo tải từng giây, tính phí theo mức sử dụng." },
+  { need: "Database có khối lượng đọc ghi rất lớn, phí I/O chiếm phần lớn chi phí, yêu cầu chi phí dự đoán được", answer: "Aurora I/O-Optimized",
+    why: "Không tính phí theo từng I/O; đổi lại, giá instance và storage cao hơn một chút." },
 ]} />
 
-<Takeaway>Aurora Replica + reader endpoint cho đọc nhiều, và cũng là mục tiêu failover. Tải đọc lên xuống: Aurora Auto Scaling. Nhiều Region, RPO vài giây, RTO khoảng một phút: Global Database. Tải thất thường: Serverless v2.</Takeaway>
+<Takeaway>Aurora Replica + reader endpoint phục vụ tải đọc lớn, đồng thời là đích failover. Tải đọc biến động: Aurora Auto Scaling. Nhiều Region, RPO vài giây, RTO khoảng một phút: Global Database. Tải không dự đoán được: Serverless v2.</Takeaway>
 
 </Scene>
 
-<Scene id="s4" label="Cảnh 4/4" title="Mã hoá một database đang chạy" questions={["exam2_q45", "exam4_q31", "exam4_q39", "exam2_q57"]}>
+<Scene id="s4" label="Phần 4/4" title="Mã hoá database đang vận hành" questions={["exam2_q45", "exam4_q31", "exam4_q39", "exam2_q57"]}>
 
-Đợt kiểm tra bảo mật phát hiện database đơn hàng chưa mã hoá. Không thể bật encryption trực tiếp trên một RDS instance đang chạy, nên phải đi đường vòng qua snapshot:
+Đợt kiểm tra bảo mật phát hiện database đơn hàng chưa được mã hoá. Không thể bật encryption trực tiếp trên một RDS instance đang chạy, do đó cần thực hiện thông qua snapshot:
 
 <StepSim client:visible height={210}
-  intro="Kiểm tra bảo mật phát hiện database đơn hàng chưa mã hoá."
+  intro="Kiểm tra bảo mật phát hiện database đơn hàng chưa được mã hoá."
   nodes={[
     { id: "old", x: 30, y: 80, label: "RDS chưa mã hoá", kind: "warn" },
     { id: "snap", x: 220, y: 80, label: "Snapshot", sub: "chưa mã hoá", kind: "site" },
@@ -98,62 +98,62 @@ Vài quyết định Aurora khác của ShopViet:
   ]}
   initial={["old"]}
   steps={[
-    { button: "1. Tạo snapshot", show: ["snap"], flows: [{ path: ["old", "snap"], tone: "neutral" }], note: "Snapshot của database chưa mã hoá cũng chưa mã hoá." },
+    { button: "1. Tạo snapshot", show: ["snap"], flows: [{ path: ["old", "snap"], tone: "neutral" }], note: "Snapshot của database chưa mã hoá cũng ở trạng thái chưa mã hoá." },
     { button: "2. Copy snapshot có bật encryption", show: ["enc"], flows: [{ path: ["snap", "enc"], tone: "good", label: "copy + KMS" }], note: "Khi copy snapshot, chọn mã hoá bằng một KMS key." },
     { button: "3. Restore thành instance mới", show: ["new"], flows: [{ path: ["enc", "new"], tone: "good", label: "restore" }],
-      note: "Restore từ snapshot đã mã hoá ra instance mới đã mã hoá, chuyển ứng dụng sang, rồi xoá instance cũ." },
+      note: "Restore snapshot đã mã hoá thành instance mới đã mã hoá, chuyển ứng dụng sang instance mới, sau đó xoá instance cũ." },
   ]} />
 
-Mã hoá ổ đĩa mới là một phần. Các yêu cầu bảo mật khác của ShopViet:
+Mã hoá ổ đĩa chỉ là một phần. Các yêu cầu bảo mật khác của ShopViet:
 
 <RequirementPicker client:visible items={[
-  { need: "Database đã mã hoá at rest, giờ cần bảo vệ dữ liệu trên đường từ app tới database", answer: "Kết nối bằng SSL/TLS", why: "KMS chỉ bảo vệ dữ liệu at rest." },
-  { need: "Lambda kết nối PostgreSQL mà không lưu mật khẩu ở đâu cả", answer: "IAM database authentication + IAM role", why: "Lambda lấy token ngắn hạn bằng IAM role thay cho mật khẩu." },
-  { need: "Gửi bản sao database đã mã hoá cho account của đội phân tích", answer: "Share snapshot + cấp quyền dùng KMS key", why: "Account kia phải dùng được KMS key thì mới restore được. Xem bài KMS." },
+  { need: "Database đã được mã hoá khi lưu trữ; cần bảo vệ dữ liệu khi truyền từ ứng dụng tới database", answer: "Kết nối bằng SSL/TLS", why: "KMS chỉ bảo vệ dữ liệu khi lưu trữ (at rest)." },
+  { need: "Lambda kết nối PostgreSQL mà không lưu trữ mật khẩu", answer: "IAM database authentication + IAM role", why: "Lambda lấy token ngắn hạn thông qua IAM role thay cho mật khẩu." },
+  { need: "Chia sẻ bản sao database đã mã hoá cho account của team phân tích", answer: "Share snapshot + cấp quyền sử dụng KMS key", why: "Account nhận phải có quyền sử dụng KMS key thì mới restore được. Xem bài KMS." },
 ]} />
 
-<Takeaway>Mã hoá database đang chạy: snapshot → copy có mã hoá → restore. Trên đường truyền: SSL/TLS. Không dùng mật khẩu: IAM DB authentication.</Takeaway>
+<Takeaway>Mã hoá database đang vận hành: snapshot → copy có mã hoá → restore. Mã hoá khi truyền: SSL/TLS. Xác thực không dùng mật khẩu: IAM DB authentication.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="Multi-AZ hay Read Replica?" questions={["exam1_q52", "exam5_q25", "exam6_q19", "exam2_q61", "exam2_q45"]}>
+<Scene id="challenge" label="Bài tập" title="Phân loại đặc tính: Multi-AZ và Read Replica" questions={["exam1_q52", "exam5_q25", "exam6_q19", "exam2_q61", "exam2_q45"]}>
 
-Xếp từng đặc điểm vào đúng tính năng. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
+Phân loại từng đặc tính vào tính năng tương ứng. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
 <SortGame client:visible
   bins={[
-    { id: "maz", title: "Multi-AZ", sub: "Để chịu lỗi", hint: "Gợi ý: đặc điểm này phục vụ high availability." },
-    { id: "rr", title: "Read Replica", sub: "Để đọc nhiều", hint: "Gợi ý: đặc điểm này phục vụ mở rộng đọc." },
+    { id: "maz", title: "Multi-AZ", sub: "Khả năng chịu lỗi", hint: "Gợi ý: đặc tính này phục vụ high availability." },
+    { id: "rr", title: "Read Replica", sub: "Mở rộng đọc", hint: "Gợi ý: đặc tính này phục vụ mở rộng khả năng đọc." },
   ]}
   cards={[
     ["Sao chép đồng bộ", "maz"], ["Standby không phục vụ đọc", "maz"], ["Failover tự động bằng CNAME", "maz"], ["Ghi mỗi giao dịch trên ít nhất hai node", "maz"],
-    ["Sao chép bất đồng bộ", "rr"], ["Có endpoint riêng để đọc", "rr"], ["Đặt được ở Region khác", "rr"], ["Dùng cho báo cáo, analytics", "rr"],
+    ["Sao chép bất đồng bộ", "rr"], ["Có endpoint riêng để đọc", "rr"], ["Triển khai được tại Region khác", "rr"], ["Phục vụ báo cáo, analytics", "rr"],
   ]}
 />
 
-Kiểm tra nhanh: nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "Đồng nghiệp hỏi bạn Multi-AZ và Read Replica khác nhau thế nào. Câu trả lời nào đúng?",
+  { q: "Phát biểu nào mô tả đúng sự khác biệt giữa Multi-AZ và Read Replica?",
     opts: ["Multi-AZ bất đồng bộ, Read Replica đồng bộ", "Multi-AZ đồng bộ trong một Region; Read Replica bất đồng bộ, có thể cùng AZ, khác AZ hoặc khác Region", "Cả hai đều phục vụ đọc"],
     a: 1,
-    why: "Multi-AZ để chịu lỗi, sao chép đồng bộ; Read Replica để đọc nhiều, sao chép bất đồng bộ." },
-  { q: "Primary của database đơn hàng (RDS Multi-AZ) bị hỏng phần cứng. Điều gì xảy ra?",
+    why: "Multi-AZ nhằm đảm bảo khả năng chịu lỗi, sao chép đồng bộ; Read Replica nhằm mở rộng đọc, sao chép bất đồng bộ." },
+  { q: "Primary của database đơn hàng (RDS Multi-AZ) gặp lỗi phần cứng. Hệ thống phản ứng như thế nào?",
     opts: ["Phải restore từ snapshot", "Bản ghi CNAME của endpoint trỏ sang standby", "Read Replica tự thành primary"],
     a: 1,
-    why: "RDS promote standby và đổi CNAME; ứng dụng giữ nguyên endpoint, chỉ cần kết nối lại." },
-  { q: "Báo cáo cuối tháng của kế toán làm chậm database bán hàng. Cách rẻ nhất?",
+    why: "RDS promote standby và cập nhật CNAME; ứng dụng giữ nguyên endpoint, chỉ cần kết nối lại." },
+  { q: "Báo cáo cuối tháng của phòng kế toán làm chậm database bán hàng. Giải pháp nào có chi phí thấp nhất?",
     opts: ["Read Replica cùng Region, chạy báo cáo trên đó", "Bật Multi-AZ", "Tăng instance lên gấp đôi"],
     a: 0,
     why: "Replica cùng Region tách tải đọc và không tính phí truyền dữ liệu replication." },
-  { q: "ShopViet dùng Aurora và cần RPO vài giây, RTO khoảng một phút nếu cả Region Singapore gặp sự cố. Chọn gì?",
+  { q: "ShopViet sử dụng Aurora và yêu cầu RPO vài giây, RTO khoảng một phút khi toàn bộ Region Singapore gặp sự cố. Phương án nào phù hợp?",
     opts: ["Aurora Replica trong cùng Region", "Aurora Global Database", "Snapshot hằng ngày copy sang Region khác"],
     a: 1,
     why: "Global Database sao chép sang Region khác với độ trễ rất thấp và failover nhanh." },
-  { q: "Database RDS đang chạy chưa mã hoá. Bạn mã hoá nó thế nào?",
+  { q: "Database RDS đang vận hành chưa được mã hoá. Cách mã hoá nào đúng?",
     opts: ["Bật encryption trong cấu hình instance", "Snapshot, copy có mã hoá, restore instance mới", "Bật SSL"],
     a: 1,
-    why: "Không bật được encryption tại chỗ; phải đi qua snapshot đã mã hoá." },
+    why: "Không thể bật encryption trực tiếp trên instance hiện có; phải thực hiện thông qua snapshot đã mã hoá." },
 ]} />
 
 </Scene>

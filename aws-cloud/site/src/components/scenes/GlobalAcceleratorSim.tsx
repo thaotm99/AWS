@@ -8,8 +8,8 @@ type Mode = "ga" | "dns";
 type RegionId = "sg" | "fra";
 
 const USERS: { id: string; label: string; y: number; home: RegionId }[] = [
-  { id: "asia", label: "Khách châu Á", y: 90, home: "sg" },
-  { id: "eu", label: "Khách châu Âu", y: 230, home: "fra" },
+  { id: "asia", label: "Người dùng châu Á", y: 90, home: "sg" },
+  { id: "eu", label: "Người dùng châu Âu", y: 230, home: "fra" },
 ];
 const REGIONS: Record<RegionId, { label: string; code: string; y: number }> = {
   sg: { label: "Singapore", code: "ap-southeast-1", y: 90 },
@@ -73,18 +73,18 @@ export default function GlobalAcceleratorSim() {
   const note =
     mode === "ga"
       ? down
-        ? "Global Accelerator kiểm tra sức khỏe endpoint và chuyển khách châu Á sang Frankfurt. Khách vẫn gọi đúng 2 IP tĩnh cũ, không cần đổi DNS, nên không bị ảnh hưởng bởi DNS cache trên điện thoại."
-        : "Khách đi vào mạng AWS ở Edge location gần nhất, rồi chạy trên mạng riêng của AWS tới Region gần nhất. Mọi khách dùng chung 2 IP tĩnh (anycast). Thử bấm \"Sự cố Region Singapore\"."
+        ? "Global Accelerator thực hiện health check endpoint và chuyển traffic của người dùng châu Á sang Frankfurt. Client vẫn kết nối tới 2 địa chỉ IP tĩnh ban đầu, không cần thay đổi DNS, nên không bị ảnh hưởng bởi DNS cache trên thiết bị."
+        : "Traffic của người dùng đi vào mạng AWS tại Edge location gần nhất, sau đó truyền qua mạng riêng của AWS tới Region gần nhất. Mọi người dùng kết nối tới cùng 2 địa chỉ IP tĩnh (anycast). Nhấn \"Sự cố Region Singapore\" để quan sát cơ chế failover."
       : down
-        ? "Chỉ dùng DNS: dù đã đổi bản ghi DNS, nhiều client vẫn giữ địa chỉ cũ trong cache tới khi hết TTL, nên tiếp tục gọi vào Region đang sự cố. Vì vậy khi cần failover nhanh giữa Region, dùng Global Accelerator."
-        : "Chỉ dùng DNS: khách đi qua internet công cộng thẳng tới Region. Thử gây sự cố để so sánh với Global Accelerator.";
+        ? "Chỉ sử dụng DNS: dù bản ghi DNS đã được cập nhật, nhiều client vẫn giữ địa chỉ cũ trong cache cho tới khi hết TTL và tiếp tục gửi request tới Region đang gặp sự cố. Do đó, khi cần failover nhanh giữa các Region, giải pháp phù hợp là Global Accelerator."
+        : "Chỉ sử dụng DNS: traffic của người dùng đi qua internet công cộng trực tiếp tới Region. Tạo sự cố để so sánh với Global Accelerator.";
 
   return (
     <div className="stage">
       <div className="stage-bar">
-        <span className="label">Cách định tuyến</span>
+        <span className="label">Phương thức định tuyến</span>
         <button className="btn" aria-pressed={mode === "ga"} onClick={() => pick("ga")}>Global Accelerator</button>
-        <button className="btn" aria-pressed={mode === "dns"} onClick={() => pick("dns")}>Chỉ dùng DNS</button>
+        <button className="btn" aria-pressed={mode === "dns"} onClick={() => pick("dns")}>Chỉ sử dụng DNS</button>
         <span className="sep" />
         <button className="btn danger" onClick={() => setDown("sg")} disabled={down === "sg"}>Sự cố Region Singapore</button>
         <button className="btn" onClick={() => setDown(null)}>Khôi phục</button>
@@ -92,7 +92,7 @@ export default function GlobalAcceleratorSim() {
         <button className="btn" aria-pressed={paused} onClick={() => setPaused(!paused)}>{paused ? "Chạy tiếp" : "Tạm dừng"}</button>
       </div>
       <div className="svg-wrap">
-        <svg ref={svgRef} viewBox="0 0 760 320" role="img" aria-label="Khách ở châu Á và châu Âu đi qua Global Accelerator tới Region gần nhất">
+        <svg ref={svgRef} viewBox="0 0 760 320" role="img" aria-label="Người dùng ở châu Á và châu Âu đi qua Global Accelerator tới Region gần nhất">
           {mode === "ga" && (
             <g>
               <rect className="ga-box" x={160} y={20} width={120} height={290} rx={12} />
@@ -140,7 +140,7 @@ export default function GlobalAcceleratorSim() {
       <div className="readout">
         <div className="status">
           <span className={"pill " + (err && mode === "dns" && down ? "bad" : "ok")}>
-            <i />{err && mode === "dns" && down ? "Một phần khách bị lỗi" : "Khách truy cập bình thường"}
+            <i />{err && mode === "dns" && down ? "Một phần người dùng gặp lỗi" : "Người dùng truy cập bình thường"}
           </span>
           <span className="count">thành công {ok} · lỗi {err}</span>
         </div>

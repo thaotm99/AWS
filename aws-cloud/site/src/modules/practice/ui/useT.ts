@@ -7,4 +7,5 @@ export function useT() {
   return useMemo(() => translator.scope("practice"), [translator]);
 }
 
-export type PracticeT = ReturnType<typeof useT>["t"];
+export type PracticeTranslator = ReturnType<typeof useT>;
+export type PracticeT = PracticeTranslator["t"];

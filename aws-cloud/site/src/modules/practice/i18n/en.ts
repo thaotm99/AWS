@@ -6,12 +6,18 @@ import type { vi } from "./vi";
 export const en: Messages<typeof vi> = {
   /** Option counts inside "Select {n}". */
   count: { "1": "ONE", "2": "TWO", "3": "THREE", "4": "FOUR", "5": "FIVE" },
+  domains: {
+    "Design Secure Architectures": "Design Secure Architectures",
+    "Design Resilient Architectures": "Design Resilient Architectures",
+    "Design High-Performing Architectures": "Design High-Performing Architectures",
+    "Design Cost-Optimized Architectures": "Design Cost-Optimized Architectures",
+  },
   catalog: {
     crumb: "Practice",
     pageTitle: "Practice · AWS Thực Chiến",
     certPageTitle: "{code} practice · AWS Thực Chiến",
     examPageTitle: "{code} · Practice Test {n} · Practice",
-    title: "AWS Certification practice tests",
+    title: "Practice tests",
     lede: "Pick a certification and a practice test, then answer one question at a time. Choose Check answer to see if you are right and read the explanation, then go to the next question. Your progress is saved in this browser.",
     certifications: "Certifications",
     examCount: "{n} practice tests",
@@ -41,6 +47,9 @@ export const en: Messages<typeof vi> = {
     correctAnswers: "Correct options:",
     yourAnswer: "you chose {keys}",
     explanation: "Explanation",
+    showOriginal: "Show original (EN)",
+    showTranslation: "Show translation",
+    notTranslated: "This question has no Vietnamese translation yet; showing the original.",
     tagCorrect: "Correct",
     tagAnswer: "Answer",
     tagWrong: "Incorrect",

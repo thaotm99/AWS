@@ -39,7 +39,7 @@ export default function SortGame({ bins, cards }: Props) {
       setShake(null);
       requestAnimationFrame(() => setShake(name));
       const right = bins.find((b) => b.id === answer[name]);
-      setHint({ cls: "bad", text: `${name} không thuộc ô này. ${right?.hint ?? ""}` });
+      setHint({ cls: "bad", text: `${name} không thuộc nhóm này. ${right?.hint ?? ""}` });
     }
   }
 
@@ -65,9 +65,9 @@ export default function SortGame({ bins, cards }: Props) {
 
   return (
     <div className="game">
-      <div className="pool" aria-label="Các thẻ chưa xếp">
+      <div className="pool" aria-label="Các thẻ chưa phân loại">
         {order.filter((n) => !placed[n]).map(card)}
-        {placedCount === cards.length && <span className="hint ok" style={{ margin: 0 }}>Đã xếp hết thẻ.</span>}
+        {placedCount === cards.length && <span className="hint ok" style={{ margin: 0 }}>Đã phân loại toàn bộ thẻ.</span>}
       </div>
       <div className="bins">
         {bins.map((b) => (

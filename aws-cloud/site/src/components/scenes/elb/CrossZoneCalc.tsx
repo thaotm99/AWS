@@ -14,7 +14,7 @@ export default function CrossZoneCalc() {
     <div className="cz-az">
       <div className="cz-head">
         <b>AZ {az.toUpperCase()}</b>
-        <span className="count">node của LB nhận 50% từ DNS</span>
+        <span className="count">node của LB nhận 50% traffic từ DNS</span>
       </div>
       <div className="cz-targets">
         {Array.from({ length: n }, (_, i) => (
@@ -30,9 +30,9 @@ export default function CrossZoneCalc() {
   return (
     <div className="stage">
       <div className="stage-bar">
-        <label className="label" htmlFor="czA">Target ở AZ A: {a}</label>
+        <label className="label" htmlFor="czA">Số target tại AZ A: {a}</label>
         <input id="czA" type="range" min={1} max={8} value={a} onChange={(e) => setA(Number(e.target.value))} />
-        <label className="label" htmlFor="czB">Target ở AZ B: {b}</label>
+        <label className="label" htmlFor="czB">Số target tại AZ B: {b}</label>
         <input id="czB" type="range" min={1} max={8} value={b} onChange={(e) => setB(Number(e.target.value))} />
         <span className="sep" />
         <button className="btn" aria-pressed={cross} onClick={() => setCross(true)}>Cross-zone bật</button>
@@ -41,9 +41,9 @@ export default function CrossZoneCalc() {
       <div className="cz-grid">{column("a", a)}{column("b", b)}</div>
       <div className="readout" aria-live="polite">
         {cross
-          ? <>Cross-zone bật: mỗi node chia traffic cho <b>mọi target ở mọi AZ</b>, nên mỗi target nhận 100% ÷ {total} = {pct(100 / total)}.</>
-          : <>Cross-zone tắt: mỗi node chỉ chia cho target <b>cùng AZ</b>. Mỗi target ở AZ A nhận 50% ÷ {a} = {pct(50 / a)}, ở AZ B nhận 50% ÷ {b} = {pct(50 / b)}. AZ ít target thì từng target bị dồn tải.</>}
-        <p className="note-small">Mặc định: ALB bật cross-zone; NLB và GWLB tắt cross-zone.</p>
+          ? <>Cross-zone bật: mỗi node phân phối traffic cho <b>mọi target trên mọi AZ</b>, do đó mỗi target nhận 100% ÷ {total} = {pct(100 / total)}.</>
+          : <>Cross-zone tắt: mỗi node chỉ phân phối cho các target <b>cùng AZ</b>. Mỗi target tại AZ A nhận 50% ÷ {a} = {pct(50 / a)}, tại AZ B nhận 50% ÷ {b} = {pct(50 / b)}. Tại AZ có ít target, mỗi target phải tiếp nhận tải lớn hơn.</>}
+        <p className="note-small">Cấu hình mặc định: ALB bật cross-zone; NLB và GWLB tắt cross-zone.</p>
       </div>
     </div>
   );

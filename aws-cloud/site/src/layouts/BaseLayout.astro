@@ -40,6 +40,7 @@ const {
 // wrong colors) and hide translatable text until the saved language is applied.
 // Keys match the preference fields in modules/shell (localStorage "theme", "locale").
 const earlyPreferences = `(function(){var h=document.documentElement,t=${JSON.stringify(DEFAULT_THEME)};try{var s=localStorage.getItem("theme");if(${JSON.stringify(THEMES)}.indexOf(s)>=0)t=s;var l=localStorage.getItem("locale");if(l&&l!==${JSON.stringify(DEFAULT_LOCALE)}){h.lang=l;h.classList.add("i18n-pending");setTimeout(function(){h.classList.remove("i18n-pending")},2000)}}catch(e){}h.dataset.theme=t})();`;
+const toc = Astro.slots.has("toc");
 const ready = (await getCollection("concepts")).map((e) => e.id);
 // Only what the roadmap shows reaches the browser.
 const layers = getCurriculum().map(({ n, name, concepts }) => ({
@@ -81,9 +82,10 @@ const layers = getCurriculum().map(({ n, name, concepts }) => ({
         <LanguageSwitch />
         <ThemeToggle />
       </div>
+      {toc && <div class="read-bar" aria-hidden="true"><i /></div>}
     </header>
 
-    <div class:list={["shell", { single: !sidebar, wide: !sidebar && wide }]}>
+    <div class:list={["shell", { single: !sidebar, wide: !sidebar && wide, "with-toc": toc }]}>
       <!-- Sidebar on desktop; on phones the same element is the ☰ drawer, which also carries the main links. -->
       <aside class:list={["sidebar", { "nav-only": !sidebar }]} id="drawer" aria-label="Menu" data-i18n-attr="aria-label:shell.nav.menu">
         <nav class="drawer-nav" aria-label="Chính" data-i18n-attr="aria-label:shell.nav.main">
@@ -97,6 +99,7 @@ const layers = getCurriculum().map(({ n, name, concepts }) => ({
       <main class="article">
         <slot />
       </main>
+      {toc && <aside class="toc-col"><slot name="toc" /></aside>}
     </div>
     <div class="toast" id="toast" hidden></div>
 

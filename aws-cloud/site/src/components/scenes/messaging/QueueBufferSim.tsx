@@ -18,8 +18,8 @@ const MAX_W = 8;
 const TARGET = 8;
 
 const MODES: { id: Mode; name: string }[] = [
-  { id: "direct", name: "Web gọi thẳng tầng xử lý" },
-  { id: "queue", name: "Có SQS, 2 worker cố định" },
+  { id: "direct", name: "Web tier gọi trực tiếp tầng xử lý" },
+  { id: "queue", name: "SQS, 2 worker cố định" },
   { id: "scale", name: "SQS + scale theo backlog" },
 ];
 
@@ -47,11 +47,11 @@ function simulate(mode: Mode): Tick[] {
 
 const RESULT: Record<Mode, (s: { lost: number; left: number; peak: number }) => { ok: boolean; text: string }> = {
   direct: ({ lost }) => ({ ok: false,
-    text: `**${lost} đơn bị mất.** Tầng xử lý chỉ nhận được ${MIN_W * PER_WORKER} đơn mỗi phút; phần dư bị timeout, khách thấy lỗi và không có cách nào chạy lại.` }),
+    text: `**${lost} đơn hàng bị mất.** Tầng xử lý chỉ tiếp nhận được ${MIN_W * PER_WORKER} đơn mỗi phút; các request vượt quá năng lực bị timeout, người dùng nhận lỗi và đơn hàng không thể được xử lý lại.` }),
   queue: ({ left, peak }) => ({ ok: left === 0,
-    text: `**Không mất đơn nào.** SQS giữ đơn cho tới khi có worker rảnh, lúc đông nhất có ${peak} đơn chờ. Nhưng 2 worker xử lý chậm: hết giờ vẫn còn ${left} đơn trong queue, khách chờ lâu.` }),
+    text: `**Không có đơn hàng bị mất.** SQS lưu giữ đơn hàng cho tới khi có worker sẵn sàng; tại thời điểm cao điểm có ${peak} đơn đang chờ. Tuy nhiên, 2 worker có thông lượng thấp: kết thúc khung thời gian vẫn còn ${left} đơn trong queue, thời gian chờ xử lý kéo dài.` }),
   scale: ({ left, peak }) => ({ ok: left === 0,
-    text: `**Không mất đơn, chờ ngắn.** Auto Scaling group dùng target tracking theo **backlog per instance** (số message chờ ÷ số worker, mục tiêu ${TARGET}). Queue dài ra là thêm worker; cao nhất ${peak} đơn chờ, hết giờ còn ${left}.` }),
+    text: `**Không mất đơn hàng, thời gian chờ ngắn.** Auto Scaling group sử dụng target tracking theo **backlog per instance** (số message chờ ÷ số worker, giá trị mục tiêu ${TARGET}). Khi backlog tăng, Auto Scaling bổ sung worker; backlog cao nhất là ${peak} đơn, cuối khung thời gian còn ${left} đơn.` }),
 };
 
 const X0 = 40;
@@ -129,7 +129,7 @@ export default function QueueBufferSim() {
 
   return (
     <div className="stage qbs">
-      <div className="qbs-row" role="group" aria-label="Cách nối web với tầng xử lý">
+      <div className="qbs-row" role="group" aria-label="Phương án kết nối web tier với tầng xử lý">
         {MODES.map((m) => (
           <button key={m.id} className="chip" aria-pressed={m.id === mode} disabled={busy && m.id !== mode} onClick={() => pick(m.id)}>
             {m.name}
@@ -137,11 +137,11 @@ export default function QueueBufferSim() {
         ))}
       </div>
       <div className="stage-bar">
-        <span className="qbs-about">Flash sale 20h: số đơn mỗi phút tăng gấp 6 trong vài phút.</span>
-        <button className="btn primary" onClick={run} disabled={busy}>Chạy flash sale</button>
+        <span className="qbs-about">Flash sale lúc 20h: số đơn hàng mỗi phút tăng gấp 6 lần trong vài phút.</span>
+        <button className="btn primary" onClick={run} disabled={busy}>Chạy mô phỏng flash sale</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 20 820 262" role="img" aria-label="Đơn hàng đi từ web tier qua hàng đợi SQS tới các worker xử lý; biểu đồ bên dưới là số đơn chờ theo từng phút">
+        <svg viewBox="0 20 820 262" role="img" aria-label="Đơn hàng được chuyển từ web tier qua hàng đợi SQS tới các worker xử lý; biểu đồ bên dưới thể hiện số đơn hàng chờ theo từng phút">
           <path className="qbs-link" d={`M${WEB[0]} ${LANE} H${Q_IN[0]} M${Q_OUT[0]} ${LANE} H560`} />
           <path className="qbs-link" d={`M560 ${wpos(0)[1]} V${wpos(MAX_W - 1)[1]}`} />
           {Array.from({ length: MAX_W / 2 }, (_, r) => (
@@ -150,19 +150,19 @@ export default function QueueBufferSim() {
           <g className="qbs-node">
             <rect x={40} y={LANE - 25} width={120} height={50} rx={8} />
             <text className="qbs-l1" x={100} y={LANE - 3} textAnchor="middle">Web tier</text>
-            <text className="qbs-l2" x={100} y={LANE + 13} textAnchor="middle">{cur ? `+${cur.arrive} đơn/phút` : "nhận đơn"}</text>
+            <text className="qbs-l2" x={100} y={LANE + 13} textAnchor="middle">{cur ? `+${cur.arrive} đơn/phút` : "tiếp nhận đơn"}</text>
           </g>
           <g className={"qbs-queue" + (mode === "direct" ? " off" : "")}>
             <rect x={Q_IN[0]} y={LANE - 30} width={Q_OUT[0] - Q_IN[0]} height={60} rx={10} />
             <text className="qbs-l2" x={Q_IN[0] + 8} y={LANE - 36}>
-              {mode === "direct" ? "không có hàng đợi" : `Amazon SQS · ${backlog} đơn đang chờ`}
+              {mode === "direct" ? "không sử dụng hàng đợi" : `Amazon SQS · ${backlog} đơn đang chờ`}
             </text>
             {Array.from({ length: cells }, (_, i) => (
               <rect key={i} className="qbs-msg" x={Q_OUT[0] - 16 - (i % 20) * 14.5} y={LANE - 23 + Math.floor(i / 20) * 16} width={11} height={12} rx={2} />
             ))}
             {backlog > 60 && <text className="qbs-more" x={Q_IN[0] + 6} y={LANE + 46}>+{backlog - 60}</text>}
           </g>
-          <text className="qbs-l2" x={wpos(0)[0] - 36} y={42}>{mode === "direct" ? "Tầng xử lý" : "Worker EC2"} · {workers} máy</text>
+          <text className="qbs-l2" x={wpos(0)[0] - 36} y={42}>{mode === "direct" ? "Tầng xử lý" : "Worker EC2"} · {workers} instance</text>
           {Array.from({ length: MAX_W }, (_, i) => {
             const [cx, cy] = wpos(i);
             const on = i < workers;
@@ -182,17 +182,17 @@ export default function QueueBufferSim() {
           {[0, 6, 12, 18].map((m) => (
             <text key={m} className="ts" x={X0 + m * bw + bw / 2} y={CH_Y + CH_H + 15} textAnchor="middle">20:{String(m).padStart(2, "0")}</text>
           ))}
-          <text className="ts" x={X0} y={CH_Y - 6}>{mode === "direct" ? "đơn bị mất mỗi phút" : "số đơn chờ trong queue"}</text>
+          <text className="ts" x={X0} y={CH_Y - 6}>{mode === "direct" ? "số đơn bị mất mỗi phút" : "số đơn chờ trong queue"}</text>
           <g ref={fx} />
         </svg>
       </div>
       <div className="readout" aria-live="polite">
         {!cur ? (
-          <p className="qbs-hint">Chọn cách nối rồi bấm <b>Chạy flash sale</b>. So sánh cả ba cách.</p>
+          <p className="qbs-hint">Chọn phương án kết nối, sau đó chọn <b>Chạy mô phỏng flash sale</b>. So sánh kết quả của cả ba phương án.</p>
         ) : (
           <>
             <div className="status">
-              <span className="count">20:{String(shown).padStart(2, "0")} · nhận {sum("arrive")} · xong {sum("done")}</span>
+              <span className="count">20:{String(shown).padStart(2, "0")} · tiếp nhận {sum("arrive")} · hoàn tất {sum("done")}</span>
               <span className={"pill " + (sum("lost") ? "bad" : "ok")}><i />{sum("lost")} đơn mất</span>
               {mode !== "direct" && <span className="pill qbs-wait"><i />{backlog} đơn chờ</span>}
             </div>

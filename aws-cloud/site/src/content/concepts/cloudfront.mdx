@@ -1,6 +1,6 @@
 ---
 title: "CloudFront + Global Accelerator"
-lede: "ShopViet đã có khách ở nhiều nơi. Bài này giải quyết bốn việc: khóa bucket S3 để chỉ CloudFront đọc được, đặt CloudFront trước đúng backend, dùng các tính năng ở edge để chặn tấn công, bảo vệ nội dung trả phí và giữ web chạy khi origin hỏng, rồi biết lúc nào cần Global Accelerator thay vì CloudFront."
+lede: "Bài học trình bày bốn nội dung: giới hạn truy cập origin S3 chỉ thông qua CloudFront, lựa chọn loại origin phù hợp, các cơ chế bảo vệ và đảm bảo tính sẵn sàng tại edge (WAF, geo restriction, signed URL/cookie, field-level encryption, origin failover), và tiêu chí lựa chọn giữa CloudFront, S3 Transfer Acceleration và AWS Global Accelerator."
 minutes: 20
 scenes: 4
 prerequisites: ["global-infra", "route53"]
@@ -29,18 +29,18 @@ import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
-  { href: "#s1", label: "1 · Khóa origin S3" },
-  { href: "#s2", label: "2 · Đặt CloudFront trước gì" },
-  { href: "#s3", label: "3 · Một request đi qua edge" },
-  { href: "#s4", label: "4 · CloudFront hay Global Accelerator" },
-  { href: "#challenge", label: "Thử thách" },
+  { href: "#s1", label: "1 · Kiểm soát truy cập origin S3" },
+  { href: "#s2", label: "2 · Các loại origin" },
+  { href: "#s3", label: "3 · Xử lý request tại edge" },
+  { href: "#s4", label: "4 · CloudFront và Global Accelerator" },
+  { href: "#challenge", label: "Bài tập" },
 ]}>
-Ảnh và trang tĩnh của ShopViet đã đi qua **CloudFront** (bài Global Infrastructure). Giờ ShopViet bán thêm khoá học video, nhận thanh toán bằng thẻ và có khách ở nhiều nước. Cần làm cho đúng: không ai đọc thẳng được bucket S3, chỉ người đã mua mới xem được video, và web vẫn chạy khi origin chính hỏng.
+Nội dung tĩnh của ShopViet đã được phân phối qua **Amazon CloudFront** (xem bài Global Infrastructure). Hệ thống hiện mở rộng sang khoá học video trả phí, thanh toán bằng thẻ và người dùng tại nhiều quốc gia, dẫn tới ba yêu cầu: bucket S3 không được truy cập trực tiếp, nội dung trả phí chỉ được phục vụ cho người dùng có quyền, và dịch vụ phải duy trì khi origin chính gặp sự cố.
 </Story>
 
-<Scene id="s1" label="Cảnh 1/4" title="Chỉ cho đọc S3 qua CloudFront" questions={["exam6_q54", "exam3_q60", "exam5_q15"]}>
+<Scene id="s1" label="Phần 1/4" title="Giới hạn truy cập origin S3 thông qua CloudFront" questions={["exam6_q54", "exam3_q60", "exam5_q15"]}>
 
-Nếu bucket để public, ai cũng có thể đi vòng qua CloudFront để đọc thẳng S3. Như vậy là bỏ qua cache, WAF và giới hạn địa lý mà ShopViet đã cấu hình. So sánh các cách làm:
+Khi bucket được cấu hình public, client có thể truy cập trực tiếp S3 endpoint và bỏ qua toàn bộ lớp kiểm soát tại CloudFront (cache, AWS WAF, geo restriction). Các phương án cấu hình được so sánh dưới đây:
 
 <ScenarioFlow client:visible height={240} scenarios={[
   { name: "Chỉ qua CloudFront",
@@ -53,10 +53,10 @@ Nếu bucket để public, ai cũng có thể đi vòng qua CloudFront để đ�
     options: [
       { name: "Bucket public", verdict: "bad",
         flows: [{ path: ["user", "cf", "s3"], tone: "neutral" }, { path: ["other", "s3"], tone: "bad", label: "đọc được trực tiếp" }],
-        text: "Bucket public thì ai biết tên object cũng đọc thẳng được, CloudFront chỉ còn là một lối đi tùy chọn." },
+        text: "Với bucket public, bất kỳ client nào biết object key đều truy cập được trực tiếp; CloudFront không còn là điểm truy cập duy nhất." },
       { name: "OAC/OAI + bucket policy", verdict: "good",
         flows: [{ path: ["user", "cf", "s3"], tone: "good" }, { path: ["other", "s3"], blocked: true, label: "403 Access Denied" }],
-        text: "Tạo **origin access control** (OAC, cách mới) hoặc **origin access identity** (OAI, cách cũ, vẫn gặp ở nhiều hệ thống đang chạy), rồi sửa **bucket policy** chỉ cho CloudFront đọc. Bucket để private, ai gọi thẳng đều bị từ chối." },
+        text: "Cấu hình **origin access control** (OAC, cơ chế được khuyến nghị) hoặc **origin access identity** (OAI, cơ chế cũ, vẫn tồn tại ở nhiều hệ thống), đồng thời cập nhật **bucket policy** để chỉ cho phép principal của CloudFront đọc object. Bucket giữ chế độ private; mọi request trực tiếp đều bị từ chối." },
     ] },
   { name: "Chỉ cho một số IP",
     nodes: [
@@ -69,73 +69,73 @@ Nếu bucket để public, ai cũng có thể đi vòng qua CloudFront để đ�
     options: [
       { name: "Security group trên EC2", verdict: "bad",
         flows: [{ path: ["no", "cf", "s3"], tone: "bad", label: "vẫn lọt" }],
-        text: "Security group chỉ bảo vệ EC2. Nội dung phục vụ qua CloudFront không đi qua security group nên không bị giới hạn." },
+        text: "Security Group chỉ áp dụng cho network interface (ví dụ EC2); request tới CloudFront và S3 không đi qua Security Group nên không bị giới hạn." },
       { name: "WAF trên CloudFront + OAI", verdict: "good",
         flows: [{ path: ["ok", "waf", "cf", "s3"], tone: "good" }, { path: ["no", "waf"], blocked: true, label: "chặn" }],
-        text: "Gắn **AWS WAF** với **IP match condition** vào CloudFront để chỉ cho các IP được phép, và dùng **OAI** để không ai đọc thẳng được S3. Cần cả hai lớp cùng lúc." },
+        text: "Liên kết **AWS WAF** web ACL chứa **IP set** với CloudFront distribution để chỉ chấp nhận dải IP cho phép, kết hợp **OAI/OAC** để ngăn truy cập trực tiếp S3. Hai lớp kiểm soát cần được áp dụng đồng thời." },
     ] },
 ]} />
 
-<Takeaway>Bucket để private. OAC (hoặc OAI) + bucket policy chỉ cho CloudFront đọc. Cần giới hạn theo IP hay quốc gia thì gắn WAF vào CloudFront.</Takeaway>
+<Takeaway>Bucket ở chế độ private; OAC (hoặc OAI) kết hợp bucket policy đảm bảo chỉ CloudFront truy cập được origin. Giới hạn theo IP hoặc quốc gia được thực hiện bằng AWS WAF gắn với CloudFront distribution.</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Cảnh 2/4" title="Đặt CloudFront trước origin nào?" questions={["exam1_q62", "exam6_q5", "exam3_q40", "exam2_q2", "exam3_q42", "exam3_q48", "exam1_q1"]}>
+<Scene id="s2" label="Phần 2/4" title="Các loại origin của CloudFront" questions={["exam1_q62", "exam6_q5", "exam3_q40", "exam2_q2", "exam3_q42", "exam3_q48", "exam1_q1"]}>
 
-Nhắc lại cơ chế cache: lần đầu MISS phải về origin, các lần sau HIT trả ngay ở edge.
+Cơ chế cache tại edge: request đầu tiên (cache miss) được chuyển tới origin; các request tiếp theo trong thời gian TTL (cache hit) được phục vụ trực tiếp tại edge location.
 
 <EdgeCacheDemo client:visible />
 
-Origin của CloudFront không chỉ là S3. Trong thực tế, CloudFront đứng trước nhiều loại backend. Chọn từng nhu cầu để xem cách làm:
+Ngoài S3, CloudFront hỗ trợ custom origin bao gồm Application Load Balancer, EC2 và máy chủ on-premises. Chọn từng yêu cầu để xem kiến trúc phù hợp:
 
 <RequirementPicker client:visible items={[
-  { need: "Backend phải ở lại data center ở Mỹ, khách châu Á cần tải nhanh ngay", answer: "CloudFront với custom origin trỏ về on-premises",
-    why: "Origin có thể là server ngoài AWS. Không cần di chuyển backend." },
-  { need: "Web động sau ALB, đọc nhiều, database quá tải", answer: "CloudFront trước ALB + Aurora Replica",
-    why: "CloudFront cache phần trả về được, Aurora Replica gánh phần đọc còn lại." },
-  { need: "Website tĩnh, serverless, rẻ nhất", answer: "S3 + CloudFront + Route 53 Alias",
-    why: "S3 chứa file tĩnh, CloudFront phân phối, Alias record ở tên miền chính trỏ tới CloudFront." },
-  { need: "Có cả nội dung tĩnh và động, muốn serverless", answer: "S3 cho tĩnh, Lambda + DynamoDB cho động, CloudFront phía trước",
-    why: "CloudFront phân phối cả hai loại nội dung." },
-  { need: "Chi phí data transfer out từ S3 tăng vọt", answer: "Phân phối qua CloudFront",
-    why: "Dữ liệu từ S3 sang CloudFront không tính phí, và phần lớn request được trả từ cache." },
-  { need: "Đọc DynamoDB và S3 lặp lại rất nhiều", answer: "DAX cho DynamoDB, CloudFront cho S3",
-    why: "Mỗi lớp dữ liệu một lớp cache phù hợp." },
+  { need: "Backend phải duy trì tại data center ở Hoa Kỳ, người dùng châu Á yêu cầu độ trễ thấp", answer: "CloudFront với custom origin trỏ về on-premises",
+    why: "Custom origin có thể là máy chủ ngoài AWS, không yêu cầu di chuyển backend." },
+  { need: "Ứng dụng web động phía sau ALB, tải đọc lớn gây quá tải database", answer: "CloudFront trước ALB + Aurora Replica",
+    why: "CloudFront cache các response có thể cache; Aurora Replica tiếp nhận phần tải đọc còn lại." },
+  { need: "Website tĩnh, kiến trúc serverless, tối ưu chi phí", answer: "S3 + CloudFront + Route 53 Alias",
+    why: "S3 lưu trữ nội dung tĩnh, CloudFront phân phối, bản ghi Alias tại zone apex trỏ tới distribution." },
+  { need: "Kết hợp nội dung tĩnh và động theo kiến trúc serverless", answer: "S3 cho tĩnh, Lambda + DynamoDB cho động, CloudFront phía trước",
+    why: "Một distribution phân phối cả hai loại nội dung thông qua nhiều cache behavior." },
+  { need: "Chi phí data transfer out từ S3 tăng đột biến", answer: "Phân phối qua CloudFront",
+    why: "Data transfer từ S3 tới CloudFront không tính phí; phần lớn request được phục vụ từ cache." },
+  { need: "Tần suất đọc lặp lại cao trên DynamoDB và S3", answer: "DAX cho DynamoDB, CloudFront cho S3",
+    why: "Mỗi tầng dữ liệu sử dụng lớp cache tương ứng." },
 ]} />
 
-<Takeaway>CloudFront đứng trước được S3, ALB, EC2 và cả server on-premises. Nó vừa tăng tốc vừa giảm tải và giảm phí data transfer của origin.</Takeaway>
+<Takeaway>CloudFront hỗ trợ origin là S3, ALB, EC2 và máy chủ on-premises; ngoài việc giảm độ trễ, CloudFront giảm tải và chi phí data transfer của origin.</Takeaway>
 
 </Scene>
 
-<Scene id="s3" label="Cảnh 3/4" title="Một request đi qua CloudFront như thế nào?" questions={["exam6_q62", "exam1_q38", "exam4_q63", "exam5_q15", "exam5_q13", "exam5_q57"]}>
+<Scene id="s3" label="Phần 3/4" title="Quy trình xử lý request tại edge location" questions={["exam6_q62", "exam1_q38", "exam4_q63", "exam5_q15", "exam5_q13", "exam5_q57"]}>
 
-Mỗi request của khách đi qua một chuỗi trạm ngay tại edge location gần họ, trước khi tới server của ShopViet. Mỗi trạm giải quyết một việc: chứng chỉ HTTPS, chặn tấn công, chặn theo quốc gia, kiểm tra quyền xem nội dung trả phí, mã hoá dữ liệu nhạy cảm, và chọn origin. Chọn một tình huống, bật tắt công tắc, rồi gửi request để xem trạm nào xử lý.
+Trước khi được chuyển tới origin, mỗi request đi qua chuỗi bước xử lý tại edge location: TLS termination với chứng chỉ ACM, đánh giá bởi AWS WAF, geo restriction, xác thực signed URL/cookie, field-level encryption và lựa chọn origin theo cache behavior. Chọn một tình huống, thay đổi cấu hình và gửi request để quan sát bước xử lý tương ứng.
 
 <EdgePipelineSim client:visible />
 
-<Takeaway>Chặn tấn công: AWS WAF. Chặn theo quốc gia: geo restriction. Nội dung trả phí: signed URL (một file) hoặc signed cookie (nhiều file). Dữ liệu nhạy cảm: field-level encryption. Chia theo đường dẫn: cache behavior. Dự phòng origin: origin group. Tên miền riêng: chứng chỉ ACM ở us-east-1.</Takeaway>
+<Takeaway>Lọc tấn công tầng ứng dụng: AWS WAF. Giới hạn theo quốc gia: geo restriction. Nội dung riêng tư: signed URL (một object) hoặc signed cookie (nhiều object). Dữ liệu nhạy cảm: field-level encryption. Định tuyến theo path: cache behavior. Dự phòng origin: origin group. Tên miền tuỳ chỉnh: chứng chỉ ACM tại us-east-1.</Takeaway>
 
 </Scene>
 
-<Scene id="s4" label="Cảnh 4/4" title="CloudFront, S3 Transfer Acceleration hay Global Accelerator?" questions={["exam5_q21", "exam6_q58", "exam1_q59", "exam3_q8", "exam4_q58", "exam5_q55", "exam2_q22"]}>
+<Scene id="s4" label="Phần 4/4" title="CloudFront, S3 Transfer Acceleration và AWS Global Accelerator" questions={["exam5_q21", "exam6_q58", "exam1_q59", "exam3_q8", "exam4_q58", "exam5_q55", "exam2_q22"]}>
 
-Ba dịch vụ cùng dùng edge location của AWS nhưng giải quyết ba việc khác nhau. Bài Global Infrastructure đã có mô phỏng failover của Global Accelerator; ở đây là cách chọn theo nhu cầu.
+Ba dịch vụ cùng sử dụng mạng edge của AWS nhưng phục vụ các mục đích khác nhau. Cơ chế failover của Global Accelerator đã được trình bày trong bài Global Infrastructure; phần này tổng hợp tiêu chí lựa chọn theo yêu cầu.
 
 <RequirementPicker client:visible items={[
-  { need: "Cache trang, ảnh, video cho người xem ở xa", answer: "CloudFront", why: "Chỉ HTTP/HTTPS, có cache tại edge." },
-  { need: "Upload file lớn vào S3 từ khắp nơi", answer: "S3 Transfer Acceleration", why: "Đi vào edge gần người upload rồi chạy trên mạng AWS tới bucket." },
-  { need: "Game, ứng dụng dùng UDP", answer: "Global Accelerator", why: "Hỗ trợ TCP và UDP; CloudFront thì không." },
-  { need: "Khách hàng cần whitelist vài IP cố định", answer: "Global Accelerator", why: "2 IP tĩnh anycast đứng trước ALB/NLB ở nhiều Region." },
-  { need: "Failover tự động giữa Region, không chờ DNS", answer: "Global Accelerator", why: "Chuyển sang endpoint khỏe mà client không cần phân giải DNS lại." },
+  { need: "Cache nội dung web (trang, ảnh, video) cho người dùng ở xa", answer: "CloudFront", why: "Hỗ trợ HTTP/HTTPS, có cache tại edge." },
+  { need: "Tải lên tệp dung lượng lớn vào S3 từ nhiều khu vực địa lý", answer: "S3 Transfer Acceleration", why: "Dữ liệu đi vào edge location gần nhất, sau đó truyền qua mạng backbone của AWS tới bucket." },
+  { need: "Ứng dụng game hoặc ứng dụng sử dụng giao thức UDP", answer: "Global Accelerator", why: "Hỗ trợ TCP và UDP; CloudFront chỉ hỗ trợ HTTP/HTTPS." },
+  { need: "Đối tác yêu cầu allow-list một số địa chỉ IP cố định", answer: "Global Accelerator", why: "Cung cấp hai địa chỉ IP tĩnh anycast đứng trước ALB/NLB tại nhiều Region." },
+  { need: "Failover tự động giữa các Region, không phụ thuộc DNS TTL", answer: "Global Accelerator", why: "Chuyển traffic sang endpoint healthy mà client không cần phân giải DNS lại." },
 ]} />
 
-<Takeaway>Cần cache nội dung web: CloudFront. Cần tăng tốc upload vào S3: Transfer Acceleration. Cần UDP, IP tĩnh hoặc failover giữa Region: Global Accelerator.</Takeaway>
+<Takeaway>Cache nội dung web: CloudFront. Tăng tốc tải lên S3: S3 Transfer Acceleration. Giao thức UDP, địa chỉ IP tĩnh hoặc failover giữa các Region: AWS Global Accelerator.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="CloudFront hay Global Accelerator?" questions={["exam6_q54", "exam5_q15", "exam6_q62", "exam3_q48"]}>
+<Scene id="challenge" label="Bài tập" title="Phân loại đặc tính: CloudFront và Global Accelerator" questions={["exam6_q54", "exam5_q15", "exam6_q62", "exam3_q48"]}>
 
-Xếp từng đặc điểm vào đúng dịch vụ. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
+Phân loại từng đặc tính vào dịch vụ tương ứng. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
 <SortGame client:visible
   bins={[
@@ -148,25 +148,25 @@ Xếp từng đặc điểm vào đúng dịch vụ. Trên điện thoại: ch�
   ]}
 />
 
-Kiểm tra nhanh: nếu bạn là người vận hành ShopViet, bạn sẽ chọn gì?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "Ảnh sản phẩm nằm trong S3. ShopViet muốn khách chỉ tải ảnh qua CloudFront, không ai đọc thẳng được bucket. Làm thế nào?",
+  { q: "Ảnh sản phẩm được lưu trong S3. Yêu cầu: người dùng chỉ truy cập ảnh thông qua CloudFront, không truy cập trực tiếp bucket. Cấu hình nào đáp ứng yêu cầu?",
     opts: ["Bật S3 Transfer Acceleration", "Tạo origin access identity/control và cập nhật bucket policy", "Đặt bucket trong private subnet"],
     a: 1,
-    why: "OAI/OAC là danh tính của CloudFront; bucket policy chỉ cho danh tính đó đọc. Bucket S3 không nằm trong subnet nào." },
-  { q: "ShopViet gắn tên miền shopviet.vn với HTTPS cho CloudFront, origin ở Singapore (ap-southeast-1). Chứng chỉ ACM phải tạo ở đâu?",
+    why: "OAI/OAC là danh tính của CloudFront; bucket policy chỉ cấp quyền đọc cho danh tính đó. Bucket S3 không thuộc subnet nào nên phương án subnet không áp dụng." },
+  { q: "Distribution sử dụng tên miền tuỳ chỉnh shopviet.vn qua HTTPS; origin đặt tại ap-southeast-1. Chứng chỉ ACM phải được tạo tại Region nào?",
     opts: ["ap-southeast-1, cùng Region với origin", "us-east-1", "Bất kỳ Region nào"],
     a: 1,
-    why: "CloudFront chỉ dùng chứng chỉ ACM ở us-east-1 (N. Virginia), dù origin ở Region nào." },
-  { q: "Khoá học video có hàng chục file. Chỉ người đã mua mới được xem, và ShopViet không muốn đổi đường dẫn video. Chọn gì?",
+    why: "CloudFront chỉ sử dụng chứng chỉ ACM tại us-east-1 (N. Virginia), không phụ thuộc Region của origin." },
+  { q: "Khoá học video gồm nhiều tệp; chỉ người dùng đã mua được truy cập và URL hiện tại phải được giữ nguyên. Cơ chế nào phù hợp?",
     opts: ["CloudFront signed cookies", "S3 presigned URL cho từng file", "Geo restriction"],
     a: 0,
-    why: "Signed cookie cấp quyền cho nhiều file cùng lúc mà giữ nguyên URL. Signed URL hợp khi chỉ cấp quyền cho một file." },
-  { q: "Hoá đơn tháng này của ShopViet có phí data transfer out từ S3 tăng mạnh vì khách tải ảnh nhiều. Cách giảm chi phí mà vẫn giữ tốc độ?",
+    why: "Signed cookie cấp quyền truy cập nhiều object mà không thay đổi URL; signed URL phù hợp khi cấp quyền cho từng object riêng lẻ." },
+  { q: "Chi phí data transfer out từ S3 tăng mạnh do lượng tải ảnh lớn. Giải pháp nào giảm chi phí mà vẫn duy trì độ trễ thấp?",
     opts: ["Phân phối qua CloudFront", "Chuyển sang S3 Glacier", "Bật S3 Transfer Acceleration"],
     a: 0,
-    why: "S3 sang CloudFront không tính phí; CloudFront trả từ cache gần người dùng. Transfer Acceleration tăng tốc upload, không giảm phí." },
+    why: "Data transfer từ S3 tới CloudFront không tính phí và CloudFront phục vụ từ cache gần người dùng. S3 Transfer Acceleration chỉ tăng tốc tải lên, không giảm chi phí." },
 ]} />
 
 </Scene>

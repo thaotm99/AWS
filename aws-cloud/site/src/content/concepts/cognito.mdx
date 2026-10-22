@@ -1,6 +1,6 @@
 ---
 title: "Cognito, IAM Identity Center và Directory Service"
-lede: "Khách hàng, nhân viên và đối tác của ShopViet đều cần đăng nhập, mỗi nhóm một cách. Bài này dựng đăng nhập cho web và app bằng Cognito (user pool và identity pool khác nhau thế nào), cho nhân viên vào nhiều AWS account bằng một lần đăng nhập, dùng lại Active Directory của văn phòng, và nhận file của đối tác qua SFTP."
+lede: "Khách hàng, nhân viên và đối tác của ShopViet có yêu cầu xác thực khác nhau. Bài học trình bày xác thực cho ứng dụng web và mobile bằng Amazon Cognito (phân biệt user pool và identity pool), single sign-on cho nhân viên vào nhiều AWS account, tái sử dụng Active Directory on-premises, và tiếp nhận tệp của đối tác qua SFTP."
 minutes: 15
 scenes: 2
 prerequisites: ["iam"]
@@ -25,102 +25,102 @@ import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
-  { href: "#s1", label: "1 · Người dùng ứng dụng" },
-  { href: "#s2", label: "2 · Nhân viên, AD và đối tác" },
-  { href: "#challenge", label: "Thử thách" },
+  { href: "#s1", label: "1 · Xác thực người dùng ứng dụng" },
+  { href: "#s2", label: "2 · Nhân viên, Active Directory và đối tác" },
+  { href: "#challenge", label: "Bài tập" },
 ]}>
-Có hai nhóm người cần đăng nhập vào ShopViet: **khách hàng** dùng web và app, và **nhân viên** cần vào các AWS account và hệ thống nội bộ đang dùng Active Directory. Mỗi nhóm một bộ công cụ.
+Hệ thống ShopViet có hai nhóm danh tính cần xác thực: **khách hàng** sử dụng ứng dụng web và mobile, và **nhân viên** cần truy cập các AWS account cùng các hệ thống nội bộ đang sử dụng Active Directory. Mỗi nhóm sử dụng một bộ dịch vụ riêng.
 </Story>
 
-<Scene id="s1" label="Cảnh 1/2" title="Khách hàng: Cognito user pool và identity pool" questions={["exam2_q17", "exam6_q50"]}>
+<Scene id="s1" label="Phần 1/2" title="Xác thực khách hàng: Cognito user pool và identity pool" questions={["exam2_q17", "exam6_q50"]}>
 
-**User pool** là danh bạ người dùng: đăng ký, đăng nhập, trả về token (JWT). **Identity pool** đổi danh tính đã đăng nhập thành **credentials AWS tạm thời** để gọi thẳng dịch vụ AWS như S3. ShopViet gặp cả hai việc. Chọn tình huống rồi so sánh hai cách làm:
+**User pool** là thư mục người dùng: cung cấp chức năng đăng ký, đăng nhập và trả về token (JWT). **Identity pool** đổi danh tính đã xác thực thành **temporary AWS credentials** để gọi trực tiếp các dịch vụ AWS như S3. ShopViet có cả hai yêu cầu này. Chọn tình huống và so sánh hai phương án:
 
 <ScenarioFlow client:visible height={230} scenarios={[
-  { name: "Khách đăng nhập web ShopViet",
+  { name: "Người dùng đăng nhập web ShopViet",
     nodes: [
-      { id: "user", x: 30, y: 90, label: "Khách", kind: "user" },
+      { id: "user", x: 30, y: 90, label: "Người dùng", kind: "user" },
       { id: "alb", x: 230, y: 90, label: "ALB", sub: "listener HTTPS", kind: "net" },
       { id: "pool", x: 230, y: 175, label: "Cognito user pool", kind: "edge" },
-      { id: "app", x: 520, y: 90, label: "EC2 ứng dụng", sub: "chỉ lo nghiệp vụ", kind: "ec2" },
-      { id: "code", x: 520, y: 10, label: "Code đăng nhập tự viết", kind: "warn" },
+      { id: "app", x: 520, y: 90, label: "EC2 ứng dụng", sub: "chỉ xử lý nghiệp vụ", kind: "ec2" },
+      { id: "code", x: 520, y: 10, label: "Mã xác thực tự phát triển", kind: "warn" },
     ],
     options: [
-      { name: "Tự viết login trong app", verdict: "bad", hide: ["pool"],
-        flows: [{ path: ["user", "alb", "app"], tone: "neutral" }, { path: ["app", "code"], tone: "bad", label: "phải tự bảo trì" }],
-        text: "Mỗi server phải tự xử lý đăng nhập, phiên, mật khẩu. Tốn công phát triển và dễ sai." },
+      { name: "Tự phát triển chức năng đăng nhập", verdict: "bad", hide: ["pool"],
+        flows: [{ path: ["user", "alb", "app"], tone: "neutral" }, { path: ["app", "code"], tone: "bad", label: "tự bảo trì" }],
+        text: "Mỗi máy chủ phải tự xử lý đăng nhập, quản lý phiên và mật khẩu, làm tăng chi phí phát triển và nguy cơ sai sót." },
       { name: "ALB + Cognito user pool", verdict: "good", hide: ["code"],
         flows: [{ path: ["user", "alb"], tone: "good" }, { path: ["alb", "pool"], tone: "good", label: "authenticate" }, { path: ["alb", "app"], tone: "good", label: "đã xác thực" }],
-        text: "Cấu hình **authenticate-cognito** trên listener của ALB. ALB lo đăng nhập, ứng dụng chỉ nhận request đã xác thực. Đội dev của ShopViet **không phải viết code đăng nhập** nào." },
+        text: "Cấu hình action **authenticate-cognito** trên listener của ALB. ALB đảm nhận việc xác thực; ứng dụng chỉ tiếp nhận request đã được xác thực. Đội phát triển của ShopViet **không cần viết mã xác thực**." },
     ] },
-  { name: "App mobile tải ảnh đánh giá lên S3",
+  { name: "Ứng dụng mobile tải ảnh đánh giá lên S3",
     nodes: [
-      { id: "user", x: 30, y: 90, label: "Người dùng app", kind: "user" },
+      { id: "user", x: 30, y: 90, label: "Người dùng mobile", kind: "user" },
       { id: "idp", x: 250, y: 20, label: "Cognito identity pool", kind: "edge" },
-      { id: "key", x: 250, y: 170, label: "Access key nhúng trong app", kind: "warn" },
+      { id: "key", x: 250, y: 170, label: "Access key nhúng trong ứng dụng", kind: "warn" },
       { id: "vpce", x: 470, y: 90, label: "S3 VPC endpoint", kind: "net" },
       { id: "s3", x: 640, y: 90, w: 100, label: "S3", kind: "store" },
     ],
     options: [
       { name: "Nhúng access key", verdict: "bad", hide: ["idp", "vpce"],
-        flows: [{ path: ["user", "key", "s3"], tone: "bad", label: "lộ key là mất" }],
-        text: "Ai giải nén app ra cũng lấy được access key dài hạn." },
+        flows: [{ path: ["user", "key", "s3"], tone: "bad", label: "nguy cơ lộ key" }],
+        text: "Bất kỳ ai dịch ngược gói ứng dụng đều có thể trích xuất access key dài hạn." },
       { name: "Identity pool + VPC endpoint", verdict: "good", hide: ["key"],
-        flows: [{ path: ["user", "idp"], tone: "good", label: "đổi token lấy credentials tạm" }, { path: ["idp", "vpce", "s3"], tone: "good" }],
-        text: "**Identity pool** cấp credentials AWS tạm thời cho người dùng đã đăng nhập (federated). Phía ứng dụng trong VPC dùng **S3 VPC endpoint** để đi đường riêng, không ra Internet. Hai thứ này đi cùng nhau." },
+        flows: [{ path: ["user", "idp"], tone: "good", label: "đổi token lấy credentials tạm thời" }, { path: ["idp", "vpce", "s3"], tone: "good" }],
+        text: "**Identity pool** cấp temporary AWS credentials cho người dùng đã xác thực (federated). Thành phần ứng dụng trong VPC sử dụng **S3 VPC endpoint** để truy cập S3 qua kết nối riêng, không đi qua Internet. Hai cơ chế này được sử dụng kết hợp." },
     ] },
 ]} />
 
-<Takeaway>User pool: đăng nhập, trả token, tích hợp được với ALB. Identity pool: đổi token lấy credentials AWS tạm thời để gọi S3, DynamoDB…</Takeaway>
+<Takeaway>User pool: xác thực người dùng, trả về token, tích hợp được với ALB. Identity pool: đổi token lấy temporary AWS credentials để gọi S3, DynamoDB…</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Cảnh 2/2" title="Nhân viên, Active Directory và đối tác" questions={["exam6_q10", "exam4_q4", "exam1_q10", "exam3_q28", "exam6_q44", "exam3_q5", "exam2_q4"]}>
+<Scene id="s2" label="Phần 2/2" title="Xác thực nhân viên, Active Directory và đối tác" questions={["exam6_q10", "exam4_q4", "exam1_q10", "exam3_q28", "exam6_q44", "exam3_q5", "exam2_q4"]}>
 
-Cognito dành cho khách hàng. Nhân viên và đối tác cần công cụ khác: đăng nhập một lần vào nhiều AWS account, dùng lại tài khoản Active Directory ở văn phòng, mở ổ chia sẻ, gửi file qua SFTP. Chọn từng tình huống, bật tắt công tắc, rồi bấm Đăng nhập.
+Cognito phục vụ khách hàng của ứng dụng. Nhân viên và đối tác có các yêu cầu khác: single sign-on vào nhiều AWS account, tái sử dụng tài khoản Active Directory on-premises, truy cập file share và truyền tệp qua SFTP. Chọn từng tình huống, thay đổi cấu hình, sau đó nhấn Đăng nhập.
 
 <StaffSignInSim client:visible />
 
-<Takeaway>Nhân viên vào nhiều account: IAM Identity Center + permission sets. Chỉ cần mượn AD ở văn phòng: AD Connector. Cần AD chạy trên AWS và trust với văn phòng: AWS Managed Microsoft AD. Ổ chia sẻ có quyền NTFS: FSx for Windows File Server. Đối tác gửi file qua SFTP: Transfer Family.</Takeaway>
+<Takeaway>Nhân viên truy cập nhiều account: IAM Identity Center + permission sets. Chỉ sử dụng AD on-premises để xác thực: AD Connector. AD chạy trên AWS và có trust với AD on-premises: AWS Managed Microsoft AD. File share với quyền NTFS: FSx for Windows File Server. Đối tác truyền tệp qua SFTP: AWS Transfer Family.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="Dùng cái nào?" questions={["exam2_q17", "exam6_q44", "exam6_q10"]}>
+<Scene id="challenge" label="Bài tập" title="Phân loại yêu cầu: Cognito và IAM Identity Center" questions={["exam2_q17", "exam6_q44", "exam6_q10"]}>
 
-Xếp từng việc vào đúng công cụ. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
+Phân loại từng yêu cầu vào dịch vụ tương ứng. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
 <SortGame client:visible
   bins={[
-    { id: "up", title: "Cognito user pool", sub: "Đăng nhập, token", hint: "Gợi ý: thứ này lo đăng ký, đăng nhập người dùng ứng dụng." },
-    { id: "ip", title: "Cognito identity pool", sub: "Credentials AWS tạm", hint: "Gợi ý: thứ này đổi danh tính thành quyền gọi dịch vụ AWS." },
-    { id: "ic", title: "IAM Identity Center", sub: "Nhân viên, nhiều account", hint: "Gợi ý: thứ này dành cho nhân viên vào nhiều AWS account." },
+    { id: "up", title: "Cognito user pool", sub: "Xác thực, token", hint: "Gợi ý: dịch vụ đảm nhận đăng ký và đăng nhập cho người dùng ứng dụng." },
+    { id: "ip", title: "Cognito identity pool", sub: "Credentials tạm thời", hint: "Gợi ý: dịch vụ đổi danh tính thành quyền gọi dịch vụ AWS." },
+    { id: "ic", title: "IAM Identity Center", sub: "Nhân viên, nhiều account", hint: "Gợi ý: dịch vụ dành cho nhân viên truy cập nhiều AWS account." },
   ]}
   cards={[
-    ["Trả về JWT sau khi đăng nhập", "up"], ["Tích hợp xác thực vào ALB", "up"], ["Đăng ký, quên mật khẩu", "up"],
-    ["App mobile ghi thẳng vào S3", "ip"], ["Người dùng federated nhận credentials tạm", "ip"],
+    ["Trả về JWT sau khi đăng nhập", "up"], ["Tích hợp xác thực vào ALB", "up"], ["Đăng ký, khôi phục mật khẩu", "up"],
+    ["Ứng dụng mobile ghi trực tiếp vào S3", "ip"], ["Người dùng federated nhận credentials tạm thời", "ip"],
     ["Permission sets", "ic"], ["Single sign-on vào nhiều AWS account", "ic"],
   ]}
 />
 
-Kiểm tra nhanh: nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "Đội dev ShopViet muốn ALB lo việc đăng nhập để server chỉ xử lý nghiệp vụ, viết ít code nhất. Chọn gì?",
+  { q: "Đội phát triển ShopViet muốn ALB đảm nhận xác thực để máy chủ chỉ xử lý nghiệp vụ, với lượng mã cần viết ít nhất. Phương án nào phù hợp?",
     opts: ["Cognito user pool tích hợp với ALB", "Viết module đăng nhập trên từng EC2", "IAM user cho từng khách hàng"],
     a: 0,
-    why: "ALB hỗ trợ authenticate bằng Cognito user pool ngay trên listener." },
-  { q: "App kế toán của ShopViet cần join domain ngay trên AWS, và domain đó phải trust với AD ở văn phòng. Dùng dịch vụ nào?",
+    why: "ALB hỗ trợ xác thực bằng Cognito user pool trực tiếp trên listener." },
+  { q: "Ứng dụng kế toán của ShopViet cần join domain trên AWS, và domain đó phải thiết lập trust với AD on-premises. Dịch vụ nào đáp ứng yêu cầu?",
     opts: ["AD Connector", "AWS Managed Microsoft AD", "Simple AD"],
     a: 1,
-    why: "Managed Microsoft AD là AD thật, tạo được trust. AD Connector chỉ là proxy, không chạy workload AD." },
-  { q: "40 nhân viên ShopViet cần đăng nhập một lần vào nhiều AWS account, mỗi nhóm chỉ có quyền cần dùng. Cách ít quản trị nhất?",
+    why: "AWS Managed Microsoft AD là Active Directory đầy đủ, hỗ trợ thiết lập trust. AD Connector chỉ là proxy, không hỗ trợ workload phụ thuộc AD." },
+  { q: "40 nhân viên ShopViet cần single sign-on vào nhiều AWS account, mỗi nhóm chỉ được cấp các quyền cần thiết. Phương án nào có chi phí quản trị thấp nhất?",
     opts: ["IAM user riêng ở từng account", "IAM Identity Center với permission sets", "Cognito identity pool"],
     a: 1,
-    why: "Identity Center quản lý đăng nhập tập trung; permission set gán quyền theo nhóm và account." },
-  { q: "App mobile của ShopViet cần cho khách đã đăng nhập tải ảnh đánh giá thẳng lên S3. Không được nhúng access key trong app. Dùng gì?",
-    opts: ["Cognito identity pool cấp credentials tạm thời", "IAM user dùng chung cho mọi khách", "Cognito user pool trả JWT rồi gọi S3 bằng JWT"],
+    why: "IAM Identity Center quản lý xác thực tập trung; permission set gán quyền theo nhóm và theo account." },
+  { q: "Ứng dụng mobile của ShopViet cần cho phép người dùng đã đăng nhập tải ảnh đánh giá trực tiếp lên S3, không được nhúng access key trong ứng dụng. Giải pháp nào phù hợp?",
+    opts: ["Cognito identity pool cấp credentials tạm thời", "IAM user dùng chung cho mọi người dùng", "Cognito user pool trả JWT rồi gọi S3 bằng JWT"],
     a: 0,
-    why: "Identity pool đổi danh tính đã đăng nhập thành credentials AWS tạm thời. S3 không nhận JWT của user pool trực tiếp." },
+    why: "Identity pool đổi danh tính đã xác thực thành temporary AWS credentials. S3 không chấp nhận trực tiếp JWT do user pool phát hành." },
 ]} />
 
 </Scene>

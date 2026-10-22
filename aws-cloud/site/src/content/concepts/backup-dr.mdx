@@ -1,6 +1,6 @@
 ---
-title: "Backup + Disaster Recovery: khi cả Region gặp sự cố"
-lede: "ShopViet đã chạy ổn ở Singapore. Bài này chuẩn bị cho ngày xấu nhất: chọn một trong bốn chiến lược DR theo số dữ liệu được mất và thời gian được ngừng, giữ database và cache sống qua sự cố, dùng AWS Backup cho file dùng chung, và để một EC2 đơn lẻ tự hồi phục."
+title: "Backup + Disaster Recovery: khôi phục khi Region gặp sự cố"
+lede: "Hệ thống ShopViet đang vận hành ổn định tại Region Singapore. Bài học trình bày phương án chuẩn bị cho kịch bản sự cố nghiêm trọng nhất: lựa chọn một trong bốn chiến lược DR theo lượng dữ liệu được phép mất và thời gian gián đoạn được phép, đảm bảo database và cache duy trì qua sự cố, sử dụng AWS Backup cho file system dùng chung, và cấu hình một EC2 instance đơn lẻ tự động khôi phục."
 minutes: 20
 scenes: 4
 prerequisites: ["global-infra", "ec2", "rds", "storage"]
@@ -28,122 +28,122 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#s1", label: "1 · Bốn chiến lược DR" },
-  { href: "#s2", label: "2 · Database và cache" },
+  { href: "#s2", label: "2 · Khả năng phục hồi của database và cache" },
   { href: "#s3", label: "3 · AWS Backup" },
-  { href: "#s4", label: "4 · Một EC2 tự hồi phục" },
-  { href: "#challenge", label: "Thử thách" },
+  { href: "#s4", label: "4 · Tự động khôi phục EC2 đơn lẻ" },
+  { href: "#challenge", label: "Bài tập" },
 ]}>
-Multi-AZ giúp ShopViet sống qua một data center hỏng. Nhưng nếu **cả Region Singapore** ngừng hoạt động thì sao? Sếp hỏi hai câu: "Mình được phép mất bao nhiêu đơn hàng?" và "Bao lâu thì bán lại được?". Hai con số đó có tên:
+Multi-AZ giúp ShopViet duy trì hoạt động khi một data center gặp sự cố. Tuy nhiên, cần có phương án khi **toàn bộ Region Singapore** ngừng hoạt động. Ban lãnh đạo đặt ra hai câu hỏi: "Lượng đơn hàng tối đa được phép mất là bao nhiêu?" và "Sau bao lâu hệ thống phải hoạt động trở lại?". Hai chỉ số tương ứng là:
 
-- **RPO** (recovery point objective): lượng dữ liệu tối đa được mất, tính bằng thời gian. RPO 15 phút nghĩa là mất tối đa 15 phút đơn hàng.
-- **RTO** (recovery time objective): thời gian tối đa từ lúc sự cố tới lúc chạy lại.
+- **RPO** (recovery point objective): lượng dữ liệu tối đa được phép mất, tính bằng thời gian. RPO 15 phút nghĩa là mất tối đa dữ liệu đơn hàng của 15 phút.
+- **RTO** (recovery time objective): thời gian tối đa từ thời điểm xảy ra sự cố tới khi hệ thống hoạt động trở lại.
 
-RPO và RTO càng nhỏ thì càng tốn tiền. Bài này giúp chọn mức vừa đủ.
+RPO và RTO càng nhỏ thì chi phí càng cao. Bài học hướng dẫn lựa chọn mức đáp ứng vừa đủ yêu cầu.
 </Story>
 
-<Scene id="s1" label="Cảnh 1/4" title="Bốn cách chuẩn bị cho ngày Region sập" questions={["exam4_q41", "exam4_q5"]}>
+<Scene id="s1" label="Phần 1/4" title="Bốn chiến lược chuẩn bị cho sự cố cấp Region" questions={["exam4_q41", "exam4_q5"]}>
 
-ShopViet chọn Tokyo làm Region dự phòng. Câu hỏi là: bình thường thì giữ gì ở Tokyo? Càng giữ nhiều thứ đang chạy, càng lên nhanh, càng tốn tiền. Có bốn mức:
+ShopViet chọn Tokyo làm Region dự phòng. Vấn đề cần xác định là những thành phần nào được duy trì tại Tokyo trong điều kiện bình thường. Càng nhiều thành phần đang chạy thì thời gian khôi phục càng ngắn và chi phí càng cao. Có bốn mức:
 
-1. **Backup & restore**: chỉ giữ bản backup. Sự cố thì dựng lại từ đầu.
-2. **Pilot light**: phần lõi (database) luôn chạy và nhận dữ liệu. Web server tắt, sự cố mới bật.
-3. **Warm standby**: một bản thu nhỏ nhưng chạy đủ chức năng luôn bật. Sự cố thì scale lên.
-4. **Multi-site active-active**: Tokyo là một site đầy đủ, nhận khách cùng lúc với Singapore.
+1. **Backup & restore**: chỉ lưu giữ bản backup. Khi xảy ra sự cố, hệ thống được dựng lại từ đầu.
+2. **Pilot light**: phần lõi (database) luôn chạy và nhận dữ liệu. Web server ở trạng thái tắt và chỉ được khởi động khi xảy ra sự cố.
+3. **Warm standby**: một phiên bản thu nhỏ nhưng đầy đủ chức năng luôn hoạt động. Khi xảy ra sự cố, hệ thống được scale lên.
+4. **Multi-site active-active**: Tokyo là một site đầy đủ, phục vụ người dùng đồng thời với Singapore.
 
-Chọn một mục tiêu của ShopViet, chọn chiến lược, rồi cho Singapore sập. Thử cả công tắc AMI: web của ShopViet mất hơn 45 phút để cài trên máy trống.
+Chọn một mục tiêu của ShopViet, chọn chiến lược, sau đó mô phỏng sự cố tại Singapore. Thử thêm tuỳ chọn AMI: ứng dụng web của ShopViet mất hơn 45 phút để cài đặt trên instance trống.
 
 <DrStrategySim client:visible />
 
-AMI chỉ dùng được trong Region nơi nó nằm. Muốn launch nhanh ở Tokyo thì phải **copy AMI sang Tokyo** từ trước (bài Global Infrastructure đã có từng bước copy). Nếu ShopViet chạy ở nhiều Region, copy AMI sang từng Region đó.
+AMI chỉ sử dụng được trong Region chứa AMI đó. Để launch nhanh tại Tokyo, cần **copy AMI sang Tokyo** từ trước (các bước copy đã được trình bày trong bài Global Infrastructure). Nếu ShopViet hoạt động ở nhiều Region, AMI cần được copy sang từng Region tương ứng.
 
-<Takeaway>Backup & restore → pilot light → warm standby → multi-site: RPO/RTO nhỏ dần, chi phí tăng dần. Chọn mức rẻ nhất vẫn đạt mục tiêu. "Bản thu nhỏ chạy đủ chức năng luôn bật" là warm standby. Muốn dựng server nhanh ở Region khác: tạo AMI đã cài sẵn ứng dụng và copy sang Region đó.</Takeaway>
+<Takeaway>Backup & restore → pilot light → warm standby → multi-site: RPO/RTO giảm dần, chi phí tăng dần. Lựa chọn mức có chi phí thấp nhất vẫn đáp ứng mục tiêu. "Phiên bản thu nhỏ đầy đủ chức năng luôn hoạt động" là warm standby. Để dựng máy chủ nhanh tại Region khác: tạo AMI đã cài sẵn ứng dụng và copy sang Region đó.</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Cảnh 2/4" title="Database và cache phải sống qua sự cố" questions={["exam2_q61", "exam6_q23", "exam5_q42", "exam4_q32"]}>
+<Scene id="s2" label="Phần 2/4" title="Đảm bảo database và cache duy trì qua sự cố" questions={["exam2_q61", "exam6_q23", "exam5_q42", "exam4_q32"]}>
 
-Web server dựng lại được trong vài phút. Dữ liệu thì không: đơn hàng đã mất là mất hẳn. Ba phần dữ liệu của ShopViet, mỗi phần có một cách giữ an toàn riêng:
+Web server có thể được dựng lại trong vài phút, nhưng dữ liệu thì không: đơn hàng đã mất không thể khôi phục. ShopViet có ba thành phần dữ liệu, mỗi thành phần cần một cơ chế bảo vệ riêng:
 
-- **Aurora** chứa đơn hàng: mục tiêu RPO ≤ 5 phút, RTO ≤ 15 phút khi cả Region sập, và đội vận hành không muốn tự viết script.
-- **RDS PostgreSQL** của app kho hàng: đã bật Multi-AZ, nhưng chưa có gì ở Region khác.
-- **ElastiCache Redis** giữ giỏ hàng và phiên đăng nhập: chỉ có backup hằng ngày.
+- **Aurora** lưu đơn hàng: mục tiêu RPO ≤ 5 phút, RTO ≤ 15 phút khi toàn bộ Region gặp sự cố, và đội vận hành không muốn tự phát triển script.
+- **RDS PostgreSQL** của ứng dụng kho hàng: đã bật Multi-AZ, nhưng chưa có thành phần nào tại Region khác.
+- **ElastiCache Redis** lưu giỏ hàng và phiên đăng nhập: chỉ có backup hằng ngày.
 
 <DataFailoverSim client:visible />
 
-**Aurora Global Database** sao chép ở tầng storage sang Region khác, thường trễ dưới 1 giây. Khi Region chính sập, promote Region phụ thành chính trong khoảng một phút. Nó còn cho khách ở Region phụ đọc dữ liệu với độ trễ thấp. Tự dựng bằng DMS, read replica tự promote tay, hay script copy snapshot đều làm được nhưng chậm hơn và tốn công vận hành hơn.
+**Aurora Global Database** sao chép ở tầng storage sang Region khác, với độ trễ thường dưới 1 giây. Khi Region chính gặp sự cố, Region phụ được promote thành Region chính trong khoảng một phút. Dịch vụ này còn cho phép người dùng tại Region phụ đọc dữ liệu với độ trễ thấp. Các phương án tự triển khai bằng DMS, read replica promote thủ công hoặc script copy snapshot đều khả thi nhưng thời gian khôi phục dài hơn và chi phí vận hành cao hơn.
 
-<Takeaway>Aurora cần RPO giây, RTO phút giữa các Region: Aurora Global Database. RDS cần chống mất Region: cross-Region read replica (promote khi cần) và sao chép automated backup sang Region khác; Multi-AZ chỉ chống hỏng một AZ. Redis cần ít downtime, ít mất dữ liệu: Multi-AZ với automatic failover, không phải backup hằng ngày.</Takeaway>
+<Takeaway>Aurora yêu cầu RPO tính bằng giây, RTO tính bằng phút giữa các Region: Aurora Global Database. RDS cần chịu được sự cố cấp Region: cross-Region read replica (promote khi cần) và sao chép automated backup sang Region khác; Multi-AZ chỉ bảo vệ trước sự cố của một AZ. Redis yêu cầu downtime thấp và mất ít dữ liệu: Multi-AZ với automatic failover, không phải backup hằng ngày.</Takeaway>
 
 </Scene>
 
-<Scene id="s3" label="Cảnh 3/4" title="AWS Backup cho file dùng chung" questions={["exam5_q47"]}>
+<Scene id="s3" label="Phần 3/4" title="AWS Backup cho file system dùng chung" questions={["exam5_q47"]}>
 
-Các service của ShopViet chạy trên ECS với Fargate, cùng đọc ghi ảnh của người bán và hoá đơn trên một file system dùng chung. ShopViet chọn **Amazon EFS**: file system POSIX (NFS), chạy trên nhiều AZ, task Fargate mount được trực tiếp. Yêu cầu tuân thủ: backup tự động, có bản ở Region khác, mất tối đa 8 giờ dữ liệu.
+Các service của ShopViet chạy trên ECS với Fargate, cùng đọc và ghi ảnh của người bán và hoá đơn trên một file system dùng chung. ShopViet lựa chọn **Amazon EFS**: file system POSIX (NFS), hoạt động trên nhiều AZ, task Fargate có thể mount trực tiếp. Yêu cầu tuân thủ: backup tự động, có bản sao tại Region khác, mất tối đa 8 giờ dữ liệu.
 
-**AWS Backup** gom việc backup của nhiều service (EFS, EBS, RDS, DynamoDB…) vào một chỗ. Bạn viết một **backup plan**: chạy bao lâu một lần, giữ bao lâu, copy sang đâu. Recovery point được cất trong **backup vault**. Hãy chỉnh plan và thử từng sự cố:
+**AWS Backup** quản lý tập trung việc backup của nhiều service (EFS, EBS, RDS, DynamoDB…). Người vận hành định nghĩa một **backup plan**: tần suất backup, thời gian lưu giữ và đích copy. Recovery point được lưu trong **backup vault**. Điều chỉnh plan và kiểm tra với từng loại sự cố:
 
 <BackupPlanSim client:visible />
 
-Mỗi sự cố cần một cài đặt khác nhau. Region sập: cần bản copy ở **Region khác**. Quyền admin bị lộ: cần bản copy ở **tài khoản khác**, hoặc **Vault Lock** để không ai xoá được recovery point trước hạn. Kiểm toán: cần **thời gian giữ** đủ dài. Còn RPO thì do **tần suất** quyết định.
+Mỗi loại sự cố đòi hỏi một cấu hình khác nhau. Sự cố cấp Region: cần bản copy tại **Region khác**. Thông tin xác thực admin bị lộ: cần bản copy tại **account khác**, hoặc **Vault Lock** để không ai xoá được recovery point trước thời hạn. Kiểm toán: cần **thời gian lưu giữ** đủ dài. RPO do **tần suất backup** quyết định.
 
-<Takeaway>File dùng chung cho container, nhiều AZ, cần backup sang Region khác: EFS + AWS Backup với lịch backup và cross-Region copy. Tần suất backup quyết định RPO. Khác Region chống mất Region; khác tài khoản và Vault Lock chống bị xoá backup.</Takeaway>
+<Takeaway>File system dùng chung cho container, trên nhiều AZ, cần backup sang Region khác: EFS + AWS Backup với lịch backup và cross-Region copy. Tần suất backup quyết định RPO. Bản sao tại Region khác bảo vệ trước sự cố cấp Region; bản sao tại account khác và Vault Lock bảo vệ backup khỏi bị xoá.</Takeaway>
 
 </Scene>
 
-<Scene id="s4" label="Cảnh 4/4" title="Một EC2 đơn lẻ tự hồi phục" questions={["exam3_q38"]}>
+<Scene id="s4" label="Phần 4/4" title="Tự động khôi phục EC2 instance đơn lẻ" questions={["exam3_q38"]}>
 
-Trang admin nội bộ của ShopViet chạy trên đúng một EC2. Ít người dùng, không đáng dựng Auto Scaling group hay chiến lược DR. Chỉ cần: nếu máy hỏng thì tự chạy lại trong khoảng 10 phút, rẻ và không ai phải thức dậy.
+Trang admin nội bộ của ShopViet chạy trên duy nhất một EC2 instance. Số lượng người dùng ít, không cần tới Auto Scaling group hay chiến lược DR. Yêu cầu: khi instance gặp sự cố, hệ thống tự hoạt động trở lại trong khoảng 10 phút, với chi phí thấp và không cần can thiệp thủ công ngoài giờ làm việc.
 
-EC2 có hai loại status check. **System status check** báo lỗi phía AWS (phần cứng, mạng, nguồn của host). **Instance status check** báo lỗi bên trong máy (hệ điều hành treo, hết bộ nhớ). Một **CloudWatch alarm** theo dõi status check có thể chạy action: recover, reboot, stop hoặc terminate.
+EC2 có hai loại status check. **System status check** phản ánh lỗi phía AWS (phần cứng, mạng, nguồn điện của host). **Instance status check** phản ánh lỗi bên trong instance (hệ điều hành bị treo, cạn bộ nhớ). Một **CloudWatch alarm** theo dõi status check có thể thực thi action: recover, reboot, stop hoặc terminate.
 
 <Ec2RecoverSim client:visible />
 
-<Takeaway>Một EC2, cần tự hồi phục rẻ: CloudWatch alarm theo dõi system status check với action recover. Instance chuyển sang host mới, giữ instance ID, private IP, Elastic IP. Chỉ dùng được khi instance chạy bằng EBS, không dùng instance store.</Takeaway>
+<Takeaway>Một EC2 instance cần tự động khôi phục với chi phí thấp: CloudWatch alarm theo dõi system status check với action recover. Instance được chuyển sang host mới, giữ nguyên instance ID, private IP, Elastic IP. Chỉ áp dụng khi instance sử dụng EBS, không sử dụng instance store.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="Chọn chiến lược cho ShopViet" questions={["exam4_q41", "exam6_q23", "exam4_q32", "exam3_q38"]}>
+<Scene id="challenge" label="Bài tập" title="Phân loại chiến lược DR" questions={["exam4_q41", "exam6_q23", "exam4_q32", "exam3_q38"]}>
 
-Xếp từng mô tả vào đúng chiến lược DR. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
+Phân loại từng mô tả vào chiến lược DR tương ứng. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
 <SortGame client:visible
   bins={[
-    { id: "br", title: "Backup & restore", sub: "chỉ giữ bản backup", hint: "Gợi ý: ở Region dự phòng không có gì đang chạy." },
-    { id: "pilot", title: "Pilot light", sub: "lõi luôn chạy", hint: "Gợi ý: chỉ phần dữ liệu luôn chạy, server ứng dụng còn tắt." },
-    { id: "warm", title: "Warm standby", sub: "bản thu nhỏ luôn chạy", hint: "Gợi ý: mọi thứ đều chạy, chỉ là nhỏ hơn." },
-    { id: "multi", title: "Multi-site active-active", sub: "hai site đầy đủ", hint: "Gợi ý: cả hai Region đang nhận khách." },
+    { id: "br", title: "Backup & restore", sub: "chỉ lưu bản backup", hint: "Gợi ý: không có thành phần nào đang chạy tại Region dự phòng." },
+    { id: "pilot", title: "Pilot light", sub: "phần lõi luôn chạy", hint: "Gợi ý: chỉ tầng dữ liệu luôn chạy, máy chủ ứng dụng ở trạng thái tắt." },
+    { id: "warm", title: "Warm standby", sub: "phiên bản thu nhỏ luôn chạy", hint: "Gợi ý: mọi thành phần đều chạy nhưng với quy mô nhỏ hơn." },
+    { id: "multi", title: "Multi-site active-active", sub: "hai site đầy đủ", hint: "Gợi ý: cả hai Region đều đang phục vụ người dùng." },
   ]}
   cards={[
-    ["Chỉ có snapshot và AMI ở Tokyo", "br"], ["RTO tính bằng giờ, rẻ nhất", "br"],
-    ["Database replica luôn chạy, web server tắt", "pilot"], ["Sự cố mới launch web từ AMI", "pilot"],
-    ["Bản thu nhỏ chạy đủ chức năng luôn bật", "warm"], ["Sự cố thì chỉ cần scale lên", "warm"],
-    ["Cả hai Region cùng nhận khách", "multi"], ["RTO gần như bằng 0, tốn nhất", "multi"],
+    ["Chỉ có snapshot và AMI ở Tokyo", "br"], ["RTO tính bằng giờ, chi phí thấp nhất", "br"],
+    ["Database replica luôn chạy, web server tắt", "pilot"], ["Chỉ launch web server từ AMI khi có sự cố", "pilot"],
+    ["Phiên bản thu nhỏ đầy đủ chức năng luôn hoạt động", "warm"], ["Khi có sự cố chỉ cần scale lên", "warm"],
+    ["Cả hai Region cùng phục vụ người dùng", "multi"], ["RTO gần như bằng 0, chi phí cao nhất", "multi"],
   ]}
 />
 
-Nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "Sếp muốn ở Tokyo luôn có một phiên bản nhỏ của toàn bộ hệ thống đang chạy, sự cố thì chỉ cần scale lên để rút ngắn thời gian ngừng. Đó là chiến lược nào?",
+  { q: "Yêu cầu: tại Tokyo luôn có một phiên bản thu nhỏ của toàn bộ hệ thống đang chạy; khi xảy ra sự cố chỉ cần scale lên để rút ngắn thời gian gián đoạn. Đây là chiến lược nào?",
     opts: ["Pilot light", "Warm standby", "Backup & restore"],
     a: 1,
-    why: "Warm standby: mọi thành phần đều chạy, chỉ nhỏ hơn. Pilot light chỉ giữ phần lõi như database, server ứng dụng vẫn tắt." },
-  { q: "Đơn hàng nằm trên Aurora MySQL ở Singapore. Cần RPO ≤ 5 phút, RTO ≤ 15 phút khi Region sập, ít công cấu hình nhất. Chọn gì?",
-    opts: ["Aurora Global Database với secondary cluster ở Tokyo", "Lambda copy snapshot sang Tokyo mỗi 5 phút", "DMS sao chép sang một cluster riêng ở Tokyo, failover bằng tay"],
+    why: "Warm standby: mọi thành phần đều chạy nhưng với quy mô nhỏ hơn. Pilot light chỉ duy trì phần lõi như database, máy chủ ứng dụng vẫn ở trạng thái tắt." },
+  { q: "Dữ liệu đơn hàng được lưu trên Aurora MySQL tại Singapore. Yêu cầu RPO ≤ 5 phút, RTO ≤ 15 phút khi Region gặp sự cố, với công sức cấu hình tối thiểu. Phương án nào phù hợp?",
+    opts: ["Aurora Global Database với secondary cluster tại Tokyo", "Lambda copy snapshot sang Tokyo mỗi 5 phút", "DMS sao chép sang một cluster riêng tại Tokyo, failover thủ công"],
     a: 0,
-    why: "Global database sao chép trễ dưới 1 giây và có failover do AWS quản lý. Hai cách kia làm được nhưng chậm hơn và phải tự vận hành." },
-  { q: "Cache Redis giữ giỏ hàng. ShopViet muốn ít downtime và ít mất dữ liệu nhất khi node chính hỏng. Chọn gì?",
-    opts: ["Backup tự động mỗi đêm", "Multi-AZ với automatic failover", "Backup bằng tay qua AOF"],
+    why: "Global database sao chép với độ trễ dưới 1 giây và có failover do AWS quản lý. Hai phương án còn lại khả thi nhưng thời gian khôi phục dài hơn và phải tự vận hành." },
+  { q: "Cache Redis lưu giỏ hàng. Yêu cầu: downtime và lượng dữ liệu bị mất thấp nhất khi primary node gặp sự cố. Phương án nào phù hợp?",
+    opts: ["Backup tự động hằng đêm", "Multi-AZ với automatic failover", "Backup thủ công qua AOF"],
     a: 1,
-    why: "Replica ở AZ khác nhận dữ liệu liên tục và được promote tự động. Backup chỉ giữ dữ liệu tới lần chụp cuối và restore thì chậm." },
-  { q: "Trang admin chạy trên một EC2 dùng EBS. Muốn tự chạy lại khi phần cứng hỏng, rẻ nhất, chịu được 10 phút gián đoạn. Làm gì?",
-    opts: ["CloudWatch alarm theo dõi system status check với action recover", "Trusted Advisor theo dõi và tự sửa", "Dựng warm standby ở Region khác"],
+    why: "Replica tại AZ khác nhận dữ liệu liên tục và được promote tự động. Backup chỉ lưu dữ liệu tới thời điểm snapshot gần nhất và quá trình restore chậm." },
+  { q: "Trang admin chạy trên một EC2 instance sử dụng EBS. Yêu cầu: tự động hoạt động trở lại khi phần cứng gặp sự cố, chi phí thấp nhất, chấp nhận 10 phút gián đoạn. Phương án nào phù hợp?",
+    opts: ["CloudWatch alarm theo dõi system status check với action recover", "Trusted Advisor giám sát và tự động khắc phục", "Triển khai warm standby tại Region khác"],
     a: 0,
-    why: "Recover chuyển instance sang host mới, giữ instance ID và IP. Trusted Advisor chỉ đưa khuyến nghị, không tự sửa máy. Warm standby quá tốn cho nhu cầu này." },
-  { q: "Ứng dụng cài mất hơn 45 phút, nhưng cần dựng lại trong 5 phút ở mọi Region ShopViet đang chạy. Làm gì?",
-    opts: ["Để file cài đặt trong S3", "Tạo AMI đã cài sẵn và copy sang từng Region", "Viết user data cài tự động"],
+    why: "Recover chuyển instance sang host mới, giữ nguyên instance ID và IP. Trusted Advisor chỉ đưa ra khuyến nghị, không tự động khắc phục instance. Warm standby có chi phí quá cao so với yêu cầu này." },
+  { q: "Ứng dụng cần hơn 45 phút để cài đặt, nhưng phải được dựng lại trong 5 phút tại mọi Region mà ShopViet đang hoạt động. Phương án nào phù hợp?",
+    opts: ["Lưu bộ cài đặt trong S3", "Tạo AMI đã cài sẵn và copy sang từng Region", "Viết user data cài đặt tự động"],
     a: 1,
-    why: "AMI đã cài sẵn thì launch là chạy. AMI thuộc về một Region nên phải copy sang từng Region. User data vẫn phải cài 45 phút." },
+    why: "AMI đã cài sẵn cho phép instance hoạt động ngay sau khi launch. AMI thuộc về một Region nên phải được copy sang từng Region. User data vẫn cần 45 phút để cài đặt." },
 ]} />
 
 </Scene>

@@ -2,6 +2,7 @@
 import { getCollection, render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Scene from "../../components/Scene.astro";
+import Donate from "../../components/Donate.astro";
 import DoneButton from "../../components/DoneButton.tsx";
 import Importance from "../../components/Importance.astro";
 import T from "../../app/T.astro";
@@ -29,6 +30,19 @@ const ready = new Set((await getCollection("concepts")).map((e) => e.id));
 const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(layers, p)).filter(Boolean);
 ---
 <BaseLayout title={`${concept.title} · AWS Thực Chiến`} description={entry?.data.lede} current={id}>
+  {entry && (
+    <nav slot="toc" class="ltoc" id="toc" aria-label="Mục lục bài học" data-i18n-attr="aria-label:shell.toc.label">
+      <div class="toc-head">
+        <span class="side-label"><T k="shell.toc.progress" /></span>
+        <span class="toc-percent" data-read-percent>0%</span>
+      </div>
+      <p class="toc-lesson">{entry.data.title}</p>
+      <div class="side-label toc-title"><T k="shell.toc.title" /></div>
+      <ol></ol>
+      <div class="toc-bar" aria-hidden="true"><i /></div>
+      <p class="toc-keys"><kbd>J</kbd> / <kbd>K</kbd> <T k="shell.toc.jump" /></p>
+    </nav>
+  )}
   <div class="crumbs">
     <span>Lớp {concept.layer.n} · {concept.layer.name}</span><span aria-hidden="true">/</span><b>{concept.title}</b>
   </div>
@@ -42,14 +56,14 @@ const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(layers,
     {entry && (
       <>
         <div>
-          <dt>Cần biết trước</dt>
+          <dt>Kiến thức tiên quyết</dt>
           <dd>
             {prereqs.length
               ? prereqs.map((p) => <a href={`/concepts/${p!.id}/`}>{p!.title}</a>)
-              : "Không có. Đây là điểm bắt đầu"}
+              : "Không yêu cầu. Đây là bài khởi đầu của lộ trình"}
           </dd>
         </div>
-        <div><dt>Thời gian</dt><dd>~{entry.data.minutes} phút, {entry.data.scenes} cảnh tương tác</dd></div>
+        <div><dt>Thời lượng</dt><dd>~{entry.data.minutes} phút, {entry.data.scenes} phần có mô phỏng</dd></div>
         <div><dt>Tiến độ</dt><dd><DoneButton client:load id={id} /></dd></div>
       </>
     )}
@@ -58,29 +72,30 @@ const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(layers,
   {Content ? (
     <>
       <Content />
-      <Scene id="next" label="Đọc tiếp" title="Bài tiếp theo trong lộ trình">
+      <Scene id="next" label="Tiếp theo" title="Các bài tiếp theo trong lộ trình">
         <div class="next">
           <div class="next-col">
-            <h3>Lý thuyết tiếp theo</h3>
+            <h3>Bài học tiếp theo</h3>
             <ul>
               {next.map((c) => (
                 <li>
                   <a href={`/concepts/${c.id}/`}>{c.title}</a>
-                  {!ready.has(c.id) && <span class="tag-soon">sắp có</span>}
+                  {!ready.has(c.id) && <span class="tag-soon">đang biên soạn</span>}
                 </li>
               ))}
             </ul>
           </div>
           <div class="next-col">
-            <h3>Tự kiểm tra</h3>
-            <ul><li><a href="/on-tap/">Làm bài ở trang Ôn tập</a></li></ul>
+            <h3>Luyện tập</h3>
+            <ul><li><a href="/on-tap/">Làm bài ở trang Luyện đề</a></li></ul>
           </div>
           <div class="next-col">
-            <h3>AWS docs gốc</h3>
+            <h3>Tài liệu AWS</h3>
             <ul>{entry!.data.docs.map((d) => <li><a href={d.url} target="_blank" rel="noopener">{d.title}</a></li>)}</ul>
           </div>
         </div>
       </Scene>
+      <Donate />
     </>
   ) : (
     <div class="placeholder">
@@ -89,3 +104,11 @@ const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(layers,
     </div>
   )}
 </BaseLayout>
+
+<script>
+  import { LessonToc } from "../../modules/shell/ui/LessonToc";
+
+  const root = document.getElementById("toc");
+  const content = document.querySelector<HTMLElement>("main.article");
+  if (root && content) new LessonToc(root, content).start();
+</script>

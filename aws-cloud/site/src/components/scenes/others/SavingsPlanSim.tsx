@@ -12,8 +12,8 @@ type PlanId = "ec2i" | "compute" | "sm";
 type WorkId = "web" | "batch" | "fargate" | "lambda" | "sm";
 
 const PLANS: { id: PlanId; l1: string; l2: string; y: number }[] = [
-  { id: "ec2i", l1: "EC2 Instance Savings Plans", l2: "họ m5 · Singapore", y: 70 },
-  { id: "compute", l1: "Compute Savings Plans", l2: "mọi họ, mọi Region", y: 150 },
+  { id: "ec2i", l1: "EC2 Instance Savings Plans", l2: "family m5 · Singapore", y: 70 },
+  { id: "compute", l1: "Compute Savings Plans", l2: "mọi family, mọi Region", y: 150 },
   { id: "sm", l1: "SageMaker Savings Plans", l2: "mọi loại instance SageMaker", y: 230 },
 ];
 const WORKS: { id: WorkId; l1: string; l2: string; y: number }[] = [
@@ -37,19 +37,19 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 function verdict(sel: PlanId[]): { ok: boolean; text: string } {
   const covered = new Set(sel.flatMap((p) => COVERS[p]));
   const missing = WORKS.filter((w) => !covered.has(w.id)).map((w) => w.l1);
-  if (sel.length === 0) return { ok: false, text: "Chưa mua gì: mọi thứ chạy giá on-demand." };
+  if (sel.length === 0) return { ok: false, text: "Chưa mua plan nào: mọi workload chạy theo giá on-demand." };
   if (missing.length) {
     let why = "";
     if (!sel.includes("compute")) {
       why += sel.includes("ec2i")
-        ? " EC2 Instance Savings Plans chỉ giảm cho **một họ instance trong một Region**, không áp cho Fargate hay Lambda."
-        : " Loại phủ được EC2, Fargate và Lambda cùng lúc là **Compute Savings Plans**.";
+        ? " EC2 Instance Savings Plans chỉ giảm giá cho **một instance family trong một Region**, không áp dụng cho Fargate hay Lambda."
+        : " Loại plan áp dụng đồng thời cho EC2, Fargate và Lambda là **Compute Savings Plans**.";
     }
-    if (missing.includes("SageMaker")) why += " **SageMaker không nằm trong Compute Savings Plans**, nó có Savings Plans riêng.";
-    return { ok: false, text: `Còn chạy giá on-demand: ${missing.join(", ")}.${why}` };
+    if (missing.includes("SageMaker")) why += " **SageMaker không thuộc phạm vi Compute Savings Plans** mà có Savings Plans riêng.";
+    return { ok: false, text: `Vẫn chạy theo giá on-demand: ${missing.join(", ")}.${why}` };
   }
-  if (sel.includes("ec2i")) return { ok: false, text: "Phủ hết rồi nhưng **thừa một plan**: Compute Savings Plans đã giảm giá cho EC2 web. Bỏ EC2 Instance Savings Plans để quản lý ít hơn." };
-  return { ok: true, text: "Hai plan phủ cả năm workload: **Compute Savings Plans** cho EC2 (mọi họ, mọi Region), Fargate và Lambda; **SageMaker Savings Plans** cho SageMaker. Không phải đổi kiến trúc." };
+  if (sel.includes("ec2i")) return { ok: false, text: "Đã áp dụng cho mọi workload nhưng **dư một plan**: Compute Savings Plans đã giảm giá cho EC2 web. Bỏ EC2 Instance Savings Plans để giảm số plan cần quản lý." };
+  return { ok: true, text: "Hai plan áp dụng cho cả năm workload: **Compute Savings Plans** cho EC2 (mọi instance family, mọi Region), Fargate và Lambda; **SageMaker Savings Plans** cho SageMaker. Không cần thay đổi kiến trúc." };
 }
 
 export default function SavingsPlanSim() {
@@ -106,9 +106,9 @@ export default function SavingsPlanSim() {
         <button className="btn primary sav-play" onClick={apply} disabled={busy}>Áp dụng giảm giá</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 0 820 290" role="img" aria-label="Các Savings Plans bên trái, workload của ShopViet bên phải; đường nối là plan giảm giá cho workload">
+        <svg viewBox="0 0 820 290" role="img" aria-label="Các Savings Plans ở bên trái, workload của ShopViet ở bên phải; đường nối thể hiện plan giảm giá cho workload">
           <text className="sav-cap" x={PX} y={22} textAnchor="middle">Savings Plans</text>
-          <text className="sav-cap" x={WX} y={22} textAnchor="middle">Workload đang chạy đều</text>
+          <text className="sav-cap" x={WX} y={22} textAnchor="middle">Workload có tải ổn định</text>
           {PLANS.filter((p) => sel.includes(p.id)).flatMap((p) => COVERS[p.id].map((w) => {
             const to = WORKS.find((x) => x.id === w)!;
             const x1 = PX + PW / 2;
@@ -135,7 +135,7 @@ export default function SavingsPlanSim() {
       </div>
       <div className="readout" aria-live="polite">
         {!done ? (
-          <p className="sav-hint">Chọn các Savings Plans muốn mua rồi bấm <b>Áp dụng giảm giá</b>. Mục tiêu: mọi workload được giảm giá, với ít plan nhất.</p>
+          <p className="sav-hint">Chọn các Savings Plans cần mua, sau đó chọn <b>Áp dụng giảm giá</b>. Mục tiêu: mọi workload được giảm giá với số plan tối thiểu.</p>
         ) : (
           <>
             <div className="status">

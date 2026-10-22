@@ -13,9 +13,11 @@ export default function ExamPage({ certId, examId }: { certId: string; examId: s
   const store = app.exam.store;
   const state = useStore(store);
   const { cert, exam, attempt, index, view } = state;
-  const { t } = useT();
+  const { t, locale } = useT();
 
-  useEffect(() => app.dispatch({ type: "exam/open", certId, examId }), [certId, examId]);
+  useEffect(() => app.dispatch({ type: "exam/open", certId, examId, locale }), [certId, examId]);
+  // Switching VI/EN reloads only the question text; progress stays.
+  useEffect(() => app.dispatch({ type: "exam/language", locale }), [locale]);
 
   // Keyboard: letters pick options, Enter submits or moves on.
   useEffect(() => {
@@ -72,7 +74,9 @@ export default function ExamPage({ certId, examId }: { certId: string; examId: s
         <>
           <QuestionMap exam={exam} attempt={attempt} index={index} frontier={store.frontier} dispatch={app.dispatch} />
           <QuestionCard
+            key={question.id}
             question={question}
+            original={state.original?.questions[index]}
             total={exam.questions.length}
             answer={attempt.answers[question.id]}
             selection={state.selection}

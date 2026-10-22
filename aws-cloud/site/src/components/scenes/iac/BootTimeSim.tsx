@@ -23,35 +23,35 @@ interface Lane {
 const LANES: Lane[] = [
   {
     id: "userdata",
-    name: "User data cài toàn bộ",
+    name: "User data cài đặt toàn bộ",
     segs: [{ kind: "boot", min: 1 }, { kind: "static", min: 40 }, { kind: "dynamic", min: 0.7 }],
     works: true,
-    note: "Đúng nhưng chậm: mỗi instance mới lại cài lại 40 phút phần tĩnh. Lúc cần scale out gấp thì máy mới tới quá muộn.",
+    note: "Cấu hình đúng nhưng chậm: mỗi instance mới phải cài đặt lại phần tĩnh trong 40 phút. Khi cần scale out khẩn cấp, instance mới sẵn sàng quá muộn.",
   },
   {
     id: "s3",
-    name: "Để sẵn file cài trên S3",
+    name: "Bộ cài đặt lưu sẵn trên S3",
     segs: [{ kind: "boot", min: 1 }, { kind: "fetch", min: 1 }, { kind: "static", min: 38 }, { kind: "dynamic", min: 0.7 }],
     works: true,
-    note: "Tải nhanh hơn một chút, nhưng phần lớn thời gian là **cài**, không phải tải. Vẫn hơn 40 phút.",
+    note: "Thời gian tải giảm không đáng kể, vì phần lớn thời gian dành cho **cài đặt**, không phải tải xuống. Tổng thời gian vẫn trên 40 phút.",
   },
   {
     id: "ami",
-    name: "Golden AMI chứa mọi thứ",
+    name: "Golden AMI chứa toàn bộ",
     segs: [{ kind: "boot", min: 1 }],
     works: false,
-    note: "Lên rất nhanh, nhưng file động (cấu hình theo môi trường, theo từng instance) đã bị đóng cứng lúc tạo AMI. Instance chạy với cấu hình sai.",
+    note: "Khởi động rất nhanh, nhưng các file động (cấu hình theo môi trường, theo từng instance) đã bị cố định tại thời điểm tạo AMI. Instance chạy với cấu hình sai.",
   },
   {
     id: "golden",
     name: "Golden AMI + user data",
     segs: [{ kind: "boot", min: 1 }, { kind: "dynamic", min: 0.7 }],
     works: true,
-    note: "**Golden AMI** đã cài sẵn phần tĩnh; **user data** chỉ sinh phần động lúc khởi động. Dưới 2 phút và đúng cấu hình. Elastic Beanstalk cho chỉ định custom AMI trong cấu hình environment.",
+    note: "**Golden AMI** đã cài sẵn phần tĩnh; **user data** chỉ tạo phần động khi khởi động. Thời gian dưới 2 phút và cấu hình chính xác. Elastic Beanstalk cho phép chỉ định custom AMI trong cấu hình environment.",
   },
 ];
 
-const KIND_TEXT: Record<Seg["kind"], string> = { boot: "khởi động", static: "cài phần tĩnh", dynamic: "sinh file động", fetch: "tải từ S3" };
+const KIND_TEXT: Record<Seg["kind"], string> = { boot: "khởi động", static: "cài đặt phần tĩnh", dynamic: "tạo file động", fetch: "tải từ S3" };
 const total = (l: Lane) => l.segs.reduce((s, x) => s + x.min, 0);
 const END = 45;
 const TARGET = 2;
@@ -98,11 +98,11 @@ export default function BootTimeSim() {
     <div className="stage bts">
       <div className="stage-bar">
         <span className="label">Elastic Beanstalk scale out</span>
-        <span className="count">Cần: instance mới phục vụ được trong {TARGET} phút</span>
+        <span className="count">Yêu cầu: instance mới phục vụ được request trong {TARGET} phút</span>
         <button className="btn primary bts-play" onClick={play} disabled={busy}>Khởi động 4 instance</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox={`0 0 820 ${Y0 + LANES.length * LH + 34}`} role="img" aria-label="Bốn cách khởi động instance chạy đua trên cùng một đồng hồ">
+        <svg viewBox={`0 0 820 ${Y0 + LANES.length * LH + 34}`} role="img" aria-label="So sánh thời gian của bốn phương án khởi động instance trên cùng một trục thời gian">
           {[0, 2, 10, 20, 30, 45].map((m) => (
             <g key={m}>
               <line className="bts-grid" x1={px(m)} x2={px(m)} y1={Y0 - 6} y2={Y0 + LANES.length * LH} />
@@ -136,7 +136,7 @@ export default function BootTimeSim() {
                 })}
                 {finished && (
                   <text className={"bts-end " + (l.works && total(l) <= TARGET ? "ok" : "bad")} x={px(total(l)) + 8} y={y + LH / 2 + 4}>
-                    {l.works ? `${total(l).toFixed(1).replace(".", ",")} phút` : "lên nhanh, cấu hình sai"}
+                    {l.works ? `${total(l).toFixed(1).replace(".", ",")} phút` : "khởi động nhanh, cấu hình sai"}
                   </text>
                 )}
               </g>
@@ -150,11 +150,11 @@ export default function BootTimeSim() {
         ))}
       </div>
       <div className="readout" aria-live="polite">
-        <p className="bts-pick">Bấm vào một làn để xem nhận xét. Đang xem: <b>{lane.name}</b></p>
+        <p className="bts-pick">Chọn một phương án để xem phân tích. Đang xem: <b>{lane.name}</b></p>
         {laneDone && now > 0 ? (
           <p className={"bts-result " + (lane.works && total(lane) <= TARGET ? "ok" : "bad")}>{rich(lane.note)}</p>
         ) : (
-          <p className="bts-hint">Bấm <b>Khởi động 4 instance</b> và chờ làn này chạy xong.</p>
+          <p className="bts-hint">Chọn <b>Khởi động 4 instance</b> và chờ phương án này hoàn tất.</p>
         )}
       </div>
     </div>

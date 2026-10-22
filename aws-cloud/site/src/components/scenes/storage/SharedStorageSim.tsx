@@ -11,9 +11,9 @@ type Store = "ebs" | "efs" | "s3";
 type Ec2 = "w1" | "w2" | "w3";
 
 const STORES: { id: Store; name: string; label: string; sub: string }[] = [
-  { id: "ebs", name: "EBS gắn vào web-1", label: "EBS volume", sub: "block · nằm trong AZ a" },
-  { id: "efs", name: "Amazon EFS", label: "Amazon EFS", sub: "file (NFS) · lưu ở nhiều AZ · mount target mỗi AZ" },
-  { id: "s3", name: "Amazon S3", label: "Amazon S3", sub: "object · gọi qua API · lưu ở ≥ 3 AZ" },
+  { id: "ebs", name: "EBS gắn vào web-1", label: "EBS volume", sub: "block · thuộc AZ a" },
+  { id: "efs", name: "Amazon EFS", label: "Amazon EFS", sub: "file (NFS) · lưu trữ tại nhiều AZ · mount target tại mỗi AZ" },
+  { id: "s3", name: "Amazon S3", label: "Amazon S3", sub: "object · truy cập qua API · lưu trữ tại ≥ 3 AZ" },
 ];
 
 const EC2: Record<Ec2, { x: number; az: "a" | "b" }> = { w1: { x: 130, az: "a" }, w2: { x: 300, az: "a" }, w3: { x: 620, az: "b" } };
@@ -64,17 +64,17 @@ export default function SharedStorageSim() {
     const ebsLost = store === "ebs" && azDown;
     if (ebsLost) {
       await travel(L, [[EC2.w3.x, EY + 22], [EC2.w3.x, 165], [430, 165]], 600, "pkt-bad");
-      flashText(L, 410, 155, "AZ a mất", "flash-bad", 1100);
+      flashText(L, 410, 155, "AZ a sự cố", "flash-bad", 1100);
       light("w3", "bad");
       light("store", "bad");
-      add("GHI", "bad", "web-3 ở AZ b không với tới volume: **EBS** nằm trong AZ a và chỉ gắn vào instance cùng AZ.");
-      setResult({ ok: false, msg: rich("Video cũ trên volume và video mới đều không dùng được cho tới khi AZ a hồi lại hoặc khôi phục từ snapshot. Dữ liệu nằm trên một ổ block gắn với một AZ là điểm hỏng duy nhất.") });
+      add("GHI", "bad", "web-3 tại AZ b không truy cập được volume: **EBS** thuộc AZ a và chỉ gắn được vào instance cùng AZ.");
+      setResult({ ok: false, msg: rich("Cả video cũ trên volume và video mới đều không sử dụng được cho tới khi AZ a phục hồi hoặc dữ liệu được khôi phục từ snapshot. Dữ liệu lưu trên một ổ block gắn với một AZ là single point of failure.") });
       setBusy(false);
       return;
     }
     await travel(L, path(writer), 500, "pkt");
     light("store", "ok");
-    add("GHI", "hit", `${writer === "w1" ? "web-1" : "web-3"} nhận video và ghi vào **${STORES.find((s) => s.id === store)!.label}**.`);
+    add("GHI", "hit", `${writer === "w1" ? "web-1" : "web-3"} tiếp nhận video và ghi vào **${STORES.find((s) => s.id === store)!.label}**.`);
     await wait(250);
     // 2. every live server opens the video
     const results = await Promise.all(alive.map(async (id, i) => {
@@ -95,18 +95,18 @@ export default function SharedStorageSim() {
     }));
     const okCount = results.filter(Boolean).length;
     if (store === "ebs") {
-      add("ĐỌC", "bad", "web-2 và web-3 không thấy video. Một EBS volume gắn vào một instance (Multi-Attach chỉ có ở io1/io2 và chỉ trong cùng AZ).");
-      setResult({ ok: false, msg: rich("Khách vào trúng web-2 hay web-3 sẽ không thấy video vừa upload. Chuyển dữ liệu dùng chung sang **EFS** hoặc **S3**. EBS hợp làm ổ boot và ổ riêng của từng máy, tính tiền theo **dung lượng cấp phát**.") });
+      add("ĐỌC", "bad", "web-2 và web-3 không truy cập được video. Một EBS volume chỉ gắn vào một instance (Multi-Attach chỉ hỗ trợ io1/io2 và chỉ trong cùng AZ).");
+      setResult({ ok: false, msg: rich("Người dùng được định tuyến tới web-2 hoặc web-3 không xem được video vừa tải lên. Dữ liệu dùng chung cần được chuyển sang **EFS** hoặc **S3**. EBS phù hợp làm ổ boot và ổ riêng của từng instance, tính phí theo **dung lượng cấp phát**.") });
     } else if (store === "efs") {
-      add("ĐỌC", "hit", `${okCount}/${alive.length} server mở được video qua **mount target** trong AZ của mình.`);
+      add("ĐỌC", "hit", `${okCount}/${alive.length} server truy cập được video qua **mount target** trong AZ tương ứng.`);
       setResult({ ok: true, msg: rich(azDown
-        ? "AZ a mất nhưng EFS lưu dữ liệu ở nhiều AZ, web-3 vẫn đọc qua mount target ở AZ b. EFS tính tiền theo dung lượng dùng thật."
-        : "Mọi server thấy cùng một thư mục, như một ổ mạng dùng chung. EFS tính tiền theo dung lượng dùng thật, đắt hơn S3 nhưng ứng dụng đọc ghi file như bình thường.") });
+        ? "AZ a gặp sự cố nhưng EFS lưu dữ liệu tại nhiều AZ; web-3 vẫn đọc dữ liệu qua mount target tại AZ b. EFS tính phí theo dung lượng thực tế sử dụng."
+        : "Mọi server truy cập cùng một thư mục, tương tự một ổ mạng dùng chung. EFS tính phí theo dung lượng thực tế sử dụng, chi phí cao hơn S3 nhưng ứng dụng đọc ghi tệp theo cách thông thường.") });
     } else {
-      add("ĐỌC", "hit", `${okCount}/${alive.length} server lấy video qua **S3 API**.`);
+      add("ĐỌC", "hit", `${okCount}/${alive.length} server truy xuất video qua **S3 API**.`);
       setResult({ ok: true, msg: rich(azDown
-        ? "S3 Standard lưu ở ít nhất 3 AZ, không phụ thuộc instance hay AZ nào. Video vẫn còn nguyên."
-        : "Mọi server đọc cùng một object. S3 rẻ nhất và bền nhất trong ba loại, nhưng ứng dụng phải gọi API thay vì đọc file như trên ổ đĩa.") });
+        ? "S3 Standard lưu dữ liệu tại tối thiểu 3 AZ, không phụ thuộc vào instance hay AZ cụ thể. Video được giữ nguyên."
+        : "Mọi server đọc cùng một object. S3 có chi phí thấp nhất và độ bền dữ liệu cao nhất trong ba loại, nhưng ứng dụng phải gọi API thay vì đọc tệp như trên ổ đĩa.") });
     }
     setBusy(false);
   }
@@ -119,15 +119,15 @@ export default function SharedStorageSim() {
       <g key={id} className={`stx-node ${down ? "down" : lit[id] ?? ""}`}>
         <rect x={x - 60} y={EY - 22} width={120} height={44} rx={8} />
         <text className="stx-t" x={x} y={EY - 3} textAnchor="middle">web-{id.slice(1)}</text>
-        <text className="stx-s" x={x} y={EY + 13} textAnchor="middle">{down ? "mất cùng AZ a" : `EC2 · AZ ${az}`}</text>
+        <text className="stx-s" x={x} y={EY + 13} textAnchor="middle">{down ? "sự cố cùng AZ a" : `EC2 · AZ ${az}`}</text>
       </g>
     );
   };
 
   return (
     <div className="stage stx">
-      <div className="stx-row" role="group" aria-label="Nơi lưu video">
-        <span className="stx-lbl">Lưu video ở</span>
+      <div className="stx-row" role="group" aria-label="Vị trí lưu video">
+        <span className="stx-lbl">Lưu video tại</span>
         {STORES.map((s) => (
           <button key={s.id} className="chip" aria-pressed={s.id === store} disabled={busy} onClick={() => { setStore(s.id); reset(); }}>{s.name}</button>
         ))}
@@ -135,19 +135,19 @@ export default function SharedStorageSim() {
       <div className="stage-bar">
         <label className="stx-toggle">
           <input type="checkbox" checked={azDown} disabled={busy} onChange={(e) => { setAzDown(e.target.checked); reset(); }} />
-          AZ a mất điện
+          AZ a mất nguồn điện
         </label>
-        <button className="btn primary" onClick={run} disabled={busy}>Khách upload video</button>
+        <button className="btn primary" onClick={run} disabled={busy}>Người dùng tải lên video</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 10 820 250" role="img" aria-label="Ba web server ở hai AZ cùng cần đọc một video; video lưu trên EBS, EFS hoặc S3">
+        <svg viewBox="0 10 820 250" role="img" aria-label="Ba web server tại hai AZ cùng cần đọc một video; video được lưu trên EBS, EFS hoặc S3">
           <rect className="stx-region" x={20} y={40} width={780} height={214} rx={12} />
           <text className="stx-m" x={32} y={57}>Region Singapore · VPC của ShopViet</text>
           <rect className={`stx-az ${azDown ? "down" : ""}`} x={40} y={66} width={370} height={120} rx={10} />
           <text className="stx-m" x={52} y={82}>AZ a</text>
           <rect className="stx-az" x={430} y={66} width={350} height={120} rx={10} />
           <text className="stx-m" x={442} y={82}>AZ b</text>
-          <text className="stx-m" x={azDown ? EC2.w3.x : EC2.w1.x} y={24} textAnchor="middle">khách upload ↓</text>
+          <text className="stx-m" x={azDown ? EC2.w3.x : EC2.w1.x} y={24} textAnchor="middle">người dùng tải lên ↓</text>
           {(Object.keys(EC2) as Ec2[]).map(ec2Node)}
           {store === "ebs" ? (
             <g className={`stx-node ${lit.store ?? "on"}`}>
@@ -172,7 +172,7 @@ export default function SharedStorageSim() {
       </div>
       <div className="readout">
         {log.length === 0 && !result ? (
-          <p className="stx-hint">Chọn nơi lưu video rồi bấm <b>Khách upload video</b>: video vào một server, sau đó cả ba server cùng mở. Bật <b>AZ a mất điện</b> để thử khi một AZ hỏng.</p>
+          <p className="stx-hint">Chọn vị trí lưu video, sau đó nhấn <b>Người dùng tải lên video</b>: video được ghi qua một server, sau đó cả ba server cùng truy cập. Bật <b>AZ a mất nguồn điện</b> để mô phỏng sự cố một AZ.</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) => (

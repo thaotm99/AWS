@@ -1,6 +1,6 @@
 ---
-title: "DynamoDB: key-value nhanh ở mọi quy mô"
-lede: "Giỏ hàng, phiên đăng nhập, vị trí shipper của ShopViet cần đọc ghi trong vài mili giây dù có bao nhiêu khách. Bài này đi qua cách DynamoDB tìm dữ liệu theo key, chọn capacity mode, chữa partition nóng bằng DAX, phản ứng khi dữ liệu đổi, cứu dữ liệu khi lỡ tay, và chạy ở nhiều Region."
+title: "DynamoDB: cơ sở dữ liệu key-value độ trễ thấp ở mọi quy mô"
+lede: "Bài học trình bày năm nội dung: cơ chế truy xuất dữ liệu theo key của DynamoDB, lựa chọn capacity mode và xử lý hot partition bằng DAX, xử lý thay đổi dữ liệu, khôi phục dữ liệu sau thao tác sai, và triển khai trên nhiều Region."
 minutes: 30
 scenes: 5
 prerequisites: ["rds", "lambda"]
@@ -30,141 +30,141 @@ import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
-  { href: "#s1", label: "1 · Đọc ghi theo key" },
-  { href: "#s2", label: "2 · Capacity và DAX" },
-  { href: "#s3", label: "3 · Dữ liệu vào, dữ liệu ra" },
-  { href: "#s4", label: "4 · Ghi hỏng, xóa nhầm" },
-  { href: "#s5", label: "5 · Nhiều Region" },
-  { href: "#challenge", label: "Thử thách" },
+  { href: "#s1", label: "1 · Truy xuất dữ liệu theo key" },
+  { href: "#s2", label: "2 · Capacity mode và DAX" },
+  { href: "#s3", label: "3 · Luồng dữ liệu vào và ra" },
+  { href: "#s4", label: "4 · Khôi phục sau ghi sai và xoá nhầm" },
+  { href: "#s5", label: "5 · Triển khai nhiều Region" },
+  { href: "#challenge", label: "Bài tập" },
 ]}>
-Đơn hàng và báo cáo của ShopViet đã nằm trên Aurora. Nhưng giỏ hàng, phiên đăng nhập và vị trí shipper thì khác: dữ liệu đơn giản, đọc ghi liên tục, lúc ít lúc cực nhiều. **DynamoDB** là database NoSQL serverless: không có server để quản lý, tự mở rộng theo chiều ngang, trả lời trong vài mili giây ở mọi quy mô.
+Dữ liệu đơn hàng và báo cáo của ShopViet đã được lưu trên Aurora. Giỏ hàng, phiên đăng nhập và vị trí shipper có đặc điểm khác: cấu trúc dữ liệu đơn giản, tần suất đọc ghi liên tục, lưu lượng biến động mạnh. **Amazon DynamoDB** là cơ sở dữ liệu NoSQL serverless: không có server cần quản lý, tự động mở rộng theo chiều ngang, thời gian phản hồi vài mili giây ở mọi quy mô.
 </Story>
 
-<Scene id="s1" label="Cảnh 1/5" title="Đọc ghi theo key" questions={["exam4_q10", "exam2_q29", "exam3_q11", "exam6_q17", "exam4_q23", "exam6_q65"]}>
+<Scene id="s1" label="Phần 1/5" title="Truy xuất dữ liệu theo key" questions={["exam4_q10", "exam2_q29", "exam3_q11", "exam6_q17", "exam4_q23", "exam6_q65"]}>
 
-Một **table** chứa các **item**; mỗi item là một nhóm **attribute**, không cần cùng cấu trúc. Mỗi item có **primary key**:
+Một **table** chứa các **item**; mỗi item là một tập hợp **attribute**, các item không bắt buộc có cùng cấu trúc. Mỗi item có một **primary key**:
 
-- **Partition key**: DynamoDB băm giá trị này để biết item nằm ở partition nào.
-- **Sort key** (không bắt buộc): xếp các item cùng partition key theo thứ tự, ví dụ ngày đặt hàng.
+- **Partition key**: DynamoDB băm giá trị này để xác định partition chứa item.
+- **Sort key** (không bắt buộc): sắp xếp các item có cùng partition key theo thứ tự, ví dụ theo ngày đặt hàng.
 
-Dữ liệu tự sao chép qua 3 AZ trong Region. Truy vấn theo key thì nhanh như nhau dù bảng có một nghìn hay một tỉ item. Thử năm việc của ShopViet:
+Dữ liệu được tự động sao chép trên 3 AZ trong Region. Truy vấn theo key có độ trễ như nhau dù bảng chứa một nghìn hay một tỷ item. Thử năm tác vụ của ShopViet:
 
 <KeyAccessSim client:visible />
 
-Vài điều rút ra:
+Một số kết luận:
 
-- Cần tìm theo một attribute không phải key: tạo **GSI** (global secondary index), chọn attribute bất kỳ làm key mới, tạo lúc nào cũng được. **LSI** dùng chung partition key với bảng, chỉ khác sort key, và chỉ tạo được lúc tạo bảng.
-- File lớn (video, ảnh, output 20 MB của một task) không vào DynamoDB. Để trên S3 hoặc EFS, DynamoDB chỉ giữ đường dẫn.
-- Dữ liệu quan hệ cần JOIN, tải thất thường: Aurora Serverless v2 (bài RDS), không phải DynamoDB.
+- Khi cần truy vấn theo một attribute không phải key: tạo **GSI** (global secondary index), chọn attribute bất kỳ làm key mới; GSI có thể được tạo vào bất kỳ thời điểm nào. **LSI** dùng chung partition key với bảng, chỉ khác sort key, và chỉ tạo được khi tạo bảng.
+- Tệp dung lượng lớn (video, ảnh, output 20 MB của một tác vụ) không lưu trong DynamoDB. Tệp được lưu trên S3 hoặc EFS; DynamoDB chỉ lưu đường dẫn.
+- Dữ liệu quan hệ cần JOIN và có tải biến động: Aurora Serverless v2 (bài RDS), không phải DynamoDB.
 
-<Takeaway>Truy cập theo key, vài mili giây, serverless, tự mở rộng: DynamoDB. Tìm theo attribute khác: GSI. Item tối đa 400 KB, file lớn để S3. Từ private subnet: gateway endpoint (chỉ S3 và DynamoDB có).</Takeaway>
+<Takeaway>Truy xuất theo key, độ trễ vài mili giây, serverless, tự động mở rộng: DynamoDB. Truy vấn theo attribute khác: GSI. Item tối đa 400 KB; tệp lớn lưu trên S3. Truy cập từ private subnet: gateway endpoint (chỉ S3 và DynamoDB hỗ trợ).</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Cảnh 2/5" title="Capacity, partition nóng và DAX" questions={["exam4_q62", "exam4_q54", "exam1_q1", "exam6_q6", "exam1_q29", "exam6_q47", "exam5_q65", "exam5_q37"]}>
+<Scene id="s2" label="Phần 2/5" title="Capacity mode, hot partition và DAX" questions={["exam4_q62", "exam4_q54", "exam1_q1", "exam6_q6", "exam1_q29", "exam6_q47", "exam5_q65", "exam5_q37"]}>
 
-DynamoDB tính sức đọc ghi bằng **RCU** và **WCU**. 1 RCU là một lần đọc strongly consistent mỗi giây (hoặc hai lần eventually consistent) cho item tới 4 KB. 1 WCU là một lần ghi mỗi giây cho item tới 1 KB. Có hai cách trả tiền:
+DynamoDB đo năng lực đọc ghi bằng **RCU** và **WCU**. 1 RCU tương ứng một lần đọc strongly consistent mỗi giây (hoặc hai lần đọc eventually consistent) cho item tối đa 4 KB. 1 WCU tương ứng một lần ghi mỗi giây cho item tối đa 1 KB. DynamoDB có hai mô hình tính phí:
 
-- **Provisioned**: đặt trước số RCU/WCU, trả theo giờ dù có dùng hay không. Bật **Auto Scaling** để capacity đi theo tải, nhưng nó cần vài phút mới phản ứng.
-- **On-Demand**: trả theo từng request, không cần đoán trước. Không có request thì không tốn tiền đọc ghi.
+- **Provisioned**: cấp phát trước số RCU/WCU, tính phí theo giờ bất kể mức sử dụng thực tế. Bật **Auto Scaling** để capacity điều chỉnh theo tải, tuy nhiên Auto Scaling cần vài phút để phản ứng.
+- **On-Demand**: tính phí theo từng request, không cần dự báo trước. Không phát sinh phí đọc ghi khi không có request.
 
-Mỗi partition lại có trần riêng: **3.000 RCU** và **1.000 WCU**. Chọn kiểu tải và capacity mode, rồi chạy một ngày:
+Mỗi partition có giới hạn riêng: **3.000 RCU** và **1.000 WCU**. Chọn mẫu tải và capacity mode, sau đó mô phỏng một ngày vận hành:
 
 <CapacitySim client:visible />
 
-**DAX** (DynamoDB Accelerator) là cache in-memory dành riêng cho DynamoDB: từ mili giây xuống **micro giây**, dùng cùng API nên gần như không sửa code, ghi kiểu write-through. DAX chỉ cache **eventually consistent read**; lệnh đọc strongly consistent đi thẳng xuống bảng. Nó hợp khi nhiều khách đọc cùng một dữ liệu, ví dụ 90% lượt đọc là trang chủ và các sản phẩm hot. Ảnh tĩnh trên S3 thì để CloudFront cache.
+**DAX** (DynamoDB Accelerator) là cache in-memory chuyên dụng cho DynamoDB: giảm độ trễ từ mili giây xuống **micro giây**, sử dụng cùng API nên gần như không cần thay đổi code, ghi theo cơ chế write-through. DAX chỉ cache **eventually consistent read**; request đọc strongly consistent được chuyển thẳng tới bảng. DAX phù hợp khi nhiều người dùng đọc cùng một dữ liệu, ví dụ 90% lượt đọc tập trung vào trang chủ và các sản phẩm bán chạy. Ảnh tĩnh trên S3 được cache bằng CloudFront.
 
-Bản thân DynamoDB lưu trên SSD, **không phải** database in-memory. Cần in-memory:
+Bản thân DynamoDB lưu dữ liệu trên SSD, **không phải** cơ sở dữ liệu in-memory. Khi cần lưu trữ in-memory:
 
-- Dữ liệu ở DynamoDB: DAX.
-- Dữ liệu ở RDS, Aurora, hoặc dùng làm session store, bảng xếp hạng, tìm theo vị trí: **ElastiCache** (bài Analytics). Cần cache nhiều thread: Memcached. Cần sorted set hay geospatial: Redis.
+- Dữ liệu trên DynamoDB: DAX.
+- Dữ liệu trên RDS, Aurora, hoặc dùng làm session store, bảng xếp hạng, truy vấn theo vị trí: **ElastiCache** (bài Analytics). Cần cache đa luồng: Memcached. Cần sorted set hoặc geospatial: Redis.
 
-<Takeaway>Tải thất thường, có lúc gần 0: On-Demand. Tải đều, đoán trước được: Provisioned + Auto Scaling. Partition nóng vì đọc lặp lại: DAX, không phải tăng RCU. DAX cho DynamoDB, ElastiCache cho mọi nguồn khác.</Takeaway>
+<Takeaway>Tải biến động, có thời điểm gần bằng 0: On-Demand. Tải ổn định, dự đoán được: Provisioned + Auto Scaling. Hot partition do đọc lặp lại: DAX, không phải tăng RCU. DAX dành cho DynamoDB; ElastiCache dành cho các nguồn dữ liệu khác.</Takeaway>
 
 </Scene>
 
-<Scene id="s3" label="Cảnh 3/5" title="Dữ liệu vào, dữ liệu ra" questions={["exam1_q33", "exam5_q32", "exam5_q35"]}>
+<Scene id="s3" label="Phần 3/5" title="Luồng dữ liệu vào và ra" questions={["exam1_q33", "exam5_q32", "exam5_q35"]}>
 
-Ba câu hỏi ShopViet gặp khi nối DynamoDB với phần còn lại: dữ liệu đi vào bằng đường nào, cũ thì xóa ra sao, và có thay đổi thì ai được báo.
+Khi tích hợp DynamoDB với các thành phần khác, ShopViet cần trả lời ba câu hỏi: dữ liệu được đưa vào bằng phương thức nào, dữ liệu cũ được xoá như thế nào, và thành phần nào được thông báo khi dữ liệu thay đổi.
 
 <DataFlowSim client:visible />
 
-- **TTL**: chọn một attribute kiểu Number chứa thời điểm hết hạn (Unix epoch, đơn vị giây). DynamoDB tự xóa item hết hạn, không tốn WCU. Hợp với session, OTP, giỏ hàng bỏ dở, log giữ N ngày.
-- **DynamoDB Streams**: ghi lại mọi thay đổi ở mức item, đúng thứ tự, giữ 24 giờ. Gắn Lambda để làm việc gì đó mỗi khi có thay đổi. Item bị TTL xóa cũng xuất hiện trong stream, nên có thể lưu trữ sang S3 trước khi mất hẳn.
+- **TTL**: chọn một attribute kiểu Number chứa thời điểm hết hạn (Unix epoch, đơn vị giây). DynamoDB tự động xoá item hết hạn, không tiêu tốn WCU. Phù hợp với session, OTP, giỏ hàng bị bỏ dở, log lưu giữ N ngày.
+- **DynamoDB Streams**: ghi lại mọi thay đổi ở cấp item, đúng thứ tự, lưu giữ 24 giờ. Gắn Lambda để xử lý mỗi khi có thay đổi. Item bị TTL xoá cũng xuất hiện trong stream, do đó có thể lưu trữ sang S3 trước khi item bị xoá vĩnh viễn.
 
-<Takeaway>Xóa dữ liệu cũ miễn phí: TTL. Có thay đổi thì làm gì đó: Streams + Lambda. Dữ liệu nhạy cảm: làm sạch trước khi ghi. Đưa dữ liệu vào DynamoDB không cần server: SQS → Lambda → DynamoDB; Firehose không ghi vào DynamoDB.</Takeaway>
+<Takeaway>Xoá dữ liệu cũ không phát sinh chi phí: TTL. Xử lý theo sự kiện thay đổi dữ liệu: Streams + Lambda. Dữ liệu nhạy cảm: làm sạch trước khi ghi. Đưa dữ liệu vào DynamoDB theo kiến trúc serverless: SQS → Lambda → DynamoDB; Firehose không ghi vào DynamoDB.</Takeaway>
 
 </Scene>
 
-<Scene id="s4" label="Cảnh 4/5" title="Ghi hỏng, xóa nhầm" questions={["exam3_q49", "exam4_q42"]}>
+<Scene id="s4" label="Phần 4/5" title="Khôi phục sau ghi sai và xoá nhầm" questions={["exam3_q49", "exam4_q42"]}>
 
-Hai sự cố hay gặp nhất với dữ liệu không đến từ phần cứng mà từ con người: một bản deploy ghi sai, và một lệnh xóa nhầm. Chọn thứ ShopViet đã chuẩn bị, rồi chạy:
+Hai sự cố dữ liệu phổ biến nhất không xuất phát từ phần cứng mà từ thao tác của con người: một bản deploy ghi sai dữ liệu, và một thao tác xoá nhầm. Chọn biện pháp ShopViet đã chuẩn bị, sau đó chạy mô phỏng:
 
 <RecoverySim client:visible />
 
-| | Dùng khi | Khôi phục về |
+| | Trường hợp sử dụng | Điểm khôi phục |
 |---|---|---|
-| **PITR** | Cần quay về đúng trước sự cố | Bất kỳ giây nào trong 1–35 ngày, ra bảng mới |
-| **On-demand backup** | Giữ lâu dài, tuân thủ | Đúng lúc tạo backup |
-| **Deletion protection** | Ngăn xóa nhầm | Không cần khôi phục: lệnh xóa bị từ chối |
+| **PITR** | Cần khôi phục về đúng thời điểm trước sự cố | Bất kỳ giây nào trong 1–35 ngày, ra bảng mới |
+| **On-demand backup** | Lưu giữ dài hạn, đáp ứng yêu cầu tuân thủ | Đúng thời điểm tạo backup |
+| **Deletion protection** | Ngăn xoá nhầm | Không cần khôi phục: request xoá bị từ chối |
 
-<Takeaway>Quay về một giây cụ thể: PITR. Ngăn xóa nhầm, ít vận hành nhất: deletion protection. Streams và global tables không phải backup.</Takeaway>
+<Takeaway>Khôi phục về một thời điểm chính xác tới từng giây: PITR. Ngăn xoá nhầm với chi phí vận hành thấp nhất: deletion protection. Streams và global tables không phải là cơ chế backup.</Takeaway>
 
 </Scene>
 
-<Scene id="s5" label="Cảnh 5/5" title="Mở rộng ra nhiều Region" questions={["exam5_q59", "exam5_q27", "exam2_q5", "exam1_q7"]}>
+<Scene id="s5" label="Phần 5/5" title="Mở rộng sang nhiều Region" questions={["exam5_q59", "exam5_q27", "exam2_q5", "exam1_q7"]}>
 
-ShopViet mở thêm thị trường châu Âu và Mỹ. App chạy ở mỗi Region, còn dữ liệu thì sao?
+ShopViet mở rộng sang thị trường châu Âu và Hoa Kỳ. Ứng dụng được triển khai tại mỗi Region; vấn đề cần giải quyết là cách tổ chức dữ liệu.
 
 <MultiRegionSim client:visible />
 
-- **Global tables**: mỗi Region có một replica, replica nào cũng đọc và ghi được. DynamoDB tự sao chép, thường dưới một giây. App dùng API DynamoDB như cũ. Tải ổn định thì dùng Provisioned + Auto Scaling để tiết kiệm; lưu ý mỗi replica cũng tốn WCU cho phần ghi được sao chép tới.
-- **Aurora Global Database**: một Region nhận ghi, tối đa 10 Region phụ chỉ đọc. Hợp khi app đã dùng SQL và JOIN, chỉ cần đọc nhanh ở nơi khác. Một bảng cần toàn cầu, các bảng khác chỉ cần trong Region: tách riêng, không phải chuyển cả database.
+- **Global tables**: mỗi Region có một replica, mọi replica đều hỗ trợ đọc và ghi. DynamoDB tự động sao chép, thường dưới một giây. Ứng dụng sử dụng DynamoDB API như trước. Với tải ổn định, sử dụng Provisioned + Auto Scaling để tối ưu chi phí; lưu ý mỗi replica cũng tiêu tốn WCU cho phần dữ liệu ghi được sao chép tới.
+- **Aurora Global Database**: một Region tiếp nhận ghi, tối đa 10 Region phụ chỉ đọc. Phù hợp khi ứng dụng đã sử dụng SQL và JOIN, chỉ cần đọc với độ trễ thấp tại Region khác. Khi chỉ một bảng cần phạm vi toàn cầu và các bảng khác chỉ cần trong Region: tách riêng bảng đó, không cần chuyển toàn bộ database.
 
-<Takeaway>Ghi độ trễ thấp ở nhiều Region: DynamoDB global tables. Giữ schema quan hệ, chỉ cần đọc tại chỗ: Aurora Global Database.</Takeaway>
+<Takeaway>Ghi với độ trễ thấp tại nhiều Region: DynamoDB global tables. Giữ schema quan hệ, chỉ cần đọc tại Region gần người dùng: Aurora Global Database.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="Đặt từng nhu cầu vào đúng chỗ" questions={["exam4_q62", "exam4_q54", "exam3_q49", "exam4_q42", "exam5_q59", "exam5_q32"]}>
+<Scene id="challenge" label="Bài tập" title="Phân loại yêu cầu theo tính năng DynamoDB" questions={["exam4_q62", "exam4_q54", "exam3_q49", "exam4_q42", "exam5_q59", "exam5_q32"]}>
 
-Xếp từng nhu cầu của ShopViet vào tính năng giải quyết nó. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
+Phân loại từng yêu cầu của ShopViet vào tính năng giải quyết yêu cầu đó. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
 <SortGame client:visible
   bins={[
-    { id: "speed", title: "Capacity và tốc độ", sub: "On-Demand, DAX", hint: "Gợi ý: chuyện này là về tải và độ trễ." },
-    { id: "life", title: "Vòng đời dữ liệu", sub: "TTL, Streams", hint: "Gợi ý: chuyện này là về item cũ hoặc item vừa đổi." },
-    { id: "safe", title: "Bảo vệ và nhiều Region", sub: "PITR, deletion protection, global tables", hint: "Gợi ý: chuyện này là về sự cố." },
+    { id: "speed", title: "Capacity và hiệu năng", sub: "On-Demand, DAX", hint: "Gợi ý: yêu cầu liên quan tới tải và độ trễ." },
+    { id: "life", title: "Vòng đời dữ liệu", sub: "TTL, Streams", hint: "Gợi ý: yêu cầu liên quan tới item cũ hoặc item vừa thay đổi." },
+    { id: "safe", title: "Bảo vệ dữ liệu và nhiều Region", sub: "PITR, deletion protection, global tables", hint: "Gợi ý: yêu cầu liên quan tới sự cố." },
   ]}
   cards={[
-    ["Tải thất thường, đêm gần như không ai dùng", "speed"], ["Một shop nổi tiếng làm một partition quá tải", "speed"], ["Đọc trong micro giây", "speed"],
-    ["Tự xóa phiên đăng nhập sau 24 giờ", "life"], ["Gửi email khi có khách mới", "life"], ["Lưu item sắp hết hạn sang S3", "life"],
-    ["Quay về đúng 14:31:59 hôm qua", "safe"], ["Không ai xóa được bảng Orders", "safe"], ["Khách ở Đức ghi đơn ngay tại Frankfurt", "safe"],
+    ["Tải biến động, ban đêm gần như không có người dùng", "speed"], ["Một shop có lưu lượng lớn gây quá tải một partition", "speed"], ["Đọc với độ trễ micro giây", "speed"],
+    ["Tự động xoá phiên đăng nhập sau 24 giờ", "life"], ["Gửi email khi có người dùng mới", "life"], ["Lưu item sắp hết hạn sang S3", "life"],
+    ["Khôi phục về đúng 14:31:59 hôm qua", "safe"], ["Không ai xoá được bảng Orders", "safe"], ["Người dùng tại Đức ghi đơn hàng ngay tại Frankfurt", "safe"],
   ]}
 />
 
-Kiểm tra nhanh: nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "App shipper chỉ chạy ban ngày, tải tăng vọt trong vài phút không báo trước. Bảng DynamoDB nên dùng capacity mode nào?",
+  { q: "Ứng dụng shipper chỉ hoạt động ban ngày; tải tăng đột biến trong vài phút mà không báo trước. Bảng DynamoDB nên sử dụng capacity mode nào?",
     opts: ["Provisioned + Auto Scaling", "On-Demand", "Provisioned cố định ở mức đỉnh"],
     a: 1,
-    why: "On-Demand phục vụ ngay khi tải tăng vọt, và không tốn tiền đọc ghi lúc không có request. Auto Scaling cần vài phút để phản ứng." },
-  { q: "Đã tăng RCU của bảng lên gấp đôi mà trang của một shop nổi tiếng vẫn bị throttle. Làm gì?",
+    why: "On-Demand đáp ứng ngay khi tải tăng đột biến và không phát sinh phí đọc ghi khi không có request. Auto Scaling cần vài phút để phản ứng." },
+  { q: "RCU của bảng đã được tăng gấp đôi nhưng trang của một shop có lưu lượng lớn vẫn bị throttle. Cách xử lý nào phù hợp?",
     opts: ["Tăng RCU thêm lần nữa", "Thêm DAX trước bảng", "Bật DynamoDB Streams"],
     a: 1,
-    why: "Trần 3.000 RCU là của mỗi partition. DAX trả các lượt đọc lặp lại từ cache nên chúng không chạm tới partition nóng." },
-  { q: "Bản deploy lỗi ghi sai giá từ 14:32. Cần bảng quay về đúng trước lúc đó. Dùng gì?",
+    why: "Giới hạn 3.000 RCU áp dụng cho mỗi partition. DAX phục vụ các lượt đọc lặp lại từ cache nên các request này không tới hot partition." },
+  { q: "Một bản deploy lỗi ghi sai giá từ 14:32. Bảng cần được khôi phục về đúng thời điểm trước đó. Tính năng nào phù hợp?",
     opts: ["On-demand backup tối qua", "Point-in-time recovery", "Replica global table ở Region khác"],
     a: 1,
-    why: "PITR khôi phục về bất kỳ giây nào trong tối đa 35 ngày. Backup tối qua làm mất cả ngày dữ liệu đúng; replica đã nhận dữ liệu hỏng." },
-  { q: "Một kỹ sư suýt xóa bảng production. ShopViet muốn chuyện này không thể xảy ra, ít công vận hành nhất. Bật gì?",
+    why: "PITR khôi phục về bất kỳ giây nào trong tối đa 35 ngày. Backup từ tối hôm trước làm mất dữ liệu hợp lệ của cả ngày; replica đã nhận dữ liệu lỗi." },
+  { q: "Một kỹ sư suýt xoá bảng production. ShopViet cần ngăn chặn hoàn toàn tình huống này với chi phí vận hành thấp nhất. Cần bật tính năng nào?",
     opts: ["Deletion protection", "PITR", "EventBridge bắt DeleteTable rồi tạo lại bảng"],
     a: 0,
-    why: "Deletion protection chặn lệnh xóa ngay từ đầu, miễn phí. PITR chỉ cứu được sau khi bảng đã mất và app đã sập." },
-  { q: "Khách ở châu Âu, Mỹ và châu Á đều cần ghi đơn với độ trễ thấp tại Region của mình. Chọn gì?",
+    why: "Deletion protection chặn request xoá ngay từ đầu và không tính phí. PITR chỉ khôi phục được sau khi bảng đã bị xoá và ứng dụng đã ngừng hoạt động." },
+  { q: "Người dùng tại châu Âu, Hoa Kỳ và châu Á đều cần ghi đơn hàng với độ trễ thấp tại Region gần nhất. Phương án nào phù hợp?",
     opts: ["Aurora Global Database", "DynamoDB global tables", "RDS cross-Region read replica"],
     a: 1,
-    why: "Global tables có replica đọc ghi ở mọi Region. Aurora Global Database và read replica chỉ có một nơi nhận ghi." },
+    why: "Global tables có replica hỗ trợ đọc ghi tại mọi Region. Aurora Global Database và read replica chỉ có một Region tiếp nhận ghi." },
 ]} />
 
 </Scene>

@@ -2,41 +2,68 @@
 import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getCurriculum } from "../data/exam";
-import Importance from "../components/Importance.astro";
 import ArchitectureMap from "../components/home/ArchitectureMap.tsx";
+import { practiceCatalog } from "../modules/practice/content/PracticeCatalog";
 
 const layers = getCurriculum();
 const ready = new Set((await getCollection("concepts")).map((e) => e.id));
-const lessons = layers.reduce((s, l) => s + l.concepts.length, 0);
+const lessons = layers.flatMap((l) => l.concepts).filter((c) => ready.has(c.id)).length;
+const first = layers.flatMap((l) => l.concepts).find((c) => ready.has(c.id));
+const certs = practiceCatalog.listCertifications();
+const exams = certs.reduce((s, c) => s + c.examCount, 0);
+const questions = certs.reduce((s, c) => s + c.examCount * c.questionCount, 0);
 // Lesson titles for the map's links, keyed by lesson id.
 const titles = Object.fromEntries(layers.flatMap((l) => l.concepts).map((c) => [c.id, c.title]));
+
+const features = [
+  {
+    title: "Học từ tình huống thực tế",
+    body: "Mỗi bài học xuất phát từ một yêu cầu cụ thể của ShopViet: độ trễ, tính sẵn sàng, bảo mật hay chi phí. Từ yêu cầu đó, bài học so sánh các dịch vụ AWS và chỉ ra phương án phù hợp.",
+  },
+  {
+    title: "Mô phỏng tương tác",
+    body: "Cơ chế hoạt động của từng dịch vụ được trình bày bằng mô phỏng: request đi qua các thành phần nào, điều gì xảy ra khi một Availability Zone gặp sự cố, chính sách nào cho phép hoặc từ chối truy cập.",
+  },
+  {
+    title: "Luyện đề song ngữ",
+    body: "Bộ đề luyện tập theo định dạng kỳ thi AWS Certified Solutions Architect – Associate, có lời giải cho từng phương án và có thể chuyển giữa tiếng Việt và bản gốc tiếng Anh.",
+  },
+];
 ---
 <BaseLayout title="AWS Thực Chiến" sidebar={false} wide>
-  <div class="crumbs"><b>Lộ trình SAA-C03</b></div>
-  <h1>Một cửa hàng online chạy trên AWS như thế nào?</h1>
-  <p class="lede">Theo dõi từng request của ShopViet đi qua các dịch vụ AWS. Bấm vào dịch vụ bất kỳ để mở bài học về nó.</p>
+  <section class="hero">
+    <p class="hero-eyebrow">Kiến trúc AWS qua một hệ thống thực tế</p>
+    <h1>Thiết kế hệ thống trên AWS từ yêu cầu đến kiến trúc hoàn chỉnh</h1>
+    <p class="lede">
+      AWS Thực Chiến xây dựng kiến thức kiến trúc AWS thông qua ShopViet, một hệ thống thương mại điện tử giả định.
+      Lộ trình đi từ hạ tầng toàn cầu, mạng và bảo mật đến tính toán, lưu trữ, cơ sở dữ liệu và vận hành;
+      mỗi quyết định thiết kế được phân tích từ yêu cầu và minh hoạ bằng mô phỏng tương tác.
+    </p>
+    <div class="hero-actions">
+      {first && <a class="btn primary cta" href={`/concepts/${first.id}/`}>Bắt đầu học</a>}
+      <a class="btn cta" href="/on-tap/">Luyện đề</a>
+    </div>
+    <dl class="hero-stats">
+      <div><dt>Bài học</dt><dd>{lessons}</dd></div>
+      <div><dt>Đề luyện tập</dt><dd>{exams}</dd></div>
+      <div><dt>Câu hỏi có lời giải</dt><dd>{questions}</dd></div>
+      <div><dt>Ngôn ngữ</dt><dd>VI · EN</dd></div>
+    </dl>
+  </section>
 
-  <ArchitectureMap client:visible titles={titles} />
+  <section class="home-map" aria-labelledby="map-title">
+    <h2 id="map-title">Kiến trúc tổng thể của ShopViet</h2>
+    <p class="home-sub">Sơ đồ mô tả luồng xử lý request qua các dịch vụ AWS trong hệ thống. Chọn một luồng để theo dõi, hoặc chọn một dịch vụ để mở bài học tương ứng.</p>
+    <ArchitectureMap client:visible titles={titles} />
+  </section>
 
-  <div class="home-start">
-    <p>{lessons} bài theo thứ tự từ nền lên. Mỗi bài gặp một vấn đề thật của ShopViet, chọn dịch vụ AWS phù hợp, rồi thử ngay trong mô phỏng. Lý thuyết đối chiếu với AWS docs.</p>
-    <a class="btn primary cta" href="/concepts/global-infra/">Bắt đầu: Global Infrastructure</a>
-  </div>
-
-  <div class="layer-grid">
-    {layers.map((layer) => (
-      <section class="layer-card">
-        <h2><span class="layer-num">Lớp {layer.n}</span>{layer.name}</h2>
-        <div class="concept-cards">
-          {layer.concepts.map((c) => (
-            <a class={"concept-card " + (ready.has(c.id) ? "ready" : "soon")} href={`/concepts/${c.id}/`}>
-              <span class="title">{c.title}</span>
-              <Importance level={c.importance} />
-              <span class="state">{ready.has(c.id) ? "Có bài · học ngay" : "Sắp có"}</span>
-            </a>
-          ))}
-        </div>
-      </section>
+  <section class="home-features" aria-label="Cách học trên AWS Thực Chiến">
+    {features.map((f, i) => (
+      <article class="feature">
+        <span class="feature-n">0{i + 1}</span>
+        <h3>{f.title}</h3>
+        <p>{f.body}</p>
+      </article>
     ))}
-  </div>
+  </section>
 </BaseLayout>

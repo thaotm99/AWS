@@ -1,6 +1,7 @@
 import type { Dispatch } from "../app/events";
 import { Scoring } from "../domain/Scoring";
 import type { Attempt, CertificationDetail, Exam } from "../domain/types";
+import { domainLabel } from "./domainLabel";
 import { routes } from "./routes";
 import { useT } from "./useT";
 
@@ -13,7 +14,8 @@ interface Props {
 }
 
 export default function ResultPanel({ cert, exam, attempt, saving, dispatch }: Props) {
-  const { t } = useT();
+  const tr = useT();
+  const { t } = tr;
   const score = Scoring.score(attempt, cert);
   const next = cert.exams[cert.exams.findIndex((e) => e.id === exam.id) + 1];
 
@@ -39,7 +41,7 @@ export default function ResultPanel({ cert, exam, attempt, saving, dispatch }: P
       <div className="pr-domains">
         {[...domains].map(([name, d]) => (
           <div key={name} className="pr-domain">
-            <span className="pr-domain-name">{name || t("result.other")}</span>
+            <span className="pr-domain-name">{name ? domainLabel(tr, name) : t("result.other")}</span>
             <span className="pr-domain-val">{d.right}/{d.total}</span>
             <span className="pr-meter" aria-hidden="true"><span style={{ width: `${(d.right / d.total) * 100}%` }} /></span>
           </div>
@@ -63,7 +65,7 @@ export default function ResultPanel({ cert, exam, attempt, saving, dispatch }: P
             <li key={q.id}>
               <button type="button" onClick={() => dispatch({ type: "exam/goTo", index: i })}>
                 <span className="pr-review-n">{q.number}</span>
-                <span className="pr-review-domain">{q.domain}</span>
+                <span className="pr-review-domain">{domainLabel(tr, q.domain)}</span>
                 <span className={`pr-review-r ${a?.correct ? "ok" : "bad"}`}>{a?.correct ? t("result.correct") : t("result.incorrect")}</span>
               </button>
             </li>

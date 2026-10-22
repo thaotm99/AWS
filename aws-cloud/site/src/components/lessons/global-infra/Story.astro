@@ -14,7 +14,7 @@ const { toc } = Astro.props;
     <text x="75" y="31" text-anchor="middle" fill="var(--on-accent)" font-family="var(--font-body)" font-size="12" font-weight="700">ShopViet</text>
   </svg>
   <div>
-    <div class="eyebrow">Ví dụ xuyên suốt bài</div>
+    <div class="eyebrow">Bối cảnh hệ thống</div>
     <p><slot /></p>
     <nav class="toc" aria-label="Các cảnh">
       {toc.map((t) => <a href={t.href}>{t.label}</a>)}

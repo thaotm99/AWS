@@ -12,13 +12,13 @@ const PRICE = { od: 1, ri: 0.6, spot: 0.3 };
 
 const STRATEGIES: Record<Strategy, { label: string; verdict: "good" | "bad"; text: string }> = {
   od: { label: "Toàn bộ On-Demand", verdict: "bad",
-    text: "Không cam kết gì nên linh hoạt nhất, nhưng trả giá cao nhất cho cả phần nền chạy 24/7." },
+    text: "Không yêu cầu cam kết nên linh hoạt nhất, nhưng chịu mức giá cao nhất cho cả phần tải nền chạy 24/7." },
   riOd: { label: "RI cho nền + On-Demand", verdict: "good",
-    text: "Phần nền luôn chạy nên mua Reserved Instances. Phần đỉnh dùng On-Demand: rẻ hơn hẳn mà không bị gián đoạn. Hợp khi phần đỉnh không chịu được gián đoạn." },
+    text: "Tải nền chạy liên tục nên sử dụng Reserved Instances. Tải đỉnh sử dụng On-Demand: chi phí thấp hơn đáng kể và không bị gián đoạn. Phù hợp khi tải đỉnh không chịu được gián đoạn." },
   riSpot: { label: "RI cho nền + Spot", verdict: "good",
-    text: "Rẻ nhất mà vẫn an toàn: nền dùng RI, phần đỉnh là công việc chịu được gián đoạn (batch, worker đọc queue) nên dùng Spot. Đây là cách phối hợp phổ biến nhất trong thực tế." },
+    text: "Chi phí thấp nhất mà vẫn đảm bảo tính sẵn sàng: tải nền sử dụng RI; tải đỉnh là tác vụ chịu được gián đoạn (batch, worker đọc queue) nên sử dụng Spot. Đây là cách phối hợp phổ biến nhất trong thực tế." },
   spot: { label: "Toàn bộ Spot", verdict: "bad",
-    text: "Rẻ nhất trên giấy, nhưng Spot có thể bị thu hồi với thông báo 2 phút. Phần nền bắt buộc luôn chạy mà nằm trên Spot thì có lúc mất cả hệ thống." },
+    text: "Chi phí thấp nhất trên lý thuyết, nhưng Spot Instance có thể bị thu hồi với thông báo trước 2 phút. Khi tải nền bắt buộc chạy liên tục được đặt trên Spot, toàn bộ hệ thống có thể ngừng hoạt động." },
 };
 
 function split(s: Strategy, need: number) {
@@ -54,9 +54,9 @@ export default function PurchaseMixSim() {
         ))}
       </div>
       <div className="svg-wrap">
-        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Số instance theo giờ, chia theo kiểu mua: ${STRATEGIES[s].label}`}>
+        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Số instance theo giờ, phân theo tuỳ chọn mua: ${STRATEGIES[s].label}`}>
           <line x1={pad} y1={y(BASE)} x2={W - pad} y2={y(BASE)} className="base-line" />
-          <text className="ts base-t" x={pad + 4} y={y(BASE) - 6}>nền luôn chạy: {BASE} instance</text>
+          <text className="ts base-t" x={pad + 4} y={y(BASE) - 6}>tải nền: {BASE} instance</text>
           {DEMAND.map((need, h) => {
             const x = split(s, need);
             const x0 = pad + h * bw + 2;
@@ -84,10 +84,10 @@ export default function PurchaseMixSim() {
       <div className="readout" aria-live="polite">
         <div className="status">
           <span className={"pill " + (STRATEGIES[s].verdict === "good" ? "ok" : "bad")}><i />{STRATEGIES[s].verdict === "good" ? "Hợp lý" : "Không đạt yêu cầu"}</span>
-          <span className="count">Chi phí tương đối: {Math.round((c / baseline) * 100)}% so với toàn On-Demand</span>
+          <span className="count">Chi phí tương đối: {Math.round((c / baseline) * 100)}% so với toàn bộ On-Demand</span>
         </div>
         <p style={{ margin: "8px 0 0" }}>{STRATEGIES[s].text}</p>
-        <p className="note-small">Giá dùng để so sánh là giả định (RI rẻ hơn 40%, Spot rẻ hơn 70% so với On-Demand). AWS công bố mức giảm tối đa khoảng 72% cho RI và 90% cho Spot.</p>
+        <p className="note-small">Mức giá dùng để so sánh là giả định (RI thấp hơn 40%, Spot thấp hơn 70% so với On-Demand). AWS công bố mức chiết khấu tối đa khoảng 72% cho RI và 90% cho Spot.</p>
       </div>
     </div>
   );
