@@ -19,6 +19,8 @@ interface Props {
   section?: "theory" | "practice";
   /** Practice pages have no lesson roadmap. */
   sidebar?: boolean;
+  /** Full-width content (home page map); only used without the sidebar. */
+  wide?: boolean;
   /** Translated <title>; `title` stays as the default-language text. */
   titleKey?: SiteMessageKey;
   titleParams?: MessageParams;
@@ -30,6 +32,7 @@ const {
   current,
   section = "theory",
   sidebar = true,
+  wide = false,
   titleKey,
   titleParams,
 } = Astro.props;
@@ -61,11 +64,14 @@ const layers = getCurriculum().map(({ n, name, concepts }) => ({
   <body>
     <header class="topbar">
       <div class="topbar-inner">
+        <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Mở menu" data-i18n-attr="aria-label:shell.nav.openMenu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path class="icon-open" d="M4 7h16M4 12h16M4 17h16" /><path class="icon-close" d="M6 6l12 12M18 6L6 18" /></svg>
+        </button>
         <a class="brand" href="/">
           <span class="brand-mark" aria-hidden="true">
             <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="9" width="14" height="5" rx="1" fill="currentColor"/><rect x="3" y="4" width="10" height="4" rx="1" fill="currentColor" opacity=".75"/><rect x="5" y="1" width="6" height="2" rx="1" fill="currentColor" opacity=".5"/></svg>
           </span>
-          <span class="brand-text">AWS Từ Nền</span>
+          <span class="brand-text">AWS Thực Chiến</span>
         </a>
         <nav class="topnav" aria-label="Chính" data-i18n-attr="aria-label:shell.nav.main">
           <a href="/" aria-current={section === "theory" ? "page" : undefined}><T k="shell.nav.theory" /></a>
@@ -74,16 +80,20 @@ const layers = getCurriculum().map(({ n, name, concepts }) => ({
         </nav>
         <LanguageSwitch />
         <ThemeToggle />
-        {sidebar && <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="sidebar"><T k="shell.nav.roadmap" /></button>}
       </div>
     </header>
 
-    <div class:list={["shell", { single: !sidebar }]}>
-      {sidebar && (
-        <aside class="sidebar" id="sidebar" aria-label="Lộ trình học" data-i18n-attr="aria-label:shell.nav.roadmap">
-          <Roadmap client:load layers={layers} current={current} ready={ready} />
-        </aside>
-      )}
+    <div class:list={["shell", { single: !sidebar, wide: !sidebar && wide }]}>
+      <!-- Sidebar on desktop; on phones the same element is the ☰ drawer, which also carries the main links. -->
+      <aside class:list={["sidebar", { "nav-only": !sidebar }]} id="drawer" aria-label="Menu" data-i18n-attr="aria-label:shell.nav.menu">
+        <nav class="drawer-nav" aria-label="Chính" data-i18n-attr="aria-label:shell.nav.main">
+          <a href="/" aria-current={section === "theory" ? "page" : undefined}><T k="shell.nav.theory" /></a>
+          <a href="#" class="soon" data-soon="shell.nav.scenarios"><T k="shell.nav.scenarios" /></a>
+          <a href="/on-tap/" aria-current={section === "practice" ? "page" : undefined}><T k="shell.nav.practice" /></a>
+        </nav>
+        {sidebar && <Roadmap client:load layers={layers} current={current} ready={ready} />}
+      </aside>
+      <div class="scrim" id="scrim" hidden></div>
       <main class="article">
         <slot />
       </main>

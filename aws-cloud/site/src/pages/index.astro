@@ -3,16 +3,25 @@ import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getCurriculum } from "../data/exam";
 import Importance from "../components/Importance.astro";
+import ArchitectureMap from "../components/home/ArchitectureMap.tsx";
 
 const layers = getCurriculum();
 const ready = new Set((await getCollection("concepts")).map((e) => e.id));
 const lessons = layers.reduce((s, l) => s + l.concepts.length, 0);
+// Lesson titles for the map's links, keyed by lesson id.
+const titles = Object.fromEntries(layers.flatMap((l) => l.concepts).map((c) => [c.id, c.title]));
 ---
-<BaseLayout title="AWS Từ Nền">
+<BaseLayout title="AWS Thực Chiến" sidebar={false} wide>
   <div class="crumbs"><b>Lộ trình SAA-C03</b></div>
-  <h1>Hiểu AWS bằng cách bấm và xem</h1>
-  <p class="lede">{lessons} bài theo thứ tự từ nền lên. Mỗi bài đi cùng ShopViet, một cửa hàng online đang lớn dần: gặp một vấn đề thật, chọn dịch vụ AWS phù hợp, rồi thử ngay trong mô phỏng. Lý thuyết đối chiếu với AWS docs.</p>
-  <a class="btn primary cta" href="/concepts/global-infra/">Bắt đầu: Global Infrastructure</a>
+  <h1>Một cửa hàng online chạy trên AWS như thế nào?</h1>
+  <p class="lede">Theo dõi từng request của ShopViet đi qua các dịch vụ AWS. Bấm vào dịch vụ bất kỳ để mở bài học về nó.</p>
+
+  <ArchitectureMap client:visible titles={titles} />
+
+  <div class="home-start">
+    <p>{lessons} bài theo thứ tự từ nền lên. Mỗi bài gặp một vấn đề thật của ShopViet, chọn dịch vụ AWS phù hợp, rồi thử ngay trong mô phỏng. Lý thuyết đối chiếu với AWS docs.</p>
+    <a class="btn primary cta" href="/concepts/global-infra/">Bắt đầu: Global Infrastructure</a>
+  </div>
 
   <div class="layer-grid">
     {layers.map((layer) => (

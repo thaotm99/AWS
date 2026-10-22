@@ -1,4 +1,4 @@
-# Kiến trúc app · AWS Từ Nền
+# Kiến trúc app · AWS Thực Chiến
 
 Tài liệu này dành cho người sửa code trong `aws-cloud/site/`. Nó trả lời ba câu hỏi:
 
