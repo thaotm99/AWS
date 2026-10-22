@@ -504,3 +504,10 @@ Checked 2026-10-22 against the pages below (keyword → claim → URL).
 
 ## ec2 (wave 6)
 - Persistent Spot request with a stopped instance → "If the request is persistent, the request is opened again after your Spot Instance is interrupted. If the request is persistent and you stop your Spot Instance, the request only opens after you start your Spot Instance." → https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-request-status.html ; request states: open (not yet fulfilled), active (fulfilled), disabled (when you stop your Spot Instance); canceling an active request with a running instance does not terminate the instance → https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-spot-instances-cancel.html . Taught in Ec2CostSim (persistent hop), the s1 Takeaway and a challenge SortGame card.
+
+## elb (wave 6)
+
+Checked 2026-10-22.
+
+- Classic Load Balancer → previous generation of ELB load balancers, AWS recommends migrating to a current generation load balancer → https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/introduction.html ; internet-facing CLB gets a public DNS name that resolves to the public IP addresses of the load balancer nodes → https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-internet-facing-load-balancers.html ; feature table: "IP address - Static, Elastic" ticked only for Network Load Balancer (not ALB, GWLB, CLB); CLB is Layer 4/7, for applications built within EC2-Classic → https://aws.amazon.com/elasticloadbalancing/features/ ; NLB: one network interface per AZ with a static IP, optional one Elastic IP per network interface → https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/how-elastic-load-balancing-works.html (elb.mdx#s7 / QuickCompare)
+- Factual check, HttpsListenerSim / s5 prose: console default security policy `ELBSecurityPolicy-TLS13-1-2-Res-PQ-2025-09`, other methods (CLI, CloudFormation, CDK) `ELBSecurityPolicy-2016-08` → confirmed unchanged on https://docs.aws.amazon.com/elasticloadbalancing/latest/application/describe-ssl-policies.html ; no change made.

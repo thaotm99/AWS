@@ -5,6 +5,10 @@ minutes: 35
 scenes: 7
 prerequisites: ["vpc", "ec2"]
 docs:
+  - title: "What is a Classic Load Balancer? (previous generation)"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/introduction.html"
+  - title: "Elastic Load Balancing features (product comparison)"
+    url: "https://aws.amazon.com/elasticloadbalancing/features/"
   - title: "What is Elastic Load Balancing?"
     url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/what-is-load-balancing.html"
   - title: "Cross-zone load balancing"
@@ -177,7 +181,7 @@ Bộ phận an ninh của ShopViet yêu cầu mọi traffic từ Internet vào �
 
 </Scene>
 
-<Scene id="s7" label="Phần 7/7" title="Phân biệt nhanh: các phương án dễ nhầm với load balancer" questions={["exam3_q47", "exam3_q53", "exam6_q60", "exam6_q41"]}>
+<Scene id="s7" label="Phần 7/7" title="Phân biệt nhanh: các phương án dễ nhầm với load balancer" questions={["exam3_q47", "exam3_q53", "exam6_q60", "exam6_q41", "exam4_q9"]}>
 
 Một số dịch vụ và tính năng thường được cân nhắc cùng load balancer nhưng giải quyết vấn đề khác. Chọn từng mục để xem phạm vi sử dụng và phương án phù hợp với tình huống của ShopViet.
 
@@ -210,6 +214,10 @@ Một số dịch vụ và tính năng thường được cân nhắc cùng load
     use: "Kiểm tra traffic tập trung qua appliance bên thứ ba cho nhiều VPC.",
     notHere: "Yêu cầu là tách môi trường dev, test, production theo account và quản lý subnet, gateway tập trung với chi phí vận hành thấp; thêm GWLB và appliance vào mỗi luồng traffic làm kiến trúc phức tạp hơn mà không phục vụ yêu cầu.",
     instead: "Account mạng sở hữu VPC trung tâm và chia sẻ subnet cho các account khác trong cùng AWS Organizations bằng VPC sharing (AWS RAM); account được tạo và quản trị bằng AWS Control Tower." },
+  { name: "Classic Load Balancer",
+    use: "Thế hệ load balancer trước (previous generation) của Elastic Load Balancing, hoạt động ở cả tầng 4 và tầng 7, dành cho ứng dụng xây dựng trên mạng EC2-Classic cũ. AWS khuyến nghị migrate sang load balancer thế hệ hiện tại.",
+    notHere: "Client truy cập qua **DNS name**; DNS name trỏ tới IP public của các node load balancer. Bảng so sánh tính năng ELB chỉ đánh dấu IP tĩnh và Elastic IP cho Network Load Balancer; Classic Load Balancer và ALB không có, nên không cung cấp được một IP cố định để đối tác đưa vào whitelist.",
+    instead: "Ngân hàng đối tác chỉ cho phép một danh sách IP public cố định: Network Load Balancer, mỗi AZ một IP tĩnh và có thể gắn một Elastic IP; nhóm máy chủ phía sau vẫn scale bằng Auto Scaling group." },
 ]} />
 
 </Scene>

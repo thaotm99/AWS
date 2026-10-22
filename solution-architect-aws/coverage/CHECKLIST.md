@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **983 keyword** khác nhau: ✅ 967 (98%) · 🟡 10 (1%) · ❌ 6 (1%).
+Có **983 keyword** khác nhau: ✅ 968 (98%) · 🟡 10 (1%) · ❌ 5 (1%).
 
 ### Theo bài học
 
@@ -29,7 +29,7 @@ Có **983 keyword** khác nhau: ✅ 967 (98%) · 🟡 10 (1%) · ❌ 6 (1%).
 | [security](#security) | 27 | 26 | 1 | 0 | 96% |
 | [cognito](#cognito) | 15 | 15 | 0 | 0 | 100% |
 | [ec2](#ec2) | 58 | 58 | 0 | 0 | 100% |
-| [elb](#elb) | 43 | 42 | 0 | 1 | 98% |
+| [elb](#elb) | 43 | 43 | 0 | 0 | 100% |
 | [asg](#asg) | 47 | 47 | 0 | 0 | 100% |
 | [containers](#containers) | 23 | 23 | 0 | 0 | 100% |
 | [lambda](#lambda) | 37 | 37 | 0 | 0 | 100% |
@@ -53,7 +53,7 @@ Có **983 keyword** khác nhau: ✅ 967 (98%) · 🟡 10 (1%) · ❌ 6 (1%).
 | Đề 1 | 223 | 2 | 1 |
 | Đề 2 | 202 | 0 | 2 |
 | Đề 3 | 224 | 2 | 1 |
-| Đề 4 | 235 | 1 | 1 |
+| Đề 4 | 236 | 1 | 0 |
 | Đề 5 | 220 | 5 | 1 |
 | Đề 6 | 217 | 0 | 0 |
 
@@ -467,7 +467,6 @@ Có **983 keyword** khác nhau: ✅ 967 (98%) · 🟡 10 (1%) · ❌ 6 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | Classic Load Balancer | ❌ Thiếu | 1 | exam4_q9 |  |
 | [ ] | ALB health check | ✅ Đã có | 2 | exam4_q26, exam5_q1 | elb.mdx#s4 / HealthCheckSim |
 | [ ] | ALB sticky sessions | ✅ Đã có | 2 | exam5_q37, exam6_q60 | analytics.mdx#s1 / CacheSim<br>elb.mdx#s7 / QuickCompare |
 | [ ] | Application Load Balancer (HTTP/HTTPS only) | ✅ Đã có | 2 | exam5_q4, exam6_q56 | elb.mdx#s1 / LbTypeSim |
@@ -488,6 +487,7 @@ Có **983 keyword** khác nhau: ✅ 967 (98%) · 🟡 10 (1%) · ❌ 6 (1%).
 | [ ] | ALB target group deregistration during patching | ✅ Đã có | 1 | exam5_q34 | monitoring.mdx#s5 / PatchWindowSim |
 | [ ] | Application Load Balancer content-based routing | ✅ Đã có | 1 | exam1_q2 | elb.mdx#s3 |
 | [ ] | Application Load Balancer target group | ✅ Đã có | 1 | exam6_q53 | elb.mdx#s1 / LbTypeSim |
+| [ ] | Classic Load Balancer | ✅ Đã có | 1 | exam4_q9 | elb.mdx#s7 / QuickCompare |
 | [ ] | ELB across multiple AZs | ✅ Đã có | 1 | exam2_q8 | global-infra.mdx#s3 / AzFailureSim; elb.mdx#s1 |
 | [ ] | ELB cross-zone load balancing | ✅ Đã có | 1 | exam3_q14 | elb.mdx#s2 / CrossZoneCalc |
 | [ ] | ELB scope: single Region, multiple AZs | ✅ Đã có | 1 | exam6_q7 | elb.mdx#s1 |

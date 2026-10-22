@@ -306,8 +306,8 @@
         {
           "keyword": "Classic Load Balancer",
           "lesson": "elb",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "elb.mdx#s7 / QuickCompare"
         }
       ]
     },

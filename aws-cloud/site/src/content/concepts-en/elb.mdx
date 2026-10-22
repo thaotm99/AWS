@@ -5,6 +5,10 @@ minutes: 35
 scenes: 7
 prerequisites: ["vpc", "ec2"]
 docs:
+  - title: "What is a Classic Load Balancer? (previous generation)"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/introduction.html"
+  - title: "Elastic Load Balancing features (product comparison)"
+    url: "https://aws.amazon.com/elasticloadbalancing/features/"
   - title: "What is Elastic Load Balancing?"
     url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/what-is-load-balancing.html"
   - title: "Cross-zone load balancing"
@@ -177,7 +181,7 @@ ShopViet's security team requires all internet traffic to the application to pas
 
 </Scene>
 
-<Scene id="en-s7" label="Part 7/7" title="Quick comparison: options that are easy to confuse with a load balancer" questions={["exam3_q47", "exam3_q53", "exam6_q60", "exam6_q41"]}>
+<Scene id="en-s7" label="Part 7/7" title="Quick comparison: options that are easy to confuse with a load balancer" questions={["exam3_q47", "exam3_q53", "exam6_q60", "exam6_q41", "exam4_q9"]}>
 
 Some services and features are often considered together with a load balancer but solve a different problem. Pick each item to see what it is for and what fits ShopViet's situation.
 
@@ -210,6 +214,10 @@ Some services and features are often considered together with a load balancer bu
     use: "Centralized inspection of traffic through third-party appliances for many VPCs.",
     notHere: "The requirement is to separate dev, test and production into accounts and manage subnets and gateways centrally with low operational overhead; adding a GWLB and appliances to every traffic path makes the architecture more complex without serving the requirement.",
     instead: "A network account owns the central VPC and shares subnets with the other accounts in the same AWS Organizations organization through VPC sharing (AWS RAM); accounts are created and governed with AWS Control Tower." },
+  { name: "Classic Load Balancer",
+    use: "The previous generation of Elastic Load Balancing load balancers, operating at both layer 4 and layer 7, intended for applications built in the old EC2-Classic network. AWS recommends migrating to a current generation load balancer.",
+    notHere: "Clients reach it through its **DNS name**, which resolves to the public IP addresses of the load balancer nodes. The ELB feature comparison marks static and Elastic IP addresses only for the Network Load Balancer; the Classic Load Balancer and the ALB have neither, so they cannot give a partner one fixed IP address to allow-list.",
+    instead: "A partner bank allows only a fixed list of public IP addresses: a Network Load Balancer, with one static IP address per AZ and an optional Elastic IP; the servers behind it still scale with an Auto Scaling group." },
 ]} />
 
 </Scene>
