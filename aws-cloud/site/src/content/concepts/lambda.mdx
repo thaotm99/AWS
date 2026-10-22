@@ -1,6 +1,6 @@
 ---
-title: "Lambda + API Gateway: serverless theo sự kiện"
-lede: "Nhiều việc của ShopViet chỉ cần chạy khi có chuyện xảy ra. Bài này dựng các luồng theo sự kiện (ảnh mới, dữ liệu stream, việc định kỳ), sửa những lỗi hay gặp khi Lambda chạy thật (VPC, cold start, quota, quyền), và mở API cho app và đối tác bằng API Gateway."
+title: "AWS Lambda và Amazon API Gateway: kiến trúc serverless hướng sự kiện"
+lede: "Nhiều tác vụ của ShopViet chỉ cần chạy khi phát sinh sự kiện. Bài học trình bày các luồng xử lý hướng sự kiện (ảnh mới, dữ liệu stream, tác vụ định kỳ), các lỗi thường gặp khi vận hành Lambda trong môi trường production (VPC, cold start, quota, phân quyền), và cách cung cấp API cho ứng dụng và đối tác bằng API Gateway."
 minutes: 20
 scenes: 3
 prerequisites: ["iam", "vpc"]
@@ -26,20 +26,20 @@ import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
-  { href: "#s1", label: "1 · Mẫu theo sự kiện" },
-  { href: "#s2", label: "2 · Lambda chạy thật" },
-  { href: "#s3", label: "3 · API Gateway" },
-  { href: "#challenge", label: "Thử thách" },
+  { href: "#s1", label: "1 · Mẫu kiến trúc hướng sự kiện" },
+  { href: "#s2", label: "2 · Vận hành Lambda trong production" },
+  { href: "#s3", label: "3 · Cung cấp API bằng API Gateway" },
+  { href: "#challenge", label: "Bài tập" },
 ]}>
-Nhiều việc của ShopViet chỉ chạy khi có chuyện xảy ra: có ảnh mới, có đơn hàng mới, đến giờ dọn dữ liệu. Thay vì để EC2 chạy chờ cả ngày, **Lambda** chạy đúng lúc có sự kiện, và **API Gateway** mở API cho app gọi vào.
+Nhiều tác vụ của ShopViet chỉ chạy khi phát sinh sự kiện: ảnh mới, đơn hàng mới, đến lịch dọn dữ liệu. Thay vì duy trì EC2 chạy chờ cả ngày, **Lambda** thực thi đúng thời điểm có sự kiện, và **API Gateway** cung cấp API cho ứng dụng gọi tới.
 </Story>
 
-<Scene id="s1" label="Cảnh 1/3" title="Chạy code khi có sự kiện" questions={["exam5_q23", "exam2_q14", "exam1_q60", "exam5_q35", "exam6_q31", "exam3_q30", "exam1_q33"]}>
+<Scene id="s1" label="Phần 1/3" title="Thực thi mã khi phát sinh sự kiện" questions={["exam5_q23", "exam2_q14", "exam1_q60", "exam5_q35", "exam6_q31", "exam3_q30", "exam1_q33"]}>
 
-Ba việc của ShopViet: tạo thumbnail khi người bán tải ảnh, cập nhật bảng xếp hạng từ lượt xem, và dọn dữ liệu cũ mỗi tuần. So sánh cách làm "bật server chờ sẵn" với cách để sự kiện gọi Lambda:
+Ba tác vụ của ShopViet: tạo thumbnail khi người bán tải ảnh lên, cập nhật bảng xếp hạng từ lượt xem, và dọn dữ liệu cũ hằng tuần. So sánh phương án "duy trì máy chủ chờ sẵn" với phương án để sự kiện kích hoạt Lambda:
 
-<ScenarioFlow client:visible height={220} legend={["Nên chọn", "Tốn kém hoặc nhiều vận hành"]} scenarios={[
-  { name: "Xử lý ảnh khi upload",
+<ScenarioFlow client:visible height={220} legend={["Khuyến nghị", "Chi phí hoặc công vận hành cao"]} scenarios={[
+  { name: "Xử lý ảnh khi tải lên",
     nodes: [
       { id: "s3", x: 30, y: 90, label: "S3: ảnh gốc", kind: "store" },
       { id: "sqs", x: 250, y: 30, label: "SQS", sub: "đệm sự kiện", kind: "net" },
@@ -50,13 +50,13 @@ Ba việc của ShopViet: tạo thumbnail khi người bán tải ảnh, cập n
     options: [
       { name: "EC2 quét theo lịch", verdict: "bad", hide: ["sqs", "fn"],
         flows: [{ path: ["s3", "ec2"], tone: "bad", label: "chờ tới lượt quét" }, { path: ["ec2", "out"], tone: "bad" }],
-        text: "Ảnh phải chờ tới lượt quét; EC2 chạy cả khi không có ảnh nào." },
+        text: "Ảnh phải chờ tới lượt quét kế tiếp; EC2 vẫn chạy cả khi không có ảnh nào." },
       { name: "S3 event → Lambda", verdict: "good", hide: ["ec2", "sqs"],
         flows: [{ path: ["s3", "fn"], tone: "good", label: "event notification" }, { path: ["fn", "out"], tone: "good" }],
-        text: "**S3 Event Notification** gọi Lambda ngay khi có object mới. Rẻ, tự scale, không quản lý server." },
+        text: "**S3 Event Notification** kích hoạt Lambda ngay khi có object mới. Chi phí thấp, tự động scale, không cần quản lý máy chủ." },
       { name: "S3 event → SQS → Lambda", verdict: "good", hide: ["ec2"],
         flows: [{ path: ["s3", "sqs"], tone: "good", label: "event" }, { path: ["sqs", "fn"], tone: "good", label: "poll theo batch" }, { path: ["fn", "out"], tone: "good" }],
-        text: "Thêm **SQS** ở giữa để đệm khi ảnh đổ về dồn dập; Lambda đọc hàng đợi và xử lý bất đồng bộ." },
+        text: "Đặt **SQS** ở giữa làm bộ đệm khi lượng ảnh tải lên tăng đột biến; Lambda đọc hàng đợi và xử lý bất đồng bộ." },
     ] },
   { name: "Dữ liệu stream thời gian thực",
     nodes: [
@@ -68,65 +68,65 @@ Ba việc của ShopViet: tạo thumbnail khi người bán tải ảnh, cập n
     options: [
       { name: "Kinesis → Lambda → DynamoDB", verdict: "good",
         flows: [{ path: ["src", "kds"], tone: "good" }, { path: ["kds", "fn"], tone: "good", label: "event source mapping" }, { path: ["fn", "ddb"], tone: "good" }],
-        text: "Lambda làm consumer của Kinesis Data Streams (có thể dùng on-demand capacity mode), xử lý rồi ghi DynamoDB. Không quản lý server." },
+        text: "Lambda đóng vai trò consumer của Kinesis Data Streams (có thể sử dụng on-demand capacity mode), xử lý và ghi kết quả vào DynamoDB. Không cần quản lý máy chủ." },
     ] },
-  { name: "Việc định kỳ",
+  { name: "Tác vụ định kỳ",
     nodes: [
       { id: "eb", x: 30, y: 90, label: "EventBridge", sub: "cron mỗi tuần", kind: "net" },
-      { id: "fn", x: 300, y: 90, label: "Lambda", sub: "chạy job dọn dữ liệu", kind: "edge" },
+      { id: "fn", x: 300, y: 90, label: "Lambda", sub: "job dọn dữ liệu", kind: "edge" },
       { id: "ec2", x: 300, y: 20, label: "EC2 bật 24/7 với cron", kind: "ec2" },
       { id: "db", x: 600, y: 90, w: 120, label: "Database", kind: "db" },
     ],
     options: [
       { name: "EC2 + crontab", verdict: "bad", hide: ["eb", "fn"],
-        flows: [{ path: ["ec2", "db"], tone: "bad", label: "trả tiền cả tuần cho vài phút" }],
-        text: "Server chạy suốt tuần chỉ để làm một việc vài phút." },
+        flows: [{ path: ["ec2", "db"], tone: "bad", label: "trả phí cả tuần cho vài phút" }],
+        text: "Máy chủ chạy suốt tuần chỉ để thực hiện một tác vụ kéo dài vài phút." },
       { name: "EventBridge cron → Lambda", verdict: "good", hide: ["ec2"],
         flows: [{ path: ["eb", "fn"], tone: "good", label: "schedule" }, { path: ["fn", "db"], tone: "good" }],
-        text: "**EventBridge** (rule hoặc Scheduler) với biểu thức cron gọi Lambda đúng giờ. Rẻ và đáng tin cậy nhất." },
+        text: "**EventBridge** (rule hoặc Scheduler) với biểu thức cron kích hoạt Lambda đúng lịch. Đây là phương án có chi phí thấp và độ tin cậy cao nhất." },
     ] },
 ]} />
 
-<Takeaway>Có sự kiện thì gọi Lambda: S3 event, SQS, Kinesis, lịch EventBridge. Thêm SQS ở giữa khi cần đệm.</Takeaway>
+<Takeaway>Nguồn sự kiện kích hoạt Lambda: S3 event, SQS, Kinesis, lịch EventBridge. Đặt SQS ở giữa khi cần bộ đệm.</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Cảnh 2/3" title="Khi Lambda chạy thật" questions={["exam4_q25", "exam1_q50", "exam3_q20", "exam6_q35", "exam4_q39", "exam2_q16"]}>
+<Scene id="s2" label="Phần 2/3" title="Vận hành Lambda trong môi trường production" questions={["exam4_q25", "exam1_q50", "exam3_q20", "exam6_q35", "exam4_q39", "exam2_q16"]}>
 
-Chạy thử trên máy thì ổn, lên production mới lộ chuyện: function gắn vào VPC rồi không ra được internet, khách chờ lâu lúc cao điểm, thông báo bị rơi, mật khẩu database nằm trong cấu hình. Chọn từng chuyện, chạy thử, rồi bật công tắc để sửa:
+Một số vấn đề chỉ xuất hiện khi triển khai lên production: function gắn vào VPC không truy cập được Internet, người dùng chờ lâu vào giờ cao điểm, thông báo bị mất, mật khẩu database lưu trong cấu hình. Chọn từng tình huống, chạy thử, sau đó bật tuỳ chọn để khắc phục:
 
 <LambdaRunSim client:visible />
 
-Hai điều nữa. Một lần chạy Lambda tối đa **15 phút**; job dài hơn thì chạy container trên Fargate (bài Containers). Nhiều function dùng chung thư viện thì đóng gói thư viện đó thành **Lambda Layers**.
+Hai lưu ý bổ sung. Mỗi lần thực thi Lambda tối đa **15 phút**; job dài hơn nên chạy bằng container trên Fargate (bài Containers). Khi nhiều function dùng chung thư viện, đóng gói thư viện đó thành **Lambda Layers**.
 
-<Takeaway>Lambda trong VPC cần NAT gateway để ra internet. Cold start lúc cao điểm: provisioned concurrency. Concurrency có quota theo account và Region; đặt alarm trên ConcurrentExecutions. Không lưu mật khẩu: IAM database authentication. Truy cập chéo account: cả execution role lẫn bucket policy phải cho phép.</Takeaway>
+<Takeaway>Lambda trong VPC cần NAT gateway để truy cập Internet. Cold start vào giờ cao điểm: provisioned concurrency. Concurrency có quota theo account và Region; cấu hình alarm trên ConcurrentExecutions. Không lưu mật khẩu: IAM database authentication. Truy cập cross-account: cả execution role và bucket policy đều phải cho phép.</Takeaway>
 
 </Scene>
 
-<Scene id="s3" label="Cảnh 3/3" title="Mở API cho app và đối tác" questions={["exam1_q49", "exam3_q52", "exam3_q53", "exam2_q58", "exam4_q44", "exam5_q32", "exam1_q57", "exam1_q11"]}>
+<Scene id="s3" label="Phần 3/3" title="Cung cấp API cho ứng dụng và đối tác" questions={["exam1_q49", "exam3_q52", "exam3_q53", "exam2_q58", "exam4_q44", "exam5_q32", "exam1_q57", "exam1_q11"]}>
 
-App di động, đối tác bán hàng và trang quản trị đều gọi vào `api.shopviet.vn`. **API Gateway** chạy một loạt kiểm tra trước khi tới code của bạn. Chọn tình huống và gửi request:
+Ứng dụng mobile, đối tác bán hàng và trang quản trị đều gọi tới `api.shopviet.vn`. **API Gateway** thực hiện một chuỗi bước kiểm tra trước khi request tới mã ứng dụng. Chọn tình huống và gửi request:
 
 <ApiGatewaySim client:visible />
 
-Còn vài nhu cầu khác:
+Một số yêu cầu khác:
 
-- Chat giữa khách và người bán cần kết nối hai chiều, server tự đẩy tin nhắn xuống: **WebSocket API**. REST API thì mỗi request độc lập, không giữ kết nối.
-- Shipper gửi vị trí liên tục để theo dõi đơn: API Gateway nhận dữ liệu, đẩy vào Kinesis để **Kinesis Data Analytics** phân tích stream.
-- Nhận giao dịch từ app, kiểm tra nhẹ rồi xử lý, ít vận hành nhất: **REST API + Lambda** kiểm tra dữ liệu, backend serverless phía sau. Không có server hay container nào phải vá.
+- Chat giữa người mua và người bán cần kết nối hai chiều, máy chủ chủ động đẩy tin nhắn tới client: **WebSocket API**. Với REST API, mỗi request độc lập và không duy trì kết nối.
+- Shipper gửi vị trí liên tục để theo dõi đơn hàng: API Gateway tiếp nhận dữ liệu và đẩy vào Kinesis để **Kinesis Data Analytics** phân tích stream.
+- Tiếp nhận giao dịch từ ứng dụng, kiểm tra dữ liệu đơn giản rồi xử lý, với chi phí vận hành thấp nhất: **REST API + Lambda** kiểm tra dữ liệu, backend serverless phía sau. Không có máy chủ hay container nào cần vá lỗi.
 
-<Takeaway>Chỉ cho dải IP nội bộ: resource policy. JWT mà không viết code: HTTP API với JWT authorizer. Giới hạn theo từng khách: usage plan + API key. Giảm tải backend khi request lặp lại: caching. Việc chậm: API Gateway đẩy vào SQS. Chat hai chiều: WebSocket API.</Takeaway>
+<Takeaway>Giới hạn truy cập theo dải IP nội bộ: resource policy. Xác thực JWT không cần viết mã: HTTP API với JWT authorizer. Giới hạn theo từng client: usage plan + API key. Giảm tải backend khi request lặp lại: caching. Tác vụ xử lý lâu: API Gateway đẩy vào SQS. Giao tiếp hai chiều: WebSocket API.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="Ghép yêu cầu với tính năng" questions={["exam5_q23", "exam4_q25", "exam3_q53", "exam3_q30"]}>
+<Scene id="challenge" label="Bài tập" title="Phân loại cấu hình: Lambda và API Gateway" questions={["exam5_q23", "exam4_q25", "exam3_q53", "exam3_q30"]}>
 
-Xếp từng thứ vào nơi bạn cấu hình nó. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
+Phân loại từng tính năng vào nơi cấu hình tương ứng. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
 <SortGame client:visible
   bins={[
-    { id: "lambda", title: "Cấu hình Lambda", sub: "Function", hint: "Gợi ý: thứ này cấu hình trên Lambda function." },
-    { id: "apigw", title: "Cấu hình API Gateway", sub: "API", hint: "Gợi ý: thứ này cấu hình trên API." },
+    { id: "lambda", title: "Cấu hình Lambda", sub: "Function", hint: "Gợi ý: tính năng này được cấu hình trên Lambda function." },
+    { id: "apigw", title: "Cấu hình API Gateway", sub: "API", hint: "Gợi ý: tính năng này được cấu hình trên API." },
   ]}
   cards={[
     ["Provisioned concurrency", "lambda"], ["Layers", "lambda"], ["Gắn vào VPC", "lambda"], ["Execution role", "lambda"],
@@ -134,25 +134,25 @@ Xếp từng thứ vào nơi bạn cấu hình nó. Trên điện thoại: chạ
   ]}
 />
 
-Kiểm tra nhanh: nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "Người bán tải ảnh sản phẩm lên S3. ShopViet muốn có thumbnail ngay, chi phí thấp, không quản lý server. Dựng thế nào?",
+  { q: "Người bán tải ảnh sản phẩm lên S3. Yêu cầu: tạo thumbnail ngay lập tức, chi phí thấp, không quản lý máy chủ. Kiến trúc nào phù hợp?",
     opts: ["EC2 quét bucket mỗi giờ", "S3 Event Notification gọi Lambda", "Glue job hằng ngày"],
     a: 1,
-    why: "S3 event gọi Lambda ngay khi có object mới; chỉ trả tiền khi chạy." },
-  { q: "Sau khi gắn Lambda vào VPC để đọc database, function không gọi được API giao hàng trên internet nữa. Vì sao?",
-    opts: ["Lambda trong VPC cần NAT gateway để ra internet", "Lambda không hỗ trợ HTTPS", "Thiếu Lambda Layer"],
+    why: "S3 event kích hoạt Lambda ngay khi có object mới; chi phí chỉ phát sinh khi thực thi." },
+  { q: "Sau khi gắn Lambda vào VPC để đọc database, function không còn gọi được API giao hàng trên Internet. Nguyên nhân là gì?",
+    opts: ["Lambda trong VPC cần NAT gateway để truy cập Internet", "Lambda không hỗ trợ HTTPS", "Thiếu Lambda Layer"],
     a: 0,
-    why: "ENI của Lambda trong subnet private chỉ có private IP; ra internet phải qua NAT." },
-  { q: "Mỗi đối tác của ShopViet được gọi API một số lần khác nhau mỗi ngày tuỳ gói. Cấu hình gì?",
+    why: "ENI của Lambda trong private subnet chỉ có private IP; truy cập Internet phải đi qua NAT." },
+  { q: "Mỗi đối tác của ShopViet được phép gọi API với số lần khác nhau mỗi ngày tuỳ theo gói dịch vụ. Cấu hình nào phù hợp?",
     opts: ["Usage plans với API keys", "WAF rate-based rule", "Lambda reserved concurrency"],
     a: 0,
-    why: "Usage plan đặt throttle và quota theo từng API key." },
-  { q: "ShopViet cần dọn dữ liệu cũ mỗi tuần một lần, việc chạy vài phút. Cách rẻ và tin cậy nhất?",
+    why: "Usage plan thiết lập throttle và quota theo từng API key." },
+  { q: "ShopViet cần dọn dữ liệu cũ mỗi tuần một lần, tác vụ kéo dài vài phút. Phương án nào có chi phí thấp và độ tin cậy cao nhất?",
     opts: ["EC2 chạy crontab", "EventBridge cron gọi Lambda", "Lambda chạy liên tục và sleep"],
     a: 1,
-    why: "Chỉ trả tiền cho vài phút chạy mỗi tuần." },
+    why: "Chi phí chỉ phát sinh cho vài phút thực thi mỗi tuần." },
 ]} />
 
 </Scene>
