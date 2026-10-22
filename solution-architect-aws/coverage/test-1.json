@@ -339,8 +339,8 @@
         {
           "keyword": "SAML 2.0 federation",
           "lesson": "iam",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "iam.mdx#s5 / FederationSim"
         },
         {
           "keyword": "AWS Control Tower",
@@ -539,8 +539,8 @@
         {
           "keyword": "IAM least privilege",
           "lesson": "iam",
-          "status": "partial",
-          "where": "iam.mdx#s3"
+          "status": "covered",
+          "where": "iam.mdx#s1 / LeastPrivilegeSim; iam.mdx#confuse / IamMythsSim"
         },
         {
           "keyword": "IAM role for EC2 instead of access keys",
@@ -1775,8 +1775,8 @@
         {
           "keyword": "IAM least privilege",
           "lesson": "iam",
-          "status": "partial",
-          "where": "iam.mdx#s3"
+          "status": "covered",
+          "where": "iam.mdx#s1 / LeastPrivilegeSim"
         }
       ]
     },

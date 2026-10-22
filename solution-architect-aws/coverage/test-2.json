@@ -772,8 +772,8 @@
         {
           "keyword": "IAM inline policy per user",
           "lesson": "iam",
-          "status": "partial",
-          "where": "iam.mdx#confuse / IamMythsSim"
+          "status": "covered",
+          "where": "iam.mdx#s6 / QuickCompare"
         }
       ]
     },
@@ -1282,8 +1282,8 @@
         {
           "keyword": "IAM service-linked role",
           "lesson": "iam",
-          "status": "partial",
-          "where": "iam.mdx#s2 Takeaway"
+          "status": "covered",
+          "where": "iam.mdx#s6 / QuickCompare; iam.mdx#s3 / RequirementPicker"
         }
       ]
     },

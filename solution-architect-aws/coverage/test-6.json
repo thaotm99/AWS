@@ -289,8 +289,8 @@
         {
           "keyword": "IAM SAML 2.0 federation (IAM identity provider)",
           "lesson": "iam",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "iam.mdx#s5 / FederationSim"
         },
         {
           "keyword": "Service control policy (SCP) as guardrail, not grant",
@@ -1153,13 +1153,13 @@
         {
           "keyword": "AWS account alternate contacts",
           "lesson": "iam",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "iam.mdx#confuse / IamMythsSim"
         },
         {
           "keyword": "Root user email as alias to monitored mailbox",
           "lesson": "iam",
-          "status": "partial",
+          "status": "covered",
           "where": "iam.mdx#confuse / IamMythsSim"
         }
       ]

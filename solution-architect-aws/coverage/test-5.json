@@ -566,8 +566,8 @@
         {
           "keyword": "IAM Access Advisor (last accessed information)",
           "lesson": "iam",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "iam.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "AWS Config",
@@ -747,8 +747,8 @@
         {
           "keyword": "IAM Access Analyzer for S3 (not an event source)",
           "lesson": "iam",
-          "status": "partial",
-          "where": "iam.mdx#s4 / OrgGuardSim"
+          "status": "covered",
+          "where": "iam.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "AWS Glue (batch ETL)",

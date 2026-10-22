@@ -197,8 +197,8 @@
         {
           "keyword": "EC2 instance profile (one IAM role per instance)",
           "lesson": "iam",
-          "status": "partial",
-          "where": "iam.mdx#s3 / StepSim"
+          "status": "covered",
+          "where": "iam.mdx#s3 / StepSim + RequirementPicker"
         }
       ]
     },

@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 870 (91%) · 🟡 42 (4%) · ❌ 48 (5%).
+Có **960 keyword** khác nhau: ✅ 881 (92%) · 🟡 36 (4%) · ❌ 43 (4%).
 
 ### Theo bài học
 
@@ -24,7 +24,7 @@ Có **960 keyword** khác nhau: ✅ 870 (91%) · 🟡 42 (4%) · ❌ 48 (5%).
 | [vpc](#vpc) | 107 | 107 | 0 | 0 | 100% |
 | [route53](#route53) | 28 | 24 | 2 | 2 | 86% |
 | [cloudfront](#cloudfront) | 31 | 22 | 5 | 4 | 71% |
-| [iam](#iam) | 49 | 38 | 6 | 5 | 78% |
+| [iam](#iam) | 49 | 49 | 0 | 0 | 100% |
 | [kms](#kms) | 21 | 21 | 0 | 0 | 100% |
 | [security](#security) | 27 | 25 | 1 | 1 | 93% |
 | [cognito](#cognito) | 15 | 13 | 1 | 1 | 87% |
@@ -50,12 +50,12 @@ Có **960 keyword** khác nhau: ✅ 870 (91%) · 🟡 42 (4%) · ❌ 48 (5%).
 
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
-| Đề 1 | 206 | 10 | 8 |
-| Đề 2 | 183 | 7 | 8 |
-| Đề 3 | 208 | 6 | 8 |
-| Đề 4 | 220 | 7 | 9 |
-| Đề 5 | 200 | 13 | 8 |
-| Đề 6 | 200 | 2 | 8 |
+| Đề 1 | 209 | 8 | 7 |
+| Đề 2 | 185 | 5 | 8 |
+| Đề 3 | 209 | 5 | 8 |
+| Đề 4 | 221 | 7 | 8 |
+| Đề 5 | 202 | 12 | 7 |
+| Đề 6 | 203 | 1 | 6 |
 
 ## global-infra
 
@@ -269,24 +269,15 @@ Có **960 keyword** khác nhau: ✅ 870 (91%) · 🟡 42 (4%) · ❌ 48 (5%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | AWS account alternate contacts | ❌ Thiếu | 1 | exam6_q40 |  |
-| [ ] | IAM Access Advisor (last accessed information) | ❌ Thiếu | 1 | exam5_q17 |  |
-| [ ] | IAM SAML 2.0 federation | ❌ Thiếu | 1 | exam4_q4 |  |
-| [ ] | IAM SAML 2.0 federation (IAM identity provider) | ❌ Thiếu | 1 | exam6_q10 |  |
-| [ ] | SAML 2.0 federation | ❌ Thiếu | 1 | exam1_q10 |  |
-| [ ] | IAM least privilege | 🟡 Một phần | 2 | exam1_q16, exam1_q58 | iam.mdx#s3 |
-| [ ] | EC2 instance profile (one IAM role per instance) | 🟡 Một phần | 1 | exam3_q6 | iam.mdx#s3 / StepSim |
-| [ ] | IAM Access Analyzer for S3 (not an event source) | 🟡 Một phần | 1 | exam5_q23 | iam.mdx#s4 / OrgGuardSim |
-| [ ] | IAM inline policy per user | 🟡 Một phần | 1 | exam2_q24 | iam.mdx#confuse / IamMythsSim |
-| [ ] | IAM service-linked role | 🟡 Một phần | 1 | exam2_q43 | iam.mdx#s2 Takeaway |
-| [ ] | Root user email as alias to monitored mailbox | 🟡 Một phần | 1 | exam6_q40 | iam.mdx#confuse / IamMythsSim |
 | [ ] | IAM permissions boundary | ✅ Đã có | 4 | exam1_q25, exam4_q34, exam4_q65, exam5_q18 | iam.mdx#s2 / PolicyEvaluator<br>iam.mdx#s2 |
 | [ ] | IAM Access Analyzer | ✅ Đã có | 3 | exam5_q17, exam6_q10, exam6_q30 | iam.mdx#s4 / OrgGuardSim |
 | [ ] | IAM role for EC2 (instance profile) | ✅ Đã có | 3 | exam2_q3, exam3_q23, exam6_q57 | iam.mdx#s3 / StepSim<br>iam.mdx#s3 |
 | [ ] | Service control policy (SCP) | ✅ Đã có | 3 | exam2_q39, exam3_q59, exam4_q34 | iam.mdx#s2, #s4 / OrgGuardSim<br>iam.mdx#s2 / PolicyEvaluator |
 | [ ] | AWS Control Tower | ✅ Đã có | 2 | exam1_q10, exam6_q22 | iam.mdx#s4 / OrgGuardSim |
 | [ ] | IAM condition key aws:SourceIp | ✅ Đã có | 2 | exam2_q37, exam2_q48 | iam.mdx#s1 / PolicyReader |
+| [ ] | IAM least privilege | ✅ Đã có | 2 | exam1_q16, exam1_q58 | iam.mdx#s1 / LeastPrivilegeSim; iam.mdx#confuse / IamMythsSim<br>iam.mdx#s1 / LeastPrivilegeSim |
 | [ ] | IAM role trust policy | ✅ Đã có | 2 | exam3_q23, exam4_q34 | iam.mdx#s3 / RequirementPicker |
+| [ ] | AWS account alternate contacts | ✅ Đã có | 1 | exam6_q40 | iam.mdx#confuse / IamMythsSim |
 | [ ] | AWS Control Tower (landing zone, controls) | ✅ Đã có | 1 | exam6_q41 | iam.mdx#s4 / OrgGuardSim; vpc.mdx#s5 |
 | [ ] | AWS IAM Identity Center permission set | ✅ Đã có | 1 | exam1_q10 | cognito.mdx#s2 |
 | [ ] | AWS Organizations | ✅ Đã có | 1 | exam3_q17 | iam.mdx#s4 / OrgGuardSim |
@@ -294,12 +285,16 @@ Có **960 keyword** khác nhau: ✅ 870 (91%) · 🟡 42 (4%) · ❌ 48 (5%).
 | [ ] | AWS Resource Access Manager (RAM) | ✅ Đã có | 1 | exam3_q36 | iac.mdx#s2 |
 | [ ] | Cross-account access (identity policy + bucket policy) | ✅ Đã có | 1 | exam2_q16 | iam.mdx#s2 / PolicyEvaluator |
 | [ ] | EC2 instance profile | ✅ Đã có | 1 | exam1_q5 | iam.mdx#s3 |
+| [ ] | EC2 instance profile (one IAM role per instance) | ✅ Đã có | 1 | exam3_q6 | iam.mdx#s3 / StepSim + RequirementPicker |
+| [ ] | IAM Access Advisor (last accessed information) | ✅ Đã có | 1 | exam5_q17 | iam.mdx#s6 / QuickCompare |
+| [ ] | IAM Access Analyzer for S3 (not an event source) | ✅ Đã có | 1 | exam5_q23 | iam.mdx#s6 / QuickCompare |
 | [ ] | IAM access key (long-term credentials) | ✅ Đã có | 1 | exam2_q3 | iam.mdx#s3 / StepSim |
 | [ ] | IAM condition key aws:RequestedRegion | ✅ Đã có | 1 | exam2_q38 | iam.mdx#s1 / PolicyReader |
 | [ ] | IAM cross-account role | ✅ Đã có | 1 | exam2_q15 | iam.mdx#s3 / RequirementPicker |
 | [ ] | IAM cross-account role (AssumeRole) | ✅ Đã có | 1 | exam1_q17 | iam.mdx#s3 |
 | [ ] | IAM explicit deny with condition | ✅ Đã có | 1 | exam2_q48 | iam.mdx#s2 / PolicyEvaluator |
 | [ ] | IAM group | ✅ Đã có | 1 | exam6_q29 | iam.mdx#confuse / IamMythsSim |
+| [ ] | IAM inline policy per user | ✅ Đã có | 1 | exam2_q24 | iam.mdx#s6 / QuickCompare |
 | [ ] | IAM MFA for privileged users | ✅ Đã có | 1 | exam1_q16 | iam.mdx#confuse / IamMythsSim |
 | [ ] | IAM permissions boundary (users/roles, not groups) | ✅ Đã có | 1 | exam2_q39 | iam.mdx#s2 / PolicyEvaluator; iam.mdx#challenge / SortGame |
 | [ ] | IAM policy condition aws:SourceIp (IpAddress/NotIpAddress) | ✅ Đã có | 1 | exam4_q8 | iam.mdx#s1 / PolicyReader; s3.mdx#s3 / RequirementPicker |
@@ -308,9 +303,14 @@ Có **960 keyword** khác nhau: ✅ 870 (91%) · 🟡 42 (4%) · ❌ 48 (5%).
 | [ ] | IAM root user access keys (do not create) | ✅ Đã có | 1 | exam1_q31 | iam.mdx#confuse / IamMythsSim |
 | [ ] | IAM root user best practice | ✅ Đã có | 1 | exam1_q25 | iam.mdx#confuse / IamMythsSim |
 | [ ] | IAM root user MFA | ✅ Đã có | 1 | exam1_q31 | iam.mdx#confuse / IamMythsSim |
+| [ ] | IAM SAML 2.0 federation | ✅ Đã có | 1 | exam4_q4 | iam.mdx#s5 / FederationSim |
+| [ ] | IAM SAML 2.0 federation (IAM identity provider) | ✅ Đã có | 1 | exam6_q10 | iam.mdx#s5 / FederationSim |
+| [ ] | IAM service-linked role | ✅ Đã có | 1 | exam2_q43 | iam.mdx#s6 / QuickCompare; iam.mdx#s3 / RequirementPicker |
 | [ ] | IAM user access keys stored on instance (anti-pattern) | ✅ Đã có | 1 | exam3_q23 | iam.mdx#s3 / StepSim |
 | [ ] | IAM user policy (same account only) | ✅ Đã có | 1 | exam4_q65 | iam.mdx#s2 |
+| [ ] | Root user email as alias to monitored mailbox | ✅ Đã có | 1 | exam6_q40 | iam.mdx#confuse / IamMythsSim |
 | [ ] | S3 ListBucket (bucket ARN) vs GetObject (bucket/*) | ✅ Đã có | 1 | exam2_q54 | iam.mdx#s1 / PolicyReader |
+| [ ] | SAML 2.0 federation | ✅ Đã có | 1 | exam1_q10 | iam.mdx#s5 / FederationSim |
 | [ ] | SCP applies to member-account root user | ✅ Đã có | 1 | exam3_q59 | iam.mdx#s2 / PolicyEvaluator |
 | [ ] | SCP deny ec2:DeleteTags | ✅ Đã có | 1 | exam5_q18 | iam.mdx#s4 / OrgGuardSim |
 | [ ] | SCP does not affect service-linked roles | ✅ Đã có | 1 | exam3_q59 | iam.mdx#s2 / PolicyEvaluator |
