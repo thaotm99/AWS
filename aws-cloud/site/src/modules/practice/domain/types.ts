@@ -55,6 +55,14 @@ export interface Question {
   explanationHtml: string;
 }
 
+/** A set of questions to work through: a practice test, or every question about one service ("topic"). */
+export type QuestionSetKind = "exam" | "topic";
+export interface QuestionSetRef {
+  kind: QuestionSetKind;
+  /** Exam id, or the service id of a topic (e.g. "s3"). */
+  id: string;
+}
+
 export interface Exam extends ExamSummary {
   locale: ContentLocale;
   /** Questions whose text is in `locale`; the rest fall back to the English original. */

@@ -64,6 +64,13 @@ export const en: Messages<typeof vi> = {
     restartFailed: "Could not start again: {detail}",
     questionList: "All questions · {done}/{total} answered",
   },
+  topic: {
+    crumb: "Quiz",
+    title: "Quiz: {title}",
+    pageTitle: "{title} quiz · AWS Thực Chiến",
+    lede: "Every practice-test question about this topic, one at a time. Your progress is saved in this browser.",
+    backToLesson: "Back to the lesson",
+  },
   result: {
     heading: "Results",
     passed: "Pass",

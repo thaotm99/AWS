@@ -46,6 +46,8 @@ export const en: Messages<typeof vi> = {
     scan: "Scan with your banking app; the note is prefilled",
   },
   roadmap: {
+    quiz: "Quiz",
+    quizCount: "{n} questions",
     title: "Study path",
     progress: "{done} of {total} lessons completed",
     note: "Bars on the right: how important this is when you build on AWS.",

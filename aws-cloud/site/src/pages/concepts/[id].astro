@@ -87,7 +87,12 @@ const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(layers,
           </div>
           <div class="next-col">
             <h3>Luyện tập</h3>
-            <ul><li><a href="/on-tap/">Làm bài ở trang Luyện đề</a></li></ul>
+            <ul>
+              {concept.exact && concept.questions > 0 && (
+                <li><a href={`/concepts/${id}/kiem-tra/`}>Kiểm tra: {concept.questions} câu hỏi về chủ đề này</a></li>
+              )}
+              <li><a href="/on-tap/">Làm bài ở trang Luyện đề</a></li>
+            </ul>
           </div>
           <div class="next-col">
             <h3>Tài liệu AWS</h3>

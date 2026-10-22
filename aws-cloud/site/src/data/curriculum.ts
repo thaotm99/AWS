@@ -21,7 +21,10 @@ export interface Concept {
 export interface RoadmapLayer {
   n: number;
   name: string;
-  concepts: Pick<Concept, "id" | "title" | "importance">[];
+  concepts: (Pick<Concept, "id" | "title" | "importance"> & {
+    /** Size of the lesson's question set ("Kiểm tra"); 0 when it has none. */
+    quiz: number;
+  })[];
 }
 
 export interface Layer {

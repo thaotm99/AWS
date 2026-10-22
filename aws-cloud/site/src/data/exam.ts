@@ -7,7 +7,7 @@ import { EXTRA_TITLES, importanceOf, LAYERS, type Layer } from "./curriculum";
 const STUDY_DIR = resolve(process.cwd(), "../../solution-architect-aws");
 const QUESTION_ID = /^exam[1-6]_q\d{1,2}$/;
 
-function readListQa(id: string): string[] | undefined {
+export function readListQa(id: string): string[] | undefined {
   const file = join(STUDY_DIR, id, "list_qa.md");
   if (!existsSync(file)) return undefined;
   return readFileSync(file, "utf8")

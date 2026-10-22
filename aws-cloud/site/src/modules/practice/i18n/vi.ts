@@ -62,6 +62,13 @@ export const vi = {
     restartFailed: "Không thể khởi tạo lượt làm mới: {detail}",
     questionList: "Danh sách câu hỏi · đã hoàn thành {done}/{total}",
   },
+  topic: {
+    crumb: "Kiểm tra",
+    title: "Kiểm tra: {title}",
+    pageTitle: "Kiểm tra {title} · AWS Thực Chiến",
+    lede: "Toàn bộ câu hỏi trong bộ đề luyện tập liên quan đến chủ đề này, làm lần lượt từng câu. Tiến độ được lưu cục bộ trên trình duyệt.",
+    backToLesson: "Về bài học",
+  },
   result: {
     heading: "Kết quả",
     passed: "Đạt",

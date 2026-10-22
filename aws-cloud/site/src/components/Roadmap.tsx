@@ -6,10 +6,12 @@ import { useI18n } from "../app/i18n";
 interface Props {
   layers: RoadmapLayer[];
   current?: string;
+  /** The open page is the current lesson's question set. */
+  currentQuiz?: boolean;
   ready: string[];
 }
 
-export default function Roadmap({ layers, current, ready }: Props) {
+export default function Roadmap({ layers, current, currentQuiz = false, ready }: Props) {
   const { t } = useI18n();
   const currentLayer = layers.find((l) => l.concepts.some((c) => c.id === current))?.n ?? 0;
   const [done, setDoneState] = useState<Set<string>>(new Set());
@@ -58,15 +60,30 @@ export default function Roadmap({ layers, current, ready }: Props) {
               {layer.concepts.map((c) => {
                 const cls = ["concept", ready.includes(c.id) ? "ready" : "", done.has(c.id) ? "done" : ""]
                   .filter(Boolean).join(" ");
+                const here = c.id === current;
                 return (
                   <li key={c.id}>
-                    <a className={cls} href={`/concepts/${c.id}/`} aria-current={c.id === current ? "page" : undefined}>
+                    <a className={cls} href={`/concepts/${c.id}/`} aria-current={here && !currentQuiz ? "page" : undefined}>
                       <span className="dot" aria-hidden="true" />
                       <span>{c.title}</span>
                       <span className={`imp imp-${c.importance}`} title={t(`shell.importance.${IMPORTANCE_NAMES[c.importance]}`)}>
                         <i /><i /><i />
                       </span>
                     </a>
+                    {ready.includes(c.id) && c.quiz > 0 && (
+                      <a
+                        className="concept-quiz"
+                        href={`/concepts/${c.id}/kiem-tra/`}
+                        aria-current={here && currentQuiz ? "page" : undefined}
+                      >
+                        <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true">
+                          <rect x="2" y="2" width="12" height="12" rx="3" fill="none" stroke="currentColor" strokeWidth="1.6" />
+                          <path d="M5 8.2l2 2 4-4.4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span>{t("shell.roadmap.quiz")}</span>
+                        <span className="concept-quiz-n">{t("shell.roadmap.quizCount", { n: c.quiz })}</span>
+                      </a>
+                    )}
                   </li>
                 );
               })}

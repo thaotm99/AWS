@@ -44,6 +44,8 @@ export const vi = {
     scan: "Quét bằng ứng dụng ngân hàng, nội dung đã điền sẵn",
   },
   roadmap: {
+    quiz: "Kiểm tra",
+    quizCount: "{n} câu",
     title: "Lộ trình học",
     progress: "Đã hoàn thành {done}/{total} bài học",
     note: "Biểu tượng bên phải thể hiện mức độ quan trọng của chủ đề trong thiết kế hệ thống trên AWS.",
