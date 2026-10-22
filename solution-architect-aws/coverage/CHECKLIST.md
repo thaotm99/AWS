@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **972 keyword** khác nhau: ✅ 963 (99%) · 🟡 3 (0%) · ❌ 6 (1%).
+Có **977 keyword** khác nhau: ✅ 962 (98%) · 🟡 6 (1%) · ❌ 9 (1%).
 
 ### Theo bài học
 
@@ -28,16 +28,16 @@ Có **972 keyword** khác nhau: ✅ 963 (99%) · 🟡 3 (0%) · ❌ 6 (1%).
 | [kms](#kms) | 21 | 21 | 0 | 0 | 100% |
 | [security](#security) | 27 | 27 | 0 | 0 | 100% |
 | [cognito](#cognito) | 15 | 15 | 0 | 0 | 100% |
-| [ec2](#ec2) | 57 | 57 | 0 | 0 | 100% |
+| [ec2](#ec2) | 58 | 57 | 0 | 1 | 98% |
 | [elb](#elb) | 42 | 42 | 0 | 0 | 100% |
-| [asg](#asg) | 46 | 44 | 1 | 1 | 96% |
+| [asg](#asg) | 47 | 44 | 2 | 1 | 94% |
 | [containers](#containers) | 23 | 23 | 0 | 0 | 100% |
 | [lambda](#lambda) | 37 | 37 | 0 | 0 | 100% |
-| [s3](#s3) | 71 | 70 | 1 | 0 | 99% |
-| [storage](#storage) | 70 | 70 | 0 | 0 | 100% |
-| [storage-migration](#storage-migration) | 34 | 34 | 0 | 0 | 100% |
-| [rds](#rds) | 60 | 58 | 0 | 2 | 97% |
-| [dynamodb](#dynamodb) | 23 | 23 | 0 | 0 | 100% |
+| [s3](#s3) | 71 | 69 | 2 | 0 | 97% |
+| [storage](#storage) | 70 | 69 | 1 | 0 | 99% |
+| [storage-migration](#storage-migration) | 35 | 34 | 0 | 1 | 97% |
+| [rds](#rds) | 61 | 58 | 0 | 3 | 95% |
+| [dynamodb](#dynamodb) | 24 | 24 | 0 | 0 | 100% |
 | [analytics](#analytics) | 48 | 47 | 0 | 1 | 98% |
 | [messaging](#messaging) | 50 | 50 | 0 | 0 | 100% |
 | [kinesis](#kinesis) | 28 | 26 | 1 | 1 | 93% |
@@ -52,7 +52,7 @@ Có **972 keyword** khác nhau: ✅ 963 (99%) · 🟡 3 (0%) · ❌ 6 (1%).
 |---|---:|---:|---:|
 | Đề 1 | 223 | 2 | 1 |
 | Đề 2 | 198 | 1 | 5 |
-| Đề 3 | 222 | 0 | 0 |
+| Đề 3 | 221 | 3 | 3 |
 | Đề 4 | 236 | 0 | 0 |
 | Đề 5 | 221 | 0 | 0 |
 | Đề 6 | 217 | 0 | 0 |
@@ -402,6 +402,7 @@ Có **972 keyword** khác nhau: ✅ 963 (99%) · 🟡 3 (0%) · ❌ 6 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
+| [ ] | Persistent Spot request with a stopped instance (reopens only after start) | ❌ Thiếu | 1 | exam3_q51 |  |
 | [ ] | EC2 Spot Instance | ✅ Đã có | 8 | exam1_q21, exam2_q23, exam2_q33, exam2_q49, exam3_q51, exam4_q20, exam4_q46, exam5_q36 | ec2.mdx#s1 / Ec2CostSim<br>ec2.mdx#s1 / PurchaseMixSim |
 | [ ] | EC2 Reserved Instance | ✅ Đã có | 6 | exam1_q21, exam2_q14, exam2_q35, exam4_q46, exam6_q33, exam6_q38 | ec2.mdx#s1 / PurchaseMixSim<br>ec2.mdx#s1 / PurchaseMixSim; ec2.mdx#challenge / Quiz |
 | [ ] | EC2 Dedicated Instance | ✅ Đã có | 5 | exam2_q23, exam3_q21, exam4_q60, exam6_q21, exam6_q33 | ec2.mdx#s1 / Ec2CostSim<br>ec2.mdx#s1; ec2.mdx#challenge |
@@ -430,7 +431,7 @@ Có **972 keyword** khác nhau: ✅ 963 (99%) · 🟡 3 (0%) · ❌ 6 (1%).
 | [ ] | EC2 instance store (ephemeral, lost on stop/hibernate/terminate) | ✅ Đã có | 1 | exam6_q42 | ec2.mdx#s4 / Ec2OpsSim |
 | [ ] | EC2 instance store (highest I/O performance) | ✅ Đã có | 1 | exam5_q52 | ec2.mdx#s6; ec2.mdx#challenge / Quiz |
 | [ ] | EC2 On-Demand Capacity Reservation | ✅ Đã có | 1 | exam4_q60 | ec2.mdx#s1; ec2.mdx#s5 / RequirementPicker |
-| [ ] | EC2 recovery requires EBS-backed instance (no instance store) | ✅ Đã có | 1 | exam3_q38 | ec2.mdx#challenge / Quiz |
+| [ ] | EC2 recovery requires EBS-backed instance (no instance store) | ✅ Đã có | 1 | exam3_q38 | backup-dr.mdx#s4 / Ec2RecoverSim; ec2.mdx#challenge / Quiz |
 | [ ] | EC2 Reserved Instance (steady baseline) | ✅ Đã có | 1 | exam2_q33 | ec2.mdx#s1 / PurchaseMixSim |
 | [ ] | EC2 Reserved Instance for baseline | ✅ Đã có | 1 | exam5_q60 | ec2.mdx#s1 / PurchaseMixSim |
 | [ ] | EC2 Scheduled Reserved Instance | ✅ Đã có | 1 | exam3_q30 | ec2.mdx#s1 |
@@ -513,6 +514,7 @@ Có **972 keyword** khác nhau: ✅ 963 (99%) · 🟡 3 (0%) · ❌ 6 (1%).
 |---|---|---|---:|---|---|
 | [ ] | ASG termination: oldest launch configuration (groups using a launch configuration) | ❌ Thiếu | 1 | exam2_q65 |  |
 | [ ] | ASG default termination policy | 🟡 Một phần ⚠ | 2 | exam2_q65, exam4_q16 | asg.mdx#s3 / TerminationSim; asg.mdx#challenge / Quiz<br>asg.mdx#s3 / TerminationSim |
+| [ ] | Elastic IP cannot be assigned to an Auto Scaling group | 🟡 Một phần | 1 | exam3_q45 | elb.mdx#challenge / Quiz |
 | [ ] | ASG scheduled action | ✅ Đã có | 3 | exam3_q54, exam4_q21, exam6_q52 | asg.mdx#s1 / ScalingPolicySim<br>asg.mdx#s1 |
 | [ ] | Auto Scaling group | ✅ Đã có | 3 | exam4_q9, exam4_q53, exam6_q43 | asg.mdx#s1<br>asg.mdx#s1 / ScalingPolicySim |
 | [ ] | Auto Scaling group across multiple AZs behind ALB | ✅ Đã có | 2 | exam2_q32, exam5_q7 | global-infra.mdx#s3 / AzFailureSim<br>asg.mdx#s2 / AzCapacityCalc |
@@ -632,6 +634,7 @@ Có **972 keyword** khác nhau: ✅ 963 (99%) · 🟡 3 (0%) · ❌ 6 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
+| [ ] | CloudFront vs S3 Transfer Acceleration for large uploads | 🟡 Một phần | 1 | exam3_q37 | global-infra.mdx#s4; global-infra.mdx#s5 / EdgeChoiceSim; s3.mdx#s5 / UploadSim |
 | [ ] | S3 Lifecycle minimum 30 days before transition to IA | 🟡 Một phần | 1 | exam1_q8 | s3.mdx#s1 / LifecycleValidator (teaches only the 30-day minimum storage charge in IA; validator accepts Standard→IA after 7 days; neither the old 30-day transition rule nor its July 2026 removal is mentioned) |
 | [ ] | S3 Transfer Acceleration | ✅ Đã có | 9 | exam1_q18, exam1_q64, exam2_q12, exam3_q37, exam4_q18, exam4_q29, exam5_q21, exam5_q48, exam6_q58 | s3.mdx#s5 / UploadSim<br>s3.mdx#s5 |
 | [ ] | S3 One Zone-IA | ✅ Đã có | 5 | exam1_q8, exam4_q43, exam5_q49, exam5_q51, exam6_q28 | s3.mdx#s1<br>s3.mdx#s1 / LifecycleValidator |
@@ -653,7 +656,6 @@ Có **972 keyword** khác nhau: ✅ 963 (99%) · 🟡 3 (0%) · ❌ 6 (1%).
 | [ ] | S3 Standard | ✅ Đã có | 2 | exam2_q29, exam5_q52 | s3.mdx#s1; storage.mdx#s1<br>s3.mdx#s1 |
 | [ ] | S3 Storage Class Analysis | ✅ Đã có | 2 | exam4_q30, exam6_q3 | s3.mdx#s3 / RequirementPicker |
 | [ ] | Access control list (ACL) | ✅ Đã có | 1 | exam4_q34 | s3.mdx#s3 |
-| [ ] | CloudFront vs S3 Transfer Acceleration for large uploads | ✅ Đã có | 1 | exam3_q37 | s3.mdx#s5; global-infra.mdx#s5 / EdgeChoiceSim |
 | [ ] | Glacier Vault Lock | ✅ Đã có | 1 | exam4_q64 | s3.mdx#s2 |
 | [ ] | S3 access control list (ACL) | ✅ Đã có | 1 | exam5_q39 | s3.mdx#s2 / s3.mdx#s7 / QuickCompare |
 | [ ] | S3 Access Point | ✅ Đã có | 1 | exam2_q24 | s3.mdx#s3 / RequirementPicker |
@@ -708,6 +710,7 @@ Có **972 keyword** khác nhau: ✅ 963 (99%) · 🟡 3 (0%) · ❌ 6 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
+| [ ] | Amazon S3 cannot be mounted as a file system | 🟡 Một phần | 1 | exam3_q32 | storage.mdx#s1; storage.mdx#s5 / MountpointSim |
 | [ ] | Amazon FSx for Lustre | ✅ Đã có | 6 | exam1_q65, exam2_q56, exam3_q5, exam3_q43, exam5_q28, exam5_q47 | storage.mdx#s4 / FsxSim |
 | [ ] | Amazon EFS | ✅ Đã có | 3 | exam1_q43, exam1_q51, exam2_q56 | storage.mdx#s1<br>storage.mdx#s1, #s3 |
 | [ ] | Amazon FSx for Windows File Server | ✅ Đã có | 3 | exam1_q24, exam3_q5, exam4_q37 | storage.mdx#s4 / FsxSim<br>storage.mdx#s4 |
@@ -744,7 +747,6 @@ Có **972 keyword** khác nhau: ✅ 963 (99%) · 🟡 3 (0%) · ❌ 6 (1%).
 | [ ] | Amazon FSx for Windows File Server (Active Directory integration) | ✅ Đã có | 1 | exam3_q43 | storage.mdx#s4 / FsxSim |
 | [ ] | Amazon FSx for Windows File Server (DFS support) | ✅ Đã có | 1 | exam1_q65 | storage.mdx#s4 / FsxSim |
 | [ ] | Amazon S3 as highly available document store | ✅ Đã có | 1 | exam6_q15 | storage.mdx#s1 / SharedStorageSim |
-| [ ] | Amazon S3 cannot be mounted as a file system | ✅ Đã có | 1 | exam3_q32 | storage.mdx#s1 |
 | [ ] | EBS Cold HDD (sc1) | ✅ Đã có | 1 | exam3_q27 | storage.mdx#s2 / VolumeChooser |
 | [ ] | EBS encryption (at rest, in transit, snapshots) | ✅ Đã có | 1 | exam5_q40 | storage.mdx#s2 |
 | [ ] | EBS fast snapshot restore | ✅ Đã có | 1 | exam5_q64 | storage.mdx#s2 |
@@ -783,6 +785,7 @@ Có **972 keyword** khác nhau: ✅ 963 (99%) · 🟡 3 (0%) · ❌ 6 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
+| [ ] | DMS Basic Schema Copy (no secondary indexes, foreign keys, stored procedures) | ❌ Thiếu | 1 | exam3_q4 |  |
 | [ ] | AWS DataSync | ✅ Đã có | 6 | exam1_q9, exam1_q35, exam3_q3, exam4_q36, exam5_q41, exam5_q48 | storage-migration.mdx#s2<br>storage-migration.mdx#s2 / TransferPlannerSim |
 | [ ] | Storage Gateway S3 File Gateway | ✅ Đã có | 3 | exam1_q35, exam3_q3, exam3_q43 | storage-migration.mdx#s1<br>storage-migration.mdx#s1 / ScenarioFlow |
 | [ ] | Amazon S3 File Gateway | ✅ Đã có | 2 | exam5_q28, exam5_q48 | storage-migration.mdx#s1<br>storage-migration.mdx#s1; storage-migration.mdx#s2 |
@@ -824,6 +827,7 @@ Có **972 keyword** khác nhau: ✅ 963 (99%) · 🟡 3 (0%) · ❌ 6 (1%).
 |---|---|---|---:|---|---|
 | [ ] | Aurora multi-master cluster (single Region) | ❌ Thiếu | 1 | exam2_q61 |  |
 | [ ] | RDS DB snapshot storage (not accessible as objects in a customer S3 bucket) | ❌ Thiếu | 1 | exam2_q57 |  |
+| [ ] | RDS magnetic storage (previous generation, backward compatibility only) | ❌ Thiếu | 1 | exam3_q41 |  |
 | [ ] | RDS Multi-AZ standby (not readable) | ✅ Đã có | 6 | exam2_q13, exam3_q41, exam4_q13, exam4_q50, exam6_q19, exam6_q46 | rds.mdx#s1 / MultiAzSim<br>rds.mdx#s1 |
 | [ ] | Aurora Global Database | ✅ Đã có | 4 | exam1_q7, exam1_q47, exam2_q5, exam4_q12 | rds.mdx#s3<br>rds.mdx#s3 / AuroraSim |
 | [ ] | Aurora Serverless v2 | ✅ Đã có | 4 | exam2_q53, exam4_q2, exam4_q12, exam6_q17 | rds.mdx#s3 / RequirementPicker<br>rds.mdx#s3 |
@@ -906,6 +910,7 @@ Có **972 keyword** khác nhau: ✅ 963 (99%) · 🟡 3 (0%) · ❌ 6 (1%).
 | [ ] | DynamoDB global tables (multi-active, sub-second replication) | ✅ Đã có | 1 | exam5_q59 | dynamodb.mdx#s5 / MultiRegionSim |
 | [ ] | DynamoDB hot partition | ✅ Đã có | 1 | exam4_q54 | dynamodb.mdx#s2 |
 | [ ] | DynamoDB is not in-memory | ✅ Đã có | 1 | exam1_q29 | dynamodb.mdx#s2 |
+| [ ] | DynamoDB item size limit (400 KB) | ✅ Đã có | 1 | exam3_q11 | dynamodb.mdx#s1 |
 | [ ] | DynamoDB on-demand backup | ✅ Đã có | 1 | exam3_q49 | dynamodb.mdx#s4 / RecoverySim |
 | [ ] | DynamoDB Streams (custom replication) | ✅ Đã có | 1 | exam5_q27 | dynamodb.mdx#s5 / MultiRegionSim |
 | [ ] | DynamoDB Streams (not a backup) | ✅ Đã có | 1 | exam3_q49 | dynamodb.mdx#s3; dynamodb.mdx#s4 |

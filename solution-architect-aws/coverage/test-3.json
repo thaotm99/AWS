@@ -115,6 +115,12 @@
           "lesson": "storage-migration",
           "status": "covered",
           "where": "storage-migration.mdx#s3"
+        },
+        {
+          "keyword": "DMS Basic Schema Copy (no secondary indexes, foreign keys, stored procedures)",
+          "lesson": "storage-migration",
+          "status": "missing",
+          "where": ""
         }
       ]
     },
@@ -358,6 +364,12 @@
           "lesson": "storage",
           "status": "covered",
           "where": "storage.mdx#s1 / SharedStorageSim"
+        },
+        {
+          "keyword": "DynamoDB item size limit (400 KB)",
+          "lesson": "dynamodb",
+          "status": "covered",
+          "where": "dynamodb.mdx#s1"
         }
       ]
     },
@@ -1015,8 +1027,8 @@
         {
           "keyword": "Amazon S3 cannot be mounted as a file system",
           "lesson": "storage",
-          "status": "covered",
-          "where": "storage.mdx#s1"
+          "status": "partial",
+          "where": "storage.mdx#s1; storage.mdx#s5 / MountpointSim"
         }
       ]
     },
@@ -1148,8 +1160,8 @@
         {
           "keyword": "CloudFront vs S3 Transfer Acceleration for large uploads",
           "lesson": "s3",
-          "status": "covered",
-          "where": "s3.mdx#s5; global-infra.mdx#s5 / EdgeChoiceSim"
+          "status": "partial",
+          "where": "global-infra.mdx#s4; global-infra.mdx#s5 / EdgeChoiceSim; s3.mdx#s5 / UploadSim"
         },
         {
           "keyword": "Global Accelerator (no caching, not for S3 uploads)",
@@ -1186,7 +1198,7 @@
           "keyword": "EC2 recovery requires EBS-backed instance (no instance store)",
           "lesson": "ec2",
           "status": "covered",
-          "where": "ec2.mdx#challenge / Quiz"
+          "where": "backup-dr.mdx#s4 / Ec2RecoverSim; ec2.mdx#challenge / Quiz"
         },
         {
           "keyword": "AWS Trusted Advisor",
@@ -1269,6 +1281,12 @@
           "lesson": "rds",
           "status": "covered",
           "where": "rds.mdx#s1 / MultiAzSim"
+        },
+        {
+          "keyword": "RDS magnetic storage (previous generation, backward compatibility only)",
+          "lesson": "rds",
+          "status": "missing",
+          "where": ""
         }
       ]
     },
@@ -1381,6 +1399,12 @@
           "lesson": "elb",
           "status": "covered",
           "where": "elb.mdx#s1 / LbTypeSim"
+        },
+        {
+          "keyword": "Elastic IP cannot be assigned to an Auto Scaling group",
+          "lesson": "asg",
+          "status": "partial",
+          "where": "elb.mdx#challenge / Quiz"
         }
       ]
     },
@@ -1579,6 +1603,12 @@
           "lesson": "ec2",
           "status": "covered",
           "where": "ec2.mdx#challenge / SortGame"
+        },
+        {
+          "keyword": "Persistent Spot request with a stopped instance (reopens only after start)",
+          "lesson": "ec2",
+          "status": "missing",
+          "where": ""
         }
       ]
     },
