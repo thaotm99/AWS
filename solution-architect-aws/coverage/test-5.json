@@ -75,8 +75,8 @@
         {
           "keyword": "Aurora failover (replica promotion, no standby instance)",
           "lesson": "rds",
-          "status": "partial",
-          "where": "rds.mdx#s3 / AuroraSim (replica promotion shown; never says Aurora has no separate standby instance)"
+          "status": "covered",
+          "where": "rds.mdx#s3 / AuroraSim + Takeaway; rds.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "Lambda concurrency",

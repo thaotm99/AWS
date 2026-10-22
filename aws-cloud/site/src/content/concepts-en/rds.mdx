@@ -1,7 +1,7 @@
 ---
 title: "RDS + Aurora: high availability, read scaling and multi-Region deployment"
 lede: "This lesson covers six topics: comparing Multi-AZ and Read Replicas for writes, reads, failures, maintenance and backups; handling common RDS operational incidents; deploying Aurora for heavy read traffic and multiple Regions; encrypting a database that is already running; configuring copies for reporting and DR; and telling apart features that are easy to confuse."
-minutes: 38
+minutes: 40
 scenes: 6
 prerequisites: ["vpc", "kms"]
 docs:
@@ -51,6 +51,14 @@ docs:
     url: "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/postgresql-ml.html"
   - title: "Amazon Redshift ML"
     url: "https://docs.aws.amazon.com/redshift/latest/dg/machine_learning.html"
+  - title: "Multi-AZ DB cluster deployments"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/multi-az-db-clusters-concepts.html"
+  - title: "Exporting DB snapshot data to Amazon S3"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ExportSnapshot.html"
+  - title: "Preparing for Aurora MySQL version 1 end of life"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.MySQL56.EOL.html"
+  - title: "Amazon Aurora Multi-Master is now generally available (with 2023 update)"
+    url: "https://aws.amazon.com/about-aws/whats-new/2019/08/amazon-aurora-multimaster-now-generally-available/"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -83,7 +91,9 @@ Write an order, run a report, run an automated backup, then simulate a primary f
 
 <MultiAzSim client:visible />
 
-<Takeaway>Multi-AZ: synchronous replication to one standby that does not serve reads, for fault tolerance; failover works by updating the CNAME. Read Replica: asynchronous replication that serves reads, to offload read traffic. OS maintenance is applied to the standby first; engine upgrades are applied to both at the same time (except RDS for SQL Server, which uses a rolling upgrade). Automated backups and snapshots are taken from the standby, so I/O on the primary is not suspended. A Multi-AZ failover typically takes 60–120 seconds.</Takeaway>
+The simulation above is a **Multi-AZ DB instance deployment** (one standby). RDS has a second form, the **Multi-AZ DB cluster deployment** (RDS for MySQL and RDS for PostgreSQL): one writer and **two reader DB instances** in three AZs of the same Region, with **semisynchronous** replication (acknowledgment from at least one reader), and the two readers are both failover targets and **serve read traffic**. Statements in this lesson that "the standby serves no reads" apply to the DB instance form only.
+
+<Takeaway>Multi-AZ DB instance deployment: synchronous replication to one standby that does not serve reads, for fault tolerance; a Multi-AZ DB cluster deployment has two readers in two other AZs that are failover targets and also serve reads; failover works by updating the CNAME. Read Replica: asynchronous replication that serves reads, to offload read traffic. OS maintenance is applied to the standby first; engine upgrades are applied to both at the same time (except RDS for SQL Server, which uses a rolling upgrade). Automated backups and snapshots are taken from the standby, so I/O on the primary is not suspended. A Multi-AZ failover typically takes 60–120 seconds.</Takeaway>
 
 </Scene>
 
@@ -122,7 +132,7 @@ Some other ShopViet decisions involving Aurora:
     why: "No additional charges for read and write I/O; you pay only for instance and storage usage. AWS recommends this configuration when I/O costs make up 25% or more of the total Aurora cost." },
 ]} />
 
-<Takeaway>Aurora Replicas + the reader endpoint serve heavy read traffic and are also failover targets. Fluctuating read traffic: Aurora Auto Scaling. Multiple Regions (up to 10 secondary Regions), RPO typically measured in seconds, RTO in minutes: Global Database. Unpredictable load: Serverless v2.</Takeaway>
+<Takeaway>Aurora has **no separate standby instance**: when the writer fails, Aurora promotes an Aurora Replica (by priority tier 0–15) to be the new writer; if the cluster has no replica, Aurora recreates the primary in the same AZ (typically under 10 minutes, much slower than promoting a replica). So, to improve availability, create an Aurora Replica in another AZ. Aurora Replicas + the reader endpoint serve heavy read traffic and are also failover targets. Fluctuating read traffic: Aurora Auto Scaling. Multiple Regions (up to 10 secondary Regions), RPO typically measured in seconds, RTO in minutes: Global Database. Unpredictable load: Serverless v2.</Takeaway>
 
 </Scene>
 
@@ -152,6 +162,8 @@ Disk encryption is only one part. ShopViet's other security requirements:
   { need: "The database is already encrypted at rest; data in transit from the application to the database must also be protected", answer: "Connect with SSL/TLS", why: "KMS protects data only at rest." },
   { need: "Lambda connects to PostgreSQL without storing a password", answer: "IAM database authentication + IAM role", why: "Lambda gets a short-lived token through its IAM role instead of a password." },
   { need: "Share a copy of the encrypted database with the analytics team's account", answer: "Share the snapshot + grant use of the KMS key", why: "The snapshot must be encrypted with a customer managed key (a snapshot encrypted with the account's default KMS key cannot be shared), and the receiving account must have permission to use that key. See the KMS lesson." },
+  { need: "An external auditor proposes: grant them read access to the snapshot objects in an S3 bucket", answer: "Not possible: share the snapshot through RDS, or export the snapshot to S3",
+    why: "Snapshots and automated backups are stored by RDS in Amazon S3 that RDS manages, not as objects in a bucket of your account; you work with them only through RDS (console, API), so you cannot grant bucket access or an IAM role on snapshot objects. To give the auditor their own database: share the snapshot (with the KMS key if encrypted). If you need the data as files in your own bucket: snapshot export to S3 writes the data in Apache Parquet format (query it with Athena or Redshift Spectrum), but exported data cannot be restored to a DB instance." },
 ]} />
 
 Two approaches sound plausible but cannot encrypt the database: creating an encrypted Read Replica (an encrypted replica of an unencrypted instance is not possible) and turning on Multi-AZ (encryption can be enabled only when the instance is created). Part 5 lets you try both directly.
@@ -168,11 +180,11 @@ The accounting team needs a copy of the order database (RDS for MySQL, unencrypt
 
 For DR, ShopViet combines two mechanisms in another Region: a **cross-Region read replica** (promoted to a standalone DB instance if the primary Region fails) and **cross-Region automated backups** (RDS copies snapshots and transaction logs to the destination Region as soon as they are ready). The storage type, for example Provisioned IOPS, determines only I/O performance and is not a DR measure.
 
-<Takeaway>Reports: a same-Region Read Replica with the same compute and storage as the source (scale the replica when you scale the source). A replica's encryption follows the source. The Multi-AZ standby serves no reads and stays in the same Region, but automated backups and snapshots are taken from it. DR for RDS: cross-Region read replicas and cross-Region automated backups.</Takeaway>
+<Takeaway>Reports: a same-Region Read Replica with the same compute and storage as the source (scale the replica when you scale the source). A replica's encryption follows the source. The standby of a Multi-AZ DB instance deployment serves no reads and stays in the same Region, but automated backups and snapshots are taken from it. DR for RDS: cross-Region read replicas and cross-Region automated backups.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s6" label="Part 6/6" title="Quick comparison: RDS and Aurora features that are easy to confuse" questions={["exam1_q26", "exam5_q42", "exam4_q2"]}>
+<Scene id="en-s6" label="Part 6/6" title="Quick comparison: RDS and Aurora features that are easy to confuse" questions={["exam1_q26", "exam5_q42", "exam4_q2", "exam2_q61", "exam3_q41", "exam5_q3"]}>
 
 Some features have names close to a real need but solve a different problem. Choose each feature to see when to use it, why it does not fit the matching ShopViet situation, and what to choose instead:
 
@@ -193,9 +205,17 @@ Some features have names close to a real need but solve a different problem. Cho
     use: "Storage types of an **RDS DB instance** (Magnetic is no longer offered for new DB instances).",
     notHere: "Aurora does not use these volume types: data lives in a cluster volume that grows automatically, with no manual IOPS provisioning. Spiky Aurora Serverless v2 workloads need no volume type choice.",
     instead: "Choose the **Aurora I/O-Optimized** configuration (no I/O charges, predictable cost, suited when I/O spending is 25% or more of the total Aurora cost) or **Aurora Standard**." },
+  { name: "Magnetic storage for RDS",
+    use: "The previous-generation storage type of an RDS DB instance. AWS used to keep Magnetic for backward compatibility only and recommended SSD. Magnetic is now deprecated: you cannot create new DB instances on it, RDS has migrated existing magnetic volumes to gp3, and starting July 1, 2026 you cannot restore a snapshot to magnetic storage.",
+    notHere: "Heavy reports slow the website while CPU, memory and storage sit at about 50%. Magnetic is limited to a maximum of 1,000 IOPS, so it does not raise IOPS compared with SSD, and the problem is the reports' read load running on the production instance.",
+    instead: "A same-Region **Read Replica** for reports (parts 1 and 5). Higher IOPS: **Provisioned IOPS SSD** (io2 Block Express) or gp3." },
+  { name: "Aurora multi-master cluster",
+    use: "An Aurora MySQL 5.6 (Aurora MySQL version 1) cluster with up to four DB instances that can all read and write, in **a single Region**; it could not be combined with Global Database. AWS has retired it: Aurora MySQL version 1 reached end of life on February 28, 2023, and multi-master is no longer available as of that date.",
+    notHere: "A global application needs low-latency reads and writes in several Regions, an RPO of seconds and an RTO of about a minute. Multi-master (while it existed) stayed within one Region; ordinary Aurora provisioned or Serverless clusters are also single-Region.",
+    instead: "**Aurora Global Database**: one primary Region writes, secondary Regions serve local reads; promote a secondary if the primary Region fails (part 3)." },
   { name: "Multi-AZ standby",
-    use: "A synchronous copy in another AZ of the same Region for automatic failover; the source of automated backups and snapshots.",
-    notHere: "It serves no reads, cannot be in another Region, and is not a way to encrypt a database.",
+    use: "A synchronous copy in another AZ of the same Region for automatic failover; the source of automated backups and snapshots. Applies to a **Multi-AZ DB instance deployment**. Aurora has no standby: failover promotes an Aurora Replica.",
+    notHere: "The standby of a Multi-AZ DB instance serves no reads, cannot be in another Region, and is not a way to encrypt a database. (A Multi-AZ DB cluster deployment has two readers that serve reads, but still within one Region.)",
     instead: "Reads: a Read Replica or Aurora Replica. Another Region: a cross-Region read replica or Aurora Global Database. Encryption: snapshot → encrypted copy → restore." },
 ]} />
 
@@ -213,7 +233,7 @@ Sort each property into the matching feature. On a mobile device: tap a card, th
     { id: "rr", title: "Read Replica", sub: "Read scaling", hint: "Hint: this property serves scaling read capacity." },
   ]}
   cards={[
-    ["Synchronous replication", "maz"], ["The standby does not serve reads", "maz"], ["Automatic failover via CNAME", "maz"], ["Each transaction is written on at least two nodes", "maz"],
+    ["Synchronous replication", "maz"], ["The standby (DB instance deployment) does not serve reads", "maz"], ["Automatic failover via CNAME", "maz"], ["Each transaction is written on at least two nodes", "maz"],
     ["Asynchronous replication", "rr"], ["Has its own read endpoint", "rr"], ["Can be deployed in another Region", "rr"], ["Serves reporting and analytics", "rr"],
   ]}
 />
@@ -244,7 +264,7 @@ Check question: as the designer of the ShopViet system, which option fits?
   { q: "The accounting team needs to run reports on a copy of the RDS for MySQL database. Which configuration is both cost-effective and in line with AWS guidance?",
     opts: ["A same-Region Read Replica with half the source's compute and storage", "A same-Region Read Replica with the same compute and storage as the source", "Enable Multi-AZ and run the reports on the standby"],
     a: 1,
-    why: "AWS recommends that each read replica has the same compute and storage as the source for replication to operate effectively. The Multi-AZ standby serves no reads." },
+    why: "AWS recommends that each read replica has the same compute and storage as the source for replication to operate effectively. The standby of a Multi-AZ DB instance deployment serves no reads." },
   { q: "The order database runs Multi-AZ. What happens to the primary during the backup window?",
     opts: ["I/O on the primary is suspended during the backup", "Automated backups are taken from the standby, so I/O on the primary is not suspended", "Backups are skipped when Multi-AZ is enabled"],
     a: 1,

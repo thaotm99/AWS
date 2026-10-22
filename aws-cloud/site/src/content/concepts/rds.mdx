@@ -1,7 +1,7 @@
 ---
 title: "RDS + Aurora: tính sẵn sàng cao, mở rộng đọc và triển khai nhiều Region"
 lede: "Bài học trình bày sáu nội dung: so sánh Multi-AZ và Read Replica trong các tình huống ghi, đọc, sự cố, bảo trì và backup; xử lý các sự cố vận hành RDS thường gặp; triển khai Aurora cho tải đọc lớn và nhiều Region; mã hoá một database đang vận hành; cấu hình bản sao cho báo cáo và DR; và phân biệt các tính năng dễ nhầm lẫn."
-minutes: 38
+minutes: 40
 scenes: 6
 prerequisites: ["vpc", "kms"]
 docs:
@@ -51,6 +51,14 @@ docs:
     url: "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/postgresql-ml.html"
   - title: "Amazon Redshift ML"
     url: "https://docs.aws.amazon.com/redshift/latest/dg/machine_learning.html"
+  - title: "Multi-AZ DB cluster deployments"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/multi-az-db-clusters-concepts.html"
+  - title: "Exporting DB snapshot data to Amazon S3"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ExportSnapshot.html"
+  - title: "Preparing for Aurora MySQL version 1 end of life"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.MySQL56.EOL.html"
+  - title: "Amazon Aurora Multi-Master is now generally available (with 2023 update)"
+    url: "https://aws.amazon.com/about-aws/whats-new/2019/08/amazon-aurora-multimaster-now-generally-available/"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -83,7 +91,9 @@ Ghi một đơn hàng, chạy báo cáo, chạy automated backup, sau đó mô p
 
 <MultiAzSim client:visible />
 
-<Takeaway>Multi-AZ: sao chép đồng bộ, một standby không phục vụ đọc, nhằm đảm bảo khả năng chịu lỗi; failover bằng cách cập nhật CNAME. Read Replica: sao chép bất đồng bộ, phục vụ đọc, nhằm giảm tải đọc. Bảo trì OS được áp dụng cho standby trước; nâng cấp engine được áp dụng cho cả hai cùng lúc (riêng RDS for SQL Server dùng rolling upgrade). Automated backup và snapshot lấy từ standby, nên I/O trên primary không bị tạm dừng. Failover Multi-AZ thường mất 60–120 giây.</Takeaway>
+Mô phỏng trên là **Multi-AZ DB instance deployment** (một standby). RDS còn một dạng thứ hai, **Multi-AZ DB cluster deployment** (RDS for MySQL và RDS for PostgreSQL): một writer và **hai reader DB instance** ở ba AZ trong cùng Region, sao chép **bán đồng bộ** (semisynchronous: chỉ cần ít nhất một reader xác nhận), và hai reader vừa là đích failover vừa **phục vụ đọc**. Các phát biểu "standby không phục vụ đọc" trong bài chỉ áp dụng cho dạng DB instance.
+
+<Takeaway>Multi-AZ DB instance deployment: sao chép đồng bộ sang một standby không phục vụ đọc, nhằm đảm bảo khả năng chịu lỗi; Multi-AZ DB cluster deployment có hai reader ở hai AZ khác, vừa là đích failover vừa phục vụ đọc; failover bằng cách cập nhật CNAME. Read Replica: sao chép bất đồng bộ, phục vụ đọc, nhằm giảm tải đọc. Bảo trì OS được áp dụng cho standby trước; nâng cấp engine được áp dụng cho cả hai cùng lúc (riêng RDS for SQL Server dùng rolling upgrade). Automated backup và snapshot lấy từ standby, nên I/O trên primary không bị tạm dừng. Failover Multi-AZ thường mất 60–120 giây.</Takeaway>
 
 </Scene>
 
@@ -122,7 +132,7 @@ Một số quyết định khác của ShopViet liên quan tới Aurora:
     why: "Không tính phí bổ sung cho I/O đọc ghi; chỉ trả phí theo mức sử dụng instance và storage. AWS khuyến nghị cấu hình này khi chi phí I/O chiếm từ 25% tổng chi phí Aurora trở lên." },
 ]} />
 
-<Takeaway>Aurora Replica + reader endpoint phục vụ tải đọc lớn, đồng thời là đích failover. Tải đọc biến động: Aurora Auto Scaling. Nhiều Region (tối đa 10 secondary Region), RPO thường tính bằng giây, RTO tính bằng phút: Global Database. Tải không dự đoán được: Serverless v2.</Takeaway>
+<Takeaway>Aurora **không có standby instance riêng**: khi writer gặp sự cố, Aurora promote một Aurora Replica (theo priority tier 0–15) thành writer mới; nếu cluster không có replica, Aurora tạo lại primary trong cùng AZ (thường dưới 10 phút, chậm hơn nhiều so với promote replica). Vì vậy, để tăng tính sẵn sàng, tạo Aurora Replica ở AZ khác. Aurora Replica + reader endpoint phục vụ tải đọc lớn, đồng thời là đích failover. Tải đọc biến động: Aurora Auto Scaling. Nhiều Region (tối đa 10 secondary Region), RPO thường tính bằng giây, RTO tính bằng phút: Global Database. Tải không dự đoán được: Serverless v2.</Takeaway>
 
 </Scene>
 
@@ -152,6 +162,8 @@ Mã hoá ổ đĩa chỉ là một phần. Các yêu cầu bảo mật khác c�
   { need: "Database đã được mã hoá khi lưu trữ; cần bảo vệ dữ liệu khi truyền từ ứng dụng tới database", answer: "Kết nối bằng SSL/TLS", why: "KMS chỉ bảo vệ dữ liệu khi lưu trữ (at rest)." },
   { need: "Lambda kết nối PostgreSQL mà không lưu trữ mật khẩu", answer: "IAM database authentication + IAM role", why: "Lambda lấy token ngắn hạn thông qua IAM role thay cho mật khẩu." },
   { need: "Chia sẻ bản sao database đã mã hoá cho account của team phân tích", answer: "Share snapshot + cấp quyền sử dụng KMS key", why: "Snapshot phải được mã hoá bằng customer managed key (không share được snapshot mã hoá bằng KMS key mặc định của account), và account nhận phải có quyền sử dụng key đó. Xem bài KMS." },
+  { need: "Kiểm toán viên bên ngoài đề xuất: cấp cho họ quyền đọc object snapshot trong bucket S3", answer: "Không thực hiện được: chia sẻ snapshot qua RDS, hoặc export snapshot sang S3",
+    why: "Snapshot và automated backup được RDS lưu trong Amazon S3 do RDS quản lý, không phải object trong bucket của account; chỉ thao tác được qua RDS (console, API), nên không cấp quyền bucket hay IAM role cho object snapshot được. Để kiểm toán viên có database riêng: share snapshot (kèm KMS key nếu mã hoá). Nếu cần dữ liệu dạng file trong bucket của mình: snapshot export sang S3 ghi dữ liệu ở định dạng Apache Parquet (đọc bằng Athena, Redshift Spectrum), nhưng không restore dữ liệu export thành DB instance được." },
 ]} />
 
 Hai cách nghe hợp lý nhưng không mã hoá được database: tạo Read Replica có mã hoá (không tạo được replica mã hoá từ instance chưa mã hoá) và bật Multi-AZ (encryption chỉ bật được khi tạo instance). Phần 5 cho phép thử trực tiếp hai cách này.
@@ -168,11 +180,11 @@ Phòng kế toán cần một bản sao của database đơn hàng (RDS for MySQ
 
 Với DR, ShopViet kết hợp hai cơ chế ở Region khác: **cross-Region read replica** (promote thành DB instance độc lập khi Region chính gặp sự cố) và **cross-Region automated backups** (RDS sao chép snapshot và transaction log sang Region đích ngay khi chúng sẵn sàng). Loại storage, ví dụ Provisioned IOPS, chỉ quyết định hiệu năng I/O và không phải biện pháp DR.
 
-<Takeaway>Báo cáo: Read Replica cùng Region, cùng compute và storage như source (khi scale source thì scale cả replica). Mã hoá của replica theo source. Standby Multi-AZ không phục vụ đọc và chỉ ở cùng Region, nhưng là nơi lấy automated backup và snapshot. DR cho RDS: cross-Region read replica và cross-Region automated backups.</Takeaway>
+<Takeaway>Báo cáo: Read Replica cùng Region, cùng compute và storage như source (khi scale source thì scale cả replica). Mã hoá của replica theo source. Standby của Multi-AZ DB instance deployment không phục vụ đọc và chỉ ở cùng Region, nhưng là nơi lấy automated backup và snapshot. DR cho RDS: cross-Region read replica và cross-Region automated backups.</Takeaway>
 
 </Scene>
 
-<Scene id="s6" label="Phần 6/6" title="Phân biệt nhanh: các tính năng RDS và Aurora dễ nhầm lẫn" questions={["exam1_q26", "exam5_q42", "exam4_q2"]}>
+<Scene id="s6" label="Phần 6/6" title="Phân biệt nhanh: các tính năng RDS và Aurora dễ nhầm lẫn" questions={["exam1_q26", "exam5_q42", "exam4_q2", "exam2_q61", "exam3_q41", "exam5_q3"]}>
 
 Một số tính năng có tên gần với nhu cầu thực tế nhưng giải quyết vấn đề khác. Chọn từng tính năng để xem trường hợp sử dụng, lý do không phù hợp trong tình huống ShopViet tương ứng, và phương án nên chọn:
 
@@ -193,9 +205,17 @@ Một số tính năng có tên gần với nhu cầu thực tế nhưng giải 
     use: "Các loại storage của **RDS DB instance** (Magnetic đã ngừng cung cấp cho DB instance mới).",
     notHere: "Aurora không dùng các loại volume này: dữ liệu nằm trong cluster volume tự động tăng dung lượng, không cấp phát IOPS thủ công. Tải đột biến của Aurora Serverless v2 không cần chọn loại volume.",
     instead: "Chọn cấu hình **Aurora I/O-Optimized** (không tính phí I/O, chi phí dự đoán được, phù hợp khi chi phí I/O từ 25% tổng chi phí Aurora trở lên) hoặc **Aurora Standard**." },
+  { name: "Magnetic storage cho RDS",
+    use: "Loại storage thế hệ cũ của RDS DB instance. Trước đây AWS chỉ giữ Magnetic để tương thích ngược và khuyến nghị dùng SSD. Hiện nay Magnetic đã bị ngừng: không tạo DB instance mới bằng Magnetic, RDS đã chuyển các volume Magnetic hiện có sang gp3, và từ 01/07/2026 không restore snapshot về Magnetic được.",
+    notHere: "Báo cáo nặng làm chậm website trong khi CPU, bộ nhớ và storage chỉ dùng khoảng 50%. Magnetic giới hạn tối đa 1.000 IOPS nên không tăng IOPS so với SSD, và vấn đề nằm ở tải đọc của báo cáo chạy chung với production.",
+    instead: "**Read Replica** cùng Region cho báo cáo (phần 1, phần 5). Cần IOPS cao hơn: **Provisioned IOPS SSD** (io2 Block Express) hoặc gp3." },
+  { name: "Aurora multi-master cluster",
+    use: "Cluster Aurora MySQL 5.6 (Aurora MySQL version 1) với tối đa bốn DB instance đều đọc ghi được, trong **một Region**; không dùng được cùng Global Database. AWS đã ngừng tính năng này: Aurora MySQL version 1 hết vòng đời ngày 28/02/2023, và multi-master không còn được cung cấp từ ngày đó.",
+    notHere: "Ứng dụng toàn cầu cần đọc ghi độ trễ thấp ở nhiều Region, RPO tính bằng giây, RTO khoảng một phút. Multi-master (khi còn tồn tại) chỉ nằm trong một Region; Aurora provisioned hay Serverless thông thường cũng chỉ ở một Region.",
+    instead: "**Aurora Global Database**: một Region chính ghi, các secondary Region đọc tại chỗ; promote secondary khi Region chính gặp sự cố (phần 3)." },
   { name: "Multi-AZ standby",
-    use: "Bản sao đồng bộ ở một AZ khác trong cùng Region để tự động failover; nơi lấy automated backup và snapshot.",
-    notHere: "Không phục vụ đọc, không đặt ở Region khác, và không phải cách mã hoá database.",
+    use: "Bản sao đồng bộ ở một AZ khác trong cùng Region để tự động failover; nơi lấy automated backup và snapshot. Áp dụng cho **Multi-AZ DB instance deployment**. Aurora không có standby: failover promote một Aurora Replica.",
+    notHere: "Standby của Multi-AZ DB instance không phục vụ đọc, không đặt ở Region khác, và không phải cách mã hoá database. (Multi-AZ DB cluster deployment có hai reader phục vụ đọc, nhưng cũng chỉ trong một Region.)",
     instead: "Đọc: Read Replica hoặc Aurora Replica. Region khác: cross-Region read replica hoặc Aurora Global Database. Mã hoá: snapshot → copy có mã hoá → restore." },
 ]} />
 
@@ -213,7 +233,7 @@ Phân loại từng đặc tính vào tính năng tương ứng. Trên thiết b
     { id: "rr", title: "Read Replica", sub: "Mở rộng đọc", hint: "Gợi ý: đặc tính này phục vụ mở rộng khả năng đọc." },
   ]}
   cards={[
-    ["Sao chép đồng bộ", "maz"], ["Standby không phục vụ đọc", "maz"], ["Failover tự động bằng CNAME", "maz"], ["Ghi mỗi giao dịch trên ít nhất hai node", "maz"],
+    ["Sao chép đồng bộ", "maz"], ["Standby (DB instance deployment) không phục vụ đọc", "maz"], ["Failover tự động bằng CNAME", "maz"], ["Ghi mỗi giao dịch trên ít nhất hai node", "maz"],
     ["Sao chép bất đồng bộ", "rr"], ["Có endpoint riêng để đọc", "rr"], ["Triển khai được tại Region khác", "rr"], ["Phục vụ báo cáo, analytics", "rr"],
   ]}
 />
@@ -244,7 +264,7 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
   { q: "Phòng kế toán cần chạy báo cáo trên bản sao của database RDS for MySQL. Cấu hình nào vừa tiết kiệm vừa đúng khuyến nghị?",
     opts: ["Read Replica cùng Region, compute và storage bằng một nửa source", "Read Replica cùng Region, cùng compute và storage như source", "Bật Multi-AZ và chạy báo cáo trên standby"],
     a: 1,
-    why: "AWS khuyến nghị mỗi read replica có cùng compute và storage như source để replication hoạt động hiệu quả. Standby Multi-AZ không phục vụ đọc." },
+    why: "AWS khuyến nghị mỗi read replica có cùng compute và storage như source để replication hoạt động hiệu quả. Standby của Multi-AZ DB instance deployment không phục vụ đọc." },
   { q: "Database đơn hàng chạy Multi-AZ. Điều gì xảy ra với primary trong backup window?",
     opts: ["I/O trên primary bị tạm dừng trong lúc backup", "Automated backup lấy từ standby nên I/O trên primary không bị tạm dừng", "Backup bị bỏ qua khi bật Multi-AZ"],
     a: 1,

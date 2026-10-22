@@ -1673,8 +1673,8 @@
         {
           "keyword": "RDS DB snapshot storage (not accessible as objects in a customer S3 bucket)",
           "lesson": "rds",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "rds.mdx#s4 / RequirementPicker"
         }
       ]
     },
@@ -1799,8 +1799,8 @@
         {
           "keyword": "Aurora multi-master cluster (single Region)",
           "lesson": "rds",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "rds.mdx#s6 / QuickCompare"
         }
       ]
     },

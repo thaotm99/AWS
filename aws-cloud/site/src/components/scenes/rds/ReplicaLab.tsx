@@ -68,7 +68,7 @@ export default function ReplicaLab() {
       }
       out.push({ tone: "info", tag: { vi: "TẠO", en: "CREATE" }, msg: { vi: "RDS tự tạo và quản lý standby đồng bộ ở AZ khác; không chọn cấu hình riêng cho standby.", en: "RDS provisions and maintains the synchronous standby in another AZ; you do not size the standby separately." } });
       out.push({ tone: "ok", tag: { vi: "BACKUP", en: "BACKUP" }, msg: { vi: "Lợi ích thực tế: automated backup và DB snapshot được **lấy từ standby**, nên I/O trên primary không bị tạm dừng trong backup window.", en: "A real benefit: automated backups and DB snapshots are **taken from the standby**, so I/O on the primary is not suspended during the backup window." } });
-      out.push({ tone: "bad", tag: { vi: "BÁO CÁO", en: "REPORTS" }, msg: { vi: "Standby **không phục vụ đọc**: không có endpoint để chạy báo cáo trên standby.", en: "The standby **serves no reads**: there is no endpoint to run reports against it." } });
+      out.push({ tone: "bad", tag: { vi: "BÁO CÁO", en: "REPORTS" }, msg: { vi: "Standby của Multi-AZ DB instance deployment **không phục vụ đọc**: không có endpoint để chạy báo cáo trên standby.", en: "The standby of a Multi-AZ DB instance deployment **serves no reads**: there is no endpoint to run reports against it." } });
       return { lines: out, created: true, reportOk: false, verdict: { tone: "bad", msg: { vi: "Multi-AZ phục vụ tính sẵn sàng cao, không phải mở rộng đọc. Báo cáo cần **Read Replica**.", en: "Multi-AZ is for high availability, not read scaling. The reports need a **Read Replica**." } } };
     }
     if (enc === "encrypt") {

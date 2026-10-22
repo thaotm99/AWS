@@ -11,7 +11,7 @@ type Role = "primary" | "standby";
 const APP: Pt = [90, 150];
 const ENDPOINT: Pt = [260, 150];
 const POS = { a: [470, 90] as Pt, b: [470, 230] as Pt, replica: [680, 150] as Pt };
-const INTRO: Bi<ReactNode> = { vi: "Primary tại AZ a, standby tại AZ b, cùng một Read Replica. Thực hiện lần lượt từng thao tác phía trên.", en: "Primary in AZ a, standby in AZ b, plus one Read Replica. Try each action above in turn." };
+const INTRO: Bi<ReactNode> = { vi: "Multi-AZ DB instance deployment: primary tại AZ a, standby tại AZ b, cùng một Read Replica. Thực hiện lần lượt từng thao tác phía trên.", en: "Multi-AZ DB instance deployment: primary in AZ a, standby in AZ b, plus one Read Replica. Try each action above in turn." };
 
 export default function MultiAzSim() {
   const [primaryAz, setPrimaryAz] = useState<"a" | "b">("a");
@@ -42,7 +42,7 @@ export default function MultiAzSim() {
     setBusy(true);
     await travel(layer, [APP, [APP[0], 280], [POS.replica[0], 280], POS.replica], 1000, "pkt", 6);
     await travel(layer, [POS.replica, [POS.replica[0], 280], [APP[0], 280], APP], 900, "pkt-back", 6);
-    setNote({ vi: <>Tác vụ báo cáo và analytics đọc từ <b>Read Replica</b> qua endpoint riêng của replica, không ảnh hưởng hiệu năng của primary. Standby của Multi-AZ <b>không phục vụ đọc</b>.</>, en: <>Reporting and analytics jobs read from the <b>Read Replica</b> through the replica&apos;s own endpoint, without affecting the primary&apos;s performance. The Multi-AZ standby <b>does not serve reads</b>.</> });
+    setNote({ vi: <>Tác vụ báo cáo và analytics đọc từ <b>Read Replica</b> qua endpoint riêng của replica, không ảnh hưởng hiệu năng của primary. Standby của Multi-AZ DB instance deployment <b>không phục vụ đọc</b> (Multi-AZ DB cluster deployment thì có hai reader phục vụ đọc).</>, en: <>Reporting and analytics jobs read from the <b>Read Replica</b> through the replica&apos;s own endpoint, without affecting the primary&apos;s performance. The standby of a Multi-AZ DB instance deployment <b>does not serve reads</b> (a Multi-AZ DB cluster deployment has two readers that do).</> });
     setBusy(false);
   }
 

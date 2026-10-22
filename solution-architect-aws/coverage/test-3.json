@@ -1285,8 +1285,8 @@
         {
           "keyword": "RDS magnetic storage (previous generation, backward compatibility only)",
           "lesson": "rds",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "rds.mdx#s6 / QuickCompare"
         }
       ]
     },

@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **983 keyword** khác nhau: ✅ 959 (98%) · 🟡 13 (1%) · ❌ 11 (1%).
+Có **983 keyword** khác nhau: ✅ 963 (98%) · 🟡 12 (1%) · ❌ 8 (1%).
 
 ### Theo bài học
 
@@ -36,7 +36,7 @@ Có **983 keyword** khác nhau: ✅ 959 (98%) · 🟡 13 (1%) · ❌ 11 (1%).
 | [s3](#s3) | 72 | 68 | 4 | 0 | 94% |
 | [storage](#storage) | 70 | 68 | 2 | 0 | 97% |
 | [storage-migration](#storage-migration) | 35 | 34 | 0 | 1 | 97% |
-| [rds](#rds) | 61 | 57 | 1 | 3 | 93% |
+| [rds](#rds) | 61 | 61 | 0 | 0 | 100% |
 | [dynamodb](#dynamodb) | 25 | 25 | 0 | 0 | 100% |
 | [analytics](#analytics) | 48 | 47 | 0 | 1 | 98% |
 | [messaging](#messaging) | 51 | 51 | 0 | 0 | 100% |
@@ -51,10 +51,10 @@ Có **983 keyword** khác nhau: ✅ 959 (98%) · 🟡 13 (1%) · ❌ 11 (1%).
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
 | Đề 1 | 223 | 2 | 1 |
-| Đề 2 | 198 | 1 | 5 |
-| Đề 3 | 221 | 3 | 3 |
+| Đề 2 | 200 | 1 | 3 |
+| Đề 3 | 222 | 3 | 2 |
 | Đề 4 | 235 | 1 | 1 |
-| Đề 5 | 219 | 6 | 1 |
+| Đề 5 | 220 | 5 | 1 |
 | Đề 6 | 217 | 0 | 0 |
 
 ## global-infra
@@ -829,10 +829,6 @@ Có **983 keyword** khác nhau: ✅ 959 (98%) · 🟡 13 (1%) · ❌ 11 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | Aurora multi-master cluster (single Region) | ❌ Thiếu | 1 | exam2_q61 |  |
-| [ ] | RDS DB snapshot storage (not accessible as objects in a customer S3 bucket) | ❌ Thiếu | 1 | exam2_q57 |  |
-| [ ] | RDS magnetic storage (previous generation, backward compatibility only) | ❌ Thiếu | 1 | exam3_q41 |  |
-| [ ] | Aurora failover (replica promotion, no standby instance) | 🟡 Một phần | 1 | exam5_q3 | rds.mdx#s3 / AuroraSim (replica promotion shown; never says Aurora has no separate standby instance) |
 | [ ] | RDS Multi-AZ standby (not readable) | ✅ Đã có | 6 | exam2_q13, exam3_q41, exam4_q13, exam4_q50, exam6_q19, exam6_q46 | rds.mdx#s1 / MultiAzSim<br>rds.mdx#s1 |
 | [ ] | Aurora Global Database | ✅ Đã có | 4 | exam1_q7, exam1_q47, exam2_q5, exam4_q12 | rds.mdx#s3<br>rds.mdx#s3 / AuroraSim |
 | [ ] | Aurora Serverless v2 | ✅ Đã có | 4 | exam2_q53, exam4_q2, exam4_q12, exam6_q17 | rds.mdx#s3 / RequirementPicker<br>rds.mdx#s3 |
@@ -855,10 +851,12 @@ Có **983 keyword** khác nhau: ✅ 959 (98%) · 🟡 13 (1%) · ❌ 11 (1%).
 | [ ] | Aurora cross-Region read replica (manual promotion) | ✅ Đã có | 1 | exam6_q23 | backup-dr.mdx#s2 |
 | [ ] | Aurora cross-Region read replica (read-only) | ✅ Đã có | 1 | exam1_q55 | rds.mdx#s3 |
 | [ ] | Aurora database cloning (Aurora only) | ✅ Đã có | 1 | exam5_q42 | rds.mdx#s6 / QuickCompare |
+| [ ] | Aurora failover (replica promotion, no standby instance) | ✅ Đã có | 1 | exam5_q3 | rds.mdx#s3 / AuroraSim + Takeaway; rds.mdx#s6 / QuickCompare |
 | [ ] | Aurora Global Database (managed failover) | ✅ Đã có | 1 | exam6_q23 | backup-dr.mdx#s2 / DataFailoverSim; rds.mdx#s3 |
 | [ ] | Aurora Global Database (RPO seconds, RTO minute) | ✅ Đã có | 1 | exam2_q61 | rds.mdx#s3 / AuroraSim; backup-dr.mdx |
 | [ ] | Aurora Global Database (single writer Region) | ✅ Đã có | 1 | exam5_q59 | rds.mdx#s3 / AuroraSim; dynamodb.mdx#s5 / MultiRegionSim |
 | [ ] | Aurora I/O-Optimized | ✅ Đã có | 1 | exam4_q2 | rds.mdx#s3 / RequirementPicker |
+| [ ] | Aurora multi-master cluster (single Region) | ✅ Đã có | 1 | exam2_q61 | rds.mdx#s6 / QuickCompare |
 | [ ] | Aurora read replica (Aurora Replica) | ✅ Đã có | 1 | exam5_q7 | rds.mdx#s3 / AuroraSim |
 | [ ] | Aurora reader endpoint | ✅ Đã có | 1 | exam5_q3 | rds.mdx#s3 / AuroraSim |
 | [ ] | Aurora Replica (Multi-AZ) | ✅ Đã có | 1 | exam2_q52 | rds.mdx#s3 / AuroraSim |
@@ -869,7 +867,9 @@ Có **983 keyword** khác nhau: ✅ 959 (98%) · 🟡 13 (1%) · ❌ 11 (1%).
 | [ ] | Babelfish for Aurora PostgreSQL | ✅ Đã có | 1 | exam1_q47 | storage-migration.mdx#s3 |
 | [ ] | RDS cross-Region automated backups | ✅ Đã có | 1 | exam5_q42 | backup-dr.mdx#s2 / DataFailoverSim; rds.mdx#s2 / RdsOpsSim |
 | [ ] | RDS cross-Region read replica (single writer) | ✅ Đã có | 1 | exam5_q59 | rds.mdx#s2 / RdsOpsSim |
+| [ ] | RDS DB snapshot storage (not accessible as objects in a customer S3 bucket) | ✅ Đã có | 1 | exam2_q57 | rds.mdx#s4 / RequirementPicker |
 | [ ] | RDS encryption via encrypted snapshot copy and restore | ✅ Đã có | 1 | exam2_q45 | rds.mdx#s4 / StepSim |
+| [ ] | RDS magnetic storage (previous generation, backward compatibility only) | ✅ Đã có | 1 | exam3_q41 | rds.mdx#s6 / QuickCompare |
 | [ ] | RDS Multi-AZ (same Region only) | ✅ Đã có | 1 | exam2_q6 | rds.mdx#s1 / MultiAzSim |
 | [ ] | RDS Multi-AZ automatic failover | ✅ Đã có | 1 | exam6_q49 | rds.mdx#s1 / MultiAzSim |
 | [ ] | RDS Multi-AZ backups taken from standby | ✅ Đã có | 1 | exam6_q49 | rds.mdx#s1 / MultiAzSim |
