@@ -1,8 +1,8 @@
 ---
 title: "Amazon S3: storage classes, data protection, access control and performance"
-lede: "This lesson covers five topics: choosing storage classes and lifecycle rules for each type of data, protecting invoices from deletion (versioning, Object Lock), controlling bucket access, choosing an encryption method, and optimizing upload speed and the ability to handle traffic peaks."
-minutes: 35
-scenes: 5
+lede: "This lesson covers seven topics: choosing storage classes and lifecycle rules for each type of data, protecting invoices from deletion (versioning, Object Lock), controlling bucket access, choosing an encryption method, optimizing upload speed and the ability to handle traffic peaks, serving a static website from S3, and telling apart S3 features that are easy to confuse."
+minutes: 50
+scenes: 7
 prerequisites: ["iam", "kms"]
 docs:
   - title: "Amazon S3 storage classes"
@@ -27,6 +27,46 @@ docs:
     url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens_metrics_glossary.html"
   - title: "Amazon Glacier Vault Lock"
     url: "https://docs.aws.amazon.com/amazonglacier/latest/dev/vault-lock.html"
+  - title: "Adding filters to Lifecycle rules"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/intro-lifecycle-filters.html"
+  - title: "Website endpoints"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteEndpoints.html"
+  - title: "Hosting a static website using Amazon S3"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteHosting.html"
+  - title: "Configuring a custom error document"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/CustomErrorDocSupport.html"
+  - title: "Routing traffic to a website that is hosted in an Amazon S3 bucket"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/RoutingToS3Bucket.html"
+  - title: "Active-active and active-passive failover (Route 53)"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-types.html"
+  - title: "Restrict access to an Amazon S3 origin (CloudFront OAC)"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.html"
+  - title: "Protecting data with server-side encryption"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingServerSideEncryption.html"
+  - title: "Protecting data by using client-side encryption"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingClientSideEncryption.html"
+  - title: "Adding a bucket policy by using the Amazon S3 console"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/add-bucket-policy.html"
+  - title: "Access control list (ACL) overview"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html"
+  - title: "Performing object operations in bulk with Batch Operations"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/batch-ops.html"
+  - title: "Operations supported by S3 Batch Operations"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/batch-ops-operations.html"
+  - title: "Replicating existing objects with Batch Replication"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-batch-replication-batch.html"
+  - title: "Querying data in place with Amazon S3 Select"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/selecting-content-from-objects.html"
+  - title: "Managing multi-Region traffic with Multi-Region Access Points"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/MultiRegionAccessPoints.html"
+  - title: "What is Amazon S3 on Outposts?"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/s3-outposts/S3onOutposts.html"
+  - title: "AWS CLI Command Reference: aws s3 sync"
+    url: "https://docs.aws.amazon.com/cli/latest/reference/s3/sync.html"
+  - title: "Amazon S3 pricing"
+    url: "https://aws.amazon.com/s3/pricing/"
+  - title: "Amazon S3 Transfer Acceleration"
+    url: "https://aws.amazon.com/s3/transfer-acceleration/"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -35,6 +75,11 @@ import LifecycleValidator from "../../components/scenes/s3/LifecycleValidator.ts
 import DeleteGuardSim from "../../components/scenes/s3/DeleteGuardSim.tsx";
 import EncryptionSim from "../../components/scenes/s3/EncryptionSim.tsx";
 import UploadSim from "../../components/scenes/s3/UploadSim.tsx";
+import LifecycleFilterSim from "../../components/scenes/s3/LifecycleFilterSim.tsx";
+import RetentionSim from "../../components/scenes/s3/RetentionSim.tsx";
+import WebsiteEndpointSim from "../../components/scenes/s3/WebsiteEndpointSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
+import StepSim from "../../components/scenes/StepSim.tsx";
 import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
@@ -45,12 +90,14 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s3", label: "3 · Access control" },
   { href: "#en-s4", label: "4 · Managing encryption keys" },
   { href: "#en-s5", label: "5 · Upload performance and peak load" },
+  { href: "#en-s6", label: "6 · Static website and failover page" },
+  { href: "#en-s7", label: "7 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
 ShopViet stores its product images, invoices, promotional videos, logs and analytics data on **Amazon S3**. Each type of data has a different access frequency, retention period and group of users. This lesson analyzes each type of data to determine the right S3 configuration.
 </Story>
 
-<Scene id="en-s1" label="Part 1/5" title="Choosing a storage class for each type of data" questions={["exam1_q8", "exam1_q15", "exam1_q28", "exam5_q49", "exam6_q9", "exam5_q51", "exam6_q28", "exam2_q34", "exam4_q43", "exam1_q19"]}>
+<Scene id="en-s1" label="Part 1/7" title="Choosing a storage class for each type of data" questions={["exam1_q8", "exam1_q15", "exam1_q28", "exam5_q49", "exam6_q9", "exam5_q51", "exam6_q28", "exam2_q34", "exam4_q43", "exam1_q19"]}>
 
 S3 cost has two main components: a storage charge per GB and a data retrieval charge. The lower a storage class's storage charge, the higher its retrieval charge or the longer its retrieval time. Choose each type of ShopViet data to see the right storage class:
 
@@ -73,29 +120,39 @@ Lifecycle transitions objects in a waterfall model: one way only, down to lower-
 
 <LifecycleValidator client:visible />
 
-<Takeaway>Frequent access: Standard. Unpredictable access patterns: Intelligent-Tiering. Infrequent access that needs immediate retrieval: Standard-IA (One Zone-IA if the data can be regenerated). Long-term archive: the Glacier classes. Lifecycle does not transition objects back up. Standard-IA and One Zone-IA have a 30-day minimum storage duration: an object deleted, overwritten or transitioned earlier is still charged for the full 30 days.</Takeaway>
+A lifecycle rule does not have to apply to the whole bucket. The rule's **filter** element selects the objects it acts on: by key **prefix**, by one or more **object tags** (each matching both key and value exactly), or by object size; when several conditions are combined, S3 applies a logical AND. A filter has only one prefix, so to apply an action to several different prefixes you create several rules. An empty filter applies to every object in the bucket. ShopViet's product image bucket keeps originals under `images/` and thumbnails under `thumbnails/`; the two groups have different access patterns:
+
+<LifecycleFilterSim client:visible />
+
+<Takeaway>Frequent access: Standard. Unpredictable access patterns: Intelligent-Tiering. Infrequent access that needs immediate retrieval: Standard-IA (One Zone-IA if the data can be regenerated and losing it with an AZ is acceptable). Long-term archive: the Glacier classes. Lifecycle does not transition objects back up. Only part of the data changes its access pattern: a lifecycle rule with a prefix or tag filter. Standard-IA and One Zone-IA have a 30-day minimum storage duration: an object deleted, overwritten or transitioned earlier is still charged for the full 30 days.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/5" title="Protecting invoices from deletion: versioning and Object Lock" questions={["exam1_q20", "exam5_q50", "exam1_q56", "exam4_q64", "exam5_q39"]}>
+<Scene id="en-s2" label="Part 2/7" title="Protecting invoices from deletion: versioning and Object Lock" questions={["exam1_q20", "exam5_q50", "exam1_q56", "exam4_q64", "exam5_q39"]}>
 
 Regulations require ShopViet to keep invoices for many years. The risk of data loss comes from an employee deleting by mistake, a faulty cleanup script, or an administrator deleting on purpose. Choose how the bucket is protected and who deletes, then see which layer of protection keeps the invoice:
 
 <DeleteGuardSim client:visible />
 
-The retention period (**Retain Until Date**) is set on each object version, so each version can have its own mode and retention period. For data stored in an **Amazon Glacier** vault (a standalone vault service, distinct from the S3 Glacier storage classes and no longer open to new customers), **Vault Lock** works in a similar way: once a Vault Lock policy is locked, it can no longer be changed or deleted.
+A retention period is set in one of two ways. When you apply it **explicitly** to an object version, the request carries a **Retain Until Date**, and S3 stores that date in the version's metadata. With a **bucket default retention**, you specify only a **duration** (days or years); S3 computes the Retain Until Date by adding that duration to the version's creation time. If a PUT request carries its own retention mode and period, those explicit settings **override** the bucket default. A retention period can be extended with a later Retain Until Date; in Compliance mode it cannot be shortened.
 
-<Takeaway>Protect against accidental deletes: versioning (a simple delete only adds a delete marker). Require extra authentication for permanent deletes: MFA Delete. No one can delete, including root: Object Lock Compliance mode. Governance mode still lets users with bypass permission delete. Retention with no end date, for example during a dispute: legal hold.</Takeaway>
+<RetentionSim client:visible />
+
+Retention periods apply to individual object versions, so versions of the same key can have different retention modes and periods. **ACLs** cannot replace this mechanism: an ACL only defines which accounts or groups are granted access and the type of access; it has no notion of a retention period, so it cannot enforce WORM compliance controls. For data stored in an **Amazon Glacier** vault (a standalone vault service, distinct from the S3 Glacier storage classes and no longer open to new customers), **Vault Lock** works in a similar way: once a Vault Lock policy is locked, it can no longer be changed or deleted.
+
+<Takeaway>Protect against accidental deletes: versioning (a simple delete only adds a delete marker). Require extra authentication for permanent deletes: MFA Delete. No one can delete, including root: Object Lock Compliance mode. Governance mode still lets users with bypass permission delete. Retention with no end date, for example during a dispute: legal hold. A bucket default retention is a duration; an explicit retention on a version is a Retain Until Date and overrides the default.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/5" title="Controlling bucket access" questions={["exam4_q65", "exam2_q24", "exam4_q8", "exam2_q15", "exam6_q30", "exam6_q3", "exam6_q54"]}>
+<Scene id="en-s3" label="Part 3/7" title="Controlling bucket access" questions={["exam4_q65", "exam2_q24", "exam4_q8", "exam2_q15", "exam6_q30", "exam6_q3", "exam6_q54", "exam6_q29", "exam4_q34", "exam5_q39"]}>
 
 As the number of teams and partners using the data grows, permissions need to be organized in a compact, clear way. Choose each scenario:
 
 <RequirementPicker client:visible items={[
   { need: "ShopViet's accounting department and an audit firm (a different AWS account) both read the invoice bucket", answer: "Bucket policy",
     why: "A bucket policy is a resource-based policy, which can grant permissions to principals in other accounts." },
+  { need: "200 employees have IAM users and can read the reports bucket; 50 of them also need write access", answer: "IAM group + identity-based policy",
+    why: "Attach a read/write policy to an IAM group and add the 50 users to it; a new employee only needs to be added to the group. Listing each user in a bucket policy is hard to maintain, and bucket policies are limited to 20 KB in size." },
   { need: "Three analytics teams (marketing, warehouse, finance); each team may read only one prefix", answer: "S3 Access Points, one access point per team",
     why: "Each access point has its own policy limited to a prefix, instead of one long bucket policy that is hard to maintain." },
   { need: "A bucket policy has IpAddress 54.240.143.0/24 and NotIpAddress 54.240.143.188/32. Which addresses are allowed access?", answer: "The whole /24 range except the .188 address",
@@ -109,29 +166,110 @@ As the number of teams and partners using the data grows, permissions need to be
   { need: "Product images may be accessed only through CloudFront", answer: "OAC/OAI + bucket policy", why: "See the CloudFront lesson." },
 ]} />
 
-<Takeaway>Grant permissions to another account: bucket policy. Many teams, one prefix each: access points. Organization-wide monitoring: Storage Lens. New buckets use Object Ownership = bucket owner enforced.</Takeaway>
+An **ACL** is S3's legacy access control mechanism: every bucket and object has an ACL attached as a subresource that defines which AWS accounts or groups are granted access and the type of access. An ACL is not a JSON policy like a bucket policy or an IAM role trust policy. With Object Ownership = bucket owner enforced (the default), all ACLs are disabled, requests to set ACLs fail with the `AccessControlListNotSupported` error code, and access is managed only with policies. AWS recommends keeping ACLs disabled except when you need to control access to each object individually.
+
+<Takeaway>Grant permissions to another account: bucket policy (up to 20 KB). Grant extra permissions to a set of IAM users in the same account: an IAM group. Many teams, one prefix each: access points. Organization-wide monitoring: Storage Lens. New buckets use Object Ownership = bucket owner enforced, with ACLs disabled.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/5" title="Managing encryption keys" questions={["exam2_q10", "exam6_q51", "exam3_q24", "exam1_q22", "exam5_q46"]}>
+<Scene id="en-s4" label="Part 4/7" title="Managing encryption keys" questions={["exam2_q10", "exam6_q51", "exam3_q24", "exam1_q22", "exam5_q46"]}>
 
 Every encryption method makes data at rest unusable without the key. The differences lie in which component performs the encryption, where the key is stored, and whether each use of the key is logged. Choose a ShopViet requirement, upload three invoices and see where the data becomes encrypted:
 
 <EncryptionSim client:visible />
 
-<Takeaway>Simplest configuration: SSE-S3. Need to audit key usage: SSE-KMS (enable S3 Bucket Key to reduce the cost of KMS calls). Keys must be kept at the company but S3 performs the encryption: SSE-C (since April 2026, SSE-C is blocked by default on new buckets; re-enable it with PutBucketEncryption). Your own encryption algorithm: client-side encryption.</Takeaway>
+When the invoice archive moves from the data center to S3, the security team requires every file to be encrypted with a different key. This does not require splitting the data across several buckets: with server-side encryption, S3 encrypts **each object with a unique key**, including with the default SSE-S3. **Client-side encryption** is a different approach: the application uses the **Amazon S3 Encryption Client** to encrypt data locally before sending it; S3 receives data that is already encrypted, plays no role in encrypting or decrypting it, and does not recognize the object as encrypted. The Encryption Client also encrypts every object with a unique data key, but the application must integrate the library and manage the wrapping key itself, so it fits only when data must be encrypted before it leaves the company's systems.
+
+<Takeaway>Simplest configuration: SSE-S3 (a unique key per object). Need to audit key usage: SSE-KMS (enable S3 Bucket Key to reduce the cost of KMS calls). Keys must be kept at the company but S3 performs the encryption: SSE-C (since April 2026, SSE-C is blocked by default on new buckets; re-enable it with PutBucketEncryption). Data must be encrypted before it is sent to AWS: client-side encryption with the Amazon S3 Encryption Client.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s5" label="Part 5/5" title="Optimizing upload speed and peak-load capacity" questions={["exam4_q14", "exam1_q64", "exam1_q18", "exam1_q40", "exam1_q51", "exam6_q20", "exam5_q21"]}>
+<Scene id="en-s5" label="Part 5/7" title="Optimizing upload speed and peak-load capacity" questions={["exam4_q14", "exam1_q64", "exam1_q18", "exam1_q40", "exam1_q51", "exam6_q20", "exam5_q21"]}>
 
-This part presents four problems ShopViet ran into as data volume and the number of users grew. Run each scenario, then turn on the matching S3 feature to compare the results:
+This part presents four problems ShopViet ran into as data volume and the number of users grew, plus the cost of one upload through Transfer Acceleration. Run each scenario, then turn on the matching S3 feature to compare the results:
 
 <UploadSim client:visible />
 
 For distant users who both download videos and upload files, combine both: **CloudFront** for downloads and **S3 Transfer Acceleration** for uploads.
 
-<Takeaway>Large files: multipart upload (required for objects over 5 GB). Distant uploaders: Transfer Acceleration (goes through CloudFront edge locations; can incur additional data transfer charges). Too many requests: spread keys across many prefixes. Only part of a file is needed: byte-range fetch.</Takeaway>
+<Takeaway>Large files: multipart upload (required for objects over 5 GB). Distant uploaders: Transfer Acceleration (goes through CloudFront edge locations; can incur additional data transfer charges). Too many requests: spread keys across many prefixes. Only part of a file is needed: byte-range fetch (a `Range` header on a GET request). Cost: data transfer in from the internet to S3 is free; the Transfer Acceleration charge is in addition to data transfer pricing and applies only to transfers that are accelerated. S3 Select (SQL queries on the content of one CSV, JSON or Parquet object) is no longer available to new customers.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s6" label="Part 6/7" title="Static websites on S3: the website endpoint and a failover page" questions={["exam5_q15", "exam1_q62", "exam4_q53", "exam5_q56"]}>
+
+ShopViet's seasonal promotion site consists only of HTML, CSS, images and client-side scripts, so it can be served directly from the `shopviet-promo` bucket. When you enable **static website hosting**, the bucket gets a Region-specific **website endpoint** (`http://<bucket>.s3-website-<region>.amazonaws.com` or `…s3-website.<region>…`, depending on the Region), separate from the **REST API endpoint** that applications send API requests to. The two endpoints handle the same request very differently. Send each request through each endpoint to compare:
+
+<WebsiteEndpointSim client:visible />
+
+The website endpoint is optimized for browsers: it returns the index document at the root, returns an HTML document (the custom error document for 4XX errors) on errors and supports redirects, but it serves only publicly readable content, accepts only GET and HEAD, and does not support HTTPS. AWS recommends **AWS Amplify Hosting**, or putting **CloudFront** in front, when you need HTTPS. A static website does not replace an application tier either: S3 does not run server-side scripts, so pages with dynamic content that changes constantly (a cart, real-time prices) still need EC2 in an Auto Scaling group or an equivalent service to scale with traffic.
+
+A static website on S3 is often used as a **failover page**: when the main website behind the ALB stops responding, customers see a maintenance notice instead of a connection error. Perform each step in turn:
+
+<StepSim client:visible height={250}
+  intro="The domain shopviet.vn has two failover records in Route 53: the primary points to the ALB, the secondary points to the website endpoint of the bucket that holds the maintenance page."
+  nodes={[
+    { id: "user", x: 20, y: 100, label: "Customer", kind: "user" },
+    { id: "r53", x: 170, y: 100, label: "Route 53", sub: "failover record", kind: "net" },
+    { id: "alb", x: 400, y: 30, label: "ALB", sub: "primary", kind: "net" },
+    { id: "web", x: 590, y: 30, label: "EC2 web", sub: "Auto Scaling group", kind: "ec2" },
+    { id: "hc", x: 590, y: 120, label: "Health check", sub: "Route 53", kind: "warn" },
+    { id: "s3", x: 400, y: 185, label: "S3 website endpoint", sub: "secondary · maintenance.html", kind: "store" },
+  ]}
+  initial={["user", "r53", "alb", "web", "s3"]}
+  steps={[
+    { button: "1. Normal operation", show: ["hc"], flows: [{ path: ["user", "r53"], tone: "neutral" }, { path: ["r53", "alb"], tone: "neutral", label: "primary" }, { path: ["alb", "web"], tone: "neutral" }, { path: ["hc", "alb"], tone: "neutral", dashed: true }], move: ["user", "r53", "alb"],
+      note: "Route 53 returns the **primary** record (an alias to the ALB) only while the primary's health check is healthy." },
+    { button: "2. The main website stops responding", flows: [{ path: ["hc", "alb"], tone: "bad", blocked: true, label: "unhealthy" }],
+      note: "The health check marks the ALB **unhealthy**. The instances behind it do not respond, and customers cannot reach the main website." },
+    { button: "3. Route 53 returns the secondary record", flows: [{ path: ["r53", "s3"], tone: "good", label: "secondary" }], move: ["user", "r53", "s3"],
+      note: "Route 53 switches to the **secondary** record: an alias to the website endpoint of the bucket with the maintenance page. This is an **active-passive** configuration, which you build only with the **failover routing policy**; active-active uses the other routing policies. The bucket must have the same name as the domain (or subdomain) the record serves." },
+  ]} />
+
+<Takeaway>Static website (HTML, CSS, images, client-side scripts): S3 static website hosting. Website endpoint: GET/HEAD only, public content only, returns the index document and HTML error pages, no HTTPS. Uploads through CloudFront: the origin is the bucket's REST endpoint with OAC, not the website endpoint. A maintenance page when the main website fails: Route 53 failover routing (active-passive) with the secondary as an alias to the website endpoint. Dynamic content: needs an application tier, not S3.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s7" label="Part 7/7" title="Quick comparison: S3 features that are easy to confuse" questions={["exam3_q48", "exam4_q29", "exam5_q49", "exam6_q30", "exam6_q20", "exam5_q39"]}>
+
+Some S3 features have names or descriptions close to a real need but solve a different problem. Choose each feature to see what it is for, why it does not fit the matching ShopViet situation, and what to choose instead:
+
+<QuickCompare client:visible items={[
+  { name: "S3 Batch Operations",
+    use: "Runs **a single operation** on a list of up to billions of objects (a manifest from S3 Inventory, a CSV file or filter criteria): copy objects, replace tags, replace ACLs, restore from Glacier Flexible Retrieval, invoke Lambda, update encryption, set Object Lock retention or legal hold. S3 tracks progress and produces a completion report.",
+    notHere: "Read traffic to the internal training site grows sharply and S3 data transfer out charges climb. Batch Operations is an object management tool; it does not serve users' read requests, so it cannot reduce traffic out to the internet.",
+    instead: "Put **CloudFront** in front of the bucket: content is cached at edge locations, and data transferred from S3 to CloudFront is not charged." },
+  { name: "S3 Batch Replication",
+    use: "Replicates on demand objects that **already existed** before a replication configuration was in place, objects that were previously replicated, or objects that failed replication. It runs as a Batch Operations job; the source bucket must have a replication configuration.",
+    notHere: "It does not replace live replication: Batch Replication runs once over existing objects and does not copy new objects automatically.",
+    instead: "A one-time copy of 1 PB to a bucket in another Region: a replication rule with a Batch Replication job for existing objects, or `aws s3 sync`. Continuous copying: live replication (CRR/SRR)." },
+  { name: "aws s3 sync",
+    use: "An AWS CLI command that syncs a local directory and an S3 prefix, or two buckets: it copies only objects that are missing at the destination, differ in size, or have a newer last-modified time. Running it again after an interruption does not copy what is already in sync. The `--delete` option deletes destination files that no longer exist in the source.",
+    notHere: "It is not an automatic replication mechanism: the command runs only when it is invoked.",
+    instead: "Continuous, monitored copying: S3 Replication." },
+  { name: "S3 Transfer Acceleration",
+    use: "Speeds up internet transfers between distant clients and **a single bucket**, through edge locations and the AWS network.",
+    notHere: "It is not a tool for copying data between two buckets in two Regions.",
+    instead: "Copying between buckets: `aws s3 sync`, S3 Batch Replication or S3 Replication." },
+  { name: "S3 Select",
+    use: "Filters the content of **one** CSV, JSON or Parquet **object** with a SQL statement and returns only the matching data. The feature is **no longer available to new customers**.",
+    notHere: "You need to read the first 250 bytes of 100,000 files to build a metadata index. The files are not record data to query with SQL; S3 Select's scan range parameter only sets which part of the object a query scans.",
+    instead: "A GET request with the header `Range: bytes=0-249` (a byte-range fetch) for each object." },
+  { name: "Multi-Region Access Points",
+    use: "A **global endpoint** for buckets in several Regions (kept in sync with Cross-Region Replication); requests are routed through AWS Global Accelerator to the closest bucket with an active routing status; failover controls shift traffic to another Region within minutes.",
+    notHere: "The compliance team needs a list of every bucket without versioning across all Regions and accounts. An access point only routes requests to data; it does not report bucket configuration.",
+    instead: "**S3 Storage Lens**: an Organization-wide dashboard with per-bucket versioning metrics." },
+  { name: "S3 on Outposts",
+    use: "Creates buckets on AWS Outposts in the company's own data center, with the `OUTPOSTS` storage class, for data residency, local processing or low-latency access to on-premises systems. Outposts are purchased as rack configurations.",
+    notHere: "Hundreds of buckets with poorly tuned lifecycle rules drive up storage costs. Moving data onto Outposts is not a way to reduce storage costs.",
+    instead: "**S3 Intelligent-Tiering**: automatically moves objects between tiers by access, with no retrieval fees and no lifecycle rules to manage per bucket." },
+  { name: "ACL",
+    use: "Grants access to accounts or groups on individual buckets and objects (a legacy mechanism). Disabled by default with Object Ownership = bucket owner enforced.",
+    notHere: "Records need WORM compliance controls. An ACL only decides who may access data; it does not stop someone with permission from deleting data during a retention period.",
+    instead: "**S3 Object Lock** for objects in S3; **Vault Lock** for Amazon Glacier vaults." },
+]} />
+
+<Takeaway>Bulk operations on objects: Batch Operations. Replicate existing objects: Batch Replication. One-time copy between buckets: `aws s3 sync` or Batch Replication. One endpoint for buckets in several Regions: Multi-Region Access Points. Objects stored on premises: S3 on Outposts. Read part of a file: byte-range fetch. Lower data transfer out charges when serving content: CloudFront.</Takeaway>
 
 </Scene>
 
@@ -175,6 +313,14 @@ Check question: as the designer of the ShopViet system, which option fits?
     opts: ["Create more buckets in several Regions", "Name keys with a separate prefix per shop", "Move to EFS"],
     a: 1,
     why: "S3 supports at least 3,500 PUT/COPY/POST/DELETE or 5,500 GET/HEAD requests per second per partitioned prefix; the number of prefixes in a bucket is not limited, so adding prefixes means adding request capacity." },
+  { q: "The invoice bucket has a default retention of Compliance, 1 year. An application PUTs a new invoice with a Retain Until Date 3 years away. Until when is the new version locked?",
+    opts: ["1 year from creation, because the bucket default takes precedence", "Until the Retain Until Date 3 years away", "The request is rejected because it conflicts with the default retention"],
+    a: 1,
+    why: "Retention settings specified in the request override the bucket default retention. The default retention is only a duration applied to versions that carry no settings of their own." },
+  { q: "An application lets customers upload photos to S3 through CloudFront on a custom domain over HTTPS. Which origin fits?",
+    opts: ["The bucket's website endpoint", "The bucket's REST endpoint, with origin access control (OAC)", "The website endpoint, with OAC"],
+    a: 1,
+    why: "A website endpoint supports only GET and HEAD, serves only public content and does not support HTTPS. The REST endpoint with OAC lets CloudFront send PUT requests to the bucket while the bucket still blocks direct access." },
 ]} />
 
 </Scene>

@@ -1266,14 +1266,14 @@
         {
           "keyword": "S3 Transfer Acceleration pricing (pay only when accelerated)",
           "lesson": "s3",
-          "status": "partial",
+          "status": "covered",
           "where": "s3.mdx#s5 / UploadSim"
         },
         {
           "keyword": "Data transfer in from internet is free",
           "lesson": "global-infra",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "s3.mdx#s5 / UploadSim"
         }
       ]
     },
@@ -1713,8 +1713,8 @@
         {
           "keyword": "S3 Object Lock bucket default retention (duration, overridden by explicit setting)",
           "lesson": "s3",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "s3.mdx#s2 / RetentionSim"
         },
         {
           "keyword": "S3 Object Lock retention modes (governance, compliance)",
@@ -1905,8 +1905,8 @@
         {
           "keyword": "S3 static website hosting (static content only)",
           "lesson": "s3",
-          "status": "partial",
-          "where": "cloudfront.mdx#s2"
+          "status": "covered",
+          "where": "s3.mdx#s6 / WebsiteEndpointSim"
         },
         {
           "keyword": "Route 53 geoproximity routing",

@@ -919,8 +919,8 @@
         {
           "keyword": "aws s3 sync",
           "lesson": "storage-migration",
-          "status": "partial",
-          "where": "storage-migration.mdx#s2 / RequirementPicker"
+          "status": "covered",
+          "where": "s3.mdx#s7 / QuickCompare"
         },
         {
           "keyword": "S3 Batch Replication",
@@ -1116,7 +1116,7 @@
         {
           "keyword": "Access control list (ACL)",
           "lesson": "s3",
-          "status": "partial",
+          "status": "covered",
           "where": "s3.mdx#s3"
         }
       ]
@@ -1392,8 +1392,8 @@
         {
           "keyword": "S3 Lifecycle rule prefix filter",
           "lesson": "s3",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "s3.mdx#s1 / LifecycleFilterSim"
         },
         {
           "keyword": "S3 Standard-IA",
@@ -1696,8 +1696,8 @@
         {
           "keyword": "S3 static website hosting",
           "lesson": "s3",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "s3.mdx#s6 / WebsiteEndpointSim"
         }
       ]
     },

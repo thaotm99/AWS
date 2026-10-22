@@ -5,7 +5,8 @@ import { useLang, type Bi } from "../../../lib/lang";
 import "./s3-sims.css";
 
 // Four real upload/download problems at ShopViet and the S3 feature that fixes each:
-// multipart upload, S3 Transfer Acceleration, spreading keys over prefixes, byte-range fetch.
+// multipart upload, S3 Transfer Acceleration, spreading keys over prefixes, byte-range fetch,
+// and what an S3TA upload costs (data in is free; S3TA is charged only when it accelerates).
 // Source questions: exam4_q14, exam1_q64, exam1_q18, exam1_q40, exam1_q51, exam6_q20, exam5_q21.
 
 type Row = "r1" | "r2";
@@ -149,6 +150,31 @@ const SCENARIOS: Scenario[] = [
       return { tone: "ok", msg: { vi: "Thời gian và chi phí giảm đáng kể. Byte-range fetch cũng được dùng để tải song song nhiều đoạn của một tệp lớn.", en: "Time and cost drop significantly. Byte-range fetches are also used to download several ranges of a large file in parallel." } };
     },
   },
+  {
+    name: { vi: "Chi phí tải 3 GB qua Transfer Acceleration", en: "Cost of a 3 GB upload with Transfer Acceleration" },
+    src: { vi: "Đối tác tại Đức", en: "Partner in Germany" },
+    toggle: { vi: "Đường qua edge location nhanh hơn", en: "Edge path is faster" },
+    prefixes: () => ["supplier-videos/", null],
+    request: () => ({ vi: "PUT shopviet-media.s3-accelerate.amazonaws.com/… (3 GB)", en: "PUT shopviet-media.s3-accelerate.amazonaws.com/… (3 GB)" }),
+    async run({ L, on, log, row, edge }) {
+      if (!on) {
+        edge("warn");
+        await travel(L, [OUT, [EDGE[0] - 75, EDGE[1]]], 350, "pkt");
+        log({ vi: "KIỂM TRA", en: "CHECK" }, "miss", { vi: "S3 xác định Transfer Acceleration **không có khả năng nhanh hơn** một lần truyền thông thường tới cùng Region, nên có thể bỏ qua hệ thống tăng tốc.", en: "S3 determines that Transfer Acceleration is **not likely to be faster** than a regular transfer to the same Region, so it may bypass the acceleration system." });
+        await travel(L, [[EDGE[0] - 75, EDGE[1]], OUT, [540, OUT[1]], [540, ROW.r1[1]], ROW.r1], 1100, "pkt");
+        row("r1", "ok");
+        log({ vi: "PHÍ", en: "BILL" }, "hit", { vi: "Data transfer **in** từ Internet vào S3: **miễn phí**. Phí Transfer Acceleration: **không tính** vì lần truyền này không được tăng tốc.", en: "Data transfer **in** from the internet to S3: **free**. Transfer Acceleration charge: **none**, because this transfer was not accelerated." });
+        return { tone: "ok", msg: { vi: "Tổng phí truyền dữ liệu cho lần tải lên này bằng 0. Với S3 Transfer Acceleration, chỉ các lần truyền được tăng tốc mới bị tính phí.", en: "The total data transfer charge for this upload is zero. With S3 Transfer Acceleration, you pay only for transfers that are accelerated." } };
+      }
+      edge("pass");
+      await travel(L, [OUT, [EDGE[0] - 75, EDGE[1]]], 350, "pkt");
+      await travel(L, [[EDGE[0] + 75, EDGE[1]], [540, EDGE[1]], [540, ROW.r1[1]], ROW.r1], 650, "pkt-edge");
+      row("r1", "ok");
+      log("EDGE", "hit", { vi: "Lần truyền đi qua edge location và mạng AWS: **được tăng tốc**.", en: "The transfer goes through the edge location and the AWS network: it **is accelerated**." });
+      log({ vi: "PHÍ", en: "BILL" }, "miss", { vi: "Data transfer **in** từ Internet: **miễn phí**. Phí Transfer Acceleration tính theo GB, theo edge location đã dùng, và **cộng thêm** vào giá data transfer.", en: "Data transfer **in** from the internet: **free**. The Transfer Acceleration charge is per GB, based on the edge location used, and is **in addition to** data transfer pricing." });
+      return { tone: "warn", msg: { vi: "Chỉ phát sinh phí Transfer Acceleration cho 3 GB đã được tăng tốc. Kiểm tra mức cải thiện tại vị trí của mình bằng speed comparison tool của S3 trước khi bật.", en: "Only the Transfer Acceleration charge for the 3 GB that was accelerated applies. Check the improvement from your location with the S3 speed comparison tool before turning it on." } };
+    },
+  },
 ];
 
 type LogEntry = { tag: string | Bi; cls: string; msg: Bi };
@@ -184,18 +210,21 @@ export default function UploadSim() {
     if (!L || busy) return;
     setBusy(true);
     reset();
-    const out = await sc.run({
-      L, on, tr,
-      log: (tag, cls, msg) => setLog((l) => [...l, { tag, cls, msg }]),
-      row: (id, state) => setRows((r) => ({ ...r, [id]: state })),
-      edge: setEdgeState,
-    });
-    setResult({ tone: out.tone, msg: out.msg });
-    setBusy(false);
+    try {
+      const out = await sc.run({
+        L, on, tr,
+        log: (tag, cls, msg) => setLog((l) => [...l, { tag, cls, msg }]),
+        row: (id, state) => setRows((r) => ({ ...r, [id]: state })),
+        edge: setEdgeState,
+      });
+      setResult({ tone: out.tone, msg: out.msg });
+    } finally {
+      setBusy(false);
+    }
   }
 
   const [p1, p2] = sc.prefixes(on);
-  const accel = index === 1;
+  const accel = index === 1 || index === 4;
 
   return (
     <div className="stage s3x">
@@ -220,7 +249,7 @@ export default function UploadSim() {
             <>
               <path className={`s3x-wire${on ? "" : " dash"}`} d={`M170 125 L225 ${EDGE[1]} M375 ${EDGE[1]} H540`} />
               <text className="s3x-m edge" x={458} y={EDGE[1] - 8} textAnchor="middle">{tr({ vi: "mạng AWS", en: "AWS network" })}</text>
-              <g className={`s3x-node ${on ? edgeState || "on" : "off"}`}>
+              <g className={`s3x-node ${on || index === 4 ? edgeState || "on" : "off"}`}>
                 <rect x={EDGE[0] - 75} y={EDGE[1] - 22} width={150} height={44} rx={8} />
                 <text className="s3x-t" x={EDGE[0]} y={EDGE[1] - 3} textAnchor="middle">Edge location</text>
                 <text className="s3x-s" x={EDGE[0]} y={EDGE[1] + 13} textAnchor="middle">{tr({ vi: "gần Frankfurt", en: "near Frankfurt" })}</text>

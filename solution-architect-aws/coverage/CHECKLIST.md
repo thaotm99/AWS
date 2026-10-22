@@ -14,13 +14,13 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 811 (84%) · 🟡 72 (8%) · ❌ 77 (8%).
+Có **960 keyword** khác nhau: ✅ 828 (86%) · 🟡 63 (7%) · ❌ 69 (7%).
 
 ### Theo bài học
 
 | Bài học | Keyword | ✅ Đã có | 🟡 Một phần | ❌ Thiếu | Tỷ lệ đã có |
 |---|---:|---:|---:|---:|---:|
-| [global-infra](#global-infra) | 22 | 19 | 2 | 1 | 86% |
+| [global-infra](#global-infra) | 22 | 20 | 2 | 0 | 91% |
 | [vpc](#vpc) | 107 | 91 | 10 | 6 | 85% |
 | [route53](#route53) | 28 | 24 | 2 | 2 | 86% |
 | [cloudfront](#cloudfront) | 31 | 22 | 5 | 4 | 71% |
@@ -33,9 +33,9 @@ Có **960 keyword** khác nhau: ✅ 811 (84%) · 🟡 72 (8%) · ❌ 77 (8%).
 | [asg](#asg) | 44 | 44 | 0 | 0 | 100% |
 | [containers](#containers) | 22 | 17 | 2 | 3 | 77% |
 | [lambda](#lambda) | 37 | 28 | 4 | 5 | 76% |
-| [s3](#s3) | 70 | 55 | 8 | 7 | 79% |
+| [s3](#s3) | 70 | 70 | 0 | 0 | 100% |
 | [storage](#storage) | 70 | 60 | 5 | 5 | 86% |
-| [storage-migration](#storage-migration) | 34 | 30 | 2 | 2 | 88% |
+| [storage-migration](#storage-migration) | 34 | 31 | 1 | 2 | 91% |
 | [rds](#rds) | 58 | 50 | 3 | 5 | 86% |
 | [dynamodb](#dynamodb) | 23 | 22 | 0 | 1 | 96% |
 | [analytics](#analytics) | 47 | 37 | 5 | 5 | 79% |
@@ -50,18 +50,17 @@ Có **960 keyword** khác nhau: ✅ 811 (84%) · 🟡 72 (8%) · ❌ 77 (8%).
 
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
-| Đề 1 | 198 | 13 | 13 |
+| Đề 1 | 202 | 11 | 11 |
 | Đề 2 | 179 | 9 | 10 |
-| Đề 3 | 197 | 10 | 15 |
-| Đề 4 | 202 | 15 | 19 |
-| Đề 5 | 185 | 22 | 14 |
-| Đề 6 | 194 | 6 | 10 |
+| Đề 3 | 199 | 9 | 14 |
+| Đề 4 | 206 | 13 | 17 |
+| Đề 5 | 189 | 19 | 13 |
+| Đề 6 | 197 | 5 | 8 |
 
 ## global-infra
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | Data transfer in from internet is free | ❌ Thiếu | 1 | exam1_q40 |  |
 | [ ] | AWS Local Zones | 🟡 Một phần | 1 | exam1_q27 | monitoring.mdx#s3 |
 | [ ] | Global Accelerator endpoint weights (blue/green traffic shift) | 🟡 Một phần | 1 | exam2_q22 | cloudfront.mdx#challenge / SortGame (card only) |
 | [ ] | AWS Global Accelerator | ✅ Đã có | 7 | exam1_q18, exam2_q32, exam3_q8, exam4_q18, exam5_q4, exam6_q5, exam6_q47 | global-infra.mdx#s5<br>global-infra.mdx#s5 / GlobalAcceleratorSim |
@@ -75,6 +74,7 @@ Có **960 keyword** khác nhau: ✅ 811 (84%) · 🟡 72 (8%) · ❌ 77 (8%).
 | [ ] | AWS Global Accelerator (UDP, fast regional failover) | ✅ Đã có | 1 | exam1_q59 | global-infra.mdx#s5 / EdgeChoiceSim |
 | [ ] | AWS Global Accelerator static anycast IP | ✅ Đã có | 1 | exam4_q58 | global-infra.mdx#s5 / GlobalAcceleratorSim |
 | [ ] | AWS Global Accelerator static anycast IP addresses | ✅ Đã có | 1 | exam3_q45 | global-infra.mdx#s5 / GlobalAcceleratorSim |
+| [ ] | Data transfer in from internet is free | ✅ Đã có | 1 | exam1_q40 | s3.mdx#s5 / UploadSim |
 | [ ] | Data transfer out (DTO) pricing | ✅ Đã có | 1 | exam5_q2 | global-infra.mdx#s6 / CostPatterns |
 | [ ] | EBS snapshot (Regional resource) | ✅ Đã có | 1 | exam1_q41 | global-infra.mdx#s1 / AmiCopySim |
 | [ ] | EFS access via inter-Region VPC peering | ✅ Đã có | 1 | exam1_q42 | global-infra.mdx#confuse / ScopeExplorer / GlobalMythsSim |
@@ -628,29 +628,16 @@ Có **960 keyword** khác nhau: ✅ 811 (84%) · 🟡 72 (8%) · ❌ 77 (8%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | Amazon S3 static website hosting | ❌ Thiếu ⚠ | 2 | exam2_q2, exam4_q53 | cloudfront.mdx#s2 / RequirementPicker |
-| [ ] | S3 Batch Operations | ❌ Thiếu | 1 | exam3_q48 |  |
-| [ ] | S3 Lifecycle rule prefix filter | ❌ Thiếu | 1 | exam4_q43 |  |
-| [ ] | S3 Multi-Region Access Point | ❌ Thiếu | 1 | exam6_q30 |  |
-| [ ] | S3 Object Lock bucket default retention (duration, overridden by explicit setting) | ❌ Thiếu | 1 | exam1_q56 |  |
-| [ ] | S3 Select | ❌ Thiếu | 1 | exam6_q20 |  |
-| [ ] | S3 static website endpoint (GET/HEAD only) | ❌ Thiếu | 1 | exam5_q15 |  |
-| [ ] | S3 client-side encryption | 🟡 Một phần ⚠ | 4 | exam2_q10, exam3_q24, exam4_q6, exam6_q51 | s3.mdx#s4 Takeaway<br>s3.mdx#s4 |
-| [ ] | Access control list (ACL) | 🟡 Một phần | 1 | exam4_q34 | s3.mdx#s3 |
-| [ ] | S3 access control list (ACL) | 🟡 Một phần | 1 | exam5_q39 | s3.mdx#s3 |
-| [ ] | S3 bucket policy (20 KB size limit) | 🟡 Một phần | 1 | exam6_q29 | s3.mdx#s3 (bucket policy explained, size limit not) |
-| [ ] | S3 on Outposts | 🟡 Một phần | 1 | exam5_q49 | global-infra.mdx#deep |
-| [ ] | S3 static website hosting (error page) | 🟡 Một phần | 1 | exam5_q56 | route53.mdx#s3 / RoutingPolicySim |
-| [ ] | S3 static website hosting (static content only) | 🟡 Một phần | 1 | exam1_q62 | cloudfront.mdx#s2 |
-| [ ] | S3 Transfer Acceleration pricing (pay only when accelerated) | 🟡 Một phần | 1 | exam1_q40 | s3.mdx#s5 / UploadSim |
 | [ ] | S3 Transfer Acceleration | ✅ Đã có | 9 | exam1_q18, exam1_q64, exam2_q12, exam3_q37, exam4_q18, exam4_q29, exam5_q21, exam5_q48, exam6_q58 | s3.mdx#s5 / UploadSim<br>s3.mdx#s5 |
 | [ ] | S3 One Zone-IA | ✅ Đã có | 5 | exam1_q8, exam4_q43, exam5_q49, exam5_q51, exam6_q28 | s3.mdx#s1<br>s3.mdx#s1 / LifecycleValidator |
 | [ ] | S3 Standard-IA | ✅ Đã có | 5 | exam1_q15, exam4_q43, exam5_q51, exam6_q26, exam6_q28 | s3.mdx#s1 / messaging.mdx#s4<br>s3.mdx#s1 |
+| [ ] | S3 client-side encryption | ✅ Đã có | 4 | exam2_q10, exam3_q24, exam4_q6, exam6_q51 | s3.mdx#s4 Takeaway<br>s3.mdx#s4 / EncryptionSim |
 | [ ] | S3 Glacier Deep Archive | ✅ Đã có | 4 | exam1_q15, exam2_q29, exam2_q41, exam4_q36 | s3.mdx#s1 / LifecycleValidator<br>s3.mdx#s1 / RequirementPicker |
 | [ ] | S3 Intelligent-Tiering | ✅ Đã có | 4 | exam1_q15, exam5_q49, exam5_q54, exam6_q9 | s3.mdx#s1<br>s3.mdx#s1 / LifecycleValidator |
 | [ ] | S3 Lifecycle rule | ✅ Đã có | 4 | exam1_q8, exam1_q35, exam4_q43, exam6_q3 | s3.mdx#s1 / LifecycleValidator<br>s3.mdx#s1 |
 | [ ] | S3 bucket policy | ✅ Đã có | 3 | exam2_q4, exam4_q8, exam6_q54 | s3.mdx#s3 / RequirementPicker<br>s3.mdx#s3 |
 | [ ] | S3 multipart upload | ✅ Đã có | 3 | exam1_q18, exam1_q64, exam4_q14 | s3.mdx#s5 / UploadSim |
+| [ ] | Amazon S3 static website hosting | ✅ Đã có | 2 | exam2_q2, exam4_q53 | cloudfront.mdx#s2 / RequirementPicker<br>s3.mdx#s6 / WebsiteEndpointSim |
 | [ ] | S3 Access Points | ✅ Đã có | 2 | exam1_q9, exam5_q24 | s3.mdx#s3 |
 | [ ] | S3 Cross-Region Replication | ✅ Đã có | 2 | exam1_q62, exam2_q46 | analytics.mdx#s4<br>analytics.mdx (CRR paragraph); kms.mdx#s1 / S3EncryptSim |
 | [ ] | S3 Glacier Flexible Retrieval | ✅ Đã có | 2 | exam4_q64, exam6_q28 | s3.mdx#s1<br>s3.mdx#s1 / LifecycleValidator |
@@ -660,9 +647,13 @@ Có **960 keyword** khác nhau: ✅ 811 (84%) · 🟡 72 (8%) · ❌ 77 (8%).
 | [ ] | S3 SSE-S3 | ✅ Đã có | 2 | exam2_q10, exam4_q6 | s3.mdx#s4 / EncryptionSim<br>s3.mdx#s4 / EncryptionSim; kms.mdx#challenge |
 | [ ] | S3 Standard | ✅ Đã có | 2 | exam2_q29, exam5_q52 | s3.mdx#s1; storage.mdx#s1<br>s3.mdx#s1 |
 | [ ] | S3 Storage Class Analysis | ✅ Đã có | 2 | exam4_q30, exam6_q3 | s3.mdx#s3 / RequirementPicker |
+| [ ] | Access control list (ACL) | ✅ Đã có | 1 | exam4_q34 | s3.mdx#s3 |
 | [ ] | CloudFront vs S3 Transfer Acceleration for large uploads | ✅ Đã có | 1 | exam3_q37 | s3.mdx#s5; global-infra.mdx#s5 / EdgeChoiceSim |
 | [ ] | Glacier Vault Lock | ✅ Đã có | 1 | exam4_q64 | s3.mdx#s2 |
+| [ ] | S3 access control list (ACL) | ✅ Đã có | 1 | exam5_q39 | s3.mdx#s2 / s3.mdx#s7 / QuickCompare |
 | [ ] | S3 Access Point | ✅ Đã có | 1 | exam2_q24 | s3.mdx#s3 / RequirementPicker |
+| [ ] | S3 Batch Operations | ✅ Đã có | 1 | exam3_q48 | s3.mdx#s7 / QuickCompare |
+| [ ] | S3 bucket policy (20 KB size limit) | ✅ Đã có | 1 | exam6_q29 | s3.mdx#s3 / RequirementPicker |
 | [ ] | S3 bucket policy (cross-account) | ✅ Đã có | 1 | exam4_q65 | s3.mdx#s3 / RequirementPicker |
 | [ ] | S3 byte-range fetch | ✅ Đã có | 1 | exam6_q20 | s3.mdx#s5 / UploadSim |
 | [ ] | S3 Cross-Region Replication (CRR) | ✅ Đã có | 1 | exam5_q11 | analytics.mdx#s4 |
@@ -676,14 +667,19 @@ Có **960 keyword** khác nhau: ✅ 811 (84%) · 🟡 72 (8%) · ❌ 77 (8%).
 | [ ] | S3 Lifecycle (not a compliance control) | ✅ Đã có | 1 | exam5_q39 | s3.mdx#s1 / LifecycleValidator |
 | [ ] | S3 Lifecycle minimum 30 days before transition to IA | ✅ Đã có | 1 | exam1_q8 | s3.mdx#s1 / LifecycleValidator |
 | [ ] | S3 Lifecycle rule (transition + expiration) | ✅ Đã có | 1 | exam6_q28 | s3.mdx#s1 / RequirementPicker |
+| [ ] | S3 Lifecycle rule prefix filter | ✅ Đã có | 1 | exam4_q43 | s3.mdx#s1 / LifecycleFilterSim |
 | [ ] | S3 Lifecycle rule to Glacier Deep Archive | ✅ Đã có | 1 | exam2_q34 | s3.mdx#s1; analytics.mdx / LakeCostSim |
 | [ ] | S3 Lifecycle supported transitions (waterfall) | ✅ Đã có | 1 | exam1_q19 | s3.mdx#s1 / LifecycleValidator |
 | [ ] | S3 Lifecycle transition and expiration | ✅ Đã có | 1 | exam5_q51 | s3.mdx#s1 / LifecycleValidator |
 | [ ] | S3 MFA Delete | ✅ Đã có | 1 | exam1_q20 | s3.mdx#s2 / DeleteGuardSim |
+| [ ] | S3 Multi-Region Access Point | ✅ Đã có | 1 | exam6_q30 | s3.mdx#s7 / QuickCompare |
+| [ ] | S3 Object Lock bucket default retention (duration, overridden by explicit setting) | ✅ Đã có | 1 | exam1_q56 | s3.mdx#s2 / RetentionSim |
 | [ ] | S3 Object Lock retention modes (governance, compliance) | ✅ Đã có | 1 | exam1_q56 | s3.mdx#s2 / DeleteGuardSim / challenge |
 | [ ] | S3 Object Lock retention period (Retain Until Date per object version) | ✅ Đã có | 1 | exam1_q56 | s3.mdx#s2 / DeleteGuardSim |
 | [ ] | S3 Object Ownership (object writer vs bucket owner enforced) | ✅ Đã có | 1 | exam2_q15 | s3.mdx#s3 / RequirementPicker; analytics.mdx / DataJobSim |
+| [ ] | S3 on Outposts | ✅ Đã có | 1 | exam5_q49 | s3.mdx#s7 / QuickCompare |
 | [ ] | S3 request rate per prefix (3,500 PUT / 5,500 GET) | ✅ Đã có | 1 | exam1_q51 | s3.mdx#s5 / challenge |
+| [ ] | S3 Select | ✅ Đã có | 1 | exam6_q20 | s3.mdx#s7 / QuickCompare |
 | [ ] | S3 SSE-C | ✅ Đã có | 1 | exam2_q10 | s3.mdx#s4 / EncryptionSim; kms.mdx#s1 / S3EncryptSim |
 | [ ] | S3 SSE-S3 (unique key per object) | ✅ Đã có | 1 | exam3_q24 | s3.mdx#s4 / EncryptionSim; kms.mdx#s1 / S3EncryptSim |
 | [ ] | S3 Standard (no minimum storage duration, no retrieval fee) | ✅ Đã có | 1 | exam1_q28 | s3.mdx#s1 |
@@ -691,7 +687,11 @@ Có **960 keyword** khác nhau: ✅ 811 (84%) · 🟡 72 (8%) · ❌ 77 (8%).
 | [ ] | S3 Standard-IA (retrieval fee, 30-day minimum) | ✅ Đã có | 1 | exam6_q9 | s3.mdx#s1 |
 | [ ] | S3 Standard-IA 30-day minimum storage charge | ✅ Đã có | 1 | exam1_q28 | s3.mdx#s1 / LifecycleValidator |
 | [ ] | S3 Standard-IA retrieval fee | ✅ Đã có | 1 | exam4_q37 | s3.mdx#s1 |
+| [ ] | S3 static website endpoint (GET/HEAD only) | ✅ Đã có | 1 | exam5_q15 | s3.mdx#s6 / WebsiteEndpointSim |
+| [ ] | S3 static website hosting (error page) | ✅ Đã có | 1 | exam5_q56 | s3.mdx#s6 / StepSim |
+| [ ] | S3 static website hosting (static content only) | ✅ Đã có | 1 | exam1_q62 | s3.mdx#s6 / WebsiteEndpointSim |
 | [ ] | S3 Storage Lens | ✅ Đã có | 1 | exam6_q30 | s3.mdx#s3 / RequirementPicker |
+| [ ] | S3 Transfer Acceleration pricing (pay only when accelerated) | ✅ Đã có | 1 | exam1_q40 | s3.mdx#s5 / UploadSim |
 | [ ] | S3 Versioning | ✅ Đã có | 1 | exam4_q14 | s3.mdx#s2 |
 | [ ] | S3 Versioning (delete marker) | ✅ Đã có | 1 | exam1_q20 | s3.mdx#s2 / DeleteGuardSim |
 | [ ] | S3 Versioning and bucket policy deny | ✅ Đã có | 1 | exam5_q50 | s3.mdx#s2 / DeleteGuardSim |
@@ -781,7 +781,6 @@ Có **960 keyword** khác nhau: ✅ 811 (84%) · 🟡 72 (8%) · ❌ 77 (8%).
 | [ ] | Transfer Family POSIX identity mapping | ❌ Thiếu | 1 | exam5_q62 |  |
 | [ ] | Transfer Family VPC endpoint with Elastic IP and security group | ❌ Thiếu | 1 | exam5_q62 |  |
 | [ ] | AWS DMS ongoing replication (CDC) | 🟡 Một phần | 1 | exam5_q8 | storage-migration.mdx#s3 |
-| [ ] | aws s3 sync | 🟡 Một phần | 1 | exam4_q29 | storage-migration.mdx#s2 / RequirementPicker |
 | [ ] | AWS DataSync | ✅ Đã có | 6 | exam1_q9, exam1_q35, exam3_q3, exam4_q36, exam5_q41, exam5_q48 | storage-migration.mdx#s2<br>storage-migration.mdx#s2 / TransferPlannerSim |
 | [ ] | Storage Gateway S3 File Gateway | ✅ Đã có | 3 | exam1_q35, exam3_q3, exam3_q43 | storage-migration.mdx#s1<br>storage-migration.mdx#s1 / ScenarioFlow |
 | [ ] | Amazon S3 File Gateway | ✅ Đã có | 2 | exam5_q28, exam5_q48 | storage-migration.mdx#s1<br>storage-migration.mdx#s1; storage-migration.mdx#s2 |
@@ -795,6 +794,7 @@ Có **960 keyword** khác nhau: ✅ 811 (84%) · 🟡 72 (8%) · ❌ 77 (8%).
 | [ ] | AWS DataSync (scheduled task to EFS) | ✅ Đã có | 1 | exam2_q11 | storage-migration.mdx#s2 / TransferPlannerSim |
 | [ ] | AWS DMS (not for stream ingestion) | ✅ Đã có | 1 | exam6_q35 | kinesis.mdx#s3 |
 | [ ] | AWS DMS Serverless | ✅ Đã có | 1 | exam5_q8 | storage-migration.mdx#s3 |
+| [ ] | aws s3 sync | ✅ Đã có | 1 | exam4_q29 | s3.mdx#s7 / QuickCompare |
 | [ ] | AWS Snowball | ✅ Đã có | 1 | exam4_q14 | storage-migration.mdx#s2 / TransferPlannerSim |
 | [ ] | AWS Snowball Edge Compute Optimized | ✅ Đã có | 1 | exam1_q27 | others.mdx#s4 / storage-migration.mdx#s2 |
 | [ ] | AWS Snowball Edge import | ✅ Đã có | 1 | exam3_q61 | storage-migration.mdx#s2 |

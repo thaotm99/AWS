@@ -502,8 +502,8 @@
         {
           "keyword": "S3 static website endpoint (GET/HEAD only)",
           "lesson": "s3",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "s3.mdx#s6 / WebsiteEndpointSim"
         },
         {
           "keyword": "CloudFront signed URL",
@@ -1217,8 +1217,8 @@
         {
           "keyword": "S3 access control list (ACL)",
           "lesson": "s3",
-          "status": "partial",
-          "where": "s3.mdx#s3"
+          "status": "covered",
+          "where": "s3.mdx#s2 / s3.mdx#s7 / QuickCompare"
         }
       ]
     },
@@ -1504,8 +1504,8 @@
         {
           "keyword": "S3 on Outposts",
           "lesson": "s3",
-          "status": "partial",
-          "where": "global-infra.mdx#deep"
+          "status": "covered",
+          "where": "s3.mdx#s7 / QuickCompare"
         }
       ]
     },
@@ -1725,8 +1725,8 @@
         {
           "keyword": "S3 static website hosting (error page)",
           "lesson": "s3",
-          "status": "partial",
-          "where": "route53.mdx#s3 / RoutingPolicySim"
+          "status": "covered",
+          "where": "s3.mdx#s6 / StepSim"
         }
       ]
     },

@@ -594,8 +594,8 @@
         {
           "keyword": "S3 Select",
           "lesson": "s3",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "s3.mdx#s7 / QuickCompare"
         }
       ]
     },
@@ -843,8 +843,8 @@
         {
           "keyword": "S3 bucket policy (20 KB size limit)",
           "lesson": "s3",
-          "status": "partial",
-          "where": "s3.mdx#s3 (bucket policy explained, size limit not)"
+          "status": "covered",
+          "where": "s3.mdx#s3 / RequirementPicker"
         }
       ]
     },
@@ -876,8 +876,8 @@
         {
           "keyword": "S3 Multi-Region Access Point",
           "lesson": "s3",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "s3.mdx#s7 / QuickCompare"
         }
       ]
     },

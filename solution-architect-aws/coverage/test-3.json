@@ -756,8 +756,8 @@
         {
           "keyword": "S3 client-side encryption",
           "lesson": "s3",
-          "status": "partial",
-          "where": "s3.mdx#s4"
+          "status": "covered",
+          "where": "s3.mdx#s4 / EncryptionSim"
         }
       ]
     },
@@ -1477,8 +1477,8 @@
         {
           "keyword": "S3 Batch Operations",
           "lesson": "s3",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "s3.mdx#s7 / QuickCompare"
         }
       ]
     },
