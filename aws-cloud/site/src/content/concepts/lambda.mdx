@@ -1,8 +1,8 @@
 ---
 title: "AWS Lambda và Amazon API Gateway: kiến trúc serverless hướng sự kiện"
 lede: "Nhiều tác vụ của ShopViet chỉ cần chạy khi phát sinh sự kiện. Bài học trình bày các luồng xử lý hướng sự kiện (ảnh mới, dữ liệu stream, tác vụ định kỳ), các lỗi thường gặp khi vận hành Lambda trong môi trường production (VPC, cold start, quota, phân quyền), và cách cung cấp API cho ứng dụng và đối tác bằng API Gateway."
-minutes: 20
-scenes: 3
+minutes: 27
+scenes: 4
 prerequisites: ["iam", "vpc"]
 docs:
   - title: "Invoking Lambda with events from other AWS services"
@@ -25,6 +25,42 @@ docs:
     url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.html"
   - title: "What is Amazon Managed Service for Apache Flink?"
     url: "https://docs.aws.amazon.com/managed-flink/latest/java/what-is.html"
+  - title: "Configure Lambda function memory"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/configuration-memory.html"
+  - title: "Configure ephemeral storage for Lambda functions"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/configuration-ephemeral-storage.html"
+  - title: "Configure Lambda function timeout"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/configuration-timeout.html"
+  - title: "Managing Lambda dependencies with layers"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/chapter-layers.html"
+  - title: "Create a Lambda function using a container image"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/images-create.html"
+  - title: "Understanding the Lambda execution environment lifecycle"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtime-environment.html"
+  - title: "Best practices for working with AWS Lambda functions"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/best-practices.html"
+  - title: "AWS Lambda pricing"
+    url: "https://aws.amazon.com/lambda/pricing/"
+  - title: "Tutorial: Create a REST API as an Amazon Kinesis proxy"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/integrating-api-with-aws-services-kinesis.html"
+  - title: "Control access to a REST API with API Gateway resource policies"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-resource-policies.html"
+  - title: "Private REST APIs in API Gateway"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-private-apis.html"
+  - title: "Use API Gateway Lambda authorizers"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-use-lambda-authorizer.html"
+  - title: "Control access to HTTP APIs with JWT authorizers"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-jwt-authorizer.html"
+  - title: "Create a Lambda REQUEST authorizer function (WebSocket APIs)"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-lambda-auth.html"
+  - title: "Lambda deployment packages (.zip and container images)"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-package.html"
+  - title: "Configuring Amazon EFS file system access for Lambda"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/configuration-filesystem-efs.html"
+  - title: "API Gateway resource policy examples"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-resource-policies-examples.html"
+  - title: "Access an AWS service using an interface VPC endpoint"
+    url: "https://docs.aws.amazon.com/vpc/latest/privatelink/create-interface-endpoint.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -32,19 +68,22 @@ import Story from "../../components/lessons/global-infra/Story.astro";
 import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
 import LambdaRunSim from "../../components/scenes/lambda/LambdaRunSim.tsx";
 import ApiGatewaySim from "../../components/scenes/lambda/ApiGatewaySim.tsx";
+import FunctionConfigSim from "../../components/scenes/lambda/FunctionConfigSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#s1", label: "1 · Mẫu kiến trúc hướng sự kiện" },
   { href: "#s2", label: "2 · Vận hành Lambda trong production" },
-  { href: "#s3", label: "3 · Cung cấp API bằng API Gateway" },
+  { href: "#sizing", label: "3 · Cấu hình tài nguyên và đóng gói function" },
+  { href: "#s3", label: "4 · Cung cấp API bằng API Gateway" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
 Nhiều tác vụ của ShopViet chỉ chạy khi phát sinh sự kiện: ảnh mới, đơn hàng mới, đến lịch dọn dữ liệu. Thay vì duy trì EC2 chạy chờ cả ngày, **Lambda** thực thi đúng thời điểm có sự kiện, và **API Gateway** cung cấp API cho ứng dụng gọi tới.
 </Story>
 
-<Scene id="s1" label="Phần 1/3" title="Thực thi mã khi phát sinh sự kiện" questions={["exam5_q23", "exam2_q14", "exam1_q60", "exam5_q35", "exam6_q31", "exam3_q30", "exam1_q33"]}>
+<Scene id="s1" label="Phần 1/4" title="Thực thi mã khi phát sinh sự kiện" questions={["exam5_q23", "exam2_q14", "exam1_q60", "exam5_q35", "exam6_q31", "exam3_q30", "exam1_q33"]}>
 
 Ba tác vụ của ShopViet: tạo thumbnail khi người bán tải ảnh lên, cập nhật bảng xếp hạng từ lượt xem, và dọn dữ liệu cũ hằng tuần. So sánh phương án "duy trì máy chủ chờ sẵn" với phương án để sự kiện kích hoạt Lambda:
 
@@ -101,19 +140,40 @@ Ba tác vụ của ShopViet: tạo thumbnail khi người bán tải ảnh lên,
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/3" title="Vận hành Lambda trong môi trường production" questions={["exam4_q25", "exam1_q50", "exam3_q20", "exam6_q35", "exam4_q39", "exam2_q16"]}>
+<Scene id="s2" label="Phần 2/4" title="Vận hành Lambda trong môi trường production" questions={["exam4_q25", "exam1_q50", "exam3_q20", "exam6_q35", "exam4_q39", "exam2_q16"]}>
 
 Một số vấn đề chỉ xuất hiện khi triển khai lên production: function gắn vào VPC không truy cập được Internet, người dùng chờ lâu vào giờ cao điểm, thông báo bị throttle khi vượt concurrency quota, mật khẩu database lưu trong cấu hình. Chọn từng tình huống, chạy thử, sau đó bật tuỳ chọn để khắc phục:
 
 <LambdaRunSim client:visible />
 
-Hai lưu ý bổ sung. Mỗi lần thực thi Lambda function tiêu chuẩn tối đa **15 phút** (900 giây; Lambda Managed Instances cho phép tới 90 phút với lời gọi bất đồng bộ hoặc qua event source mapping, trừ Amazon MQ và Amazon DocumentDB); job dài hơn nên chạy bằng container trên Fargate (bài Containers). Khi nhiều function dùng chung thư viện, đóng gói thư viện đó thành **Lambda Layers**.
+Hai lưu ý bổ sung. Mỗi lần thực thi Lambda function tiêu chuẩn tối đa **15 phút** (900 giây; Lambda Managed Instances cho phép tới 90 phút với lời gọi bất đồng bộ hoặc qua event source mapping, trừ Amazon MQ và Amazon DocumentDB); job dài hơn nên chạy bằng container trên Fargate (bài Containers). Khi chưa gắn vào VPC, Lambda function vẫn gọi được Internet và các AWS API công khai; chỉ gắn VPC khi cần truy cập tài nguyên private như RDS, và khi đó cần NAT gateway như mô phỏng trên. Cách định cỡ memory, /tmp, timeout và đóng gói (layer, container image) được trình bày ở phần 3.
 
 <Takeaway>Lambda trong VPC cần NAT gateway để truy cập Internet. Cold start vào giờ cao điểm: provisioned concurrency. Concurrency có quota theo account và Region; cấu hình alarm trên ConcurrentExecutions. Không lưu mật khẩu: IAM database authentication. Truy cập cross-account: cả execution role và bucket policy đều phải cho phép.</Takeaway>
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/3" title="Cung cấp API cho ứng dụng và đối tác" questions={["exam1_q49", "exam3_q52", "exam3_q53", "exam2_q58", "exam4_q44", "exam5_q32", "exam1_q57", "exam1_q11"]}>
+<Scene id="sizing" label="Phần 3/4" title="Cấu hình tài nguyên và đóng gói function" questions={["exam4_q25", "exam3_q32", "exam1_q9"]}>
+
+Mỗi Lambda function có một số thiết lập quyết định tài nguyên của execution environment:
+
+- **Memory** từ 128 MB (mặc định) tới 10.240 MB. Lambda không có thiết lập CPU riêng: CPU được cấp **tỷ lệ với memory**, tại 1.769 MB function có tương đương một vCPU. Tác vụ nặng về CPU chạy chậm thì tăng memory. Chi phí duration tính theo GB-giây nên phụ thuộc memory đã cấp.
+- **Ephemeral storage** (`/tmp`) từ 512 MB (mặc định) tới 10.240 MB, mã hoá khi lưu trữ bằng key do AWS quản lý. Dữ liệu trong `/tmp` **riêng cho từng execution environment** và chỉ là bộ nhớ đệm tạm: có thể còn lại khi môi trường được tái sử dụng, nhưng Lambda thu hồi môi trường sau vài giờ. Dữ liệu cần giữ lâu dài hoặc dùng chung giữa các function đặt trên Amazon S3 hoặc Amazon EFS.
+- **Timeout** mặc định 3 giây, tối đa 900 giây. Timeout quá sát thời gian chạy dễ gây lỗi khi dữ liệu lớn hơn bình thường; timeout quá cao làm lời gọi bị treo giữ môi trường thực thi lâu hơn cần thiết. Giá trị phù hợp được xác định bằng load test.
+- **Kiểu đóng gói**: tệp .zip (tối đa 250 MB khi giải nén, **kể cả layer**) hoặc **container image** lưu trong Amazon ECR cùng Region (tối đa 10 GB). **Lambda layer** chứa thư viện, custom runtime hoặc tệp cấu hình dùng chung cho nhiều function; mỗi function dùng tối đa 5 layer, mỗi layer version là bản chụp bất biến, và layer chỉ áp dụng cho function dạng .zip.
+
+Thời gian khởi tạo (cold start) phụ thuộc kích thước package, gồm cả thư viện, dependency và layer. Đưa thư viện vào layer giúp package gọn và dùng chung được, nhưng không loại bỏ thời gian khởi tạo thư viện đó; cách giảm cold start là chỉ import những gì function cần, hoặc dùng provisioned concurrency (phần 2).
+
+Chọn từng tác vụ của ShopViet, điều chỉnh cấu hình rồi triển khai thử:
+
+<FunctionConfigSim client:visible />
+
+Layer không thay thế được nơi lưu dữ liệu. Khi team gợi ý sản phẩm cần đọc bộ dữ liệu lớn, liên tục tăng trên EFS thuộc account đối tác, Lambda mount trực tiếp EFS đó qua access point, kèm file system policy cho phép cross-account và kết nối VPC peering: xem [bài Storage, phần 3](/concepts/storage/#s3). Đóng gói dữ liệu vào layer không phù hợp vì layer version bất biến và bị giới hạn 250 MB chung với package.
+
+<Takeaway>CPU tỷ lệ với memory (1.769 MB ≈ 1 vCPU). `/tmp` từ 512 MB tới 10.240 MB, tạm thời, riêng cho từng execution environment; dữ liệu bền vững dùng S3 hoặc EFS. Timeout đặt theo load test, không đặt dư. Gói .zip tối đa 250 MB giải nén kể cả layer; lớn hơn dùng container image (tối đa 10 GB). Layer cho thư viện dùng chung, không cho dữ liệu.</Takeaway>
+
+</Scene>
+
+<Scene id="s3" label="Phần 4/4" title="Cung cấp API cho ứng dụng và đối tác" questions={["exam1_q49", "exam3_q52", "exam3_q53", "exam2_q58", "exam4_q44", "exam5_q32", "exam1_q57", "exam1_q11"]}>
 
 Ứng dụng mobile, đối tác bán hàng và trang quản trị đều gọi tới `api.shopviet.vn`. **API Gateway** thực hiện một chuỗi bước kiểm tra trước khi request tới mã ứng dụng. Chọn tình huống và gửi request:
 
@@ -122,14 +182,35 @@ Hai lưu ý bổ sung. Mỗi lần thực thi Lambda function tiêu chuẩn tố
 Một số yêu cầu khác:
 
 - Chat giữa người mua và người bán cần kết nối hai chiều, máy chủ chủ động đẩy tin nhắn tới client: **WebSocket API**. Với REST API, mỗi request độc lập và không duy trì kết nối.
-- Shipper gửi vị trí liên tục để theo dõi đơn hàng: API Gateway tiếp nhận dữ liệu và đẩy vào Kinesis Data Streams để **Amazon Managed Service for Apache Flink** (tên cũ: Amazon Kinesis Data Analytics) phân tích stream.
+- Shipper gửi vị trí liên tục để theo dõi đơn hàng (tình huống "Shipper gửi vị trí liên tục" trong mô phỏng): REST API dùng **AWS service integration** gọi thẳng `PutRecord` của Kinesis Data Streams, không cần Lambda trung gian, để **Amazon Managed Service for Apache Flink** (tên cũ: Amazon Kinesis Data Analytics) phân tích stream. Lambda chỉ xử lý từng request, không phải nơi lưu trữ hay phân tích dữ liệu.
 - Tiếp nhận giao dịch từ ứng dụng, kiểm tra dữ liệu đơn giản rồi xử lý, với chi phí vận hành thấp nhất: **REST API + Lambda** kiểm tra dữ liệu, backend serverless phía sau. Không có máy chủ hay container nào cần vá lỗi.
 
-<Takeaway>Giới hạn truy cập theo dải IP nội bộ: resource policy. Xác thực token không cần viết mã: REST API với Cognito user pool authorizer, hoặc HTTP API với JWT authorizer (HTTP API không hỗ trợ resource policy, API key, caching). Giới hạn theo từng client: usage plan + API key. Giảm tải backend khi request lặp lại: caching. Tác vụ xử lý lâu: API Gateway đẩy vào SQS. Giao tiếp hai chiều: WebSocket API.</Takeaway>
+Xác thực người dùng ở API Gateway có nhiều cơ chế. Ứng dụng mobile mới của ShopViet đăng nhập qua một identity provider bên ngoài tuân thủ OIDC; backend cần kiểm tra JWT và scope với độ trễ, chi phí thấp, không viết mã xác thực. **HTTP API với JWT authorizer** đáp ứng yêu cầu này: API Gateway kiểm tra chữ ký token bằng public key lấy từ `jwks_uri` của issuer, kiểm tra các claim `iss`, `aud`, `exp` và yêu cầu token có ít nhất một scope của route; các claim hợp lệ được chuyển tới backend. So sánh với các cơ chế còn lại:
+
+<QuickCompare client:visible items={[
+  { name: "REST API + Lambda authorizer",
+    use: "Cần cơ chế xác thực tuỳ biến: Lambda function nhận bearer token (TOKEN authorizer) hoặc header, query string (REQUEST authorizer), tự kiểm tra, ví dụ tra thông tin xác thực trong database, rồi trả về IAM policy để API Gateway đánh giá.",
+    notHere: "Phải viết, triển khai và duy trì mã kiểm tra JWT; mỗi lần authorizer chạy là một lần gọi Lambda, tăng độ trễ và chi phí.",
+    instead: "HTTP API với **JWT authorizer**: API Gateway tự kiểm tra JWT và scope, không cần mã." },
+  { name: "WebSocket API + Lambda authorizer",
+    use: "Ứng dụng cần kết nối hai chiều, ví dụ chat giữa người mua và người bán.",
+    notHere: "Với WebSocket API, Lambda authorizer chỉ dùng được cho route `$connect`: token được kiểm tra một lần khi mở kết nối, không kiểm tra ở từng message. Backend ở đây là các API request-response.",
+    instead: "HTTP API với JWT authorizer, kiểm tra token ở mỗi request." },
+  { name: "REST API + Cognito user pool authorizer",
+    use: "Người dùng đăng nhập bằng Amazon Cognito user pool; API Gateway kiểm tra token do user pool đó phát hành, không cần mã.",
+    notHere: "Token do identity provider bên ngoài phát hành, không phải Cognito user pool. REST API cũng có giá cao hơn HTTP API.",
+    instead: "HTTP API với JWT authorizer, cấu hình issuer và audience của identity provider đó." },
+  { name: "IAM authorization",
+    use: "Bên gọi là ứng dụng hoặc dịch vụ có AWS credentials, ký request bằng Signature Version 4; quyền được kiểm soát bằng IAM policy.",
+    notHere: "Người dùng cuối của ứng dụng mobile chỉ có JWT từ identity provider, không có AWS credentials.",
+    instead: "HTTP API với JWT authorizer." },
+]} />
+
+<Takeaway>Giới hạn truy cập theo dải IP nội bộ: resource policy (API Gateway không nằm trong subnet nên không có security group). Xác thực token không cần viết mã: REST API với Cognito user pool authorizer, hoặc HTTP API với JWT authorizer cho identity provider OIDC bất kỳ; Lambda authorizer khi cần logic tuỳ biến (WebSocket API: chỉ tại `$connect`) (HTTP API không hỗ trợ resource policy, API key, caching). Giới hạn theo từng client: usage plan + API key. Giảm tải backend khi request lặp lại: caching. Tác vụ xử lý lâu: API Gateway đẩy vào SQS. Dữ liệu stream: AWS service integration đẩy thẳng vào Kinesis Data Streams. Giao tiếp hai chiều: WebSocket API.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Bài tập" title="Phân loại cấu hình: Lambda và API Gateway" questions={["exam5_q23", "exam4_q25", "exam3_q53", "exam3_q30"]}>
+<Scene id="challenge" label="Bài tập" title="Phân loại cấu hình: Lambda và API Gateway" questions={["exam5_q23", "exam4_q25", "exam3_q53", "exam3_q30", "exam3_q32"]}>
 
 Phân loại từng tính năng vào nơi cấu hình tương ứng. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
@@ -140,7 +221,9 @@ Phân loại từng tính năng vào nơi cấu hình tương ứng. Trên thi�
   ]}
   cards={[
     ["Provisioned concurrency", "lambda"], ["Layers", "lambda"], ["Gắn vào VPC", "lambda"], ["Execution role", "lambda"],
+    ["Memory (quyết định CPU)", "lambda"], ["Ephemeral storage /tmp", "lambda"],
     ["Usage plan + API key", "apigw"], ["Resource policy giới hạn IP", "apigw"], ["Caching", "apigw"], ["JWT authorizer", "apigw"],
+    ["AWS service integration tới Kinesis", "apigw"],
   ]}
 />
 
@@ -163,6 +246,14 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["EC2 chạy crontab", "EventBridge cron gọi Lambda", "Lambda chạy liên tục và sleep"],
     a: 1,
     why: "Lịch cron của EventBridge kích hoạt Lambda đúng thời điểm; chi phí Lambda chỉ phát sinh cho vài phút thực thi mỗi tuần. EC2 chạy crontab phải chạy suốt tuần; Lambda function tiêu chuẩn không chạy liên tục được vì mỗi lần thực thi tối đa 15 phút." },
+  { q: "Function tạo ảnh banner chạy chậm và mức sử dụng CPU luôn ở mức tối đa. Thiết lập nào cần thay đổi?",
+    opts: ["Tăng timeout lên 900 giây", "Tăng memory của function", "Tăng ephemeral storage"],
+    a: 1,
+    why: "Lambda cấp CPU tỷ lệ với memory (1.769 MB tương đương một vCPU); tăng memory là cách tăng CPU. Tăng timeout chỉ cho phép function chạy lâu hơn, không làm function chạy nhanh hơn." },
+  { q: "Team gợi ý sản phẩm cần đưa thư viện ML và mô hình, tổng cộng 2,5 GB khi giải nén, lên Lambda. Phương án đóng gói nào phù hợp?",
+    opts: ["Tệp .zip kèm 5 layer", "Container image lưu trong Amazon ECR", "Tải mô hình vào /tmp và coi đó là nơi lưu lâu dài"],
+    a: 1,
+    why: "Container image cho phép tới 10 GB. Gói .zip, kể cả mọi layer, tối đa 250 MB khi giải nén. /tmp chỉ là bộ nhớ tạm của từng execution environment, không phải nơi lưu lâu dài." },
 ]} />
 
 </Scene>

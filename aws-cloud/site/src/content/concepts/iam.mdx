@@ -1,8 +1,8 @@
 ---
 title: "IAM và Organizations: xác thực và ủy quyền"
 lede: "Khi ShopViet mở rộng về nhân sự, ứng dụng và số lượng account, việc kiểm soát quyền truy cập trở nên cần thiết. Bài học trình bày cách đọc một policy JSON, cơ chế đánh giá request qua nhiều lớp quyền (SCP, permissions boundary, identity policy, resource policy), việc sử dụng IAM role thay cho access key cho ứng dụng, và quản trị nhiều account bằng AWS Organizations."
-minutes: 30
-scenes: 4
+minutes: 45
+scenes: 6
 prerequisites: ["global-infra"]
 docs:
   - title: "Policy evaluation logic"
@@ -21,6 +21,54 @@ docs:
     url: "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/view-cloudtrail-events.html"
   - title: "Security best practices in IAM"
     url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html"
+  - title: "Use instance profiles"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html"
+  - title: "Default Host Management Configuration (Systems Manager)"
+    url: "https://docs.aws.amazon.com/systems-manager/latest/userguide/fleet-manager-default-host-management-configuration.html"
+  - title: "Service-linked roles"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/using-service-linked-roles.html"
+  - title: "Managed policies and inline policies"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_managed-vs-inline.html"
+  - title: "IAM JSON policy elements: Action"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_action.html"
+  - title: "IAM JSON policy elements: Resource"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_resource.html"
+  - title: "SAML 2.0 federation"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_saml.html"
+  - title: "Create a SAML identity provider in IAM"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_saml.html"
+  - title: "IAM Identity Center: Microsoft AD directory"
+    url: "https://docs.aws.amazon.com/singlesignon/latest/userguide/manage-your-identity-source-ad.html"
+  - title: "IAM Identity Center: external identity providers"
+    url: "https://docs.aws.amazon.com/singlesignon/latest/userguide/manage-your-identity-source-idp.html"
+  - title: "IAM Identity Center: manage your identity source"
+    url: "https://docs.aws.amazon.com/singlesignon/latest/userguide/manage-your-identity-source.html"
+  - title: "IAM Identity Center: permission sets"
+    url: "https://docs.aws.amazon.com/singlesignon/latest/userguide/permissionsetsconcept.html"
+  - title: "AD Connector"
+    url: "https://docs.aws.amazon.com/directoryservice/latest/admin-guide/directory_ad_connector.html"
+  - title: "AWS Managed Microsoft AD: trust relationships"
+    url: "https://docs.aws.amazon.com/directoryservice/latest/admin-guide/ms_ad_setup_trust.html"
+  - title: "Refine permissions using last accessed information"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_last-accessed.html"
+  - title: "IAM access advisor APIs (AWS Security Blog)"
+    url: "https://aws.amazon.com/blogs/security/automate-analyzing-permissions-using-iam-access-advisor/"
+  - title: "Using IAM Access Analyzer"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/what-is-access-analyzer.html"
+  - title: "IAM Access Analyzer for S3"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-analyzer.html"
+  - title: "Amazon S3 Event Notifications"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/EventNotifications.html"
+  - title: "Amazon S3 access points"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-points.html"
+  - title: "What is AWS Config?"
+    url: "https://docs.aws.amazon.com/config/latest/developerguide/WhatIsConfig.html"
+  - title: "What is Amazon Inspector?"
+    url: "https://docs.aws.amazon.com/inspector/latest/user/what-is-inspector.html"
+  - title: "Root user best practices"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/root-user-best-practices.html"
+  - title: "Update the alternate contacts for your AWS account"
+    url: "https://docs.aws.amazon.com/accounts/latest/reference/manage-acct-update-contact-alternate.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -33,28 +81,37 @@ import OrgGuardSim from "../../components/scenes/iam/OrgGuardSim.tsx";
 import IamMythsSim from "../../components/scenes/iam/IamMythsSim.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
+import LeastPrivilegeSim from "../../components/scenes/iam/LeastPrivilegeSim.tsx";
+import FederationSim from "../../components/scenes/iam/FederationSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 
 <Story toc={[
   { href: "#s1", label: "1 · Phân tích policy" },
   { href: "#s2", label: "2 · Đánh giá nhiều lớp quyền" },
   { href: "#s3", label: "3 · IAM role" },
   { href: "#s4", label: "4 · Organizations" },
+  { href: "#s5", label: "5 · Truy cập tập trung cho nhân sự" },
+  { href: "#s6", label: "6 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
 ShopViet bổ sung developer, account production và kiểm toán viên. Mỗi người dùng và mỗi ứng dụng chỉ được cấp quyền đúng với nhiệm vụ của mình. Yêu cầu này được đáp ứng bằng **IAM** trong phạm vi một account và **AWS Organizations** khi có nhiều account.
 </Story>
 
-<Scene id="s1" label="Phần 1/4" title="Phân tích phạm vi quyền của một policy" questions={["exam2_q37", "exam2_q38", "exam2_q48", "exam2_q54", "exam1_q58"]}>
+<Scene id="s1" label="Phần 1/6" title="Phân tích phạm vi quyền của một policy" questions={["exam2_q37", "exam2_q38", "exam2_q48", "exam2_q54", "exam1_q58"]}>
 
 Trước khi gắn một policy do người khác soạn vào user hoặc role của ShopViet, cần xác định chính xác phạm vi quyền mà policy đó cấp. Chọn policy, dự đoán kết quả, sau đó gửi từng request để kiểm tra.
 
 <PolicyReader client:visible />
 
-<Takeaway>Khi không có statement Allow nào khớp, request bị từ chối ngầm định (implicit deny). aws:SourceIp là IP của bên gọi, aws:RequestedRegion là Region nhận API call. ListBucket áp dụng trên ARN của bucket, GetObject/DeleteObject áp dụng trên bucket/*.</Takeaway>
+Đọc đúng policy mới là một nửa yêu cầu; nửa còn lại là cấp **đúng và đủ** quyền (least privilege). Nhóm tài chính của ShopViet cần liệt kê bucket shopviet-reports và xoá báo cáo cũ, không hơn. Policy hiện tại chưa xoá được object. Chọn statement bổ sung và quan sát những request nào được phép.
+
+<LeastPrivilegeSim client:visible />
+
+<Takeaway>Khi không có statement Allow nào khớp, request bị từ chối ngầm định (implicit deny). aws:SourceIp là IP của bên gọi, aws:RequestedRegion là Region nhận API call. ListBucket áp dụng trên ARN của bucket, GetObject/DeleteObject áp dụng trên bucket/*. Wildcard trong tên action (`s3:*Object`), `s3:*` và dấu `*` ở cuối ARN (`bucket*`, khớp cả `/` và bucket khác cùng tiền tố) đều dễ cấp thừa quyền.</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/4" title="Các lớp quyền tham gia đánh giá request" questions={["exam3_q59", "exam1_q25", "exam2_q39", "exam2_q16"]}>
+<Scene id="s2" label="Phần 2/6" title="Các lớp quyền tham gia đánh giá request" questions={["exam3_q59", "exam1_q25", "exam2_q39", "exam2_q16"]}>
 
 Một request có thể bị chặn tại nhiều lớp: **SCP** của Organizations giới hạn toàn bộ account, **permissions boundary** giới hạn quyền tối đa của một user/role, **identity policy** cấp quyền, và với truy cập cross-account, **resource policy** (ví dụ bucket policy) cũng phải cho phép. Thay đổi từng lớp và quan sát kết quả.
 
@@ -64,7 +121,7 @@ Một request có thể bị chặn tại nhiều lớp: **SCP** của Organizat
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/4" title="IAM role thay cho access key" questions={["exam2_q3", "exam3_q23", "exam1_q17", "exam4_q34", "exam1_q5", "exam4_q39", "exam2_q16"]}>
+<Scene id="s3" label="Phần 3/6" title="IAM role thay cho access key" questions={["exam2_q3", "exam3_q23", "exam1_q17", "exam4_q34", "exam1_q5", "exam4_q39", "exam2_q16", "exam3_q6", "exam1_q16"]}>
 
 Server của ShopViet cần đọc dữ liệu từ DynamoDB. Phương án đơn giản nhưng rủi ro là lưu access key trong mã nguồn: khi mã nguồn bị lộ, access key cũng bị lộ. Phương án an toàn:
 
@@ -79,7 +136,7 @@ Server của ShopViet cần đọc dữ liệu từ DynamoDB. Phương án đơn
   initial={["ec2", "ddb"]}
   steps={[
     { button: "1. Gắn IAM role vào EC2", show: ["role"], flows: [{ path: ["role", "ec2"], tone: "good", label: "instance profile" }],
-      note: "Tạo IAM role có quyền đọc bảng orders và gắn vào EC2 qua **instance profile**. Trust policy của role cho phép dịch vụ EC2 assume role." },
+      note: "Tạo IAM role có quyền đọc bảng orders và gắn vào EC2 qua **instance profile**. Trust policy của role cho phép dịch vụ EC2 assume role. Một instance chỉ gắn được **một** IAM role; một instance profile chứa đúng một role và giới hạn này không tăng được." },
     { button: "2. Ứng dụng nhận credentials tạm thời", show: ["sts"], flows: [{ path: ["ec2", "sts"], tone: "good", label: "tự động, tự động xoay vòng" }],
       note: "SDK trên EC2 tự động lấy **credentials tạm thời** từ STS thông qua instance metadata. Credentials có thời hạn và được làm mới tự động." },
     { button: "3. Gọi DynamoDB", flows: [{ path: ["ec2", "ddb"], tone: "good", label: "đã được cấp quyền" }], move: ["ec2", "ddb"],
@@ -99,13 +156,17 @@ Nguyên tắc tương tự áp dụng cho các trường hợp khác:
     why: "Lambda sử dụng role để lấy token xác thực ngắn hạn khi kết nối RDS." },
   { need: "Quy định principal nào được assume một role", answer: "Trust policy của role",
     why: "Trust policy là resource-based policy duy nhất của chính IAM: gắn vào role và xác định principal nào được assume role đó." },
+  { need: "Fleet EC2 đã có role đọc RDS và Secrets Manager, nay cần thêm quyền cho Systems Manager vá OS", answer: "Bật Default Host Management Configuration, hoặc thêm policy vào role hiện có",
+    why: "Không gắn được role thứ hai vào instance. Default Host Management Configuration của Systems Manager tạo và áp dụng một IAM role mặc định cho mọi instance trong account và Region, không cần sửa instance profile (yêu cầu IMDSv2 và SSM Agent 3.2.582.0 trở lên). Instance profile hiện có không được cho phép ssm:UpdateInstanceInformation, nếu không SSM Agent dùng quyền của instance profile trước." },
+  { need: "Một dịch vụ AWS cần quyền gọi dịch vụ khác thay mặt ShopViet", answer: "Service-linked role",
+    why: "Service-linked role do dịch vụ định nghĩa sẵn, gồm trust policy và permissions policy. Chỉ dịch vụ đó assume được role (trừ khi dịch vụ quy định khác); quản trị viên xem được nhưng không sửa được quyền, và permissions policy này không gắn được cho identity khác." },
 ]} />
 
 <Takeaway>Ứng dụng trên AWS sử dụng IAM role, không sử dụng access key. Truy cập cross-account: tạo role tại account đích và assume role đó.</Takeaway>
 
 </Scene>
 
-<Scene id="s4" label="Phần 4/4" title="Quản trị nhiều account bằng AWS Organizations" questions={["exam2_q43", "exam5_q18", "exam6_q41", "exam3_q36", "exam6_q22", "exam5_q17", "exam2_q36", "exam3_q17"]}>
+<Scene id="s4" label="Phần 4/6" title="Quản trị nhiều account bằng AWS Organizations" questions={["exam2_q43", "exam5_q18", "exam6_q41", "exam3_q36", "exam6_q22", "exam5_q17", "exam2_q36", "exam3_q17"]}>
 
 ShopViet hiện có nhiều account: dev, staging, prod, sandbox, marketing. Quản trị thủ công từng account không thể duy trì khi quy mô tăng. Mỗi tình huống dưới đây là một tác vụ quản trị thực tế. Thử phương án thủ công trước, sau đó chuyển sang công cụ của AWS để so sánh.
 
@@ -115,13 +176,62 @@ ShopViet hiện có nhiều account: dev, staging, prod, sandbox, marketing. Qu�
 
 </Scene>
 
-<Scene id="confuse" label="Lỗi thường gặp" title="Bốn nguyên tắc bảo vệ account" questions={["exam1_q31", "exam6_q40", "exam1_q16", "exam6_q29", "exam1_q25"]}>
+<Scene id="s5" label="Phần 5/6" title="Truy cập tập trung cho nhân sự bằng danh tính có sẵn" questions={["exam1_q10", "exam4_q4", "exam6_q10"]}>
 
-Bốn nguyên tắc dưới đây quyết định mức độ an toàn của account ShopViet. Chọn tình huống, thử phương án tắt trước, sau đó chuyển sang phương án đúng.
+ShopViet có 6 account trong Organizations và quản lý nhân sự trong Active Directory on-premises; một công ty con dùng Microsoft Entra ID. Nhân viên cần vào đúng account theo vai trò công việc, bằng chính tài khoản công ty. AWS khuyến nghị người dùng là con người truy cập AWS qua **federation** với một identity provider và dùng credentials tạm thời; để quản lý tập trung nhiều account, AWS khuyến nghị **IAM Identity Center**.
+
+Identity Center có đúng một identity source cho mỗi organization: Identity Center directory, Active Directory (qua **AD Connector** hoặc **AWS Managed Microsoft AD**), hoặc IdP bên ngoài qua **SAML 2.0**. Quyền được định nghĩa bằng **permission set** (tập hợp IAM policy) và gán cho user hoặc group trên từng account. Chọn tình huống và so sánh các phương án.
+
+<FederationSim client:visible />
+
+Directory dùng cho Identity Center phải nằm trong management account của Organizations (hoặc delegated admin account của Identity Center). Với AWS Managed Microsoft AD, Identity Center phải được bật ở cùng Region với directory.
+
+<Takeaway>Nhiều account, danh tính đã có sẵn: IAM Identity Center, gán permission set cho group. AD on-premises một domain: AD Connector; nhiều domain hoặc forest: AWS Managed Microsoft AD với two-way trust. IdP bên ngoài (Okta, Entra ID): SAML 2.0 để xác thực, SCIM để provision user và group. IAM SAML identity provider phải nằm cùng account với role, nên phải cấu hình lại ở từng account.</Takeaway>
+
+</Scene>
+
+<Scene id="confuse" label="Lỗi thường gặp" title="Năm nguyên tắc bảo vệ account" questions={["exam1_q31", "exam6_q40", "exam1_q16", "exam6_q29", "exam1_q25"]}>
+
+Năm nguyên tắc dưới đây quyết định mức độ an toàn của account ShopViet. Chọn tình huống, thử phương án tắt trước, sau đó chuyển sang phương án đúng.
 
 <IamMythsSim client:visible />
 
-<Takeaway>Root user: không tạo access key, bật MFA. Cấp quyền cho nhiều người dùng: IAM group. Người dùng đặc quyền: MFA, kèm CloudTrail để truy vết. Cho phép developer tự gắn policy: kết hợp permissions boundary.</Takeaway>
+<Takeaway>Root user: không tạo access key, bật MFA, email là địa chỉ nhóm do doanh nghiệp quản lý. Cấp quyền cho nhiều người dùng: IAM group. Người dùng đặc quyền: MFA, kèm CloudTrail để truy vết. Cho phép developer tự gắn policy: kết hợp permissions boundary. Thông báo billing, vận hành, bảo mật: alternate contacts trỏ tới distribution list của từng nhóm.</Takeaway>
+
+</Scene>
+
+<Scene id="s6" label="Phần 6/6" title="Phân biệt nhanh: các công cụ IAM dễ nhầm lẫn" questions={["exam5_q17", "exam5_q23", "exam2_q24", "exam2_q43"]}>
+
+Các công cụ dưới đây có tên hoặc chức năng gần nhau. Mỗi mục nêu công cụ dùng khi nào, vì sao không phù hợp với tình huống của ShopViet, và phương án phù hợp.
+
+<QuickCompare client:visible items={[
+  { name: "IAM last accessed information (access advisor)",
+    use: "Cho biết lần cuối user, group, role hoặc policy dùng tới từng dịch vụ AWS (và một số management action); thông tin dịch vụ được theo dõi ít nhất 400 ngày. Dùng để loại bỏ quyền không dùng tới, tiến tới **least privilege**.",
+    notHere: "Đội bảo mật cần tìm bucket S3, IAM role, KMS key bị chia sẻ ra ngoài Organization. Last accessed information không phân tích resource-based policy nên không cho biết principal bên ngoài nào truy cập được tài nguyên.",
+    instead: "**IAM Access Analyzer** với external access analyzer, zone of trust là Organization (phần 4)." },
+  { name: "IAM Access Analyzer for S3",
+    use: "Tạo finding cho bucket cho phép truy cập public hoặc từ account khác (qua bucket policy, ACL, access point policy); chặn public access bằng một thao tác. Cần tạo external access analyzer cho từng Region; không tính thêm phí trên console S3.",
+    notHere: "ShopViet cần tạo thumbnail mỗi khi có ảnh mới tải lên. Access Analyzer phân tích policy, không phát sự kiện khi có object mới nên không kích hoạt được Lambda.",
+    instead: "**S3 Event Notifications** (đích: SNS, SQS, Lambda, EventBridge) gọi Lambda tạo thumbnail và ghi sang bucket thứ hai, tránh vòng lặp kích hoạt." },
+  { name: "AWS Config",
+    use: "Ghi lại cấu hình tài nguyên, quan hệ giữa các tài nguyên và lịch sử thay đổi; đánh giá tuân thủ bằng rule.",
+    notHere: "Xác định tài nguyên nào được chia sẻ ra ngoài đòi hỏi phân tích ý nghĩa của resource-based policy để tìm principal bên ngoài; Access Analyzer làm việc này bằng logic-based reasoning.",
+    instead: "IAM Access Analyzer; AWS Config bổ sung lịch sử cấu hình và rule tuân thủ." },
+  { name: "Amazon Inspector",
+    use: "Quản lý lỗ hổng: tự động phát hiện và quét liên tục EC2, container image trong ECR và Lambda để tìm lỗ hổng phần mềm và network exposure ngoài ý muốn.",
+    notHere: "Inspector không đánh giá IAM policy hay resource policy, nên không tìm được tài nguyên được chia sẻ ra ngoài.",
+    instead: "IAM Access Analyzer." },
+  { name: "Inline policy cho từng IAM user",
+    use: "Policy gắn chặt 1-1 với một user, group hoặc role và bị xoá cùng identity. Policy có thể dùng cho nhiều identity thì nên là managed policy.",
+    notHere: "Nhiều dịch vụ phân tích dùng chung một bucket, mỗi dịch vụ chỉ được truy cập prefix của mình. Tạo IAM user cho từng dịch vụ và viết inline policy liệt kê tên object: mỗi lần thêm dịch vụ hay đổi object đều phải sửa thủ công, và ứng dụng nên dùng IAM role thay cho IAM user.",
+    instead: "Mỗi dịch vụ một **S3 access point**, access point policy giới hạn theo prefix (bài S3). Policy dùng lại cho nhiều role: customer managed policy." },
+  { name: "Service-linked role",
+    use: "Role do một dịch vụ AWS định nghĩa sẵn để gọi dịch vụ khác thay mặt account. Quản trị viên xem được nhưng không sửa được quyền; chỉ dịch vụ đó assume được; permissions policy không gắn được cho identity khác. SCP không ảnh hưởng service-linked role.",
+    notHere: "Developer có quyền root user trong account riêng, ShopViet cần giữ nguyên trail CloudTrail bắt buộc. Service-linked role không phải cơ chế giới hạn quyền của người dùng, và quyền của nó do dịch vụ định nghĩa.",
+    instead: "**SCP** deny các thao tác thay đổi CloudTrail, gắn vào OU chứa account của developer (phần 4)." },
+]} />
+
+<Takeaway>Quyền không dùng tới: last accessed information. Tài nguyên chia sẻ ra ngoài: IAM Access Analyzer. Phản ứng khi có object mới: S3 Event Notifications. Phân quyền theo prefix trên bucket dùng chung: S3 access point. Giới hạn quyền cả root user của member account: SCP.</Takeaway>
 
 </Scene>
 
@@ -161,6 +271,10 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Gắn permissions boundary cho mỗi developer", "Dùng SCP chặn cả account", "Xóa quyền IAM của developer"],
     a: 0,
     why: "Permissions boundary giới hạn quyền tối đa; kể cả khi developer tự gắn AdministratorAccess, quyền hiệu lực vẫn không vượt quá boundary." },
+  { q: "Một công ty con của ShopViet quản lý nhân sự trên Okta và có 8 account trong Organizations. Phương án nào cấp quyền theo nhóm với ít công vận hành nhất?",
+    opts: ["Tạo IAM SAML identity provider và role tại từng account", "IAM Identity Center kết nối Okta qua SAML 2.0 và SCIM, gán permission set cho group", "Tạo IAM user cho từng nhân viên tại từng account"],
+    a: 1,
+    why: "Identity Center quản lý quyền tập trung cho mọi account; SCIM tự động provision user và group, permission set tạo role tại từng account được gán. IAM SAML identity provider phải nằm cùng account với role nên phải cấu hình lặp lại." },
 ]} />
 
 </Scene>

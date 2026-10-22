@@ -1,8 +1,8 @@
 ---
 title: "Amazon EC2: tuỳ chọn mua, khởi tạo, kết nối mạng và vận hành instance"
 lede: "Tầng máy chủ của ShopViet chạy trên các EC2 instance. Bài học trình bày các tác vụ vận hành thường gặp: lựa chọn tuỳ chọn mua để tối ưu chi phí, rút ngắn thời gian khởi tạo instance xuống vài phút, cấu hình mạng giữa các instance, và xử lý sự cố phần cứng, ứng dụng không phản hồi hoặc mất dữ liệu tạm."
-minutes: 30
-scenes: 4
+minutes: 42
+scenes: 6
 prerequisites: ["vpc", "iam"]
 docs:
   - title: "Amazon EC2 billing and purchasing options"
@@ -21,6 +21,10 @@ docs:
     url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/dedicated-hosts-overview.html"
   - title: "Spot Instance requests"
     url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-requests.html"
+  - title: "Spot request status"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-request-status.html"
+  - title: "Cancel a Spot Instance request"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-spot-instances-cancel.html"
   - title: "Savings Plans types"
     url: "https://docs.aws.amazon.com/savingsplans/latest/userguide/plan-types.html"
   - title: "Use encryption with EBS-backed AMIs"
@@ -29,6 +33,56 @@ docs:
     url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html"
   - title: "Amazon EC2 instance IP addressing"
     url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-instance-addressing.html"
+  - title: "Placement strategies for your placement groups"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/placement-strategies.html"
+  - title: "Data persistence for Amazon EC2 instance store volumes"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-store-lifetime.html"
+  - title: "Add instance store volumes to an EC2 instance"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/add-instance-store-volumes.html"
+  - title: "Root volumes for your Amazon EC2 instances"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/RootDeviceStorage.html"
+  - title: "AMI types and characteristics"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ComponentsAMIs.html"
+  - title: "Specifications for Amazon EC2 storage optimized instances"
+    url: "https://docs.aws.amazon.com/ec2/latest/instancetypes/so.html"
+  - title: "Enhanced networking on Amazon EC2 instances"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/enhanced-networking.html"
+  - title: "Elastic network interfaces"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html"
+  - title: "Elastic Fabric Adapter for AI/ML and HPC workloads"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html"
+  - title: "Reserve compute capacity with EC2 On-Demand Capacity Reservations"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-capacity-reservations.html"
+  - title: "Capacity Reservation pricing and billing"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/capacity-reservations-pricing-billing.html"
+  - title: "New – Scheduled Reserved Instances (update 9/3/2024)"
+    url: "https://aws.amazon.com/blogs/aws/new-scheduled-reserved-instances/"
+  - title: "New – EC2 Spot Blocks for Defined-Duration Workloads (update July 2021)"
+    url: "https://aws.amazon.com/blogs/aws/new-ec2-spot-blocks-for-defined-duration-workloads/"
+  - title: "Amazon ECS task definition parameters (Elastic Inference no longer available)"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters_ec2.html"
+  - title: "Connect to your instances using a private IP address and EC2 Instance Connect Endpoint"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/connect-with-ec2-instance-connect-endpoint.html"
+  - title: "Connect to a Linux instance using EC2 Instance Connect"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-connect-methods.html"
+  - title: "Use instance metadata to manage your EC2 instance"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html"
+  - title: "Access instance metadata for an EC2 instance"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html"
+  - title: "Elastic IP addresses"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html"
+  - title: "Terminate Amazon EC2 instances"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/terminating-instances.html"
+  - title: "How instance termination works"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/how-ec2-instance-termination-works.html"
+  - title: "Enable VPC internet access using internet gateways"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Internet_Gateway.html"
+  - title: "VPC CIDR blocks"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-cidr-blocks.html"
+  - title: "Target groups for your Application Load Balancers"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html"
+  - title: "AWS global condition context keys"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_condition-keys.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -40,18 +94,23 @@ import Ec2OpsSim from "../../components/scenes/ec2/Ec2OpsSim.tsx";
 import StepSim from "../../components/scenes/StepSim.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
+import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
+import PlacementSim from "../../components/scenes/ec2/PlacementSim.tsx";
+import Ec2LifecycleSim from "../../components/scenes/ec2/Ec2LifecycleSim.tsx";
 
 <Story toc={[
   { href: "#s1", label: "1 · Tối ưu chi phí mua" },
   { href: "#s2", label: "2 · Rút ngắn thời gian khởi tạo" },
   { href: "#s3", label: "3 · Kết nối mạng giữa các instance" },
   { href: "#s4", label: "4 · Xử lý sự cố instance" },
+  { href: "#s5", label: "5 · Placement group và card mạng" },
+  { href: "#s6", label: "6 · Vòng đời instance và địa chỉ IP" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
 Tầng máy chủ của ShopViet chạy trên các EC2 instance. Thách thức không nằm ở việc khởi chạy một instance, mà ở các quyết định thiết kế: tuỳ chọn mua nào tối ưu chi phí, thời gian khởi tạo bao lâu, bố trí các instance gần nhau hay phân tán, lưu dữ liệu tạm ở đâu, và cơ chế tự phục hồi khi xảy ra sự cố.
 </Story>
 
-<Scene id="s1" label="Phần 1/4" title="Tối ưu chi phí mà vẫn đảm bảo tính sẵn sàng" questions={["exam2_q33", "exam2_q35", "exam4_q49", "exam5_q60", "exam1_q21", "exam4_q46", "exam2_q49", "exam6_q18", "exam2_q23", "exam6_q21", "exam6_q33", "exam6_q38", "exam4_q30"]}>
+<Scene id="s1" label="Phần 1/6" title="Tối ưu chi phí mà vẫn đảm bảo tính sẵn sàng" questions={["exam2_q33", "exam2_q35", "exam4_q49", "exam5_q60", "exam1_q21", "exam4_q46", "exam2_q49", "exam6_q18", "exam2_q23", "exam6_q21", "exam6_q33", "exam6_q38", "exam4_q30", "exam3_q30", "exam4_q60", "exam6_q2", "exam3_q51"]}>
 
 ShopViet cần 80 instance chạy liên tục 24/7; vào ban ngày cần bổ sung worker xử lý ảnh từ hàng đợi (chịu được gián đoạn). Chọn chiến lược mua:
 
@@ -61,11 +120,15 @@ Biểu đồ trên thể hiện bức tranh tổng thể. Thực tế còn nhi�
 
 <Ec2CostSim client:visible />
 
-<Takeaway>Tải nền chạy 24/7: Reserved Instances hoặc Savings Plans. Tác vụ chịu được gián đoạn: Spot (persistent request hoặc Spot Fleet để tiếp tục xử lý). Tải biến động không chịu được gián đoạn: On-Demand. Phần cứng single-tenant, không cần kiểm soát host và không có license theo socket, core: Dedicated Instances (tính phí theo instance); license theo socket, core: Dedicated Hosts (tính phí theo host). Chiết khấu áp dụng cho cả EC2, Fargate và Lambda: Compute Savings Plan.</Takeaway>
+Trước đợt khuyến mãi 11/11, ShopViet cần **chắc chắn có đủ capacity** cho 40 instance c-family trong AZ ap-southeast-1a. Savings Plans và regional Reserved Instances chỉ giảm giá, không giữ capacity. **On-Demand Capacity Reservation** giữ capacity trong một AZ cụ thể; loại dùng ngay có thể tạo, sửa và huỷ bất kỳ lúc nào, không cam kết thời hạn. Capacity Reservation không có chiết khấu riêng: được tính theo giá On-Demand dù có instance chạy trong capacity đã giữ hay không. Để vừa giữ capacity vừa được giảm giá, kết hợp Capacity Reservation với Savings Plans hoặc regional Reserved Instances. Capacity Reservation không làm thay đổi hiệu năng của instance.
+
+Hai tuỳ chọn mua cũ đã ngừng: **Scheduled Reserved Instances** (đặt trước capacity theo lịch ngày, tuần, tháng) không còn mua được, AWS không có capacity và không có kế hoạch cung cấp lại; **Spot block** (Spot Instance với defined duration 1 đến 6 giờ) đã ngừng cung cấp cho khách hàng mới từ 1/7/2021. Thay thế: cần giữ capacity thì dùng On-Demand Capacity Reservation, cần giá thấp hơn thì dùng Savings Plans; tác vụ chịu được gián đoạn dùng Spot Instance không đặt duration.
+
+<Takeaway>Tải nền chạy 24/7: Reserved Instances hoặc Savings Plans. Tác vụ chịu được gián đoạn: Spot (persistent request hoặc Spot Fleet để tiếp tục xử lý). Persistent request mở lại sau khi Spot Instance bị gián đoạn; nếu bạn stop instance, request ở trạng thái disabled và chỉ mở lại sau khi start; huỷ request không terminate instance. Tải biến động không chịu được gián đoạn: On-Demand. Phần cứng single-tenant, không cần kiểm soát host và không có license theo socket, core: Dedicated Instances (tính phí theo instance); license theo socket, core: Dedicated Hosts (tính phí theo host). Chiết khấu áp dụng cho cả EC2, Fargate và Lambda: Compute Savings Plan. Bảo đảm có capacity trong một AZ: On-Demand Capacity Reservation (giá On-Demand, không tăng hiệu năng). Scheduled Reserved Instances và Spot block đã ngừng.</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/4" title="Rút ngắn thời gian khởi tạo: golden AMI và user data" questions={["exam4_q1", "exam2_q19", "exam6_q11", "exam2_q51", "exam3_q55"]}>
+<Scene id="s2" label="Phần 2/6" title="Rút ngắn thời gian khởi tạo: golden AMI và user data" questions={["exam4_q1", "exam2_q19", "exam6_q11", "exam2_q51", "exam3_q55"]}>
 
 Quá trình cài đặt đầy đủ một máy chủ ShopViet mất 45 phút, trong khi Auto Scaling yêu cầu instance mới sẵn sàng trong vài phút.
 
@@ -89,44 +152,112 @@ Quá trình cài đặt đầy đủ một máy chủ ShopViet mất 45 phút, t
 
 Golden AMI có thể được tái sử dụng ở phạm vi rộng hơn. Khi ShopViet mở rộng sang Region mới, **copy AMI** sang Region đó. Khi nhóm khác cần sử dụng, **share AMI** với account của nhóm đó. AMI tạo từ snapshot đã mã hoá thì bản copy cũng phải được mã hoá; không thể copy thành bản không mã hoá.
 
-<Takeaway>Rút ngắn thời gian khởi tạo: golden AMI cho phần cố định + user data cho phần thay đổi. AMI có thể copy sang Region khác và share với account khác. Duy trì trạng thái RAM khi dừng instance: Hibernate (phần 4).</Takeaway>
+Bên trong instance, script khởi động thường cần biết instance ID, AZ hoặc địa chỉ IP của chính nó. Các thông tin này lấy từ **instance metadata**: dữ liệu về instance, chia theo category (host name, security group, events…), đọc tại địa chỉ `169.254.169.254` (IMDSv2 yêu cầu lấy token trước). Instance metadata cũng trả về user data đã truyền khi launch. Metadata là dữ liệu để đọc, không phải cơ chế chạy script. Metadata và user data chỉ đọc được từ bên trong instance nhưng không được bảo vệ bằng xác thực hay mã hoá, nên không lưu mật khẩu trong đó.
+
+Chọn từng nhu cầu của đội vận hành để xem cơ chế phù hợp:
+
+<RequirementPicker client:visible label="Cơ chế phù hợp" items={[
+  { need: "Chạy script cấu hình một lần duy nhất khi instance khởi chạy lần đầu", answer: "User data",
+    why: "Theo mặc định, user data script và cloud-init directive chỉ chạy trong chu kỳ boot của lần launch đầu tiên, với quyền root. Không cần cấu hình thêm; chỉ khi muốn chạy ở mọi lần khởi động mới phải đổi cấu hình." },
+  { need: "Script trong instance cần biết instance ID, AZ và private IP của chính nó", answer: "Instance metadata (169.254.169.254)",
+    why: "Instance metadata là dữ liệu về instance, dùng để cấu hình hoặc quản lý instance đang chạy. Chỉ truy cập được từ bên trong instance." },
+  { need: "Ứng dụng mất nhiều phút khởi động mỗi lần stop/start; cần tiếp tục ngay trạng thái cũ", answer: "EC2 Hibernate",
+    why: "Hibernate lưu nội dung RAM xuống EBS root volume và nạp lại khi start. User data, metadata hay AMI không rút ngắn được thời gian ứng dụng tự khởi động." },
+  { need: "Phần mềm dùng chung cho mọi instance phải có sẵn ngay khi launch", answer: "Golden AMI",
+    why: "Phần mềm được cài một lần vào AMI; mọi instance launch từ AMI đó đã có sẵn phần mềm." },
+]} />
+
+<Takeaway>Rút ngắn thời gian khởi tạo: golden AMI cho phần cố định + user data cho phần thay đổi. AMI có thể copy sang Region khác và share với account khác. Thông tin về chính instance (ID, IP, AZ): instance metadata, không dùng để chạy script. Duy trì trạng thái RAM khi dừng instance: Hibernate (phần 4).</Takeaway>
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/4" title="Kết nối mạng giữa các instance" questions={["exam1_q23", "exam4_q20", "exam4_q60", "exam6_q36", "exam6_q57", "exam6_q59"]}>
+<Scene id="s3" label="Phần 3/6" title="Kết nối mạng giữa các instance" questions={["exam1_q23", "exam4_q20", "exam4_q60", "exam6_q36", "exam6_q57", "exam6_q59", "exam5_q31"]}>
 
 Vị trí đặt instance và đường truyền giữa chúng quyết định độ trễ, chi phí và mức độ bảo mật. Chọn một tình huống, thay đổi cấu hình, sau đó gửi traffic:
 
 <Ec2NetSim client:visible />
 
-<Takeaway>Độ trễ mạng thấp nhất giữa các node: cluster placement group (+ EFA cho HPC). Traffic giữa các instance trong VPC: sử dụng private IP. SSH bằng key tạm thời: EC2 Instance Connect. Bastion host có tính sẵn sàng cao: NLB + Auto Scaling group.</Takeaway>
+<Takeaway>Độ trễ mạng thấp nhất giữa các node: cluster placement group (+ EFA cho HPC). Traffic giữa các instance trong VPC: sử dụng private IP. SSH bằng key tạm thời: EC2 Instance Connect (instance có public IP: kết nối trực tiếp). SSH tới instance chỉ có private IP, không cần bastion và internet gateway: EC2 Instance Connect Endpoint. Chi tiết về placement group ở phần 5. Bastion host có tính sẵn sàng cao: NLB + Auto Scaling group.</Takeaway>
 
 </Scene>
 
-<Scene id="s4" label="Phần 4/4" title="Xử lý sự cố instance" questions={["exam1_q43", "exam5_q43", "exam5_q52", "exam6_q42", "exam3_q38", "exam3_q57", "exam5_q19", "exam5_q20", "exam5_q31", "exam6_q56"]}>
+<Scene id="s4" label="Phần 4/6" title="Xử lý sự cố instance" questions={["exam1_q43", "exam5_q43", "exam5_q52", "exam6_q42", "exam3_q38", "exam3_q57", "exam5_q19", "exam5_q20", "exam5_q31", "exam6_q56"]}>
 
 Các sự cố thường gặp: lỗi phần cứng lúc 3 giờ sáng, ứng dụng không phản hồi, dữ liệu tạm bị mất sau khi stop. Mô phỏng từng sự cố, sau đó kích hoạt tính năng EC2 tương ứng và chạy lại:
 
 <Ec2OpsSim client:visible />
 
-<Takeaway>Lỗi phần cứng: automatic instance recovery (simplified automatic recovery bật mặc định trên instance được hỗ trợ, hoặc alarm action recover), giữ nguyên instance ID và địa chỉ IP. Ứng dụng không phản hồi: alarm action reboot. Instance store là lưu trữ tạm, mất dữ liệu khi stop, hibernate hoặc terminate; chỉ phù hợp cho buffer, cache, tệp tạm. Dừng instance và giữ trạng thái RAM: Hibernate. Tự động thay thế một instance và giữ nguyên IP: ASG min = max = 1 + Elastic IP gắn bằng user data. Metric chu kỳ 1 phút: detailed monitoring.</Takeaway>
+<Takeaway>Lỗi phần cứng: automatic instance recovery (simplified automatic recovery bật mặc định trên instance được hỗ trợ, hoặc alarm action recover), giữ nguyên instance ID và địa chỉ IP. Ứng dụng không phản hồi: alarm action reboot. Instance store là lưu trữ tạm, mất dữ liệu khi stop, hibernate hoặc terminate; chỉ phù hợp cho buffer, cache, tệp tạm. Dừng instance và giữ trạng thái RAM: Hibernate. Tự động thay thế một instance và giữ nguyên IP: ASG min = max = 1 + Elastic IP gắn bằng user data. Metric chu kỳ 1 phút: detailed monitoring. Instance đã terminate không thể recover hay start lại.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Bài tập" title="Spot Instance và instance store: nhận định đúng hay sai?" questions={["exam3_q51", "exam6_q2", "exam6_q42", "exam2_q35", "exam1_q23", "exam4_q1", "exam3_q38", "exam6_q21"]}>
+<Scene id="s5" label="Phần 5/6" title="Placement group và card mạng cho workload hiệu năng cao" questions={["exam1_q23", "exam4_q20", "exam4_q60", "exam6_q36"]}>
+
+Khi không chỉ định placement group, EC2 tự trải các instance trên phần cứng để giảm sự cố đồng thời. Placement group cho phép chủ động chọn: đặt các instance **sát nhau** để có độ trễ thấp nhất, hoặc **tách rời** để một sự cố phần cứng không ảnh hưởng nhiều instance. Chọn workload và placement strategy, sau đó nhấn vào một rack để mô phỏng rack đó gặp sự cố:
+
+<PlacementSim client:visible />
+
+Placement group chỉ quyết định vị trí. Hiệu năng mạng còn phụ thuộc thiết bị mạng của instance và các tuỳ chọn khi launch. Đội HPC của ShopViet cân nhắc từng tuỳ chọn sau:
+
+<RequirementPicker client:visible label="Tuỳ chọn phù hợp" items={[
+  { need: "Giao tiếp node-to-node của ứng dụng HPC dùng MPI, cần độ trễ thấp và ổn định nhất", answer: "Elastic Fabric Adapter (EFA)",
+    why: "EFA cung cấp OS-bypass và giao thức truyền tin cậy Scalable Reliable Datagram (SRD), tăng hiệu năng giao tiếp giữa các instance cho HPC và ML. Kiểu EFA with ENA tạo đồng thời thiết bị EFA và thiết bị ENA cho mạng IP thông thường. Dùng kết hợp với cluster placement group." },
+  { need: "Băng thông cao, packet per second cao và độ trễ ổn định cho ứng dụng mạng thông thường", answer: "Elastic Network Adapter (ENA): enhanced networking",
+    why: "Enhanced networking dùng SR-IOV, cho băng thông và PPS cao hơn, độ trễ giữa các instance thấp và ổn định hơn, không tính phí thêm. ENA hỗ trợ tới 100 Gbps trên instance type được hỗ trợ; mọi instance Nitro dùng ENA. ENA không có OS-bypass như EFA." },
+  { need: "Card mạng ảo có thể tách khỏi instance này và gắn sang instance khác cùng AZ", answer: "Elastic network interface (ENI)",
+    why: "ENI là thành phần mạng logic trong VPC, đại diện cho một card mạng ảo; thuộc tính của nó đi theo khi chuyển sang instance khác và traffic được chuyển hướng theo. ENI không phải tuỳ chọn tăng hiệu năng cho HPC." },
+  { need: "Bảo đảm có đủ capacity trong một AZ cho đợt sale", answer: "On-Demand Capacity Reservation",
+    why: "Giữ capacity, không thay đổi hiệu năng. Có thể tạo trong cluster placement group; không hỗ trợ spread và partition placement group." },
+  { need: "Phần cứng single-tenant theo yêu cầu tuân thủ", answer: "Dedicated Instances",
+    why: "Đáp ứng yêu cầu cách ly phần cứng ở cấp host, không phải tuỳ chọn tăng hiệu năng mạng." },
+  { need: "Gắn bộ tăng tốc suy luận deep learning vào instance", answer: "Elastic Inference: đã ngừng",
+    why: "Amazon Elastic Inference không còn khả dụng; AWS chỉ sang Amazon SageMaker cho khả năng tương tự. Đây cũng không phải tuỳ chọn cải thiện mạng." },
+  { need: "Một địa chỉ public tĩnh cho instance", answer: "Elastic IP address",
+    why: "Elastic IP là địa chỉ IPv4 public tĩnh, không phải thiết bị mạng và không ảnh hưởng hiệu năng (phần 6)." },
+]} />
+
+<Takeaway>Độ trễ thấp nhất cho HPC tightly coupled: cluster placement group (1 AZ) + EFA. Hệ phân tán có replicate quy mô lớn (HDFS, HBase, Cassandra, Kafka): partition placement group (tối đa 7 partition mỗi AZ, các partition không dùng chung rack). Số ít instance quan trọng cần tách biệt: spread placement group (tối đa 7 instance đang chạy mỗi AZ mỗi group). Enhanced networking: ENA; HPC/ML với OS-bypass: EFA; card mạng ảo chuyển được giữa các instance: ENI. Capacity Reservation và Dedicated Instances không tăng hiệu năng; Elastic Inference đã ngừng.</Takeaway>
+
+</Scene>
+
+<Scene id="s6" label="Phần 6/6" title="Vòng đời instance: instance store, địa chỉ IP và những gì còn lại" questions={["exam1_q2", "exam1_q44", "exam2_q37", "exam3_q57", "exam4_q26", "exam4_q38", "exam5_q52", "exam6_q42"]}>
+
+Máy chủ chuyển mã video của ShopViet cần đọc ghi khoảng 10 TB tệp tạm với hiệu năng I/O cao nhất. **Instance store** là ổ đĩa gắn vật lý vào host của instance; các instance storage optimized được tối ưu để cung cấp hàng chục nghìn IOPS ngẫu nhiên với độ trễ thấp. Instance store không tính phí riêng (đã gồm trong giá instance). Đổi lại, dữ liệu chỉ tồn tại trong vòng đời instance, nên kết quả cuối cùng phải được đẩy lên S3 để lưu trữ bền vững và S3 Glacier để lưu trữ dài hạn.
+
+Instance còn có ba loại địa chỉ IPv4. **Private IP** dùng trong VPC, thường thuộc dải RFC 1918 (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16), được giữ qua stop/start. **Public IP** tự gán lấy từ pool của Amazon, không thuộc account, được release khi stop, hibernate hoặc terminate. **Elastic IP** là địa chỉ public tĩnh thuộc account cho tới khi release, có thể remap sang instance khác để che sự cố. Chọn một thao tác để xem thành phần nào còn lại:
+
+<Ec2LifecycleSim client:visible />
+
+Một số điểm thường bị nhầm lẫn khi thiết kế:
+
+- **Elastic IP không thay thế kiến trúc sẵn sàng cao.** Remap Elastic IP che được sự cố của một instance, còn phân phối traffic và thay thế instance lỗi là việc của load balancer và Auto Scaling group. Instance đứng sau Application Load Balancer **không cần** public IP hay Elastic IP: target đăng ký bằng instance ID nhận traffic qua primary private IP.
+- **Elastic IP chỉ là địa chỉ.** Để truy cập instance từ Internet (kể cả ping), route table của subnet vẫn phải có route tới internet gateway và security group phải cho phép traffic tương ứng (ping dùng ICMP).
+- **Điều kiện `aws:SourceIp` trong IAM policy** so khớp IP của bên gọi API, không phải địa chỉ của instance.
+- **Instance store làm root volume** chỉ có với Amazon S3-backed AMI trên một số instance type thế hệ cũ (C1, C3, D2, I2, M1, M2, M3, R3, X1); AWS coi loại AMI này là end of life. Instance như vậy không stop được và không khôi phục được sau khi lỗi hoặc terminate. Ổ EBS st1 và sc1 không dùng làm root volume.
+
+<Takeaway>Instance store: hiệu năng I/O cao nhất cho dữ liệu tạm; giữ dữ liệu khi reboot; mất khi stop, hibernate, terminate; chỉ chỉ định khi launch; không tách sang instance khác; dữ liệu không nằm trong AMI tạo từ instance. Public IP tự gán đổi sau stop/start; Elastic IP giữ nguyên và bị tính phí kể cả khi chưa gắn. Recover giữ nguyên instance ID và mọi địa chỉ IP; terminate là vĩnh viễn, không thể recover.</Takeaway>
+
+</Scene>
+
+<Scene id="challenge" label="Bài tập" title="EC2: nhận định đúng hay sai?" questions={["exam3_q51", "exam6_q2", "exam6_q42", "exam2_q35", "exam1_q23", "exam4_q1", "exam3_q38", "exam6_q21", "exam4_q20", "exam3_q57", "exam6_q11", "exam5_q31", "exam6_q36", "exam5_q52"]}>
 
 Phân loại từng nhận định vào ô Đúng hoặc Sai. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
 <SortGame client:visible
   bins={[
-    { id: "true", title: "Đúng", sub: "Theo tài liệu AWS", hint: "Gợi ý: nhận định này đúng với Spot Instance hoặc instance store." },
+    { id: "true", title: "Đúng", sub: "Theo tài liệu AWS", hint: "Gợi ý: nhận định này đúng theo tài liệu EC2." },
     { id: "false", title: "Sai", sub: "Nhầm lẫn phổ biến", hint: "Gợi ý: nhận định này có vẻ hợp lý nhưng không chính xác." },
   ]}
   cards={[
     ["Spot bị thu hồi với thông báo 2 phút", "true"], ["Spot request persistent được mở lại sau khi bị gián đoạn", "true"],
     ["Hủy Spot request không terminate instance đang chạy", "true"], ["Spot Fleet có thể gồm cả On-Demand", "true"],
     ["Instance store giữ dữ liệu khi stop instance", "false"], ["Instance store có thể tách ra và gắn sang instance khác", "false"],
-    ["Hủy Spot request sẽ tự động terminate instance", "false"],
+    ["Hủy Spot request sẽ tự động terminate instance", "false"], ["Persistent Spot request mở lại ngay khi bạn stop Spot Instance", "false"],
+    ["Dữ liệu instance store được đưa vào AMI tạo từ instance", "false"], ["Có thể gắn thêm instance store volume sau khi launch", "false"],
+    ["Dữ liệu instance store vẫn còn sau khi reboot", "true"], ["Instance đã terminate có thể recover nếu cấu hình từ lúc launch", "false"],
+    ["Khách hàng mới vẫn mua được Spot block 1 đến 6 giờ", "false"], ["Partition placement group phù hợp cho cụm Kafka hoặc Cassandra", "true"],
+    ["Spread placement group chạy tối đa 7 instance mỗi AZ", "true"], ["Instance metadata dùng để chạy script khi khởi động", "false"],
+    ["Instance có public IP vẫn bắt buộc dùng EC2 Instance Connect Endpoint", "false"], ["Public IP tự gán thay đổi sau khi stop và start", "true"],
   ]}
 />
 
@@ -153,6 +284,18 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Dedicated Hosts", "Dedicated Instances", "Cluster placement group"],
     a: 1,
     why: "Dedicated Instances chạy trên phần cứng dành riêng cho một account và tính phí theo instance; Dedicated Hosts tính phí theo toàn bộ host và chỉ cần khi phải kiểm soát socket, core cho license." },
+  { q: "Cụm Cassandra 12 node của ShopViet cần các nhóm bản sao nằm trên phần cứng tách biệt để một rack hỏng không làm mất dữ liệu. Placement strategy nào phù hợp?",
+    opts: ["Cluster placement group", "Partition placement group", "Spread placement group"],
+    a: 1,
+    why: "Partition placement group cho mỗi partition một tập rack riêng và cho ứng dụng biết instance thuộc partition nào. Spread chỉ chạy tối đa 7 instance mỗi AZ; cluster dồn các node lên phần cứng gần nhau." },
+  { q: "Ứng dụng phân tích gen chạy MPI trên nhiều instance, cần hiệu năng giao tiếp liên node cao nhất. Instance nên dùng thiết bị mạng nào?",
+    opts: ["Elastic network interface (ENI)", "Elastic Network Adapter (ENA)", "Elastic Fabric Adapter (EFA)", "Elastic IP address"],
+    a: 2,
+    why: "EFA bổ sung OS-bypass cho HPC và ML. ENA là enhanced networking thông thường; ENI là card mạng ảo; Elastic IP chỉ là địa chỉ." },
+  { q: "Máy chủ chuyển mã cần khoảng 10 TB không gian tạm với I/O cao nhất; kết quả được lưu lên S3. Lưu trữ tạm nào phù hợp?",
+    opts: ["Instance store", "EBS gp3", "Amazon EFS"],
+    a: 0,
+    why: "Instance store là ổ gắn vật lý vào host, cho I/O cao nhất và đã gồm trong giá instance. Dữ liệu mất khi stop hoặc terminate nên chỉ dùng cho dữ liệu tạm." },
 ]} />
 
 </Scene>

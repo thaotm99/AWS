@@ -1,8 +1,8 @@
 ---
 title: "EBS, EFS and FSx: choosing a storage service"
-lede: "This lesson covers four topics: telling block, file and object storage apart, choosing an EBS volume type for an IOPS requirement, configuring Amazon EFS for the workload, and choosing the right Amazon FSx type for each group of users."
-minutes: 25
-scenes: 4
+lede: "This lesson covers five topics: telling block, file and object storage apart, choosing an EBS volume type for an IOPS requirement, configuring Amazon EFS for the workload, choosing the right Amazon FSx type for each group of users, and accessing S3 data through a file interface."
+minutes: 35
+scenes: 5
 prerequisites: ["ec2", "s3"]
 docs:
   - title: "Amazon EBS volume types"
@@ -25,6 +25,44 @@ docs:
     url: "https://docs.aws.amazon.com/efs/latest/ug/features.html"
   - title: "Mounting EFS file systems from another VPC or account"
     url: "https://docs.aws.amazon.com/efs/latest/ug/efs-different-vpc.html"
+  - title: "Amazon EBS General Purpose SSD volumes (gp2 burst credits, gp3)"
+    url: "https://docs.aws.amazon.com/ebs/latest/userguide/general-purpose.html"
+  - title: "Working with EFS access points"
+    url: "https://docs.aws.amazon.com/efs/latest/ug/efs-access-points.html"
+  - title: "Configuring Amazon EFS file system access for Lambda"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/configuration-filesystem-efs.html"
+  - title: "Mountpoint for Amazon S3"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/mountpoint.html"
+  - title: "Configuring caching in Mountpoint"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/mountpoint-usage.html"
+  - title: "What is Amazon S3 File Gateway"
+    url: "https://docs.aws.amazon.com/filegateway/latest/files3/what-is-file-s3.html"
+  - title: "What is Amazon FSx for OpenZFS?"
+    url: "https://docs.aws.amazon.com/fsx/latest/OpenZFSGuide/what-is-fsx.html"
+  - title: "FSx for ONTAP: replicating data with NetApp SnapMirror"
+    url: "https://docs.aws.amazon.com/fsx/latest/ONTAPGuide/scheduled-replication.html"
+  - title: "FSx for ONTAP: storage tiers and volume data tiering"
+    url: "https://docs.aws.amazon.com/fsx/latest/ONTAPGuide/volume-storage-capacity.html"
+  - title: "Choosing an Amazon FSx file system"
+    url: "https://aws.amazon.com/fsx/when-to-choose-fsx/"
+  - title: "Amazon S3 pricing"
+    url: "https://aws.amazon.com/s3/pricing/"
+  - title: "Amazon EFS pricing"
+    url: "https://aws.amazon.com/efs/pricing/"
+  - title: "Amazon EBS pricing"
+    url: "https://aws.amazon.com/ebs/pricing/"
+  - title: "Storage options for Amazon ECS tasks"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_data_volumes.html"
+  - title: "Fargate task ephemeral storage for Amazon ECS"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-task-storage.html"
+  - title: "Configuring S3 Files for Amazon ECS"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/s3files-volumes.html"
+  - title: "Working with Amazon S3 Files"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-files.html"
+  - title: "Deployment and storage class options for FSx for Lustre file systems"
+    url: "https://docs.aws.amazon.com/fsx/latest/LustreGuide/using-fsx-lustre.html"
+  - title: "CreateFileSystem (Amazon FSx API Reference)"
+    url: "https://docs.aws.amazon.com/fsx/latest/APIReference/API_CreateFileSystem.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -32,6 +70,10 @@ import Story from "../../components/lessons/global-infra/Story.astro";
 import SharedStorageSim from "../../components/scenes/storage/SharedStorageSim.tsx";
 import VolumeChooser from "../../components/scenes/storage/VolumeChooser.tsx";
 import FsxSim from "../../components/scenes/storage/FsxSim.tsx";
+import BurstCreditSim from "../../components/scenes/storage/BurstCreditSim.tsx";
+import MountpointSim from "../../components/scenes/storage/MountpointSim.tsx";
+import StorageBillSim from "../../components/scenes/storage/StorageBillSim.tsx";
+import StepSim from "../../components/scenes/StepSim.tsx";
 import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
@@ -41,28 +83,37 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s2", label: "2 · Choosing an EBS volume" },
   { href: "#en-s3", label: "3 · Configuring EFS" },
   { href: "#en-s4", label: "4 · The FSx types" },
+  { href: "#en-s5", label: "5 · S3 through a file interface" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
 The ShopViet system has four different storage needs: the database needs a high-performance disk, the web servers need a shared folder, the office needs a file share for Windows, and the data team needs a very high-performance file system for compute jobs. Each need maps to a different type of storage service.
 </Story>
 
-<Scene id="en-s1" label="Part 1/4" title="Shared storage for multiple web servers" questions={["exam2_q29", "exam6_q15", "exam1_q46", "exam1_q9"]}>
+<Scene id="en-s1" label="Part 1/5" title="Shared storage for multiple web servers" questions={["exam2_q29", "exam6_q15", "exam1_q46", "exam1_q9"]}>
 
 ShopViet runs three web servers in two AZs behind a load balancer. A user uploads a product video to any one server, and other users must be able to watch that video whichever server they are routed to. Try storing the video in three places:
 
 <SharedStorageSim client:visible />
 
-When several AWS accounts (for example, the account of each sub-shop) need to mount the same folder, EFS still works: add a file system policy that grants access to the other account, and connect the two VPCs with VPC peering or a transit gateway.
+When several AWS accounts (for example, the account of each sub-shop) need to mount the same folder, EFS still works: add a file system policy that grants access to the other account, and connect the two VPCs with VPC peering or a transit gateway. Part 3 builds this setup for a Lambda function with an EFS access point.
 
-<Takeaway>Block storage (EBS): a disk dedicated to one instance in one AZ, charged for provisioned capacity. File storage (EFS, FSx): shared by many instances; EFS scales automatically and charges for the data actually stored. Object storage (S3): accessed through an API; S3 Standard stores data across at least 3 AZs. S3 Standard and EFS Regional are both designed for 99.999999999% (11 nines) durability. Cost comparisons must use the current pricing of each Region, and keep in mind that EBS charges for provisioned capacity, including the unused part.</Takeaway>
+The three kinds of service are also billed differently. The ShopViet operations team needs to estimate what the same data costs to store on each service; adjust the amount of data and the EBS volume size:
+
+<StorageBillSim client:visible />
+
+<Takeaway>Block storage (EBS): a disk dedicated to one instance in one AZ, charged for provisioned capacity. File storage (EFS, FSx): shared by many instances; EFS scales automatically and charges for the data actually stored. Object storage (S3): accessed through an API; S3 Standard stores data across at least 3 AZs. S3 Standard and EFS Regional are both designed for 99.999999999% (11 nines) durability. At us-east-1 list prices (10/2026), per GB-month: S3 Standard $0.023, EFS Standard $0.30, EBS gp2 $0.10 and gp3 $0.08 charged on provisioned capacity. For 1 GB of data on a 100 GB volume: S3 < EFS < EBS. Prices vary by Region; always compare with current pricing.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/4" title="Choosing an EBS volume for the database" questions={["exam3_q27", "exam5_q22", "exam1_q44", "exam6_q24", "exam4_q15", "exam5_q64", "exam5_q16", "exam5_q40"]}>
+<Scene id="en-s2" label="Part 2/5" title="Choosing an EBS volume for the database" questions={["exam3_q27", "exam5_q22", "exam1_q44", "exam6_q24", "exam4_q15", "exam5_q64", "exam5_q16", "exam5_q40"]}>
 
 ShopViet's order database runs on EC2, and its IOPS needs keep growing. Adjust the IOPS slider and turn on requirements to see the suitable volume type:
 
 <VolumeChooser client:visible />
+
+**gp2** performance scales with size: a baseline of 3 IOPS per GiB (minimum 100, maximum 16,000 IOPS). gp2 volumes smaller than 1 TiB can burst to 3,000 IOPS using **I/O credits**: each volume starts with 5.4 million credits (also the cap), spends credits while the load is above the baseline, and earns them back when the load drops below it. **gp3** volumes do not burst: 3,000 IOPS and 125 MiB/s are an included baseline sustained indefinitely, and you provision extra IOPS and throughput independently of size. Simulate a 3,000 IOPS peak on the order database:
+
+<BurstCreditSim client:visible kind="ebs" />
 
 Besides choosing a volume type, operating EBS also involves these tasks:
 
@@ -73,13 +124,15 @@ Besides choosing a volume type, operating EBS also involves these tasks:
     why: "Deleted snapshots go to the Recycle Bin and can be recovered within the retention period." },
   { need: "When you enable encryption for EBS, which components are encrypted?", answer: "Data on the volume, snapshots, and data moving between the volume and the instance",
     why: "All three are encrypted with a KMS key, with no application changes required. Volumes created from those snapshots are also encrypted." },
+  { need: "An io1 volume makes up most of the cost, but its IOPS usage is low with only occasional short I/O bursts", answer: "Move to General Purpose SSD with Elastic Volumes (gp3)",
+    why: "io1 is billed per GB and per provisioned IOPS, used or not. Elastic Volumes changes the volume type without interrupting the instance. gp2 handles short I/O bursts with burst credits; gp3 is the current generation, about 20% cheaper per GB than gp2, and sustains 3,000 IOPS without credits. Older study material often picks gp2 for this situation." },
 ]} />
 
-<Takeaway>Default choice: gp3 (up to 80,000 IOPS; gp2 up to 16,000 IOPS). Consistent IOPS for I/O-intensive databases, more than 80,000 IOPS, or Multi-Attach: io1/io2 (io2 Block Express up to 256,000 IOPS). Large sequential reads: st1; infrequently accessed data: sc1; the two HDD types cannot be used as boot volumes. Quickly creating a test environment from a snapshot: fast snapshot restore.</Takeaway>
+<Takeaway>Default choice: gp3 (3,000 IOPS baseline without credits, up to 80,000 IOPS; gp2 up to 16,000 IOPS, a 3 IOPS/GiB baseline, and volumes under 1 TiB burst to 3,000 IOPS with I/O credits, tracked by the BurstBalance metric). Consistent IOPS for I/O-intensive databases, more than 80,000 IOPS, or Multi-Attach: io1/io2 (io2 Block Express up to 256,000 IOPS). Large sequential reads: st1; infrequently accessed data: sc1; the two HDD types cannot be used as boot volumes. Quickly creating a test environment from a snapshot: fast snapshot restore.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/4" title="Configuring EFS for the workload" questions={["exam2_q64", "exam4_q55", "exam3_q11", "exam2_q60", "exam6_q39", "exam4_q24", "exam1_q12", "exam5_q47"]}>
+<Scene id="en-s3" label="Part 3/5" title="Configuring EFS for the workload" questions={["exam2_q64", "exam4_q55", "exam3_q11", "exam2_q60", "exam6_q39", "exam4_q24", "exam1_q12", "exam5_q47", "exam1_q9"]}>
 
 After deploying EFS, ShopViet has operational issues to solve: adjusting the configuration under heavy load, optimizing the cost of storing old files, and controlling who can mount. Choose each scenario:
 
@@ -91,25 +144,94 @@ After deploying EFS, ShopViet has operational issues to solve: adjusting the con
   { need: "Each web server accesses EFS with the lowest latency", answer: "A mount target in each AZ; EC2 uses the mount target in its own AZ", why: "Traffic does not have to cross to another AZ." },
   { need: "Only the web servers may mount; other servers are denied", answer: "Security group + IAM policy", why: "The mount target's security group controls network access; IAM controls mount permissions." },
   { need: "The risk that a Region-level outage causes data loss on EFS", answer: "AWS Backup copies to another Region", why: "Scheduled backups copied to another Region." },
+  { need: "A scratch folder for the dev environment, used in one AZ only, where low cost comes first", answer: "One Zone file system type", why: "One Zone stores data in a single AZ (us-east-1: $0.16 versus $0.30 per GB-month for Regional). Data may be lost if the AZ is damaged; EFS automatically backs up One Zone file systems with AWS Backup. One Zone always uses General Purpose and supports all three throughput modes: choosing One Zone does not change the throughput mode." },
+  { need: "Several applications share one file system; each may see only its own directory, with a fixed UID/GID", answer: "EFS access point", why: "An access point is an application-specific entry point: it enforces a POSIX user identity and a root directory for every request made through it. Combine it with IAM policies to require an application to use a specific access point. Security groups still apply at the mount target." },
 ]} />
 
-<Takeaway>EFS: an NFS file system shared across multiple AZs. Recommended configuration: General Purpose performance mode + Elastic throughput; Max I/O is previous generation. Throughput needs known in advance, independent of storage size: Provisioned throughput. Rarely accessed files: the IA class. Mount targets in the same AZ to reduce latency.</Takeaway>
+**Bursting throughput** scales with the amount of data in the **Standard** class: a baseline of 50 KiBps per GiB, bursting to 100 KiBps per GiB (at least 100 MiBps) while credits last. Credits accrue while the load is below the baseline, up to 2.1 TiB (file systems under 1 TiB) or 2.1 TiB per TiB stored. Data moved to IA does not count toward the baseline. Simulate the product image folder during a bulk catalog import:
+
+<BurstCreditSim client:visible kind="efs" />
+
+On performance modes: older study material often picks **Max I/O** for parallel big data jobs. Current AWS guidance ([Amazon EFS performance specifications](https://docs.aws.amazon.com/efs/latest/ug/performance.html)) lists Max I/O as previous generation with higher per-operation latency, and recommends **General Purpose** for all file systems, with **Elastic throughput** for spiky workloads. ShopViet uses this current configuration.
+
+ShopViet's recommendation team runs a Lambda function in a VPC that must read a dataset on an EFS file system owned by a data partner's account. Lambda mounts EFS through an **access point**; build the setup step by step:
+
+<StepSim client:visible height={240}
+  intro="The Lambda function runs in a VPC of the ShopViet account; the EFS file system is in a VPC of the partner account."
+  boxes={[{ x: 10, y: 20, w: 260, h: 200, label: "ShopViet account" }, { x: 300, y: 20, w: 450, h: 200, label: "Data partner account" }]}
+  nodes={[
+    { id: "lam", x: 30, y: 95, label: "Lambda function", sub: "in a VPC · /mnt/data", kind: "ec2" },
+    { id: "mt", x: 330, y: 150, label: "Mount target", sub: "each AZ · NFS 2049", kind: "net" },
+    { id: "ap", x: 330, y: 50, label: "Access point", sub: "/shopviet · UID 1001", kind: "edge" },
+    { id: "efs", x: 560, y: 100, label: "Amazon EFS", sub: "file system policy", kind: "store" },
+  ]}
+  initial={["lam", "efs"]}
+  steps={[
+    { button: "1. Create a mount target in each AZ", show: ["mt"], flows: [{ path: ["mt", "efs"], tone: "neutral" }],
+      note: "Mount targets provide network connectivity to the file system. The Lambda documentation recommends a mount target in every AZ the function connects to (at least two AZs), with security groups on the function and mount targets that allow NFS (port 2049)." },
+    { button: "2. Connect the two VPCs", flows: [{ path: ["lam", "mt"], tone: "good", label: "VPC peering" }],
+      note: "Connect the ShopViet VPC to the partner VPC with **VPC peering** or a transit gateway (or use a shared VPC). Lambda charges for data transfer between peered VPCs." },
+    { button: "3. Grant access with a file system policy",
+      note: "The partner adds a **file system policy** that lets the ShopViet account mount (`elasticfilesystem:ClientMount`, plus `ClientWrite` for writes). The function's execution role needs the same permissions." },
+    { button: "4. Create an access point", show: ["ap"], flows: [{ path: ["ap", "efs"], tone: "good" }],
+      note: "The access point enforces the root directory `/shopviet` and a POSIX user identity (UID/GID 1001) for every request made through it: the function sees only its directory, with no POSIX permission handling in code." },
+    { button: "5. Attach the file system to Lambda", flows: [{ path: ["lam", "ap"], tone: "good", label: "access point" }], move: ["lam", "mt", "efs"],
+      note: "In the function configuration, choose the **access point** and a local mount path that starts with `/mnt/`. The function reads and writes files directly, with no copy to S3 and no proxy function in between." },
+  ]} />
+
+For other considerations when Lambda runs in a VPC (internet access, NAT gateway), see the [Lambda lesson](/concepts/lambda/#en-s2).
+
+<Takeaway>EFS: an NFS file system shared across multiple AZs. Recommended configuration: General Purpose performance mode + Elastic throughput; Max I/O is previous generation (older material may still recommend Max I/O for parallel workloads). Bursting: throughput tied to Standard storage size, using burst credits. Throughput needs known in advance: Provisioned throughput. Rarely accessed files: the IA class. No need to survive an AZ loss and low cost first: One Zone. Mount targets in the same AZ to reduce latency. Lambda mounts EFS through an access point.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/4" title="Choosing a file system for four groups of users" questions={["exam2_q12", "exam2_q56", "exam1_q65", "exam3_q5", "exam3_q43", "exam3_q56", "exam1_q24", "exam3_q61", "exam3_q26"]}>
+<Scene id="en-s4" label="Part 4/5" title="Choosing a file system for four groups of users" questions={["exam2_q12", "exam2_q56", "exam1_q65", "exam3_q5", "exam3_q43", "exam3_q56", "exam1_q24", "exam3_q61", "exam3_q26", "exam5_q47", "exam5_q54"]}>
 
-Besides EFS, AWS offers three **FSx** types for specialized needs. Each of ShopViet's four user groups has three must-have requirements. Try mounting each file system for each group to find the file system that meets all the requirements:
+Besides EFS, AWS offers four **FSx** types for specialized needs. Each of ShopViet's four user groups has three must-have requirements. Try mounting each file system for each group to find the file system that meets all the requirements:
 
 <FsxSim client:visible />
 
 When the office needs to keep an on-premises SMB file share but store the data on S3, use **S3 File Gateway** (see the Storage Gateway lesson).
 
-<Takeaway>Windows, SMB, NTFS, Active Directory, DFS: FSx for Windows File Server. HPC, parallel reads, loading data from S3: FSx for Lustre. Already on NetApp, needs NFS + SMB + iSCSI: FSx for NetApp ONTAP. A simple shared folder for Linux: EFS.</Takeaway>
+Data management features of FSx for NetApp ONTAP and FSx for OpenZFS in ShopViet's operations:
+
+<RequirementPicker client:visible items={[
+  { need: "The warehouse uses FSx for ONTAP; most files are accessed only in their first month, and SSD cost must come down", answer: "Volume tiering to the capacity pool", why: "ONTAP has two storage tiers: a provisioned SSD tier for active data, and an elastic, low-cost capacity pool for infrequently accessed data. The tiering policy is set per volume: Auto moves cold data after the cooling period (31 days by default, configurable from 2 to 183 days), Snapshot Only moves only snapshots, All keeps all data in the capacity pool. Metadata always stays on the SSD tier." },
+  { need: "Replicate an ONTAP volume to another Region for disaster recovery", answer: "NetApp SnapMirror (volume-level)", why: "SnapMirror replicates on a schedule, as often as every 5 minutes, between two file systems in the same or another Region. You schedule it with NetApp Console or the ONTAP CLI; FSx for ONTAP supports only volume-level SnapMirror, not Synchronous SnapMirror." },
+  { need: "Microservices on Fargate need a shared POSIX file system across multiple AZs and cross-Region backups with an 8-hour RPO", answer: "Amazon EFS + AWS Backup (copy to another Region)", why: "Fargate tasks mount EFS directly, and EFS stores data across multiple AZs; AWS Backup runs scheduled backups and copies them to another Region. FSx for ONTAP replicates across Regions with SnapMirror, configured with NetApp tools." },
+  { need: "An engineer proposes FSx for Lustre as the shared file system for microservices that must survive the loss of an AZ", answer: "Not suitable: FSx for Lustre file servers sit in one AZ", why: "Every FSx for Lustre deployment type (Scratch, Persistent 1, Persistent 2) takes exactly one subnet, and the file server is launched in that subnet's AZ; clients in other AZs of the same VPC can still mount it, but their traffic crosses into that AZ. Persistent SSD and HDD file systems replicate data within the same AZ; Intelligent-Tiering replicates data across multiple AZs but the file servers are still in one subnet; Scratch does not replicate data. File systems that tolerate an AZ failure: EFS Regional (a mount target in each AZ), or FSx for Windows File Server, ONTAP or OpenZFS with a Multi-AZ deployment type. FSx for Lustre is also not among the ECS volume types." },
+  { need: "Move an on-premises Linux file server running ZFS to AWS, keeping snapshots and clones, with Linux and macOS clients over NFS", answer: "FSx for OpenZFS", why: "AWS recommends FSx for OpenZFS for ZFS or other Linux-based file servers. Access is over NFS v3, v4.0, v4.1, v4.2 from Linux, Windows and macOS; latency of hundreds of microseconds; Multi-AZ (HA), Single-AZ (HA) and Single-AZ (non-HA) deployment types. No SMB: when you need both SMB and NFS, choose FSx for NetApp ONTAP." },
+  { need: "A long-term archive of design images on EFS Standard-IA; the application can change to the S3 API; lowest cost wanted", answer: "Amazon S3 (Intelligent-Tiering)", why: "Once the application can change, S3 bills for the data actually stored and moves objects between tiers by access pattern automatically (see the S3 lesson). FSx for ONTAP still needs a provisioned SSD tier and suits enterprise NAS workloads already on NetApp." },
+]} />
+
+<Takeaway>Windows, SMB, NTFS, Active Directory, DFS: FSx for Windows File Server. HPC, parallel reads, loading data from S3: FSx for Lustre. Already on NetApp, needs NFS + SMB + iSCSI, SnapMirror, tiering to a capacity pool: FSx for NetApp ONTAP. ZFS or Linux file servers that need only NFS: FSx for OpenZFS. A simple shared folder for Linux: EFS. FSx for Lustre has no Multi-AZ deployment type (file servers in one subnet, one AZ); to tolerate an AZ failure: EFS Regional, or FSx for Windows, ONTAP or OpenZFS Multi-AZ.</Takeaway>
 
 </Scene>
 
-<Scene id="en-challenge" label="Exercise" title="Sort the properties: EBS, EFS and FSx" questions={["exam3_q27", "exam1_q44", "exam3_q5", "exam2_q64"]}>
+<Scene id="en-s5" label="Part 5/5" title="Accessing S3 data through a file interface" questions={["exam3_q5", "exam4_q24", "exam5_q28", "exam5_q47", "exam3_q32"]}>
+
+The ShopViet data team keeps all product images and the recommendation model's training data in S3. Some older applications only read and write files and cannot call the S3 API. **Mountpoint for Amazon S3** is an open source file client that mounts a bucket as a local directory on Linux and translates file operations (`open`, `read`) into S3 API calls. Mountpoint is not a fully POSIX file system: try common operations on Mountpoint and on EFS:
+
+<MountpointSim client:visible />
+
+Mountpoint suits large-scale, read-heavy applications: data lakes, machine learning training, image rendering, ETL. It can read objects in every storage class except S3 Glacier Flexible Retrieval, S3 Glacier Deep Archive and the two Archive tiers of S3 Intelligent-Tiering. For repeated reads of the same data you can opt in to a local cache (instance storage or EBS) or a shared cache in S3 Express One Zone. For workloads that need full POSIX support on S3 data, AWS recommends **FSx for Lustre** linked to the bucket. Choose a file interface for each situation:
+
+<RequirementPicker client:visible items={[
+  { need: "A training job on EC2 Linux reads terabytes of S3 data sequentially; the application only reads files", answer: "Mountpoint for Amazon S3", why: "Mount the bucket as a directory and read at S3's elastic throughput, with no data copy. The job only reads and creates new result files, so Mountpoint's limits do not apply." },
+  { need: "Render servers in the data center need frequent, low-latency access to large media files in S3", answer: "Amazon S3 File Gateway", why: "File Gateway runs on premises (VM or hardware appliance), exposes NFS/SMB file shares, and provides low-latency access through transparent local caching; the data stays in S3." },
+  { need: "Microservices on Fargate append to log files and need a shared POSIX file system across multiple AZs", answer: "Amazon EFS", why: "Mountpoint cannot modify existing files and has no file locking; EFS supports full reads and writes over NFSv4 and stores data across multiple AZs." },
+  { need: "A risk analytics tool runs in Docker with a locally mounted volume and moves to ECS on Fargate to avoid managing servers; one proposal is a script that mounts an S3 bucket into the container", answer: "An EFS volume declared in the task definition", why: "A Fargate task uses only the volume types ECS supports: EFS (persistent, shared), EBS (can persist when attached to a standalone task, ephemeral for a task maintained by a service), bind mounts on Fargate ephemeral storage (20 GiB by default, up to 200 GiB, lost when the task stops), and Amazon S3 Files. An S3 bucket by itself is not a volume type; Mountpoint for Amazon S3 is a file client installed on a Linux host, not a task volume. To mount S3 data you first create an S3 file system linked to the bucket and declare it in the task definition, not a script that mounts the bucket." },
+  { need: "An EC2 cluster across several AZs needs a shared file system with frequent, low-latency reads and writes", answer: "EFS, with a mount target in each AZ", why: "Each instance mounts through the mount target in its own AZ. Mountpoint lacks the full write and locking semantics of a shared file system." },
+  { need: "Windows and Linux machines share one file share and must keep NTFS permissions and Active Directory", answer: "FSx for Windows File Server", why: "Mountpoint runs only on Linux and has no NTFS permissions; EFS does not support Windows (part 4)." },
+]} />
+
+**Amazon S3 Files** is a shared file system, built using Amazon EFS, linked to a bucket or a prefix: applications read and write files with full file system semantics, and S3 Files synchronizes changes between the file system and the bucket. An S3 file system can be mounted on EC2 and Lambda, and declared as a volume (`s3filesVolumeConfiguration`) for ECS tasks on Fargate, ECS Managed Instances and EC2; a task IAM role and encryption in transit are mandatory. Older study material states that "S3 cannot be mounted as a file system"; with S3 Files, S3 data can be mounted through a separate file system resource, but the bucket itself is still not a volume type you attach to a task. For microservices that need a shared POSIX directory across AZs and whose data does not need to live in S3, EFS remains the most direct option.
+
+<Takeaway>Fargate tasks: EFS, EBS, bind mount (ephemeral storage) or S3 Files volumes; no script that mounts a bucket. Mountpoint for Amazon S3: a Linux file client that reads large files and creates new files at S3 throughput; it cannot modify existing files or delete directories, and does not support symbolic links or file locking. File access to S3 from the data center with a local cache: S3 File Gateway. Full POSIX: EFS, or FSx for Lustre linked to S3 for HPC.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Sort the properties: EBS, EFS and FSx" questions={["exam3_q27", "exam1_q44", "exam3_q5", "exam2_q64", "exam4_q15", "exam5_q47"]}>
 
 Sort each property into the matching service. On a mobile device: tap a card, then tap the target box.
 
@@ -145,6 +267,14 @@ Check question: as the designer of the ShopViet system, which option fits?
     opts: ["General Purpose", "Max I/O", "Provisioned throughput"],
     a: 0,
     why: "AWS recommends General Purpose for all file systems because Max I/O (previous generation) has higher per-operation latency and does not support Elastic throughput. Provisioned throughput is a throughput mode, not a performance mode." },
+  { q: "A 200 GiB gp2 database volume reports BurstBalance at 0 after every sales campaign, and IOPS drops to 600. Which option sustains 3,000 IOPS at low cost?",
+    opts: ["Change the volume to gp3", "Change the volume to st1", "Turn on Multi-Attach"],
+    a: 0,
+    why: "gp3 has a 3,000 IOPS baseline that does not depend on burst credits and costs less per GB than gp2. st1 is HDD for sequential I/O; Multi-Attach is only for io1/io2." },
+  { q: "An application that appends to a log file on a bucket mounted with Mountpoint for Amazon S3 gets errors. What is the cause?",
+    opts: ["Mountpoint cannot modify existing files", "Versioning is not enabled on the bucket", "Mountpoint can read only files smaller than 5 GB"],
+    a: 0,
+    why: "Mountpoint reads files and creates new ones, but cannot modify existing files; it can read files up to 50 TB. An application that modifies files should use EFS." },
 ]} />
 
 </Scene>

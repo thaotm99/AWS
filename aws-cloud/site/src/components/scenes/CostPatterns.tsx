@@ -88,8 +88,15 @@ const patterns = (L: Lang): Pattern[] => [
           { d: "M180 132 H280", paid: false, heavy: true, label: L({ vi: "lưu lượng nằm trong AWS", en: "stays in AWS" }), lx: 230, ly: 122 },
           { d: "M430 140 C 500 140, 520 172, 580 172", paid: true, label: L({ vi: "chỉ trang kết quả nhỏ", en: "small results only" }), lx: 505, ly: 196 },
         ],
-        text: L({ vi: <>Các truy vấn có khối lượng lớn được xử lý trong Region. Chỉ các trang kết quả dung lượng nhỏ được truyền về văn phòng qua Direct Connect, nhờ đó data transfer out giảm đáng kể.</>,
-          en: <>Large queries are processed within the Region. Only small result pages are sent to the office over Direct Connect, which greatly reduces data transfer out.</> }) },
+        text: L({ vi: <>Các truy vấn có khối lượng lớn được xử lý trong Region. Chỉ các trang kết quả dung lượng nhỏ được truyền về văn phòng qua Direct Connect, nhờ đó data transfer out giảm đáng kể. Dữ liệu đi qua kết nối Direct Connect được tính theo <b>đơn giá Direct Connect data transfer</b>, thấp hơn đơn giá data transfer qua internet (đơn giá cụ thể phụ thuộc Region nguồn và Direct Connect location).</>,
+          en: <>Large queries are processed within the Region. Only small result pages are sent to the office over Direct Connect, which greatly reduces data transfer out. Data sent over the Direct Connect connection is charged at the <b>reduced AWS Direct Connect data transfer rate</b> rather than internet data transfer rates (the exact rate depends on the source Region and the Direct Connect location).</> }) },
+      { name: L({ vi: "Công cụ trong Region, truy cập qua internet", en: "Tool in same Region, over the internet" }), verdict: "costly", hide: ["toolOnPrem"],
+        flows: [
+          { d: "M180 132 H280", paid: false, heavy: true, label: L({ vi: "lưu lượng nằm trong AWS", en: "stays in AWS" }), lx: 230, ly: 122 },
+          { d: "M430 150 C 480 212, 540 212, 580 182", paid: true, label: L({ vi: "trang kết quả qua internet", en: "result pages over the internet" }), lx: 505, ly: 222 },
+        ],
+        text: L({ vi: <>Lượng dữ liệu truyền ra vẫn chỉ là các trang kết quả nhỏ, nhưng đi qua internet nên được tính theo <b>đơn giá data transfer out ra internet</b> của EC2, cao hơn đơn giá Direct Connect data transfer. Khi ShopViet đã có Direct Connect, truy cập công cụ qua Direct Connect cho chi phí data transfer out thấp nhất.</>,
+          en: <>The outbound volume is still only small result pages, but it crosses the internet, so it is billed at the EC2 <b>data transfer out to the internet</b> rate, which is higher than the Direct Connect data transfer rate. When ShopViet already has Direct Connect, reaching the tool over Direct Connect gives the lowest data transfer out cost.</> }) },
     ],
   },
 ];

@@ -1,8 +1,8 @@
 ---
 title: "CloudFront + Global Accelerator"
-lede: "This lesson covers four topics: restricting access to an S3 origin so that it is reachable only through CloudFront, choosing the right origin type, the protection and availability mechanisms at the edge (WAF, geo restriction, signed URLs/cookies, field-level encryption, origin failover), and the criteria for choosing between CloudFront, S3 Transfer Acceleration and AWS Global Accelerator."
-minutes: 20
-scenes: 4
+lede: "This lesson covers six topics: restricting access to an S3 origin so that it is reachable only through CloudFront, choosing the right origin type, the protection and availability mechanisms at the edge (WAF, geo restriction, signed URLs/cookies, field-level encryption, origin failover), and the criteria for choosing between CloudFront, S3 Transfer Acceleration and AWS Global Accelerator, the request path through regional edge caches (including uploads and dynamic APIs), and a quick comparison of settings that are easy to confuse."
+minutes: 30
+scenes: 6
 prerequisites: ["global-infra", "route53"]
 docs:
   - title: "Restricting access to an Amazon S3 origin (OAC)"
@@ -23,6 +23,40 @@ docs:
     url: "https://docs.aws.amazon.com/global-accelerator/latest/dg/about-listeners.html"
   - title: "What is AWS Global Accelerator?"
     url: "https://docs.aws.amazon.com/global-accelerator/latest/dg/what-is-global-accelerator.html"
+  - title: "How CloudFront works with regional edge caches"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/HowCloudFrontWorks.html"
+  - title: "Cache behavior settings (allowed HTTP methods)"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/DownloadDistValuesCacheBehavior.html"
+  - title: "Request and response behavior for Amazon S3 origins"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/RequestAndResponseBehaviorS3Origin.html"
+  - title: "Control origin requests with a policy"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/controlling-origin-requests.html"
+  - title: "Use managed cache policies"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html"
+  - title: "Use managed origin request policies"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-origin-request-policies.html"
+  - title: "Origin settings (origin protocol policy)"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/DownloadDistValuesOrigin.html"
+  - title: "Require HTTPS for communication between CloudFront and your Amazon S3 origin"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-https-cloudfront-to-s3-origin.html"
+  - title: "Website endpoints (Amazon S3)"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteEndpoints.html"
+  - title: "Customize at the edge with Lambda@Edge"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-at-the-edge.html"
+  - title: "Differences between CloudFront Functions and Lambda@Edge"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/edge-functions-choosing.html"
+  - title: "Distribution settings (price class)"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/DownloadDistValuesGeneral.html"
+  - title: "DistributionConfig: PriceClass (API Reference)"
+    url: "https://docs.aws.amazon.com/cloudfront/latest/APIReference/API_DistributionConfig.html"
+  - title: "AWS Global Accelerator FAQs (Global Accelerator and CloudFront)"
+    url: "https://aws.amazon.com/global-accelerator/faqs/"
+  - title: "Amazon CloudFront: content uploads via POST, PUT and other HTTP methods (AWS News Blog)"
+    url: "https://aws.amazon.com/blogs/aws/amazon-cloudfront-content-uploads-post-put-other-methods/"
+  - title: "Ways to use Lambda@Edge"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-edge-ways-to-use.html"
+  - title: "Authenticate users using an Application Load Balancer"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/listener-authenticate-users.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -31,6 +65,8 @@ import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
 import EdgeCacheDemo from "../../components/scenes/EdgeCacheDemo.tsx";
 import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
 import EdgePipelineSim from "../../components/scenes/cloudfront/EdgePipelineSim.tsx";
+import TieredPathSim from "../../components/scenes/cloudfront/TieredPathSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
@@ -39,12 +75,14 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s2", label: "2 · Origin types" },
   { href: "#en-s3", label: "3 · Request processing at the edge" },
   { href: "#en-s4", label: "4 · CloudFront and Global Accelerator" },
+  { href: "#en-s5", label: "5 · Regional edge caches, uploads and dynamic content" },
+  { href: "#en-s6", label: "6 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
 ShopViet's static content is already distributed through **Amazon CloudFront** (see the Global Infrastructure lesson). The system is now expanding to paid video courses, card payments and users in many countries, which leads to three requirements: the S3 bucket must not be accessed directly, paid content must be served only to entitled users, and the service must keep running when the primary origin fails.
 </Story>
 
-<Scene id="en-s1" label="Part 1/4" title="Restricting access to the S3 origin through CloudFront" questions={["exam6_q54", "exam3_q60", "exam5_q15"]}>
+<Scene id="en-s1" label="Part 1/6" title="Restricting access to the S3 origin through CloudFront" questions={["exam6_q54", "exam3_q60", "exam5_q15"]}>
 
 When the bucket is configured as public, clients can access the S3 endpoint directly and bypass every control layer at CloudFront (cache, AWS WAF, geo restriction). The configuration options are compared below:
 
@@ -86,7 +124,7 @@ When the bucket is configured as public, clients can access the S3 endpoint dire
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/4" title="CloudFront origin types" questions={["exam1_q62", "exam6_q5", "exam3_q40", "exam2_q2", "exam3_q42", "exam3_q48", "exam1_q1"]}>
+<Scene id="en-s2" label="Part 2/6" title="CloudFront origin types" questions={["exam1_q62", "exam6_q5", "exam3_q40", "exam2_q2", "exam3_q42", "exam3_q48", "exam1_q1"]}>
 
 How the edge cache works: the first request (cache miss) is forwarded to the origin; later requests within the TTL (cache hit) are served directly at the edge location.
 
@@ -113,7 +151,7 @@ Besides S3, CloudFront supports custom origins, including an Application Load Ba
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/4" title="How a request is processed at the edge location" questions={["exam6_q62", "exam1_q38", "exam4_q63", "exam5_q15", "exam5_q13", "exam5_q57"]}>
+<Scene id="en-s3" label="Part 3/6" title="How a request is processed at the edge location" questions={["exam6_q62", "exam1_q38", "exam4_q63", "exam5_q15", "exam5_q13", "exam5_q57"]}>
 
 Before forwarding a request to the origin, CloudFront can apply the following mechanisms at the edge location: TLS termination with an ACM certificate, evaluation by AWS WAF, geo restriction, signed URL/cookie validation, field-level encryption and origin selection by cache behavior. The simulation arranges these mechanisms into a chain for illustration. Choose a scenario, change the configuration and send a request to see the corresponding processing step.
 
@@ -123,7 +161,7 @@ Before forwarding a request to the origin, CloudFront can apply the following me
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/4" title="CloudFront, S3 Transfer Acceleration and AWS Global Accelerator" questions={["exam5_q21", "exam6_q58", "exam1_q59", "exam3_q8", "exam4_q58", "exam5_q55", "exam2_q22"]}>
+<Scene id="en-s4" label="Part 4/6" title="CloudFront, S3 Transfer Acceleration and AWS Global Accelerator" questions={["exam5_q21", "exam6_q58", "exam1_q59", "exam3_q8", "exam4_q58", "exam5_q55", "exam2_q22"]}>
 
 The three services all use the AWS edge network but serve different purposes. Global Accelerator failover was covered in the Global Infrastructure lesson; this part summarizes the selection criteria by requirement.
 
@@ -139,7 +177,62 @@ The three services all use the AWS edge network but serve different purposes. Gl
 
 </Scene>
 
-<Scene id="en-challenge" label="Exercise" title="Sort the features: CloudFront and Global Accelerator" questions={["exam6_q54", "exam5_q15", "exam6_q62", "exam3_q48"]}>
+<Scene id="en-s5" label="Part 5/6" title="Regional edge caches, uploads through CloudFront and dynamic content" questions={["exam3_q8", "exam5_q15", "exam5_q21", "exam5_q30", "exam4_q53"]}>
+
+CloudFront caches at two tiers. **POPs** (edge locations) serve users directly and keep popular content. **Regional edge caches** sit between the POPs and the origin and have a larger cache than an individual POP, so objects that become less popular (older product photos, user-generated content, news that suddenly regains interest) stay close to users after a POP has removed them. When neither tier has the object, the origin response is cached at both the regional edge cache and the POP; the POPs of an area share the regional edge cache, which removes repeated requests to the origin. Both tiers belong to CloudFront and serve HTTP/HTTPS only; an application that uses UDP uses AWS Global Accelerator (part 4).
+
+Not every request goes through a regional edge cache: requests that use PUT, POST, PATCH, OPTIONS or DELETE, and dynamic requests (as determined at request time), go from the POP directly to the origin; when the origin is S3 and the optimal regional edge cache is in the same Region as the bucket, the POP also goes to the bucket directly. Besides product images, two more ShopViet flows use the same distribution: customers upload review photos to an S3 bucket, and shipping partners look up order status through an API. Choose a scenario and a configuration to watch the request path:
+
+<TieredPathSim client:visible />
+
+**Uploads through CloudFront.** When the cache behavior allows PUT and POST, data enters the edge location near the user and is forwarded to the origin over the persistent connections that CloudFront keeps with the origin; CloudFront does not cache responses to these methods. For remote offices that upload and download large video files to and from one central bucket, both CloudFront (origin is the bucket's REST endpoint, OAC granted `s3:PutObject`) and S3 Transfer Acceleration improve transfer speed without splitting the data across buckets. An S3 website endpoint origin cannot serve this flow, because a website endpoint accepts only GET and HEAD and does not support OAC.
+
+**Dynamic content.** CloudFront accelerates both cacheable and dynamic content, but when responses cannot be cached, every request reaches the origin. During a flash sale with an expected 10x traffic increase and constantly changing content, capacity must come from an **Auto Scaling group** behind the ALB; CloudFront adds no capacity to the origin. For an API used by partners worldwide, applying a managed cache policy built for static content (CachingOptimized) returns wrong data, as the simulation shows; when static IPs, TCP/UDP or fast failover between Regions are needed without changing the application, AWS Global Accelerator is the right fit.
+
+<Takeaway>POPs keep popular content; regional edge caches keep less popular content longer. PUT, POST, PATCH, OPTIONS, DELETE and dynamic requests go from the POP directly to the origin. Uploading to S3 through CloudFront needs a cache behavior that allows PUT/POST and an OAC granted `s3:PutObject` in the bucket policy; an origin request policy only decides what information is forwarded and grants no permission. An API whose data depends on each request uses CachingDisabled (or a cache policy with a complete cache key), and the origin still scales on its own with an Auto Scaling group.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s6" label="Part 6/6" title="Quick comparison of settings that are easy to confuse" questions={["exam4_q63", "exam5_q7", "exam5_q15", "exam6_q62", "exam4_q53", "exam5_q30", "exam2_q17"]}>
+
+Some CloudFront settings have names close to a real requirement but solve a different problem. Select each item to see when to use it, why it does not fit the matching ShopViet situation, and what fits instead:
+
+<QuickCompare client:visible items={[
+  { name: "Price class",
+    use: "Limits the set of edge locations that serve the distribution to the maximum price you want to pay: `PriceClass_100`, `PriceClass_200` or `PriceClass_All`. By default CloudFront serves from edge locations in all regions. With a price class other than `PriceClass_All`, CloudFront serves from the lowest-latency edge location within the price class; viewers in excluded regions may see slower performance.",
+    notHere: "ShopViet must serve images from S3 and the API from an ALB in one distribution, with a standby origin. A price class only concerns cost and the set of edge locations; it does not route requests to origins.",
+    instead: "**Cache behaviors** by path pattern (`/images/*` to S3, `/api/*` to the ALB) and an **origin group** for failover (part 3)." },
+  { name: "Origin request policy",
+    use: "Chooses which viewer query strings, headers and cookies go into the origin request without being part of the cache key, for example when the origin needs data for analytics. Values in the cache key are forwarded to the origin automatically. AWS provides managed policies such as `AllViewer` and `AllViewerExceptHostHeader`.",
+    notHere: "Customers uploading photos to the bucket through CloudFront get Access Denied. An origin request policy grants no write permission on the bucket; neither does S3 Object Ownership.",
+    instead: "A cache behavior that allows PUT/POST, with **OAC** and a bucket policy that grants `s3:PutObject` to `cloudfront.amazonaws.com` (part 5)." },
+  { name: "Origin protocol policy: HTTPS only",
+    use: "Encryption in transit between CloudFront and a custom origin; values: HTTP only, HTTPS only, Match viewer. For an S3 REST endpoint origin, the protocol follows the viewer protocol policy; when OAC always signs requests, CloudFront always uses HTTPS to S3. An S3 website endpoint supports HTTP only.",
+    notHere: "The video course is only for students who bought it. HTTPS to the origin protects data in transit but does not decide who may view the content.",
+    instead: "A **signed URL** for one file or **signed cookies** for many files (part 3)." },
+  { name: "Lambda@Edge",
+    use: "Runs Node.js or Python functions (created in us-east-1) at AWS locations close to viewers to customize the requests and responses that CloudFront delivers; triggered on viewer request, viewer response, origin request and origin response; has network access and access to the request body. Lightweight logic (cache key normalization, header changes, redirects, JWT validation) fits CloudFront Functions.",
+    notHere: "A web application and MySQL on a single EC2 instance need high availability and better read performance. Lambda@Edge does not replicate the application tier or the database.",
+    instead: "ALB + an Auto Scaling group across multiple AZs; Aurora MySQL with an Aurora Replica in another AZ." },
+  { name: "Cognito user authentication on CloudFront",
+    use: "A CloudFront distribution has no setting that authenticates users with an Amazon Cognito user pool. To check sign-in at the edge you write the function yourself: **Lambda@Edge** on the viewer request event inspects tokens and can make network calls to confirm user credentials; **CloudFront Functions** can only validate signed tokens such as JWTs. The whole sign-in, redirect and token check flow is code the team writes and runs.",
+    notHere: "A social media application runs on EC2 behind an ALB, fronted by CloudFront; the team wants to offload user authentication from the application servers with minimal development effort. Authenticating at CloudFront means writing and maintaining a Lambda@Edge function.",
+    instead: "An **ALB** HTTPS listener rule with the `authenticate-cognito` action using a **Cognito user pool** (an identity pool only issues temporary AWS credentials; it does not authenticate users for the application). With CloudFront in front of the ALB: forward all headers, cookies and query strings, and use HTTPS port 443 along the whole path." },
+  { name: "CloudFront in front of a dynamic site during a flash sale",
+    use: "Caches the cacheable part of the content at the edge and accelerates the delivery of dynamic content.",
+    notHere: "Traffic is expected at 10x and the content changes constantly: most requests cannot be cached and still reach the origin, so CloudFront does not solve the capacity problem.",
+    instead: "An **Auto Scaling group** for the EC2 tier behind the ALB." },
+  { name: "CachingOptimized for a real-time API",
+    use: "Managed cache policy for static content: no query strings or cookies in the cache key; default TTL 24 hours, minimum TTL 1 second.",
+    notHere: "The order-tracking API in us-west-2 returns data specific to each request; caching on a key without the query string returns one customer's data to another.",
+    instead: "To improve performance for distant users without moving the application: **AWS Global Accelerator** with a TCP 443 listener and the existing EC2/ALB as the endpoint. With CloudFront: CachingDisabled with a suitable origin request policy." },
+]} />
+
+<Takeaway>A price class sets cost and the set of edge locations; it does not route to origins. An origin request policy decides what is sent to the origin; it grants no permission. HTTPS to the origin protects data in transit; it does not restrict viewers. Lambda@Edge customizes requests and responses at the edge; it does not make the application and database highly available. CloudFront has no built-in Cognito authentication: authenticating at the edge needs Lambda@Edge; the least-code option is letting the ALB behind it authenticate with a Cognito user pool ([ELB lesson](/concepts/elb/#en-s3)).</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Sort the features: CloudFront and Global Accelerator" questions={["exam6_q54", "exam5_q15", "exam6_q62", "exam3_q48", "exam4_q63"]}>
 
 Sort each feature into the matching service. On a mobile device: select a card, then select the target box.
 
@@ -173,6 +266,18 @@ Check your understanding: as the designer of the ShopViet system, which option i
     opts: ["Distribute through CloudFront", "Move to S3 Glacier", "Enable S3 Transfer Acceleration"],
     a: 0,
     why: "Data transfer from an AWS origin such as S3 to CloudFront is free, and CloudFront serves from a cache close to users. S3 Transfer Acceleration speeds up transfers but does not cache and can incur additional data transfer charges." },
+  { q: "ShopViet wants to lower CloudFront delivery cost and accepts higher latency for users in some regions. Which setting meets the requirement?",
+    opts: ["Choose a price class other than PriceClass_All", "Create an origin group", "Enable geo restriction"],
+    a: 0,
+    why: "A price class limits the set of edge locations by price; users in excluded regions are still served, from a more distant edge location. Geo restriction blocks users by country; an origin group is for failover." },
+  { q: "The upload path's cache behavior already allows PUT and OAC is attached to the S3 origin, but customers still get Access Denied. What must change?",
+    opts: ["Attach the AllViewer origin request policy", "Grant s3:PutObject to cloudfront.amazonaws.com in the bucket policy, limited to the distribution ARN", "Switch the origin to the S3 website endpoint"],
+    a: 1,
+    why: "Write permission comes from the bucket policy granted to the CloudFront service principal that OAC uses. An origin request policy only decides what is forwarded; a website endpoint accepts only GET and HEAD." },
+  { q: "The video course is only for students who bought it. Which proposal restricts who can view it?",
+    opts: ["Origin protocol policy HTTPS only", "Signed URLs or signed cookies", "Viewer protocol policy Redirect HTTP to HTTPS"],
+    a: 1,
+    why: "HTTPS (between viewers and CloudFront, or between CloudFront and the origin) only encrypts data in transit; signed URLs/cookies decide which users have access." },
 ]} />
 
 </Scene>

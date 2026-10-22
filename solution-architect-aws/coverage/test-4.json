@@ -51,8 +51,8 @@
         {
           "keyword": "Aurora cluster storage (no gp2/io1/magnetic volume choice)",
           "lesson": "rds",
-          "status": "partial",
-          "where": "rds.mdx#s3 / AuroraSim"
+          "status": "covered",
+          "where": "rds.mdx#s6 / QuickCompare"
         }
       ]
     },
@@ -108,7 +108,7 @@
           "keyword": "AWS Managed Microsoft AD (two-way trust)",
           "lesson": "cognito",
           "status": "covered",
-          "where": "cognito.mdx#s2 / StaffSignInSim"
+          "where": "iam.mdx#s5 / FederationSim; cognito.mdx#s2 / StaffSignInSim"
         },
         {
           "keyword": "Cognito identity pool",
@@ -119,8 +119,8 @@
         {
           "keyword": "IAM SAML 2.0 federation",
           "lesson": "iam",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "iam.mdx#s5 / FederationSim"
         }
       ]
     },
@@ -194,14 +194,14 @@
         {
           "keyword": "KMS imported key material",
           "lesson": "kms",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "kms.mdx#s4 / QuickCompare; kms.mdx#challenge / Quiz"
         },
         {
           "keyword": "AWS CloudHSM",
           "lesson": "kms",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "kms.mdx#s4 / QuickCompare; kms.mdx#challenge / Quiz"
         },
         {
           "keyword": "S3 client-side encryption",
@@ -245,8 +245,8 @@
         {
           "keyword": "Direct Connect private VIF",
           "lesson": "vpc",
-          "status": "partial",
-          "where": "vpc.mdx#s6 / HybridLinkSim"
+          "status": "covered",
+          "where": "vpc.mdx#hub / HubSim; vpc.mdx#s6 / HybridLinkSim"
         }
       ]
     },
@@ -272,8 +272,8 @@
         {
           "keyword": "CIDR notation",
           "lesson": "vpc",
-          "status": "partial",
-          "where": "iam.mdx#s1 / PolicyReader"
+          "status": "covered",
+          "where": "vpc.mdx#addr / CidrSim"
         }
       ]
     },
@@ -302,6 +302,12 @@
           "lesson": "asg",
           "status": "covered",
           "where": "asg.mdx#s1"
+        },
+        {
+          "keyword": "Classic Load Balancer",
+          "lesson": "elb",
+          "status": "covered",
+          "where": "elb.mdx#s7 / QuickCompare"
         }
       ]
     },
@@ -474,8 +480,8 @@
         {
           "keyword": "EBS General Purpose SSD (gp2) burst credits",
           "lesson": "storage",
-          "status": "partial",
-          "where": "iac.mdx#s1 / StackSim; storage.mdx#s2"
+          "status": "covered",
+          "where": "storage.mdx#s2 / BurstCreditSim, RequirementPicker"
         },
         {
           "keyword": "CloudFormation (no extra charge)",
@@ -631,14 +637,14 @@
         {
           "keyword": "EC2 spread placement group",
           "lesson": "ec2",
-          "status": "partial",
-          "where": "ec2.mdx#challenge"
+          "status": "covered",
+          "where": "ec2.mdx#s5 / PlacementSim"
         },
         {
           "keyword": "EC2 partition placement group",
           "lesson": "ec2",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "ec2.mdx#s5 / PlacementSim"
         },
         {
           "keyword": "EC2 Spot Instance",
@@ -672,14 +678,14 @@
         {
           "keyword": "ASG step scaling policy",
           "lesson": "asg",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "asg.mdx#dynamic / DynamicPolicySim"
         },
         {
           "keyword": "ASG simple scaling policy (cooldown)",
           "lesson": "asg",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "asg.mdx#dynamic / DynamicPolicySim"
         },
         {
           "keyword": "ASG scheduled action",
@@ -770,8 +776,8 @@
         {
           "keyword": "Mountpoint for Amazon S3",
           "lesson": "storage",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "storage.mdx#s5 / MountpointSim, RequirementPicker"
         }
       ]
     },
@@ -805,20 +811,20 @@
         {
           "keyword": "Lambda memory and CPU allocation",
           "lesson": "lambda",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "lambda.mdx#sizing / FunctionConfigSim"
         },
         {
           "keyword": "Lambda deployment package size (cold start)",
           "lesson": "lambda",
-          "status": "partial",
-          "where": "lambda.mdx#s2 / LambdaRunSim"
+          "status": "covered",
+          "where": "lambda.mdx#sizing / FunctionConfigSim"
         },
         {
           "keyword": "Lambda container image",
           "lesson": "lambda",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "lambda.mdx#sizing / FunctionConfigSim"
         }
       ]
     },
@@ -846,8 +852,8 @@
         {
           "keyword": "Elastic IP address",
           "lesson": "ec2",
-          "status": "partial",
-          "where": "elb.mdx#s1"
+          "status": "covered",
+          "where": "ec2.mdx#s6"
         }
       ]
     },
@@ -896,8 +902,8 @@
         {
           "keyword": "Transit VPC",
           "lesson": "vpc",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "vpc.mdx#s5 / VpcConnectSim; vpc.mdx#compare / QuickCompare"
         },
         {
           "keyword": "VPC peering (full mesh)",
@@ -919,20 +925,20 @@
         {
           "keyword": "aws s3 sync",
           "lesson": "storage-migration",
-          "status": "partial",
-          "where": "storage-migration.mdx#s2 / RequirementPicker"
+          "status": "covered",
+          "where": "s3.mdx#s7 / QuickCompare"
         },
         {
           "keyword": "S3 Batch Replication",
           "lesson": "storage-migration",
           "status": "covered",
-          "where": "storage-migration.mdx#s2 / RequirementPicker"
+          "where": "s3.mdx#s7 / QuickCompare; storage-migration.mdx#s2 / RequirementPicker"
         },
         {
           "keyword": "S3 Transfer Acceleration",
           "lesson": "s3",
           "status": "covered",
-          "where": "s3.mdx#s5"
+          "where": "s3.mdx#s7 / QuickCompare; s3.mdx#s5"
         },
         {
           "keyword": "Snowball Edge",
@@ -1032,20 +1038,20 @@
         {
           "keyword": "ElastiCache backup",
           "lesson": "analytics",
-          "status": "partial",
-          "where": "analytics.mdx#s1 / CacheSim"
+          "status": "covered",
+          "where": "analytics.mdx#s5 / CacheRecoverySim"
         },
         {
           "keyword": "Redis append-only file (AOF)",
           "lesson": "analytics",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "analytics.mdx#s5 / CacheRecoverySim"
         },
         {
           "keyword": "ElastiCache read replica",
           "lesson": "analytics",
-          "status": "partial",
-          "where": "analytics.mdx#s2"
+          "status": "covered",
+          "where": "analytics.mdx#s5 / CacheRecoverySim"
         }
       ]
     },
@@ -1083,8 +1089,8 @@
         {
           "keyword": "Amazon SageMaker",
           "lesson": "others",
-          "status": "partial",
-          "where": "others.mdx#s3"
+          "status": "covered",
+          "where": "others.mdx#s3, #s5 / QuickCompare; containers.mdx#s1"
         }
       ]
     },
@@ -1116,7 +1122,7 @@
         {
           "keyword": "Access control list (ACL)",
           "lesson": "s3",
-          "status": "partial",
+          "status": "covered",
           "where": "s3.mdx#s3"
         }
       ]
@@ -1231,20 +1237,20 @@
         {
           "keyword": "Security group ICMP rule (ping)",
           "lesson": "vpc",
-          "status": "partial",
-          "where": "vpc.mdx#s1"
+          "status": "covered",
+          "where": "vpc.mdx#confuse / VpcMythsSim"
         },
         {
           "keyword": "EC2 source/destination check",
           "lesson": "vpc",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "vpc.mdx#confuse / VpcMythsSim; vpc.mdx#compare / QuickCompare"
         },
         {
           "keyword": "Elastic IP address",
           "lesson": "ec2",
-          "status": "partial",
-          "where": "elb.mdx#s1"
+          "status": "covered",
+          "where": "ec2.mdx#s6"
         }
       ]
     },
@@ -1272,8 +1278,8 @@
         {
           "keyword": "SSM Parameter Store",
           "lesson": "monitoring",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "monitoring.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "Security group referencing",
@@ -1299,20 +1305,20 @@
         {
           "keyword": "Wildcard SSL certificate",
           "lesson": "elb",
-          "status": "partial",
-          "where": "elb.mdx#s3"
+          "status": "covered",
+          "where": "elb.mdx#s5 / HttpsListenerSim"
         },
         {
           "keyword": "ALB HTTP to HTTPS redirect",
           "lesson": "elb",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "elb.mdx#s3 / RuleMatchSim, elb.mdx#s5 / HttpsListenerSim"
         },
         {
           "keyword": "ELB SSL security policy",
           "lesson": "elb",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "elb.mdx#s5 / HttpsListenerSim"
         }
       ]
     },
@@ -1371,8 +1377,8 @@
         {
           "keyword": "DynamoDB export to S3",
           "lesson": "dynamodb",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "dynamodb.mdx#s4 / table + Quiz"
         }
       ]
     },
@@ -1392,8 +1398,8 @@
         {
           "keyword": "S3 Lifecycle rule prefix filter",
           "lesson": "s3",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "s3.mdx#s1 / LifecycleFilterSim"
         },
         {
           "keyword": "S3 Standard-IA",
@@ -1612,8 +1618,8 @@
         {
           "keyword": "OpenSearch geospatial",
           "lesson": "analytics",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "analytics.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "RDS Multi-AZ (standby not readable)",
@@ -1684,20 +1690,20 @@
         {
           "keyword": "CloudFront (dynamic content)",
           "lesson": "cloudfront",
-          "status": "partial",
-          "where": "cloudfront.mdx#s2"
+          "status": "covered",
+          "where": "cloudfront.mdx#s5 / TieredPathSim; cloudfront.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "Route 53 multivalue answer routing",
           "lesson": "route53",
-          "status": "partial",
-          "where": "route53.mdx#challenge"
+          "status": "covered",
+          "where": "route53.mdx#confuse / Route53MythsSim"
         },
         {
           "keyword": "S3 static website hosting",
           "lesson": "s3",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "s3.mdx#s6 / WebsiteEndpointSim"
         }
       ]
     },
@@ -1746,8 +1752,8 @@
         {
           "keyword": "EFS Bursting throughput mode",
           "lesson": "storage",
-          "status": "partial",
-          "where": "storage.mdx#s3 / RequirementPicker"
+          "status": "covered",
+          "where": "storage.mdx#s3 / BurstCreditSim"
         },
         {
           "keyword": "EFS General Purpose performance mode",
@@ -1770,8 +1776,8 @@
         {
           "keyword": "EFS One Zone storage class",
           "lesson": "storage",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "storage.mdx#s3 / RequirementPicker"
         }
       ]
     },
@@ -1793,8 +1799,8 @@
         {
           "keyword": "Kubernetes Horizontal Pod Autoscaler",
           "lesson": "containers",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "containers.mdx#s3 / ScaleLayersSim"
         },
         {
           "keyword": "EKS on Fargate",
@@ -1880,8 +1886,8 @@
         {
           "keyword": "EC2 On-Demand Capacity Reservation",
           "lesson": "ec2",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "ec2.mdx#s1; ec2.mdx#s5 / RequirementPicker"
         },
         {
           "keyword": "EC2 Dedicated Instance",
@@ -1892,8 +1898,8 @@
         {
           "keyword": "Elastic Inference accelerator",
           "lesson": "ec2",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "ec2.mdx#s5 / RequirementPicker"
         }
       ]
     },
@@ -1997,8 +2003,8 @@
         {
           "keyword": "CloudFront price class",
           "lesson": "cloudfront",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "cloudfront.mdx#s6 / QuickCompare"
         }
       ]
     },
@@ -2025,7 +2031,7 @@
           "keyword": "Glacier Vault Lock",
           "lesson": "s3",
           "status": "covered",
-          "where": "s3.mdx#s2"
+          "where": "s3.mdx#s2 (Vault Lock policy vs vault access policy, 24h in-progress lock, immutable once locked, Amazon Glacier closed to new customers) / Quiz in s3.mdx#challenge"
         },
         {
           "keyword": "S3 Glacier Flexible Retrieval",

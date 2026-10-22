@@ -1,8 +1,8 @@
 ---
 title: "KMS and ACM: encryption and certificates"
-lede: "ShopViet stores invoices, orders and customer data. This lesson covers real encryption requirements: giving auditors information about key usage, reducing KMS cost, rotating keys periodically, using one key in two Regions, sharing an encrypted database copy with auditors, protecting data in transit and preventing HTTPS certificates from expiring unexpectedly."
-minutes: 20
-scenes: 3
+lede: "ShopViet stores invoices, orders and customer data. This lesson covers real encryption requirements: giving auditors information about key usage, reducing KMS cost, rotating keys periodically, using one key in two Regions, sharing an encrypted database copy with auditors, protecting data in transit preventing HTTPS certificates from expiring unexpectedly, and telling apart easily confused encryption choices."
+minutes: 25
+scenes: 4
 prerequisites: ["iam"]
 docs:
   - title: "AWS KMS concepts"
@@ -27,6 +27,24 @@ docs:
     url: "https://docs.aws.amazon.com/acm/latest/userguide/supported-events.html"
   - title: "Sharing a DB snapshot (Amazon RDS)"
     url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ShareSnapshot.html"
+  - title: "Encryption context (AWS KMS)"
+    url: "https://docs.aws.amazon.com/kms/latest/developerguide/encrypt_context.html"
+  - title: "Using server-side encryption with AWS KMS keys (SSE-KMS)"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingKMSEncryption.html"
+  - title: "Importing key material for AWS KMS keys"
+    url: "https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html"
+  - title: "What is AWS CloudHSM?"
+    url: "https://docs.aws.amazon.com/cloudhsm/latest/userguide/introduction.html"
+  - title: "AWS CloudHSM key stores (AWS KMS)"
+    url: "https://docs.aws.amazon.com/kms/latest/developerguide/keystore-cloudhsm.html"
+  - title: "Protecting data by using client-side encryption (S3)"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingClientSideEncryption.html"
+  - title: "Replicating encrypted objects (S3)"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/replication-config-for-kms-objects.html"
+  - title: "Setting default server-side encryption behavior for S3 buckets"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucket-encryption.html"
+  - title: "Replicating objects within and across Regions (S3)"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/replication.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -36,27 +54,29 @@ import S3EncryptSim from "../../components/scenes/kms/S3EncryptSim.tsx";
 import DataGuardSim from "../../components/scenes/kms/DataGuardSim.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 
 <Story toc={[
   { href: "#en-s1", label: "1 · Encrypting data on S3" },
   { href: "#en-s2", label: "2 · Sharing an encrypted database" },
   { href: "#en-s3", label: "3 · Encryption at rest and in transit" },
+  { href: "#en-s4", label: "4 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
 ShopViet's customer data must be encrypted, and the audit team requires information on **which principal used a key and when**. **AWS KMS** stores and manages encryption keys. **ACM** issues and renews TLS certificates for HTTPS.
 </Story>
 
-<Scene id="en-s1" label="Part 1/3" title="Encrypting invoices stored on S3" questions={["exam1_q22", "exam2_q50", "exam4_q6", "exam5_q46", "exam5_q11", "exam2_q46", "exam3_q24"]}>
+<Scene id="en-s1" label="Part 1/4" title="Encrypting invoices stored on S3" questions={["exam1_q22", "exam2_q50", "exam4_q6", "exam5_q46", "exam5_q11", "exam2_q46", "exam3_q24"]}>
 
 Every new object on S3 is encrypted. The decision to make is **who manages the key** and **who can track key usage**. Each scenario below is a real ShopViet requirement. Choose a scenario, change the configuration and press Run to watch the object's path and the services that are called.
 
 <S3EncryptSim client:visible />
 
-<Takeaway>Auditing or controlling who can use the key: SSE-KMS. Automatic key rotation: customer managed key + automatic rotation (365 days by default, configurable from 90 to 2560 days). High KMS cost: turn on S3 Bucket Keys and keep SSE-KMS. One key for multiple Regions: multi-Region keys. A key per object with no extra configuration: SSE-S3. The key must be kept outside AWS: SSE-C (since April 2026 blocked by default on new buckets; it must be re-enabled with PutBucketEncryption).</Takeaway>
+<Takeaway>Auditing or controlling who can use the key: SSE-KMS. Automatic key rotation: customer managed key + automatic rotation (365 days by default, configurable from 90 to 2560 days). High KMS cost: turn on S3 Bucket Keys and keep SSE-KMS. One key for multiple Regions: multi-Region keys, chosen when the key is created (a single-Region key cannot be converted; existing data must be copied to re-encrypt it under the new key). A key per object with no extra configuration: SSE-S3. The key must be kept outside AWS: SSE-C (since April 2026 blocked by default on new buckets; it must be re-enabled with PutBucketEncryption).</Takeaway>
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/3" title="Sharing a copy of an encrypted database with the auditors" questions={["exam2_q57"]}>
+<Scene id="en-s2" label="Part 2/4" title="Sharing a copy of an encrypted database with the auditors" questions={["exam2_q57"]}>
 
 The auditors have their own AWS account and need a copy of an RDS database encrypted with KMS. Perform each step in turn:
 
@@ -86,13 +106,44 @@ The auditors have their own AWS account and need a copy of an RDS database encry
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/3" title="Encryption at rest and in transit" questions={["exam2_q40", "exam4_q31", "exam2_q45", "exam5_q40", "exam5_q15", "exam2_q9"]}>
+<Scene id="en-s3" label="Part 3/4" title="Encryption at rest and in transit" questions={["exam2_q40", "exam4_q31", "exam2_q45", "exam5_q40", "exam5_q15", "exam2_q9"]}>
 
 KMS protects data **at rest**. Data **in transit** between machines needs SSL/TLS, and HTTPS requires a valid certificate. A simulation of six situations ShopViet meets in operations:
 
 <DataGuardSim client:visible />
 
 <Takeaway>At rest: KMS. In transit: SSL/TLS. Encryption cannot be turned on directly for a running RDS instance: snapshot → encrypted copy → restore. Certificate for CloudFront: ACM in us-east-1. Imported certificates: ACM does not renew them automatically; track expiration with the AWS Config rule `acm-certificate-expiration-check` (14 days by default, configured through `daysToExpiration`) + SNS, or the EventBridge event "ACM Certificate Approaching Expiration" (from 45 days before by default).</Takeaway>
+
+</Scene>
+
+<Scene id="en-s4" label="Part 4/4" title="Quick comparison: easily confused encryption choices" questions={["exam3_q24", "exam4_q6", "exam5_q46", "exam2_q46"]}>
+
+Some features have names close to ShopViet's encryption requirements but solve a different problem, or add operational work. Choose each feature to see when to use it, why it does not fit the matching ShopViet situation, and what to choose instead:
+
+<QuickCompare client:visible items={[
+  { name: "Encryption context",
+    use: "A set of **non-secret** key–value pairs sent with an encryption request to KMS. KMS uses it as additional authenticated data (AAD): decryption must supply the same encryption context. The encryption context appears in plaintext in CloudTrail and can be used as a condition in key policies, IAM policies (`kms:EncryptionContext:`) or grants. With SSE-KMS, S3 uses the object ARN (or the bucket ARN when an S3 Bucket Key is enabled) as the default encryption context.",
+    notHere: "The legal team wants a separate key for every invoice in a single bucket. An encryption context does not create any key: it only binds the ciphertext to information that describes the data, and it must hold no sensitive data because it is not encrypted.",
+    instead: "**SSE-S3**: S3 encrypts each object with a unique key, with no bucket split and no extra configuration." },
+  { name: "KMS key with imported key material",
+    use: "Bring your own key (BYOK): create a KMS key without key material and import your own, when you must prove the entropy source, keep the original key material outside AWS, or set an expiration time on the key material. ShopViet remains responsible for that key material.",
+    notHere: "The long-term invoice archive needs yearly key rotation with the least work. **Automatic key rotation is supported only** on symmetric KMS keys whose key material KMS generates (`AWS_KMS` origin). With imported key material (`EXTERNAL` origin), ShopViet must import new key material itself and then run on-demand rotation.",
+    instead: "A **customer managed key** with KMS-generated key material and **automatic rotation** turned on (365 days by default), set as the bucket's default encryption." },
+  { name: "AWS CloudHSM",
+    use: "Single-tenant hardware security modules (HSMs) in the AWS Cloud, FIPS 140-2/140-3 level 3 validated in FIPS mode. ShopViet has full control of keys and algorithms and manages HSM users itself; suits applications that use PKCS #11, JCE or CNG/KSP. It can back a KMS custom key store.",
+    notHere: "For the same yearly rotation and low-cost requirement, CloudHSM adds work ShopViet must do itself: AWS states that the trade-off for this control is more responsibility than with a managed service. KMS keys in a custom key store do not support automatic rotation either, only manual rotation.",
+    instead: "An **AWS KMS customer managed key** with automatic rotation, used through SSE-KMS." },
+  { name: "Client-side encryption",
+    use: "Encrypt data **before sending it to S3** with the Amazon S3 Encryption Client; each object gets a unique data key. S3 receives the object already encrypted, plays no role in encrypting or decrypting it, and does not recognize it as encrypted. AWS never sees the plaintext.",
+    notHere: "ShopViet wants to lower its KMS bill while keeping SSE-KMS. Client-side encryption moves encryption and key management into the application; the S3 Encryption Client also does not use S3 Bucket Keys, even when the wrapping key is a KMS key. Storing the key in the object's metadata lets anyone who can read the object decrypt it.",
+    instead: "Keep SSE-KMS and turn on **S3 Bucket Keys**." },
+  { name: "Converting the current key to multi-Region",
+    use: "There is no such operation: the multi-Region property is chosen **when the key is created** and cannot be changed afterwards. A KMS key cannot be shared with another Region either.",
+    notHere: "Invoices in us-east-1 are encrypted with a single-Region key and the same key is needed in us-west-1. That key cannot be turned into a multi-Region key before running Batch Replication.",
+    instead: "Create a **new multi-Region key** and a replica key in us-west-1; have a bucket use the new key as default encryption with replication turned on; then **copy** the existing data into it to re-encrypt it under the new key." },
+]} />
+
+<Takeaway>Encryption context: authenticated data bound to the ciphertext, not a key generator. Imported key material and CloudHSM: more control, but no automatic rotation. Client-side encryption: the application encrypts before sending and does not use S3 Bucket Keys. Multi-Region: chosen at key creation, never converted later.</Takeaway>
 
 </Scene>
 
@@ -136,6 +187,14 @@ Check your understanding: as the designer of the ShopViet system, which option i
     opts: ["Switch to SSE-S3", "Turn on S3 Bucket Keys", "Turn off CloudTrail"],
     a: 1,
     why: "S3 Bucket Keys reduce the number of requests to KMS while keeping SSE-KMS and the logs. Switching to SSE-S3 would lose the audit trail." },
+  { q: "Invoices in us-east-1 are encrypted with a single-Region key. ShopViet needs the same key in us-west-1 for the replicas. Which option works?",
+    opts: ["Convert the current key to a multi-Region key", "Create a new multi-Region key, have a bucket use it with replication turned on, and copy the existing data into it", "Share the current key with us-west-1"],
+    a: 1,
+    why: "A single-Region key cannot be converted to multi-Region and a KMS key cannot be shared with another Region. The data must be re-encrypted under a new multi-Region key." },
+  { q: "A long-term archive must be encrypted with KMS, with automatic yearly key rotation and the least work. Which option fits?",
+    opts: ["A KMS key with imported key material", "A customer managed key with KMS-generated key material and automatic rotation turned on", "A key generated in CloudHSM, with client-side encryption"],
+    a: 1,
+    why: "Automatic rotation is supported only on symmetric keys whose key material KMS generates. Keys with imported key material and keys in CloudHSM have no automatic rotation." },
 ]} />
 
 </Scene>

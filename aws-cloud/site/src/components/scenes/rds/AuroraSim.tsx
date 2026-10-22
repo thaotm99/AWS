@@ -6,6 +6,7 @@ import "./rds-sims.css";
 // ShopViet's Aurora cluster: one shared cluster volume (6 copies over 3 AZs), a writer and
 // readers behind the cluster and reader endpoints. Try writes, spread reads, Auto Scaling,
 // writer failover, then Aurora Global Database and a Region outage.
+// Cross-Region read replica for Aurora MySQL: AuroraMySQL.Replication.CrossRegion.html (exam2_q6).
 // Source questions: exam5_q3, exam2_q52, exam3_q50, exam2_q5, exam1_q7, exam2_q61, exam6_q23, exam6_q17, exam2_q53, exam4_q2, exam6_q5, exam5_q7.
 
 type Inst = "i1" | "i2" | "i3" | "i4";
@@ -123,7 +124,7 @@ export default function AuroraSim() {
     await wait(300);
     await travel(L, [[578, VOL_Y], [615, VOL_Y]], 600, "pkt-edge", 5);
     flashText(L, 597, VOL_Y - 18, tr({ vi: "< 1 giây", en: "< 1 s" }), "rdx-flash-ok", 1200);
-    setNote({ vi: <><b>Aurora Global Database</b> sao chép ở tầng storage sang Region Tokyo, độ trễ thường dưới 1 giây. Người dùng tại Nhật Bản đọc dữ liệu tại Region gần nhất với độ trễ thấp; Tokyo đồng thời là Region dự phòng.</>, en: <><b>Aurora Global Database</b> replicates at the storage layer to the Tokyo Region, usually with under 1 second of lag. Users in Japan read data from the nearest Region with low latency; Tokyo is also the standby Region.</> });
+    setNote({ vi: <><b>Aurora Global Database</b> sao chép ở tầng storage sang Region Tokyo, độ trễ thường dưới 1 giây. Người dùng tại Nhật Bản đọc dữ liệu tại Region gần nhất với độ trễ thấp; Tokyo đồng thời là Region dự phòng. Aurora MySQL còn hỗ trợ <b>cross-Region read replica</b> (một DB cluster ở Region khác, sao chép bằng binlog, tối đa 5 cluster), độ trễ cao hơn Global Database. Multi-AZ chỉ trải trên các AZ của một Region nên không đưa dữ liệu tới gần người dùng ở Region khác.</>, en: <><b>Aurora Global Database</b> replicates at the storage layer to the Tokyo Region, usually with under 1 second of lag. Users in Japan read data from the nearest Region with low latency; Tokyo is also the standby Region. Aurora MySQL also supports <b>cross-Region read replicas</b> (a DB cluster in another Region, replicated with binlog, up to 5 clusters), with more lag than Global Database. Multi-AZ spans only the AZs of one Region, so it does not bring data closer to users in another Region.</> });
   });
 
   const failRegion = () => act(async (L) => {

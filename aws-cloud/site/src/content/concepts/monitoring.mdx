@@ -1,8 +1,8 @@
 ---
 title: "Giám sát và vận hành: CloudWatch, CloudTrail, Config, Systems Manager"
-lede: "Hệ thống ShopViet đã vận hành trong môi trường production và cần khả năng quan sát trạng thái hệ thống cũng như truy vết thao tác. Bài học trình bày năm nội dung: cấu hình alarm với độ trễ phát hiện đủ thấp, dùng alarm action để tự động khôi phục instance, bảo toàn log khi instance bị thay thế, truy vết thay đổi và đánh giá mức tuân thủ cấu hình, và vá hàng trăm instance mà không gây lỗi cho người dùng."
-minutes: 30
-scenes: 5
+lede: "Hệ thống ShopViet đã vận hành trong môi trường production và cần khả năng quan sát trạng thái hệ thống cũng như truy vết thao tác. Bài học trình bày năm nội dung: cấu hình alarm với độ trễ phát hiện đủ thấp, dùng alarm action để tự động khôi phục instance, bảo toàn log khi instance bị thay thế, truy vết thay đổi và đánh giá mức tuân thủ cấu hình, và vá hàng trăm instance mà không gây lỗi cho người dùng; phần cuối phân biệt các tính năng dễ nhầm lẫn."
+minutes: 35
+scenes: 6
 prerequisites: ["ec2", "asg", "iam"]
 docs:
   - title: "What is Amazon CloudWatch?"
@@ -49,6 +49,46 @@ docs:
     url: "https://docs.aws.amazon.com/outposts/latest/userguide/what-is-outposts.html"
   - title: "What is Snowball Edge?"
     url: "https://docs.aws.amazon.com/snowball/latest/developer-guide/whatisedge.html"
+  - title: "Working with CloudTrail Insights"
+    url: "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-insights-events-with-cloudtrail.html"
+  - title: "How CloudTrail works"
+    url: "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/how-cloudtrail-works.html"
+  - title: "Sending CloudTrail events to CloudWatch Logs"
+    url: "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/send-cloudtrail-events-to-cloudwatch-logs.html"
+  - title: "Creating a trail for an organization"
+    url: "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/creating-trail-organization.html"
+  - title: "CloudWatch alarms for AWS Trusted Advisor metrics"
+    url: "https://docs.aws.amazon.com/awssupport/latest/user/cloudwatch-metrics-ta.html"
+  - title: "Trusted Advisor service limits checks"
+    url: "https://docs.aws.amazon.com/awssupport/latest/user/service-limits.html"
+  - title: "ACM supported CloudWatch metrics"
+    url: "https://docs.aws.amazon.com/acm/latest/userguide/cloudwatch-metrics.html"
+  - title: "Amazon EventBridge support for ACM"
+    url: "https://docs.aws.amazon.com/acm/latest/userguide/supported-events.html"
+  - title: "Managed certificate renewal in ACM"
+    url: "https://docs.aws.amazon.com/acm/latest/userguide/managed-renewal.html"
+  - title: "Conformance packs for AWS Config"
+    url: "https://docs.aws.amazon.com/config/latest/developerguide/conformance-packs.html"
+  - title: "Managing conformance packs across an organization"
+    url: "https://docs.aws.amazon.com/config/latest/developerguide/conformance-pack-organization-apis.html"
+  - title: "What is AWS Control Tower?"
+    url: "https://docs.aws.amazon.com/controltower/latest/userguide/what-is-control-tower.html"
+  - title: "Systems Manager hybrid activations"
+    url: "https://docs.aws.amazon.com/systems-manager/latest/userguide/activations.html"
+  - title: "Managing nodes in hybrid and multicloud environments"
+    url: "https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-hybrid-multicloud.html"
+  - title: "Configure instance permissions required for Systems Manager"
+    url: "https://docs.aws.amazon.com/systems-manager/latest/userguide/setup-instance-permissions.html"
+  - title: "Use instance profiles (IAM)"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html"
+  - title: "AWS Systems Manager Parameter Store"
+    url: "https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html"
+  - title: "IAM database authentication for MariaDB, MySQL, and PostgreSQL"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.html"
+  - title: "AWS Systems Manager Session Manager"
+    url: "https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html"
+  - title: "Connect to a Linux instance using EC2 Instance Connect"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/connect-linux-inst-eic.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -63,6 +103,7 @@ import GuardrailSim from "../../components/scenes/monitoring/GuardrailSim.tsx";
 import PatchWindowSim from "../../components/scenes/monitoring/PatchWindowSim.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 
 <Story toc={[
   { href: "#s1", label: "1 · Metric và alarm" },
@@ -70,12 +111,13 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s3", label: "3 · Bảo toàn log" },
   { href: "#s4", label: "4 · Truy vết API và tuân thủ cấu hình" },
   { href: "#s5", label: "5 · Vá instance bằng Systems Manager" },
+  { href: "#s6", label: "6 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
 Hệ thống ShopViet đã có load balancer, Auto Scaling group, container và Lambda. Hệ thống đã vận hành ổn định, nhưng đội vận hành thường xuyên cần trả lời các câu hỏi: mức sử dụng CPU hiện tại là bao nhiêu, ai vừa xoá security group, log của instance ngày hôm trước được lưu ở đâu, khi nào thực hiện vá hệ điều hành. Bốn dịch vụ tương ứng với bốn nhóm câu hỏi này: **CloudWatch** (metric, log, alarm), **CloudTrail** (ai đã gọi API nào), **AWS Config** (cấu hình và mức tuân thủ), **Systems Manager** (thao tác trực tiếp trên các instance).
 </Story>
 
-<Scene id="s1" label="Phần 1/5" title="Độ trễ phát hiện của alarm" questions={["exam5_q20", "exam4_q25", "exam3_q15"]}>
+<Scene id="s1" label="Phần 1/6" title="Độ trễ phát hiện của alarm" questions={["exam5_q20", "exam4_q25", "exam3_q15"]}>
 
 Mỗi dịch vụ AWS gửi **metric** lên CloudWatch: CPU của EC2, số lần gọi của Lambda, CPU của một ECS service. Một **alarm** theo dõi một metric, so sánh với ngưỡng, và khi metric vượt ngưỡng trong khoảng thời gian đủ dài thì thực thi **action**: gửi thông báo qua SNS, scale một nhóm tài nguyên, hoặc thao tác trên EC2.
 
@@ -89,7 +131,7 @@ Lựa chọn metric phù hợp quan trọng tương đương lựa chọn ngư�
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/5" title="Tự động khôi phục instance bằng alarm action" questions={["exam3_q38", "exam3_q57", "exam5_q19", "exam4_q16"]}>
+<Scene id="s2" label="Phần 2/6" title="Tự động khôi phục instance bằng alarm action" questions={["exam3_q38", "exam3_q57", "exam5_q19", "exam4_q16"]}>
 
 Trang quản lý kho của ShopViet chạy trên **một** EC2 instance, quy mô chưa cần tới Auto Scaling group. Instance thỉnh thoảng gặp sự cố và việc khởi động lại thủ công ngoài giờ làm việc (ví dụ lúc 3h sáng) là không mong muốn. CloudWatch alarm có thể gọi trực tiếp bốn action của EC2: **stop**, **terminate**, **reboot**, **recover**, không cần Lambda hay script. Ngoài ra, với instance type được hỗ trợ, **simplified automatic recovery** được bật mặc định khi launch; CloudWatch action based recovery là cơ chế cấu hình thêm và không áp dụng cho instance thuộc Auto Scaling group.
 
@@ -101,19 +143,23 @@ EC2 có hai loại status check. **Instance status check** thất bại khi lỗ
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/5" title="Bảo toàn log khi instance bị thay thế" questions={["exam5_q33", "exam1_q61", "exam1_q27"]}>
+<Scene id="s3" label="Phần 3/6" title="Bảo toàn log khi instance bị thay thế" questions={["exam5_q33", "exam1_q61", "exam1_q27"]}>
 
 Auto Scaling group của ShopViet scale với tần suất cao, gần như mỗi ngày đều có instance mới thay thế. Một người dùng báo lỗi thanh toán xảy ra hai ngày trước, nhưng instance liên quan đã bị terminate. Trong một sự cố khác, một access key bị lộ được dùng để gọi API liên tục vào ban đêm. Hai sự cố có chung giải pháp: chuyển log ra khỏi instance và để CloudWatch xử lý log.
 
 <LogPipelineSim client:visible />
 
+Trail gửi event tới một S3 bucket, và có thể gửi thêm tới **CloudWatch Logs** và **EventBridge**; Kinesis không nằm trong các đích này. CloudTrail gửi log trung bình khoảng 5 phút sau lệnh gọi API (thời gian này không được đảm bảo). Ngưỡng cảnh báo trong tình huống trên đã được xác định trước (số lệnh gọi bị `AccessDenied`), do đó metric filter và alarm là cơ chế trực tiếp nhất.
+
+**CloudTrail Insights** giải quyết bài toán khác, khi chưa biết trước ngưỡng: Insights phân tích management event và data event trong quá khứ để xác lập **baseline** của tốc độ gọi API và tỷ lệ lỗi API, sau đó sinh **Insights event** khi hoạt động hiện tại lệch khỏi baseline. Insights tính phí riêng; lần đầu bật trên một trail, CloudTrail có thể mất tới 36 giờ mới bắt đầu gửi Insights event. Insights event cũng có thể được gửi vào CloudWatch Logs cùng với các event khác của trail.
+
 Một yêu cầu khác liên quan tới vị trí triển khai: ShopViet mở rộng sang mảng ví điện tử, và quy định bắt buộc dữ liệu cùng workload phải nằm trong data center của công ty. Đội kỹ thuật vẫn cần Kubernetes do AWS quản lý, cùng IAM và CloudWatch như trên cloud. Giải pháp là **AWS Outposts**: AWS lắp đặt Outpost tại site của khách hàng, mở rộng hạ tầng, dịch vụ, API và công cụ của AWS tới đó; EC2, EBS, ECS, RDS và Amazon EKS chạy tại chỗ, còn AWS vận hành và giám sát capacity này như một phần của Region. Direct Connect và Local Zone vẫn đặt workload trên hạ tầng của AWS; Snowball Edge là thiết bị chuyển dữ liệu và xử lý tại biên, và hiện không còn cung cấp cho khách hàng mới.
 
-<Takeaway>Log phải được chuyển ra khỏi instance trước khi instance bị terminate: cài đặt CloudWatch agent để gửi log lên CloudWatch Logs. Cảnh báo gần thời gian thực về API call bất thường: CloudTrail gửi vào CloudWatch Logs, metric filter đếm lỗi, alarm gửi thông báo qua SNS. Dữ liệu bắt buộc lưu tại chỗ nhưng vẫn cần dịch vụ AWS: Outposts.</Takeaway>
+<Takeaway>Log phải được chuyển ra khỏi instance trước khi instance bị terminate: cài đặt CloudWatch agent để gửi log lên CloudWatch Logs. Cảnh báo gần thời gian thực về API call bất thường: CloudTrail gửi vào CloudWatch Logs, metric filter đếm lỗi, alarm gửi thông báo qua SNS. Đích của trail: S3, CloudWatch Logs, EventBridge (không có Kinesis). Phát hiện tốc độ gọi API hoặc tỷ lệ lỗi lệch khỏi baseline mà không cần đặt ngưỡng: CloudTrail Insights (tính phí riêng). Dữ liệu bắt buộc lưu tại chỗ nhưng vẫn cần dịch vụ AWS: Outposts.</Takeaway>
 
 </Scene>
 
-<Scene id="s4" label="Phần 4/5" title="Truy vết thao tác và đánh giá tuân thủ cấu hình" questions={["exam1_q16", "exam3_q29", "exam2_q43", "exam2_q9"]}>
+<Scene id="s4" label="Phần 4/6" title="Truy vết thao tác và đánh giá tuân thủ cấu hình" questions={["exam1_q16", "exam3_q29", "exam2_q43", "exam2_q9"]}>
 
 Sau một sự cố, đội vận hành ShopViet cần trả lời nhiều câu hỏi; mỗi câu hỏi chỉ một dịch vụ cung cấp được câu trả lời. Chọn từng câu hỏi và gửi truy vấn:
 
@@ -127,11 +173,17 @@ Phát hiện vi phạm khác với ngăn chặn hoặc tự động khắc phụ
 
 <GuardrailSim client:visible />
 
-<Takeaway>Ai gọi API nào, vào thời điểm nào: CloudTrail (thao tác IAM là management event, được trail ghi theo mặc định). Cấu hình tài nguyên theo thời gian và mức tuân thủ: AWS Config. Đảm bảo trail luôn hoạt động kể cả khi developer có quyền root: SCP. Chứng chỉ import vào ACM không được tự động gia hạn: managed rule acm-certificate-expiration-check cảnh báo trước. Config rule kết hợp remediation để tự động khắc phục.</Takeaway>
+Trail `org-audit-trail` trong tình huống trên có thể được tạo dưới dạng **organization trail**. Organization trail chỉ được tạo từ **management account** hoặc account **delegated administrator** của CloudTrail; trail tự động áp dụng cho mọi account thành viên, kể cả account gia nhập organization sau này. User trong account thành viên nhìn thấy organization trail nhưng không xoá, không bật tắt ghi log và không sửa đổi được trail này. Ngược lại, một trail do developer tạo ngay trong account của mình chỉ là trail thông thường của account đó, và root user có thể xoá nó; vì vậy với trail thuộc account thành viên, SCP vẫn là lớp bảo vệ cần thiết.
+
+Với chứng chỉ, ACM cung cấp thêm hai nguồn tín hiệu ngoài Config rule. Metric **`DaysToExpiry`** (namespace `AWS/CertificateManager`, dimension `CertificateArn`) được ACM gửi lên CloudWatch hai lần mỗi ngày cho mọi chứng chỉ cho tới khi hết hạn; vì metric gắn với từng ARN, mỗi chứng chỉ cần một alarm riêng, và mỗi chứng chỉ import thêm sau này cần thêm một alarm mới. EventBridge nhận event **ACM Certificate Approaching Expiration** hằng ngày, bắt đầu từ 45 ngày trước khi hết hạn với chứng chỉ private hoặc import và 30 ngày với chứng chỉ public. Managed rule `acm-certificate-expiration-check` đánh giá mọi chứng chỉ trong account theo cùng một ngưỡng và lưu lịch sử tuân thủ, không cần tạo alarm cho từng chứng chỉ.
+
+Khi cần áp dụng cùng một bộ Config rule cho nhiều account, ShopViet dùng **conformance pack**: tập hợp Config rule và remediation action, viết trong một template YAML, triển khai như một đơn vị trong một account và Region hoặc trên toàn bộ organization. Khi triển khai từ management account, account thành viên không sửa đổi được các rule và remediation action đó. Conformance pack chỉ đánh giá và khắc phục cấu hình; nó không tạo account và không dựng hạ tầng mạng dùng chung.
+
+<Takeaway>Ai gọi API nào, vào thời điểm nào: CloudTrail (thao tác IAM là management event, được trail ghi theo mặc định). Cấu hình tài nguyên theo thời gian và mức tuân thủ: AWS Config. Đảm bảo trail luôn hoạt động kể cả khi developer có quyền root: SCP. Organization trail chỉ tạo được từ management account hoặc delegated administrator; account thành viên không sửa được trail này. Chứng chỉ import vào ACM không được tự động gia hạn: managed rule acm-certificate-expiration-check cảnh báo trước (metric DaysToExpiry cần một alarm cho mỗi chứng chỉ). Config rule kết hợp remediation để tự động khắc phục; conformance pack triển khai một bộ rule và remediation cho cả organization.</Takeaway>
 
 </Scene>
 
-<Scene id="s5" label="Phần 5/5" title="Vá hàng trăm instance mà không gián đoạn dịch vụ" questions={["exam3_q6", "exam5_q34"]}>
+<Scene id="s5" label="Phần 5/6" title="Vá hàng trăm instance mà không gián đoạn dịch vụ" questions={["exam3_q6", "exam5_q34"]}>
 
 ShopViet có hơn 200 EC2 instance; mỗi tháng đều có bản vá bảo mật cho hệ điều hành. **Systems Manager** thực hiện việc này thông qua **SSM Agent** chạy trên instance: Patch Manager vá theo lịch, Run Command thực thi lệnh trên cả nhóm instance, Automation thực thi runbook nhiều bước. Bước đầu tiên là cấp quyền để agent giao tiếp với Systems Manager. Các instance đã có IAM role riêng để truy cập RDS và Secrets Manager:
 
@@ -141,26 +193,73 @@ ShopViet có hơn 200 EC2 instance; mỗi tháng đều có bản vá bảo mậ
       { id: "ssm", x: 20, y: 70, w: 170, label: "Systems Manager", sub: "Patch Manager", kind: "net" },
       { id: "ec2", x: 290, y: 70, w: 190, label: "200 EC2", sub: "role ứng dụng: RDS, Secrets", kind: "ec2" },
       { id: "role", x: 560, y: 10, w: 170, label: "Role mới (gộp quyền)", kind: "warn" },
+      { id: "hyb", x: 560, y: 90, w: 170, label: "Hybrid Activation", sub: "role thứ hai", kind: "warn" },
       { id: "dhmc", x: 550, y: 170, w: 170, label: "Default Host Management", sub: "Quick Setup", kind: "edge" },
     ],
     options: [
-      { name: "Cài agent, cron trên từng instance", verdict: "bad", hide: ["role", "dhmc"],
+      { name: "Cài agent, cron trên từng instance", verdict: "bad", hide: ["role", "dhmc", "hyb"],
         flows: [{ path: ["ec2", "ssm"], tone: "bad", label: "không tập trung" }],
         text: "Mỗi instance tự vá theo lịch riêng, 200 lịch cron phải được theo dõi thủ công. Không xác định được instance nào đã được vá và instance nào chưa." },
-      { name: "Thay IAM role của instance", verdict: "bad", hide: ["dhmc"],
+      { name: "Thay IAM role của instance", verdict: "bad", hide: ["dhmc", "hyb"],
         flows: [{ path: ["role", "ec2"], tone: "bad", label: "gỡ role hiện tại" }, { path: ["ssm", "ec2"], tone: "neutral" }],
         text: "Gỡ role cũ và gắn role mới có quyền gộp: thao tác trên từng instance, và ứng dụng có thể mất quyền đọc Secrets Manager trong quá trình thay đổi." },
-      { name: "Bật Default Host Management", verdict: "good", hide: ["role"],
+      { name: "Gắn thêm role qua Hybrid Activation", verdict: "bad", hide: ["role", "dhmc"],
+        flows: [{ path: ["hyb", "ec2"], tone: "bad", label: "role thứ hai" }],
+        text: "Không thực hiện được. Một instance profile chỉ chứa **một** IAM role, và giới hạn này không tăng được; EC2 instance không thể nhận đồng thời role ứng dụng và một role thứ hai. **Hybrid activation** dùng để đăng ký máy **không phải EC2** (server on-premises, edge device, VM ở cloud khác) làm managed node: tạo activation, nhận activation code và ID, rồi cài SSM Agent kèm hai giá trị này trên từng máy." },
+      { name: "Bật Default Host Management", verdict: "good", hide: ["role", "hyb"],
         flows: [{ path: ["dhmc", "ec2"], tone: "good", label: "quyền cho SSM Agent" }, { path: ["ssm", "ec2"], tone: "good", label: "vá theo lịch" }],
         text: "**Default Host Management Configuration** (bật trong Fleet Manager, hoặc bằng Quick Setup cho toàn organization) tạo và áp dụng một IAM role mặc định để Systems Manager quản lý mọi EC2 instance trong account và Region, **không cần tạo hay thay instance profile**. Điều kiện: instance dùng IMDSv2, SSM Agent 3.2.582.0 trở lên, và role hiện có của instance không cho phép `ssm:UpdateInstanceInformation` (nếu có, agent dùng quyền của instance profile). Instance trở thành managed node, được Patch Manager quét và vá theo lịch." },
     ] },
 ]} />
 
+Cách cấp quyền theo từng instance vẫn được hỗ trợ: gắn managed policy **`AmazonSSMManagedInstanceCore`** vào role mà instance profile đang dùng (có thể thêm vào role hiện có, không cần thay role). Systems Manager khuyến nghị cấp quyền ở cấp account bằng Default Host Management Configuration khi điều kiện cho phép, vì không phải sửa từng role. Sau khi bật, instance có thể mất tới 30 phút để dùng thông tin xác thực của role mặc định, và cấu hình phải được bật riêng ở từng Region.
+
 Trong đợt vá trước, mọi bản vá đều báo thành công nhưng người dùng vẫn gặp lỗi và timeout, do instance reboot trong khi ALB vẫn tiếp tục định tuyến request tới. So sánh hai phương án vá trong cùng một **Maintenance Window**:
 
 <PatchWindowSim client:visible />
 
-<Takeaway>Quản lý mọi EC2 instance bằng Systems Manager mà không cần tạo instance profile: Default Host Management Configuration (yêu cầu IMDSv2, SSM Agent 3.2.582.0 trở lên). Vá instance phía sau load balancer: Automation runbook AWSEC2-PatchLoadBalancerInstance (gỡ khỏi load balancer hoặc target group, chờ connection draining, chạy AWS-RunPatchBaseline, gắn lại), thực thi trong Maintenance Window.</Takeaway>
+<Takeaway>Quản lý mọi EC2 instance bằng Systems Manager mà không cần tạo instance profile: Default Host Management Configuration (yêu cầu IMDSv2, SSM Agent 3.2.582.0 trở lên). Cấp quyền theo từng instance: thêm AmazonSSMManagedInstanceCore vào role hiện có (mỗi instance profile chỉ chứa một role). Hybrid activation chỉ dành cho máy không phải EC2. Vá instance phía sau load balancer: Automation runbook AWSEC2-PatchLoadBalancerInstance (gỡ khỏi load balancer hoặc target group, chờ connection draining, chạy AWS-RunPatchBaseline, gắn lại), thực thi trong Maintenance Window.</Takeaway>
+
+</Scene>
+
+<Scene id="s6" label="Phần 6/6" title="Phân biệt nhanh: các tính năng dễ nhầm trong giám sát và vận hành" questions={["exam1_q61", "exam2_q9", "exam2_q43", "exam3_q6", "exam4_q39", "exam5_q31", "exam6_q41"]}>
+
+Một số tính năng của CloudTrail, Config, Systems Manager và Trusted Advisor có tên gần với giải pháp đúng nhưng phục vụ mục đích khác. Chọn từng mục để xem phạm vi sử dụng và phương án phù hợp với tình huống của ShopViet.
+
+<QuickCompare client:visible items={[
+  { name: "Trusted Advisor: Service limits",
+    use: "Nhóm check **Service limits** so sánh mức sử dụng với quota của từng dịch vụ theo Region: vàng khi đạt 80%, đỏ khi đạt 100%. Khi check được làm mới, Trusted Advisor gửi metric (ví dụ `ServiceLimitUsage`) lên CloudWatch ở Region US East (N. Virginia), và alarm có thể theo dõi các metric này.",
+    notHere: "Đội bảo mật cần cảnh báo gần thời gian thực khi có nhiều lệnh gọi API trái phép. Check service limits đo mức sử dụng quota, không đếm lệnh gọi bị từ chối; dữ liệu dựa trên snapshot và có thể mất tới 24 giờ để phản ánh thay đổi.",
+    instead: "CloudTrail gửi event vào CloudWatch Logs, metric filter đếm `errorCode`, alarm gửi thông báo qua SNS (phần 3)." },
+  { name: "CloudTrail Insights",
+    use: "Phân tích management event và data event để xác lập baseline của tốc độ gọi API và tỷ lệ lỗi API; sinh Insights event khi hoạt động lệch khỏi baseline. Phù hợp khi chưa biết trước ngưỡng bất thường.",
+    notHere: "ShopViet đã biết chính xác cần theo dõi mã lỗi nào và ngưỡng nào. Insights tính phí riêng, và lần đầu bật có thể mất tới 36 giờ mới bắt đầu gửi Insights event.",
+    instead: "Metric filter trên log group của trail và alarm theo ngưỡng cố định. Trail gửi event tới S3, CloudWatch Logs và EventBridge; Kinesis không phải đích của trail." },
+  { name: "ACM: metric DaysToExpiry",
+    use: "ACM gửi metric `DaysToExpiry` (namespace `AWS/CertificateManager`, dimension `CertificateArn`) hai lần mỗi ngày cho mọi chứng chỉ cho tới khi hết hạn. EventBridge cũng nhận event ACM Certificate Approaching Expiration hằng ngày, từ 45 ngày trước hạn với chứng chỉ import.",
+    notHere: "Mỗi alarm theo dõi một chứng chỉ (một `CertificateArn`); mỗi lần import chứng chỉ mới phải tạo thêm alarm. Chứng chỉ do ACM cấp được ACM tự động gia hạn khi đủ điều kiện; chứng chỉ import thì không.",
+    instead: "Managed rule `acm-certificate-expiration-check` (`daysToExpiration = 30`) đánh giá mọi chứng chỉ trong account, thông báo qua EventBridge và SNS (phần 4)." },
+  { name: "Organization trail tạo trong account developer",
+    use: "Organization trail ghi event của management account và mọi account thành viên, tự động áp dụng cho account mới gia nhập. Account thành viên nhìn thấy trail nhưng không sửa, không bật tắt và không xoá được.",
+    notHere: "Organization trail chỉ tạo được từ management account hoặc delegated administrator, không tạo được từ bên trong account developer. Trail do developer tự tạo trong account của mình là trail thông thường, root user có thể xoá.",
+    instead: "Gắn SCP chặn các thao tác sửa đổi CloudTrail vào OU của developer (phần 4); organization trail, nếu dùng, được tạo từ management account." },
+  { name: "AWS Config conformance pack",
+    use: "Tập hợp Config rule và remediation action trong một template YAML, triển khai như một đơn vị cho một account và Region hoặc cho cả organization; khi triển khai từ management account, account thành viên không sửa được các rule.",
+    notHere: "Yêu cầu là tạo account dev, test, production có sẵn guardrail và quản lý subnet, gateway tập trung. Conformance pack chỉ đánh giá và khắc phục cấu hình; kết hợp nó với một VPC riêng cho mỗi account làm lặp lại NAT gateway, internet gateway và route table.",
+    instead: "AWS Control Tower dựng landing zone, tạo account qua Account Factory và áp dụng control; account mạng chia sẻ subnet của VPC trung tâm bằng AWS RAM." },
+  { name: "Systems Manager hybrid activation",
+    use: "Đăng ký máy không phải EC2 (server on-premises, edge device, VM ở cloud khác) làm managed node: tạo activation, nhận activation code và ID, cài SSM Agent kèm hai giá trị này.",
+    notHere: "Các máy cần vá là EC2 instance. Hybrid activation không gắn role cho EC2, và một instance profile chỉ chứa một IAM role.",
+    instead: "Default Host Management Configuration, hoặc thêm `AmazonSSMManagedInstanceCore` vào role hiện có của instance (phần 5)." },
+  { name: "SSM Parameter Store",
+    use: "Kho cấu hình tập trung dạng tham số có tên: String, StringList, SecureString (mã hoá bằng AWS KMS). Phù hợp với AMI ID, endpoint URL, biến môi trường. Parameter Store không có cơ chế xoay vòng thông tin xác thực; với mật khẩu cơ sở dữ liệu, AWS khuyến nghị Secrets Manager.",
+    notHere: "Lambda cần thông tin xác thực ngắn hạn để kết nối RDS PostgreSQL. Lưu mật khẩu vào Parameter Store và tự viết logic xoay vòng vẫn là xác thực bằng mật khẩu dài hạn.",
+    instead: "IAM database authentication: Lambda dùng IAM role của function để tạo authentication token (hiệu lực 15 phút) thay cho mật khẩu." },
+  { name: "Session Manager",
+    use: "Mở shell trên managed node từ console hoặc AWS CLI mà không cần mở inbound port, không cần bastion host và không cần quản lý SSH key; quyền truy cập kiểm soát bằng IAM policy, hoạt động được ghi lại qua CloudTrail, S3 hoặc CloudWatch Logs. Instance phải chạy SSM Agent và là managed node.",
+    notHere: "Đội DevOps cần phiên **SSH** tạm thời từ Console tới instance đã có public IP, bằng khoá chỉ dùng cho phiên đó.",
+    instead: "EC2 Instance Connect: API đẩy SSH public key vào instance metadata, khoá tồn tại 60 giây; mọi yêu cầu kết nối được ghi vào CloudTrail; không tính phí thêm." },
+]} />
 
 </Scene>
 
@@ -176,8 +275,8 @@ Phân loại từng tác vụ của ShopViet vào dịch vụ đáp ứng tác v
   ]}
   cards={[
     ["Metric chu kỳ 1 phút cho EC2", "cw"], ["Tự động reboot instance khi status check thất bại", "cw"], ["Tập trung log của mọi instance", "cw"],
-    ["Ai đã xoá security group", "trail"], ["Ghi mọi IAM action của admin mới", "trail"], ["Nguồn event cho metric filter AccessDenied", "trail"],
-    ["Cấu hình security group tại tuần trước", "config"], ["Chứng chỉ import sắp hết hạn", "config"], ["Tự động đóng cổng SSH mở ra Internet", "config"],
+    ["Ai đã xoá security group", "trail"], ["Ghi mọi IAM action của admin mới", "trail"], ["Nguồn event cho metric filter AccessDenied", "trail"], ["Phát hiện tốc độ gọi API lệch khỏi baseline", "trail"],
+    ["Cấu hình security group tại tuần trước", "config"], ["Chứng chỉ import sắp hết hạn", "config"], ["Tự động đóng cổng SSH mở ra Internet", "config"], ["Một bộ rule và remediation cho mọi account", "config"],
   ]}
 />
 
@@ -204,6 +303,14 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Đổi target group sang kiểu instance ID", "Automation runbook AWSEC2-PatchLoadBalancerInstance trong Maintenance Window", "Phân tích bằng Logs Insights rồi gỡ instance khỏi ALB thủ công"],
     a: 1,
     why: "Runbook gỡ instance khỏi load balancer hoặc target group, chờ hết thời gian connection draining, gọi AWS-RunPatchBaseline để vá, rồi gắn instance trở lại. Maintenance Window thực thi runbook đúng lịch; đặt concurrency 1 để vá lần lượt từng instance." },
+  { q: "Các EC2 instance đã có role ứng dụng (truy cập RDS, Secrets Manager). Một đề xuất là gắn thêm role thứ hai chứa AmazonSSMManagedInstanceCore bằng Systems Manager hybrid activation. Nhận định nào đúng?",
+    opts: ["Khả thi, vì hybrid activation cho phép gắn nhiều role", "Không khả thi: instance profile chỉ chứa một role, và hybrid activation dành cho máy không phải EC2", "Khả thi nếu instance dùng IMDSv1"],
+    a: 1,
+    why: "Mỗi instance profile chỉ chứa một IAM role và giới hạn này không tăng được. Hybrid activation đăng ký server on-premises, edge device hoặc VM ở cloud khác. Với EC2: Default Host Management Configuration, hoặc thêm AmazonSSMManagedInstanceCore vào role hiện có." },
+  { q: "ShopViet cần cảnh báo trong vài phút khi số lệnh gọi API bị AccessDenied vượt 10 lần trong 5 phút. Phương án nào trực tiếp nhất?",
+    opts: ["Bật CloudTrail Insights", "Metric filter trên log group của trail và CloudWatch alarm", "Alarm trên metric service limits của Trusted Advisor"],
+    a: 1,
+    why: "Ngưỡng đã biết trước, nên metric filter đếm errorCode và alarm theo ngưỡng là đủ. Insights phát hiện độ lệch so với baseline, tính phí riêng và có thể mất tới 36 giờ để bắt đầu; Trusted Advisor đo mức sử dụng quota." },
 ]} />
 
 </Scene>

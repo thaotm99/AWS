@@ -194,6 +194,31 @@ const scenarios = (L: Lang): PScenario[] => [
           ], ok: false, result: L({ vi: "Giải pháp hoạt động, nhưng dữ liệu ít truy cập phải chịu chi phí của kho dữ liệu hiệu năng cao.", en: "It works, but infrequently accessed data bears the cost of a high-performance data warehouse." }) },
   },
   {
+    name: L({ vi: "Đồng bộ liên tục Oracle tại văn phòng sang RDS", en: "Continuously sync on-premises Oracle to RDS" }),
+    request: L({ vi: "Dữ liệu hiện có + mọi giao dịch mới → RDS for Oracle (khối lượng thay đổi biến động)", en: "Existing data + every new transaction → RDS for Oracle (fluctuating change volume)" }),
+    toggle: { label: L({ vi: "Sử dụng AWS DMS Serverless (full load + ongoing replication)", en: "Use AWS DMS Serverless (full load + ongoing replication)" }), initial: false },
+    action: L({ vi: "Đồng bộ", en: "Sync" }),
+    layout: (dms) => ({
+      viewBox: VB,
+      aria: L({ vi: "Database Oracle tại văn phòng được sao chép sang Amazon RDS for Oracle bằng Glue job hoặc DMS Serverless", en: "An on-premises Oracle database is copied to Amazon RDS for Oracle by a Glue job or by DMS Serverless" }),
+      nodes: [
+        { id: "src", x: 100, y: Y, w: 160, l1: "Oracle", l2: "on-premises" },
+        { id: "tool", x: 400, y: Y, w: 220, l1: dms ? "AWS DMS Serverless" : "AWS Glue job", l2: dms ? L({ vi: "tự cấp phát capacity", en: "provisions capacity itself" }) : L({ vi: "ETL theo lịch hoặc trigger", en: "ETL on a schedule or trigger" }) },
+        { id: "rds", x: 700, y: Y, w: 170, l1: "RDS for Oracle" },
+      ],
+      links: [["src", "tool"], ["tool", "rds"]],
+    }),
+    run: (dms) => dms
+      ? { steps: [
+            { at: "tool", state: "pass", tag: "FULL LOAD", msg: L({ vi: "DMS sao chép dữ liệu hiện có, sau đó **replicate các thay đổi liên tục** để nguồn và đích luôn đồng bộ.", en: "DMS copies the existing data, then **replicates ongoing changes** to keep source and target in sync." }) },
+            { at: "rds", state: "pass", msg: L({ vi: "DMS Serverless phân tích tải, tự cấp phát và co giãn capacity; không phải chọn kích thước replication instance.", en: "DMS Serverless analyzes the workload and provisions and scales capacity automatically; no replication instance to size." }) },
+          ], ok: true, back: false, result: L({ vi: "Di chuyển và đồng bộ liên tục giữa hai database: AWS DMS (chi tiết trong bài Storage Gateway, Snow, DataSync, DMS).", en: "Migrating and continuously syncing between two databases: AWS DMS (details in the Storage Gateway, Snow, DataSync, DMS lesson)." }) }
+      : { steps: [
+            { at: "tool", state: "change", tag: L({ vi: "THEO LƯỢT", en: "BATCH" }), msg: L({ vi: "Glue là dịch vụ ETL: job chạy theo lịch, theo sự kiện hoặc theo yêu cầu, mỗi lượt đọc dữ liệu tại thời điểm chạy rồi biến đổi và ghi ra đích.", en: "Glue is an ETL service: jobs run on a schedule, on an event or on demand, and each run reads the data as of that moment, transforms it and writes it out." }) },
+            { at: "rds", state: "wait", msg: L({ vi: "Giao dịch phát sinh giữa hai lượt chạy chưa có ở đích; phải tự xây dựng cơ chế phát hiện thay đổi.", en: "Transactions made between runs are not yet in the target; you would have to build change detection yourself." }) },
+          ], ok: false, back: false, result: L({ vi: "Glue phù hợp với biến đổi dữ liệu cho phân tích. Sao chép dữ liệu cùng các thay đổi liên tục giữa hai database là chức năng của AWS DMS.", en: "Glue fits transforming data for analytics. Copying data plus ongoing changes between two databases is what AWS DMS does." }) },
+  },
+  {
     name: L({ vi: "Redshift UNLOAD sang bucket của đối tác", en: "Redshift UNLOAD to a partner’s bucket" }),
     request: "UNLOAD ('SELECT …') TO 's3://doi-tac-bao-cao/'",
     toggle: { label: L({ vi: "Bucket đối tác cấu hình Object Ownership = Bucket owner enforced", en: "Partner bucket uses Object Ownership = Bucket owner enforced" }), initial: false },

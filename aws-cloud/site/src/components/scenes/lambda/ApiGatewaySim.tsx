@@ -3,7 +3,8 @@ import { useLang } from "../../../lib/lang";
 
 // A request to ShopViet's public API passes the checks API Gateway runs before any
 // code on a REST API: resource policy (IP ranges), Cognito user pool authorizer, usage plan + API key, cache. Then
-// it reaches Lambda, or goes straight into SQS for slow work.
+// it reaches Lambda, or goes straight into SQS for slow work, or into Kinesis Data Streams for
+// courier locations (apigateway/latest/developerguide/integrating-api-with-aws-services-kinesis.html).
 
 type Lang = ReturnType<typeof useLang>;
 
@@ -65,8 +66,44 @@ const scenarios = (L: Lang): PScenario[] => {
       ? { steps: [{ at: "ip", state: "pass", msg: L({ vi: "IP thuộc dải được phép trong **resource policy**.", en: "The IP is in a range allowed by the **resource policy**." }) }, NO_JWT, NO_PLAN, NO_CACHE,
             { at: "fn", state: "pass", msg: L({ vi: "Yêu cầu hoàn tiền được xử lý.", en: "The refund request is processed." }) }],
           ok: true, result: L({ vi: "200 OK: chỉ mạng văn phòng gọi được API quản trị.", en: "200 OK: only the office network can call the admin API." }) }
-      : { steps: [{ at: "ip", state: "block", flash: "403", msg: L({ vi: "Resource policy từ chối mọi IP ngoài dải `203.0.113.0/24`.", en: "The resource policy denies every IP outside `203.0.113.0/24`." }) }],
+      : { steps: [{ at: "ip", state: "block", flash: "403", msg: L({ vi: "Resource policy từ chối mọi IP ngoài dải `203.0.113.0/24` (điều kiện `aws:SourceIp`). API Gateway là dịch vụ được quản lý, API không nằm trong subnet nào của ShopViet nên không có security group để gắn; giới hạn theo IP thực hiện bằng resource policy.", en: "The resource policy denies every IP outside `203.0.113.0/24` (the `aws:SourceIp` condition). API Gateway is a managed service: the API does not sit in any ShopViet subnet, so there is no security group to attach; IP restrictions are done with the resource policy." }) }],
           ok: true, result: L({ vi: "403 Forbidden: request bị chặn trước khi bất kỳ dòng mã nào được thực thi.", en: "403 Forbidden: the request is blocked before any code runs." }) },
+  },
+  {
+    name: L({ vi: "Shipper gửi vị trí liên tục", en: "Couriers stream their locations" }),
+    request: L({ vi: "PUT /streams/vi-tri/record  { shipper: \"S-1024\", lat, lon }", en: "PUT /streams/locations/record  { courier: \"S-1024\", lat, lon }" }),
+    from: L({ vi: "nguồn: ứng dụng shipper, mỗi 5 giây", en: "source: courier app, every 5 seconds" }),
+    toggle: { label: L({ vi: "API tích hợp trực tiếp Kinesis Data Streams (AWS service integration)", en: "The API integrates directly with Kinesis Data Streams (AWS service integration)" }), initial: false },
+    layout: (direct) => ({
+      viewBox: "0 40 840 225",
+      aria: L({ vi: "Ứng dụng shipper gửi vị trí qua REST API; API chuyển dữ liệu vào Kinesis Data Streams để Managed Service for Apache Flink phân tích, hoặc chỉ gọi Lambda",
+        en: "The courier app sends locations through a REST API; the API puts the data into Kinesis Data Streams for Managed Service for Apache Flink to analyze, or only invokes Lambda" }),
+      nodes: direct ? [
+        { id: "c", x: 52, y: 155, l1: "Shipper", user: true },
+        { id: "apigw", x: 210, y: 155, w: 150, l1: "REST API", l2: "AWS service integration" },
+        { id: "kds", x: 400, y: 155, w: 150, l1: "Kinesis Data Streams", l2: "PutRecord" },
+        { id: "flink", x: 590, y: 155, w: 150, l1: "Managed Service", l2: "for Apache Flink" },
+        { id: "dash", x: 760, y: 155, w: 120, l1: L({ vi: "Bảng điều phối", en: "Dispatch board" }) },
+      ] : [
+        { id: "c", x: 52, y: 155, l1: "Shipper", user: true },
+        { id: "apigw", x: 230, y: 155, w: 150, l1: "REST API", l2: "Lambda proxy" },
+        { id: "fn", x: 470, y: 155, w: 170, l1: "Lambda", l2: L({ vi: "nhận request, trả 200", en: "receives, returns 200" }) },
+        { id: "dash", x: 720, y: 155, w: 150, l1: L({ vi: "Bảng điều phối", en: "Dispatch board" }) },
+      ],
+      links: direct ? [["c", "apigw"], ["apigw", "kds"], ["kds", "flink"], ["flink", "dash"]] : [["c", "apigw"], ["apigw", "fn"], ["fn", "dash"]],
+    }),
+    run: (direct) => direct
+      ? { steps: [
+            { at: "apigw", state: "change", tag: "PutRecord", msg: L({ vi: "Integration type **AWS service**: API Gateway gọi thẳng action `PutRecord` của Kinesis bằng IAM role cấp cho API; không có Lambda trung gian.", en: "Integration type **AWS service**: API Gateway calls the Kinesis `PutRecord` action directly with an IAM role granted to the API; there is no Lambda in between." }) },
+            { at: "kds", state: "pass", msg: L({ vi: "Bản ghi vị trí được lưu vào stream, sẵn sàng cho consumer đọc.", en: "The location record is stored in the stream, ready for consumers to read." }) },
+            { at: "flink", state: "pass", msg: L({ vi: "**Amazon Managed Service for Apache Flink** (tên cũ: Kinesis Data Analytics) phân tích stream liên tục theo thời gian thực.", en: "**Amazon Managed Service for Apache Flink** (formerly Kinesis Data Analytics) analyzes the stream continuously in real time." }) },
+            { at: "dash", state: "pass", msg: L({ vi: "Vị trí và thời gian giao dự kiến được cập nhật liên tục.", en: "Locations and estimated delivery times update continuously." }) },
+          ], ok: true, back: false, result: L({ vi: "REST API tiếp nhận dữ liệu, Kinesis Data Streams lưu stream, Flink phân tích theo thời gian thực. Không có máy chủ hay mã chuyển tiếp cần duy trì.", en: "The REST API takes in the data, Kinesis Data Streams stores the stream, and Flink analyzes it in real time. No servers or forwarding code to maintain." }) }
+      : { steps: [
+            { at: "apigw", state: "pass", msg: L({ vi: "Chuyển request tới Lambda.", en: "Forwards the request to Lambda." }) },
+            { at: "fn", state: "change", tag: L({ vi: "KHÔNG LƯU", en: "NOT STORED" }), msg: L({ vi: "Lambda xử lý từng request rồi kết thúc; bản thân Lambda không lưu trữ dữ liệu và không phân tích stream.", en: "Lambda handles each request and finishes; Lambda itself neither stores the data nor analyzes the stream." }) },
+            { at: "dash", state: "block", msg: L({ vi: "Không có dòng dữ liệu vị trí nào để phân tích.", en: "There is no location stream to analyze." }) },
+          ], ok: false, back: false, result: L({ vi: "Cần nơi lưu và phân tích stream: bật tích hợp trực tiếp với Kinesis Data Streams.", en: "A place to store and analyze the stream is needed: turn on the direct integration with Kinesis Data Streams." }) },
   },
   {
     name: L({ vi: "Người dùng đã đăng nhập truy xuất đơn hàng", en: "Signed-in user fetches orders" }),

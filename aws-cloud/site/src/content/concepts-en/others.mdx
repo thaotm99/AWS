@@ -1,8 +1,8 @@
 ---
 title: "Cost management, AI services and other services"
 lede: "ShopViet has grown: AWS costs need tight control, and the volume of user data exceeds what can be processed manually. This lesson shows how to control costs with AWS Budgets, Cost Optimization Hub, Compute Optimizer and Savings Plans; how to use Comprehend, Transcribe and Textract without an ML team; and introduces AWS Batch and AWS Outposts."
-minutes: 20
-scenes: 4
+minutes: 25
+scenes: 5
 prerequisites: ["iam", "ec2", "lambda", "containers"]
 docs:
   - title: "Managing your costs with AWS Budgets"
@@ -45,6 +45,36 @@ docs:
     url: "https://docs.aws.amazon.com/quicksight/latest/user/welcome.html"
   - title: "Using time to live (TTL) in DynamoDB"
     url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/TTL.html"
+  - title: "What is Amazon Rekognition?"
+    url: "https://docs.aws.amazon.com/rekognition/latest/dg/what-is.html"
+  - title: "What is Amazon Translate?"
+    url: "https://docs.aws.amazon.com/translate/latest/dg/what-is.html"
+  - title: "Supported languages (Amazon Translate)"
+    url: "https://docs.aws.amazon.com/translate/latest/dg/what-is-languages.html"
+  - title: "What is Amazon Polly?"
+    url: "https://docs.aws.amazon.com/polly/latest/dg/what-is.html"
+  - title: "What is Amazon SageMaker AI?"
+    url: "https://docs.aws.amazon.com/sagemaker/latest/dg/whatis.html"
+  - title: "Services in full shutdown (AWS General Reference)"
+    url: "https://docs.aws.amazon.com/general/latest/gr/full_shutdown_services.html"
+  - title: "Exploring alternatives and migrating data from Amazon Lookout for Vision"
+    url: "https://aws.amazon.com/blogs/machine-learning/exploring-alternatives-and-seamlessly-migrating-data-from-amazon-lookout-for-vision/"
+  - title: "What is Amazon Lightsail?"
+    url: "https://docs.aws.amazon.com/lightsail/latest/userguide/what-is-amazon-lightsail.html"
+  - title: "What is Amazon AppFlow?"
+    url: "https://docs.aws.amazon.com/appflow/latest/userguide/what-is-appflow.html"
+  - title: "Supported source and destination applications (Amazon AppFlow)"
+    url: "https://docs.aws.amazon.com/appflow/latest/userguide/app-specific.html"
+  - title: "What is Amazon Timestream for LiveAnalytics?"
+    url: "https://docs.aws.amazon.com/timestream/latest/developerguide/what-is-timestream.html"
+  - title: "Amazon Timestream for LiveAnalytics availability change"
+    url: "https://docs.aws.amazon.com/timestream/latest/developerguide/AmazonTimestreamForLiveAnalytics-availability-change.html"
+  - title: "Rules for AWS IoT"
+    url: "https://docs.aws.amazon.com/iot/latest/developerguide/iot-rules.html"
+  - title: "AWS IoT rule actions"
+    url: "https://docs.aws.amazon.com/iot/latest/developerguide/iot-rule-actions.html"
+  - title: "What is Amazon SNS?"
+    url: "https://docs.aws.amazon.com/sns/latest/dg/welcome.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -53,6 +83,7 @@ import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
 import CostWatchSim from "../../components/scenes/others/CostWatchSim.tsx";
 import SavingsPlanSim from "../../components/scenes/others/SavingsPlanSim.tsx";
 import AiPipelineSim from "../../components/scenes/others/AiPipelineSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
@@ -61,12 +92,13 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s2", label: "2 · Savings Plans" },
   { href: "#en-s3", label: "3 · Pre-trained AI services" },
   { href: "#en-s4", label: "4 · AWS Batch and Outposts" },
+  { href: "#en-s5", label: "5 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
 ShopViet now has many AWS accounts and many engineering teams, and its monthly costs keep rising. At the same time, thousands of reviews, call-center calls and scanned documents arrive every day, more than can be processed manually, while ShopViet has no machine learning experts. This lesson brings together the services that meet these needs: cost management tools, pre-trained AI services, and two services for special requirements.
 </Story>
 
-<Scene id="en-s1" label="Part 1/4" title="Controlling AWS costs" questions={["exam6_q22", "exam6_q1", "exam4_q30"]}>
+<Scene id="en-s1" label="Part 1/5" title="Controlling AWS costs" questions={["exam6_q22", "exam6_q1", "exam4_q30"]}>
 
 Each cost management tool answers a different question:
 
@@ -83,7 +115,7 @@ Choose a ShopViet problem, choose a tool, then run the simulation for one month:
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/4" title="Choosing the type of long-term usage commitment" questions={["exam6_q38"]}>
+<Scene id="en-s2" label="Part 2/5" title="Choosing the type of long-term usage commitment" questions={["exam6_q38"]}>
 
 After the launch, ShopViet's load has stabilized. Committing to a fixed amount of spend per hour for 1 or 3 years in exchange for prices lower than on-demand: that is **Savings Plans**. AWS currently offers four types:
 
@@ -100,25 +132,28 @@ ShopViet's requirement: every workload gets a discount, with the fewest plans po
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/4" title="Processing text and speech without an ML team" questions={["exam1_q4", "exam2_q26", "exam5_q32", "exam5_q58"]}>
+<Scene id="en-s3" label="Part 3/5" title="Processing text and speech without an ML team" questions={["exam1_q4", "exam2_q26", "exam5_q32", "exam5_q58"]}>
 
 AWS provides pre-trained AI services that you use through API calls, with no machine learning knowledge required:
 
 - **Amazon Comprehend**: analyzes **text**: sentiment, entities, key phrases. Supports **custom entity recognition** to identify entity types specific to the business. Comprehend supports only certain languages (English, Spanish, French, German, Italian, Portuguese, Japanese, Korean, Hindi, Arabic, Chinese); Vietnamese is not yet on the list.
 - **Amazon Transcribe**: converts **speech** to text and can separate individual speakers.
 - **Amazon Textract**: extracts text, tables and forms from **scanned images and PDFs**; recognizes text in English, French, German, Italian, Portuguese and Spanish.
+- **Amazon Rekognition**: analyzes **images and videos**: objects, scenes, faces, unsafe content, text that appears in an image. Rekognition does not analyze the sentiment or topics of a piece of text.
+- **Amazon Translate**: **translates** text between languages (Vietnamese is supported). Translate does not detect sentiment; to analyze Vietnamese reviews, you can translate them to English with Translate and then pass them to Comprehend.
+- **Amazon Polly**: the reverse of Transcribe, converts **text to speech**. Transcribe accepts only audio as input.
 
 Each scenario below is a ShopViet processing pipeline; the text sent to Comprehend and Textract is in English (ShopViet's international storefront), because of the language limits above. Send a document and watch the output at each processing step:
 
 <AiPipelineSim client:visible />
 
-Training your own model on SageMaker also meets these requirements, but it needs staff with ML expertise and costs more to operate. When a suitable pre-trained service exists, prefer that service.
+**Amazon SageMaker AI** is a fully managed ML service for building, training and deploying ML models. Training your own model on SageMaker AI also meets these requirements, but it needs staff with ML expertise and costs more to operate. When a suitable pre-trained service exists, prefer that service. SageMaker AI is also not where the application's container APIs run: that is the job of [ECS or EKS on Fargate](/concepts/containers/#en-s1).
 
-<Takeaway>Text → sentiment, entities: Comprehend (custom entity types: custom entity recognition). Speech → text: Transcribe, then query with SQL using Athena. Scanned images, PDFs → text: Textract, then pass to Comprehend. Traffic spikes: put SQS between API Gateway and Lambda; automatically delete data after one year: DynamoDB TTL (expired items are typically deleted within a few days).</Takeaway>
+<Takeaway>Text → sentiment, entities: Comprehend (custom entity types: custom entity recognition). Images, video: Rekognition. Language translation: Translate. Text → speech: Polly. Speech → text: Transcribe, then query with SQL using Athena. Scanned images, PDFs → text: Textract, then pass to Comprehend. Traffic spikes: put SQS between API Gateway and Lambda; automatically delete data after one year: DynamoDB TTL (expired items are typically deleted within a few days).</Takeaway>
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/4" title="Batch processing and AWS services in the company's data center" questions={["exam6_q55", "exam1_q27"]}>
+<Scene id="en-s4" label="Part 4/5" title="Batch processing and AWS services in the company's data center" questions={["exam6_q55", "exam1_q27"]}>
 
 ShopViet's last two requirements do not fit the services covered so far. The content team needs to process tens of thousands of images every night (resizing, watermarking), and each job runs longer than the Lambda limit. At the same time, ShopViet has just acquired an e-wallet company: regulations require its data and applications to stay in that company's data center, but the engineering team needs to use EKS, CloudWatch and IAM consistently with the rest of ShopViet.
 
@@ -169,7 +204,56 @@ ShopViet's last two requirements do not fit the services covered so far. The con
 
 </Scene>
 
-<Scene id="en-challenge" label="Exercise" title="Sort the tasks by service" questions={["exam6_q22", "exam4_q30", "exam6_q38", "exam5_q58", "exam1_q27"]}>
+<Scene id="en-s5" label="Part 5/5" title="Quick comparison: services that are easy to pick by mistake" questions={["exam1_q4", "exam2_q26", "exam5_q32", "exam4_q33", "exam1_q11", "exam2_q4", "exam2_q40", "exam2_q47"]}>
+
+When designing ShopViet's processing pipelines, some services have a name or scope close to the requirement but solve a different problem. Pick each service to see what it is for, why it does not fit ShopViet's situation, and what fits instead.
+
+<QuickCompare client:visible items={[
+  { name: "Amazon Rekognition",
+    use: "Analyzes **images and videos** stored in S3 or streaming video: detects objects, scenes, faces, unsafe content, printed or handwritten text in images; Custom Labels for business-specific objects such as logos and products. No ML expertise required.",
+    notHere: "The content team needs the tone and topics of thousands of articles that Textract has already extracted as text. Rekognition is a computer vision service; it does not analyze the sentiment of text.",
+    instead: "Textract extracts the text from the PDFs, **Amazon Comprehend** detects sentiment and entities, and the results are stored in S3." },
+  { name: "Amazon Translate",
+    use: "Translates text between languages on demand: company-authored content, customer service chat, documents stored in S3. Supports Vietnamese.",
+    notHere: "The requirement is to determine whether user feedback is positive or negative. Translate only changes the language; it does not return sentiment.",
+    instead: "**Amazon Comprehend** (DetectSentiment). Add Translate before Comprehend only when the text is in a language Comprehend does not support, such as Vietnamese." },
+  { name: "Amazon Transcribe and Amazon Polly",
+    use: "Transcribe: audio → text (recordings in S3 or streaming). Polly: text → speech.",
+    notHere: "The feedback and product descriptions are already text. Converting text to audio and back with Transcribe only adds processing steps; Transcribe also cannot produce audio from text.",
+    instead: "Send the text directly to **Amazon Comprehend** (custom entity recognition when a business-specific entity type is needed)." },
+  { name: "Amazon Lookout for Vision",
+    use: "Was a service for building computer vision models that detect defects in product **images** for quality inspection. Closed to new customers on October 10, 2024 and reached end of support on October 31, 2025; AWS suggests SageMaker AI or partner solutions instead.",
+    notHere: "The service is no longer available, and even before that it processed only images; it never extracted entities from text files.",
+    instead: "A description file in S3 triggers Lambda, and Lambda calls **Comprehend custom entity recognition**." },
+  { name: "Amazon SageMaker AI",
+    use: "Builds, trains and deploys ML models on managed infrastructure; fits when a custom model is needed and an ML team is available.",
+    notHere: "ShopViet's API team needs a place to run Docker containers without managing servers. SageMaker AI is not a container orchestration service for applications; for common text analysis, training your own model takes more effort than using a pre-trained AI service.",
+    instead: "Container APIs: **ECS or EKS with Fargate**. Text analysis without an ML team: **Comprehend**." },
+  { name: "Amazon Lightsail",
+    use: "The easiest way to get started with AWS for websites and web applications: instances (virtual private servers), container services, managed databases, load balancers and CDN for a low, predictable monthly price.",
+    notHere: "The e-wallet's transaction backend is compute- and memory-intensive, runs for long periods and scales with traffic, while the team does not want to provision or patch virtual machines. Running it on Lightsail instances still means managing a fleet of virtual servers.",
+    instead: "API Gateway + Lambda for validation, with the long-running backend on **ECS with Fargate**." },
+  { name: "Amazon AppFlow",
+    use: "Exchanges data between SaaS applications (Salesforce, Zendesk, Slack, ServiceNow…) and AWS services such as S3 and Redshift; flows run on a schedule, on an event or on demand. A Custom Connector SDK connects private APIs or on-premises systems.",
+    notHere: "ShopViet's vendors push files with their existing SFTP software and will not change their workflow. AppFlow pulls data through the source application's API; SFTP is not in the list of supported applications.",
+    instead: "**AWS Transfer Family** (a managed SFTP endpoint that stores files directly in S3, with an IAM role per vendor)." },
+  { name: "Amazon Timestream",
+    use: "A serverless time series database for measurement data such as telemetry and metrics. Timestream for LiveAnalytics closed to new customers on June 20, 2025; AWS recommends Timestream for InfluxDB.",
+    notHere: "The back-office system runs on Microsoft SQL Server with stored procedures, transactions and relations between tables. A time series database cannot replace this relational database.",
+    instead: "**Amazon RDS for SQL Server** Multi-AZ, encrypted at rest with a KMS key." },
+  { name: "AWS IoT Core rule → Amazon SNS",
+    use: "An IoT rule reads devices' MQTT messages and performs actions: write to DynamoDB, store in S3, send to Kinesis, invoke Lambda, send to SQS, publish to SNS… SNS **pushes** messages to subscribers (SQS, Lambda, HTTP(S), email…).",
+    notHere: "The application on EC2 was overwhelmed and lost location data. An application does not poll messages from an SNS topic; it receives the messages SNS pushes to it. SNS is not a queue from which the application takes messages at its own processing pace.",
+    instead: "**Amazon SQS** as a buffer, with the application polling the queue at its own pace. When devices go through IoT Core, the IoT rule's SQS action can be used." },
+]} />
+
+Details of the alternatives: [ECS and EKS with Fargate](/concepts/containers/#en-s1), [AWS Transfer Family](/concepts/storage-migration/#en-s2), [RDS Multi-AZ](/concepts/rds/#en-s1), [SQS as a buffer](/concepts/messaging/#en-s1).
+
+<Takeaway>Text: Comprehend. Images, video: Rekognition. Translation: Translate. Speech ↔ text: Transcribe (audio in), Polly (audio out). Containers without managing servers: ECS/EKS with Fargate, not SageMaker AI or Lightsail. Vendors sending files over SFTP: Transfer Family, not AppFlow. Relational database: RDS, not Timestream. A buffer so no data is lost: SQS, not SNS.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Sort the tasks by service" questions={["exam6_q22", "exam4_q30", "exam6_q38", "exam5_q58", "exam1_q27", "exam2_q26"]}>
 
 Sort each ShopViet task into the matching service. On mobile devices: choose a card, then choose the target box.
 
@@ -213,6 +297,10 @@ Check your understanding: as the designer of the ShopViet system, which option f
     opts: ["Snowball Edge", "EKS in the Region over Direct Connect", "AWS Outposts"],
     a: 2,
     why: "Outposts extends AWS infrastructure and services to the company's data center; data is stored and processed on premises. With Direct Connect, the workloads still run in the Region." },
+  { q: "The content team has used Textract to extract text from thousands of PDF articles and needs the tone and topics of each article without building a model. Which option fits?",
+    opts: ["Rekognition analyzes the page layout to determine tone", "Comprehend detects sentiment and entities, with results stored in S3", "Translate converts the text to English and stores it in DynamoDB"],
+    a: 1,
+    why: "Comprehend is the AI service for text analysis (sentiment, entities, key phrases). Rekognition analyzes images and video; Translate only translates languages and does not return sentiment." },
 ]} />
 
 </Scene>

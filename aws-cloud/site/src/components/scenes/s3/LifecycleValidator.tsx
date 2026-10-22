@@ -2,7 +2,9 @@ import { useId, useState } from "react";
 import { useLang, type Bi } from "../../../lib/lang";
 
 // S3 Lifecycle transitions follow a one-way "waterfall". Standard-IA and One Zone-IA have a
-// 30-day minimum storage duration charge (storage-class-intro.html).
+// 30-day minimum storage duration charge (storage-class-intro.html). Since 2026-07-16 a rule can
+// transition to Standard-IA / One Zone-IA from day 0; before that, objects needed 30 days in
+// Standard first (What's New 2026/07 "S3 removes 30-day minimum for transitions").
 type C = "std" | "ia" | "it" | "oz" | "gir" | "gfr" | "gda";
 
 const CLASSES: { id: C; label: string; note: Bi }[] = [
@@ -38,6 +40,7 @@ export default function LifecycleValidator() {
 
   const allowed = ALLOWED[from].includes(to);
   const ia = to === "ia" || to === "oz";
+  const early = from === "std" && ia && days < 30;
   const ok = allowed;
   let why: string;
   if (from === to) why = L({ vi: "Object đã thuộc storage class này.", en: "The object is already in this storage class." });
@@ -49,6 +52,9 @@ export default function LifecycleValidator() {
   else why = L({ vi: `Hợp lệ: ${name(from)} → ${name(to)} sau ${days} ngày.`, en: `Valid: ${name(from)} → ${name(to)} after ${days} days.` }) + (ia ? L({
     vi: ` Lưu ý: ${name(to)} có thời gian lưu trữ tối thiểu 30 ngày và kích thước tính phí tối thiểu 128 KB; object bị xoá, ghi đè hoặc chuyển đi trước 30 ngày vẫn bị tính phí đủ 30 ngày.`,
     en: ` Note: ${name(to)} has a 30-day minimum storage duration and a 128 KB minimum billable object size; an object deleted, overwritten or transitioned before 30 days is still charged for the full 30 days.`,
+  }) : "") + (early ? L({
+    vi: ` Transition sau ${days} ngày hợp lệ từ ngày 16/7/2026. Trước thời điểm đó, S3 yêu cầu object nằm ít nhất 30 ngày trong Standard rồi mới chuyển sang ${name(to)}.`,
+    en: ` A transition after ${days} days is valid since July 16, 2026. Before that date, S3 required objects to stay at least 30 days in Standard before moving to ${name(to)}.`,
   }) : "");
 
   return (
@@ -77,7 +83,7 @@ export default function LifecycleValidator() {
       </div>
       <div className="stage-bar">
         <label className="label" htmlFor={`${uid}-lcDays`}>{L({ vi: `Sau ${days} ngày kể từ khi tạo object`, en: `${days} days after object creation` })}</label>
-        <input id={`${uid}-lcDays`} type="range" min={1} max={365} value={days} onChange={(e) => setDays(Number(e.target.value))} />
+        <input id={`${uid}-lcDays`} type="range" min={0} max={365} value={days} onChange={(e) => setDays(Number(e.target.value))} />
       </div>
       <div className="readout" aria-live="polite">
         <span className={"pill " + (ok ? "ok" : "bad")}><i />{ok ? L({ vi: "Transition hợp lệ", en: "Valid transition" }) : L({ vi: "Không hợp lệ", en: "Not valid" })}</span>

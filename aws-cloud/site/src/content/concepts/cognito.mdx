@@ -1,8 +1,8 @@
 ---
 title: "Cognito, IAM Identity Center và Directory Service"
 lede: "Khách hàng, nhân viên và đối tác của ShopViet có yêu cầu xác thực khác nhau. Bài học trình bày xác thực cho ứng dụng web và mobile bằng Amazon Cognito (phân biệt user pool và identity pool), single sign-on cho nhân viên vào nhiều AWS account, tái sử dụng Active Directory on-premises, và tiếp nhận tệp của đối tác qua SFTP."
-minutes: 15
-scenes: 2
+minutes: 18
+scenes: 3
 prerequisites: ["iam"]
 docs:
   - title: "Amazon Cognito user pools"
@@ -21,24 +21,30 @@ docs:
     url: "https://docs.aws.amazon.com/directoryservice/latest/admin-guide/directory_ad_connector.html"
   - title: "Working with custom identity providers (AWS Transfer Family)"
     url: "https://docs.aws.amazon.com/transfer/latest/userguide/custom-idp-intro.html"
+  - title: "Simple AD"
+    url: "https://docs.aws.amazon.com/directoryservice/latest/admin-guide/directory_simple_ad.html"
+  - title: "What is Amazon Cloud Directory?"
+    url: "https://docs.aws.amazon.com/clouddirectory/latest/developerguide/what_is_cloud_directory.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
 import Story from "../../components/lessons/global-infra/Story.astro";
 import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
 import StaffSignInSim from "../../components/scenes/cognito/StaffSignInSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#s1", label: "1 · Xác thực người dùng ứng dụng" },
   { href: "#s2", label: "2 · Nhân viên, Active Directory và đối tác" },
+  { href: "#s3", label: "3 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
 Hệ thống ShopViet có hai nhóm danh tính cần xác thực: **khách hàng** sử dụng ứng dụng web và mobile, và **nhân viên** cần truy cập các AWS account cùng các hệ thống nội bộ đang sử dụng Active Directory. Mỗi nhóm sử dụng một bộ dịch vụ riêng.
 </Story>
 
-<Scene id="s1" label="Phần 1/2" title="Xác thực khách hàng: Cognito user pool và identity pool" questions={["exam2_q17", "exam6_q50"]}>
+<Scene id="s1" label="Phần 1/3" title="Xác thực khách hàng: Cognito user pool và identity pool" questions={["exam2_q17", "exam6_q50"]}>
 
 **User pool** là thư mục người dùng: cung cấp chức năng đăng ký, đăng nhập và trả về token (JWT). **Identity pool** đổi danh tính đã xác thực thành **temporary AWS credentials** để gọi trực tiếp các dịch vụ AWS như S3. ShopViet có cả hai yêu cầu này. Chọn tình huống và so sánh hai phương án:
 
@@ -80,13 +86,40 @@ Hệ thống ShopViet có hai nhóm danh tính cần xác thực: **khách hàng
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/2" title="Xác thực nhân viên, Active Directory và đối tác" questions={["exam6_q10", "exam4_q4", "exam1_q10", "exam3_q28", "exam6_q44", "exam3_q5", "exam2_q4"]}>
+<Scene id="s2" label="Phần 2/3" title="Xác thực nhân viên, Active Directory và đối tác" questions={["exam6_q10", "exam4_q4", "exam1_q10", "exam3_q28", "exam6_q44", "exam3_q5", "exam2_q4"]}>
 
 Cognito phục vụ khách hàng của ứng dụng. Nhân viên và đối tác có các yêu cầu khác: single sign-on vào nhiều AWS account, tái sử dụng tài khoản Active Directory on-premises, truy cập file share và truyền tệp qua SFTP. Chọn từng tình huống, thay đổi cấu hình, sau đó nhấn Đăng nhập.
 
 <StaffSignInSim client:visible />
 
 <Takeaway>Nhân viên truy cập nhiều account: IAM Identity Center + permission sets. Dùng AD on-premises để xác thực, không đồng bộ thư mục lên AWS: AD Connector. AD chạy trên AWS và có trust với AD on-premises: AWS Managed Microsoft AD. File share với quyền NTFS: FSx for Windows File Server. Đối tác truyền tệp qua SFTP: AWS Transfer Family.</Takeaway>
+
+</Scene>
+
+<Scene id="s3" label="Phần 3/3" title="Phân biệt nhanh: các lựa chọn thư mục dễ nhầm" questions={["exam3_q28"]}>
+
+Ứng dụng kế toán ShopViet chạy SQL Server trên AWS, cần một domain Active Directory trên AWS và **trust** với AD on-premises để nhân viên single sign-on vào tài nguyên ở cả hai domain. Phương án phù hợp là AWS Managed Microsoft AD (Phần 2). Các lựa chọn dưới đây cũng có chữ "directory" hoặc "AD" nhưng không đáp ứng yêu cầu này. Chọn từng mục để xem phạm vi sử dụng.
+
+<QuickCompare client:visible items={[
+  { name: "AD Connector",
+    use: "Proxy chuyển tiếp yêu cầu đăng nhập tới domain controller on-premises; người dùng on-premises đăng nhập ứng dụng và dịch vụ AWS bằng tài khoản AD hiện có, không cần đồng bộ thư mục. Hỗ trợ seamless domain join EC2 vào domain on-premises.",
+    notHere: "AD Connector không tạo domain trên AWS nên không có domain nào để thiết lập trust, và không tương thích với RDS for SQL Server.",
+    instead: "**AWS Managed Microsoft AD**: Active Directory thực sự do AWS vận hành, chạy workload phụ thuộc AD như SQL Server và thiết lập trust với AD on-premises." },
+  { name: "Simple AD",
+    use: "Thư mục độc lập tương thích Active Directory, chạy trên Samba 4, với các tính năng cơ bản: user, group, join EC2 Linux và Windows, Kerberos SSO, group policy. Hai kích thước: Small (tối đa 500 user) và Large (tối đa 5.000 user). Simple AD **không còn mở cho khách hàng mới**.",
+    notHere: "Simple AD không hỗ trợ trust relationship với domain khác, MFA, schema extension, và không tương thích với RDS for SQL Server hay IAM Identity Center.",
+    instead: "**AWS Managed Microsoft AD** (Standard Edition cho doanh nghiệp tới khoảng 5.000 nhân viên, Enterprise Edition cho tổ chức lớn hơn)." },
+  { name: "Amazon Cloud Directory",
+    use: "Kho dữ liệu dạng thư mục, đa hierarchy, dành cho nhà phát triển lưu đối tượng của ứng dụng (sơ đồ tổ chức, danh mục thiết bị, catalog) qua API. Cloud Directory **không còn mở cho khách hàng mới** và hết hỗ trợ ngày 24/07/2027; AWS gợi ý DynamoDB hoặc Neptune thay thế.",
+    notHere: "Cloud Directory không phải dịch vụ thư mục cho quản trị viên IT: không phải Active Directory, không join domain, không thiết lập trust với AD on-premises.",
+    instead: "**AWS Managed Microsoft AD** cho domain và trust; DynamoDB hoặc Neptune nếu chỉ cần lưu dữ liệu phân cấp của ứng dụng." },
+  { name: "Amazon Cognito user pool",
+    use: "Thư mục có khả năng mở rộng cao để quản lý và xác thực người dùng của ứng dụng (khách hàng, subscriber của SaaS), hỗ trợ đăng nhập bằng mạng xã hội.",
+    notHere: "Cognito không phải Active Directory: không có domain, Kerberos hay trust, nên ứng dụng SQL Server phụ thuộc AD không join được.",
+    instead: "**AWS Managed Microsoft AD** cho nhân viên và workload Windows; Cognito cho khách hàng của ứng dụng web và mobile (Phần 1)." },
+]} />
+
+<Takeaway>Domain trên AWS có trust với AD on-premises, workload phụ thuộc AD (SQL Server): AWS Managed Microsoft AD. Chỉ dùng tài khoản AD on-premises để đăng nhập dịch vụ AWS: AD Connector. Simple AD không hỗ trợ trust và không còn mở cho khách hàng mới. Amazon Cloud Directory là kho dữ liệu cho ứng dụng, không phải Active Directory, cũng không còn mở cho khách hàng mới.</Takeaway>
 
 </Scene>
 
@@ -117,7 +150,7 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
   { q: "Ứng dụng kế toán của ShopViet cần join domain trên AWS, và domain đó phải thiết lập trust với AD on-premises. Dịch vụ nào đáp ứng yêu cầu?",
     opts: ["AD Connector", "AWS Managed Microsoft AD", "Simple AD"],
     a: 1,
-    why: "AWS Managed Microsoft AD là Active Directory do AWS vận hành, hỗ trợ thiết lập trust với AD on-premises. AD Connector chỉ là directory gateway chuyển tiếp yêu cầu tới AD on-premises, không tạo domain trên AWS và không hỗ trợ transitive trust." },
+    why: "AWS Managed Microsoft AD là Active Directory do AWS vận hành, hỗ trợ thiết lập trust với AD on-premises. AD Connector chỉ là directory gateway chuyển tiếp yêu cầu tới AD on-premises, không tạo domain trên AWS và không hỗ trợ transitive trust. Simple AD không hỗ trợ trust relationship với domain khác." },
   { q: "40 nhân viên ShopViet cần single sign-on vào nhiều AWS account, mỗi nhóm chỉ được cấp các quyền cần thiết. Phương án nào có chi phí quản trị thấp nhất?",
     opts: ["IAM user riêng ở từng account", "IAM Identity Center với permission sets", "Cognito identity pool"],
     a: 1,

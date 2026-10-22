@@ -39,3 +39,20 @@
 .stx-az.down { fill: var(--bad-soft); fill-opacity: 1; stroke: var(--bad); stroke-width: 2; stroke-dasharray: none; }
 .stx-node.down { opacity: .35; }
 .stx-node.pick rect { stroke: var(--accent); stroke-width: 2.5; }
+/* BurstCreditSim chart */
+.stx-plot { fill: var(--bg); stroke: var(--line); stroke-width: 1; }
+.stx-base { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 4; fill: none; }
+.stx-credit { fill: var(--accent-soft); stroke: none; }
+.stx-demand { stroke: var(--edge); stroke-width: 2; stroke-dasharray: 6 4; fill: none; }
+.stx-deliver { stroke: var(--accent); stroke-width: 2.5; fill: none; }
+.stx-cursor { stroke: var(--ink); stroke-width: 1; opacity: .5; }
+/* MountpointSim and StorageBillSim */
+.stx-ops { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 14px 0; }
+.stx-bars { display: grid; gap: 8px; padding: 12px 14px; }
+.stx-bar { display: grid; grid-template-columns: minmax(0, 12rem) minmax(0, 1fr) 6rem; align-items: center; gap: 8px; font-size: var(--step--1); }
+.stx-bar > span:first-child { overflow-wrap: anywhere; }
+.stx-bar-track { height: 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.stx-bar-fill { height: 100%; background: var(--accent); transition: width .3s; }
+.stx-bar-fill.ebs { background: var(--edge); }
+.stx-bar > b { text-align: right; font-family: var(--font-mono); font-size: 0.8rem; }
+@media (max-width: 520px) { .stx-bar { grid-template-columns: minmax(0, 1fr) 5.5rem; } .stx-bar-track { grid-column: 1 / -1; grid-row: 2; } }

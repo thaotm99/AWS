@@ -54,7 +54,7 @@
           "keyword": "Amazon S3 static website hosting",
           "lesson": "s3",
           "status": "covered",
-          "where": "cloudfront.mdx#s2 / RequirementPicker"
+          "where": "s3.mdx#s6 / WebsiteEndpointSim; cloudfront.mdx#s2 / RequirementPicker"
         },
         {
           "keyword": "CloudFront S3 origin",
@@ -131,8 +131,8 @@
         {
           "keyword": "Amazon AppFlow",
           "lesson": "others",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "analytics.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "Route 53 private hosted zone",
@@ -161,7 +161,7 @@
           "keyword": "DynamoDB global tables",
           "lesson": "dynamodb",
           "status": "covered",
-          "where": "dynamodb.mdx (global tables section)"
+          "where": "dynamodb.mdx#s5; analytics.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "RDS read replica",
@@ -207,8 +207,8 @@
         {
           "keyword": "Aurora cross-Region read replica",
           "lesson": "rds",
-          "status": "partial",
-          "where": "route53.mdx#challenge / Quiz"
+          "status": "covered",
+          "where": "rds.mdx#s3 / AuroraSim + RequirementPicker"
         },
         {
           "keyword": "RDS Multi-AZ (same Region only)",
@@ -310,13 +310,13 @@
           "keyword": "AWS Config managed rule acm-certificate-expiration-check",
           "lesson": "monitoring",
           "status": "covered",
-          "where": "monitoring.mdx (Config scene Takeaway) / ConfigTimelineSim; kms.mdx#s3"
+          "where": "monitoring.mdx#s4 / GuardrailSim; kms.mdx#s3 / DataGuardSim; messaging.mdx#s4 / EventRouterSim"
         },
         {
           "keyword": "ACM DaysToExpiry CloudWatch metric",
           "lesson": "monitoring",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "monitoring.mdx#s4 / monitoring.mdx#s6 QuickCompare"
         },
         {
           "keyword": "Amazon SNS notification",
@@ -390,8 +390,8 @@
         {
           "keyword": "Interface VPC endpoint for Amazon EFS over Direct Connect",
           "lesson": "vpc",
-          "status": "partial",
-          "where": "storage-migration.mdx#s2 Takeaway (one line)"
+          "status": "covered",
+          "where": "vpc.mdx#s4 / RequirementPicker"
         },
         {
           "keyword": "S3 Event Notification to Lambda",
@@ -492,8 +492,8 @@
         {
           "keyword": "AWS App Runner",
           "lesson": "containers",
-          "status": "partial",
-          "where": "security.mdx#s1 Takeaway (name only)"
+          "status": "covered",
+          "where": "containers.mdx#s5 / QuickCompare"
         }
       ]
     },
@@ -509,13 +509,13 @@
           "keyword": "S3 Object Ownership (object writer vs bucket owner enforced)",
           "lesson": "s3",
           "status": "covered",
-          "where": "s3.mdx#s3 / RequirementPicker; analytics.mdx / DataJobSim"
+          "where": "s3.mdx#s3 / RequirementPicker; analytics.mdx#s3 / DataJobSim"
         },
         {
           "keyword": "Redshift UNLOAD to cross-account bucket",
           "lesson": "analytics",
           "status": "covered",
-          "where": "analytics.mdx#challenge / DataJobSim"
+          "where": "analytics.mdx#s3 / DataJobSim; analytics.mdx#challenge / Quiz; s3.mdx#s3 / RequirementPicker"
         },
         {
           "keyword": "IAM cross-account role",
@@ -575,6 +575,12 @@
           "lesson": "elb",
           "status": "covered",
           "where": "elb.mdx#s3 / AlbRuleSim"
+        },
+        {
+          "keyword": "CloudFront (no built-in Cognito authentication)",
+          "lesson": "cloudfront",
+          "status": "covered",
+          "where": "cloudfront.mdx#s6 / QuickCompare (no Cognito setting on a distribution; Lambda@Edge needed; ALB authenticate-cognito is the minimal-effort option)"
         }
       ]
     },
@@ -596,8 +602,8 @@
         {
           "keyword": "EC2 instance Impaired status (ASG delays termination)",
           "lesson": "asg",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "asg.mdx#health / HealthReplaceSim"
         },
         {
           "keyword": "ASG ELB health check type",
@@ -608,8 +614,14 @@
         {
           "keyword": "ASG custom health check (SetInstanceHealth)",
           "lesson": "asg",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "asg.mdx#health / HealthReplaceSim"
+        },
+        {
+          "keyword": "ASG minimum capacity (does not keep unhealthy instances)",
+          "lesson": "asg",
+          "status": "covered",
+          "where": "asg.mdx#health"
         }
       ]
     },
@@ -672,8 +684,8 @@
         {
           "keyword": "Transit VPC",
           "lesson": "vpc",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "vpc.mdx#s5 / VpcConnectSim; vpc.mdx#compare / QuickCompare"
         },
         {
           "keyword": "VPC peering (full mesh, non-transitive)",
@@ -684,8 +696,8 @@
         {
           "keyword": "Centralized VPC endpoints",
           "lesson": "vpc",
-          "status": "partial",
-          "where": "vpc.mdx#s5 / RequirementPicker"
+          "status": "covered",
+          "where": "vpc.mdx#hub / HubSim; vpc.mdx#s5 / RequirementPicker"
         }
       ]
     },
@@ -700,8 +712,8 @@
         {
           "keyword": "Global Accelerator endpoint weights (blue/green traffic shift)",
           "lesson": "global-infra",
-          "status": "partial",
-          "where": "cloudfront.mdx#challenge / SortGame (card only)"
+          "status": "covered",
+          "where": "global-infra.mdx#bluegreen / BlueGreenSim"
         },
         {
           "keyword": "Route 53 weighted routing",
@@ -718,8 +730,8 @@
         {
           "keyword": "AWS CodeDeploy",
           "lesson": "iac",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "iac.mdx#s4 / QuickCompare"
         }
       ]
     },
@@ -772,8 +784,8 @@
         {
           "keyword": "IAM inline policy per user",
           "lesson": "iam",
-          "status": "partial",
-          "where": "iam.mdx#confuse / IamMythsSim"
+          "status": "covered",
+          "where": "iam.mdx#s6 / QuickCompare"
         }
       ]
     },
@@ -803,25 +815,25 @@
           "keyword": "Amazon Comprehend (sentiment, entities)",
           "lesson": "others",
           "status": "covered",
-          "where": "others.mdx (AI services section) / AiPipelineSim"
+          "where": "others.mdx#s3 / AiPipelineSim"
         },
         {
           "keyword": "Amazon Textract",
           "lesson": "others",
           "status": "covered",
-          "where": "others.mdx (AI services section) / AiPipelineSim"
+          "where": "others.mdx#s3 / AiPipelineSim"
         },
         {
           "keyword": "Amazon SageMaker (custom model)",
           "lesson": "others",
           "status": "covered",
-          "where": "others.mdx (AI services section)"
+          "where": "others.mdx#s3"
         },
         {
           "keyword": "Amazon Rekognition",
           "lesson": "others",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "others.mdx#s3, #s5 / QuickCompare, challenge Quiz"
         },
         {
           "keyword": "Amazon Athena and QuickSight",
@@ -1035,8 +1047,8 @@
         {
           "keyword": "ASG mixed instances policy (On-Demand + Spot)",
           "lesson": "asg",
-          "status": "partial",
-          "where": "monitoring.mdx Takeaway (mixed instances group, termination only)"
+          "status": "covered",
+          "where": "asg.mdx#setup / GroupSetupSim"
         }
       ]
     },
@@ -1052,13 +1064,13 @@
           "keyword": "S3 Lifecycle rule to Glacier Deep Archive",
           "lesson": "s3",
           "status": "covered",
-          "where": "s3.mdx#s1; analytics.mdx / LakeCostSim"
+          "where": "s3.mdx#s1 / RequirementPicker; analytics.mdx#s4 / LakeCostSim"
         },
         {
           "keyword": "AWS Glue ETL compressed columnar format (Parquet)",
           "lesson": "analytics",
           "status": "covered",
-          "where": "analytics.mdx / LakeCostSim"
+          "where": "analytics.mdx#s4 / LakeCostSim"
         },
         {
           "keyword": "Amazon Athena",
@@ -1141,8 +1153,8 @@
         {
           "keyword": "Elastic IP vs public IP vs private IP",
           "lesson": "ec2",
-          "status": "partial",
-          "where": "vpc.mdx#s1 / PacketPath; ec2.mdx#s3"
+          "status": "covered",
+          "where": "ec2.mdx#s6 / Ec2LifecycleSim"
         }
       ]
     },
@@ -1206,8 +1218,8 @@
         {
           "keyword": "Amazon Timestream",
           "lesson": "others",
-          "status": "partial",
-          "where": "others.mdx (Database Savings Plans list, name only)"
+          "status": "covered",
+          "where": "others.mdx#s5 / QuickCompare"
         }
       ]
     },
@@ -1255,7 +1267,13 @@
           "keyword": "Kinesis Data Streams partition key",
           "lesson": "kinesis",
           "status": "covered",
-          "where": "kinesis.mdx / ShardStreamSim"
+          "where": "kinesis.mdx#s1 / ShardStreamSim"
+        },
+        {
+          "keyword": "Kinesis Data Streams consumer parallelism bounded by shard count",
+          "lesson": "kinesis",
+          "status": "covered",
+          "where": "kinesis.mdx#s1 / prose + Takeaway (KCL lease per shard, Lambda ParallelizationFactor, SQS FIFO message group ID)"
         }
       ]
     },
@@ -1276,14 +1294,14 @@
         {
           "keyword": "CloudTrail organization trail",
           "lesson": "monitoring",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "monitoring.mdx#s4 / monitoring.mdx#s6 QuickCompare"
         },
         {
           "keyword": "IAM service-linked role",
           "lesson": "iam",
-          "status": "partial",
-          "where": "iam.mdx#s2 Takeaway"
+          "status": "covered",
+          "where": "iam.mdx#s6 / QuickCompare; iam.mdx#s3 / RequirementPicker"
         }
       ]
     },
@@ -1303,8 +1321,8 @@
         {
           "keyword": "AWS Lake Formation",
           "lesson": "analytics",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "analytics.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "Amazon Athena and QuickSight",
@@ -1330,8 +1348,8 @@
         {
           "keyword": "RDS read replica encryption follows source",
           "lesson": "rds",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "rds.mdx#s5 / ReplicaLab"
         }
       ]
     },
@@ -1347,25 +1365,25 @@
           "keyword": "KMS multi-Region key",
           "lesson": "kms",
           "status": "covered",
-          "where": "kms.mdx#s1 / S3EncryptSim"
+          "where": "kms.mdx#s1; kms.mdx#s4 / QuickCompare; kms.mdx#challenge / Quiz"
         },
         {
           "keyword": "S3 Cross-Region Replication",
           "lesson": "s3",
           "status": "covered",
-          "where": "analytics.mdx (CRR paragraph); kms.mdx#s1 / S3EncryptSim"
+          "where": "analytics.mdx#s4; s3.mdx#s7 / QuickCompare; kms.mdx#s4 / QuickCompare"
         },
         {
           "keyword": "S3 Batch Replication",
-          "lesson": "storage-migration",
+          "lesson": "s3",
           "status": "covered",
-          "where": "storage-migration.mdx#s2 / RequirementPicker"
+          "where": "s3.mdx#s7 / QuickCompare; analytics.mdx#s4"
         },
         {
           "keyword": "KMS single-Region key cannot be converted to multi-Region",
           "lesson": "kms",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "kms.mdx#s4 / QuickCompare; kms.mdx#challenge / Quiz"
         }
       ]
     },
@@ -1387,13 +1405,13 @@
           "keyword": "Amazon Data Firehose",
           "lesson": "kinesis",
           "status": "covered",
-          "where": "kinesis.mdx / StreamPipelineSim"
+          "where": "kinesis.mdx#s3 / StreamPipelineSim"
         },
         {
           "keyword": "AWS IoT Core rule",
           "lesson": "others",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "others.mdx#s5 / QuickCompare"
         },
         {
           "keyword": "Amazon SNS (push, no polling)",
@@ -1496,8 +1514,8 @@
         {
           "keyword": "EC2 instance metadata",
           "lesson": "ec2",
-          "status": "partial",
-          "where": "iam.mdx#s3 / StepSim (mention)"
+          "status": "covered",
+          "where": "ec2.mdx#s2 / RequirementPicker"
         }
       ]
     },
@@ -1560,7 +1578,7 @@
           "keyword": "Amazon Neptune",
           "lesson": "analytics",
           "status": "covered",
-          "where": "analytics.mdx#s1 Takeaway"
+          "where": "analytics.mdx#s6 / QuickCompare; analytics.mdx#s3 / DataJobSim"
         }
       ]
     },
@@ -1650,6 +1668,12 @@
           "keyword": "RDS IAM database authentication",
           "lesson": "rds",
           "status": "covered",
+          "where": "iam.mdx#s3 / RequirementPicker; monitoring.mdx#s6 / QuickCompare"
+        },
+        {
+          "keyword": "RDS DB snapshot storage (not accessible as objects in a customer S3 bucket)",
+          "lesson": "rds",
+          "status": "covered",
           "where": "rds.mdx#s4 / RequirementPicker"
         }
       ]
@@ -1670,8 +1694,8 @@
         {
           "keyword": "API Gateway (no security group or subnet)",
           "lesson": "lambda",
-          "status": "partial",
-          "where": "lambda.mdx#s3"
+          "status": "covered",
+          "where": "lambda.mdx#s3 / ApiGatewaySim"
         },
         {
           "keyword": "AWS Outposts",
@@ -1708,13 +1732,13 @@
           "keyword": "ALB with Auto Scaling group (pre-provisioned standby)",
           "lesson": "backup-dr",
           "status": "covered",
-          "where": "backup-dr.mdx / DrStrategySim"
+          "where": "backup-dr.mdx#s1 / DrStrategySim"
         },
         {
           "keyword": "AWS CloudFormation",
           "lesson": "iac",
           "status": "covered",
-          "where": "iac.mdx / StackSim"
+          "where": "iac.mdx#s1 / StackSim"
         },
         {
           "keyword": "AWS Direct Connect",
@@ -1771,6 +1795,12 @@
           "lesson": "rds",
           "status": "covered",
           "where": "rds.mdx#s3"
+        },
+        {
+          "keyword": "Aurora multi-master cluster (single Region)",
+          "lesson": "rds",
+          "status": "covered",
+          "where": "rds.mdx#s6 / QuickCompare"
         }
       ]
     },
@@ -1822,7 +1852,7 @@
           "keyword": "EFS Max I/O performance mode",
           "lesson": "storage",
           "status": "covered",
-          "where": "storage.mdx#s3 / RequirementPicker"
+          "where": "storage.mdx#s3 / RequirementPicker (current guidance + older-material note)"
         },
         {
           "keyword": "EFS throughput mode (Bursting, Provisioned)",
@@ -1850,7 +1880,13 @@
           "keyword": "ASG default termination policy",
           "lesson": "asg",
           "status": "covered",
-          "where": "asg.mdx#s3 / TerminationSim"
+          "where": "asg.mdx#s3 / TerminationSim (launch template / launch configuration toggle); asg.mdx#challenge / Quiz"
+        },
+        {
+          "keyword": "ASG termination: oldest launch configuration (groups using a launch configuration)",
+          "lesson": "asg",
+          "status": "covered",
+          "where": "asg.mdx#s3 / TerminationSim (launch configuration group) + Takeaway"
         }
       ]
     }

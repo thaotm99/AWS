@@ -42,8 +42,8 @@ return [
           ],
           ok: false, result: L({ vi: "Không sẵn sàng trong tuần này. Yêu cầu triển khai nhanh, chi phí thấp: Site-to-Site VPN.", en: "Not ready this week. For fast deployment at low cost: Site-to-Site VPN." }) }
       : { steps: [
-            { at: "vpn", via: UP, state: "pass", msg: L({ vi: "Thiết lập trên kết nối internet sẵn có, mã hóa bằng **IPsec**.", en: "Set up over the existing internet connection, encrypted with **IPsec**." }) },
-            { at: "gw", via: VPN_GW, state: "pass", msg: L({ vi: "Phía AWS là **virtual private gateway** (hoặc Transit Gateway).", en: "The AWS side is a **virtual private gateway** (or a transit gateway)." }) },
+            { at: "vpn", via: UP, state: "pass", msg: L({ vi: "Phía văn phòng: **customer gateway device** (thiết bị vật lý hoặc phần mềm do ShopViet quản lý) thiết lập hai tunnel **IPsec** qua internet. Trong AWS, tạo tài nguyên **customer gateway** mô tả thiết bị này (ví dụ public IP); tài nguyên này không tự cấu hình thiết bị.", en: "Office side: a **customer gateway device** (a physical or software appliance that ShopViet manages) brings up two **IPsec** tunnels over the internet. In AWS you create a **customer gateway** resource that describes the device (for example its public IP); the resource does not configure the device." }) },
+            { at: "gw", via: VPN_GW, state: "pass", msg: L({ vi: "Phía AWS: **virtual private gateway** gắn với VPC (hoặc một transit gateway). Hai tunnel kết thúc tại đây; một tunnel gặp sự cố thì traffic chuyển sang tunnel còn lại.", en: "AWS side: a **virtual private gateway** attached to the VPC (or a transit gateway). Both tunnels terminate here; if one tunnel fails, traffic moves to the other." }) },
             { at: "vpc", state: "pass", msg: L({ vi: "Traffic tới server trong VPC.", en: "Traffic reaches the server in the VPC." }) },
           ],
           ok: true, result: L({ vi: "Kết nối sẵn sàng nhanh, có mã hóa, chi phí thấp.", en: "The connection is ready quickly, encrypted, at low cost." }) },
@@ -110,7 +110,7 @@ return [
           ok: false, result: L({ vi: "Không truy cập được VPC Tokyo bằng kết nối hiện có.", en: "VPC Tokyo cannot be reached over the existing connection." }) }
       : { hide: ["gw"], steps: [
             { at: "dx", via: DOWN, state: "pass", msg: L({ vi: "Sử dụng một kết nối Direct Connect duy nhất.", en: "Use a single Direct Connect connection." }) },
-            { at: "dxgw", via: DX_GW, state: "pass", msg: L({ vi: "**Direct Connect gateway** gắn với VGW của cả hai Region.", en: "The **Direct Connect gateway** is associated with the VGWs in both Regions." }) },
+            { at: "dxgw", via: DX_GW, state: "pass", msg: L({ vi: "**Private VIF** gắn với **Direct Connect gateway** (tài nguyên toàn cầu); gateway này được associate với VGW của cả hai Region.", en: "The **private VIF** attaches to a **Direct Connect gateway** (a global resource), which is associated with the VGWs in both Regions." }) },
             { at: "tokyo", via: [[640, 120], [640, 173]], state: "pass", msg: L({ vi: "Traffic tới VPC Tokyo.", en: "Traffic reaches VPC Tokyo." }) },
           ],
           ok: true, result: L({ vi: "Một kết nối Direct Connect phục vụ VPC tại nhiều Region. Với số lượng VPC lớn hơn, kết hợp Transit Gateway.", en: "One Direct Connect connection serves VPCs in multiple Regions. With a larger number of VPCs, combine it with Transit Gateway." }) },

@@ -1,8 +1,8 @@
 ---
 title: "AWS Lambda and Amazon API Gateway: event-driven serverless architecture"
 lede: "Many ShopViet tasks only need to run when an event occurs. This lesson covers event-driven processing flows (new images, stream data, periodic tasks), common mistakes when running Lambda in production (VPC, cold starts, quotas, permissions), and how to provide APIs to applications and partners with API Gateway."
-minutes: 20
-scenes: 3
+minutes: 27
+scenes: 4
 prerequisites: ["iam", "vpc"]
 docs:
   - title: "Invoking Lambda with events from other AWS services"
@@ -25,6 +25,42 @@ docs:
     url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.html"
   - title: "What is Amazon Managed Service for Apache Flink?"
     url: "https://docs.aws.amazon.com/managed-flink/latest/java/what-is.html"
+  - title: "Configure Lambda function memory"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/configuration-memory.html"
+  - title: "Configure ephemeral storage for Lambda functions"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/configuration-ephemeral-storage.html"
+  - title: "Configure Lambda function timeout"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/configuration-timeout.html"
+  - title: "Managing Lambda dependencies with layers"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/chapter-layers.html"
+  - title: "Create a Lambda function using a container image"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/images-create.html"
+  - title: "Understanding the Lambda execution environment lifecycle"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtime-environment.html"
+  - title: "Best practices for working with AWS Lambda functions"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/best-practices.html"
+  - title: "AWS Lambda pricing"
+    url: "https://aws.amazon.com/lambda/pricing/"
+  - title: "Tutorial: Create a REST API as an Amazon Kinesis proxy"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/integrating-api-with-aws-services-kinesis.html"
+  - title: "Control access to a REST API with API Gateway resource policies"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-resource-policies.html"
+  - title: "Private REST APIs in API Gateway"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-private-apis.html"
+  - title: "Use API Gateway Lambda authorizers"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-use-lambda-authorizer.html"
+  - title: "Control access to HTTP APIs with JWT authorizers"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-jwt-authorizer.html"
+  - title: "Create a Lambda REQUEST authorizer function (WebSocket APIs)"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-lambda-auth.html"
+  - title: "Lambda deployment packages (.zip and container images)"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-package.html"
+  - title: "Configuring Amazon EFS file system access for Lambda"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/configuration-filesystem-efs.html"
+  - title: "API Gateway resource policy examples"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-resource-policies-examples.html"
+  - title: "Access an AWS service using an interface VPC endpoint"
+    url: "https://docs.aws.amazon.com/vpc/latest/privatelink/create-interface-endpoint.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -32,19 +68,22 @@ import Story from "../../components/lessons/global-infra/Story.astro";
 import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
 import LambdaRunSim from "../../components/scenes/lambda/LambdaRunSim.tsx";
 import ApiGatewaySim from "../../components/scenes/lambda/ApiGatewaySim.tsx";
+import FunctionConfigSim from "../../components/scenes/lambda/FunctionConfigSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#en-s1", label: "1 · Event-driven architecture patterns" },
   { href: "#en-s2", label: "2 · Running Lambda in production" },
-  { href: "#en-s3", label: "3 · Providing APIs with API Gateway" },
+  { href: "#en-sizing", label: "3 · Function resources and packaging" },
+  { href: "#en-s3", label: "4 · Providing APIs with API Gateway" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
 Many ShopViet tasks run only when an event occurs: a new image, a new order, a scheduled data cleanup. Instead of keeping EC2 running and waiting all day, **Lambda** runs exactly when an event arrives, and **API Gateway** provides APIs for applications to call.
 </Story>
 
-<Scene id="en-s1" label="Part 1/3" title="Running code when an event occurs" questions={["exam5_q23", "exam2_q14", "exam1_q60", "exam5_q35", "exam6_q31", "exam3_q30", "exam1_q33"]}>
+<Scene id="en-s1" label="Part 1/4" title="Running code when an event occurs" questions={["exam5_q23", "exam2_q14", "exam1_q60", "exam5_q35", "exam6_q31", "exam3_q30", "exam1_q33"]}>
 
 Three ShopViet tasks: create a thumbnail when a seller uploads an image, update a leaderboard from page views, and clean up old data every week. Compare the "keep a server waiting" option with letting events trigger Lambda:
 
@@ -101,19 +140,40 @@ Three ShopViet tasks: create a thumbnail when a seller uploads an image, update 
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/3" title="Running Lambda in production" questions={["exam4_q25", "exam1_q50", "exam3_q20", "exam6_q35", "exam4_q39", "exam2_q16"]}>
+<Scene id="en-s2" label="Part 2/4" title="Running Lambda in production" questions={["exam4_q25", "exam1_q50", "exam3_q20", "exam6_q35", "exam4_q39", "exam2_q16"]}>
 
 Some problems appear only after deploying to production: a function attached to a VPC cannot reach the internet, users wait a long time at peak hours, notifications are throttled when the concurrency quota is exceeded, the database password is stored in configuration. Pick each scenario, try it, then turn on the option to fix it:
 
 <LambdaRunSim client:visible />
 
-Two more notes. Each invocation of a standard Lambda function runs at most **15 minutes** (900 seconds; Lambda Managed Instances allows up to 90 minutes for asynchronous invocations or through an event source mapping, except Amazon MQ and Amazon DocumentDB); longer jobs should run as containers on Fargate (Containers lesson). When many functions share a library, package that library as **Lambda Layers**.
+Two more notes. Each invocation of a standard Lambda function runs at most **15 minutes** (900 seconds; Lambda Managed Instances allows up to 90 minutes for asynchronous invocations or through an event source mapping, except Amazon MQ and Amazon DocumentDB); longer jobs should run as containers on Fargate (Containers lesson). A Lambda function that is not attached to a VPC can already reach the internet and public AWS APIs; attach it to a VPC only when it needs private resources such as RDS, and then it needs a NAT gateway as in the simulation above. Sizing memory, /tmp and the timeout, and packaging (layers, container images), are covered in part 3.
 
 <Takeaway>Lambda in a VPC needs a NAT gateway to reach the internet. Cold starts at peak hours: provisioned concurrency. Concurrency has a quota per account and Region; configure an alarm on ConcurrentExecutions. Do not store passwords: IAM database authentication. Cross-account access: both the execution role and the bucket policy must allow it.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/3" title="Providing APIs to applications and partners" questions={["exam1_q49", "exam3_q52", "exam3_q53", "exam2_q58", "exam4_q44", "exam5_q32", "exam1_q57", "exam1_q11"]}>
+<Scene id="en-sizing" label="Part 3/4" title="Function resources and packaging" questions={["exam4_q25", "exam3_q32", "exam1_q9"]}>
+
+A few settings of each Lambda function decide the resources of its execution environment:
+
+- **Memory** from 128 MB (the default) to 10,240 MB. Lambda has no separate CPU setting: CPU is allocated **in proportion to memory**, and at 1,769 MB a function has the equivalent of one vCPU. A CPU-bound task that runs slowly needs more memory. Duration is billed in GB-seconds, so its cost depends on the memory allocated.
+- **Ephemeral storage** (`/tmp`) from 512 MB (the default) to 10,240 MB, encrypted at rest with an AWS managed key. Data in `/tmp` is **unique to each execution environment** and is only a transient cache: it can remain when the environment is reused, but Lambda terminates environments every few hours. Data that must last or be shared between functions belongs in Amazon S3 or Amazon EFS.
+- **Timeout**, 3 seconds by default and at most 900 seconds. A timeout close to the run time fails when the data is larger than usual; a timeout set far too high lets a hung invocation hold its execution environment longer than needed. Load testing finds the right value.
+- **Package type**: a .zip file archive (at most 250 MB unzipped, **including layers**) or a **container image** stored in Amazon ECR in the same Region (up to 10 GB). A **Lambda layer** holds libraries, a custom runtime or configuration files shared by several functions; a function uses up to 5 layers, each layer version is an immutable snapshot, and layers apply only to .zip functions.
+
+Initialization time (the cold start) depends on the package size, including libraries, dependencies and layers. Moving a library into a layer keeps the package small and shareable, but does not remove the library's initialization time; to reduce cold starts, import only what the function needs, or use provisioned concurrency (part 2).
+
+Pick each ShopViet workload, adjust the configuration and deploy it:
+
+<FunctionConfigSim client:visible />
+
+A layer is not a place to keep data. When the recommendations team needs to read a large, growing dataset on EFS in a partner's account, Lambda mounts that EFS file system directly through an access point, with a file system policy that allows cross-account access and VPC peering for connectivity: see the [Storage lesson, part 3](/concepts/storage/#en-s3). Packaging data into a layer does not fit, because layer versions are immutable and share the 250 MB limit with the package.
+
+<Takeaway>CPU is proportional to memory (1,769 MB ≈ 1 vCPU). `/tmp` is 512 MB to 10,240 MB, temporary and unique to each execution environment; durable data goes to S3 or EFS. Set the timeout from load tests, not with a large margin. A .zip package is at most 250 MB unzipped including layers; anything larger uses a container image (up to 10 GB). Layers are for shared libraries, not data.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 4/4" title="Providing APIs to applications and partners" questions={["exam1_q49", "exam3_q52", "exam3_q53", "exam2_q58", "exam4_q44", "exam5_q32", "exam1_q57", "exam1_q11"]}>
 
 The mobile app, sales partners and the admin site all call `api.shopviet.vn`. **API Gateway** runs a series of checks before a request reaches the application code. Pick a scenario and send a request:
 
@@ -122,14 +182,35 @@ The mobile app, sales partners and the admin site all call `api.shopviet.vn`. **
 Some other requirements:
 
 - Chat between buyers and sellers needs a two-way connection where the server pushes messages to clients: **WebSocket API**. With a REST API, each request is independent and no connection is kept open.
-- Shippers send their location continuously for order tracking: API Gateway receives the data and pushes it into Kinesis Data Streams for **Amazon Managed Service for Apache Flink** (formerly Amazon Kinesis Data Analytics) to analyze the stream.
+- Couriers send their location continuously for order tracking (the "Couriers stream their locations" scenario in the simulation): a REST API uses an **AWS service integration** to call Kinesis Data Streams `PutRecord` directly, with no Lambda in between, for **Amazon Managed Service for Apache Flink** (formerly Amazon Kinesis Data Analytics) to analyze the stream. Lambda only handles individual requests; it is not where data is stored or analyzed.
 - Receive transactions from the app, run simple data validation, then process them, with the lowest operational cost: **REST API + Lambda** for validation, with a serverless backend behind it. There are no servers or containers to patch.
 
-<Takeaway>Restrict access to internal IP ranges: resource policy. Token validation without writing code: a REST API with a Cognito user pool authorizer, or an HTTP API with a JWT authorizer (HTTP APIs do not support resource policies, API keys or caching). Limits per client: usage plan + API key. Reduce backend load for repeated requests: caching. Long-running tasks: API Gateway pushes into SQS. Two-way communication: WebSocket API.</Takeaway>
+API Gateway offers several ways to authorize users. ShopViet's new mobile app signs users in through an external OIDC-compliant identity provider; the backend must validate JWTs and scopes with low latency and cost, without writing authentication code. An **HTTP API with a JWT authorizer** meets this: API Gateway checks the token signature with the public key from the issuer's `jwks_uri`, validates the `iss`, `aud` and `exp` claims, and requires the token to include at least one of the route's scopes; valid claims are passed to the backend. Compare the other mechanisms:
+
+<QuickCompare client:visible items={[
+  { name: "REST API + Lambda authorizer",
+    use: "You need a custom authorization scheme: a Lambda function receives a bearer token (TOKEN authorizer) or headers and query strings (REQUEST authorizer), checks them itself, for example by looking up credentials in a database, and returns an IAM policy for API Gateway to evaluate.",
+    notHere: "You write, deploy and maintain the JWT validation code; every authorizer run is a Lambda invocation, which adds latency and cost.",
+    instead: "An HTTP API with a **JWT authorizer**: API Gateway validates the JWT and scopes itself, with no code." },
+  { name: "WebSocket API + Lambda authorizer",
+    use: "The application needs a two-way connection, such as chat between buyers and sellers.",
+    notHere: "For WebSocket APIs, a Lambda authorizer can only be used on the `$connect` route: the token is checked once when the connection opens, not on each message. This backend is request-response APIs.",
+    instead: "An HTTP API with a JWT authorizer, which checks the token on every request." },
+  { name: "REST API + Cognito user pool authorizer",
+    use: "Users sign in with an Amazon Cognito user pool; API Gateway validates tokens issued by that user pool, with no code.",
+    notHere: "The tokens come from an external identity provider, not a Cognito user pool. REST APIs also cost more than HTTP APIs.",
+    instead: "An HTTP API with a JWT authorizer configured with that identity provider's issuer and audience." },
+  { name: "IAM authorization",
+    use: "The caller is an application or service with AWS credentials that signs requests with Signature Version 4; access is controlled with IAM policies.",
+    notHere: "End users of the mobile app only have a JWT from the identity provider, not AWS credentials.",
+    instead: "An HTTP API with a JWT authorizer." },
+]} />
+
+<Takeaway>Restrict access to internal IP ranges: resource policy (API Gateway does not sit in a subnet, so there is no security group). Token validation without writing code: a REST API with a Cognito user pool authorizer, or an HTTP API with a JWT authorizer for any OIDC identity provider; a Lambda authorizer when custom logic is needed (WebSocket APIs: only on `$connect`) (HTTP APIs do not support resource policies, API keys or caching). Limits per client: usage plan + API key. Reduce backend load for repeated requests: caching. Long-running tasks: API Gateway pushes into SQS. Stream data: an AWS service integration puts it straight into Kinesis Data Streams. Two-way communication: WebSocket API.</Takeaway>
 
 </Scene>
 
-<Scene id="en-challenge" label="Exercise" title="Classify the settings: Lambda and API Gateway" questions={["exam5_q23", "exam4_q25", "exam3_q53", "exam3_q30"]}>
+<Scene id="en-challenge" label="Exercise" title="Classify the settings: Lambda and API Gateway" questions={["exam5_q23", "exam4_q25", "exam3_q53", "exam3_q30", "exam3_q32"]}>
 
 Sort each feature into where it is configured. On a mobile device: tap a card, then tap the target box.
 
@@ -140,7 +221,9 @@ Sort each feature into where it is configured. On a mobile device: tap a card, t
   ]}
   cards={[
     ["Provisioned concurrency", "lambda"], ["Layers", "lambda"], ["Attach to a VPC", "lambda"], ["Execution role", "lambda"],
+    ["Memory (sets CPU)", "lambda"], ["Ephemeral storage /tmp", "lambda"],
     ["Usage plan + API key", "apigw"], ["Resource policy restricting IPs", "apigw"], ["Caching", "apigw"], ["JWT authorizer", "apigw"],
+    ["AWS service integration to Kinesis", "apigw"],
   ]}
 />
 
@@ -163,6 +246,14 @@ Check your understanding: as the designer of the ShopViet system, which option f
     opts: ["EC2 running crontab", "EventBridge cron invokes Lambda", "Lambda runs continuously and sleeps"],
     a: 1,
     why: "An EventBridge cron schedule triggers Lambda at the right time; Lambda costs arise only for a few minutes of execution each week. EC2 running crontab has to run all week; a standard Lambda function cannot run continuously because each invocation lasts at most 15 minutes." },
+  { q: "The banner function runs slowly and its CPU usage is always at the maximum. Which setting should change?",
+    opts: ["Raise the timeout to 900 seconds", "Increase the function's memory", "Increase ephemeral storage"],
+    a: 1,
+    why: "Lambda allocates CPU in proportion to memory (1,769 MB is the equivalent of one vCPU); increasing memory is how you get more CPU. A longer timeout only lets the function run longer, not faster." },
+  { q: "The recommendations team needs to run ML libraries and a model, 2.5 GB in total unzipped, on Lambda. Which packaging fits?",
+    opts: ["A .zip file with 5 layers", "A container image stored in Amazon ECR", "Download the model to /tmp and treat it as long-term storage"],
+    a: 1,
+    why: "A container image can be up to 10 GB. A .zip package, including all layers, is at most 250 MB unzipped. /tmp is only temporary storage of each execution environment, not long-term storage." },
 ]} />
 
 </Scene>

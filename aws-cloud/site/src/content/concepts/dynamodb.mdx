@@ -29,6 +29,10 @@ docs:
     url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DAX.consistency.html"
   - title: "Using deletion protection"
     url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithTables.Basics.html"
+  - title: "DynamoDB data export to Amazon S3: how it works"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/S3DataExport.HowItWorks.html"
+  - title: "DynamoDB data import from Amazon S3: how it works"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/S3DataImport.HowItWorks.html"
   - title: "Using Aurora Global Database"
     url: "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html"
 ---
@@ -121,8 +125,11 @@ Hai sự cố dữ liệu phổ biến nhất không xuất phát từ phần c�
 | **PITR** | Cần khôi phục về đúng thời điểm trước sự cố | Bất kỳ giây nào trong 1–35 ngày, ra bảng mới |
 | **On-demand backup** | Lưu giữ dài hạn, đáp ứng yêu cầu tuân thủ | Đúng thời điểm tạo backup |
 | **Deletion protection** | Ngăn xoá nhầm | Không cần khôi phục: request xoá bị từ chối |
+| **Export to S3** | Phân tích bằng Athena, Glue, EMR; chuyển dữ liệu sang bucket của account hoặc Region khác | Một thời điểm bất kỳ trong cửa sổ PITR, ghi ra tệp DynamoDB JSON hoặc Amazon Ion trên S3 |
 
-<Takeaway>Khôi phục về một thời điểm chính xác tới từng giây: PITR. Ngăn xoá nhầm với chi phí vận hành thấp nhất: deletion protection. Streams và global tables không phải là cơ chế backup.</Takeaway>
+**Export to S3** là tính năng được quản lý hoàn toàn: xuất toàn bộ bảng (full export) hoặc phần dữ liệu thay đổi trong một khoảng thời gian (incremental export) tại một thời điểm bất kỳ trong cửa sổ PITR, do đó **bảng phải bật PITR**. Export chạy bất đồng bộ, **không tiêu tốn RCU** và không ảnh hưởng hiệu năng hay tính sẵn sàng của bảng; AWS không cam kết thời gian hoàn tất. Đây là bản sao dữ liệu phục vụ phân tích, không phải cơ chế bảo vệ bảng: export không ngăn được thao tác xoá bảng, và để dùng lại dữ liệu cần **import from S3**, thao tác luôn tạo một **bảng mới**. Nếu ShopViet chỉ export thủ công mỗi tuần, một sự cố xoá bảng có thể làm mất dữ liệu của tối đa một tuần, cộng thêm thời gian import và chuyển ứng dụng sang bảng mới.
+
+<Takeaway>Khôi phục về một thời điểm chính xác tới từng giây: PITR. Ngăn xoá nhầm với chi phí vận hành thấp nhất: deletion protection. Phân tích dữ liệu bảng bằng Athena mà không tiêu tốn RCU: export to S3 (cần bật PITR). Streams, global tables và export to S3 không thay thế cho deletion protection và PITR.</Takeaway>
 
 </Scene>
 
@@ -152,7 +159,7 @@ Phân loại từng yêu cầu của ShopViet vào tính năng giải quyết y�
   cards={[
     ["Tải biến động, ban đêm gần như không có người dùng", "speed"], ["Một shop có lưu lượng lớn gây quá tải một partition", "speed"], ["Đọc với độ trễ micro giây", "speed"],
     ["Tự động xoá phiên đăng nhập sau 24 giờ", "life"], ["Gửi email khi có người dùng mới", "life"], ["Lưu item sắp hết hạn sang S3", "life"],
-    ["Khôi phục về đúng 14:31:59 hôm qua", "safe"], ["Không ai xoá được bảng Orders", "safe"], ["Người dùng tại Đức ghi đơn hàng ngay tại Frankfurt", "safe"],
+    ["Khôi phục về đúng 14:31:59 hôm qua", "safe"], ["Không ai xoá được bảng Orders", "safe"], ["Đưa dữ liệu bảng sang S3 để chạy Athena, không tiêu tốn RCU", "safe"], ["Người dùng tại Đức ghi đơn hàng ngay tại Frankfurt", "safe"],
   ]}
 />
 
@@ -179,6 +186,10 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Aurora Global Database", "DynamoDB global tables", "RDS cross-Region read replica"],
     a: 1,
     why: "Global tables có replica hỗ trợ đọc ghi tại mọi Region. Aurora Global Database và read replica chỉ có một Region tiếp nhận ghi." },
+  { q: "Đội phân tích cần chạy truy vấn Athena trên dữ liệu bảng Orders tại thời điểm 00:00 hằng ngày, không làm giảm hiệu năng của bảng đang phục vụ người mua. Phương án nào phù hợp?",
+    opts: ["Lambda Scan toàn bộ bảng mỗi đêm và ghi ra S3", "Bật PITR và dùng DynamoDB export to S3", "Tạo on-demand backup rồi truy vấn trực tiếp bản backup"],
+    a: 1,
+    why: "Export to S3 xuất dữ liệu tại một thời điểm trong cửa sổ PITR, không tiêu tốn RCU và không ảnh hưởng hiệu năng bảng; Athena truy vấn trực tiếp tệp trên S3. Scan tiêu tốn RCU của bảng; on-demand backup chỉ dùng để restore ra bảng mới." },
 ]} />
 
 </Scene>

@@ -7,6 +7,7 @@ import { domainLabel } from "./domainLabel";
 import OptionalBoundary from "./OptionalBoundary";
 import { errorText } from "./errorText";
 import { useT } from "./useT";
+import { ANSWER_NOTES } from "../domain/answerNotes";
 
 interface Props {
   question: Question;
@@ -28,7 +29,7 @@ const IllustrationPanel = lazy(() => import("../illustrations/IllustrationPanel"
 
 export default function QuestionCard({ question: translated, original, total, answer, selection, saving, error, isLast, dispatch }: Props) {
   const tr = useT();
-  const { t, lookup } = tr;
+  const { t, lookup, locale } = tr;
   const [showOriginal, setShowOriginal] = useState(false);
   // Same id, option keys and answers in both languages; only the text differs.
   const q = showOriginal && original ? original : translated;
@@ -99,6 +100,14 @@ export default function QuestionCard({ question: translated, original, total, an
             <summary>{t("exam.explanation")}</summary>
             <div className="pr-html" dangerouslySetInnerHTML={{ __html: q.explanationHtml }} />
           </details>
+          {ANSWER_NOTES[q.id] && (
+            <aside className="pr-note" role="note">
+              <b>{t("exam.noteTitle")}</b> {ANSWER_NOTES[q.id].text[locale]}{" "}
+              {ANSWER_NOTES[q.id].sources.map((s) => (
+                <a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer">{s.title}</a>
+              ))}
+            </aside>
+          )}
         </div>
       )}
 

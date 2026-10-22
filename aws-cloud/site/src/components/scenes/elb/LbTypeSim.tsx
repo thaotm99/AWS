@@ -90,6 +90,34 @@ const scenarios = (L: Lang): PScenario[] => {
           ], ok: false, result: L({ vi: "Đối tác chưa kết nối được. Cần đặt NLB trước dịch vụ, sau đó tạo endpoint service.", en: "The partner cannot connect yet. Put an NLB in front of the service, then create the endpoint service." }) },
   },
   {
+    name: L({ vi: "UDP tới máy chủ on-premises", en: "UDP to on-premises servers" }),
+    request: L({ vi: "UDP 5000 → dịch vụ đồng bộ tồn kho", en: "UDP 5000 → inventory sync service" }),
+    from: L({ vi: "nguồn: thiết bị tại cửa hàng", en: "source: in-store devices" }),
+    toggle: SWITCH,
+    layout: (nlb) => ({
+      viewBox: "0 40 820 210",
+      aria: L({ vi: "Traffic UDP đi qua load balancer, qua Direct Connect tới máy chủ trong data center", en: "UDP traffic goes through the load balancer and over Direct Connect to servers in the data center" }),
+      boxes: [{ x: 520, y: 58, w: 280, h: 172, label: L({ vi: "Data center ShopViet", en: "ShopViet data center" }), edge: true }],
+      nodes: [
+        { id: "c", x: 60, y: 140, l1: L({ vi: "Cửa hàng", en: "Stores" }), user: true },
+        lb(L, nlb, 240, 140),
+        { id: "dx", x: 410, y: 140, w: 110, l1: "Direct Connect", l2: "/ Site-to-Site VPN" },
+        { id: "t1", x: 660, y: 112, w: 170, l1: "10.20.0.11", l2: L({ vi: "máy chủ on-premises", en: "on-premises server" }) },
+        { id: "t2", x: 660, y: 188, w: 170, l1: "10.20.0.12", l2: L({ vi: "máy chủ on-premises", en: "on-premises server" }) },
+      ],
+      links: [["c", "lb"], ["lb", "dx"], ["dx", "t1"], ["dx", "t2"]],
+    }),
+    run: (nlb) => nlb
+      ? { steps: [
+            { at: "lb", state: "pass", msg: L({ vi: "NLB có listener **UDP**; target group dùng target type **ip** với địa chỉ private 10.20.0.0/16 của data center.", en: "The NLB has a **UDP** listener; the target group uses the **ip** target type with the data center's private 10.20.0.0/16 addresses." }) },
+            { at: "dx", state: "pass", msg: L({ vi: "Target type ip nhận tài nguyên on-premises kết nối qua Direct Connect hoặc Site-to-Site VPN, với IP thuộc dải RFC 1918 hoặc 100.64.0.0/10; không dùng được IP public.", en: "The ip target type accepts on-premises resources connected through Direct Connect or Site-to-Site VPN, with IPs in RFC 1918 ranges or 100.64.0.0/10; public IPs cannot be used." }) },
+            { at: "t1", state: "pass", msg: L({ vi: "Máy chủ on-premises nhận datagram UDP.", en: "The on-premises server receives the UDP datagram." }) },
+          ], ok: true, result: L({ vi: "NLB phân phối traffic UDP cho máy chủ on-premises. Đặt một NLB tại mỗi Region; Global Accelerator phía trước định tuyến người dùng tới endpoint phù hợp theo vị trí địa lý và tình trạng healthy.", en: "The NLB distributes UDP traffic to on-premises servers. Put one NLB in each Region; Global Accelerator in front routes users to the best endpoint by geographic proximity and health." }) }
+      : { steps: [
+            { at: "lb", state: "block", flash: "✕", msg: L({ vi: "ALB chỉ có listener HTTP và HTTPS; không nhận được datagram UDP, dù target group của ALB cũng hỗ trợ target type ip.", en: "An ALB has only HTTP and HTTPS listeners; it cannot accept UDP datagrams, even though ALB target groups also support the ip target type." }) },
+          ], ok: false, result: L({ vi: "Dịch vụ UDP không dùng được ALB. Cần **NLB** với target group kiểu ip.", en: "A UDP service cannot use an ALB. Use an **NLB** with an ip target group." }) },
+  },
+  {
     name: L({ vi: "Ẩn máy chủ khỏi Internet", en: "Hide servers from the internet" }),
     request: L({ vi: "HTTPS (TLS) tới api.shopviet.vn", en: "HTTPS (TLS) to api.shopviet.vn" }),
     from: L({ vi: "nguồn: người dùng và một client không xác định", en: "source: users and an unknown client" }),
