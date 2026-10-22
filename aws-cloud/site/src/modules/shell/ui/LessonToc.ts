@@ -35,6 +35,7 @@ export class LessonToc {
     addEventListener("resize", update);
     addEventListener("keydown", (e) => this.onKey(e));
     this.update();
+    this.syncTitle();
   }
 
   /** Rebuild for the language now on screen (each language has its own copy of the lesson). */
@@ -45,8 +46,14 @@ export class LessonToc {
     this.active = -1;
     this.renderList();
     this.update();
-    // The page <title> is static Vietnamese; follow the lesson title shown in the panel.
-    const shown = [...this.root.querySelectorAll<HTMLElement>(".toc-lesson [data-lang]")].find((el) => el.getClientRects().length > 0);
+    this.syncTitle();
+  }
+
+  /** The page <title> is static Vietnamese; follow the lesson title shown in the panel. */
+  private syncTitle(): void {
+    // Chosen by <html lang>, not by layout: the panel itself is hidden at 1280px and below.
+    const lang = document.documentElement.lang;
+    const shown = this.root.querySelector<HTMLElement>(`.toc-lesson [data-lang="${CSS.escape(lang)}"]`);
     const title = (shown ?? this.root.querySelector(".toc-lesson"))?.textContent?.trim();
     if (title) document.title = `${title} · AWS Thực Chiến`;
   }
@@ -106,6 +113,9 @@ export class LessonToc {
 
   private onKey(e: KeyboardEvent): void {
     if (e.ctrlKey || e.metaKey || e.altKey || e.defaultPrevented) return;
+    // A zoom view or the drawer covers the lesson: the keys must not scroll the page behind it.
+    const html = document.documentElement.classList;
+    if (html.contains("zoom-open") || html.contains("drawer-open")) return;
     const target = e.target as HTMLElement;
     if (target.closest("input, textarea, select, [contenteditable]")) return;
     const key = e.key.toLowerCase();

@@ -1,6 +1,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import { flashText, travel, type Pt } from "../../../lib/animate";
 import { rich } from "../diagram";
+import { useLang, type Bi } from "../../../lib/lang";
 import "./packet-sim.css";
 
 // Small engine shared by the ELB, Auto Scaling, container and Lambda simulations.
@@ -82,12 +83,12 @@ interface Props {
   hint?: string;
 }
 
-const TAG: Record<PState, { text: string; cls: string }> = {
-  pass: { text: "QUA", cls: "hit" },
-  block: { text: "CHẶN", cls: "bad" },
-  skip: { text: "BỎ QUA", cls: "info" },
-  change: { text: "XỬ LÝ", cls: "miss" },
-  wait: { text: "CHỜ", cls: "info" },
+const TAG: Record<PState, { text: Bi; cls: string }> = {
+  pass: { text: { vi: "QUA", en: "PASS" }, cls: "hit" },
+  block: { text: { vi: "CHẶN", en: "BLOCKED" }, cls: "bad" },
+  skip: { text: { vi: "BỎ QUA", en: "SKIPPED" }, cls: "info" },
+  change: { text: { vi: "XỬ LÝ", en: "PROCESSED" }, cls: "miss" },
+  wait: { text: { vi: "CHỜ", en: "WAIT" }, cls: "info" },
 };
 
 const size = (n: PNode) => ({ w: n.w ?? 120, h: n.h ?? (n.l2 ? 48 : 38) });
@@ -105,7 +106,8 @@ const d = (pts: Pt[]) => pts.map((p, i) => `${i ? "L" : "M"}${p[0]} ${p[1]}`).jo
 
 type LogLine = { tag?: PState; tagText?: string; ok?: boolean; label?: string; msg: ReactNode };
 
-export default function PacketSim({ scenarios, layout, action = "Gửi request", hint }: Props) {
+export default function PacketSim({ scenarios, layout, action, hint }: Props) {
+  const L = useLang();
   const pk = useRef<SVGGElement>(null);
   const [index, setIndex] = useState(0);
   const sc = scenarios[index];
@@ -113,7 +115,7 @@ export default function PacketSim({ scenarios, layout, action = "Gửi request",
   const own = typeof sc.layout === "function" ? sc.layout(on) : sc.layout;
   const lay = own ?? layout!;
   const byId: Record<string, PNode> = Object.fromEntries(lay.nodes.map((n) => [n.id, n]));
-  const act = sc.action ?? action;
+  const act = sc.action ?? action ?? L({ vi: "Gửi request", en: "Send request" });
   const request = typeof sc.request === "function" ? sc.request(on) : sc.request;
   const [busy, setBusy] = useState(false);
   const [lit, setLit] = useState<Record<string, PState>>({});
@@ -137,56 +139,59 @@ export default function PacketSim({ scenarios, layout, action = "Gửi request",
     const layer = pk.current;
     if (!layer || busy) return;
     setBusy(true);
-    reset();
-    const out = sc.run(on);
-    const start = lay.nodes[0];
-    let cur: PNode = start;
-    let origin: PNode = start;
-    let path: Pt[] = [[start.x, start.y]];
-    let lastBlocked = false;
-    const shownName: Record<string, string> = {};
-    for (const step of out.steps) {
-      const target = byId[step.at];
-      if (!target) continue;
-      if (step.from && byId[step.from]) {
-        cur = origin = byId[step.from];
-        path = [[cur.x, cur.y]];
+    try {
+      reset();
+      const out = sc.run(on);
+      const start = lay.nodes[0];
+      let cur: PNode = start;
+      let origin: PNode = start;
+      let path: Pt[] = [[start.x, start.y]];
+      let lastBlocked = false;
+      const shownName: Record<string, string> = {};
+      for (const step of out.steps) {
+        const target = byId[step.at];
+        if (!target) continue;
+        if (step.from && byId[step.from]) {
+          cur = origin = byId[step.from];
+          path = [[cur.x, cur.y]];
+        }
+        const hop = step.jump || cur.id === target.id ? [[cur.x, cur.y] as Pt] : route(cur, target);
+        const cls = step.state === "block" ? "pkt-bad" : step.state === "change" ? "pkt-edge" : "pkt";
+        if (hop.length > 1) await travel(layer, hop, dur(hop), cls);
+        if (!step.jump) path = path.concat(hop.slice(1));
+        setLit((s) => ({ ...s, [target.id]: step.state }));
+        if (step.relabel) setNames((s) => ({ ...s, [target.id]: { ...s[target.id], ...step.relabel } }));
+        const label = step.label ?? shownName[target.id] ?? target.l1;
+        if (step.relabel?.l1) shownName[target.id] = step.relabel.l1;
+        setLog((l) => [...l, { tag: step.state, tagText: step.tag, label, msg: rich(step.msg) }]);
+        if (step.flash) {
+          const { h } = size(target);
+          flashText(layer, target.x, target.y - h / 2 - 8, step.flash, step.state === "block" ? "pks-flash bad" : "pks-flash", 1100);
+        }
+        lastBlocked = step.state === "block" && !step.jump;
+        if (step.jump) continue;
+        if (step.roundTrip || lastBlocked) {
+          const backTo = [...path].reverse();
+          if (backTo.length > 1) await travel(layer, backTo, dur(backTo), lastBlocked ? "pkt-bad" : "pkt-back");
+          cur = origin;
+          path = [[cur.x, cur.y]];
+        } else {
+          cur = target;
+        }
       }
-      const hop = step.jump || cur.id === target.id ? [[cur.x, cur.y] as Pt] : route(cur, target);
-      const cls = step.state === "block" ? "pkt-bad" : step.state === "change" ? "pkt-edge" : "pkt";
-      if (hop.length > 1) await travel(layer, hop, dur(hop), cls);
-      if (!step.jump) path = path.concat(hop.slice(1));
-      setLit((s) => ({ ...s, [target.id]: step.state }));
-      if (step.relabel) setNames((s) => ({ ...s, [target.id]: { ...s[target.id], ...step.relabel } }));
-      const label = step.label ?? shownName[target.id] ?? target.l1;
-      if (step.relabel?.l1) shownName[target.id] = step.relabel.l1;
-      setLog((l) => [...l, { tag: step.state, tagText: step.tag, label, msg: rich(step.msg) }]);
-      if (step.flash) {
-        const { h } = size(target);
-        flashText(layer, target.x, target.y - h / 2 - 8, step.flash, step.state === "block" ? "pks-flash bad" : "pks-flash", 1100);
+      if (out.back !== false && !lastBlocked && path.length > 1) {
+        const back = [...path].reverse();
+        await travel(layer, back, dur(back), out.ok ? "pkt-back" : "pkt-bad");
       }
-      lastBlocked = step.state === "block" && !step.jump;
-      if (step.jump) continue;
-      if (step.roundTrip || lastBlocked) {
-        const backTo = [...path].reverse();
-        if (backTo.length > 1) await travel(layer, backTo, dur(backTo), lastBlocked ? "pkt-bad" : "pkt-back");
-        cur = origin;
-        path = [[cur.x, cur.y]];
-      } else {
-        cur = target;
-      }
+      setLog((l) => [...l, { ok: out.ok, msg: rich(out.result) }]);
+    } finally {
+      setBusy(false);
     }
-    if (out.back !== false && !lastBlocked && path.length > 1) {
-      const back = [...path].reverse();
-      await travel(layer, back, dur(back), out.ok ? "pkt-back" : "pkt-bad");
-    }
-    setLog((l) => [...l, { ok: out.ok, msg: rich(out.result) }]);
-    setBusy(false);
   }
 
   return (
     <div className="stage pks">
-      <div className="pks-scenarios" role="group" aria-label="Tình huống">
+      <div className="pks-scenarios" role="group" aria-label={L({ vi: "Tình huống", en: "Scenarios" })}>
         {scenarios.map((s, i) => (
           <button key={s.name} className="chip" aria-pressed={i === index} onClick={() => pick(i)} disabled={busy && i !== index}>
             {s.name}
@@ -242,8 +247,8 @@ export default function PacketSim({ scenarios, layout, action = "Gửi request",
       <div className="readout">
         {log.length === 0 ? (
           <p className="pks-hint">
-            {hint ?? <>Nhấn <b>{act}</b> để quan sát từng bước xử lý.</>}
-            {sc.toggle && !hint ? " Thay đổi cấu hình và chạy lại để so sánh kết quả." : ""}
+            {hint ?? L({ vi: <>Nhấn <b>{act}</b> để quan sát từng bước xử lý.</>, en: <>Press <b>{act}</b> to follow each processing step.</> })}
+            {sc.toggle && !hint ? L({ vi: " Thay đổi cấu hình và chạy lại để so sánh kết quả.", en: " Change the configuration and run again to compare the results." }) : ""}
           </p>
         ) : (
           <ul className="log" aria-live="polite">
@@ -252,7 +257,7 @@ export default function PacketSim({ scenarios, layout, action = "Gửi request",
                 <li key={i} className={`pks-result ${e.ok ? "ok" : "bad"}`}>{e.msg}</li>
               ) : (
                 <li key={i}>
-                  <span className={`tag pks-tag ${TAG[e.tag].cls}`}>{e.tagText ?? TAG[e.tag].text}</span>
+                  <span className={`tag pks-tag ${TAG[e.tag].cls}`}>{e.tagText ?? L(TAG[e.tag].text)}</span>
                   <span><b>{e.label}:</b> {e.msg}</span>
                 </li>
               ),

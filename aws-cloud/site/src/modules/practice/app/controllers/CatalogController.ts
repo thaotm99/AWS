@@ -29,7 +29,14 @@ export class CatalogController extends Controller<PracticeEvent, CatalogState, C
       const certifications = await this.catalog.listCertifications();
       const id = certId ?? certifications[0]?.id;
       const [selected, latest] = id
-        ? await Promise.all([this.catalog.getCertification(id), this.attempts.latestByExam(id)])
+        ? await Promise.all([
+            this.catalog.getCertification(id),
+            // Progress badges are extras: unreadable storage must not hide the exam list.
+            this.attempts.latestByExam(id).catch((e) => {
+              console.warn("[practice] could not load attempts", e);
+              return new Map<ExamId, Attempt>();
+            }),
+          ])
         : [null, new Map<ExamId, Attempt>()];
       if (request === this.request) this.store.loaded(certifications, selected, latest);
     } catch (e) {

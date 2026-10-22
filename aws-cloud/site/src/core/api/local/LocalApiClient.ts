@@ -1,3 +1,4 @@
+import { Compat } from "../../compat";
 import { ApiClient, ApiError, type ApiRequest } from "../ApiClient";
 import type { LocalResource, LocalRoute } from "./LocalResource";
 
@@ -40,7 +41,7 @@ export class LocalApiClient extends ApiClient {
       );
       try {
         // Clone so callers can't mutate stored objects, the same as JSON over the wire.
-        return structuredClone(await route.handle({ params, query, body: structuredClone(req.body) })) as T;
+        return Compat.clone(await route.handle({ params, query, body: Compat.clone(req.body) })) as T;
       } catch (e) {
         if (e instanceof ApiError) throw new ApiError(e.status, e.message, req);
         throw new ApiError(500, e instanceof Error ? e.message : String(e), req);

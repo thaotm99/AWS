@@ -14,12 +14,21 @@ export class PracticeApp {
   readonly bus = new EventBus<PracticeEvent>();
   readonly catalog: CatalogController;
   readonly exam: ExamController;
+  private readonly attempts: AttemptService;
 
   constructor(api: ApiClient) {
     const catalog = new CatalogService(api);
-    const attempts = new AttemptService(api);
+    const attempts = (this.attempts = new AttemptService(api));
     this.catalog = new CatalogController(this.bus, catalog, attempts).attach();
     this.exam = new ExamController(this.bus, catalog, attempts).attach();
+  }
+
+  /**
+   * Deletes all saved progress through the API (DELETE /attempts), so it reaches whichever
+   * storage currently holds it. Used by the crash screen, where the page is reloaded afterwards.
+   */
+  resetProgress(): Promise<void> {
+    return this.attempts.clear();
   }
 
   static get(): PracticeApp {

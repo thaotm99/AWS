@@ -1,4 +1,5 @@
 import PacketSim, { type PLayout, type PScenario } from "../elb/PacketSim";
+import { useLang } from "../../../lib/lang";
 
 // Six ShopViet events and the service that should carry each one: SNS fan-out to
 // several SQS queues, an EventBridge partner event bus for a SaaS CRM, EventBridge
@@ -206,6 +207,205 @@ const SCENARIOS: PScenario[] = [
   },
 ];
 
+const SCENARIOS_EN: PScenario[] = [
+  {
+    name: "One order event, three receiving services",
+    action: "Create order",
+    request: "Order #2045 paid",
+    toggle: { label: "Use an SNS topic + SQS (fan-out)", initial: false },
+    layout: (fan): PLayout => fan
+      ? {
+          viewBox: VB,
+          aria: "The order service publishes once to an SNS topic; the topic delivers to three SQS queues, each with one consuming service",
+          nodes: [
+            { id: "web", x: 75, y: Y, w: 120, l1: "Order service" },
+            { id: "sns", x: 245, y: Y, w: 130, l1: "SNS topic", l2: "don-hang-moi" },
+            { id: "q1", x: 450, y: 78, w: 130, l1: "SQS email" },
+            { id: "q2", x: 450, y: Y, w: 130, l1: "SQS inventory" },
+            { id: "q3", x: 450, y: 218, w: 130, l1: "SQS analytics" },
+            { id: "s1", x: 690, y: 78, w: 140, l1: "Email service" },
+            { id: "s2", x: 690, y: Y, w: 140, l1: "Inventory service", l2: "under maintenance" },
+            { id: "s3", x: 690, y: 218, w: 140, l1: "Analytics service" },
+          ],
+          links: [["web", "sns"], ["sns", "q1"], ["sns", "q2"], ["sns", "q3"], ["q1", "s1"], ["q2", "s2"], ["q3", "s3"]],
+        }
+      : {
+          viewBox: VB,
+          aria: "The order service calls three other services directly",
+          nodes: [
+            { id: "web", x: 110, y: Y, w: 140, l1: "Order service" },
+            { id: "s1", x: 650, y: 78, w: 160, l1: "Email service" },
+            { id: "s2", x: 650, y: Y, w: 160, l1: "Inventory service", l2: "under maintenance" },
+            { id: "s3", x: 650, y: 218, w: 160, l1: "Analytics service" },
+          ],
+          links: [["web", "s1"], ["web", "s2"], ["web", "s3"]],
+        },
+    run: (fan) => fan
+      ? { back: false, steps: [
+            { at: "sns", state: "pass", msg: "Publishes **once** to the topic. The order service does not need to know the subscribers." },
+            { at: "q1", state: "pass", msg: "The topic sends a copy to the email queue." },
+            { at: "s1", state: "pass", msg: "The confirmation email is sent." },
+            { at: "q2", from: "sns", state: "pass", msg: "A copy is sent to the inventory queue." },
+            { at: "s2", state: "wait", msg: "The inventory service is under maintenance. The message is kept in the queue and will be processed when the service is back." },
+            { at: "q3", from: "sns", state: "pass", msg: "A copy is sent to the analytics queue." },
+            { at: "s3", state: "pass", msg: "The revenue report is updated." },
+          ], ok: true,
+          result: "Fan-out: **SNS topic → multiple SQS queues**. Each service reads at its own pace; a failure in one service does not make the order fail. Adding a fourth service only needs one more subscription." }
+      : { steps: [
+            { at: "s1", state: "pass", roundTrip: true, msg: "Calls the email API and waits for the response: OK." },
+            { at: "s2", state: "block", flash: "503", msg: "The inventory service is under maintenance; the direct call returns an error." },
+          ], ok: false,
+          result: "The order service must call and wait for each service; an error in one service makes the whole order fail. Adding a new service requires code changes." },
+  },
+  {
+    name: "CRM emits a new-customer event",
+    action: "Register customer",
+    request: "CRM (SaaS): a new customer signs up",
+    toggle: { label: "Use EventBridge (partner event source)", initial: false },
+    layout: (eb): PLayout => ({
+      viewBox: VB,
+      aria: "Events from the CRM software reach ShopViet through EventBridge or through a self-developed script",
+      nodes: [
+        { id: "crm", x: 80, y: Y, w: 120, l1: "CRM (SaaS)", l2: "partner" },
+        { id: "mid", x: 280, y: Y, w: 170, l1: eb ? "EventBridge" : "Script on EC2", l2: eb ? "partner event bus" : "polls CRM API every 5 min" },
+        { id: "rule", x: 480, y: Y, w: 150, l1: "Rule", l2: eb ? "matches event pattern" : "(hand-written if/else)" },
+        { id: "fn", x: 700, y: 92, w: 170, l1: "Lambda", l2: "issues voucher" },
+        { id: "q", x: 700, y: 205, w: 170, l1: "SQS", l2: "welcome email" },
+      ],
+      links: [["crm", "mid"], ["mid", "rule"], ["rule", "fn"], ["rule", "q"]],
+    }),
+    run: (eb) => eb
+      ? { back: false, steps: [
+            { at: "mid", state: "pass", msg: "The CRM is an EventBridge **SaaS partner**: events go straight to the partner event bus, with no code to develop for fetching data." },
+            { at: "rule", state: "pass", msg: "The rule matches the JSON event pattern (`detail-type: New Customer`) and routes to two targets." },
+            { at: "fn", state: "pass", msg: "The voucher is issued immediately." },
+            { at: "q", from: "rule", state: "pass", msg: "The event is put into the email queue." },
+          ], ok: true,
+          result: "Events from a SaaS application or from an AWS service: **EventBridge**. Rules filter on event content; each rule can route to multiple targets." }
+      : { back: false, steps: [
+            { at: "mid", state: "wait", msg: "The script polls the CRM API every 5 minutes and handles tokens, retries and pagination itself." },
+            { at: "rule", state: "change", tag: "CUSTOM", msg: "Routing logic for each event type has to be developed in-house." },
+            { at: "fn", state: "pass", msg: "The voucher is issued with a delay of several minutes." },
+          ], ok: false,
+          result: "The solution works but has high latency, and it adds a server and a large amount of code to operate yourself." },
+  },
+  {
+    name: "30-minute reconciliation job every night",
+    action: "Trigger at 2:00",
+    request: "cron(0 2 * * ? *) · reconciliation script runs ~30 min",
+    toggle: { label: "Run the job on Fargate (instead of Lambda)", initial: false },
+    layout: (fg): PLayout => ({
+      viewBox: VB,
+      aria: "EventBridge Scheduler triggers the reconciliation job on a schedule",
+      nodes: [
+        { id: "sch", x: 120, y: Y, w: 180, l1: "EventBridge Scheduler", l2: "2:00 every night" },
+        { id: "job", x: 420, y: Y, w: 200, l1: fg ? "ECS task on Fargate" : "Lambda", l2: fg ? "container with the script" : "reconciliation script" },
+        { id: "db", x: 700, y: Y, w: 160, l1: "Order database" },
+      ],
+      links: [["sch", "job"], ["job", "db"]],
+    }),
+    run: (fg) => fg
+      ? { steps: [
+            { at: "job", state: "pass", msg: "Scheduler starts an ECS task on **Fargate**: it uses the script's existing container, is not limited to 15 minutes, and needs no server management." },
+            { at: "db", state: "pass", flash: "30 min", msg: "Reconciliation completes." },
+          ], ok: true,
+          result: "Short scheduled jobs (a few minutes): EventBridge triggers Lambda. Jobs longer than 15 minutes: EventBridge Scheduler starts a Fargate task." }
+      : { steps: [
+            { at: "job", state: "block", flash: "15 min", msg: "The maximum timeout of a standard Lambda function is **900 seconds (15 minutes)**. The 30-minute script is stopped midway." },
+          ], ok: false,
+          result: "The schedule is right but the runtime environment is not. Long jobs need to run a container on Fargate." },
+  },
+  {
+    name: "Multi-step product video processing",
+    action: "Upload video",
+    request: "s3://shopviet-video/ao-khoac.mov",
+    toggle: { label: "Configure Retry for the transcoding step in the state machine", initial: false },
+    layout: {
+      viewBox: VB,
+      aria: "Step Functions orchestrates: validate, transcode with AWS Batch, save to S3, notify",
+      boxes: [{ x: 170, y: 92, w: 640, h: 112, label: "AWS Step Functions · state machine" }],
+      nodes: [
+        { id: "s3", x: 80, y: Y, w: 120, l1: "S3", l2: "source video" },
+        { id: "check", x: 255, y: Y + 6, w: 130, l1: "Validate", l2: "Lambda" },
+        { id: "batch", x: 410, y: Y + 6, w: 140, l1: "Transcode", l2: "AWS Batch" },
+        { id: "save", x: 565, y: Y + 6, w: 130, l1: "Save output", l2: "S3" },
+        { id: "notify", x: 720, y: Y + 6, w: 130, l1: "Notify", l2: "SNS" },
+      ],
+      links: [["s3", "check"], ["check", "batch"], ["batch", "save"], ["save", "notify"]],
+    },
+    run: (retry) => retry
+      ? { back: false, steps: [
+            { at: "check", state: "pass", msg: "The video is valid." },
+            { at: "batch", state: "change", tag: "RETRY", flash: "error", msg: "Attempt 1 fails: the Batch Spot Instance is interrupted. This step is configured with **Retry** (2 attempts, increasing backoff), so it runs again." },
+            { at: "batch", state: "pass", jump: true, msg: "Attempt 2 succeeds. Step Functions waits for the Batch job to finish before moving to the next step." },
+            { at: "save", state: "pass", msg: "The transcoded video is stored." },
+            { at: "notify", state: "pass", msg: "The seller is notified that the video is ready." },
+          ], ok: true,
+          result: "**Step Functions** keeps the state of each step, retries automatically, calls AWS Batch and waits for the job to complete. No orchestration logic to develop and no servers to manage." }
+      : { back: false, steps: [
+            { at: "check", state: "pass", msg: "The video is valid." },
+            { at: "batch", state: "block", flash: "Failed", msg: "The Batch Spot Instance is interrupted. Because no Retry is configured, the whole execution ends in the **Failed** state." },
+          ], ok: false,
+          result: "One transient error makes the whole workflow fail. Add Retry (and Catch for unrecoverable errors) to the state machine." },
+  },
+  {
+    name: "Legacy inventory app uses RabbitMQ",
+    action: "Send message",
+    request: "AMQP publish → exchange giao-van",
+    toggle: { label: "Move the broker to Amazon MQ", initial: false },
+    layout: (mq): PLayout => ({
+      viewBox: VB,
+      aria: "The inventory app sends messages through a broker to the shipping app",
+      nodes: [
+        { id: "app", x: 110, y: Y, w: 150, l1: "Inventory app", l2: "AMQP protocol" },
+        { id: "broker", x: 410, y: Y, w: 200, l1: mq ? "Amazon MQ" : "Amazon SQS", l2: mq ? "AWS-managed RabbitMQ broker" : "SQS-specific API" },
+        { id: "cons", x: 700, y: Y, w: 150, l1: "Shipping app", l2: "AMQP protocol" },
+      ],
+      links: [["app", "broker"], ["broker", "cons"]],
+    }),
+    run: (mq) => mq
+      ? { steps: [
+            { at: "broker", state: "pass", msg: "**Amazon MQ** is a managed message broker service for Apache ActiveMQ Classic and RabbitMQ that uses industry-standard APIs and protocols such as JMS, NMS, AMQP, STOMP, MQTT and WebSocket." },
+            { at: "cons", state: "pass", msg: "The shipping app receives messages as before." },
+          ], ok: true,
+          result: "In most cases there is no need to rewrite messaging code when moving to AWS; Amazon MQ performs broker maintenance and version upgrades in a scheduled maintenance window. Amazon MQ is best suited for migrating from traditional message brokers." }
+      : { steps: [
+            { at: "broker", state: "block", flash: "AMQP?", msg: "SQS does not support AMQP. Both apps would have to be rewritten with the SQS SDK." },
+          ], ok: false,
+          result: "SQS is low-cost and simple but does not support the existing protocol. To minimize code changes: Amazon MQ." },
+  },
+  {
+    name: "Imported certificate about to expire",
+    action: "Run evaluation",
+    request: "The shopviet.vn certificate is valid for 29 more days",
+    toggle: { label: "Enable an AWS Config managed rule (daysToExpiration = 30) + SNS", initial: false },
+    layout: {
+      viewBox: VB,
+      aria: "AWS Config evaluates the certificate in ACM and sends a notification through SNS to the security team",
+      nodes: [
+        { id: "cert", x: 90, y: Y, w: 140, l1: "SSL/TLS certificate", l2: "imported into ACM" },
+        { id: "cfg", x: 330, y: Y, w: 220, l1: "AWS Config rule", l2: "acm-certificate-expiration-check" },
+        { id: "sns", x: 560, y: Y, w: 120, l1: "SNS topic" },
+        { id: "team", x: 740, y: Y, l1: "Security team", user: true },
+      ],
+      links: [["cert", "cfg"], ["cfg", "sns"], ["sns", "team"]],
+    },
+    run: (on) => on
+      ? { back: false, steps: [
+            { at: "cfg", state: "change", tag: "NON_COMPLIANT", msg: "The managed rule evaluates the certificate as NON_COMPLIANT because it is valid for fewer than 30 days. The `daysToExpiration` parameter defaults to 14; ShopViet has set it to 30." },
+            { at: "sns", state: "pass", msg: "The evaluation result is sent to the SNS topic." },
+            { at: "team", state: "pass", msg: "The security team receives an email notification and has about a month to replace the certificate." },
+          ], ok: true,
+          result: "No script to develop. ACM renews certificates **issued by ACM** automatically; for **imported** certificates, monitoring has to be set up as shown." }
+      : { back: false, steps: [
+            { at: "cfg", state: "skip", msg: "No rule is monitoring yet. ACM does not renew imported certificates automatically." },
+            { at: "team", state: "block", flash: "expired", msg: "No notification is sent. When the certificate expires, browsers show users a warning." },
+          ], ok: false,
+          result: "Enable the AWS Config managed rule and send the evaluation results through SNS." },
+  },
+];
+
 export default function EventRouterSim() {
-  return <PacketSim scenarios={SCENARIOS} hint="Chọn tình huống, sau đó chọn nút để phát sự kiện. Thay đổi cấu hình và chạy lại để so sánh." />;
+  const L = useLang();
+  return <PacketSim scenarios={L({ vi: SCENARIOS, en: SCENARIOS_EN })} hint={L({ vi: "Chọn tình huống, sau đó chọn nút để phát sự kiện. Thay đổi cấu hình và chạy lại để so sánh.", en: "Choose a scenario, then choose the button to emit the event. Change the setting and run again to compare." })} />;
 }

@@ -142,8 +142,10 @@ Variables** và tạo:
 | `DISTRIBUTION_ID` | `DistributionId` |
 | `AWS_REGION` | `ap-southeast-1` (tùy chọn) |
 
-Từ đó, mỗi lần merge thay đổi trong `aws-cloud/` vào `master`, workflow `.github/workflows/aws-cloud.yml`
-sẽ build và deploy. Web chạy ở địa chỉ trong output `SiteUrl` (`https://xxxx.cloudfront.net`).
+> **Lưu ý:** job deploy lên S3 + CloudFront đã bị bỏ khỏi `.github/workflows/aws-cloud.yml`. Site được
+> deploy bằng Vercel; đường S3 public nội dung đề có bản quyền mà không có Basic Auth và không có các
+> redirect trong `vercel.json`. Workflow giờ chỉ build site và `cdk synth` để kiểm tra stack; các biến
+> trong bảng trên không còn được dùng.
 
 IAM role chỉ cho phép workflow chạy trên nhánh `master` của `thaotm99/AWS` assume, và chỉ có quyền
 ghi vào đúng bucket này cùng quyền invalidate đúng distribution này.

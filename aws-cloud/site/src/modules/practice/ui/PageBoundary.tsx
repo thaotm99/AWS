@@ -1,7 +1,9 @@
 import { Component, type ReactNode } from "react";
 import { i18n } from "../../../app/i18n";
+import { PracticeApp } from "../app/PracticeApp";
 
-const STORE = "aws-tu-nen-practice";
+/** The page reloads after this even if storage never answers, so the button can't hang. */
+const RESET_TIMEOUT_MS = 5000;
 
 interface State {
   error: Error | null;
@@ -22,11 +24,21 @@ export default class PageBoundary extends Component<{ children: ReactNode }, Sta
     console.error("Practice page crashed:", error);
   }
 
-  private resetProgress = (): void => {
+  private resetProgress = async (): Promise<void> => {
     const { t } = i18n.translator();
     if (!confirm(t("practice.crash.confirmReset"))) return;
-    const req = indexedDB.deleteDatabase(STORE);
-    req.onsuccess = req.onerror = req.onblocked = () => location.reload();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      await Promise.race([
+        PracticeApp.get().resetProgress(),
+        new Promise((_, reject) => (timer = setTimeout(() => reject(new Error("reset timed out")), RESET_TIMEOUT_MS))),
+      ]);
+    } catch (e) {
+      console.error("[practice] could not reset progress", e);
+    } finally {
+      clearTimeout(timer);
+      location.reload();
+    }
   };
 
   render(): ReactNode {

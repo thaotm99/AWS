@@ -1,0 +1,182 @@
+---
+title: "Global Infrastructure: Regions, Availability Zones and edge locations"
+lede: "This lesson covers the principles for placing resources on the AWS global infrastructure: the scope of each resource type within a Region, designing so that a failure in one Availability Zone does not disrupt the whole system, the criteria for choosing between CloudFront and Global Accelerator, and the data flows that incur data transfer charges."
+minutes: 20
+scenes: 6
+prerequisites: []
+docs:
+  - title: "Copy an AMI (Amazon EC2)"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/CopyingAMIs.html"
+  - title: "NAT gateways (Amazon VPC)"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html"
+  - title: "What is AWS Global Accelerator?"
+    url: "https://docs.aws.amazon.com/global-accelerator/latest/dg/what-is-global-accelerator.html"
+  - title: "Amazon S3 Transfer Acceleration"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/transfer-acceleration.html"
+  - title: "Gateway endpoints for Amazon S3"
+    url: "https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-s3.html"
+  - title: "Working with DB instance read replicas (Amazon RDS)"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html"
+  - title: "Regional NAT gateways for automatic multi-AZ expansion"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/nat-gateways-regional.html"
+  - title: "AZ IDs (AWS Regions and Availability Zones)"
+    url: "https://docs.aws.amazon.com/global-infrastructure/latest/regions/az-ids.html"
+  - title: "Mounting EFS file systems from a different VPC"
+    url: "https://docs.aws.amazon.com/efs/latest/ug/efs-different-vpc.html"
+  - title: "Endpoints for standard accelerators (Global Accelerator)"
+    url: "https://docs.aws.amazon.com/global-accelerator/latest/dg/about-endpoints.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import AmiCopySim from "../../components/scenes/AmiCopySim.tsx";
+import ScopeExplorer from "../../components/scenes/ScopeExplorer.tsx";
+import AzFailureSim from "../../components/scenes/AzFailureSim.tsx";
+import EdgeCacheDemo from "../../components/scenes/EdgeCacheDemo.tsx";
+import GlobalAcceleratorSim from "../../components/scenes/GlobalAcceleratorSim.tsx";
+import EdgeChoiceSim from "../../components/scenes/global-infra/EdgeChoiceSim.tsx";
+import GlobalMythsSim from "../../components/scenes/global-infra/GlobalMythsSim.tsx";
+import CostPatterns from "../../components/scenes/CostPatterns.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#en-s1", label: "1 · Region scope" },
+  { href: "#en-s2", label: "2 · Resource scope" },
+  { href: "#en-s3", label: "3 · Availability Zone failure" },
+  { href: "#en-s4", label: "4 · CloudFront and S3 Transfer Acceleration" },
+  { href: "#en-s5", label: "5 · Global Accelerator" },
+  { href: "#en-s6", label: "6 · Data transfer costs" },
+  { href: "#en-challenge", label: "Exercise" },
+]}>
+**ShopViet** is an e-commerce system serving users in many countries. Each part below corresponds to one infrastructure design decision; the simulations let you try each option and see which one works correctly and which one leads to an incident.
+</Story>
+
+<Scene id="en-s1" label="Part 1/6" title="Region scope: resources are not automatically available in another Region" questions={["exam1_q41", "exam4_q5"]}>
+
+A **Region** is an independent geographic area, for example Singapore or Tokyo. Many resources, such as **AMIs** and **EBS snapshots**, exist only in the Region where they were created. ShopViet needs to prepare a recovery plan in Tokyo. Perform each step in turn, or try launching directly in Tokyo to see the result.
+
+<AmiCopySim client:visible />
+
+<Takeaway>AMIs and snapshots are Regional resources. To use them in another Region, they must be copied; when you copy an AMI, AWS automatically creates the corresponding snapshot in the destination Region. For fast recovery in another Region, the AMI must be copied to that Region in advance.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 2/6" title="The scope of each resource type" questions={["exam1_q42", "exam3_q62"]}>
+
+A Region consists of multiple **Availability Zones (AZs)**: data centers with independent power and networking, connected to each other by a private low-latency network. The scope of a resource determines its fault tolerance. Select each ShopViet resource to see its scope.
+
+<ScopeExplorer client:visible />
+
+<Takeaway>Regional resources (S3, EFS, AMI, VPC) can be used from every AZ. AZ-scoped resources (subnet, EC2, EBS, NAT gateway in zonal mode) are tied to one AZ; to tolerate an AZ failure, these resources must be created in multiple AZs. A NAT gateway in regional mode automatically expands to the AZs that have workloads.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 3/6" title="The impact of an Availability Zone failure" questions={["exam1_q2", "exam2_q8", "exam2_q32"]}>
+
+ShopViet runs 2 EC2 web servers behind a load balancer. Each dot represents a user request. Choose a server placement, then trigger a failure to see the impact.
+
+<AzFailureSim client:visible />
+
+<Takeaway>The standard fault-tolerant architecture: EC2 in an Auto Scaling group spread across at least 2 AZs, behind a load balancer. Two servers in the same AZ both stop working when that AZ fails.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s4" label="Part 4/6" title="Edge locations: CloudFront for downloads, S3 Transfer Acceleration for uploads" questions={["exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
+
+**Edge locations** are AWS points of presence located close to users, far more numerous than Regions. **CloudFront** caches content at these locations; the origin can be S3, an ALB or an on-premises server. ShopViet's product images are stored in S3 in Singapore. Fetch an image twice to compare the results.
+
+<EdgeCacheDemo client:visible />
+
+In the other direction, when a distant supplier **uploads** large files to S3, the right solution is **S3 Transfer Acceleration**: data enters the edge location close to the upload source, then travels over the AWS network to the bucket; this solution is often combined with **multipart upload**.
+
+<Takeaway>High latency when distant users fetch content: CloudFront (even when the backend must stay where it is). Slow uploads of large files to S3: S3 Transfer Acceleration combined with multipart upload. A requirement in both directions: use both together.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s5" label="Part 5/6" title="Global Accelerator: static IP addresses, TCP/UDP and failover between Regions" questions={["exam1_q59", "exam2_q7", "exam2_q22", "exam3_q8", "exam3_q45", "exam4_q58", "exam5_q4", "exam5_q30", "exam5_q55", "exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
+
+**AWS Global Accelerator** also uses edge locations but does not cache content. The service provides **2 static anycast IPv4 addresses** (dual-stack: 2 additional IPv6 addresses), receives TCP/UDP traffic at the edge location closest to the user, then carries it over the AWS private network to the nearest healthy endpoint (ALB, NLB, EC2 or Elastic IP) in one or more Regions. The simulation below compares it with a DNS-only approach when a Region fails:
+
+<GlobalAcceleratorSim client:visible />
+
+The three services all use edge locations but solve three different problems. Choose a ShopViet scenario, apply each service in turn and press **Send traffic** to find the service that meets the requirement.
+
+<EdgeChoiceSim client:visible />
+
+<Takeaway>UDP, static IP addresses for partners to put in an allow list, or Region failover that does not depend on DNS: Global Accelerator. Caching pages, images, video: CloudFront. Uploading large files to S3: S3 Transfer Acceleration.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s6" label="Part 6/6" title="Data flows that incur data transfer charges" questions={["exam2_q62", "exam3_q47", "exam5_q2"]}>
+
+When ShopViet's AWS bill grows, the cause is often not the unit price of a service but data flows that were not designed well. Below are three scenarios that commonly incur charges. Choose a scenario and compare the two options.
+
+<CostPatterns client:visible />
+
+<Takeaway>A Read Replica in the same Region has no replication charge; a Read Replica in another Region does. EC2 in a private subnet reading and writing S3 in the same Region: use an S3 gateway endpoint instead of a NAT gateway. Keep large traffic volumes inside AWS and send only the small amount of data out.</Takeaway>
+
+</Scene>
+
+<Scene id="en-confuse" label="Common mistakes" title="Four common configuration mistakes when expanding infrastructure" questions={["exam1_q42", "exam3_q62", "exam6_q58", "exam3_q22"]}>
+
+The four requirements below look simple but are often configured wrongly as ShopViet expands its infrastructure. Choose a scenario, try the option that is commonly applied first, then compare it with the correct option.
+
+<GlobalMythsSim client:visible />
+
+<Takeaway>EFS can be accessed from another Region through inter-Region VPC peering, without copying data. A public NAT gateway in zonal mode is placed in a public subnet (regional mode does not need a public subnet); an egress-only internet gateway is for IPv6 only. To identify the same AZ as another account: use the AZ ID. To accelerate both downloads and uploads: use CloudFront and S3 Transfer Acceleration together.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Sort resources by scope" questions={["exam1_q41", "exam1_q59", "exam2_q62", "exam3_q47", "exam3_q62"]}>
+
+Drag each card into the matching group. On a mobile device: select a card, then select the target box.
+
+<SortGame client:visible
+  bins={[
+    { id: "global", title: "Global", sub: "Shared by every Region", hint: "Hint: a resource created once and usable in every Region." },
+    { id: "region", title: "Region", sub: "Usable from every AZ in the Region", hint: "Hint: a resource that belongs to one Region; to use it in another Region, it must be copied or accessed over a connection." },
+    { id: "az", title: "AZ", sub: "Tied to one AZ", hint: "Hint: a resource fixed in one AZ; for fault tolerance, it must be created in multiple AZs." },
+  ]}
+  cards={[
+    ["IAM", "global"], ["Route 53", "global"],
+    ["S3 bucket", "region"], ["EFS file system", "region"], ["AMI", "region"], ["VPC", "region"],
+    ["Subnet", "az"], ["NAT gateway (zonal)", "az"], ["EC2 instance", "az"], ["EBS volume", "az"],
+  ]}
+/>
+
+Check your understanding: as the designer of the ShopViet system, which option is right?
+
+<Quiz client:visible items={[
+  { q: "ShopViet creates an AMI from a snapshot of the web server in Singapore, copies the AMI to Tokyo, then launches an EC2 instance from that AMI in Tokyo. Which resources does the Tokyo Region then have?",
+    opts: ["1 EC2 instance and 1 AMI", "1 EC2 instance, 1 AMI and 1 snapshot", "1 EC2 instance and 1 snapshot"],
+    a: 1,
+    why: "Copying the AMI to Tokyo automatically creates the corresponding snapshot in Tokyo, along with the AMI and the EC2 instance just launched." },
+  { q: "ShopViet runs a promotional minigame that uses UDP, players are on several continents, and the application must fail over to another Region quickly when a Region fails. Which service fits?",
+    opts: ["Amazon CloudFront", "AWS Global Accelerator", "S3 Transfer Acceleration"],
+    a: 1,
+    why: "CloudFront accepts only HTTP/HTTPS requests (including WebSocket and gRPC). Global Accelerator supports UDP and automatically shifts traffic to a healthy endpoint in another Region." },
+  { q: "ShopViet adds an RDS Read Replica for reporting. Which statement about data transfer charges is correct?",
+    opts: ["Replication within the same Region is charged", "Replication between two Regions is charged", "Replication between two Regions is free"],
+    a: 1,
+    why: "Replication to a Read Replica in the same Region has no data transfer charge; a cross-Region Read Replica does." },
+  { q: "ShopViet's workers in a private subnet read and write large volumes of images to S3 in the same Region, currently through a NAT gateway, and the NAT gateway cost is very high. Which solution reduces cost?",
+    opts: ["Add another NAT gateway", "Create an S3 gateway endpoint and update the route table", "Move the EC2 instances to a public subnet"],
+    a: 1,
+    why: "A gateway endpoint for S3 has no additional charge; traffic no longer goes through the NAT gateway, so no NAT gateway data processing charge is incurred." },
+  { q: "ShopViet's VPC has public and private subnets in 3 AZs. Servers in the private subnets need internet access to download updates, even when one AZ fails. Which architecture fits?",
+    opts: ["One NAT gateway shared by all 3 AZs", "One NAT gateway per AZ in a public subnet, with a separate route table per AZ", "One NAT gateway per AZ in a private subnet"],
+    a: 1,
+    why: "A public NAT gateway in zonal mode must be placed in a public subnet and is tied to one AZ; so each AZ needs a NAT gateway, with its own route table pointing to the NAT gateway in the same AZ. A regional NAT gateway is the alternative: one NAT gateway automatically expands to the AZs that have workloads, without needing a public subnet." },
+]} />
+
+</Scene>
+
+<Scene id="en-deep" label="Going further" title="Requirements for data stored on premises" questions={["exam1_q27"]}>
+  <details class="deep">
+    <summary>AWS Outposts</summary>
+    <div class="deep-body">
+      <p><b>AWS Outposts</b> is AWS hardware installed in the organization's own data center, running AWS services with the same APIs and tools. Outposts fits when regulations require data and workloads to stay on premises but the organization still needs AWS managed services.</p>
+    </div>
+  </details>
+</Scene>

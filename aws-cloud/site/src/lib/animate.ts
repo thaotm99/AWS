@@ -6,8 +6,10 @@ export function prefersReducedMotion(): boolean {
   return typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-/** Move a dot along a polyline inside `layer`. Resolves when it arrives. */
+/** Move a dot along a polyline inside `layer`. Resolves when it arrives.
+ *  With fewer than 2 points there is no path to follow, so it resolves at once. */
 export function travel(layer: SVGGElement, pts: Pt[], dur: number, cls: string, r = 6): Promise<void> {
+  if (pts.length < 2) return Promise.resolve();
   return new Promise((resolve) => {
     const dot = document.createElementNS(NS, "circle");
     dot.setAttribute("r", String(r));

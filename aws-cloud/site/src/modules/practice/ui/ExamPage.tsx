@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import PageBoundary from "./PageBoundary";
 import { PracticeApp } from "../app/PracticeApp";
+import { Scoring } from "../domain/Scoring";
 import QuestionCard from "./QuestionCard";
 import QuestionMap from "./QuestionMap";
 import ResultPanel from "./ResultPanel";
@@ -37,6 +38,8 @@ function ExamView({ certId, examId, topic }: Props) {
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.metaKey || e.ctrlKey || e.altKey || store.getState().view !== "question") return;
+      // A full-screen diagram or the phone menu is on top: keys belong to it, not to the question.
+      if (document.documentElement.matches(".zoom-open, .drawer-open")) return;
       const target = e.target as HTMLElement;
       if (target.closest("input, textarea, select, button, a, summary")) return;
       const q = store.question;
@@ -75,6 +78,7 @@ function ExamView({ certId, examId, topic }: Props) {
   const heading = topic ? t("topic.title", { title: topic.title }) : `${cert.code} · ${examLabel}`;
 
   const question = exam.questions[index];
+  const finished = Scoring.isFinished(attempt, exam.questions.map((q) => q.id));
   return (
     <>
       {topic ? (
@@ -91,7 +95,7 @@ function ExamView({ certId, examId, topic }: Props) {
       )}
       <div className="pr-run-head">
         <h1>{heading}</h1>
-        {view === "question" && attempt.finishedAt && (
+        {view === "question" && finished && (
           <button type="button" className="btn" onClick={() => app.dispatch({ type: "exam/showResult" })}>{t("exam.showResults")}</button>
         )}
       </div>

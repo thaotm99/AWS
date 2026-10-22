@@ -1,24 +1,28 @@
+import { useLang } from "../../../lib/lang";
 import CaseSim, { type CaseScenario } from "../global-infra/CaseSim";
+
+type Lang = ReturnType<typeof useLang>;
 
 // Four Route 53 settings that ShopViet can easily get wrong: how an NLB splits
 // traffic when cross-zone is off, failover vs weighted, geolocation vs
 // geoproximity bias, and the two layers that can block content by country.
 
-const SCENARIOS: CaseScenario[] = [
+function scenarios(L: Lang): CaseScenario[] {
+return [
   {
-    name: "NLB phân phối tải không đều giữa hai AZ",
+    name: L({ vi: "NLB phân phối tải không đều giữa hai AZ", en: "NLB spreads load unevenly across two AZs" }),
     request: "GET /api/stock",
-    from: "1.000 request mỗi giây",
+    from: L({ vi: "1.000 request mỗi giây", en: "1,000 requests per second" }),
     boxes: [
-      { x: 330, y: 4, w: 470, h: 108, label: "AZ-A · 4 target" },
-      { x: 330, y: 124, w: 470, h: 108, label: "AZ-B · 6 target" },
+      { x: 330, y: 4, w: 470, h: 108, label: L({ vi: "AZ-A · 4 target", en: "AZ-A · 4 targets" }) },
+      { x: 330, y: 124, w: 470, h: 108, label: L({ vi: "AZ-B · 6 target", en: "AZ-B · 6 targets" }) },
     ],
     nodes: [
-      { id: "r53", x: 20, y: 97, w: 150, l1: "Route 53", l2: "trả về IP của 2 node NLB" },
-      { id: "na", x: 360, y: 40, w: 170, l1: "Node NLB AZ-A", l2: "nhận 50%" },
-      { id: "nb", x: 360, y: 160, w: 170, l1: "Node NLB AZ-B", l2: "nhận 50%" },
-      { id: "ta", x: 610, y: 40, w: 170, l1: "4 target", l2: "AZ-A" },
-      { id: "tb", x: 610, y: 160, w: 170, l1: "6 target", l2: "AZ-B" },
+      { id: "r53", x: 20, y: 97, w: 150, l1: "Route 53", l2: L({ vi: "trả về IP của 2 node NLB", en: "returns the IPs of 2 NLB nodes" }) },
+      { id: "na", x: 360, y: 40, w: 170, l1: "Node NLB AZ-A", l2: L({ vi: "nhận 50%", en: "receives 50%" }) },
+      { id: "nb", x: 360, y: 160, w: 170, l1: "Node NLB AZ-B", l2: L({ vi: "nhận 50%", en: "receives 50%" }) },
+      { id: "ta", x: 610, y: 40, w: 170, l1: L({ vi: "4 target", en: "4 targets" }), l2: "AZ-A" },
+      { id: "tb", x: 610, y: 160, w: 170, l1: L({ vi: "6 target", en: "6 targets" }), l2: "AZ-B" },
     ],
     links: [
       { a: "r53", b: "na", via: [[250, 120], [250, 63]] }, { a: "r53", b: "nb", via: [[250, 120], [250, 183]] },
@@ -26,104 +30,106 @@ const SCENARIOS: CaseScenario[] = [
       { id: "xa", a: "na", b: "tb", dashed: true }, { id: "xb", a: "nb", b: "ta", dashed: true },
     ],
     start: "r53",
-    choices: { label: "Cross-zone load balancing", options: ["Tắt", "Bật"], initial: 0 },
+    choices: { label: "Cross-zone load balancing", options: [L({ vi: "Tắt", en: "Off" }), L({ vi: "Bật", en: "On" })], initial: 0 },
     run: (v) => v === 0
       ? { hide: ["xa", "xb"], back: false, steps: [
-            { at: "na", via: [[250, 120], [250, 63]], state: "pass", msg: "Route 53 phân phối đều cho node NLB của mỗi AZ: 50%." },
-            { at: "ta", state: "change", tag: "12,5%", msg: "Node AZ-A chỉ phân phối cho 4 target trong cùng AZ: 50% ÷ 4 = **12,5%** mỗi target." },
-            { at: "tb", via: [[570, 63], [570, 183]], state: "change", tag: "8,33%", msg: "Node AZ-B phân phối cho 6 target: 50% ÷ 6 = **8,33%** mỗi target." },
+            { at: "na", via: [[250, 120], [250, 63]], state: "pass", msg: L({ vi: "Route 53 phân phối đều cho node NLB của mỗi AZ: 50%.", en: "Route 53 distributes evenly to the NLB node in each AZ: 50%." }) },
+            { at: "ta", state: "change", tag: L({ vi: "12,5%", en: "12.5%" }), msg: L({ vi: "Node AZ-A chỉ phân phối cho 4 target trong cùng AZ: 50% ÷ 4 = **12,5%** mỗi target.", en: "The AZ-A node distributes only to the 4 targets in its own AZ: 50% ÷ 4 = **12.5%** per target." }) },
+            { at: "tb", via: [[570, 63], [570, 183]], state: "change", tag: L({ vi: "8,33%", en: "8.33%" }), msg: L({ vi: "Node AZ-B phân phối cho 6 target: 50% ÷ 6 = **8,33%** mỗi target.", en: "The AZ-B node distributes to 6 targets: 50% ÷ 6 = **8.33%** per target." }) },
           ],
-          ok: false, result: "Mỗi target tại AZ-A chịu tải lớn hơn target tại AZ-B. Bật cross-zone load balancing để phân phối đều." }
+          ok: false, result: L({ vi: "Mỗi target tại AZ-A chịu tải lớn hơn target tại AZ-B. Bật cross-zone load balancing để phân phối đều.", en: "Each target in AZ-A carries more load than a target in AZ-B. Turn on cross-zone load balancing to distribute evenly." }) }
       : { back: false, steps: [
-            { at: "na", via: [[250, 120], [250, 63]], state: "pass", msg: "Route 53 vẫn phân phối 50/50 cho hai node." },
-            { at: "ta", state: "pass", tag: "10%", msg: "Mỗi node phân phối cho toàn bộ 10 target tại hai AZ." },
-            { at: "tb", via: [[570, 63], [570, 183]], state: "pass", tag: "10%", msg: "Mọi target nhận **10%**." },
+            { at: "na", via: [[250, 120], [250, 63]], state: "pass", msg: L({ vi: "Route 53 vẫn phân phối 50/50 cho hai node.", en: "Route 53 still distributes 50/50 to the two nodes." }) },
+            { at: "ta", state: "pass", tag: "10%", msg: L({ vi: "Mỗi node phân phối cho toàn bộ 10 target tại hai AZ.", en: "Each node distributes to all 10 targets in both AZs." }) },
+            { at: "tb", via: [[570, 63], [570, 183]], state: "pass", tag: "10%", msg: L({ vi: "Mọi target nhận **10%**.", en: "Every target receives **10%**." }) },
           ],
-          ok: true, result: "Tải được phân phối đều trên mọi target, không phụ thuộc số lượng target tại mỗi AZ." },
+          ok: true, result: L({ vi: "Tải được phân phối đều trên mọi target, không phụ thuộc số lượng target tại mỗi AZ.", en: "Load is distributed evenly across all targets, regardless of the number of targets in each AZ." }) },
   },
   {
-    name: "Hiển thị trang thông báo lỗi khi ALB gặp sự cố",
+    name: L({ vi: "Hiển thị trang thông báo lỗi khi ALB gặp sự cố", en: "Show an error notice page when the ALB fails" }),
     request: "dig shopviet.vn",
-    from: "từ người dùng",
+    from: L({ vi: "từ người dùng", en: "from users" }),
     nodes: [
-      { id: "user", x: 20, y: 97, w: 60, l1: "Người dùng", user: true },
-      { id: "r53", x: 190, y: 97, w: 170, l1: "Route 53", l2: "có health check" },
+      { id: "user", x: 20, y: 97, w: 60, l1: L({ vi: "Người dùng", en: "Users" }), user: true },
+      { id: "r53", x: 190, y: 97, w: 170, l1: "Route 53", l2: L({ vi: "có health check", en: "with health checks" }) },
       { id: "alb", x: 600, y: 30, w: 190, l1: "ALB", l2: "primary" },
-      { id: "s3", x: 600, y: 164, w: 190, l1: "S3: trang thông báo lỗi", l2: "secondary" },
+      { id: "s3", x: 600, y: 164, w: 190, l1: L({ vi: "S3: trang thông báo lỗi", en: "S3: error notice page" }), l2: "secondary" },
     ],
     links: [{ a: "user", b: "r53" }, { a: "r53", b: "alb", via: [[480, 120], [480, 53]] }, { a: "r53", b: "s3", via: [[480, 120], [480, 187]] }],
     start: "user",
-    choices: { label: "Cấu hình", options: ["Weighted 90/10, ALB healthy", "Failover, ALB healthy", "Failover, ALB unhealthy"], initial: 0 },
+    choices: { label: L({ vi: "Cấu hình", en: "Configuration" }), options: ["Weighted 90/10, ALB healthy", "Failover, ALB healthy", "Failover, ALB unhealthy"], initial: 0 },
     run: (v) => {
       if (v === 0) return {
         steps: [
-          { at: "r53", state: "change", tag: "10%", msg: "Weighted phân phối theo trọng số, không phụ thuộc trạng thái health của ALB." },
-          { at: "s3", via: [[480, 120], [480, 187]], state: "block", flash: "lỗi?", msg: "1 trên 10 người dùng nhận trang thông báo lỗi dù hệ thống đang hoạt động bình thường." },
+          { at: "r53", state: "change", tag: "10%", msg: L({ vi: "Weighted phân phối theo trọng số, không phụ thuộc trạng thái health của ALB.", en: "Weighted routing distributes by weight, regardless of the ALB's health status." }) },
+          { at: "s3", via: [[480, 120], [480, 187]], state: "block", flash: L({ vi: "lỗi?", en: "error?" }), msg: L({ vi: "1 trên 10 người dùng nhận trang thông báo lỗi dù hệ thống đang hoạt động bình thường.", en: "1 in 10 users gets the error notice page even though the system is working normally." }) },
         ],
-        ok: false, result: "Trang lỗi không được hiển thị đúng thời điểm. Sử dụng failover routing." };
+        ok: false, result: L({ vi: "Trang lỗi không được hiển thị đúng thời điểm. Sử dụng failover routing.", en: "The error page is not shown at the right time. Use failover routing." }) };
       if (v === 1) return {
         steps: [
-          { at: "r53", state: "pass", msg: "Health check xác định primary healthy." },
-          { at: "alb", via: [[480, 120], [480, 53]], state: "pass", msg: "Mọi request được chuyển tới ALB." },
+          { at: "r53", state: "pass", msg: L({ vi: "Health check xác định primary healthy.", en: "The health check marks the primary as healthy." }) },
+          { at: "alb", via: [[480, 120], [480, 53]], state: "pass", msg: L({ vi: "Mọi request được chuyển tới ALB.", en: "Every request goes to the ALB." }) },
         ],
-        ok: true, result: "Trang lỗi không được sử dụng khi primary còn healthy." };
+        ok: true, result: L({ vi: "Trang lỗi không được sử dụng khi primary còn healthy.", en: "The error page is not used while the primary is healthy." }) };
       return { marks: { alb: "down" },
         steps: [
-          { at: "r53", state: "change", tag: "FAILOVER", msg: "Health check xác định primary unhealthy, Route 53 trả về record secondary." },
-          { at: "s3", via: [[480, 120], [480, 187]], state: "pass", msg: "Người dùng nhận trang thông báo lỗi tĩnh trên S3 thay vì trang trắng." },
+          { at: "r53", state: "change", tag: "FAILOVER", msg: L({ vi: "Health check xác định primary unhealthy, Route 53 trả về record secondary.", en: "The health check marks the primary as unhealthy, and Route 53 returns the secondary record." }) },
+          { at: "s3", via: [[480, 120], [480, 187]], state: "pass", msg: L({ vi: "Người dùng nhận trang thông báo lỗi tĩnh trên S3 thay vì trang trắng.", en: "Users get the static error notice page on S3 instead of a blank page." }) },
         ],
-        ok: true, result: "Failover **active-passive**: tài nguyên dự phòng chỉ được sử dụng khi primary gặp sự cố. Với active-active, mọi record healthy đều được sử dụng và Route 53 có thể phản hồi bằng bất kỳ record healthy nào." };
+        ok: true, result: L({ vi: "Failover **active-passive**: tài nguyên dự phòng chỉ được sử dụng khi primary gặp sự cố. Với active-active, mọi record healthy đều được sử dụng và Route 53 có thể phản hồi bằng bất kỳ record healthy nào.", en: "**Active-passive** failover: the standby resource is used only when the primary fails. With active-active, every healthy record is used, and Route 53 can respond with any healthy record." }) };
     },
   },
   {
-    name: "Mở rộng khu vực phục vụ của Singapore",
+    name: L({ vi: "Mở rộng khu vực phục vụ của Singapore", en: "Expand Singapore's service area" }),
     request: "dig shopviet.vn",
-    from: "từ người dùng tại Ấn Độ",
+    from: L({ vi: "từ người dùng tại Ấn Độ", en: "from users in India" }),
     nodes: [
-      { id: "user", x: 20, y: 97, w: 60, l1: "Người dùng Ấn Độ", user: true },
+      { id: "user", x: 20, y: 97, w: 60, l1: L({ vi: "Người dùng Ấn Độ", en: "Users in India" }), user: true },
       { id: "r53", x: 190, y: 97, w: 170, l1: "Route 53" },
       { id: "sg", x: 600, y: 30, w: 190, l1: "ALB Singapore" },
       { id: "fra", x: 600, y: 164, w: 190, l1: "ALB Frankfurt" },
     ],
     links: [{ a: "user", b: "r53" }, { a: "r53", b: "sg", via: [[480, 120], [480, 53]] }, { a: "r53", b: "fra", via: [[480, 120], [480, 187]] }],
     start: "user",
-    choices: { label: "Routing policy", options: ["Geolocation", "Geoproximity, bias +50 cho Singapore"], initial: 0 },
+    choices: { label: "Routing policy", options: ["Geolocation", L({ vi: "Geoproximity, bias +50 cho Singapore", en: "Geoproximity, bias +50 for Singapore" })], initial: 0 },
     run: (v) => v === 0
       ? { steps: [
-            { at: "r53", state: "pass", msg: "Geolocation định tuyến theo **quốc gia của người dùng**. Record hiện tại: Ấn Độ → Frankfurt." },
-            { at: "fra", via: [[480, 120], [480, 187]], state: "pass", msg: "Người dùng vẫn được định tuyến tới Frankfurt." },
+            { at: "r53", state: "pass", msg: L({ vi: "Geolocation định tuyến theo **quốc gia của người dùng**. Record hiện tại: Ấn Độ → Frankfurt.", en: "Geolocation routes by the **user's country**. Current record: India → Frankfurt." }) },
+            { at: "fra", via: [[480, 120], [480, 187]], state: "pass", msg: L({ vi: "Người dùng vẫn được định tuyến tới Frankfurt.", en: "Users are still routed to Frankfurt." }) },
           ],
-          ok: false, result: "Geolocation không có khái niệm phạm vi khu vực. Để thay đổi, phải sửa record của từng quốc gia." }
+          ok: false, result: L({ vi: "Geolocation không có khái niệm phạm vi khu vực. Để thay đổi, phải sửa record của từng quốc gia.", en: "Geolocation has no notion of the size of a region. To change it, you must edit the record for each country." }) }
       : { steps: [
-            { at: "r53", state: "change", tag: "BIAS +50", msg: "Geoproximity định tuyến theo **khoảng cách**; bias dương mở rộng khu vực của Singapore." },
-            { at: "sg", via: [[480, 120], [480, 53]], state: "pass", msg: "Người dùng tại Ấn Độ hiện thuộc khu vực của Singapore." },
+            { at: "r53", state: "change", tag: "BIAS +50", msg: L({ vi: "Geoproximity định tuyến theo **khoảng cách**; bias dương mở rộng khu vực của Singapore.", en: "Geoproximity routes by **distance**; a positive bias expands Singapore's region." }) },
+            { at: "sg", via: [[480, 120], [480, 53]], state: "pass", msg: L({ vi: "Người dùng tại Ấn Độ hiện thuộc khu vực của Singapore.", en: "Users in India now fall within Singapore's region." }) },
           ],
-          ok: true, result: "Mở rộng hoặc thu hẹp khu vực địa lý của một tài nguyên: geoproximity với bias." },
+          ok: true, result: L({ vi: "Mở rộng hoặc thu hẹp khu vực địa lý của một tài nguyên: geoproximity với bias.", en: "Expanding or shrinking the geographic region of a resource: geoproximity with bias." }) },
   },
   {
-    name: "Giới hạn video tại quốc gia ngoài phạm vi bản quyền",
+    name: L({ vi: "Giới hạn video tại quốc gia ngoài phạm vi bản quyền", en: "Restrict video in countries outside the licensed territory" }),
     request: "GET https://shopviet.vn/videos/1.mp4",
-    from: "từ quốc gia ngoài phạm vi bản quyền",
+    from: L({ vi: "từ quốc gia ngoài phạm vi bản quyền", en: "from a country outside the licensed territory" }),
     nodes: [
-      { id: "user", x: 20, y: 97, w: 60, l1: "Người dùng", user: true },
-      { id: "r53", x: 180, y: 97, w: 170, l1: "Route 53", l2: "tầng DNS" },
-      { id: "cf", x: 420, y: 97, w: 170, l1: "CloudFront", l2: "tầng phân phối" },
+      { id: "user", x: 20, y: 97, w: 60, l1: L({ vi: "Người dùng", en: "Users" }), user: true },
+      { id: "r53", x: 180, y: 97, w: 170, l1: "Route 53", l2: L({ vi: "tầng DNS", en: "DNS layer" }) },
+      { id: "cf", x: 420, y: 97, w: 170, l1: "CloudFront", l2: L({ vi: "tầng phân phối", en: "delivery layer" }) },
       { id: "s3", x: 660, y: 97, w: 140, l1: "S3", l2: "video" },
     ],
     links: [{ a: "user", b: "r53" }, { a: "r53", b: "cf" }, { a: "cf", b: "s3" }],
     start: "user",
-    choices: { label: "Cơ chế giới hạn", options: ["Route 53 geolocation", "CloudFront geo restriction"], initial: 0 },
+    choices: { label: L({ vi: "Cơ chế giới hạn", en: "Restriction mechanism" }), options: ["Route 53 geolocation", "CloudFront geo restriction"], initial: 0 },
     run: (v) => v === 0
-      ? { steps: [{ at: "r53", state: "block", flash: "no answer", msg: "Không có record cho quốc gia này và không có record mặc định: Route 53 không trả về phản hồi." }],
-          ok: true, result: "Giới hạn tại **tầng DNS**: client không phân giải được địa chỉ." }
+      ? { steps: [{ at: "r53", state: "block", flash: "no answer", msg: L({ vi: "Không có record cho quốc gia này và không có record mặc định: Route 53 không trả về phản hồi.", en: "There is no record for this country and no default record: Route 53 returns no answer." }) }],
+          ok: true, result: L({ vi: "Giới hạn tại **tầng DNS**: client không phân giải được địa chỉ.", en: "Restricted at the **DNS layer**: the client cannot resolve the address." }) }
       : { steps: [
-            { at: "r53", state: "pass", msg: "Route 53 trả về CloudFront như với mọi người dùng khác." },
-            { at: "cf", state: "block", flash: "403", msg: "**Geo restriction** của CloudFront xác định quốc gia nguồn thuộc block list." },
+            { at: "r53", state: "pass", msg: L({ vi: "Route 53 trả về CloudFront như với mọi người dùng khác.", en: "Route 53 returns CloudFront, as for every other user." }) },
+            { at: "cf", state: "block", flash: "403", msg: L({ vi: "**Geo restriction** của CloudFront xác định quốc gia nguồn thuộc block list.", en: "CloudFront **geo restriction** finds the source country on the block list." }) },
           ],
-          ok: true, result: "Giới hạn tại **tầng phân phối nội dung**: CloudFront trả về 403. Hai cơ chế này có thể áp dụng đồng thời." },
+          ok: true, result: L({ vi: "Giới hạn tại **tầng phân phối nội dung**: CloudFront trả về 403. Hai cơ chế này có thể áp dụng đồng thời.", en: "Restricted at the **content delivery layer**: CloudFront returns 403. The two mechanisms can be applied together." }) },
   },
 ];
+}
 
 export default function Route53MythsSim() {
-  return <CaseSim scenarios={SCENARIOS} label="Bốn lỗi cấu hình Route 53 thường gặp" action="Chạy mô phỏng" />;
+  const L = useLang();
+  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Bốn lỗi cấu hình Route 53 thường gặp", en: "Four common Route 53 configuration mistakes" })} action={L({ vi: "Chạy mô phỏng", en: "Run simulation" })} />;
 }

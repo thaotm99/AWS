@@ -1,0 +1,124 @@
+---
+title: "CloudFormation and Elastic Beanstalk: Infrastructure as Code"
+lede: "ShopViet's headcount and number of accounts have grown, and manual actions in the console have started to cause incidents. This lesson covers three topics: describing infrastructure with CloudFormation templates and managing creation, updates and rollback through stacks; applying one standard to every account and Region with StackSets; and cutting the startup time of new Elastic Beanstalk instances down to 2 minutes."
+minutes: 15
+scenes: 3
+prerequisites: ["ec2", "vpc", "rds"]
+docs:
+  - title: "What is AWS CloudFormation?"
+    url: "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html"
+  - title: "Update CloudFormation stacks using change sets"
+    url: "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-changesets.html"
+  - title: "Managing stacks across accounts and Regions with StackSets"
+    url: "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/what-is-cfnstacksets.html"
+  - title: "What is AWS Elastic Beanstalk?"
+    url: "https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/Welcome.html"
+  - title: "Choosing an IaC tool: CloudFormation (AWS Prescriptive Guidance)"
+    url: "https://docs.aws.amazon.com/prescriptive-guidance/latest/choose-iac-tool/cloudformation.html"
+  - title: "Choose how to handle failures when provisioning resources"
+    url: "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stack-failure-options.html"
+  - title: "Enable or disable automatic deployments for StackSets in AWS Organizations"
+    url: "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-manage-auto-deployment.html"
+  - title: "AWS::EC2::Volume"
+    url: "https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-ec2-volume.html"
+  - title: "Amazon EBS General Purpose SSD volumes"
+    url: "https://docs.aws.amazon.com/ebs/latest/userguide/general-purpose.html"
+  - title: "Security group rules"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/security-group-rules.html"
+  - title: "What is AWS RAM?"
+    url: "https://docs.aws.amazon.com/ram/latest/userguide/what-is.html"
+  - title: "Using a custom Amazon machine image (AMI) in Elastic Beanstalk"
+    url: "https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/using-features.customenv.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import StackSim from "../../components/scenes/iac/StackSim.tsx";
+import SgRuleSim from "../../components/scenes/iac/SgRuleSim.tsx";
+import StackSetSim from "../../components/scenes/iac/StackSetSim.tsx";
+import BootTimeSim from "../../components/scenes/iac/BootTimeSim.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#en-s1", label: "1 · Templates and stacks" },
+  { href: "#en-s2", label: "2 · Multi-account, multi-Region deployment" },
+  { href: "#en-s3", label: "3 · Startup time on Elastic Beanstalk" },
+  { href: "#en-challenge", label: "Exercise" },
+]}>
+Last week, a new ShopViet employee created a database in the console without enabling Multi-AZ or backups. When the database failed, half a day of order data was lost. After this incident, infrastructure needs to be **defined as code**, reviewed like code and reproducible exactly any number of times. **CloudFormation** meets this requirement for every type of resource; **Elastic Beanstalk** handles running web applications for teams that do not want to assemble each infrastructure component themselves.
+</Story>
+
+<Scene id="en-s1" label="Part 1/3" title="Templates replace manual actions" questions={["exam4_q47", "exam4_q15", "exam4_q17"]}>
+
+A **template** is a YAML or JSON file that describes the resources to create. CloudFormation reads the template and creates a **stack**: a group of resources that are created, updated and deleted together. To change the infrastructure, update the template and perform an **update stack**; a **change set** lets you preview the changes CloudFormation will apply. Run three ShopViet scenarios:
+
+<StackSim client:visible />
+
+Being able to read a template matters as much as being able to write one. Below is the web group's security group in ShopViet's template. Send each test connection to see the effect of each rule:
+
+<SgRuleSim client:visible />
+
+<Takeaway>Make sure every resource is created to the same standard: put the standard into a CloudFormation template and let users choose parameters only from an allowed list. Change infrastructure by updating the template and updating the stack. When creation fails midway, by default the stack rolls back automatically (you can choose to keep the resources that were created successfully). Using CloudFormation with resources in the AWS::*, Alexa::* and Custom::* namespaces incurs no additional charge; you pay only for the AWS resources created. SecurityGroupIngress is a security group inbound rule and supports allow rules only.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 2/3" title="Applying one standard to every account and Region" questions={["exam3_q36"]}>
+
+ShopViet now has several accounts in **AWS Organizations**: production, dev, data, and soon a branch in Japan. Each account operates in several Regions. Every environment must use the approved EC2 types and the standard IAM role for Lambda. Deploy the baseline template with three approaches, then add a new account:
+
+<StackSetSim client:visible />
+
+<Takeaway>One template, many accounts and many Regions, one operation: CloudFormation StackSets. Turn on automatic deployment so that new accounts joining the OU receive the stack automatically. AWS RAM only shares existing resources; it does not deploy templates.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 3/3" title="Elastic Beanstalk: starting a new instance in 2 minutes" questions={["exam4_q1"]}>
+
+ShopViet's main website runs on **Elastic Beanstalk**: the development team only uploads the code, and Beanstalk automatically creates the EC2 instances, load balancer and Auto Scaling group and monitors health. The team can still view and adjust the underlying resources. The problem is that installing the application takes 45 minutes: when traffic grows, Beanstalk adds instances, but new instances can only serve requests almost an hour later. Compare the timing of four startup approaches:
+
+<BootTimeSim client:visible />
+
+<Takeaway>A long installation slows down the startup of new instances: put the static part into a golden AMI (Beanstalk supports custom AMIs), and let user data create only the dynamic part at startup.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Sort the tasks by deployment tool" questions={["exam3_q36", "exam4_q1", "exam4_q47"]}>
+
+Sort each task into the right tool. On mobile devices: choose a card, then choose the target box.
+
+<SortGame client:visible
+  bins={[
+    { id: "template", title: "CloudFormation template", sub: "one stack", hint: "Hint: tasks that describe and update resources in one account, one Region." },
+    { id: "stackset", title: "StackSets", sub: "many accounts, Regions", hint: "Hint: tasks that must be repeated in many accounts or many Regions." },
+    { id: "boot", title: "Golden AMI + user data", sub: "at startup", hint: "Hint: tasks about the startup process of an instance." },
+  ]}
+  cards={[
+    ["Database always has Multi-AZ and encryption", "template"], ["Change io1 to gp3 with an update stack", "template"], ["Preview changes with a change set", "template"],
+    ["IAM baseline for every account", "stackset"], ["New account joining the OU gets the baseline automatically", "stackset"], ["Same configuration in 3 Regions", "stackset"],
+    ["Preinstall large software", "boot"], ["Create a configuration file specific to each instance", "boot"],
+  ]}
+/>
+
+Check your understanding: as the designer of the ShopViet system, which option fits?
+
+<Quiz client:visible items={[
+  { q: "New employees often misconfigure RDS. Requirement: every database follows the safe settings, reusable across the whole company. Which option meets the requirement?",
+    opts: ["Send a reminder email whenever a misconfigured database is found", "Manage RDS with a CloudFormation template that contains the standard settings", "Do not allow new employees to create RDS"],
+    a: 1,
+    why: "A template turns the standard into code: every creation produces the same configuration, and the template is reviewed like code." },
+  { q: "Departments use their own accounts in several Regions. Every environment must use the same EC2 types and the standard IAM role. Which service fits?",
+    opts: ["One CloudFormation stack", "CloudFormation StackSets", "AWS RAM"],
+    a: 1,
+    why: "StackSets creates stacks from one template in many accounts and Regions with a single operation. A regular stack belongs to only one account and one Region; RAM only shares resources." },
+  { q: "io1 EBS volumes make up most of the cost, while CloudWatch shows that I/O is high only occasionally. The infrastructure is managed with CloudFormation. Which option reduces cost?",
+    opts: ["Stop using CloudFormation because it is expensive", "Change the volumes to gp3 in the template, then update the stack", "Keep io1 and move EC2 to a smaller size"],
+    a: 1,
+    why: "gp3 is the lowest-cost EBS SSD volume type (20% lower price per GiB than gp2), provides a consistent baseline of 3,000 IOPS, and can provision additional IOPS independently of storage size. Changing VolumeType on AWS::EC2::Volume is an update with no interruption. CloudFormation incurs no additional charge for AWS::* resources; EC2 is only a small part of the cost." },
+  { q: "An application on Elastic Beanstalk takes 45 minutes to install, consisting of a static part and a part that must be created at startup. Requirement: new instances are ready in under 2 minutes. Which option fits?",
+    opts: ["Store the installer on S3", "A golden AMI with the static part preinstalled, user data creates the dynamic part", "User data installs everything at startup"],
+    a: 1,
+    why: "The time-consuming part is the installation, so it must be preinstalled in the AMI. The part that varies per instance is handled by user data at startup." },
+]} />
+
+</Scene>

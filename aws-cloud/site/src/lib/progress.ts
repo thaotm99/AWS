@@ -23,6 +23,23 @@ export function getDone(): Set<string> {
   return new Set((read(DONE_KEY) ?? "").split(",").filter(Boolean));
 }
 
+/**
+ * Call `sync` whenever the saved progress may differ from what is on screen: a change on this page,
+ * a change in another tab (storage event), or a page restored from the back/forward cache (pageshow).
+ * Returns the unsubscribe function.
+ */
+export function onProgressChange(sync: () => void): () => void {
+  const onStorage = (e: StorageEvent) => (e.key === DONE_KEY || e.key === null) && sync();
+  window.addEventListener(PROGRESS_EVENT, sync);
+  window.addEventListener("storage", onStorage);
+  window.addEventListener("pageshow", sync);
+  return () => {
+    window.removeEventListener(PROGRESS_EVENT, sync);
+    window.removeEventListener("storage", onStorage);
+    window.removeEventListener("pageshow", sync);
+  };
+}
+
 export function setDone(id: string, on: boolean) {
   const done = getDone();
   if (on) done.add(id);

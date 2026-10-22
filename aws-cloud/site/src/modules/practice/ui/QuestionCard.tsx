@@ -4,6 +4,7 @@ import type { Dispatch } from "../app/events";
 import type { AnswerRecord, Question } from "../domain/types";
 import { illustrations } from "../illustrations/registry";
 import { domainLabel } from "./domainLabel";
+import OptionalBoundary from "./OptionalBoundary";
 import { errorText } from "./errorText";
 import { useT } from "./useT";
 
@@ -33,6 +34,9 @@ export default function QuestionCard({ question: translated, original, total, an
   const q = showOriginal && original ? original : translated;
   const multi = q.selectCount > 1;
   const count = lookup(`count.${q.selectCount}`);
+  // Tolerates answers saved without `chosen` (damaged or older records).
+  const chosen = answer?.chosen ?? [];
+  const lastKey = q.options[q.options.length - 1]?.key ?? "";
 
   return (
     <section className="pr-card" aria-labelledby="pr-q">
@@ -55,7 +59,7 @@ export default function QuestionCard({ question: translated, original, total, an
 
       <div className="pr-options" role={multi ? "group" : "radiogroup"} aria-labelledby="pr-q">
         {q.options.map((o) => {
-          const picked = answer ? answer.chosen.includes(o.key) : selection.includes(o.key);
+          const picked = answer ? chosen.includes(o.key) : selection.includes(o.key);
           const right = answer && q.correct.includes(o.key);
           const cls = ["pr-option", multi ? "multi" : "", answer ? (right ? "right" : picked ? "wrong" : "faded") : ""].join(" ");
           const tag = !answer ? "" : right ? (picked ? t("exam.tagCorrect") : t("exam.tagAnswer")) : picked ? t("exam.tagWrong") : "";
@@ -82,12 +86,14 @@ export default function QuestionCard({ question: translated, original, total, an
           <b className="pr-verdict-head">{answer.correct ? t("exam.correct") : t("exam.incorrect")}</b>
           <p>
             {t(multi ? "exam.correctAnswers" : "exam.correctAnswer")} <b>{q.correct.map(label).join(", ")}</b>
-            {!answer.correct && <> · {t("exam.yourAnswer", { keys: answer.chosen.map(label).join(", ") })}</>}
+            {!answer.correct && <> · {t("exam.yourAnswer", { keys: chosen.map(label).join(", ") })}</>}
           </p>
           {illustrations.has(q.id) && (
-            <Suspense fallback={null}>
-              <IllustrationPanel questionId={q.id} correct={q.correct} chosen={answer.chosen} />
-            </Suspense>
+            <OptionalBoundary name="illustration">
+              <Suspense fallback={null}>
+                <IllustrationPanel questionId={q.id} correct={q.correct} chosen={chosen} />
+              </Suspense>
+            </OptionalBoundary>
           )}
           <details className="pr-explain" open>
             <summary>{t("exam.explanation")}</summary>
@@ -111,7 +117,7 @@ export default function QuestionCard({ question: translated, original, total, an
             <span className="pr-muted">
               {multi ? t("exam.pickN", { n: q.selectCount, picked: selection.length }) : t("exam.pickOne")}
               {" · "}
-              {t("exam.keys", { last: label(q.options.at(-1)!.key) })}
+              {t("exam.keys", { last: label(lastKey) })}
             </span>
             <button
               type="button"

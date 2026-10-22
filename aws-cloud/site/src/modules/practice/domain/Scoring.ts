@@ -1,4 +1,4 @@
-import type { Attempt, Certification, OptionKey, Question } from "./types";
+import type { Attempt, Certification, OptionKey, Question, QuestionId } from "./types";
 
 export interface Score {
   answered: number;
@@ -9,11 +9,18 @@ export interface Score {
   passed: boolean;
 }
 
+/**
+ * What an attempt is graded against: the ids of the question set as it is now, or only the
+ * number of questions where the set itself isn't loaded (the exam list).
+ */
+export type QuestionScope = readonly QuestionId[] | number;
+
 /** Grading rules: an answer counts only when the chosen set equals the correct set. */
 export class Scoring {
-  static isCorrect(question: Question, chosen: readonly OptionKey[]): boolean {
-    if (chosen.length !== question.correct.length) return false;
-    return question.correct.every((key) => chosen.includes(key));
+  static isCorrect(question: Question, chosen: readonly OptionKey[] | undefined): boolean {
+    const picked = chosen ?? [];
+    if (picked.length !== question.correct.length) return false;
+    return question.correct.every((key) => picked.includes(key));
   }
 
   /** Scaled score out of 1000 approximated as a percentage, e.g. 720 → 72. */
@@ -21,20 +28,36 @@ export class Scoring {
     return cert.passingScore / 10;
   }
 
-  static score(attempt: Attempt, cert: Pick<Certification, "passingScore">): Score {
-    const answers = Object.values(attempt.answers);
-    const correct = answers.filter((a) => a.correct).length;
-    const percent = attempt.questionCount ? Math.round((correct / attempt.questionCount) * 100) : 0;
-    return {
-      answered: answers.length,
-      correct,
-      total: attempt.questionCount,
-      percent,
-      passed: percent >= Scoring.passPercent(cert),
-    };
+  /** Answers that belong to the scope; answers to questions no longer in the set are ignored. */
+  private static tally(attempt: Attempt, scope: QuestionScope): { answered: number; correct: number; total: number } {
+    if (typeof scope === "number") {
+      const answers = Object.values(attempt.answers);
+      const correct = answers.filter((a) => a?.correct === true).length;
+      return { answered: Math.min(answers.length, scope), correct: Math.min(correct, scope), total: scope };
+    }
+    const answers = scope.map((id) => attempt.answers[id]).filter(Boolean);
+    return { answered: answers.length, correct: answers.filter((a) => a.correct === true).length, total: scope.length };
   }
 
-  static isFinished(attempt: Attempt): boolean {
-    return Object.keys(attempt.answers).length >= attempt.questionCount;
+  static score(attempt: Attempt, cert: Pick<Certification, "passingScore">, scope: QuestionScope): Score {
+    const { answered, correct, total } = Scoring.tally(attempt, scope);
+    const percent = total ? Math.round((correct / total) * 100) : 0;
+    return { answered, correct, total, percent, passed: percent >= Scoring.passPercent(cert) };
+  }
+
+  /** Every question of the scope has an answer. */
+  static isFinished(attempt: Attempt, scope: QuestionScope): boolean {
+    const { answered, total } = Scoring.tally(attempt, scope);
+    return total > 0 && answered >= total;
+  }
+
+  /**
+   * Whether a saved attempt still fits the question set: same size, and no answers to questions
+   * the set no longer has. When the content changes, an old attempt must not be resumed.
+   */
+  static fits(attempt: Attempt, questionIds: readonly QuestionId[]): boolean {
+    if (attempt.questionCount !== questionIds.length) return false;
+    const ids = new Set(questionIds);
+    return Object.keys(attempt.answers).every((id) => ids.has(id));
   }
 }

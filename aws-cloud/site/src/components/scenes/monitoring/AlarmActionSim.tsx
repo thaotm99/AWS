@@ -1,4 +1,5 @@
 import PacketSim, { type PLayout, type PScenario } from "../elb/PacketSim";
+import { useLang } from "../../../lib/lang";
 
 // What a CloudWatch alarm can do by itself when one ShopViet EC2 instance gets sick:
 // reboot it (the problem is inside the instance), recover it onto new hardware (the
@@ -110,6 +111,112 @@ const SCENARIOS: PScenario[] = [
   },
 ];
 
+const EC2_EN: PLayout = {
+  viewBox: "0 34 820 236",
+  aria: "A CloudWatch alarm watches the status checks of one EC2 instance and performs the reboot or recover action",
+  boxes: [{ x: 470, y: 44, w: 330, h: 212, label: "AWS physical infrastructure" }],
+  nodes: [
+    { id: "cw", x: 95, y: 160, w: 150, l1: "CloudWatch alarm", l2: "status check" },
+    { id: "sns", x: 300, y: 70, w: 150, l1: "SNS", l2: "notifies on-call team" },
+    { id: "ec2", x: 300, y: 160, w: 150, l1: "i-shop01", l2: "EC2, storefront" },
+    { id: "old", x: 635, y: 110, w: 180, l1: "Current host", l2: "physical server" },
+    { id: "new", x: 635, y: 210, w: 180, l1: "Another host", l2: "has capacity" },
+  ],
+  links: [["cw", "sns"], ["cw", "ec2"], ["ec2", "old"], ["ec2", "new"]],
+};
+
+const ASG_EN: PLayout = {
+  viewBox: "0 30 820 246",
+  aria: "A CloudWatch alarm makes the Auto Scaling group scale in, choosing the AZ with more instances, then the instance with the oldest launch template",
+  boxes: [
+    { x: 250, y: 40, w: 560, h: 100, label: "AZ A: 3 instances" },
+    { x: 250, y: 150, w: 560, h: 120, label: "AZ B: 4 instances" },
+  ],
+  nodes: [
+    { id: "cw", x: 100, y: 95, w: 140, l1: "CloudWatch alarm", l2: "CPU < 30%" },
+    { id: "asg", x: 100, y: 205, w: 140, l1: "Auto Scaling", l2: "scale in 1" },
+    { id: "a", x: 560, y: 95, w: 190, l1: "a1, a2, a3", l2: "launch template v3" },
+    { id: "b", x: 520, y: 200, w: 190, l1: "b1, b2, b3", l2: "launch template v3" },
+    { id: "bold", x: 715, y: 242, w: 180, l1: "b0", l2: "launch template v2 (old)" },
+  ],
+  links: [["cw", "asg"], ["asg", "a"], ["asg", "b"], ["asg", "bold"]],
+};
+
+const SCENARIOS_EN: PScenario[] = [
+  {
+    name: "App hangs, instance still running",
+    request: "StatusCheckFailed_Instance = 1 for three consecutive minutes",
+    toggle: { label: "Alarm action: reboot", initial: false },
+    layout: EC2_EN,
+    run: (reboot) => reboot
+      ? { steps: [
+            { at: "cw", jump: true, state: "pass", flash: "ALARM", tag: "ALARM", msg: "The instance status check fails: the problem is **inside** the instance (memory exhausted, operating system hung)." },
+            { at: "ec2", state: "change", tag: "REBOOT", flash: "reboot", msg: "**Reboot** action: restarts immediately on the current host. The application is back after a few minutes." },
+            { at: "old", jump: true, state: "pass", msg: "The host is still healthy; nothing to change." }],
+          ok: true, back: false,
+          result: "The website is back without any manual action in the console. No Lambda or script needed: the alarm calls the EC2 action directly." }
+      : { steps: [
+            { at: "cw", jump: true, state: "pass", flash: "ALARM", tag: "ALARM", msg: "The instance status check fails." },
+            { at: "ec2", state: "block", tag: "NOT FIXED", msg: "The selected action is **recover**. The recover action can be used only with the `StatusCheckFailed_System` metric (a problem with the AWS host), not with `StatusCheckFailed_Instance`. For a problem inside the instance, AWS recommends the **reboot** action." }],
+          ok: false,
+          result: "The instance is still hung. For a problem inside the instance, choose the **reboot** action." },
+  },
+  {
+    name: "Physical host failure",
+    request: "StatusCheckFailed_System = 1  (power loss, hardware failure on the host)",
+    toggle: { label: "Alarm action: recover", initial: false },
+    layout: EC2_EN,
+    run: (recover) => recover
+      ? { steps: [
+            { at: "cw", jump: true, state: "pass", flash: "ALARM", tag: "ALARM", msg: "The system status check fails: the problem is on the host, which is within AWS's scope." },
+            { at: "old", from: "ec2", state: "block", flash: "failure", msg: "The current host can no longer be used." },
+            { at: "new", from: "ec2", state: "change", tag: "RECOVER", relabel: { l1: "i-shop01 (moved)" }, msg: "The **recover** action moves the instance to another host." },
+            { at: "ec2", jump: true, state: "pass", tag: "KEPT", msg: "Keeps the **instance ID**, public IPv4 address, private IP, Elastic IP, instance metadata, placement group, Availability Zone and attached EBS volumes." },
+            { at: "ec2", jump: true, state: "change", tag: "LOST", msg: "For the instance, recovery works like an unplanned reboot: **data in RAM is lost**, and the operating system's uptime starts again from 0." }],
+          ok: true, back: false,
+          result: "The website is back at the same address. A single instance, without an ASG, can still recover automatically within minutes." }
+      : { steps: [
+            { at: "cw", jump: true, state: "pass", flash: "ALARM", tag: "ALARM", msg: "The system status check fails." },
+            { at: "sns", state: "pass", msg: "The alarm only sends a notification; the on-call engineer does not respond outside working hours." },
+            { at: "ec2", from: "cw", state: "wait", tag: "WAITING", msg: "The instance stays on the failed host until someone stops and starts it manually." }],
+          ok: false, back: false,
+          result: "The website is down all night. Add the **recover** action to the alarm so EC2 moves to another host automatically. (For supported instance types, **simplified automatic recovery** is enabled by default at launch; this simulation assumes that mechanism does not apply to the instance.)" },
+  },
+  {
+    name: "Instance with instance store",
+    request: "StatusCheckFailed_System = 1, i-cache01 (m5d.large) has an instance store volume",
+    layout: {
+      ...EC2_EN,
+      nodes: EC2_EN.nodes.map((n) => n.id === "ec2" ? { ...n, l1: "i-cache01", l2: "m5d, has instance store" } : n),
+    },
+    run: () => ({
+      steps: [
+        { at: "cw", jump: true, state: "pass", flash: "ALARM", tag: "ALARM", msg: "The system status check fails." },
+        { at: "ec2", state: "block", tag: "NOT SUPPORTED", msg: "When an instance has instance store volumes added at launch, CloudWatch action based recovery supports only the M3, C3, R3, X1, X1e, X2idn and X2iedn instance types. **m5d.large** is not on this list, so the recover action cannot run." },
+        { at: "new", from: "ec2", state: "skip", msg: "No new host is used." }],
+      ok: false, back: false,
+      result: "Even with a supported instance type, CloudWatch action based recovery **loses the data on the instance store**. Data that must be preserved should be stored on an **EBS volume** and backed up regularly.",
+    }),
+  },
+  {
+    name: "Alarm triggers ASG scale-in",
+    action: "Run alarm",
+    request: "At night: average CPU 20%, the scale-in alarm fires",
+    layout: ASG_EN,
+    run: () => ({
+      steps: [
+        { at: "cw", jump: true, state: "pass", flash: "ALARM", tag: "ALARM", msg: "CPU stays below the threshold long enough, and the alarm invokes the scaling policy." },
+        { at: "asg", state: "pass", msg: "Removes 1 instance using the **default termination policy** (the group uses a launch template and is not a mixed instances group)." },
+        { at: "a", state: "skip", msg: "AZ A has 3 instances, fewer than AZ B." },
+        { at: "b", from: "asg", state: "pass", tag: "AZ", label: "AZ B", msg: "Step 1: choose the AZ with the most instances (and at least one instance not protected from scale in), which is **AZ B**; balance across AZs takes priority over the termination policy." },
+        { at: "bold", from: "asg", state: "change", tag: "TERMINATE", relabel: { l1: "b0 (terminated)" }, msg: "Step 2: in AZ B, prefer instances with an older configuration: a launch configuration, then a launch template other than the current one, then **the oldest version of the current launch template**. b0 uses version 2, so it is terminated. If several candidates remain, choose the instance closest to the next billing hour." }],
+      ok: true, back: false,
+      result: "3 + 3 instances remain, all using the new launch template version. With a mixed instances group, Auto Scaling also determines which purchase option (Spot or On-Demand) to reduce and considers the allocation strategy before the old-configuration step.",
+    }),
+  },
+];
+
 export default function AlarmActionSim() {
-  return <PacketSim scenarios={SCENARIOS} action="Chạy alarm" hint="Chọn một tình huống, bật hoặc tắt action, sau đó chọn Chạy alarm." />;
+  const L = useLang();
+  return <PacketSim scenarios={L({ vi: SCENARIOS, en: SCENARIOS_EN })} action={L({ vi: "Chạy alarm", en: "Run alarm" })} hint={L({ vi: "Chọn một tình huống, bật hoặc tắt action, sau đó chọn Chạy alarm.", en: "Choose a scenario, turn the action on or off, then choose Run alarm." })} />;
 }

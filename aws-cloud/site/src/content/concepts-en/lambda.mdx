@@ -1,0 +1,168 @@
+---
+title: "AWS Lambda and Amazon API Gateway: event-driven serverless architecture"
+lede: "Many ShopViet tasks only need to run when an event occurs. This lesson covers event-driven processing flows (new images, stream data, periodic tasks), common mistakes when running Lambda in production (VPC, cold starts, quotas, permissions), and how to provide APIs to applications and partners with API Gateway."
+minutes: 20
+scenes: 3
+prerequisites: ["iam", "vpc"]
+docs:
+  - title: "Invoking Lambda with events from other AWS services"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/lambda-services.html"
+  - title: "Lambda quotas"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html"
+  - title: "Giving Lambda functions access to resources in a VPC"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html"
+  - title: "Choosing between REST APIs and HTTP APIs"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-vs-rest.html"
+  - title: "Usage plans and API keys"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-api-usage-plans.html"
+  - title: "Error handling for asynchronous invocation (Lambda)"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/invocation-async-error-handling.html"
+  - title: "Use Amazon Cognito user pools as authorizer for a REST API"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-integrate-with-cognito.html"
+  - title: "Cache settings for REST APIs"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-caching.html"
+  - title: "IAM database authentication (RDS)"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.html"
+  - title: "What is Amazon Managed Service for Apache Flink?"
+    url: "https://docs.aws.amazon.com/managed-flink/latest/java/what-is.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
+import LambdaRunSim from "../../components/scenes/lambda/LambdaRunSim.tsx";
+import ApiGatewaySim from "../../components/scenes/lambda/ApiGatewaySim.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#en-s1", label: "1 · Event-driven architecture patterns" },
+  { href: "#en-s2", label: "2 · Running Lambda in production" },
+  { href: "#en-s3", label: "3 · Providing APIs with API Gateway" },
+  { href: "#en-challenge", label: "Exercise" },
+]}>
+Many ShopViet tasks run only when an event occurs: a new image, a new order, a scheduled data cleanup. Instead of keeping EC2 running and waiting all day, **Lambda** runs exactly when an event arrives, and **API Gateway** provides APIs for applications to call.
+</Story>
+
+<Scene id="en-s1" label="Part 1/3" title="Running code when an event occurs" questions={["exam5_q23", "exam2_q14", "exam1_q60", "exam5_q35", "exam6_q31", "exam3_q30", "exam1_q33"]}>
+
+Three ShopViet tasks: create a thumbnail when a seller uploads an image, update a leaderboard from page views, and clean up old data every week. Compare the "keep a server waiting" option with letting events trigger Lambda:
+
+<ScenarioFlow client:visible height={220} legend={["Recommended", "High cost or operational effort"]} scenarios={[
+  { name: "Process images on upload",
+    nodes: [
+      { id: "s3", x: 30, y: 90, label: "S3: original images", kind: "store" },
+      { id: "sqs", x: 250, y: 30, label: "SQS", sub: "buffers events", kind: "net" },
+      { id: "fn", x: 470, y: 90, label: "Lambda", sub: "creates thumbnails", kind: "edge" },
+      { id: "ec2", x: 250, y: 150, label: "EC2 runs a batch every hour", kind: "ec2" },
+      { id: "out", x: 640, y: 90, w: 100, label: "S3: thumbnails", kind: "store" },
+    ],
+    options: [
+      { name: "EC2 scans on a schedule", verdict: "bad", hide: ["sqs", "fn"],
+        flows: [{ path: ["s3", "ec2"], tone: "bad", label: "waits for the next scan" }, { path: ["ec2", "out"], tone: "bad" }],
+        text: "Images wait for the next scan; EC2 keeps running even when there are no images." },
+      { name: "S3 event → Lambda", verdict: "good", hide: ["ec2", "sqs"],
+        flows: [{ path: ["s3", "fn"], tone: "good", label: "event notification" }, { path: ["fn", "out"], tone: "good" }],
+        text: "**S3 Event Notifications** trigger Lambda as soon as a new object arrives. Low cost, automatic scaling, no servers to manage." },
+      { name: "S3 event → SQS → Lambda", verdict: "good", hide: ["ec2"],
+        flows: [{ path: ["s3", "sqs"], tone: "good", label: "event" }, { path: ["sqs", "fn"], tone: "good", label: "polls in batches" }, { path: ["fn", "out"], tone: "good" }],
+        text: "Put **SQS** in between as a buffer for sudden spikes in uploads; Lambda reads the queue and processes asynchronously." },
+    ] },
+  { name: "Real-time stream data",
+    nodes: [
+      { id: "src", x: 30, y: 90, label: "Page views, orders", kind: "user" },
+      { id: "kds", x: 230, y: 90, label: "Kinesis Data Streams", kind: "net" },
+      { id: "fn", x: 450, y: 90, label: "Lambda", sub: "processes each record", kind: "edge" },
+      { id: "ddb", x: 640, y: 90, w: 100, label: "DynamoDB", kind: "db" },
+    ],
+    options: [
+      { name: "Kinesis → Lambda → DynamoDB", verdict: "good",
+        flows: [{ path: ["src", "kds"], tone: "good" }, { path: ["kds", "fn"], tone: "good", label: "event source mapping" }, { path: ["fn", "ddb"], tone: "good" }],
+        text: "Lambda acts as a consumer of Kinesis Data Streams (which can use on-demand capacity mode), processes the data and writes the results to DynamoDB. No servers to manage." },
+    ] },
+  { name: "Periodic tasks",
+    nodes: [
+      { id: "eb", x: 30, y: 90, label: "EventBridge", sub: "weekly cron", kind: "net" },
+      { id: "fn", x: 300, y: 90, label: "Lambda", sub: "cleanup job", kind: "edge" },
+      { id: "ec2", x: 300, y: 20, label: "EC2 on 24/7 with cron", kind: "ec2" },
+      { id: "db", x: 600, y: 90, w: 120, label: "Database", kind: "db" },
+    ],
+    options: [
+      { name: "EC2 + crontab", verdict: "bad", hide: ["eb", "fn"],
+        flows: [{ path: ["ec2", "db"], tone: "bad", label: "pay all week for a few minutes" }],
+        text: "A server runs all week just to perform a task that lasts a few minutes." },
+      { name: "EventBridge cron → Lambda", verdict: "good", hide: ["ec2"],
+        flows: [{ path: ["eb", "fn"], tone: "good", label: "schedule" }, { path: ["fn", "db"], tone: "good" }],
+        text: "**EventBridge** (a rule or Scheduler) with a cron expression triggers Lambda on schedule. No server sits waiting; Lambda costs arise only for the few minutes of execution each week." },
+    ] },
+]} />
+
+<Takeaway>Event sources that trigger Lambda: S3 events, SQS, Kinesis, EventBridge schedules. Put SQS in between when you need a buffer.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 2/3" title="Running Lambda in production" questions={["exam4_q25", "exam1_q50", "exam3_q20", "exam6_q35", "exam4_q39", "exam2_q16"]}>
+
+Some problems appear only after deploying to production: a function attached to a VPC cannot reach the internet, users wait a long time at peak hours, notifications are throttled when the concurrency quota is exceeded, the database password is stored in configuration. Pick each scenario, try it, then turn on the option to fix it:
+
+<LambdaRunSim client:visible />
+
+Two more notes. Each invocation of a standard Lambda function runs at most **15 minutes** (900 seconds; Lambda Managed Instances allows up to 90 minutes for asynchronous invocations or through an event source mapping, except Amazon MQ and Amazon DocumentDB); longer jobs should run as containers on Fargate (Containers lesson). When many functions share a library, package that library as **Lambda Layers**.
+
+<Takeaway>Lambda in a VPC needs a NAT gateway to reach the internet. Cold starts at peak hours: provisioned concurrency. Concurrency has a quota per account and Region; configure an alarm on ConcurrentExecutions. Do not store passwords: IAM database authentication. Cross-account access: both the execution role and the bucket policy must allow it.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 3/3" title="Providing APIs to applications and partners" questions={["exam1_q49", "exam3_q52", "exam3_q53", "exam2_q58", "exam4_q44", "exam5_q32", "exam1_q57", "exam1_q11"]}>
+
+The mobile app, sales partners and the admin site all call `api.shopviet.vn`. **API Gateway** runs a series of checks before a request reaches the application code. Pick a scenario and send a request:
+
+<ApiGatewaySim client:visible />
+
+Some other requirements:
+
+- Chat between buyers and sellers needs a two-way connection where the server pushes messages to clients: **WebSocket API**. With a REST API, each request is independent and no connection is kept open.
+- Shippers send their location continuously for order tracking: API Gateway receives the data and pushes it into Kinesis Data Streams for **Amazon Managed Service for Apache Flink** (formerly Amazon Kinesis Data Analytics) to analyze the stream.
+- Receive transactions from the app, run simple data validation, then process them, with the lowest operational cost: **REST API + Lambda** for validation, with a serverless backend behind it. There are no servers or containers to patch.
+
+<Takeaway>Restrict access to internal IP ranges: resource policy. Token validation without writing code: a REST API with a Cognito user pool authorizer, or an HTTP API with a JWT authorizer (HTTP APIs do not support resource policies, API keys or caching). Limits per client: usage plan + API key. Reduce backend load for repeated requests: caching. Long-running tasks: API Gateway pushes into SQS. Two-way communication: WebSocket API.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Classify the settings: Lambda and API Gateway" questions={["exam5_q23", "exam4_q25", "exam3_q53", "exam3_q30"]}>
+
+Sort each feature into where it is configured. On a mobile device: tap a card, then tap the target box.
+
+<SortGame client:visible
+  bins={[
+    { id: "lambda", title: "Lambda configuration", sub: "Function", hint: "Hint: this feature is configured on the Lambda function." },
+    { id: "apigw", title: "API Gateway configuration", sub: "API", hint: "Hint: this feature is configured on the API." },
+  ]}
+  cards={[
+    ["Provisioned concurrency", "lambda"], ["Layers", "lambda"], ["Attach to a VPC", "lambda"], ["Execution role", "lambda"],
+    ["Usage plan + API key", "apigw"], ["Resource policy restricting IPs", "apigw"], ["Caching", "apigw"], ["JWT authorizer", "apigw"],
+  ]}
+/>
+
+Check your understanding: as the designer of the ShopViet system, which option fits?
+
+<Quiz client:visible items={[
+  { q: "Sellers upload product images to S3. Requirements: create thumbnails immediately, at low cost, without managing servers. Which architecture fits?",
+    opts: ["EC2 scans the bucket every hour", "S3 Event Notification invokes Lambda", "A daily Glue job"],
+    a: 1,
+    why: "An S3 event triggers Lambda as soon as a new object arrives; you pay only when it runs." },
+  { q: "After attaching Lambda to a VPC to read a database, the function can no longer call a delivery API on the internet. What is the cause?",
+    opts: ["Lambda in a VPC needs a NAT gateway to reach the internet", "Lambda does not support HTTPS", "A Lambda Layer is missing"],
+    a: 0,
+    why: "Lambda's ENI in a private subnet has only a private IP; internet access must go through NAT." },
+  { q: "Each ShopViet partner may call the API a different number of times per day depending on its service plan. Which configuration fits?",
+    opts: ["Usage plans with API keys", "WAF rate-based rule", "Lambda reserved concurrency"],
+    a: 0,
+    why: "A usage plan sets throttling and quotas per API key." },
+  { q: "ShopViet needs to clean up old data once a week, a task that lasts a few minutes. Requirements: no server kept waiting, and costs only while the task runs. Which option fits?",
+    opts: ["EC2 running crontab", "EventBridge cron invokes Lambda", "Lambda runs continuously and sleeps"],
+    a: 1,
+    why: "An EventBridge cron schedule triggers Lambda at the right time; Lambda costs arise only for a few minutes of execution each week. EC2 running crontab has to run all week; a standard Lambda function cannot run continuously because each invocation lasts at most 15 minutes." },
+]} />
+
+</Scene>

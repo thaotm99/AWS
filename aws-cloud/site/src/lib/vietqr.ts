@@ -13,7 +13,20 @@ function crc16(text: string): string {
   return crc.toString(16).toUpperCase().padStart(4, "0");
 }
 
+/** Longest transfer note accepted; banking apps cut longer ones. */
+const NOTE_MAX = 25;
+
+/**
+ * EMVCo field lengths count bytes, and field() counts UTF-16 units: a note with diacritics
+ * ("Mời bạn") would give a wrong length and a QR banking apps reject. Fail the build instead.
+ */
+function checkNote(note: string): void {
+  if (!/^[\x20-\x7e]*$/.test(note)) throw new Error(`VietQR note must be printable ASCII (no diacritics): ${JSON.stringify(note)}`);
+  if (note.length > NOTE_MAX) throw new Error(`VietQR note is ${note.length} characters; at most ${NOTE_MAX}: ${JSON.stringify(note)}`);
+}
+
 export function vietQrPayload({ bin, account, note }: { bin: string; account: string; note?: string }): string {
+  if (note) checkNote(note);
   const beneficiary = field("00", bin) + field("01", account);
   const merchant = field("00", "A000000727") + field("01", beneficiary) + field("02", "QRIBFTTA");
   const body =

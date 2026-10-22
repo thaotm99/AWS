@@ -18,7 +18,7 @@ interface Props {
 export default function ResultPanel({ cert, exam, attempt, topic, saving, dispatch }: Props) {
   const tr = useT();
   const { t } = tr;
-  const score = Scoring.score(attempt, cert);
+  const score = Scoring.score(attempt, cert, exam.questions.map((q) => q.id));
   const next = topic ? undefined : cert.exams[cert.exams.findIndex((e) => e.id === exam.id) + 1];
 
   const domains = new Map<string, { right: number; total: number }>();

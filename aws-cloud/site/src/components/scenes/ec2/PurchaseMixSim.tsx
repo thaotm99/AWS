@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLang, type Bi } from "../../../lib/lang";
 
 // Mixing purchase options against a daily demand curve: Reserved Instances for the
 // steady baseline, On-Demand or Spot for the rest (exam2_q33, exam2_q35, exam4_q49, exam5_q60).
@@ -10,15 +11,19 @@ const BASE = 80;
 // Illustrative relative prices for the comparison only (not AWS list prices).
 const PRICE = { od: 1, ri: 0.6, spot: 0.3 };
 
-const STRATEGIES: Record<Strategy, { label: string; verdict: "good" | "bad"; text: string }> = {
-  od: { label: "Toàn bộ On-Demand", verdict: "bad",
-    text: "Không yêu cầu cam kết nên linh hoạt nhất, nhưng chịu mức giá cao nhất cho cả phần tải nền chạy 24/7." },
-  riOd: { label: "RI cho nền + On-Demand", verdict: "good",
-    text: "Tải nền chạy liên tục nên sử dụng Reserved Instances. Tải đỉnh sử dụng On-Demand: chi phí thấp hơn đáng kể và không bị gián đoạn. Phù hợp khi tải đỉnh không chịu được gián đoạn." },
-  riSpot: { label: "RI cho nền + Spot", verdict: "good",
-    text: "Chi phí thấp nhất mà vẫn đảm bảo tính sẵn sàng: tải nền sử dụng RI; tải đỉnh là tác vụ chịu được gián đoạn (batch, worker đọc queue) nên sử dụng Spot. Trong mô phỏng này, đây là phương án có chi phí thấp nhất trong các phương án đáp ứng yêu cầu." },
-  spot: { label: "Toàn bộ Spot", verdict: "bad",
-    text: "Chi phí thấp nhất trên lý thuyết, nhưng Spot Instance có thể bị gián đoạn với thông báo trước 2 phút. Khi tải nền bắt buộc chạy liên tục được đặt trên Spot, toàn bộ hệ thống có thể ngừng hoạt động." },
+const STRATEGIES: Record<Strategy, { label: Bi; verdict: "good" | "bad"; text: Bi }> = {
+  od: { label: { vi: "Toàn bộ On-Demand", en: "All On-Demand" }, verdict: "bad",
+    text: { vi: "Không yêu cầu cam kết nên linh hoạt nhất, nhưng chịu mức giá cao nhất cho cả phần tải nền chạy 24/7.",
+      en: "No commitment, so the most flexible, but you pay the highest price even for the baseline load that runs 24/7." } },
+  riOd: { label: { vi: "RI cho nền + On-Demand", en: "RI baseline + On-Demand" }, verdict: "good",
+    text: { vi: "Tải nền chạy liên tục nên sử dụng Reserved Instances. Tải đỉnh sử dụng On-Demand: chi phí thấp hơn đáng kể và không bị gián đoạn. Phù hợp khi tải đỉnh không chịu được gián đoạn.",
+      en: "The baseline load runs continuously, so it uses Reserved Instances. The peak uses On-Demand: significantly lower cost and no interruptions. Suitable when the peak load cannot tolerate interruption." } },
+  riSpot: { label: { vi: "RI cho nền + Spot", en: "RI baseline + Spot" }, verdict: "good",
+    text: { vi: "Chi phí thấp nhất mà vẫn đảm bảo tính sẵn sàng: tải nền sử dụng RI; tải đỉnh là tác vụ chịu được gián đoạn (batch, worker đọc queue) nên sử dụng Spot. Trong mô phỏng này, đây là phương án có chi phí thấp nhất trong các phương án đáp ứng yêu cầu.",
+      en: "The lowest cost while keeping availability: the baseline uses RIs; the peak is interruption-tolerant work (batch, queue workers), so it uses Spot. In this simulation, this is the lowest-cost option among those that meet the requirements." } },
+  spot: { label: { vi: "Toàn bộ Spot", en: "All Spot" }, verdict: "bad",
+    text: { vi: "Chi phí thấp nhất trên lý thuyết, nhưng Spot Instance có thể bị gián đoạn với thông báo trước 2 phút. Khi tải nền bắt buộc chạy liên tục được đặt trên Spot, toàn bộ hệ thống có thể ngừng hoạt động.",
+      en: "The lowest cost in theory, but Spot Instances can be interrupted with a 2-minute notice. When a baseline load that must run continuously is placed on Spot, the whole system can go down." } },
 };
 
 function split(s: Strategy, need: number) {
@@ -39,6 +44,7 @@ function cost(s: Strategy) {
 }
 
 export default function PurchaseMixSim() {
+  const L = useLang();
   const [s, setS] = useState<Strategy>("od");
   const baseline = cost("od");
   const c = cost(s);
@@ -50,13 +56,13 @@ export default function PurchaseMixSim() {
     <div className="stage">
       <div className="stage-bar">
         {(Object.keys(STRATEGIES) as Strategy[]).map((k) => (
-          <button key={k} className="btn" aria-pressed={k === s} onClick={() => setS(k)}>{STRATEGIES[k].label}</button>
+          <button key={k} className="btn" aria-pressed={k === s} onClick={() => setS(k)}>{L(STRATEGIES[k].label)}</button>
         ))}
       </div>
       <div className="svg-wrap">
-        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Số instance theo giờ, phân theo tuỳ chọn mua: ${STRATEGIES[s].label}`}>
+        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={L({ vi: `Số instance theo giờ, phân theo tuỳ chọn mua: ${L(STRATEGIES[s].label)}`, en: `Instances per hour, by purchasing option: ${L(STRATEGIES[s].label)}` })}>
           <line x1={pad} y1={y(BASE)} x2={W - pad} y2={y(BASE)} className="base-line" />
-          <text className="ts base-t" x={pad + 4} y={y(BASE) - 6}>tải nền: {BASE} instance</text>
+          <text className="ts base-t" x={pad + 4} y={y(BASE) - 6}>{L({ vi: `tải nền: ${BASE} instance`, en: `baseline: ${BASE} instances` })}</text>
           {DEMAND.map((need, h) => {
             const x = split(s, need);
             const x0 = pad + h * bw + 2;
@@ -83,11 +89,12 @@ export default function PurchaseMixSim() {
       </div>
       <div className="readout" aria-live="polite">
         <div className="status">
-          <span className={"pill " + (STRATEGIES[s].verdict === "good" ? "ok" : "bad")}><i />{STRATEGIES[s].verdict === "good" ? "Hợp lý" : "Không đạt yêu cầu"}</span>
-          <span className="count">Chi phí tương đối: {Math.round((c / baseline) * 100)}% so với toàn bộ On-Demand</span>
+          <span className={"pill " + (STRATEGIES[s].verdict === "good" ? "ok" : "bad")}><i />{STRATEGIES[s].verdict === "good" ? L({ vi: "Hợp lý", en: "Reasonable" }) : L({ vi: "Không đạt yêu cầu", en: "Does not meet requirements" })}</span>
+          <span className="count">{L({ vi: `Chi phí tương đối: ${Math.round((c / baseline) * 100)}% so với toàn bộ On-Demand`, en: `Relative cost: ${Math.round((c / baseline) * 100)}% of all On-Demand` })}</span>
         </div>
-        <p style={{ margin: "8px 0 0" }}>{STRATEGIES[s].text}</p>
-        <p className="note-small">Mức giá dùng để so sánh là giả định (RI thấp hơn 40%, Spot thấp hơn 70% so với On-Demand). Theo tài liệu AWS, Reserved Instances và Savings Plans giảm tới 72%, Spot giảm tới 90% so với giá On-Demand.</p>
+        <p style={{ margin: "8px 0 0" }}>{L(STRATEGIES[s].text)}</p>
+        <p className="note-small">{L({ vi: "Mức giá dùng để so sánh là giả định (RI thấp hơn 40%, Spot thấp hơn 70% so với On-Demand). Theo tài liệu AWS, Reserved Instances và Savings Plans giảm tới 72%, Spot giảm tới 90% so với giá On-Demand.",
+          en: "The prices used for comparison are assumptions (RI 40% lower, Spot 70% lower than On-Demand). According to the AWS documentation, Reserved Instances and Savings Plans save up to 72%, and Spot up to 90%, compared with On-Demand prices." })}</p>
       </div>
     </div>
   );

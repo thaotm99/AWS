@@ -1,0 +1,209 @@
+---
+title: "Monitoring and operations: CloudWatch, CloudTrail, Config, Systems Manager"
+lede: "The ShopViet system now runs in production and needs to observe the state of the system and trace actions. This lesson covers five topics: configuring alarms with a low enough detection delay, using alarm actions to recover instances automatically, preserving logs when instances are replaced, tracing changes and evaluating configuration compliance, and patching hundreds of instances without causing errors for users."
+minutes: 30
+scenes: 5
+prerequisites: ["ec2", "asg", "iam"]
+docs:
+  - title: "What is Amazon CloudWatch?"
+    url: "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html"
+  - title: "Basic and detailed monitoring"
+    url: "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch-metrics-basic-detailed.html"
+  - title: "Using Amazon CloudWatch alarms"
+    url: "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/AlarmThatSendsEmail.html"
+  - title: "What is Amazon CloudWatch Logs?"
+    url: "https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/WhatIsCloudWatchLogs.html"
+  - title: "What is AWS CloudTrail?"
+    url: "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html"
+  - title: "What is AWS Config?"
+    url: "https://docs.aws.amazon.com/config/latest/developerguide/WhatIsConfig.html"
+  - title: "What is AWS Systems Manager?"
+    url: "https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html"
+  - title: "Automatic instance recovery (Amazon EC2)"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-recover.html"
+  - title: "Configure CloudWatch action based recovery"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/cloudwatch-recovery.html"
+  - title: "Create alarms that stop, terminate, reboot, or recover an instance"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/UsingAlarmActions.html"
+  - title: "Configure termination policies for Amazon EC2 Auto Scaling"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-termination-policies.html"
+  - title: "Use Lambda recursive loop detection to prevent infinite loops"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/invocation-recursion.html"
+  - title: "Amazon ECS CloudWatch metrics"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/available-metrics.html"
+  - title: "Logging management events (CloudTrail)"
+    url: "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-management-events-with-cloudtrail.html"
+  - title: "Service control policies (SCPs)"
+    url: "https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html"
+  - title: "acm-certificate-expiration-check (AWS Config)"
+    url: "https://docs.aws.amazon.com/config/latest/developerguide/acm-certificate-expiration-check.html"
+  - title: "restricted-ssh (AWS Config)"
+    url: "https://docs.aws.amazon.com/config/latest/developerguide/restricted-ssh.html"
+  - title: "Remediating noncompliant resources with AWS Config rules"
+    url: "https://docs.aws.amazon.com/config/latest/developerguide/remediation.html"
+  - title: "Managing EC2 instances automatically with Default Host Management Configuration"
+    url: "https://docs.aws.amazon.com/systems-manager/latest/userguide/fleet-manager-default-host-management-configuration.html"
+  - title: "AWSEC2-PatchLoadBalancerInstance"
+    url: "https://docs.aws.amazon.com/systems-manager-automation-runbooks/latest/userguide/automation-awsec2-patch-load-balancer-instance.html"
+  - title: "What is AWS Outposts?"
+    url: "https://docs.aws.amazon.com/outposts/latest/userguide/what-is-outposts.html"
+  - title: "What is Snowball Edge?"
+    url: "https://docs.aws.amazon.com/snowball/latest/developer-guide/whatisedge.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
+import MetricAlarmSim from "../../components/scenes/monitoring/MetricAlarmSim.tsx";
+import AlarmActionSim from "../../components/scenes/monitoring/AlarmActionSim.tsx";
+import LogPipelineSim from "../../components/scenes/monitoring/LogPipelineSim.tsx";
+import WhoAnswersSim from "../../components/scenes/monitoring/WhoAnswersSim.tsx";
+import ConfigTimelineSim from "../../components/scenes/monitoring/ConfigTimelineSim.tsx";
+import GuardrailSim from "../../components/scenes/monitoring/GuardrailSim.tsx";
+import PatchWindowSim from "../../components/scenes/monitoring/PatchWindowSim.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#en-s1", label: "1 · Metrics and alarms" },
+  { href: "#en-s2", label: "2 · Automatic recovery with alarm actions" },
+  { href: "#en-s3", label: "3 · Preserving logs" },
+  { href: "#en-s4", label: "4 · API tracing and configuration compliance" },
+  { href: "#en-s5", label: "5 · Patching instances with Systems Manager" },
+  { href: "#en-challenge", label: "Exercise" },
+]}>
+The ShopViet system already has load balancers, Auto Scaling groups, containers and Lambda. It runs stably, but the operations team regularly needs to answer questions: what is the current CPU utilization, who just deleted a security group, where are yesterday's instance logs stored, when should operating system patches be applied. Four services correspond to these four groups of questions: **CloudWatch** (metrics, logs, alarms), **CloudTrail** (who called which API), **AWS Config** (configuration and compliance), **Systems Manager** (acting directly on instances).
+</Story>
+
+<Scene id="en-s1" label="Part 1/5" title="The detection delay of an alarm" questions={["exam5_q20", "exam4_q25", "exam3_q15"]}>
+
+Each AWS service sends **metrics** to CloudWatch: EC2 CPU, Lambda invocations, the CPU of an ECS service. An **alarm** watches one metric, compares it with a threshold, and when the metric breaches the threshold for long enough it performs an **action**: sending a notification through SNS, scaling a group of resources, or acting on EC2.
+
+A point that is often overlooked: by default, EC2 sends metrics only **every 5 minutes** (basic monitoring, free of charge); detailed monitoring sends metrics every 1 minute and is charged. Run the livestream scenario twice, once with detailed monitoring off and once with it on:
+
+<MetricAlarmSim client:visible />
+
+Choosing the right metric matters as much as choosing the threshold. An ECS service scales on the CPU of the service itself (namespace `AWS/ECS`, dimensions `ClusterName`, `ServiceName`). With Lambda, an unintended invocation loop can use up the account's concurrency; the Lambda documentation recommends an alarm that fires when concurrency or invocations spike (`ConcurrentExecutions`, `Invocations`), because recursive loop detection only detects loops through SQS, S3, SNS, EventBridge custom event buses or between Lambda functions.
+
+<Takeaway>Metric data at a 1-minute period on EC2: enable detailed monitoring (charged), with no extra components to deploy. Alarm = metric + threshold + number of datapoints + action. ECS scales on the service's CPU; Lambda should have an alarm on ConcurrentExecutions.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 2/5" title="Recovering instances automatically with alarm actions" questions={["exam3_q38", "exam3_q57", "exam5_q19", "exam4_q16"]}>
+
+ShopViet's warehouse management page runs on **one** EC2 instance; its scale does not yet need an Auto Scaling group. The instance occasionally fails, and restarting it manually outside working hours (for example at 3:00 a.m.) is undesirable. A CloudWatch alarm can call four EC2 actions directly: **stop**, **terminate**, **reboot**, **recover**, with no Lambda or script. In addition, for supported instance types, **simplified automatic recovery** is enabled by default at launch; CloudWatch action based recovery is an additional mechanism you configure, and it does not apply to instances in an Auto Scaling group.
+
+EC2 has two kinds of status checks. An **instance status check** fails when the problem is inside the instance (the operating system hangs, memory is exhausted). A **system status check** fails when the AWS infrastructure the instance runs on has a problem (loss of network connectivity, loss of power, hardware or software failure on the physical host). Each kind needs a different action:
+
+<AlarmActionSim client:visible />
+
+<Takeaway>Problem inside the instance (instance status check): reboot action. Host problem (system status check): recover action, used only with `StatusCheckFailed_System`; instances with instance store are supported only on some instance types (M3, C3, R3, X1, X1e, X2idn, X2iedn), and the data on the instance store is lost. Recover keeps the instance ID, public IPv4, private IP, Elastic IP, instance metadata, placement group, AZ and EBS volumes; data in RAM is lost. Scale-in alarm with the default termination policy: the ASG picks the AZ with the most instances, then prefers instances using an older configuration (launch configuration, a different launch template, the oldest version of the current launch template), then the instance closest to the next billing hour; a mixed instances group also considers purchase option and allocation strategy first.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 3/5" title="Preserving logs when instances are replaced" questions={["exam5_q33", "exam1_q61", "exam1_q27"]}>
+
+ShopViet's Auto Scaling group scales very frequently, with new instances replacing old ones almost every day. A user reports a payment error that happened two days ago, but the instance involved has already been terminated. In another incident, a leaked access key was used to call APIs continuously at night. Both incidents share a solution: move logs off the instance and let CloudWatch process them.
+
+<LogPipelineSim client:visible />
+
+Another requirement concerns the deployment location: ShopViet is expanding into e-wallets, and regulations require the data and workloads to stay in the company's data center. The engineering team still needs AWS-managed Kubernetes, along with IAM and CloudWatch as in the cloud. The solution is **AWS Outposts**: AWS installs an Outpost at the customer's site, extending AWS infrastructure, services, APIs and tools there; EC2, EBS, ECS, RDS and Amazon EKS run on premises, while AWS operates and monitors this capacity as part of the Region. Direct Connect and Local Zones still place workloads on AWS infrastructure; Snowball Edge is a device for data transfer and edge processing, and it is no longer available to new customers.
+
+<Takeaway>Logs must be moved off an instance before it is terminated: install the CloudWatch agent to send logs to CloudWatch Logs. Near-real-time alerts on unusual API calls: CloudTrail sends to CloudWatch Logs, a metric filter counts the errors, an alarm notifies through SNS. Data that must stay on premises but still needs AWS services: Outposts.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s4" label="Part 4/5" title="Tracing actions and evaluating configuration compliance" questions={["exam1_q16", "exam3_q29", "exam2_q43", "exam2_q9"]}>
+
+After an incident, the ShopViet operations team needs to answer many questions; each question can be answered by only one service. Choose each question and send the query:
+
+<WhoAnswersSim client:visible />
+
+**CloudTrail** is the activity log: each API call is recorded as an event; by default, a trail records management events, while data events (for example operations on S3 objects) must be enabled additionally. **AWS Config** keeps the configuration history: each time a resource changes, Config records a **configuration item**, and a **Config rule** evaluates whether that configuration is compliant or noncompliant. The two services complement each other. Choose each point in time during the week of security group `sg-web`:
+
+<ConfigTimelineSim client:visible />
+
+Detecting a violation is different from preventing it or remediating it automatically. Three layers of guardrails that ShopViet applies to its accounts:
+
+<GuardrailSim client:visible />
+
+<Takeaway>Who called which API, and when: CloudTrail (IAM operations are management events, recorded by a trail by default). Resource configuration over time and compliance: AWS Config. Make sure a trail always keeps running even when developers have root access: SCP. Certificates imported into ACM are not renewed automatically: the acm-certificate-expiration-check managed rule warns in advance. Config rules combined with remediation fix violations automatically.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s5" label="Part 5/5" title="Patching hundreds of instances without service disruption" questions={["exam3_q6", "exam5_q34"]}>
+
+ShopViet has more than 200 EC2 instances; every month brings security patches for the operating system. **Systems Manager** does this through the **SSM Agent** running on the instances: Patch Manager patches on a schedule, Run Command runs commands on a whole group of instances, Automation runs multi-step runbooks. The first step is to grant the agent permission to communicate with Systems Manager. The instances already have their own IAM role to access RDS and Secrets Manager:
+
+<ScenarioFlow client:visible height={230} legend={["Few steps, no application disruption", "Many steps or application disruption"]} scenarios={[
+  { name: "Managing 200 EC2 instances with Systems Manager",
+    nodes: [
+      { id: "ssm", x: 20, y: 70, w: 170, label: "Systems Manager", sub: "Patch Manager", kind: "net" },
+      { id: "ec2", x: 290, y: 70, w: 190, label: "200 EC2", sub: "app role: RDS, Secrets", kind: "ec2" },
+      { id: "role", x: 560, y: 10, w: 170, label: "New role (merged)", kind: "warn" },
+      { id: "dhmc", x: 550, y: 170, w: 170, label: "Default Host Management", sub: "Quick Setup", kind: "edge" },
+    ],
+    options: [
+      { name: "Install the agent, cron on each instance", verdict: "bad", hide: ["role", "dhmc"],
+        flows: [{ path: ["ec2", "ssm"], tone: "bad", label: "not centralized" }],
+        text: "Each instance patches itself on its own schedule, and 200 cron schedules must be tracked manually. There is no way to tell which instances have been patched and which have not." },
+      { name: "Replace the instances' IAM role", verdict: "bad", hide: ["dhmc"],
+        flows: [{ path: ["role", "ec2"], tone: "bad", label: "removes current role" }, { path: ["ssm", "ec2"], tone: "neutral" }],
+        text: "Removing the old role and attaching a new role with merged permissions: this is done instance by instance, and the application can lose permission to read Secrets Manager during the change." },
+      { name: "Enable Default Host Management", verdict: "good", hide: ["role"],
+        flows: [{ path: ["dhmc", "ec2"], tone: "good", label: "permissions for SSM Agent" }, { path: ["ssm", "ec2"], tone: "good", label: "scheduled patching" }],
+        text: "**Default Host Management Configuration** (enabled in Fleet Manager, or through Quick Setup for the whole organization) creates and applies a default IAM role so that Systems Manager manages every EC2 instance in the account and Region, **without creating or replacing instance profiles**. Conditions: the instance uses IMDSv2, SSM Agent 3.2.582.0 or later, and the instance's existing role does not allow `ssm:UpdateInstanceInformation` (if it does, the agent uses the instance profile's permissions). The instance becomes a managed node that Patch Manager scans and patches on a schedule." },
+    ] },
+]} />
+
+In the previous patch cycle, every patch reported success but users still saw errors and timeouts, because instances rebooted while the ALB kept routing requests to them. Compare two patching approaches in the same **Maintenance Window**:
+
+<PatchWindowSim client:visible />
+
+<Takeaway>Manage every EC2 instance with Systems Manager without creating instance profiles: Default Host Management Configuration (requires IMDSv2, SSM Agent 3.2.582.0 or later). Patch instances behind a load balancer: the Automation runbook AWSEC2-PatchLoadBalancerInstance (removes the instance from the load balancer or target group, waits for connection draining, runs AWS-RunPatchBaseline, reattaches it), run in a Maintenance Window.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Sort the tasks by monitoring service" questions={["exam1_q16", "exam3_q29", "exam5_q20", "exam1_q61", "exam3_q38", "exam5_q34"]}>
+
+Sort each ShopViet task into the service that handles it. On mobile devices: choose a card, then choose the target box.
+
+<SortGame client:visible
+  bins={[
+    { id: "cw", title: "CloudWatch", sub: "metrics, logs, alarms", hint: "Hint: tasks about measurement, log processing or reacting automatically when a threshold is breached." },
+    { id: "trail", title: "CloudTrail", sub: "API calls", hint: "Hint: tasks that need to identify who called which API." },
+    { id: "config", title: "AWS Config", sub: "configuration, compliance", hint: "Hint: tasks that need to identify a resource's configuration or its compliance." },
+  ]}
+  cards={[
+    ["1-minute metrics for EC2", "cw"], ["Reboot an instance automatically when a status check fails", "cw"], ["Centralize the logs of every instance", "cw"],
+    ["Who deleted the security group", "trail"], ["Record every IAM action of a new admin", "trail"], ["Event source for an AccessDenied metric filter", "trail"],
+    ["Security group configuration last week", "config"], ["Imported certificate about to expire", "config"], ["Automatically close SSH ports open to the internet", "config"],
+  ]}
+/>
+
+Check your understanding: as the designer of the ShopViet system, which option fits?
+
+<Quiz client:visible items={[
+  { q: "The warehouse management page runs on one EC2 instance (EBS volume). The physical host occasionally fails. Requirement: recover automatically within minutes at the lowest cost. Which option meets the requirement?",
+    opts: ["Create an Auto Scaling group with 1 instance", "A CloudWatch alarm on the system status check with the recover action", "A Lambda function that runs every 5 minutes to check and restart"],
+    a: 1,
+    why: "The recover action moves the instance to another host, keeping the instance ID, IP addresses (public, private, Elastic IP) and EBS volumes. No additional services are needed." },
+  { q: "A software bug makes an application on EC2 hang every few days while the instance keeps running. Until the fix is ready, which option is simplest?",
+    opts: ["An alarm on the instance status check with the reboot action", "An alarm on the system status check with the recover action", "EventBridge invokes a Lambda function that reboots the instance every 5 minutes"],
+    a: 0,
+    why: "For a problem inside the instance, a reboot is enough, and an alarm can call the reboot action directly. Periodic reboots cause disruption even when the instance is healthy." },
+  { q: "The operations team needs EC2 metrics at a period of 2 minutes or less during a livestream, deployed quickly and with little maintenance. Which option fits?",
+    opts: ["Install the CloudWatch agent to send high-resolution custom metrics", "Enable detailed monitoring for the EC2 instances", "Push system logs to OpenSearch"],
+    a: 1,
+    why: "Detailed monitoring reduces the EC2 metric period from 5 minutes to 1 minute (charged) and only requires turning on one configuration option." },
+  { q: "Developers have root access in their own accounts (in AWS Organizations). Which mechanism ensures that the mandatory trail cannot be modified or disabled?",
+    opts: ["Attach a Deny IAM policy to the root user", "An SCP that blocks every action that modifies CloudTrail, attached to the developer accounts", "Enable a Config rule that checks the trail"],
+    a: 1,
+    why: "An SCP affects every user and role in the account it is attached to, including the root user of a member account. Identity-based policies cannot be attached to the root user. A Config rule only detects the change after it has happened." },
+  { q: "Web instances behind an ALB produce 502 errors during patching. Which option fixes this completely?",
+    opts: ["Change the target group to the instance ID type", "The Automation runbook AWSEC2-PatchLoadBalancerInstance in a Maintenance Window", "Analyze with Logs Insights, then remove instances from the ALB manually"],
+    a: 1,
+    why: "The runbook removes the instance from the load balancer or target group, waits for the connection draining timeout, calls AWS-RunPatchBaseline to patch, then reattaches the instance. The Maintenance Window runs the runbook on schedule; set concurrency to 1 to patch instances one at a time." },
+]} />
+
+</Scene>

@@ -5,4 +5,6 @@ export abstract class StorageDriver {
   abstract put<T>(collection: string, key: string, value: T): Promise<void>;
   abstract delete(collection: string, key: string): Promise<void>;
   abstract list<T>(collection: string): Promise<T[]>;
+  /** Removes every record of one collection. */
+  abstract clear(collection: string): Promise<void>;
 }

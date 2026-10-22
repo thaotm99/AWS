@@ -1,6 +1,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import { flashText, travel, type Pt } from "../../../lib/animate";
 import { rich } from "../diagram";
+import { useLang, type Bi } from "../../../lib/lang";
 import "./case-sim.css";
 
 // A small engine for "try it on ShopViet" simulations, in the style of
@@ -83,12 +84,12 @@ export interface CaseScenario {
   run(v: number): CaseOutcome;
 }
 
-const TAG: Record<CaseState, { text: string; cls: string }> = {
-  pass: { text: "THÔNG QUA", cls: "hit" },
-  block: { text: "CHẶN", cls: "bad" },
-  skip: { text: "BỎ QUA", cls: "info" },
-  change: { text: "THAY ĐỔI", cls: "miss" },
-  down: { text: "SỰ CỐ", cls: "bad" },
+const TAG: Record<CaseState, { text: Bi; cls: string }> = {
+  pass: { text: { vi: "THÔNG QUA", en: "PASS" }, cls: "hit" },
+  block: { text: { vi: "CHẶN", en: "BLOCKED" }, cls: "bad" },
+  skip: { text: { vi: "BỎ QUA", en: "SKIPPED" }, cls: "info" },
+  change: { text: { vi: "THAY ĐỔI", en: "CHANGED" }, cls: "miss" },
+  down: { text: { vi: "SỰ CỐ", en: "DOWN" }, cls: "bad" },
 };
 
 const NODE_CLS: Record<CaseState, string> = { pass: "ok", block: "bad", change: "chg", skip: "dim", down: "down" };
@@ -127,13 +128,15 @@ function initial(sc: CaseScenario): number {
 }
 
 interface LogLine {
-  tag?: { text: string; cls: string };
+  tag?: { text: string | Bi; cls: string };
   node?: string;
   ok?: boolean;
   msg: ReactNode;
 }
 
-export default function CaseSim({ scenarios, action = "Gửi request", label }: { scenarios: CaseScenario[]; action?: string; label: string }) {
+export default function CaseSim({ scenarios, action: actionProp, label }: { scenarios: CaseScenario[]; action?: string; label: string }) {
+  const L = useLang();
+  const action = actionProp ?? L({ vi: "Gửi request", en: "Send request" });
   const pk = useRef<SVGGElement>(null);
   const [index, setIndex] = useState(0);
   const sc = scenarios[index];
@@ -169,35 +172,38 @@ export default function CaseSim({ scenarios, action = "Gửi request", label }: 
     const layer = pk.current;
     if (!layer || busy) return;
     setBusy(true);
-    clear();
-    const out = sc.run(v);
-    const startPt = center(byId[sc.start]);
-    let at: Pt = startPt;
-    const trail: Pt[] = [startPt];
-    let blocked = false;
-    for (const step of out.steps) {
-      const node = byId[step.at];
-      const target = center(node);
-      const pts: Pt[] = [at, ...(step.via ?? []), target];
-      let dist = 0;
-      for (let i = 1; i < pts.length; i++) dist += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
-      if (dist > 0) await travel(layer, pts, Math.max(260, dist * 1.7), step.state === "block" || step.state === "down" ? "pkt-bad" : step.pkt ?? "pkt");
-      trail.push(...(step.via ?? []), target);
-      at = target;
-      setLit((s) => ({ ...s, [step.at]: step.state }));
-      setLog((l) => [...l, { tag: step.tag ? { text: step.tag, cls: TAG[step.state].cls } : TAG[step.state], node: node.l1, msg: rich(step.msg) }]);
-      if (step.state === "block" || step.state === "down") {
-        flashText(layer, target[0], node.y - 10, step.flash ?? "✕", "cs-flash", 1000);
-        blocked = true;
-        if (trail.length > 1) await travel(layer, [...trail].reverse(), 600, "pkt-bad");
-        break;
+    try {
+      clear();
+      const out = sc.run(v);
+      const startPt = center(byId[sc.start]);
+      let at: Pt = startPt;
+      const trail: Pt[] = [startPt];
+      let blocked = false;
+      for (const step of out.steps) {
+        const node = byId[step.at];
+        const target = center(node);
+        const pts: Pt[] = [at, ...(step.via ?? []), target];
+        let dist = 0;
+        for (let i = 1; i < pts.length; i++) dist += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+        if (dist > 0) await travel(layer, pts, Math.max(260, dist * 1.7), step.state === "block" || step.state === "down" ? "pkt-bad" : step.pkt ?? "pkt");
+        trail.push(...(step.via ?? []), target);
+        at = target;
+        setLit((s) => ({ ...s, [step.at]: step.state }));
+        setLog((l) => [...l, { tag: step.tag ? { text: step.tag, cls: TAG[step.state].cls } : TAG[step.state], node: node.l1, msg: rich(step.msg) }]);
+        if (step.state === "block" || step.state === "down") {
+          flashText(layer, target[0], node.y - 10, step.flash ?? "✕", "cs-flash", 1000);
+          blocked = true;
+          if (trail.length > 1) await travel(layer, [...trail].reverse(), 600, "pkt-bad");
+          break;
+        }
       }
+      if (!blocked && out.back !== false && trail.length > 1) {
+        await travel(layer, [...trail].reverse(), 700, out.ok ? "pkt-back" : "pkt-bad");
+      }
+      setLog((l) => [...l, { ok: out.ok, msg: rich(out.result) }]);
+    } finally {
+      setBusy(false);
     }
-    if (!blocked && out.back !== false && trail.length > 1) {
-      await travel(layer, [...trail].reverse(), 700, out.ok ? "pkt-back" : "pkt-bad");
-    }
-    setLog((l) => [...l, { ok: out.ok, msg: rich(out.result) }]);
-    setBusy(false);
   }
 
   const marks: Partial<Record<string, CaseState>> = preview.marks ?? {};
@@ -206,7 +212,7 @@ export default function CaseSim({ scenarios, action = "Gửi request", label }: 
   return (
     <div className="stage cs">
       {scenarios.length > 1 && (
-        <div className="cs-scenarios" role="group" aria-label="Tình huống">
+        <div className="cs-scenarios" role="group" aria-label={L({ vi: "Tình huống", en: "Scenario" })}>
           {scenarios.map((s, i) => (
             <button key={s.name} className="chip" aria-pressed={i === index} onClick={() => pick(i)} disabled={busy && i !== index}>
               {s.name}
@@ -284,14 +290,17 @@ export default function CaseSim({ scenarios, action = "Gửi request", label }: 
       <div className="readout">
         {log.length === 0 ? (
           <p className="cs-hint">
-            Nhấn <b>{action}</b> để quan sát từng bước xử lý.{sc.toggle || sc.choices ? " Thay đổi lựa chọn và chạy lại để so sánh kết quả." : ""}
+            {L({
+              vi: <>Nhấn <b>{action}</b> để quan sát từng bước xử lý.{sc.toggle || sc.choices ? " Thay đổi lựa chọn và chạy lại để so sánh kết quả." : ""}</>,
+              en: <>Press <b>{action}</b> to watch each processing step.{sc.toggle || sc.choices ? " Change the choice and run again to compare the results." : ""}</>,
+            })}
           </p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) =>
               e.tag ? (
                 <li key={i}>
-                  <span className={`tag ${e.tag.cls}`}>{e.tag.text}</span>
+                  <span className={`tag ${e.tag.cls}`}>{typeof e.tag.text === "string" ? e.tag.text : L(e.tag.text)}</span>
                   <span><b>{e.node}:</b> {e.msg}</span>
                 </li>
               ) : (

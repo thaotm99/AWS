@@ -1,0 +1,195 @@
+---
+title: "VPC: subnets, routing, security and connectivity"
+lede: "This lesson walks through ShopViet's private network on AWS by following a packet's path: the control layers between the internet and EC2, the differences between security groups and network ACLs, how to place NAT gateways, and the criteria for choosing between VPC endpoints, VPC peering, Transit Gateway, Site-to-Site VPN and Direct Connect."
+minutes: 30
+scenes: 6
+prerequisites: ["global-infra"]
+docs:
+  - title: "How Amazon VPC works"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/how-it-works.html"
+  - title: "Compare security groups and network ACLs"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/infrastructure-security.html"
+  - title: "NAT gateways"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html"
+  - title: "Gateway endpoints"
+    url: "https://docs.aws.amazon.com/vpc/latest/privatelink/gateway-endpoints.html"
+  - title: "Regional NAT gateways for automatic multi-AZ expansion"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/nat-gateways-regional.html"
+  - title: "Compare NAT gateways and NAT instances"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-comparison.html"
+  - title: "What is VPC peering? (pricing)"
+    url: "https://docs.aws.amazon.com/vpc/latest/peering/what-is-vpc-peering.html"
+  - title: "Understanding data transfer charges (AWS CUR)"
+    url: "https://docs.aws.amazon.com/cur/latest/userguide/cur-data-transfers-charges.html"
+  - title: "Site-to-Site VPN quotas"
+    url: "https://docs.aws.amazon.com/vpn/latest/s2svpn/vpn-limits.html"
+  - title: "Encryption in AWS Direct Connect"
+    url: "https://docs.aws.amazon.com/directconnect/latest/UserGuide/encryption-in-transit.html"
+  - title: "What is a transit gateway?"
+    url: "https://docs.aws.amazon.com/vpc/latest/tgw/what-is-transit-gateway.html"
+  - title: "AWS Direct Connect virtual interfaces"
+    url: "https://docs.aws.amazon.com/directconnect/latest/UserGuide/WorkingWithVirtualInterfaces.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import PacketPath from "../../components/scenes/vpc/PacketPath.tsx";
+import SgChain from "../../components/scenes/vpc/SgChain.tsx";
+import NatHaSim from "../../components/scenes/vpc/NatHaSim.tsx";
+import EndpointSim from "../../components/scenes/vpc/EndpointSim.tsx";
+import VpcConnectSim from "../../components/scenes/vpc/VpcConnectSim.tsx";
+import HybridLinkSim from "../../components/scenes/vpc/HybridLinkSim.tsx";
+import VpcMythsSim from "../../components/scenes/vpc/VpcMythsSim.tsx";
+import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#en-s1", label: "1 · Access from the internet" },
+  { href: "#en-s2", label: "2 · Security group chain" },
+  { href: "#en-s3", label: "3 · NAT gateway" },
+  { href: "#en-s4", label: "4 · VPC endpoints" },
+  { href: "#en-s5", label: "5 · Connecting many VPCs" },
+  { href: "#en-s6", label: "6 · Connecting on premises" },
+  { href: "#en-challenge", label: "Exercise" },
+]}>
+ShopViet runs its system in the Singapore Region. The next step is to design the **VPC**, ShopViet's private network on AWS: dividing it into subnets, allowing only legitimate traffic from users, blocking unauthorized access, and connecting the VPC to other VPCs and to the office. Each part corresponds to a real deployment task, with a simulation to verify the configuration before applying it in the console.
+</Story>
+
+<Scene id="en-s1" label="Part 1/6" title="Access from the internet: the control layers along the packet's path" questions={["exam5_q63", "exam4_q38", "exam3_q9", "exam3_q25", "exam6_q8"]}>
+
+A subnet is a **public subnet** only when its route table has a `0.0.0.0/0` route to an **internet gateway (IGW)**. A request from the internet to ShopViet's web server passes in turn through the IGW, the **network ACL** at the subnet boundary, and the **security group** attached to the instance. Turn each condition on or off and send a request to find the control layer that is blocking traffic.
+
+<PacketPath client:visible />
+
+<Takeaway>Conditions for internet connectivity: a route to the IGW, a public IP (the IGW performs NAT between the public IP and the private IP), a NACL that allows both directions, and a security group that allows the inbound direction. Security groups are stateful: responses are allowed automatically. NACLs are stateless: the return direction must be allowed explicitly.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 2/6" title="Security group chain: ALB → EC2 → RDS" questions={["exam2_q28", "exam2_q55", "exam4_q52", "exam4_q26", "exam5_q29"]}>
+
+ShopViet's web application has three tiers: an ALB receives user requests, EC2 runs the application, and RDS stores the data. Each tier should allow traffic only from the tier in front of it. Choose the inbound rules for EC2 and RDS, run the simulation, and watch both legitimate user requests and direct access attempts from outside.
+
+<SgChain client:visible />
+
+<Takeaway>Only the outermost tier (the ALB) allows traffic from the internet. Each tier behind it accepts traffic only from the security group of the tier in front of it. When a rule is missing: the ALB marks the target as unhealthy or the application gets a "connection timed out" error.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 3/6" title="NAT gateway: internet access for private subnets" questions={["exam3_q44", "exam3_q62", "exam6_q13", "exam3_q12"]}>
+
+ShopViet's database and workers are in **private subnets** without public IPs, but they still need to download patches. A **NAT gateway** allows outbound connections but does not allow the internet to initiate inbound connections. Try three placements, then trigger a failure in AZ a.
+
+<NatHaSim client:visible />
+
+<Takeaway>A NAT gateway is a managed service for IPv4 traffic (and IPv6 through DNS64 and NAT64). A public NAT gateway in zonal mode is placed in a public subnet and belongs to one AZ; to tolerate an AZ failure: one NAT gateway per AZ and a route table that points to the NAT gateway in the same AZ. A regional NAT gateway automatically expands to the AZs that have workloads and does not need a public subnet.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s4" label="Part 4/6" title="VPC endpoints: reaching AWS services without the internet" questions={["exam3_q47", "exam5_q24", "exam6_q64", "exam6_q65", "exam3_q7", "exam1_q39", "exam5_q9"]}>
+
+EC2 instances in ShopViet's private subnet write images to S3 and send jobs to SQS. By default, this traffic goes through the NAT gateway to the service's public endpoint. Choose each option, send a request and watch the change in the route table.
+
+<EndpointSim client:visible />
+
+<RequirementPicker client:visible items={[
+  { need: "Workers in a private subnet write images to S3 in the same Region, at low cost and without going over the internet", answer: "Gateway endpoint for S3",
+    why: "No charge; a route is added to the route table, and traffic no longer goes through the NAT gateway." },
+  { need: "The application reads both S3 and the DynamoDB shopping-cart table without going out to the internet", answer: "Two gateway endpoints, one per service",
+    why: "Gateway endpoints support only S3 and DynamoDB; one endpoint per service, each with its route." },
+  { need: "Workers send jobs to SQS without going out to the internet", answer: "Interface endpoint (PrivateLink)",
+    why: "Creates an ENI with a private IP in the subnet; services other than S3 and DynamoDB use this endpoint type." },
+  { need: "A shipping partner calls ShopViet's inventory API from the partner's VPC, without opening access to the whole network", answer: "AWS PrivateLink + NLB on the provider side",
+    why: "The provider places an NLB in front of the service; the consumer creates an interface endpoint. Only one service is exposed, without opening access to the whole network." },
+]} />
+
+<Takeaway>S3 and DynamoDB: gateway endpoint, no charge, routed through the route table. Other services: interface endpoint, uses an ENI, charged. Sharing a private service between VPCs: PrivateLink combined with an NLB.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s5" label="Part 5/6" title="Connecting many VPCs: VPC peering, Transit Gateway and VPC sharing" questions={["exam4_q45", "exam1_q42", "exam5_q14", "exam4_q28", "exam6_q12", "exam3_q16", "exam2_q36", "exam3_q17", "exam6_q41", "exam2_q21"]}>
+
+ShopViet sets up more teams, each using its own VPC. Increase the number of VPCs, compare the number of connections needed with VPC peering and with Transit Gateway, and try sending traffic from A to C when only the A–B and B–C peerings exist.
+
+<VpcConnectSim client:visible />
+
+<RequirementPicker client:visible items={[
+  { need: "The web VPC and the reporting VPC need to communicate, at the lowest cost", answer: "VPC peering",
+    why: "No charge to create the connection; data transfer within the same AZ is free, charged only when it crosses AZs or Regions. Simple to configure for a small number of VPCs, and supports connections between two Regions." },
+  { need: "Dozens of VPCs of the teams and the office need to connect through a central point", answer: "AWS Transit Gateway",
+    why: "Hub-and-spoke model, supports transitive routing, one attachment per VPC, and connects both VPN and Direct Connect." },
+  { need: "ShopViet's accounts in the same organization share one network, at the lowest cost", answer: "VPC sharing through AWS RAM",
+    why: "One account owns the VPC and shares subnets with the other accounts. The accounts' instances are in the same VPC, so they communicate directly, without peering." },
+  { need: "Create a new account for each team to a common standard, using a shared network", answer: "Control Tower + shared VPC (RAM)",
+    why: "Control Tower creates and governs the accounts; a network account shares subnets with the workload accounts." },
+  { need: "Logging, DNS and security tools shared by every VPC", answer: "Shared services VPC",
+    why: "Centralizes the shared services in one VPC instead of deploying them again in each VPC." },
+]} />
+
+<Takeaway>A small number of VPCs: VPC peering (low cost, but no transitive routing). Many VPCs, or on-premises connectivity as well: Transit Gateway. Many accounts in the same organization: VPC sharing.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s6" label="Part 6/6" title="Connecting on premises: Site-to-Site VPN and Direct Connect" questions={["exam3_q18", "exam5_q10", "exam5_q41", "exam6_q25", "exam1_q37", "exam4_q48", "exam4_q7", "exam6_q45", "exam6_q34", "exam4_q18"]}>
+
+ShopViet's office needs to connect to the VPC. There are two methods: **Site-to-Site VPN** travels over the internet with encryption, and **Direct Connect** is a dedicated connection to AWS. Each scenario below corresponds to a real requirement of the office. Choose a connection method and send a request to watch the traffic's path.
+
+<HybridLinkSim client:visible />
+
+<Takeaway>Fast to deploy, low cost: Site-to-Site VPN. A stable, dedicated connection: Direct Connect (set up a VPN on top when encryption is needed, and add a VPN as a backup connection). Multiple Regions: Direct Connect gateway. Accessing S3 over Direct Connect: public VIF. Branch offices communicating with each other: VPN CloudHub. Insufficient VPN throughput: Transit Gateway with ECMP.</Takeaway>
+
+</Scene>
+
+<Scene id="en-confuse" label="Common mistakes" title="Six configurations that look valid but do not work as expected" questions={["exam2_q20", "exam6_q63", "exam3_q44", "exam3_q21", "exam3_q65", "exam6_q59", "exam3_q12"]}>
+
+The configurations below look reasonable in the console, but they behave differently in practice. Choose a scenario, try the option that is commonly applied first, then switch to the correct option.
+
+<VpcMythsSim client:visible />
+
+<Takeaway>A private hosted zone requires both enableDnsHostnames and enableDnsSupport. Outbound IPv4 traffic: NAT gateway (an egress-only IGW is for IPv6 only). Port forwarding or a bastion is required: NAT instance. A VPC with dedicated tenancy makes every instance run as dedicated. The source of a security group rule cannot be an internet gateway. Two EC2 instances should communicate over private IPs: access over a public IP incurs data transfer charges; over private IPs, traffic between two AZs is still charged per GB.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Sort the features: security group and network ACL" questions={["exam3_q25", "exam6_q8", "exam5_q63", "exam6_q65", "exam4_q45", "exam6_q25", "exam2_q20"]}>
+
+Sort each feature into the matching component. On a mobile device: select a card, then select the target box.
+
+<SortGame client:visible
+  bins={[
+    { id: "sg", title: "Security Group", sub: "Instance level (ENI)", hint: "Hint: this feature belongs to the protection layer attached directly to the instance." },
+    { id: "nacl", title: "Network ACL", sub: "Subnet level", hint: "Hint: this feature belongs to the protection layer at the subnet boundary." },
+  ]}
+  cards={[
+    ["Stateful: responses are allowed automatically", "sg"], ["Allow rules only", "sg"], ["Attached to an instance / ENI", "sg"],
+    ["Source can be another security group", "sg"], ["Evaluates all rules before deciding", "sg"],
+    ["Stateless: the return direction must be allowed", "nacl"], ["Has both Allow and Deny rules", "nacl"], ["Associated with a subnet", "nacl"],
+    ["Evaluates rules by number, stops at the first match", "nacl"], ["Can block a specific IP with a Deny rule", "nacl"],
+  ]}
+/>
+
+Check your understanding: as the designer of the ShopViet system, which option is right?
+
+<Quiz client:visible items={[
+  { q: "ShopViet's web server is in a subnet with a route to an internet gateway and has a public IP; its security group allows inbound port 443, and the NACL has only an inbound rule for port 443. Users still cannot reach the site. What is the cause?",
+    opts: ["The security group is missing an outbound rule for the response", "The NACL is missing an outbound rule for the ephemeral ports (1024-65535)", "The internet gateway must be placed in the subnet"],
+    a: 1,
+    why: "Security groups are stateful, so responses are allowed automatically. NACLs are stateless, so the return direction must be allowed explicitly." },
+  { q: "ShopViet's application in a VPC needs to read images on S3 and shopping-cart data on DynamoDB without going out to the internet. Which configuration meets the requirement?",
+    opts: ["One interface endpoint shared by both", "Two gateway endpoints (S3 and DynamoDB), with routes added to the route table", "One NAT gateway in a public subnet"],
+    a: 1,
+    why: "S3 and DynamoDB both support gateway endpoints; one endpoint per service, and each endpoint adds a route to the route table." },
+  { q: "ShopViet's web VPC and reporting VPC need to exchange data. Which option has the lowest cost?",
+    opts: ["Transit Gateway", "VPC peering", "Site-to-Site VPN between the two VPCs"],
+    a: 1,
+    why: "With a small number of VPCs, VPC peering has the lowest cost and the simplest configuration. Transit Gateway fits when there are many VPCs." },
+  { q: "ShopViet's office needs to connect to the VPC within a week, at low cost and with encryption. Which option fits?",
+    opts: ["AWS Direct Connect", "AWS Site-to-Site VPN", "VPC peering"],
+    a: 1,
+    why: "Site-to-Site VPN is set up quickly over the existing internet connection and encrypted with IPsec. Direct Connect takes a long time to deploy." },
+  { q: "ShopViet creates the private hosted zone shopviet.internal and associates it with the VPC, but EC2 instances cannot resolve the domain name. Which attributes must be enabled?",
+    opts: ["enableDnsHostnames and enableDnsSupport", "A Route 53 Resolver inbound endpoint", "An internet gateway"],
+    a: 0,
+    why: "A private hosted zone requires the VPC to enable both DNS hostnames and DNS resolution (enableDnsSupport)." },
+]} />
+
+</Scene>

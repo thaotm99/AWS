@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
-import { getDone, setDone } from "../lib/progress";
+import { getDone, onProgressChange, setDone } from "../lib/progress";
 import { useI18n } from "../app/i18n";
 
 export default function DoneButton({ id }: { id: string }) {
   const [on, setOn] = useState(false);
   const { t } = useI18n();
   useEffect(() => {
-    setOn(getDone().has(id));
+    const sync = () => setOn(getDone().has(id));
+    sync();
+    // Also after Back/Forward (bfcache) and when another tab changes progress.
+    return onProgressChange(sync);
   }, [id]);
 
   function toggle() {

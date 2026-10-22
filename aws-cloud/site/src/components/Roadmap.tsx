@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { IMPORTANCE_NAMES, type RoadmapLayer } from "../data/curriculum";
-import { getDone, PROGRESS_EVENT } from "../lib/progress";
+import { getDone, onProgressChange } from "../lib/progress";
 import { useI18n } from "../app/i18n";
 
 interface Props {
@@ -20,10 +20,10 @@ export default function Roadmap({ layers, current, currentQuiz = false, ready }:
 
   // Read browser-only state after hydration so server and client markup match.
   useEffect(() => {
-    setDoneState(getDone());
     const sync = () => setDoneState(getDone());
-    window.addEventListener(PROGRESS_EVENT, sync);
-    return () => window.removeEventListener(PROGRESS_EVENT, sync);
+    sync();
+    // Also after Back/Forward (bfcache) and when another tab changes progress.
+    return onProgressChange(sync);
   }, []);
 
   function toggleLayer(n: number) {

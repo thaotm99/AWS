@@ -43,8 +43,11 @@ export default function StepSim({ nodes, boxes = [], initial, intro, steps, heig
     const step = steps[done];
     if (step.move && pk.current) {
       setBusy(true);
-      await travel(pk.current, flowPoints(byId, step.move), 900, "pkt", 6);
-      setBusy(false);
+      try {
+        await travel(pk.current, flowPoints(byId, step.move), 900, "pkt", 6);
+      } finally {
+        setBusy(false);
+      }
     }
     setDone(done + 1);
   }

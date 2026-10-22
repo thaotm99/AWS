@@ -1,0 +1,158 @@
+---
+title: "Amazon EC2: purchasing options, launching, networking and operating instances"
+lede: "ShopViet's server tier runs on EC2 instances. This lesson covers common operational tasks: choosing purchasing options to optimize cost, cutting instance launch time down to a few minutes, configuring networking between instances, and handling hardware failures, unresponsive applications and loss of temporary data."
+minutes: 30
+scenes: 4
+prerequisites: ["vpc", "iam"]
+docs:
+  - title: "Amazon EC2 billing and purchasing options"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-purchasing-options.html"
+  - title: "Spot Instances"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-spot-instances.html"
+  - title: "Run commands at launch with user data"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html"
+  - title: "Placement groups"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/placement-groups.html"
+  - title: "Instance store temporary block storage"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html"
+  - title: "Instance recovery"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-recover.html"
+  - title: "Amazon EC2 Dedicated Hosts"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/dedicated-hosts-overview.html"
+  - title: "Spot Instance requests"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-requests.html"
+  - title: "Savings Plans types"
+    url: "https://docs.aws.amazon.com/savingsplans/latest/userguide/plan-types.html"
+  - title: "Use encryption with EBS-backed AMIs"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIEncryption.html"
+  - title: "Hibernate your Amazon EC2 instance"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html"
+  - title: "Amazon EC2 instance IP addressing"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-instance-addressing.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import PurchaseMixSim from "../../components/scenes/ec2/PurchaseMixSim.tsx";
+import Ec2CostSim from "../../components/scenes/ec2/Ec2CostSim.tsx";
+import Ec2NetSim from "../../components/scenes/ec2/Ec2NetSim.tsx";
+import Ec2OpsSim from "../../components/scenes/ec2/Ec2OpsSim.tsx";
+import StepSim from "../../components/scenes/StepSim.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#en-s1", label: "1 · Optimizing purchase cost" },
+  { href: "#en-s2", label: "2 · Shortening launch time" },
+  { href: "#en-s3", label: "3 · Networking between instances" },
+  { href: "#en-s4", label: "4 · Handling instance failures" },
+  { href: "#en-challenge", label: "Exercise" },
+]}>
+ShopViet's server tier runs on EC2 instances. The challenge is not launching an instance but the design decisions: which purchasing option optimizes cost, how long a launch takes, whether to place instances close together or spread them out, where to keep temporary data, and how instances recover on their own when something fails.
+</Story>
+
+<Scene id="en-s1" label="Part 1/4" title="Optimizing cost while keeping availability" questions={["exam2_q33", "exam2_q35", "exam4_q49", "exam5_q60", "exam1_q21", "exam4_q46", "exam2_q49", "exam6_q18", "exam2_q23", "exam6_q21", "exam6_q33", "exam6_q38", "exam4_q30"]}>
+
+ShopViet needs 80 instances running continuously 24/7; during the day it also needs extra workers that process images from a queue (interruption-tolerant). Choose a purchasing strategy:
+
+<PurchaseMixSim client:visible />
+
+The chart above shows the big picture. In practice there are more specific situations: a Spot Instance reclaimed at midnight, a partner that requires dedicated hardware, licenses priced per socket, a bill that includes Fargate and Lambda as well. Pick each scenario, change the configuration, then press Run:
+
+<Ec2CostSim client:visible />
+
+<Takeaway>Baseline load running 24/7: Reserved Instances or Savings Plans. Interruption-tolerant tasks: Spot (a persistent request or Spot Fleet to keep processing). Variable load that cannot tolerate interruption: On-Demand. Single-tenant hardware, with no need to control the host and no per-socket or per-core licenses: Dedicated Instances (billed per instance); per-socket or per-core licenses: Dedicated Hosts (billed per host). A discount that covers EC2, Fargate and Lambda: Compute Savings Plan.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 2/4" title="Shortening launch time: golden AMI and user data" questions={["exam4_q1", "exam2_q19", "exam6_q11", "exam2_q51", "exam3_q55"]}>
+
+A full installation of a ShopViet server takes 45 minutes, while Auto Scaling needs a new instance ready within a few minutes.
+
+<StepSim client:visible height={230}
+  intro="The software has a static part (runtime, libraries, agents) that is the same on every instance, and a dynamic part (environment-specific configuration) that changes with each launch."
+  nodes={[
+    { id: "base", x: 30, y: 30, label: "AWS base AMI", kind: "site" },
+    { id: "golden", x: 280, y: 30, label: "Golden AMI", sub: "static part installed", kind: "net" },
+    { id: "ud", x: 280, y: 150, label: "User data", sub: "runs at boot", kind: "edge" },
+    { id: "ec2", x: 560, y: 90, label: "New EC2", sub: "ready in a few minutes", kind: "ec2" },
+  ]}
+  initial={["base"]}
+  steps={[
+    { button: "1. Install the static part and create an AMI", show: ["golden"], flows: [{ path: ["base", "golden"], tone: "good", label: "install once" }],
+      note: "The static part is installed once, then a **golden AMI** is created. Every later instance boots from this AMI without reinstalling." },
+    { button: "2. Handle the dynamic part with user data", show: ["ud"],
+      note: "**User data** is a script that runs at boot: it fetches environment-specific configuration and registers the instance with the cluster. By default, user data **runs only on the first boot** and runs **as root**." },
+    { button: "3. Launch", show: ["ec2"], flows: [{ path: ["golden", "ec2"], tone: "good" }, { path: ["ud", "ec2"], tone: "good" }],
+      note: "Golden AMI + user data: launch time as short as with an AMI, with the flexibility of installing at boot. The two mechanisms **are used together**; neither replaces the other." },
+  ]} />
+
+A golden AMI can be reused more widely. When ShopViet expands to a new Region, **copy the AMI** to that Region. When another team needs it, **share the AMI** with that team's account. An AMI created from encrypted snapshots must also be encrypted when copied; it cannot be copied into an unencrypted copy.
+
+<Takeaway>Shorter launch time: a golden AMI for the fixed part + user data for the changing part. An AMI can be copied to another Region and shared with another account. Keep the RAM state when stopping an instance: Hibernate (part 4).</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 3/4" title="Networking between instances" questions={["exam1_q23", "exam4_q20", "exam4_q60", "exam6_q36", "exam6_q57", "exam6_q59"]}>
+
+Where instances are placed and the path between them determine latency, cost and security. Pick a scenario, change the configuration, then send traffic:
+
+<Ec2NetSim client:visible />
+
+<Takeaway>Lowest network latency between nodes: cluster placement group (+ EFA for HPC). Traffic between instances in a VPC: use private IPs. SSH with temporary keys: EC2 Instance Connect. Highly available bastion host: NLB + Auto Scaling group.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s4" label="Part 4/4" title="Handling instance failures" questions={["exam1_q43", "exam5_q43", "exam5_q52", "exam6_q42", "exam3_q38", "exam3_q57", "exam5_q19", "exam5_q20", "exam5_q31", "exam6_q56"]}>
+
+Common failures: a hardware fault at 3 a.m., an unresponsive application, temporary data lost after a stop. Simulate each failure, then turn on the matching EC2 feature and run it again:
+
+<Ec2OpsSim client:visible />
+
+<Takeaway>Hardware failure: automatic instance recovery (simplified automatic recovery, on by default for supported instances, or a recover alarm action), which keeps the instance ID and IP addresses. Unresponsive application: reboot alarm action. Instance store is temporary storage and loses data on stop, hibernate or terminate; it suits only buffers, caches and temporary files. Stop an instance and keep the RAM state: Hibernate. Automatically replace a single instance and keep its IP: ASG min = max = 1 + an Elastic IP attached by user data. 1-minute metrics: detailed monitoring.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Spot Instances and instance store: true or false?" questions={["exam3_q51", "exam6_q2", "exam6_q42", "exam2_q35", "exam1_q23", "exam4_q1", "exam3_q38", "exam6_q21"]}>
+
+Sort each statement into True or False. On a mobile device: tap a card, then tap the target box.
+
+<SortGame client:visible
+  bins={[
+    { id: "true", title: "True", sub: "Per the AWS documentation", hint: "Hint: this statement is correct for Spot Instances or instance store." },
+    { id: "false", title: "False", sub: "Common misconception", hint: "Hint: this statement sounds plausible but is not accurate." },
+  ]}
+  cards={[
+    ["Spot is reclaimed with a 2-minute notice", "true"], ["A persistent Spot request is reopened after an interruption", "true"],
+    ["Canceling a Spot request does not terminate running instances", "true"], ["A Spot Fleet can include On-Demand", "true"],
+    ["Instance store keeps data when the instance stops", "false"], ["Instance store can be detached and attached to another instance", "false"],
+    ["Canceling a Spot request automatically terminates the instances", "false"],
+  ]}
+/>
+
+Check your understanding: as the designer of the ShopViet system, which option fits?
+
+<Quiz client:visible items={[
+  { q: "ShopViet needs 100 instances: 70 run continuously and 30 process batch jobs that can be deferred. Which purchasing option costs the least?",
+    opts: ["100 On-Demand", "70 Reserved Instances + 30 Spot", "100 Spot"],
+    a: 1,
+    why: "The continuously running load uses RIs; the interruption-tolerant batch load uses Spot." },
+  { q: "An inventory simulation runs on many nodes and needs the lowest network latency between them. How should the instances be placed?",
+    opts: ["Spread placement group", "Cluster placement group", "Spread the instances across 3 AZs"],
+    a: 1,
+    why: "A cluster placement group places instances close together in one AZ for the lowest network latency." },
+  { q: "Installing a ShopViet server takes 45 minutes; Auto Scaling needs new instances ready quickly, while the configuration varies by environment. Which solution fits?",
+    opts: ["Golden AMI for the static part and user data for the dynamic part", "Install everything with user data only", "Use a larger instance type"],
+    a: 0,
+    why: "The AMI shortens installation time; user data handles the changing part at boot." },
+  { q: "The shop-api server tolerates at most 10 minutes of downtime. Which self-recovery mechanism costs the least when a hardware failure occurs?",
+    opts: ["CloudWatch alarm to recover the instance (EBS-backed instance)", "Run an extra standby instance 24/7", "Use instance store"],
+    a: 0,
+    why: "Recover moves the instance to other hardware and keeps the instance ID, IP addresses and attached EBS volumes; data in RAM (and on instance store, if any) is lost." },
+  { q: "A banking partner requires the payment servers to run on single-tenant hardware, with no special licensing requirements. Which option costs the least?",
+    opts: ["Dedicated Hosts", "Dedicated Instances", "Cluster placement group"],
+    a: 1,
+    why: "Dedicated Instances run on hardware dedicated to a single account and are billed per instance; Dedicated Hosts are billed for the whole host and are needed only when you must control sockets and cores for licensing." },
+]} />
+
+</Scene>

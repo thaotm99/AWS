@@ -1,0 +1,135 @@
+---
+title: "Route 53: records, TTL, routing policies and hybrid DNS"
+lede: "This lesson covers the DNS configuration for the domain shopviet.vn: choosing between Alias and CNAME records, why users still reach the old target after a DNS record changes, the routing policy that fits each requirement, and two-way name resolution between the VPC and the office."
+minutes: 20
+scenes: 4
+prerequisites: ["vpc"]
+docs:
+  - title: "Choosing between alias and non-alias records"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-choosing-alias-non-alias.html"
+  - title: "Choosing a routing policy"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy.html"
+  - title: "Active-active and active-passive failover"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-types.html"
+  - title: "Geoproximity routing"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-geoproximity.html"
+  - title: "Geolocation routing"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-geo.html"
+  - title: "Considerations when working with a private hosted zone"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/hosted-zone-private-considerations.html"
+  - title: "How Elastic Load Balancing works (cross-zone load balancing)"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/how-elastic-load-balancing-works.html"
+  - title: "Resolving DNS queries between VPCs and your network"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver.html"
+  - title: "DNS attributes for your VPC"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-dns.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import TtlSim from "../../components/scenes/route53/TtlSim.tsx";
+import RoutingPolicySim from "../../components/scenes/route53/RoutingPolicySim.tsx";
+import HybridDnsSim from "../../components/scenes/route53/HybridDnsSim.tsx";
+import AliasCnameSim from "../../components/scenes/route53/AliasCnameSim.tsx";
+import Route53MythsSim from "../../components/scenes/route53/Route53MythsSim.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#en-s1", label: "1 · Alias and CNAME" },
+  { href: "#en-s2", label: "2 · TTL" },
+  { href: "#en-s3", label: "3 · Routing policies" },
+  { href: "#en-s4", label: "4 · Hybrid DNS" },
+  { href: "#en-challenge", label: "Exercise" },
+]}>
+ShopViet has deployed its VPC and ALB. The next requirements: users reach the system through the domain name **shopviet.vn**, users in Europe are served from the nearest Region, and when the ALB fails, the system shows an error notice page instead of a blank page. All of these requirements are implemented with **Amazon Route 53**.
+</Story>
+
+<Scene id="en-s1" label="Part 1/4" title="Alias and CNAME records" questions={["exam2_q2", "exam3_q19", "exam3_q64"]}>
+
+ShopViet needs four records: the main domain pointing to CloudFront, the main domain pointing to www, www pointing to the ALB, and blog pointing to an external WordPress site. Both **Alias** and **CNAME** records map a name to another target, but not every case can be created. Choose each record and record type, then press create to see Route 53's response.
+
+<AliasCnameSim client:visible />
+
+<Takeaway>Zone apex: a CNAME cannot be created; point to an AWS resource at the zone apex with an Alias record. Pointing to CloudFront, an ALB or an S3 website: Alias (no charge for Alias queries to AWS resources). A subdomain pointing to another domain name: a CNAME can be used.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 2/4" title="TTL: users still reach the old target after a DNS record changes" questions={["exam4_q3"]}>
+
+ShopViet moves to a new load balancer and updates the record in Route 53. Choose a TTL value, then change the record and watch when each client switches to the new target.
+
+<TtlSim client:visible />
+
+<Takeaway>Each DNS response is cached for the duration of the TTL. After the record changes, a client switches to the new target only when its cache expires.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 3/4" title="Routing policies: a DNS response per user" questions={["exam2_q6", "exam1_q38", "exam4_q61", "exam5_q56", "exam2_q59"]}>
+
+ShopViet runs ALBs in Singapore, Frankfurt and N. Virginia. Choose a routing policy, then simulate access by three users in three regions.
+
+<RoutingPolicySim client:visible />
+
+<Takeaway>Latency: the Region with the lowest latency. Geolocation: by the user's location, used to restrict content by region. Geoproximity: by geographic distance, with bias to adjust the size of a region. Active-passive failover: switches to the standby resource when health checks mark the primary as unhealthy.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s4" label="Part 4/4" title="Hybrid DNS: resolving names between the VPC and the office" questions={["exam1_q63", "exam3_q35", "exam2_q20", "exam6_q63"]}>
+
+Servers in the VPC need to resolve the address of the database at the office (`db.corp.local`), while systems at the office need to call an internal API in the VPC (`api.shopviet.internal`, in a private hosted zone). **Route 53 Resolver** provides two endpoint types for these two directions of resolution.
+
+<HybridDnsSim client:visible />
+
+<Takeaway>The VPC resolves on-premises domain names: outbound endpoint combined with a forwarding rule. On premises resolves domain names in the VPC: inbound endpoint. A private hosted zone requires the VPC to enable both enableDnsHostnames and enableDnsSupport.</Takeaway>
+
+</Scene>
+
+<Scene id="en-confuse" label="Common mistakes" title="Four common DNS configuration mistakes" questions={["exam4_q59", "exam5_q56", "exam1_q38", "exam4_q61"]}>
+
+Four situations that come up as ShopViet operates its DNS. Try the option that is usually chosen first, then switch to another option to compare.
+
+<Route53MythsSim client:visible />
+
+<Takeaway>NLB with cross-zone load balancing turned off: each node distributes traffic only to targets in its own AZ, so in an AZ with fewer targets, each target carries more load. Showing an error notice page during a failure: active-passive failover, not weighted. Adjusting the size of a region: geoproximity with bias. Restricting by country: Route 53 geolocation at the DNS layer, CloudFront geo restriction at the content delivery layer.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Sort the records: Alias and CNAME" questions={["exam2_q6", "exam4_q61", "exam5_q56", "exam4_q3"]}>
+
+Sort each situation into the right record type. On a mobile device: select a card, then select the target box.
+
+<SortGame client:visible
+  bins={[
+    { id: "alias", title: "Alias", sub: "Required or recommended", hint: "Hint: for the zone apex or an AWS resource as the target, use Alias." },
+    { id: "cname", title: "CNAME", sub: "Used when Alias does not support it", hint: "Hint: Alias points only to AWS resources or records in the same hosted zone." },
+  ]}
+  cards={[
+    ["shopviet.vn → ALB", "alias"], ["shopviet.vn → CloudFront", "alias"], ["shopviet.vn → www.shopviet.vn", "alias"],
+    ["No query charge for AWS resources", "alias"],
+    ["blog.shopviet.vn → shopviet.wordpress.com", "cname"], ["docs.shopviet.vn → a SaaS provider's domain", "cname"],
+  ]}
+/>
+
+Check your understanding: as the designer of the ShopViet system, which option is right?
+
+<Quiz client:visible items={[
+  { q: "ShopViet runs in us-east-1, and users in Europe experience high latency. An additional web tier is deployed in eu-west-1. Which routing policy routes each user to the Region with the lowest latency?",
+    opts: ["Weighted", "Latency", "Geoproximity"],
+    a: 1,
+    why: "Latency routing returns the Region with the lowest latency to the user. To reduce latency for database reads, add an Aurora read replica in eu-west-1." },
+  { q: "ShopViet needs the Singapore Region to also serve users in neighboring countries, that is, to expand the geographic area that Route 53 routes to Singapore. Which mechanism fits?",
+    opts: ["Geolocation routing", "Geoproximity routing with bias", "Multivalue answer"],
+    a: 1,
+    why: "Geoproximity bias expands or shrinks the area that a resource serves." },
+  { q: "When ShopViet's ALB fails, users must get a static error notice page on S3 instead of a blank page, with minimal configuration changes. Which configuration meets the requirement?",
+    opts: ["Active-passive failover routing, with S3 as secondary", "Weighted routing, with a small weight for S3", "Latency routing pointing to S3"],
+    a: 0,
+    why: "When health checks mark the ALB as unhealthy, Route 53 returns the secondary record, which points to the error page on S3." },
+  { q: "ShopViet has updated the record to point to the new load balancer, but after an hour many users still reach the old load balancer. What is the cause?",
+    opts: ["The new load balancer has no targets yet", "The old record's TTL is still in effect", "The hosted zone must be deleted and recreated"],
+    a: 1,
+    why: "Clients and resolvers keep the old response in their cache until the TTL expires." },
+]} />
+
+</Scene>

@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { useLang, type Bi } from "../../lib/lang";
 
 type Scope = "global" | "region" | "az" | "edge";
 
@@ -10,53 +11,64 @@ const AZS = [
 const EDGE_Y = [128, 220, 312];
 
 
-function Token({ x, y, w, label, ghost }: { x: number; y: number; w: number; label: string; ghost?: boolean }) {
+function Token({ x, y, w, label, ghost }: { x: number; y: number; w: number; label: string | Bi; ghost?: boolean }) {
+  const L = useLang();
   return (
     <g className={"tok pop" + (ghost ? " ghost" : "")}>
       <rect x={x} y={y} width={w} height={24} rx={5} />
-      <text x={x + w / 2} y={y + 16} textAnchor="middle">{label}</text>
+      <text x={x + w / 2} y={y + 16} textAnchor="middle">{typeof label === "string" ? label : L(label)}</text>
     </g>
   );
 }
 
-const replicas = AZS.map((az) => <Token key={az.n} x={az.x + 20} y={200} w={100} label="bản sao dữ liệu" ghost />);
+const replicas = AZS.map((az) => <Token key={az.n} x={az.x + 20} y={200} w={100} label={{ vi: "bản sao dữ liệu", en: "data copy" }} ghost />);
 
-const SERVICES: { name: string; scope: Scope; label: string; text: ReactNode; draw: ReactNode }[] = [
+const SERVICES: { name: string; scope: Scope; label: string; text: Bi<ReactNode>; draw: ReactNode }[] = [
   { name: "IAM", scope: "global", label: "Global",
-    text: <>Role <code>shopviet-app</code> được tạo một lần và sử dụng được tại mọi Region. IAM không có phiên bản riêng cho từng Region như Singapore hay Tokyo.</>,
+    text: { vi: <>Role <code>shopviet-app</code> được tạo một lần và sử dụng được tại mọi Region. IAM không có phiên bản riêng cho từng Region như Singapore hay Tokyo.</>,
+      en: <>The role <code>shopviet-app</code> is created once and can be used in every Region. IAM has no separate copy per Region such as Singapore or Tokyo.</> },
     draw: <Token x={250} y={18} w={190} label="IAM role: shopviet-app" /> },
   { name: "Route 53", scope: "global", label: "Global",
-    text: <>Tên miền <code>shopviet.vn</code> được phân giải bởi Route 53 Public DNS, có data plane phân bố tại các point of presence (edge location) trên toàn cầu; control plane đặt tại us-east-1.</>,
+    text: { vi: <>Tên miền <code>shopviet.vn</code> được phân giải bởi Route 53 Public DNS, có data plane phân bố tại các point of presence (edge location) trên toàn cầu; control plane đặt tại us-east-1.</>,
+      en: <>The domain <code>shopviet.vn</code> is resolved by Route 53 Public DNS, whose data plane is distributed across points of presence (edge locations) worldwide; the control plane is in us-east-1.</> },
     draw: <Token x={560} y={46} w={180} label="Route 53: shopviet.vn" /> },
   { name: "S3", scope: "region", label: "Region",
-    text: <>Bucket <code>shopviet-images</code> thuộc Region Singapore. AWS tự động lưu dữ liệu trên nhiều AZ (với các storage class thông thường), không yêu cầu cấu hình bổ sung.</>,
+    text: { vi: <>Bucket <code>shopviet-images</code> thuộc Region Singapore. AWS tự động lưu dữ liệu trên nhiều AZ (với các storage class thông thường), không yêu cầu cấu hình bổ sung.</>,
+      en: <>The bucket <code>shopviet-images</code> belongs to the Singapore Region. AWS automatically stores data across multiple AZs (for the standard storage classes), with no additional configuration required.</> },
     draw: <><Token x={296} y={70} w={220} label="S3: shopviet-images" />{replicas}</> },
   { name: "VPC", scope: "region", label: "Region",
-    text: <>VPC <code>10.0.0.0/16</code> trải trên mọi AZ của Region. Bên trong VPC, dải địa chỉ được chia thành các subnet, và mỗi subnet chỉ nằm trong một AZ.</>,
+    text: { vi: <>VPC <code>10.0.0.0/16</code> trải trên mọi AZ của Region. Bên trong VPC, dải địa chỉ được chia thành các subnet, và mỗi subnet chỉ nằm trong một AZ.</>,
+      en: <>The VPC <code>10.0.0.0/16</code> spans every AZ of the Region. Inside the VPC, the address range is divided into subnets, and each subnet resides in only one AZ.</> },
     draw: <>
       <rect className="zone pop" x={40} y={112} width={490} height={236} rx={12} />
       <text className="zone-t" x={516} y={128} textAnchor="end">VPC 10.0.0.0/16</text>
     </> },
   { name: "EFS", scope: "region", label: "Region",
-    text: <>EFS file system là tài nguyên cấp Region, có mount target tại từng AZ nên server ở bất kỳ AZ nào cũng mount được. Server tại Region khác vẫn truy cập được thông qua inter-region VPC peering, không cần copy dữ liệu.</>,
+    text: { vi: <>EFS file system là tài nguyên cấp Region, có mount target tại từng AZ nên server ở bất kỳ AZ nào cũng mount được. Server tại Region khác vẫn truy cập được thông qua inter-region VPC peering, không cần copy dữ liệu.</>,
+      en: <>An EFS file system is a Regional resource with a mount target in each AZ, so servers in any AZ can mount it. Servers in another Region can still access it through inter-Region VPC peering, without copying data.</> },
     draw: <><Token x={296} y={70} w={220} label="EFS: shopviet-shared" />{AZS.map((az) => <Token key={az.n} x={az.x + 20} y={200} w={100} label="mount target" ghost />)}</> },
   { name: "AMI", scope: "region", label: "Region",
-    text: <>AMI <code>shopviet-web</code> chỉ sử dụng được trong Region nơi AMI được tạo, nhưng sử dụng được tại mọi AZ của Region đó. Để launch tại Region khác, AMI phải được copy sang Region đích (Phần 1).</>,
+    text: { vi: <>AMI <code>shopviet-web</code> chỉ sử dụng được trong Region nơi AMI được tạo, nhưng sử dụng được tại mọi AZ của Region đó. Để launch tại Region khác, AMI phải được copy sang Region đích (Phần 1).</>,
+      en: <>The AMI <code>shopviet-web</code> can be used only in the Region where it was created, but in every AZ of that Region. To launch in another Region, the AMI must be copied to the destination Region (Part 1).</> },
     draw: <Token x={296} y={70} w={220} label="AMI: shopviet-web" /> },
   { name: "Subnet", scope: "az", label: "AZ",
-    text: <>Subnet <code>10.0.1.0/24</code> chỉ nằm trong AZ a. Để chịu được sự cố của một AZ, subnet phải được tạo tại ít nhất hai AZ.</>,
+    text: { vi: <>Subnet <code>10.0.1.0/24</code> chỉ nằm trong AZ a. Để chịu được sự cố của một AZ, subnet phải được tạo tại ít nhất hai AZ.</>,
+      en: <>The subnet <code>10.0.1.0/24</code> resides only in AZ a. To tolerate the failure of one AZ, subnets must be created in at least two AZs.</> },
     draw: <>
       <rect className="zone pop" x={58} y={170} width={124} height={108} rx={8} />
       <text className="zone-t" x={120} y={188} textAnchor="middle">subnet 10.0.1.0/24</text>
     </> },
   { name: "NAT Gateway", scope: "az", label: "AZ",
-    text: <>Public NAT gateway ở chế độ zonal được tạo trong public subnet của một AZ cụ thể. Nếu cả 3 AZ dùng chung một NAT gateway, sự cố tại AZ chứa NAT gateway sẽ làm các AZ còn lại mất kết nối internet. Cấu hình đúng: mỗi AZ một NAT gateway và một route table riêng, hoặc sử dụng NAT gateway ở chế độ regional (tự động mở rộng sang các AZ có workload).</>,
+    text: { vi: <>Public NAT gateway ở chế độ zonal được tạo trong public subnet của một AZ cụ thể. Nếu cả 3 AZ dùng chung một NAT gateway, sự cố tại AZ chứa NAT gateway sẽ làm các AZ còn lại mất kết nối internet. Cấu hình đúng: mỗi AZ một NAT gateway và một route table riêng, hoặc sử dụng NAT gateway ở chế độ regional (tự động mở rộng sang các AZ có workload).</>,
+      en: <>A public NAT gateway in zonal mode is created in the public subnet of a specific AZ. If all 3 AZs share one NAT gateway, a failure in the AZ that contains the NAT gateway cuts internet access for the other AZs. Correct configuration: one NAT gateway and a separate route table per AZ, or a NAT gateway in regional mode (automatically expands to the AZs that have workloads).</> },
     draw: <>{AZS.map((az) => <Token key={az.n} x={az.x + 20} y={200} w={100} label="NAT gateway" ghost={az.n !== "a"} />)}</> },
   { name: "EC2", scope: "az", label: "AZ",
-    text: <>Server <code>web-1</code> chạy trong một subnet nên nằm trong đúng một AZ. Khi AZ đó gặp sự cố, server cũng ngừng hoạt động. Phần 3 minh hoạ trường hợp này.</>,
+    text: { vi: <>Server <code>web-1</code> chạy trong một subnet nên nằm trong đúng một AZ. Khi AZ đó gặp sự cố, server cũng ngừng hoạt động. Phần 3 minh hoạ trường hợp này.</>,
+      en: <>The server <code>web-1</code> runs in a subnet, so it resides in exactly one AZ. When that AZ fails, the server also stops working. Part 3 illustrates this case.</> },
     draw: <Token x={70} y={200} w={100} label="EC2: web-1" /> },
   { name: "EBS", scope: "az", label: "AZ",
-    text: <>EBS volume chỉ attach được vào server trong cùng AZ. Để chuyển sang AZ khác: tạo snapshot, sau đó tạo volume mới từ snapshot.</>,
+    text: { vi: <>EBS volume chỉ attach được vào server trong cùng AZ. Để chuyển sang AZ khác: tạo snapshot, sau đó tạo volume mới từ snapshot.</>,
+      en: <>An EBS volume can be attached only to a server in the same AZ. To move it to another AZ: create a snapshot, then create a new volume from the snapshot.</> },
     draw: <>
       <Token x={70} y={196} w={100} label="EC2: web-1" />
       <line x1={120} y1={220} x2={120} y2={238} stroke="var(--accent)" strokeWidth={2} />
@@ -73,12 +85,13 @@ const userIcon = (y: number) => (
 
 export default function ScopeExplorer() {
   const [active, setActive] = useState("EC2");
+  const L = useLang();
   const svc = SERVICES.find((s) => s.name === active)!;
   const hl = (scope: Scope) => (svc.scope === scope ? "hl" : undefined);
 
   return (
     <div className="stage">
-      <div className="stage-bar" role="group" aria-label="Chọn tài nguyên">
+      <div className="stage-bar" role="group" aria-label={L({ vi: "Chọn tài nguyên", en: "Choose a resource" })}>
         {SERVICES.map((s) => (
           <button key={s.name} className="btn" aria-pressed={s.name === active} onClick={() => setActive(s.name)}>
             {s.name}
@@ -86,17 +99,17 @@ export default function ScopeExplorer() {
         ))}
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 0 760 400" role="img" aria-label="Một Region với 3 AZ và các Edge location; tài nguyên được chọn hiển thị ở đúng phạm vi">
+        <svg viewBox="0 0 760 400" role="img" aria-label={L({ vi: "Một Region với 3 AZ và các Edge location; tài nguyên được chọn hiển thị ở đúng phạm vi", en: "A Region with 3 AZs and edge locations; the selected resource is shown at its scope" })}>
           <g className={hl("global")}>
             <rect className="frame" x={8} y={8} width={744} height={384} rx={14} />
-            <text className="t" x={24} y={32}>Mạng toàn cầu của AWS</text>
+            <text className="t" x={24} y={32}>{L({ vi: "Mạng toàn cầu của AWS", en: "AWS global network" })}</text>
             <text className="ts" x={24} y={48}>Global</text>
           </g>
           <g className={hl("region")}>
             <rect className="region" x={30} y={62} width={510} height={312} rx={12} />
             <text className="t" x={48} y={88}>Region · Singapore</text>
             <text className="ts" x={48} y={104}>ap-southeast-1</text>
-            <text className="ts" x={285} y={360} textAnchor="middle">Các AZ kết nối với nhau bằng mạng riêng có độ trễ thấp</text>
+            <text className="ts" x={285} y={360} textAnchor="middle">{L({ vi: "Các AZ kết nối với nhau bằng mạng riêng có độ trễ thấp", en: "AZs are connected by a private low-latency network" })}</text>
           </g>
           <g className={hl("az")}>
             {AZS.map(({ n, x }) => (
@@ -121,7 +134,7 @@ export default function ScopeExplorer() {
           </g>
           <g aria-hidden="true">
             {EDGE_Y.map(userIcon)}
-            <text className="ts" x={704} y={344} textAnchor="middle">Người dùng</text>
+            <text className="ts" x={704} y={344} textAnchor="middle">{L({ vi: "Người dùng", en: "Users" })}</text>
           </g>
           {/* key re-mounts the overlay so the pop animation replays */}
           <g key={active}>{svc.draw}</g>
@@ -129,7 +142,7 @@ export default function ScopeExplorer() {
       </div>
       <div className="readout" aria-live="polite">
         <strong>{svc.name} · {svc.label}</strong>
-        {svc.text}
+        {L(svc.text)}
       </div>
     </div>
   );

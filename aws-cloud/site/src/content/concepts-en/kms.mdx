@@ -1,0 +1,141 @@
+---
+title: "KMS and ACM: encryption and certificates"
+lede: "ShopViet stores invoices, orders and customer data. This lesson covers real encryption requirements: giving auditors information about key usage, reducing KMS cost, rotating keys periodically, using one key in two Regions, sharing an encrypted database copy with auditors, protecting data in transit and preventing HTTPS certificates from expiring unexpectedly."
+minutes: 20
+scenes: 3
+prerequisites: ["iam"]
+docs:
+  - title: "AWS KMS concepts"
+    url: "https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html"
+  - title: "Protecting data with server-side encryption (S3)"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/serv-side-encryption.html"
+  - title: "Reducing the cost of SSE-KMS with S3 Bucket Keys"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucket-key.html"
+  - title: "Multi-Region keys in AWS KMS"
+    url: "https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html"
+  - title: "Rotate AWS KMS keys"
+    url: "https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html"
+  - title: "Using server-side encryption with customer-provided keys (SSE-C)"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerSideEncryptionCustomerKeys.html"
+  - title: "Sharing encrypted snapshots (Amazon RDS)"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/share-encrypted-snapshot.html"
+  - title: "Encrypting Amazon RDS resources"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.Encryption.html"
+  - title: "acm-certificate-expiration-check (AWS Config)"
+    url: "https://docs.aws.amazon.com/config/latest/developerguide/acm-certificate-expiration-check.html"
+  - title: "Amazon EventBridge support for ACM"
+    url: "https://docs.aws.amazon.com/acm/latest/userguide/supported-events.html"
+  - title: "Sharing a DB snapshot (Amazon RDS)"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ShareSnapshot.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import StepSim from "../../components/scenes/StepSim.tsx";
+import S3EncryptSim from "../../components/scenes/kms/S3EncryptSim.tsx";
+import DataGuardSim from "../../components/scenes/kms/DataGuardSim.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#en-s1", label: "1 · Encrypting data on S3" },
+  { href: "#en-s2", label: "2 · Sharing an encrypted database" },
+  { href: "#en-s3", label: "3 · Encryption at rest and in transit" },
+  { href: "#en-challenge", label: "Exercise" },
+]}>
+ShopViet's customer data must be encrypted, and the audit team requires information on **which principal used a key and when**. **AWS KMS** stores and manages encryption keys. **ACM** issues and renews TLS certificates for HTTPS.
+</Story>
+
+<Scene id="en-s1" label="Part 1/3" title="Encrypting invoices stored on S3" questions={["exam1_q22", "exam2_q50", "exam4_q6", "exam5_q46", "exam5_q11", "exam2_q46", "exam3_q24"]}>
+
+Every new object on S3 is encrypted. The decision to make is **who manages the key** and **who can track key usage**. Each scenario below is a real ShopViet requirement. Choose a scenario, change the configuration and press Run to watch the object's path and the services that are called.
+
+<S3EncryptSim client:visible />
+
+<Takeaway>Auditing or controlling who can use the key: SSE-KMS. Automatic key rotation: customer managed key + automatic rotation (365 days by default, configurable from 90 to 2560 days). High KMS cost: turn on S3 Bucket Keys and keep SSE-KMS. One key for multiple Regions: multi-Region keys. A key per object with no extra configuration: SSE-S3. The key must be kept outside AWS: SSE-C (since April 2026 blocked by default on new buckets; it must be re-enabled with PutBucketEncryption).</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 2/3" title="Sharing a copy of an encrypted database with the auditors" questions={["exam2_q57"]}>
+
+The auditors have their own AWS account and need a copy of an RDS database encrypted with KMS. Perform each step in turn:
+
+<StepSim client:visible height={240}
+  intro="ShopViet's database is encrypted with a customer managed key in KMS. The auditors in another account need a copy."
+  boxes={[{ x: 20, y: 20, w: 420, h: 200, label: "ShopViet account" }, { x: 470, y: 20, w: 270, h: 200, label: "Audit account" }]}
+  nodes={[
+    { id: "db", x: 50, y: 70, label: "RDS", sub: "encrypted with KMS", kind: "db" },
+    { id: "key", x: 50, y: 150, label: "KMS key", sub: "customer managed", kind: "net" },
+    { id: "snap", x: 270, y: 70, label: "Snapshot", sub: "encrypted", kind: "edge" },
+    { id: "copy", x: 520, y: 70, label: "Snapshot copy", kind: "edge" },
+    { id: "audit", x: 520, y: 150, label: "Auditors' RDS", kind: "db" },
+  ]}
+  initial={["db", "key"]}
+  steps={[
+    { button: "1. Create a snapshot", show: ["snap"], flows: [{ path: ["db", "snap"], tone: "neutral" }],
+      note: "A snapshot of an encrypted database is also encrypted with the same KMS key." },
+    { button: "2. Share the snapshot with the audit account", show: ["copy"], flows: [{ path: ["snap", "copy"], tone: "good", label: "share" }],
+      note: "Sharing the snapshot alone is **not enough**: the audit account sees the snapshot but cannot decrypt it." },
+    { button: "3. Grant the audit account use of the KMS key", flows: [{ path: ["key", "copy"], tone: "good", label: "key policy" }],
+      note: "Update the **key policy** so that the audit account can use the key. That is why the snapshot must be encrypted with a **customer managed key**: RDS does not allow sharing a snapshot encrypted with the account's default KMS key (AWS managed key)." },
+    { button: "4. The auditors restore it", show: ["audit"], flows: [{ path: ["copy", "audit"], tone: "good" }],
+      note: "The auditors have their own copy of the database; the data stays encrypted throughout the process." },
+  ]} />
+
+<Takeaway>Sharing encrypted data with another account: share the snapshot **and** grant that account use of the KMS key through the key policy. Without the key permission, the recipient only sees a snapshot it cannot decrypt.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 3/3" title="Encryption at rest and in transit" questions={["exam2_q40", "exam4_q31", "exam2_q45", "exam5_q40", "exam5_q15", "exam2_q9"]}>
+
+KMS protects data **at rest**. Data **in transit** between machines needs SSL/TLS, and HTTPS requires a valid certificate. A simulation of six situations ShopViet meets in operations:
+
+<DataGuardSim client:visible />
+
+<Takeaway>At rest: KMS. In transit: SSL/TLS. Encryption cannot be turned on directly for a running RDS instance: snapshot → encrypted copy → restore. Certificate for CloudFront: ACM in us-east-1. Imported certificates: ACM does not renew them automatically; track expiration with the AWS Config rule `acm-certificate-expiration-check` (14 days by default, configured through `daysToExpiration`) + SNS, or the EventBridge event "ACM Certificate Approaching Expiration" (from 45 days before by default).</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Sort the features: SSE-S3, SSE-KMS and SSE-C" questions={["exam1_q22", "exam2_q50", "exam2_q57", "exam5_q11"]}>
+
+Sort each feature into the matching encryption type. On a mobile device: select a card, then select the target box.
+
+<SortGame client:visible
+  bins={[
+    { id: "s3", title: "SSE-S3", sub: "S3 manages the key", hint: "Hint: the simplest encryption type, with no key management required." },
+    { id: "kms", title: "SSE-KMS", sub: "Key in KMS", hint: "Hint: the encryption type with logs and control over which principals use the key." },
+    { id: "c", title: "SSE-C", sub: "Customer provides the key", hint: "Hint: the encryption type where AWS does not store the key." },
+  ]}
+  cards={[
+    ["No key management required", "s3"], ["A unique key per object, managed by S3", "s3"], ["Default for new buckets", "s3"],
+    ["CloudTrail logs key usage", "kms"], ["Automatic key rotation", "kms"], ["Lower cost with Bucket Keys", "kms"], ["Multi-Region keys", "kms"],
+    ["Key sent with each request", "c"], ["AWS does not store the key", "c"],
+  ]}
+/>
+
+Check your understanding: as the designer of the ShopViet system, which option is right?
+
+<Quiz client:visible items={[
+  { q: "ShopViet does not want to supply its own keys, but the auditors need to know when a key was used and by which principal. How should the invoices on S3 be encrypted?",
+    opts: ["SSE-S3", "SSE-KMS", "SSE-C"],
+    a: 1,
+    why: "SSE-KMS logs key usage to CloudTrail without ShopViet having to keep the key material itself." },
+  { q: "A new policy requires: encryption at rest, logging of key usage, yearly key rotation, and minimal manual work. Which option fits?",
+    opts: ["SSE-C, rotating the keys yourself", "SSE-KMS with a customer managed key and automatic rotation turned on", "SSE-S3"],
+    a: 1,
+    why: "A customer managed key with automatic rotation is rotated automatically according to its rotation period, 365 days by default (configurable from 90 to 2560 days); CloudTrail logs key usage." },
+  { q: "Auditors in another AWS account need a copy of ShopViet's encrypted RDS database. Which option meets the requirement?",
+    opts: ["Share the encrypted snapshot and grant that account use of the KMS key", "Turn off encryption, then share", "Export the database to CSV and send it by email"],
+    a: 0,
+    why: "The receiving account needs both the snapshot and permission to decrypt with the KMS key." },
+  { q: "Invoices are replicated from us-east-1 to us-west-1 and must be encrypted and decrypted with the same key in both Regions. Which solution fits?",
+    opts: ["Two separate keys in the two Regions", "A KMS multi-Region key", "SSE-S3"],
+    a: 1,
+    why: "A multi-Region key has the same key ID and key material in multiple Regions." },
+  { q: "ShopViet's KMS request costs rise sharply during the sales season. Which solution reduces cost while keeping SSE-KMS?",
+    opts: ["Switch to SSE-S3", "Turn on S3 Bucket Keys", "Turn off CloudTrail"],
+    a: 1,
+    why: "S3 Bucket Keys reduce the number of requests to KMS while keeping SSE-KMS and the logs. Switching to SSE-S3 would lose the audit trail." },
+]} />
+
+</Scene>

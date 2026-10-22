@@ -1,5 +1,6 @@
 import { useRef, useState, type ReactNode } from "react";
 import { flashText, travel, type Pt } from "../../../lib/animate";
+import { useLang, type Bi } from "../../../lib/lang";
 
 // Hybrid DNS with Route 53 Resolver endpoints (exam1_q63, exam3_q35) and the VPC
 // DNS attributes a private hosted zone needs (exam2_q20, exam6_q63).
@@ -16,7 +17,8 @@ export default function HybridDnsSim() {
   const [support, setSupport] = useState(true);
   const [hostnames, setHostnames] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<ReactNode>(null);
+  const [msg, setMsg] = useState<Bi<ReactNode> | null>(null);
+  const L = useLang();
   const pk = useRef<SVGGElement>(null);
 
   async function ask(q: Query) {
@@ -28,21 +30,25 @@ export default function HybridDnsSim() {
       if (!support) {
         await travel(layer, [EC2, RESOLVER], 600, "pkt-bad", 6);
         flashText(layer, RESOLVER[0] - 6, RESOLVER[1] - 30, "✕", "err-t", 1500);
-        setMsg(<>enableDnsSupport đang tắt nên instance không sử dụng được Route 53 Resolver của VPC. Mọi truy vấn DNS đều thất bại.</>);
+        setMsg({ vi: <>enableDnsSupport đang tắt nên instance không sử dụng được Route 53 Resolver của VPC. Mọi truy vấn DNS đều thất bại.</>,
+          en: <>enableDnsSupport is off, so the instance cannot use the VPC&apos;s Route 53 Resolver. Every DNS query fails.</> });
       } else {
         await travel(layer, [EC2, RESOLVER, OUTBOUND, ONPREM_DNS], 1600, "pkt", 6);
         await travel(layer, [ONPREM_DNS, OUTBOUND, RESOLVER, EC2], 1400, "pkt-back", 6);
-        setMsg(<>EC2 truy vấn <code>db.corp.local</code>. Forwarding rule của Resolver chuyển truy vấn qua <b>outbound endpoint</b> tới DNS server on-premises. Cấu hình này áp dụng khi workload trong VPC cần phân giải tên miền nội bộ của văn phòng.</>);
+        setMsg({ vi: <>EC2 truy vấn <code>db.corp.local</code>. Forwarding rule của Resolver chuyển truy vấn qua <b>outbound endpoint</b> tới DNS server on-premises. Cấu hình này áp dụng khi workload trong VPC cần phân giải tên miền nội bộ của văn phòng.</>,
+          en: <>EC2 queries <code>db.corp.local</code>. A Resolver forwarding rule sends the query through the <b>outbound endpoint</b> to the on-premises DNS server. This configuration applies when workloads in the VPC need to resolve the office&apos;s internal domain names.</> });
       }
     } else {
       await travel(layer, [ONPREM_DNS, INBOUND, RESOLVER], 1200, "pkt", 6);
       if (!support || !hostnames) {
         await travel(layer, [RESOLVER, PHZ], 500, "pkt-bad", 6);
         flashText(layer, PHZ[0] - 6, PHZ[1] - 26, "✕", "err-t", 1500);
-        setMsg(<>Private hosted zone chỉ hoạt động khi VPC bật <b>cả</b> enableDnsHostnames và enableDnsSupport. Khi thiếu một trong hai thuộc tính, private hosted zone không phân giải được.</>);
+        setMsg({ vi: <>Private hosted zone chỉ hoạt động khi VPC bật <b>cả</b> enableDnsHostnames và enableDnsSupport. Khi thiếu một trong hai thuộc tính, private hosted zone không phân giải được.</>,
+          en: <>A private hosted zone works only when the VPC enables <b>both</b> enableDnsHostnames and enableDnsSupport. When either attribute is missing, the private hosted zone does not resolve.</> });
       } else {
         await travel(layer, [RESOLVER, PHZ, RESOLVER, INBOUND, ONPREM_DNS], 1800, "pkt-back", 6);
-        setMsg(<>DNS server on-premises chuyển truy vấn <code>api.shopviet.internal</code> tới <b>inbound endpoint</b>. Resolver phản hồi từ private hosted zone. Cấu hình này áp dụng khi hệ thống tại văn phòng cần phân giải tên miền trong VPC.</>);
+        setMsg({ vi: <>DNS server on-premises chuyển truy vấn <code>api.shopviet.internal</code> tới <b>inbound endpoint</b>. Resolver phản hồi từ private hosted zone. Cấu hình này áp dụng khi hệ thống tại văn phòng cần phân giải tên miền trong VPC.</>,
+          en: <>The on-premises DNS server forwards the query for <code>api.shopviet.internal</code> to the <b>inbound endpoint</b>. Resolver answers from the private hosted zone. This configuration applies when systems at the office need to resolve domain names in the VPC.</> });
       }
     }
     setBusy(false);
@@ -59,11 +65,11 @@ export default function HybridDnsSim() {
         </button>
       </div>
       <div className="stage-bar">
-        <button className="btn primary" onClick={() => ask("toOnPrem")} disabled={busy}>EC2 truy vấn db.corp.local</button>
-        <button className="btn primary" onClick={() => ask("fromOnPrem")} disabled={busy}>On-premises truy vấn api.shopviet.internal</button>
+        <button className="btn primary" onClick={() => ask("toOnPrem")} disabled={busy}>{L({ vi: "EC2 truy vấn db.corp.local", en: "EC2 queries db.corp.local" })}</button>
+        <button className="btn primary" onClick={() => ask("fromOnPrem")} disabled={busy}>{L({ vi: "On-premises truy vấn api.shopviet.internal", en: "On premises queries api.shopviet.internal" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 0 760 310" role="img" aria-label="VPC với Route 53 Resolver, inbound endpoint, outbound endpoint và DNS server on-premises">
+        <svg viewBox="0 0 760 310" role="img" aria-label={L({ vi: "VPC với Route 53 Resolver, inbound endpoint, outbound endpoint và DNS server on-premises", en: "VPC with Route 53 Resolver, an inbound endpoint, an outbound endpoint and an on-premises DNS server" })}>
           <rect className="region" x={30} y={30} width={480} height={270} rx={12} />
           <text className="t" x={46} y={54}>VPC</text>
           <g className="res res-ec2"><rect x={EC2[0] - 40} y={EC2[1] - 18} width={80} height={36} rx={6} /><text className="res-t" x={EC2[0]} y={EC2[1] + 5} textAnchor="middle">EC2</text></g>
@@ -80,7 +86,7 @@ export default function HybridDnsSim() {
         </svg>
       </div>
       <div className="readout" aria-live="polite">
-        {msg ?? <>Thực hiện truy vấn theo cả hai chiều, sau đó tắt một trong hai thuộc tính DNS của VPC và thử lại.</>}
+        {L(msg ?? { vi: <>Thực hiện truy vấn theo cả hai chiều, sau đó tắt một trong hai thuộc tính DNS của VPC và thử lại.</>, en: <>Run queries in both directions, then turn off one of the VPC&apos;s two DNS attributes and try again.</> })}
       </div>
     </div>
   );

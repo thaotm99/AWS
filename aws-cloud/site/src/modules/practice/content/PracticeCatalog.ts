@@ -42,6 +42,8 @@ export const CERTIFICATIONS: CertificationConfig[] = [
 
 export class PracticeCatalog {
   private readonly exams = new Map<string, Exam[]>();
+  /** Topic lists by certification id: building one reads every list_qa.md, so it happens once per build. */
+  private readonly topics = new Map<string, TopicConfig[]>();
 
   constructor(private readonly configs: CertificationConfig[]) {}
 
@@ -86,19 +88,25 @@ export class PracticeCatalog {
   }
 
   private topicsOf(config: CertificationConfig): TopicConfig[] {
-    return config.topics?.() ?? [];
+    let topics = this.topics.get(config.id);
+    if (!topics) this.topics.set(config.id, (topics = config.topics?.() ?? []));
+    return topics;
   }
 
   /**
-   * Every question about one service, numbered 1..N in study-path order. The practice-test
-   * references stay on the server: the set only carries question ids, which reveal nothing.
+   * Every question about one service, numbered 1..N in study-path order. The practice-test references
+   * (examN_qM) stay on the server. Questions keep their original id, so answers and illustrations are
+   * looked up the same way as on the practice tests (the question text is the same in both anyway).
    */
   getTopic(certId: string, topicId: string, locale: ContentLocale = "en"): Exam {
     const config = this.config(certId);
     const topic = this.topicsOf(config).find((t) => t.id === topicId);
     if (!topic) throw new Error(`Không có chủ đề ${certId}/${topicId}`);
     const exams = this.examsOf(config, locale);
+    const seen = new Set<string>();
     const questions = topic.refs.map((ref, i) => {
+      if (seen.has(ref)) throw new Error(`${topicId}/list_qa.md: ${ref} xuất hiện hai lần`);
+      seen.add(ref);
       const [, n, m] = ref.match(/^exam(\d+)_q(\d+)$/)!;
       const q = exams.find((e) => e.number === Number(n))?.questions[Number(m) - 1];
       if (!q || q.number !== Number(m)) throw new Error(`${topicId}/list_qa.md: không tìm thấy ${ref}`);

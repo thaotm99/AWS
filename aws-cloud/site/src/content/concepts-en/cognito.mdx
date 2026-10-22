@@ -1,0 +1,131 @@
+---
+title: "Cognito, IAM Identity Center and Directory Service"
+lede: "ShopViet's customers, employees and partners have different authentication requirements. This lesson covers authentication for web and mobile applications with Amazon Cognito (user pools versus identity pools), single sign-on for employees into multiple AWS accounts, reusing on-premises Active Directory, and receiving partner files over SFTP."
+minutes: 15
+scenes: 2
+prerequisites: ["iam"]
+docs:
+  - title: "Amazon Cognito user pools"
+    url: "https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools.html"
+  - title: "Amazon Cognito identity pools"
+    url: "https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-identity.html"
+  - title: "Authenticate users using an Application Load Balancer"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/listener-authenticate-users.html"
+  - title: "What is IAM Identity Center?"
+    url: "https://docs.aws.amazon.com/singlesignon/latest/userguide/what-is.html"
+  - title: "AWS Directory Service options"
+    url: "https://docs.aws.amazon.com/directoryservice/latest/admin-guide/what_is.html"
+  - title: "Common Amazon Cognito scenarios"
+    url: "https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-scenarios.html"
+  - title: "AD Connector"
+    url: "https://docs.aws.amazon.com/directoryservice/latest/admin-guide/directory_ad_connector.html"
+  - title: "Working with custom identity providers (AWS Transfer Family)"
+    url: "https://docs.aws.amazon.com/transfer/latest/userguide/custom-idp-intro.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
+import StaffSignInSim from "../../components/scenes/cognito/StaffSignInSim.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#en-s1", label: "1 · Authenticating application users" },
+  { href: "#en-s2", label: "2 · Employees, Active Directory and partners" },
+  { href: "#en-challenge", label: "Exercise" },
+]}>
+The ShopViet system has two groups of identities to authenticate: **customers** who use the web and mobile applications, and **employees** who need access to AWS accounts and to internal systems that use Active Directory. Each group uses its own set of services.
+</Story>
+
+<Scene id="en-s1" label="Part 1/2" title="Authenticating customers: Cognito user pools and identity pools" questions={["exam2_q17", "exam6_q50"]}>
+
+A **user pool** is a user directory: it provides sign-up and sign-in and returns tokens (JWTs). An **identity pool** exchanges an authenticated identity for **temporary AWS credentials** to call AWS services such as S3 directly. ShopViet has both requirements. Pick a scenario and compare the two options:
+
+<ScenarioFlow client:visible height={230} scenarios={[
+  { name: "A user signs in to the ShopViet website",
+    nodes: [
+      { id: "user", x: 30, y: 90, label: "User", kind: "user" },
+      { id: "alb", x: 230, y: 90, label: "ALB", sub: "HTTPS listener", kind: "net" },
+      { id: "pool", x: 230, y: 175, label: "Cognito user pool", kind: "edge" },
+      { id: "app", x: 520, y: 90, label: "Application EC2", sub: "business logic only", kind: "ec2" },
+      { id: "code", x: 520, y: 10, label: "Custom-built auth code", kind: "warn" },
+    ],
+    options: [
+      { name: "Build sign-in yourself", verdict: "bad", hide: ["pool"],
+        flows: [{ path: ["user", "alb", "app"], tone: "neutral" }, { path: ["app", "code"], tone: "bad", label: "self-maintained" }],
+        text: "Every server has to handle sign-in, session management and passwords itself, which raises development cost and the risk of mistakes." },
+      { name: "ALB + Cognito user pool", verdict: "good", hide: ["code"],
+        flows: [{ path: ["user", "alb"], tone: "good" }, { path: ["alb", "pool"], tone: "good", label: "authenticate" }, { path: ["alb", "app"], tone: "good", label: "authenticated" }],
+        text: "Configure an **authenticate-cognito** action in a listener rule of the HTTPS listener on the ALB. The ALB handles authentication; the application only receives authenticated requests. ShopViet's development team **does not need to write authentication code**." },
+    ] },
+  { name: "The mobile app uploads review photos to S3",
+    nodes: [
+      { id: "user", x: 30, y: 90, label: "Mobile user", kind: "user" },
+      { id: "idp", x: 250, y: 20, label: "Cognito identity pool", kind: "edge" },
+      { id: "key", x: 250, y: 170, label: "Access key embedded in the app", kind: "warn" },
+      { id: "s3", x: 640, y: 90, w: 100, label: "S3", kind: "store" },
+    ],
+    options: [
+      { name: "Embed an access key", verdict: "bad", hide: ["idp"],
+        flows: [{ path: ["user", "key", "s3"], tone: "bad", label: "key exposure risk" }],
+        text: "Anyone who reverse-engineers the app package can extract the long-term access key." },
+      { name: "Identity pool issues temporary credentials", verdict: "good", hide: ["key"],
+        flows: [{ path: ["user", "idp"], tone: "good", label: "exchange token for temporary credentials" }, { path: ["user", "s3"], tone: "good", label: "write with temporary credentials" }],
+        text: "The **identity pool** exchanges the signed-in user's token for **temporary AWS credentials**; the IAM role attached to the identity pool defines what those credentials can do. The app uses these credentials to write directly to S3, with no long-term access key embedded." },
+    ] },
+]} />
+
+<Takeaway>User pool: authenticates users, returns tokens, integrates with ALB. Identity pool: exchanges a token for temporary AWS credentials (permissions from an IAM role) to call S3, DynamoDB…</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 2/2" title="Authenticating employees, Active Directory and partners" questions={["exam6_q10", "exam4_q4", "exam1_q10", "exam3_q28", "exam6_q44", "exam3_q5", "exam2_q4"]}>
+
+Cognito serves the application's customers. Employees and partners have different requirements: single sign-on into multiple AWS accounts, reusing on-premises Active Directory accounts, accessing file shares, and transferring files over SFTP. Pick each scenario, change the configuration, then press Sign in.
+
+<StaffSignInSim client:visible />
+
+<Takeaway>Employees accessing multiple accounts: IAM Identity Center + permission sets. Use on-premises AD for authentication without synchronizing the directory to AWS: AD Connector. AD running on AWS with a trust to on-premises AD: AWS Managed Microsoft AD. File share with NTFS permissions: FSx for Windows File Server. Partners transferring files over SFTP: AWS Transfer Family.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Classify the requirements: Cognito and IAM Identity Center" questions={["exam2_q17", "exam6_q44", "exam6_q10"]}>
+
+Sort each requirement into the matching service. On a mobile device: tap a card, then tap the target box.
+
+<SortGame client:visible
+  bins={[
+    { id: "up", title: "Cognito user pool", sub: "Authentication, tokens", hint: "Hint: the service that handles sign-up and sign-in for application users." },
+    { id: "ip", title: "Cognito identity pool", sub: "Temporary credentials", hint: "Hint: the service that exchanges an identity for permission to call AWS services." },
+    { id: "ic", title: "IAM Identity Center", sub: "Employees, many accounts", hint: "Hint: the service for employees who access multiple AWS accounts." },
+  ]}
+  cards={[
+    ["Returns a JWT after sign-in", "up"], ["Adds authentication to an ALB", "up"], ["Sign-up, password recovery", "up"],
+    ["Mobile app writes directly to S3", "ip"], ["Federated users get temporary credentials", "ip"],
+    ["Permission sets", "ic"], ["Single sign-on into multiple AWS accounts", "ic"],
+  ]}
+/>
+
+Check your understanding: as the designer of the ShopViet system, which option fits?
+
+<Quiz client:visible items={[
+  { q: "The ShopViet development team wants the ALB to handle authentication so that servers only run business logic, with the least code to write. Which option fits?",
+    opts: ["Cognito user pool integrated with the ALB", "Write a sign-in module on each EC2 instance", "An IAM user for each customer"],
+    a: 0,
+    why: "An ALB listener rule (HTTPS listener) supports the authenticate-cognito action to authenticate with a Cognito user pool." },
+  { q: "ShopViet's accounting application needs to join a domain on AWS, and that domain must have a trust with the on-premises AD. Which service meets the requirement?",
+    opts: ["AD Connector", "AWS Managed Microsoft AD", "Simple AD"],
+    a: 1,
+    why: "AWS Managed Microsoft AD is an Active Directory operated by AWS that supports trusts with on-premises AD. AD Connector is only a directory gateway that forwards requests to the on-premises AD; it does not create a domain on AWS and does not support transitive trusts." },
+  { q: "40 ShopViet employees need single sign-on into multiple AWS accounts, with each group granted only the permissions it needs. Which option has the lowest administrative overhead?",
+    opts: ["A separate IAM user in each account", "IAM Identity Center with permission sets", "Cognito identity pool"],
+    a: 1,
+    why: "IAM Identity Center centralizes authentication; permission sets grant permissions by group and by account." },
+  { q: "ShopViet's mobile app must let signed-in users upload review photos directly to S3, without embedding an access key in the app. Which solution fits?",
+    opts: ["Cognito identity pool issuing temporary credentials", "One shared IAM user for all users", "Cognito user pool returns a JWT, then call S3 with the JWT"],
+    a: 0,
+    why: "An identity pool exchanges an authenticated identity for temporary AWS credentials to call S3. A user pool token (JWT) proves sign-in; to access AWS services, the app exchanges that token for credentials through an identity pool." },
+]} />
+
+</Scene>

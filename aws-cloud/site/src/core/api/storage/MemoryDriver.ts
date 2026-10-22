@@ -1,3 +1,4 @@
+import { Compat } from "../../compat";
 import { StorageDriver } from "./StorageDriver";
 
 /** Last resort when the browser blocks storage: progress lasts until the tab closes. */
@@ -12,11 +13,11 @@ export class MemoryDriver extends StorageDriver {
   }
 
   async get<T>(collection: string, key: string): Promise<T | undefined> {
-    return structuredClone(this.bucket(collection).get(key)) as T | undefined;
+    return Compat.clone(this.bucket(collection).get(key)) as T | undefined;
   }
 
   async put<T>(collection: string, key: string, value: T): Promise<void> {
-    this.bucket(collection).set(key, structuredClone(value));
+    this.bucket(collection).set(key, Compat.clone(value));
   }
 
   async delete(collection: string, key: string): Promise<void> {
@@ -24,6 +25,10 @@ export class MemoryDriver extends StorageDriver {
   }
 
   async list<T>(collection: string): Promise<T[]> {
-    return [...this.bucket(collection).values()].map((v) => structuredClone(v) as T);
+    return [...this.bucket(collection).values()].map((v) => Compat.clone(v) as T);
+  }
+
+  async clear(collection: string): Promise<void> {
+    this.data.delete(collection);
   }
 }

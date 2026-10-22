@@ -1,0 +1,150 @@
+---
+title: "EBS, EFS and FSx: choosing a storage service"
+lede: "This lesson covers four topics: telling block, file and object storage apart, choosing an EBS volume type for an IOPS requirement, configuring Amazon EFS for the workload, and choosing the right Amazon FSx type for each group of users."
+minutes: 25
+scenes: 4
+prerequisites: ["ec2", "s3"]
+docs:
+  - title: "Amazon EBS volume types"
+    url: "https://docs.aws.amazon.com/ebs/latest/userguide/ebs-volume-types.html"
+  - title: "Amazon EBS Multi-Attach"
+    url: "https://docs.aws.amazon.com/ebs/latest/userguide/ebs-volumes-multi.html"
+  - title: "Amazon EFS performance"
+    url: "https://docs.aws.amazon.com/efs/latest/ug/performance.html"
+  - title: "What is FSx for Windows File Server?"
+    url: "https://docs.aws.amazon.com/fsx/latest/WindowsGuide/what-is.html"
+  - title: "What is FSx for Lustre?"
+    url: "https://docs.aws.amazon.com/fsx/latest/LustreGuide/what-is.html"
+  - title: "What is FSx for NetApp ONTAP?"
+    url: "https://docs.aws.amazon.com/fsx/latest/ONTAPGuide/what-is-fsx-ontap.html"
+  - title: "How Amazon EBS encryption works"
+    url: "https://docs.aws.amazon.com/ebs/latest/userguide/how-ebs-encryption-works.html"
+  - title: "What is Amazon EFS?"
+    url: "https://docs.aws.amazon.com/efs/latest/ug/whatisefs.html"
+  - title: "Amazon EFS features: durability and availability"
+    url: "https://docs.aws.amazon.com/efs/latest/ug/features.html"
+  - title: "Mounting EFS file systems from another VPC or account"
+    url: "https://docs.aws.amazon.com/efs/latest/ug/efs-different-vpc.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import SharedStorageSim from "../../components/scenes/storage/SharedStorageSim.tsx";
+import VolumeChooser from "../../components/scenes/storage/VolumeChooser.tsx";
+import FsxSim from "../../components/scenes/storage/FsxSim.tsx";
+import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#en-s1", label: "1 · Block, file and object storage" },
+  { href: "#en-s2", label: "2 · Choosing an EBS volume" },
+  { href: "#en-s3", label: "3 · Configuring EFS" },
+  { href: "#en-s4", label: "4 · The FSx types" },
+  { href: "#en-challenge", label: "Exercise" },
+]}>
+The ShopViet system has four different storage needs: the database needs a high-performance disk, the web servers need a shared folder, the office needs a file share for Windows, and the data team needs a very high-performance file system for compute jobs. Each need maps to a different type of storage service.
+</Story>
+
+<Scene id="en-s1" label="Part 1/4" title="Shared storage for multiple web servers" questions={["exam2_q29", "exam6_q15", "exam1_q46", "exam1_q9"]}>
+
+ShopViet runs three web servers in two AZs behind a load balancer. A user uploads a product video to any one server, and other users must be able to watch that video whichever server they are routed to. Try storing the video in three places:
+
+<SharedStorageSim client:visible />
+
+When several AWS accounts (for example, the account of each sub-shop) need to mount the same folder, EFS still works: add a file system policy that grants access to the other account, and connect the two VPCs with VPC peering or a transit gateway.
+
+<Takeaway>Block storage (EBS): a disk dedicated to one instance in one AZ, charged for provisioned capacity. File storage (EFS, FSx): shared by many instances; EFS scales automatically and charges for the data actually stored. Object storage (S3): accessed through an API; S3 Standard stores data across at least 3 AZs. S3 Standard and EFS Regional are both designed for 99.999999999% (11 nines) durability. Cost comparisons must use the current pricing of each Region, and keep in mind that EBS charges for provisioned capacity, including the unused part.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 2/4" title="Choosing an EBS volume for the database" questions={["exam3_q27", "exam5_q22", "exam1_q44", "exam6_q24", "exam4_q15", "exam5_q64", "exam5_q16", "exam5_q40"]}>
+
+ShopViet's order database runs on EC2, and its IOPS needs keep growing. Adjust the IOPS slider and turn on requirements to see the suitable volume type:
+
+<VolumeChooser client:visible />
+
+Besides choosing a volume type, operating EBS also involves these tasks:
+
+<RequirementPicker client:visible items={[
+  { need: "Create a test environment from production data that must deliver full performance from the start", answer: "Snapshot + EBS fast snapshot restore",
+    why: "A volume created from a snapshot with fast snapshot restore enabled delivers full performance immediately, without waiting for the data to load gradually." },
+  { need: "A backup snapshot was deleted by mistake; it must be recovered with minimal effort", answer: "Recycle Bin with a 7-day snapshot retention rule",
+    why: "Deleted snapshots go to the Recycle Bin and can be recovered within the retention period." },
+  { need: "When you enable encryption for EBS, which components are encrypted?", answer: "Data on the volume, snapshots, and data moving between the volume and the instance",
+    why: "All three are encrypted with a KMS key, with no application changes required. Volumes created from those snapshots are also encrypted." },
+]} />
+
+<Takeaway>Default choice: gp3 (up to 80,000 IOPS; gp2 up to 16,000 IOPS). Consistent IOPS for I/O-intensive databases, more than 80,000 IOPS, or Multi-Attach: io1/io2 (io2 Block Express up to 256,000 IOPS). Large sequential reads: st1; infrequently accessed data: sc1; the two HDD types cannot be used as boot volumes. Quickly creating a test environment from a snapshot: fast snapshot restore.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 3/4" title="Configuring EFS for the workload" questions={["exam2_q64", "exam4_q55", "exam3_q11", "exam2_q60", "exam6_q39", "exam4_q24", "exam1_q12", "exam5_q47"]}>
+
+After deploying EFS, ShopViet has operational issues to solve: adjusting the configuration under heavy load, optimizing the cost of storing old files, and controlling who can mount. Choose each scenario:
+
+<RequirementPicker client:visible items={[
+  { need: "A big data job runs in parallel on a very large number of instances, all reading and writing EFS", answer: "Performance mode: General Purpose", why: "AWS recommends General Purpose for all file systems. Max I/O is a previous-generation performance mode for highly parallel workloads that can tolerate higher latency; Max I/O does not support Elastic throughput or One Zone file systems." },
+  { need: "Spiky, unpredictable load, and you do not want to provision throughput yourself", answer: "Elastic throughput (default)", why: "Throughput scales up and down automatically with the load; you pay only for the data and metadata read and written, with no burst credits. Bursting throughput instead scales with the amount of storage in the Standard class (50 KiBps per GiB)." },
+  { need: "A small configuration folder (under 1 TB) that is read and written constantly", answer: "Provisioned throughput", why: "Provisions a fixed level of throughput, independent of file system size or burst credit balance. Suits cases where the performance requirement is known in advance." },
+  { need: "Old order images are rarely accessed but sometimes must be retrieved immediately; cost must be optimized", answer: "EFS Infrequent Access (lifecycle to IA)", why: "A lower-cost storage class for rarely accessed files that can still be read immediately." },
+  { need: "Each web server accesses EFS with the lowest latency", answer: "A mount target in each AZ; EC2 uses the mount target in its own AZ", why: "Traffic does not have to cross to another AZ." },
+  { need: "Only the web servers may mount; other servers are denied", answer: "Security group + IAM policy", why: "The mount target's security group controls network access; IAM controls mount permissions." },
+  { need: "The risk that a Region-level outage causes data loss on EFS", answer: "AWS Backup copies to another Region", why: "Scheduled backups copied to another Region." },
+]} />
+
+<Takeaway>EFS: an NFS file system shared across multiple AZs. Recommended configuration: General Purpose performance mode + Elastic throughput; Max I/O is previous generation. Throughput needs known in advance, independent of storage size: Provisioned throughput. Rarely accessed files: the IA class. Mount targets in the same AZ to reduce latency.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s4" label="Part 4/4" title="Choosing a file system for four groups of users" questions={["exam2_q12", "exam2_q56", "exam1_q65", "exam3_q5", "exam3_q43", "exam3_q56", "exam1_q24", "exam3_q61", "exam3_q26"]}>
+
+Besides EFS, AWS offers three **FSx** types for specialized needs. Each of ShopViet's four user groups has three must-have requirements. Try mounting each file system for each group to find the file system that meets all the requirements:
+
+<FsxSim client:visible />
+
+When the office needs to keep an on-premises SMB file share but store the data on S3, use **S3 File Gateway** (see the Storage Gateway lesson).
+
+<Takeaway>Windows, SMB, NTFS, Active Directory, DFS: FSx for Windows File Server. HPC, parallel reads, loading data from S3: FSx for Lustre. Already on NetApp, needs NFS + SMB + iSCSI: FSx for NetApp ONTAP. A simple shared folder for Linux: EFS.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Sort the properties: EBS, EFS and FSx" questions={["exam3_q27", "exam1_q44", "exam3_q5", "exam2_q64"]}>
+
+Sort each property into the matching service. On a mobile device: tap a card, then tap the target box.
+
+<SortGame client:visible
+  bins={[
+    { id: "ebs", title: "EBS", sub: "Block, 1 AZ", hint: "Hint: a disk attached to an instance." },
+    { id: "efs", title: "EFS", sub: "Shared NFS", hint: "Hint: a Linux file system shared across multiple AZs." },
+    { id: "fsx", title: "FSx", sub: "Windows, Lustre, ONTAP", hint: "Hint: specialized file systems." },
+  ]}
+  cards={[
+    ["io2 for a 25,000 IOPS database", "ebs"], ["Fast snapshot restore", "ebs"], ["Multi-Attach within the same AZ", "ebs"],
+    ["A mount target in each AZ", "efs"], ["Max I/O performance mode", "efs"], ["Infrequent Access class", "efs"],
+    ["SMB + NTFS + Active Directory", "fsx"], ["Sub-millisecond latency HPC", "fsx"], ["Replaces DFSR", "fsx"],
+  ]}
+/>
+
+Check question: as the designer of the ShopViet system, which option fits?
+
+<Quiz client:visible items={[
+  { q: "The order database on EC2 needs a consistent 25,000 IOPS per volume. Which volume type fits?",
+    opts: ["General Purpose SSD (gp2)", "Provisioned IOPS SSD (io1)", "Throughput Optimized HDD (st1)"],
+    a: 1,
+    why: "gp2 reaches at most 16,000 IOPS; io1 can provision up to 64,000 consistent IOPS. st1 reaches at most 500 IOPS." },
+  { q: "The plan is to use a low-cost HDD as the boot disk for a log server. Which two EBS types cannot be used as boot volumes?",
+    opts: ["gp3 and io2", "st1 and sc1", "gp2 and st1"],
+    a: 1,
+    why: "The two HDD types (st1, sc1) cannot be used as boot volumes." },
+  { q: "The accounting department has both Windows and Linux machines using one file share, and it must keep NTFS permissions and authenticate with Active Directory. Which service fits?",
+    opts: ["Amazon EFS", "FSx for Windows File Server", "FSx for Lustre"],
+    a: 1,
+    why: "FSx for Windows supports SMB, NTFS and AD; Linux machines mount it over SMB." },
+  { q: "A ShopViet analytics job runs in parallel on a very large number of instances, all reading and writing one EFS file system. Which performance mode fits?",
+    opts: ["General Purpose", "Max I/O", "Provisioned throughput"],
+    a: 0,
+    why: "AWS recommends General Purpose for all file systems because Max I/O (previous generation) has higher per-operation latency and does not support Elastic throughput. Provisioned throughput is a throughput mode, not a performance mode." },
+]} />
+
+</Scene>
