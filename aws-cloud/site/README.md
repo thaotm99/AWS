@@ -18,6 +18,7 @@ Các hình bên dưới là SVG có chuyển động. Chúng tự chạy trên G
 - [Thêm một module mới](#thêm-một-module-mới)
 - [Chuyển dữ liệu lên server](#chuyển-dữ-liệu-lên-server)
 - [Sửa hình minh hoạ](#sửa-hình-minh-hoạ)
+- [Deploy lên Vercel](#deploy-lên-vercel)
 
 ## Tổng quan: core, modules, app
 
@@ -180,3 +181,20 @@ npm ci
 npm run dev       # http://localhost:4321/on-tap/
 npm run build     # astro check (kiểu TypeScript, key i18n) + build ra dist/
 ```
+
+## Deploy lên Vercel
+
+Cấu hình build nằm trong repo:
+
+- `vercel.json`: framework Astro, `npm ci`, `npm run build` (kiểm tra kiểu rồi build), xuất ra `dist`, URL có dấu `/` ở cuối.
+- `package.json` → `engines.node: 22.x`.
+- `middleware.ts`: khoá cả site bằng mật khẩu (Vercel Routing Middleware). Gói Hobby của Vercel không khoá được trang production, nên phần này cần thiết vì trang Ôn tập chứa nội dung đề có bản quyền.
+
+**Lần đầu:**
+
+1. Vào vercel.com → **Add New… → Project**, rồi import repo `thaotm99/aws` từ GitHub.
+2. **Root Directory**: chọn `aws-cloud/site`. Giữ bật tuỳ chọn cho phép dùng file nằm ngoài Root Directory, vì lúc build site cần đọc `solution-architect-aws/` để sinh dữ liệu đề.
+3. **Environment Variables**: thêm `SITE_USER` và `SITE_PASSWORD` (chọn cả Production và Preview). Bỏ trống hai biến này thì site public.
+4. Bấm **Deploy**. Từ đó, mỗi lần push lên nhánh production, Vercel tự build lại. Mỗi PR có link preview riêng.
+
+Trình duyệt sẽ hỏi tài khoản và mật khẩu ở lần mở đầu tiên, và nhớ cho các lần sau. Middleware chỉ chạy trên Vercel; `npm run dev` và `npm run preview` ở máy không bị hỏi mật khẩu.

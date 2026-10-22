@@ -27,6 +27,11 @@ aws-cloud/
     └── lib/static-site-stack.ts  S3, CloudFront, IAM role cho GitHub, Budget
 ```
 
+## Deploy miễn phí (Vercel)
+
+Xem mục "Deploy lên Vercel" trong [`site/README.md`](site/README.md#deploy-lên-vercel): Root Directory `aws-cloud/site`,
+đặt `SITE_USER` / `SITE_PASSWORD` để khoá site. Cách deploy lên AWS (S3 + CloudFront) vẫn ở mục "Deploy lần đầu" bên dưới.
+
 ## Kiến trúc app
 
 Xem [`site/README.md`](site/README.md): core / modules / app, các tầng trong một module, luồng dữ liệu,
