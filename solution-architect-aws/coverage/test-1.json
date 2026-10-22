@@ -874,8 +874,8 @@
         {
           "keyword": "AWS Local Zones",
           "lesson": "global-infra",
-          "status": "partial",
-          "where": "monitoring.mdx#s3"
+          "status": "covered",
+          "where": "global-infra.mdx#deep / QuickCompare"
         },
         {
           "keyword": "AWS Snowball Edge Compute Optimized",

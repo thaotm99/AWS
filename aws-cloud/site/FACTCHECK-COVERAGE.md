@@ -407,3 +407,21 @@ Checked 2026-10-22 against the pages below (keyword → claim → URL).
 | Route 53 multivalue answer routing | ASG scaling policies adjust desired capacity between min and max and launch/terminate instances ("instead" path) | https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-groups.html |
 
 Note: the AliasCnameSim case "shopviet.vn → www" (unchanged) calls Alias the lowest-cost option; the docs' free-query statement covers alias queries to AWS resources, so the new RecordTypeSim text avoids claiming the apex→www alias query is free.
+
+## global-infra
+
+Checked 2026-10-22 against the pages below (keyword → claim → URL).
+
+| Keyword | Claim written | Source |
+|---|---|---|
+| Global Accelerator endpoint weights (blue/green traffic shift) | Endpoint weight sets the proportion of traffic to an endpoint in an endpoint group; range up to 255, default 128; weight 0 stops traffic (bluegreen scene, BlueGreenSim) | https://docs.aws.amazon.com/global-accelerator/latest/dg/about-endpoints-endpoint-weights.html |
+| Global Accelerator endpoint weights (blue/green traffic shift) | Traffic dial per endpoint group (Region), default 100%; applies only to new connections; usable for blue/green testing across Regions | https://docs.aws.amazon.com/global-accelerator/latest/dg/about-endpoint-groups-traffic-dial.html |
+| Global Accelerator endpoint weights (blue/green traffic shift) | Some client devices and resolvers cache DNS answers for long periods; GA weight and dial changes are effective within seconds, not subject to DNS caching (AWS blog) | https://aws.amazon.com/blogs/networking-and-content-delivery/using-aws-global-accelerator-to-achieve-blue-green-deployments/ |
+| AWS Local Zones | Places compute, storage, database and select services close to large population and industry centers for low latency; managed from the parent Region; no need to own/operate a data center (deep, QuickCompare) | https://docs.aws.amazon.com/local-zones/latest/ug/what-is-aws-local-zones.html ; https://aws.amazon.com/about-aws/global-infrastructure/localzones/faqs/ |
+| AWS Local Zones | Outposts: fully managed, extends AWS infrastructure/APIs to customer premises, capacity managed as part of a Region | https://docs.aws.amazon.com/outposts/latest/userguide/what-is-outposts.html |
+| AWS Local Zones | EKS on Outposts: extended vs local clusters; control plane fully managed by AWS in both; local clusters for network disconnects or data residency mandates | https://docs.aws.amazon.com/eks/latest/userguide/eks-outposts.html |
+| AWS Local Zones | Wavelength: AWS compute/storage at the edge of CSP networks; Wavelength Zone is a logical extension of the Region | https://docs.aws.amazon.com/wavelength/latest/developerguide/what-is-wavelength.html |
+| AWS Local Zones | EKS Anywhere is customer-managed on customer infrastructure (vSphere, bare metal, Nutanix…); "not supported on AWS Outposts" | https://aws.amazon.com/eks/eks-anywhere/faqs/ |
+| AWS Local Zones | Snowball Edge no longer available to new customers; AWS points edge computing to Outposts | https://docs.aws.amazon.com/snowball/latest/developer-guide/whatisedge.html |
+
+Doc vs exam: test 1 q27 names "Amazon EKS Anywhere on Outposts" as the correct answer, but the EKS Anywhere FAQ states EKS Anywhere is not supported on AWS Outposts and recommends Amazon EKS on AWS Outposts. The lesson teaches Outposts with an Amazon EKS local cluster. The exam's Snowball Edge option also refers to a device no longer available to new customers.

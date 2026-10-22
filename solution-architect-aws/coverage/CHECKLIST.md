@@ -14,13 +14,13 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 942 (98%) · 🟡 9 (1%) · ❌ 9 (1%).
+Có **960 keyword** khác nhau: ✅ 944 (98%) · 🟡 7 (1%) · ❌ 9 (1%).
 
 ### Theo bài học
 
 | Bài học | Keyword | ✅ Đã có | 🟡 Một phần | ❌ Thiếu | Tỷ lệ đã có |
 |---|---:|---:|---:|---:|---:|
-| [global-infra](#global-infra) | 22 | 20 | 2 | 0 | 91% |
+| [global-infra](#global-infra) | 22 | 22 | 0 | 0 | 100% |
 | [vpc](#vpc) | 107 | 107 | 0 | 0 | 100% |
 | [route53](#route53) | 28 | 28 | 0 | 0 | 100% |
 | [cloudfront](#cloudfront) | 31 | 31 | 0 | 0 | 100% |
@@ -50,8 +50,8 @@ Có **960 keyword** khác nhau: ✅ 942 (98%) · 🟡 9 (1%) · ❌ 9 (1%).
 
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
-| Đề 1 | 220 | 2 | 2 |
-| Đề 2 | 196 | 1 | 1 |
+| Đề 1 | 221 | 1 | 2 |
+| Đề 2 | 197 | 0 | 1 |
 | Đề 3 | 222 | 0 | 0 |
 | Đề 4 | 231 | 2 | 3 |
 | Đề 5 | 215 | 4 | 2 |
@@ -61,8 +61,6 @@ Có **960 keyword** khác nhau: ✅ 942 (98%) · 🟡 9 (1%) · ❌ 9 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | AWS Local Zones | 🟡 Một phần | 1 | exam1_q27 | monitoring.mdx#s3 |
-| [ ] | Global Accelerator endpoint weights (blue/green traffic shift) | 🟡 Một phần | 1 | exam2_q22 | cloudfront.mdx#challenge / SortGame (card only) |
 | [ ] | AWS Global Accelerator | ✅ Đã có | 7 | exam1_q18, exam2_q32, exam3_q8, exam4_q18, exam5_q4, exam6_q5, exam6_q47 | global-infra.mdx#s5<br>global-infra.mdx#s5 / GlobalAcceleratorSim |
 | [ ] | AMI copy across Regions (creates snapshot) | ✅ Đã có | 1 | exam1_q41 | global-infra.mdx#s1 / AmiCopySim / challenge |
 | [ ] | AMI Region scope | ✅ Đã có | 1 | exam4_q5 | global-infra.mdx#s1; backup-dr.mdx#s1 |
@@ -74,12 +72,14 @@ Có **960 keyword** khác nhau: ✅ 942 (98%) · 🟡 9 (1%) · ❌ 9 (1%).
 | [ ] | AWS Global Accelerator (UDP, fast regional failover) | ✅ Đã có | 1 | exam1_q59 | global-infra.mdx#s5 / EdgeChoiceSim |
 | [ ] | AWS Global Accelerator static anycast IP | ✅ Đã có | 1 | exam4_q58 | global-infra.mdx#s5 / GlobalAcceleratorSim |
 | [ ] | AWS Global Accelerator static anycast IP addresses | ✅ Đã có | 1 | exam3_q45 | global-infra.mdx#s5 / GlobalAcceleratorSim |
+| [ ] | AWS Local Zones | ✅ Đã có | 1 | exam1_q27 | global-infra.mdx#deep / QuickCompare |
 | [ ] | Data transfer in from internet is free | ✅ Đã có | 1 | exam1_q40 | s3.mdx#s5 / UploadSim |
 | [ ] | Data transfer out (DTO) pricing | ✅ Đã có | 1 | exam5_q2 | global-infra.mdx#s6 / CostPatterns |
 | [ ] | EBS snapshot (Regional resource) | ✅ Đã có | 1 | exam1_q41 | global-infra.mdx#s1 / AmiCopySim |
 | [ ] | EFS access via inter-Region VPC peering | ✅ Đã có | 1 | exam1_q42 | global-infra.mdx#confuse / ScopeExplorer / GlobalMythsSim |
 | [ ] | Global Accelerator (no caching, not for S3 uploads) | ✅ Đã có | 1 | exam3_q37 | global-infra.mdx#s5 / EdgeChoiceSim |
 | [ ] | Global Accelerator endpoint groups with ALB endpoints | ✅ Đã có | 1 | exam3_q45 | global-infra.mdx#s5 |
+| [ ] | Global Accelerator endpoint weights (blue/green traffic shift) | ✅ Đã có | 1 | exam2_q22 | global-infra.mdx#bluegreen / BlueGreenSim |
 | [ ] | Global Accelerator for UDP and non-HTTP traffic | ✅ Đã có | 1 | exam3_q8 | global-infra.mdx#s5 / EdgeChoiceSim |
 | [ ] | Global Accelerator NLB endpoint | ✅ Đã có | 1 | exam2_q7 | global-infra.mdx#s5; cloudfront.mdx#s4 |
 | [ ] | Global Accelerator vs CloudFront | ✅ Đã có | 1 | exam1_q59 | global-infra.mdx#s5 / cloudfront.mdx#s4 |

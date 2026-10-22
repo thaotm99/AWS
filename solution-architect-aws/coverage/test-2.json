@@ -700,8 +700,8 @@
         {
           "keyword": "Global Accelerator endpoint weights (blue/green traffic shift)",
           "lesson": "global-infra",
-          "status": "partial",
-          "where": "cloudfront.mdx#challenge / SortGame (card only)"
+          "status": "covered",
+          "where": "global-infra.mdx#bluegreen / BlueGreenSim"
         },
         {
           "keyword": "Route 53 weighted routing",
