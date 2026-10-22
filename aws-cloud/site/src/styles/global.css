@@ -430,3 +430,23 @@ input[type="range"] { accent-color: var(--accent); }
   .ttl-row { grid-template-columns: minmax(0, 1fr) 80px; }
   .ttl-row .bar { grid-column: 1 / -1; grid-row: 2; }
 }
+
+/* Shared diagram engine */
+.dbox { stroke-width: 1.4; }
+.dbox-region { fill: var(--bg); stroke: var(--muted); }
+.dbox-subnet { fill: var(--surface); stroke: var(--line); }
+.dbox-public { fill: var(--ok-soft); fill-opacity: 0.45; stroke: var(--line); }
+.dbox-onprem { fill: var(--surface); stroke: var(--muted); stroke-dasharray: 6 4; }
+.flow.tone-good { stroke: var(--ok); }
+.flow.tone-bad { stroke: var(--edge); }
+.flow.tone-neutral { stroke: var(--accent); }
+.flow.still { animation: none; stroke-dasharray: 4 5; }
+.flow-t.tone-good { fill: var(--ok); }
+.flow-t.tone-bad { fill: var(--edge); }
+.flow-t.tone-neutral { fill: var(--accent); }
+.mk-neutral { fill: var(--accent); }
+.res-user rect { fill: var(--surface); stroke: var(--ink); stroke-dasharray: 3 3; }
+.res-edge rect { fill: var(--edge-soft); stroke: var(--edge); }
+.res-warn rect { fill: var(--bad-soft); stroke: var(--bad); }
+.flow { fill: none; stroke-width: 3; stroke-dasharray: 7 7; animation: dash 1.1s linear infinite; }
+.block-x { fill: var(--bad); font-size: 18px; font-weight: 700; }
