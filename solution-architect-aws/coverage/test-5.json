@@ -262,8 +262,8 @@
         {
           "keyword": "AWS DMS ongoing replication (CDC)",
           "lesson": "storage-migration",
-          "status": "partial",
-          "where": "storage-migration.mdx#s3"
+          "status": "covered",
+          "where": "storage-migration.mdx#s3 / StepSim (DMS Serverless full load + CDC)"
         },
         {
           "keyword": "AWS Glue ETL (not CDC)",
@@ -1897,14 +1897,14 @@
         {
           "keyword": "Transfer Family VPC endpoint with Elastic IP and security group",
           "lesson": "storage-migration",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "storage-migration.mdx#s4 / SftpExchangeSim"
         },
         {
           "keyword": "Transfer Family POSIX identity mapping",
           "lesson": "storage-migration",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "storage-migration.mdx#s4 / SftpExchangeSim"
         },
         {
           "keyword": "AWS WAF is HTTP(S) only (not SFTP)",

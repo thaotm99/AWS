@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 944 (98%) · 🟡 7 (1%) · ❌ 9 (1%).
+Có **960 keyword** khác nhau: ✅ 947 (99%) · 🟡 6 (1%) · ❌ 7 (1%).
 
 ### Theo bài học
 
@@ -35,7 +35,7 @@ Có **960 keyword** khác nhau: ✅ 944 (98%) · 🟡 7 (1%) · ❌ 9 (1%).
 | [lambda](#lambda) | 37 | 37 | 0 | 0 | 100% |
 | [s3](#s3) | 70 | 70 | 0 | 0 | 100% |
 | [storage](#storage) | 70 | 70 | 0 | 0 | 100% |
-| [storage-migration](#storage-migration) | 34 | 31 | 1 | 2 | 91% |
+| [storage-migration](#storage-migration) | 34 | 34 | 0 | 0 | 100% |
 | [rds](#rds) | 58 | 58 | 0 | 0 | 100% |
 | [dynamodb](#dynamodb) | 23 | 22 | 0 | 1 | 96% |
 | [analytics](#analytics) | 47 | 37 | 5 | 5 | 79% |
@@ -54,7 +54,7 @@ Có **960 keyword** khác nhau: ✅ 944 (98%) · 🟡 7 (1%) · ❌ 9 (1%).
 | Đề 2 | 197 | 0 | 1 |
 | Đề 3 | 222 | 0 | 0 |
 | Đề 4 | 231 | 2 | 3 |
-| Đề 5 | 215 | 4 | 2 |
+| Đề 5 | 218 | 3 | 0 |
 | Đề 6 | 209 | 0 | 1 |
 
 ## global-infra
@@ -778,9 +778,6 @@ Có **960 keyword** khác nhau: ✅ 944 (98%) · 🟡 7 (1%) · ❌ 9 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | Transfer Family POSIX identity mapping | ❌ Thiếu | 1 | exam5_q62 |  |
-| [ ] | Transfer Family VPC endpoint with Elastic IP and security group | ❌ Thiếu | 1 | exam5_q62 |  |
-| [ ] | AWS DMS ongoing replication (CDC) | 🟡 Một phần | 1 | exam5_q8 | storage-migration.mdx#s3 |
 | [ ] | AWS DataSync | ✅ Đã có | 6 | exam1_q9, exam1_q35, exam3_q3, exam4_q36, exam5_q41, exam5_q48 | storage-migration.mdx#s2<br>storage-migration.mdx#s2 / TransferPlannerSim |
 | [ ] | Storage Gateway S3 File Gateway | ✅ Đã có | 3 | exam1_q35, exam3_q3, exam3_q43 | storage-migration.mdx#s1<br>storage-migration.mdx#s1 / ScenarioFlow |
 | [ ] | Amazon S3 File Gateway | ✅ Đã có | 2 | exam5_q28, exam5_q48 | storage-migration.mdx#s1<br>storage-migration.mdx#s1; storage-migration.mdx#s2 |
@@ -793,6 +790,7 @@ Có **960 keyword** khác nhau: ✅ 944 (98%) · 🟡 7 (1%) · ❌ 9 (1%).
 | [ ] | AWS Application Migration Service (MGN) replication agent | ✅ Đã có | 1 | exam6_q48 | storage-migration.mdx#s3 / StepSim |
 | [ ] | AWS DataSync (scheduled task to EFS) | ✅ Đã có | 1 | exam2_q11 | storage-migration.mdx#s2 / TransferPlannerSim |
 | [ ] | AWS DMS (not for stream ingestion) | ✅ Đã có | 1 | exam6_q35 | kinesis.mdx#s3 |
+| [ ] | AWS DMS ongoing replication (CDC) | ✅ Đã có | 1 | exam5_q8 | storage-migration.mdx#s3 / StepSim (DMS Serverless full load + CDC) |
 | [ ] | AWS DMS Serverless | ✅ Đã có | 1 | exam5_q8 | storage-migration.mdx#s3 |
 | [ ] | aws s3 sync | ✅ Đã có | 1 | exam4_q29 | s3.mdx#s7 / QuickCompare |
 | [ ] | AWS Snowball | ✅ Đã có | 1 | exam4_q14 | storage-migration.mdx#s2 / TransferPlannerSim |
@@ -811,7 +809,9 @@ Có **960 keyword** khác nhau: ✅ 944 (98%) · 🟡 7 (1%) · ❌ 9 (1%).
 | [ ] | Storage Gateway Volume Gateway cached volumes | ✅ Đã có | 1 | exam4_q37 | storage-migration.mdx#s1 |
 | [ ] | Storage Gateway Volume Gateway cached volumes (iSCSI) | ✅ Đã có | 1 | exam2_q12 | storage-migration.mdx#s1 / ScenarioFlow |
 | [ ] | Storage Gateway Volume Gateway stored volume | ✅ Đã có | 1 | exam3_q31 | storage-migration.mdx#s1 / ScenarioFlow |
+| [ ] | Transfer Family POSIX identity mapping | ✅ Đã có | 1 | exam5_q62 | storage-migration.mdx#s4 / SftpExchangeSim |
 | [ ] | Transfer Family supported storage (S3 and EFS only) | ✅ Đã có | 1 | exam5_q62 | storage-migration.mdx#s2 |
+| [ ] | Transfer Family VPC endpoint with Elastic IP and security group | ✅ Đã có | 1 | exam5_q62 | storage-migration.mdx#s4 / SftpExchangeSim |
 
 ## rds
 
