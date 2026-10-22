@@ -1,3 +1,4 @@
+// Source questions: exam2_q62, exam3_q47, exam5_q2.
 import { useState, type ReactNode } from "react";
 
 // Data transfer cost patterns exactly as the practice tests ask them.
@@ -5,7 +6,7 @@ type Node = { x: number; y: number; w: number; label: string; sub?: string; kind
 type Flow = { d: string; paid: boolean; heavy?: boolean; label: string; lx: number; ly: number };
 type Option = { name: string; verdict: "cheap" | "costly"; flows: Flow[]; hide?: string[]; text: ReactNode };
 type Pattern = {
-  id: string; name: string; refs: string[];
+  id: string; name: string;
   boxes: { x: number; y: number; w: number; h: number; label: string }[];
   nodes: Record<string, Node>;
   options: Option[];
@@ -13,7 +14,7 @@ type Pattern = {
 
 const PATTERNS: Pattern[] = [
   {
-    id: "replica", name: "RDS Read Replica", refs: ["exam2_q62"],
+    id: "replica", name: "RDS Read Replica",
     boxes: [
       { x: 20, y: 30, w: 440, h: 200, label: "Region Singapore" },
       { x: 500, y: 30, w: 240, h: 200, label: "Region Tokyo" },
@@ -33,7 +34,7 @@ const PATTERNS: Pattern[] = [
     ],
   },
   {
-    id: "s3", name: "EC2 private → S3", refs: ["exam3_q47"],
+    id: "s3", name: "EC2 private → S3",
     boxes: [
       { x: 20, y: 30, w: 470, h: 200, label: "VPC · cùng Region với S3" },
     ],
@@ -59,7 +60,7 @@ const PATTERNS: Pattern[] = [
     ],
   },
   {
-    id: "dx", name: "Báo cáo về on-premises", refs: ["exam5_q2"],
+    id: "dx", name: "Báo cáo về on-premises",
     boxes: [
       { x: 20, y: 30, w: 440, h: 200, label: "Region AWS" },
       { x: 560, y: 30, w: 180, h: 200, label: "Văn phòng on-premises" },
@@ -102,8 +103,8 @@ export default function CostPatterns() {
 
   return (
     <div className="stage">
-      <div className="stage-bar" role="group" aria-label="Chọn dạng câu hỏi">
-        <span className="label">Dạng đề</span>
+      <div className="stage-bar" role="group" aria-label="Chọn tình huống">
+        <span className="label">Tình huống</span>
         {PATTERNS.map((x, i) => (
           <button key={x.id} className="btn" aria-pressed={i === pi} onClick={() => { setPi(i); setOi(0); }}>{x.name}</button>
         ))}
@@ -140,10 +141,9 @@ export default function CostPatterns() {
       </div>
       <div className="readout" aria-live="polite">
         <strong>
-          {o.name} · <span className={o.verdict === "cheap" ? "verdict ok" : "verdict bad"}>{o.verdict === "cheap" ? "Rẻ hơn, đề chọn" : "Tốn phí"}</span>
+          {o.name} · <span className={o.verdict === "cheap" ? "verdict ok" : "verdict bad"}>{o.verdict === "cheap" ? "Rẻ hơn, nên chọn" : "Tốn phí"}</span>
         </strong>
         {o.text}
-        <p className="exam-refs" style={{ marginTop: 8 }}><span>Đề hỏi ở</span>{p.refs.map((r) => <code key={r}>{r}</code>)}</p>
       </div>
       <div className="key" style={{ padding: "0 16px 12px" }}>
         <span><i style={{ background: "var(--ok)" }} />Không tính phí data transfer</span>

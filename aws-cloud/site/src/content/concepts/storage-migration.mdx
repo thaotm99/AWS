@@ -39,7 +39,7 @@ Kho hàng của ShopViet vẫn chạy hệ thống cũ trong văn phòng, có c�
 Storage Gateway là một máy ảo đặt tại văn phòng, giả làm ổ đĩa, file share hoặc thư viện băng từ cho ứng dụng cũ, còn dữ liệu thật nằm trên AWS. So sánh các kiểu:
 
 <ScenarioFlow client:visible height={230} legend={["Phù hợp", "Không phù hợp"]} scenarios={[
-  { name: "Các kiểu Storage Gateway", refs: ["exam1_q35", "exam3_q31", "exam4_q37", "exam2_q59", "exam4_q36"],
+  { name: "Các kiểu Storage Gateway",
     boxes: [{ x: 20, y: 20, w: 330, h: 190, label: "Văn phòng", tone: "onprem" }, { x: 430, y: 20, w: 310, h: 190, label: "AWS" }],
     nodes: [
       { id: "app", x: 40, y: 60, label: "Ứng dụng cũ", sub: "NFS / SMB / iSCSI / băng từ", kind: "site" },
@@ -72,18 +72,18 @@ Storage Gateway là một máy ảo đặt tại văn phòng, giả làm ổ đ�
 
 <RequirementPicker client:visible items={[
   { need: "Chuyển dữ liệu online vào S3, EFS, FSx nhanh, tự động", answer: "AWS DataSync",
-    why: "Agent tại chỗ đọc NFS/SMB và chuyển song song, có kiểm tra toàn vẹn, lên lịch được.", refs: ["exam3_q3"] },
+    why: "Agent tại chỗ đọc NFS/SMB và chuyển song song, có kiểm tra toàn vẹn, lên lịch được." },
   { need: "Đồng bộ file mới từ NFS on-premises lên EFS qua Direct Connect, riêng tư", answer: "DataSync agent → Direct Connect → interface VPC endpoint (PrivateLink)",
-    why: "DataSync đi qua đường riêng tới endpoint trong VPC.", refs: ["exam2_q11"] },
+    why: "DataSync đi qua đường riêng tới endpoint trong VPC." },
   { need: "Chuyển xong dữ liệu cũ, ứng dụng tại chỗ vẫn cần cập nhật tiếp", answer: "DataSync để chuyển, rồi S3 File Gateway để truy cập tiếp",
-    why: "DataSync làm đợt chuyển lớn; File Gateway cho ứng dụng tiếp tục làm việc với dữ liệu đã nằm trên S3.", refs: ["exam5_q48"] },
+    why: "DataSync làm đợt chuyển lớn; File Gateway cho ứng dụng tiếp tục làm việc với dữ liệu đã nằm trên S3." },
   { need: "Hàng PB dữ liệu, đường truyền không đủ, rẻ nhất", answer: "Nhiều Snowball Edge Storage Optimized",
-    why: "Gửi thiết bị vật lý; sau khi nạp vào S3 dùng lifecycle chuyển sang lớp lưu trữ rẻ.", refs: ["exam5_q5"] },
+    why: "Gửi thiết bị vật lý; sau khi nạp vào S3 dùng lifecycle chuyển sang lớp lưu trữ rẻ." },
   { need: "Bản sao lưu đưa lên bằng Snowball, lưu dài hạn rẻ nhất", answer: "Snowball nhập vào S3 + lifecycle sang Glacier Deep Archive ngay trong ngày",
-    why: "Snowball không ghi thẳng vào Glacier Deep Archive; nhập vào S3 rồi lifecycle chuyển ngay.", refs: ["exam2_q41"] },
-  { need: "150 TB nhập bằng Snowball, sau đó HPC cần đọc độ trễ dưới mili giây", answer: "Nhập vào FSx for Lustre", why: "Lustre cho đọc song song cực nhanh.", refs: ["exam3_q61"] },
-  { need: "Đối tác gửi file qua SFTP, không muốn quản lý server", answer: "AWS Transfer Family (SFTP) lưu vào S3 hoặc EFS", why: "Endpoint SFTP managed.", refs: ["exam2_q4", "exam5_q62"] },
-  { need: "Copy object đã có sang bucket ở Region khác", answer: "S3 Batch Replication, hoặc aws s3 sync", why: "Replication rule thường chỉ áp cho object mới; Batch Replication xử lý object có sẵn.", refs: ["exam4_q29"] },
+    why: "Snowball không ghi thẳng vào Glacier Deep Archive; nhập vào S3 rồi lifecycle chuyển ngay." },
+  { need: "150 TB nhập bằng Snowball, sau đó HPC cần đọc độ trễ dưới mili giây", answer: "Nhập vào FSx for Lustre", why: "Lustre cho đọc song song cực nhanh." },
+  { need: "Đối tác gửi file qua SFTP, không muốn quản lý server", answer: "AWS Transfer Family (SFTP) lưu vào S3 hoặc EFS", why: "Endpoint SFTP managed." },
+  { need: "Copy object đã có sang bucket ở Region khác", answer: "S3 Batch Replication, hoặc aws s3 sync", why: "Replication rule thường chỉ áp cho object mới; Batch Replication xử lý object có sẵn." },
 ]} />
 
 <Takeaway>Online: DataSync. Quá nhiều dữ liệu cho đường truyền: Snowball. SFTP: Transfer Family. Object đã có sẵn sang Region khác: S3 Batch Replication.</Takeaway>
@@ -94,7 +94,7 @@ Storage Gateway là một máy ảo đặt tại văn phòng, giả làm ổ đ�
 
 Di chuyển máy chủ ảo lên AWS bằng **Application Migration Service (MGN)**, đúng thứ tự đề hỏi:
 
-<StepSim client:visible height={220} refs={["exam6_q48"]}
+<StepSim client:visible height={220}
   intro="Văn phòng có các máy ảo chạy ứng dụng. Mục tiêu: chuyển lên EC2 với downtime tối thiểu (lift-and-shift)."
   boxes={[{ x: 20, y: 20, w: 300, h: 180, label: "Văn phòng", tone: "onprem" }, { x: 380, y: 20, w: 360, h: 180, label: "AWS" }]}
   nodes={[
@@ -114,17 +114,17 @@ Di chuyển máy chủ ảo lên AWS bằng **Application Migration Service (MGN
   ]} />
 
 <RequirementPicker client:visible items={[
-  { need: "Chuyển database sang engine khác (ví dụ Oracle sang Aurora)", answer: "AWS SCT + AWS DMS", why: "SCT chuyển schema và code; DMS chuyển dữ liệu.", refs: ["exam3_q4", "exam1_q47"] },
-  { need: "SQL Server sang Aurora PostgreSQL mà ít sửa code T-SQL", answer: "Babelfish for Aurora PostgreSQL", why: "Aurora PostgreSQL hiểu được T-SQL.", refs: ["exam1_q47"] },
-  { need: "Đồng bộ liên tục từ Oracle on-premises sang RDS, lưu lượng thay đổi theo giờ", answer: "DMS Serverless", why: "Tự cấp tài nguyên theo khối lượng thực tế.", refs: ["exam5_q8"] },
-  { need: "Đẩy file có sẵn và thay đổi mới từ S3 sang Kinesis Data Streams nhanh nhất", answer: "DMS làm cầu nối S3 → Kinesis", why: "DMS có S3 làm nguồn và Kinesis làm đích.", refs: ["exam4_q27"] },
+  { need: "Chuyển database sang engine khác (ví dụ Oracle sang Aurora)", answer: "AWS SCT + AWS DMS", why: "SCT chuyển schema và code; DMS chuyển dữ liệu." },
+  { need: "SQL Server sang Aurora PostgreSQL mà ít sửa code T-SQL", answer: "Babelfish for Aurora PostgreSQL", why: "Aurora PostgreSQL hiểu được T-SQL." },
+  { need: "Đồng bộ liên tục từ Oracle on-premises sang RDS, lưu lượng thay đổi theo giờ", answer: "DMS Serverless", why: "Tự cấp tài nguyên theo khối lượng thực tế." },
+  { need: "Đẩy file có sẵn và thay đổi mới từ S3 sang Kinesis Data Streams nhanh nhất", answer: "DMS làm cầu nối S3 → Kinesis", why: "DMS có S3 làm nguồn và Kinesis làm đích." },
 ]} />
 
 <Takeaway>Máy chủ: MGN (agent → test → cutover). Database khác engine: SCT + DMS. Đồng bộ liên tục, tải thay đổi: DMS Serverless.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="Công cụ nào?">
+<Scene id="challenge" label="Thử thách" title="Công cụ nào?" questions={["exam3_q31", "exam4_q36", "exam3_q3", "exam6_q48"]}>
 
 <SortGame client:visible
   bins={[
@@ -142,19 +142,19 @@ Di chuyển máy chủ ảo lên AWS bằng **Application Migration Service (MGN
 <Quiz client:visible items={[
   { q: "Ứng dụng log tại chỗ chỉ cần log hay dùng ở local, toàn bộ log lưu trên S3. Chọn gì?",
     opts: ["Volume Gateway stored volumes", "Volume Gateway cached volumes", "Snowball"],
-    a: 1, ref: "exam3_q31",
+    a: 1,
     why: "Cached volumes giữ dữ liệu hay dùng tại chỗ, toàn bộ volume nằm trên S3." },
   { q: "Có hàng PB băng từ cần đưa lên AWS, chi phí thấp nhất, giữ quy trình backup cũ. Chọn gì?",
     opts: ["Tape Gateway", "S3 File Gateway", "DataSync"],
-    a: 0, ref: "exam4_q36",
+    a: 0,
     why: "Tape Gateway thay thư viện băng từ; băng ảo lưu trên S3 và các lớp Glacier." },
   { q: "Chuyển nhanh, tự động dữ liệu on-premises vào S3, EFS và FSx for Windows qua mạng. Chọn gì?",
     opts: ["AWS DataSync", "Snowball Edge", "S3 Transfer Acceleration"],
-    a: 0, ref: "exam3_q3",
+    a: 0,
     why: "DataSync hỗ trợ cả ba đích và tự động hóa việc chuyển online." },
   { q: "Thứ tự đúng khi dùng Application Migration Service?",
     opts: ["Cutover rồi mới test", "Cài Replication Agent, replicate, launch test, rồi cutover", "Tạo AMI thủ công rồi copy"],
-    a: 1, ref: "exam6_q48",
+    a: 1,
     why: "Replicate liên tục, kiểm thử bằng test instance, cuối cùng cutover." },
 ]} />
 

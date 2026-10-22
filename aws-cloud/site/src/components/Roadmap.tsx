@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import type { Layer } from "../data/curriculum";
+import { IMPORTANCE_NAMES, type RoadmapLayer } from "../data/curriculum";
 import { getDone, PROGRESS_EVENT } from "../lib/progress";
 import { useI18n } from "../app/i18n";
 
 interface Props {
-  layers: Layer[];
+  layers: RoadmapLayer[];
   current?: string;
   ready: string[];
 }
@@ -50,7 +50,9 @@ export default function Roadmap({ layers, current, ready }: Props) {
                     <a className={cls} href={`/concepts/${c.id}/`} aria-current={c.id === current ? "page" : undefined}>
                       <span className="dot" aria-hidden="true" />
                       <span>{c.title}</span>
-                      <span className="q-count">{c.exact ? "" : "~"}{c.questions}</span>
+                      <span className={`imp imp-${c.importance}`} title={t(`shell.importance.${IMPORTANCE_NAMES[c.importance]}`)}>
+                        <i /><i /><i />
+                      </span>
                     </a>
                   </li>
                 );

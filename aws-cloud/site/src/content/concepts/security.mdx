@@ -48,24 +48,24 @@ Năm loại request đang gõ cửa ShopViet. Bật từng rule, chọn chỗ g�
 
 <RequirementPicker client:visible items={[
   { need: "Chống DDoS chủ động, có đội AWS hỗ trợ khi bị tấn công, có báo cáo", answer: "AWS Shield Advanced",
-    why: "Shield Advanced bảo vệ DDoS nâng cao, có DDoS Response Team (DRT), báo cáo và log chi tiết. Shield Standard miễn phí nhưng không có các phần này.", refs: ["exam3_q58"] },
+    why: "Shield Advanced bảo vệ DDoS nâng cao, có DDoS Response Team (DRT), báo cáo và log chi tiết. Shield Standard miễn phí nhưng không có các phần này." },
   { need: "Quản lý tập trung rule bảo mật cho nhiều account", answer: "AWS Firewall Manager",
-    why: "Áp rule cho AWS WAF, Shield Advanced và security group trên toàn Organizations.", refs: ["exam6_q4"] },
+    why: "Áp rule cho AWS WAF, Shield Advanced và security group trên toàn Organizations." },
   { need: "Phát hiện hoạt động độc hại (S3, EC2 bị dùng đào coin)", answer: "Amazon GuardDuty",
-    why: "Phân tích log (CloudTrail, VPC Flow Logs, DNS) để phát hiện mối đe dọa.", refs: ["exam1_q36", "exam3_q1", "exam6_q14"] },
+    why: "Phân tích log (CloudTrail, VPC Flow Logs, DNS) để phát hiện mối đe dọa." },
   { need: "Tìm lỗ hổng phần mềm trên EC2", answer: "Amazon Inspector",
-    why: "Quét lỗ hổng và mức độ phơi nhiễm của workload.", refs: ["exam1_q36"] },
+    why: "Quét lỗ hổng và mức độ phơi nhiễm của workload." },
   { need: "Tìm dữ liệu nhạy cảm (thông tin cá nhân) trong S3", answer: "Amazon Macie",
-    why: "Dùng machine learning để phát hiện và phân loại dữ liệu nhạy cảm trên S3.", refs: ["exam3_q1"] },
+    why: "Dùng machine learning để phát hiện và phân loại dữ liệu nhạy cảm trên S3." },
   { need: "Gom log bảo mật từ nhiều account và nguồn vào một chỗ, ít code", answer: "Amazon Security Lake",
-    why: "Tự thu thập log và sự kiện bảo mật thành data lake trên S3.", refs: ["exam2_q44"] },
+    why: "Tự thu thập log và sự kiện bảo mật thành data lake trên S3." },
 ]} />
 
 <Takeaway>WAF: lọc request web. Shield Advanced: DDoS + DRT. Firewall Manager: quản lý rule tập trung. GuardDuty: phát hiện đe dọa. Inspector: lỗ hổng EC2. Macie: dữ liệu nhạy cảm S3. Security Lake: gom log bảo mật.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="Ghép dịch vụ với việc của nó">
+<Scene id="challenge" label="Thử thách" title="Ghép dịch vụ với việc của nó" questions={["exam5_q13", "exam6_q60", "exam3_q1", "exam6_q14"]}>
 
 <SortGame client:visible
   bins={[
@@ -83,19 +83,19 @@ Các câu dưới đây viết lại theo đúng dạng câu trong đề (mã c�
 <Quiz client:visible items={[
   { q: "Ứng dụng chạy trên EC2 bị dò SQL injection và cross-site scripting. Cách hiệu quả nhất?",
     opts: ["AWS WAF gắn vào CloudFront đặt trước ứng dụng", "Security group chặn cổng 80", "Amazon Inspector"],
-    a: 0, ref: "exam5_q13",
+    a: 0,
     why: "WAF có managed rule cho SQLi/XSS. Security group không đọc nội dung request; Inspector chỉ quét lỗ hổng." },
   { q: "Kẻ tấn công gửi hơn 100 request/giây từ cùng IP, người dùng thường chỉ vài request. Chặn thế nào?",
     opts: ["WAF rate-based rule", "Tăng số EC2", "Shield Standard"],
-    a: 0, ref: "exam6_q60",
+    a: 0,
     why: "Rate-based rule chặn IP vượt ngưỡng số request trong khoảng thời gian." },
   { q: "Cần giám sát S3 khỏi hoạt động độc hại và tìm dữ liệu nhạy cảm trong S3. Chọn hai dịch vụ nào?",
     opts: ["GuardDuty và Macie", "Inspector và Shield", "WAF và Firewall Manager"],
-    a: 0, ref: "exam3_q1",
+    a: 0,
     why: "GuardDuty phát hiện mối đe dọa; Macie tìm dữ liệu nhạy cảm." },
   { q: "EC2 đang chạy phần mềm đào coin không được phép. Dịch vụ nào phát hiện được hành vi này về sau?",
     opts: ["Amazon GuardDuty", "AWS Config", "Amazon Macie"],
-    a: 0, ref: "exam6_q14",
+    a: 0,
     why: "GuardDuty có finding riêng cho hoạt động đào tiền mã hóa trên EC2." },
 ]} />
 

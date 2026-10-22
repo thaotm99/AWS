@@ -39,18 +39,18 @@ Lượng khách của ShopViet lên xuống theo giờ, theo ngày khuyến mãi
 
 <RequirementPicker client:visible items={[
   { need: "Giữ CPU quanh 50% để ứng dụng chạy ổn định", answer: "Target tracking theo CPU utilization",
-    why: "Đặt giá trị mục tiêu, ASG tự thêm bớt instance để metric bám quanh mục tiêu.", refs: ["exam1_q30"] },
+    why: "Đặt giá trị mục tiêu, ASG tự thêm bớt instance để metric bám quanh mục tiêu." },
   { need: "Worker đọc hàng đợi SQS bị dồn khi đơn hàng tăng", answer: "Target tracking theo metric của SQS (số message / backlog)",
-    why: "Scale theo độ dài hàng đợi phản ánh đúng khối lượng việc, nhạy hơn CPU.", refs: ["exam3_q54", "exam6_q52"] },
+    why: "Scale theo độ dài hàng đợi phản ánh đúng khối lượng việc, nhạy hơn CPU." },
   { need: "Tải tăng vào giờ cố định cuối mỗi tháng", answer: "Scheduled action",
-    why: "Đặt desired capacity trước thời điểm biết trước.", refs: ["exam1_q45"] },
+    why: "Đặt desired capacity trước thời điểm biết trước." },
   { need: "Có chu kỳ ngày/tuần, vẫn phải phản ứng với đột biến", answer: "Predictive scaling + target tracking",
-    why: "Predictive scale trước theo lịch sử; dynamic scaling xử lý phần bất ngờ.", refs: ["exam4_q21"] },
+    why: "Predictive scale trước theo lịch sử; dynamic scaling xử lý phần bất ngờ." },
   { need: "Lượng truy cập tăng đột ngột, nội dung động thay đổi liên tục", answer: "Auto Scaling group",
-    why: "Nội dung động không cache được nhiều, nên cần thêm server theo tải.", refs: ["exam4_q53"] },
-  { need: "ECS service quá tải CPU", answer: "Service Auto Scaling cho ECS", why: "Scale số task theo CPU của service.", refs: ["exam3_q15"] },
+    why: "Nội dung động không cache được nhiều, nên cần thêm server theo tải." },
+  { need: "ECS service quá tải CPU", answer: "Service Auto Scaling cho ECS", why: "Scale số task theo CPU của service." },
   { need: "Pod trên EKS chờ vì cluster hết chỗ", answer: "Kubernetes Cluster Autoscaler + EC2 Auto Scaling group",
-    why: "Cluster Autoscaler tăng số node trong ASG khi có Pod đang chờ.", refs: ["exam4_q56"] },
+    why: "Cluster Autoscaler tăng số node trong ASG khi có Pod đang chờ." },
 ]} />
 
 <Takeaway>Metric ổn định: target tracking. Hàng đợi: scale theo backlog SQS. Giờ biết trước: scheduled. Có chu kỳ: predictive + dynamic.</Takeaway>
@@ -83,20 +83,20 @@ Với default termination policy, ASG xét theo thứ tự cố định. Chọn 
 
 <RequirementPicker client:visible items={[
   { need: "Vá một instance mà ASG không tự thay nó trong lúc vá", answer: "Đưa instance vào Standby, hoặc suspend process ReplaceUnhealthy",
-    why: "Standby tạm rút instance khỏi phục vụ; suspend ReplaceUnhealthy ngăn ASG thay instance unhealthy. Vá xong thì đưa về lại.", refs: ["exam1_q32"] },
+    why: "Standby tạm rút instance khỏi phục vụ; suspend ReplaceUnhealthy ngăn ASG thay instance unhealthy. Vá xong thì đưa về lại." },
   { need: "ALB báo instance hỏng nhưng ASG không thay", answer: "Đổi health check của ASG sang ELB",
-    why: "Mặc định ASG chỉ dùng EC2 health check.", refs: ["exam5_q1"] },
+    why: "Mặc định ASG chỉ dùng EC2 health check." },
   { need: "Instance unhealthy nhưng chưa bị thay ngay", answer: "Đang trong health check grace period",
-    why: "ASG chờ instance mới khởi động xong mới xét health check.", refs: ["exam2_q18"] },
+    why: "ASG chờ instance mới khởi động xong mới xét health check." },
   { need: "Luôn cần 2 instance, đỉnh lên nhiều hơn, tối ưu chi phí", answer: "Minimum = 2 và mua Reserved Instances cho phần minimum",
-    why: "Phần minimum chạy liên tục nên mua RI.", refs: ["exam4_q49"] },
+    why: "Phần minimum chạy liên tục nên mua RI." },
 ]} />
 
 <Takeaway>Bảo trì: Standby hoặc suspend ReplaceUnhealthy. Muốn ASG nghe theo load balancer: ELB health check.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="Scaling policy nào?">
+<Scene id="challenge" label="Thử thách" title="Scaling policy nào?" questions={["exam2_q31", "exam4_q16", "exam2_q65", "exam3_q54"]}>
 
 <SortGame client:visible
   bins={[
@@ -116,19 +116,19 @@ Các câu dưới đây viết lại theo đúng dạng câu trong đề (mã c�
 <Quiz client:visible items={[
   { q: "Ứng dụng cần luôn có ít nhất 4 instance kể cả khi một AZ hỏng, chi phí thấp nhất. Bố trí thế nào?",
     opts: ["2 AZ, mỗi AZ 2 instance", "3 AZ, mỗi AZ 2 instance", "2 AZ, mỗi AZ 4 instance"],
-    a: 1, ref: "exam2_q31",
+    a: 1,
     why: "Mất một AZ còn 4. Phương án 2×2 chỉ còn 2; 2×4 đủ nhưng tốn 8 instance." },
   { q: "ASG trải 2 AZ: AZ-A có 3 instance, AZ-B có 4. Scale in với cấu hình mặc định thì sao?",
     opts: ["Xóa ngẫu nhiên một instance ở AZ-A", "Xóa instance có launch template/configuration cũ nhất ở AZ-B", "Xóa instance mới nhất ở AZ-B"],
-    a: 1, ref: "exam4_q16",
+    a: 1,
     why: "Chọn AZ nhiều instance nhất (AZ-B), rồi instance cũ nhất." },
   { q: "Trong một AZ có: A dùng launch template cũ nhất, B dùng launch configuration cũ nhất, C dùng launch configuration mới nhất, D gần giờ tính tiền nhất. Instance nào bị xóa?",
     opts: ["A", "B", "D"],
-    a: 1, ref: "exam2_q65",
+    a: 1,
     why: "Instance dùng launch configuration bị xóa trước instance dùng launch template; trong số đó chọn cái cũ nhất là B." },
   { q: "Worker xử lý hàng đợi SQS chậm khi đơn hàng tăng đột biến. Scale theo gì?",
     opts: ["Target tracking theo metric của hàng đợi SQS", "Scheduled action mỗi giờ", "Tăng kích thước instance"],
-    a: 0, ref: "exam3_q54",
+    a: 0,
     why: "Backlog của hàng đợi phản ánh trực tiếp lượng việc cần làm." },
 ]} />
 

@@ -5,9 +5,9 @@ import { useState } from "react";
 // using a launch template, oldest first; 3. closest to the next billing hour.
 interface Inst { id: string; az: string; kind: "LT" | "LC"; age: number; label: string; billing: number }
 
-const SCENARIOS: { name: string; ref: string; instances: Inst[] }[] = [
+const SCENARIOS: { name: string; instances: Inst[] }[] = [
   {
-    name: "AZ-A 3 instance, AZ-B 4 instance", ref: "exam4_q16",
+    name: "AZ-A 3 instance, AZ-B 4 instance",
     instances: [
       { id: "a1", az: "AZ-A", kind: "LT", age: 3, label: "template v1", billing: 40 },
       { id: "a2", az: "AZ-A", kind: "LT", age: 2, label: "template v2", billing: 15 },
@@ -19,7 +19,7 @@ const SCENARIOS: { name: string; ref: string; instances: Inst[] }[] = [
     ],
   },
   {
-    name: "4 instance trong một AZ", ref: "exam2_q65",
+    name: "4 instance trong một AZ",
     instances: [
       { id: "A", az: "us-east-1a", kind: "LT", age: 3, label: "launch template cũ nhất", billing: 30 },
       { id: "B", az: "us-east-1a", kind: "LC", age: 3, label: "launch configuration cũ nhất", billing: 45 },
@@ -110,7 +110,6 @@ export default function TerminationSim() {
             {guess === victim ? `Đúng: ${victim} bị terminate` : `Chưa đúng: ASG terminate ${victim}`}
           </span>
         )}
-        <p className="exam-refs" style={{ marginTop: 8 }}><span>Đề hỏi ở</span><code>{sc.ref}</code></p>
       </div>
     </div>
   );

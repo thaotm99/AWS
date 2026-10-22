@@ -355,8 +355,16 @@ a.concept[aria-current="page"] { color: var(--accent); }
 .exam-refs code { background: var(--edge-soft); color: var(--edge); border-radius: 4px; padding: 0 6px; font-size: 0.72rem; }
 .exam-refs.inline { display: inline-flex; margin: 0 0 0 8px; }
 .confuse-item code { font-size: 0.72rem; background: var(--edge-soft); color: var(--edge); border-radius: 4px; padding: 0 5px; }
-.q-count { margin-left: auto; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); font-variant-numeric: tabular-nums; }
-.q-badge { font-family: var(--font-mono); font-size: 0.75rem; color: var(--edge); }
+/* Importance: three bars, filled up to the level (3 core, 2 important, 1 supporting). */
+.imp { display: inline-flex; align-items: flex-end; gap: 2px; flex: none; }
+.concept .imp { margin-left: auto; }
+.imp i { width: 4px; border-radius: 1px; background: var(--line); }
+.imp i:nth-child(1) { height: 6px; } .imp i:nth-child(2) { height: 9px; } .imp i:nth-child(3) { height: 12px; }
+.imp-1 i:nth-child(-n+1), .imp-2 i:nth-child(-n+2), .imp-3 i { background: var(--accent); }
+.imp-3 i { background: var(--edge); }
+.imp-label { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.imp-hint { color: var(--muted); }
+.imp-hint::before { content: "· "; }
 
 /* Resource boxes in scene SVGs */
 .res rect { stroke-width: 1.5; }
@@ -556,3 +564,26 @@ input[type="range"] { accent-color: var(--accent); }
 .sync-line { stroke: var(--ok); stroke-width: 3; fill: none; }
 .async-line { stroke: var(--edge); stroke-width: 2.5; stroke-dasharray: 6 5; fill: none; }
 .conn-line { stroke: var(--muted); stroke-width: 1.5; fill: none; }
+.concept-card .imp-label { font-size: 0.75rem; color: var(--muted); }
+
+/* CloudFront edge pipeline (cloudfront/EdgePipelineSim) */
+.tag.bad { background: var(--bad-soft); color: var(--bad); }
+.flash-bad { fill: var(--bad); font-family: var(--font-mono); font-size: 15px; font-weight: 700; text-anchor: middle; }
+.cfp-scenarios { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
+.cfp-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; overflow-wrap: anywhere; }
+.cfp-from { font-size: var(--step--1); color: var(--muted); }
+.cfp-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
+.cfp .stage-bar .btn.primary { margin-left: auto; }
+.cfp-edge { fill: var(--edge-soft); fill-opacity: .35; stroke: var(--edge); stroke-width: 1.5; stroke-dasharray: 6 5; }
+.cfp-group { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 4 4; }
+.cfp-gate rect, .cfp-origin rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill .2s, stroke .2s, opacity .2s; }
+.cfp-gt { fill: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
+.cfp-gs { fill: var(--muted); font-family: var(--font-body); font-size: 10px; }
+.cfp-gate.pass rect, .cfp-origin.ok rect { fill: var(--ok-soft); stroke: var(--ok); }
+.cfp-gate.block rect, .cfp-origin.bad rect { fill: var(--bad-soft); stroke: var(--bad); }
+.cfp-gate.change rect { fill: var(--edge-soft); stroke: var(--edge); }
+.cfp-gate.skip { opacity: .45; }
+.cfp-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
+.cfp-result { margin-top: 6px; padding: 8px 10px; border-radius: 8px; display: block !important; }
+.cfp-result.ok { background: var(--ok-soft); }
+.cfp-result.bad { background: var(--bad-soft); }

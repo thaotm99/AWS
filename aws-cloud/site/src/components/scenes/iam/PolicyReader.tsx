@@ -3,11 +3,11 @@ import { useState } from "react";
 // Reading IAM policy JSON the way the tests ask: conditions on source IP and Region,
 // and bucket vs object ARNs for S3 (exam2_q37, exam2_q38, exam2_q48, exam2_q54, exam1_q58).
 interface Req { label: string; allowed: boolean; why: string }
-interface Pol { name: string; refs: string[]; json: string; requests: Req[] }
+interface Pol { name: string; json: string; requests: Req[] }
 
 const POLICIES: Pol[] = [
   {
-    name: "Điều kiện IP nguồn", refs: ["exam2_q37", "exam2_q48"],
+    name: "Điều kiện IP nguồn",
     json: `{
   "Version": "2012-10-17",
   "Statement": [{
@@ -26,7 +26,7 @@ const POLICIES: Pol[] = [
     ],
   },
   {
-    name: "Điều kiện Region", refs: ["exam2_q38"],
+    name: "Điều kiện Region",
     json: `{
   "Version": "2012-10-17",
   "Statement": [{
@@ -44,7 +44,7 @@ const POLICIES: Pol[] = [
     ],
   },
   {
-    name: "S3 chỉ đọc", refs: ["exam2_q54"],
+    name: "S3 chỉ đọc",
     json: `{
   "Version": "2012-10-17",
   "Statement": [
@@ -63,7 +63,7 @@ const POLICIES: Pol[] = [
     ],
   },
   {
-    name: "Lỗi ARN hay gặp", refs: ["exam1_q58"],
+    name: "Lỗi ARN hay gặp",
     json: `{
   "Version": "2012-10-17",
   "Statement": [{
@@ -108,7 +108,6 @@ export default function PolicyReader() {
             <p style={{ margin: "8px 0 0" }}>{r.why}</p>
           </>
         ) : <p style={{ margin: 0 }}>Đọc policy bên trái, đoán kết quả, rồi bấm một request để kiểm tra.</p>}
-        <p className="exam-refs" style={{ marginTop: 8 }}><span>Đề hỏi ở</span>{p.refs.map((x) => <code key={x}>{x}</code>)}</p>
       </div>
     </div>
   );

@@ -26,7 +26,7 @@ interface Props {
 
 const {
   title,
-  description = "Ôn thi AWS Solutions Architect Associate (SAA-C03) qua hình minh họa và mô phỏng tương tác, bám theo câu hỏi đề thi.",
+  description = "Học AWS qua hình minh họa và mô phỏng tương tác, đi từ những tình huống thực tế của một cửa hàng online.",
   current,
   section = "theory",
   sidebar = true,
@@ -38,7 +38,12 @@ const {
 // Keys match the preference fields in modules/shell (localStorage "theme", "locale").
 const earlyPreferences = `(function(){var h=document.documentElement,t=${JSON.stringify(DEFAULT_THEME)};try{var s=localStorage.getItem("theme");if(${JSON.stringify(THEMES)}.indexOf(s)>=0)t=s;var l=localStorage.getItem("locale");if(l&&l!==${JSON.stringify(DEFAULT_LOCALE)}){h.lang=l;h.classList.add("i18n-pending");setTimeout(function(){h.classList.remove("i18n-pending")},2000)}}catch(e){}h.dataset.theme=t})();`;
 const ready = (await getCollection("concepts")).map((e) => e.id);
-const layers = getCurriculum();
+// Only what the roadmap shows reaches the browser.
+const layers = getCurriculum().map(({ n, name, concepts }) => ({
+  n,
+  name,
+  concepts: concepts.map(({ id, title, importance }) => ({ id, title, importance })),
+}));
 ---
 <!doctype html>
 <html lang="vi" data-i18n-title={titleKey} data-i18n-params={titleParams ? JSON.stringify(titleParams) : undefined}>

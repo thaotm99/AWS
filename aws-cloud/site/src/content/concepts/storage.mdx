@@ -38,13 +38,13 @@ Database của ShopViet cần ổ đĩa nhanh, các web server cần thư mục 
 
 <RequirementPicker client:visible items={[
   { need: "Nhiều EC2 cần cùng thấy video mà người dùng upload (đang lưu riêng trên EBS từng máy)", answer: "Chuyển sang S3 hoặc EFS",
-    why: "EBS chỉ gắn vào instance trong một AZ. S3 hoặc EFS cho mọi instance cùng truy cập. Đề chọn cả hai.", refs: ["exam2_q29"] },
+    why: "EBS chỉ gắn vào instance trong một AZ. S3 hoặc EFS cho mọi instance cùng truy cập. Đề chọn cả hai." },
   { need: "Tài liệu phải sẵn sàng cao dù instance hỏng", answer: "EBS làm root volume, tài liệu lưu trên S3",
-    why: "S3 bền và không phụ thuộc instance hay AZ.", refs: ["exam6_q15"] },
+    why: "S3 bền và không phụ thuộc instance hay AZ." },
   { need: "So sánh chi phí lưu cùng một file trên ba dịch vụ", answer: "S3 Standard < EFS < EBS",
-    why: "EBS tính tiền theo dung lượng cấp phát; EFS và S3 theo dung lượng dùng, S3 rẻ nhất.", refs: ["exam1_q46"] },
+    why: "EBS tính tiền theo dung lượng cấp phát; EFS và S3 theo dung lượng dùng, S3 rẻ nhất." },
   { need: "Nhiều account cần mount chung một file system, ít vận hành", answer: "EFS với resource policy cho cross-account, mount qua VPC dùng chung hoặc peering",
-    why: "EFS cho phép mount từ VPC và account khác.", refs: ["exam1_q9"] },
+    why: "EFS cho phép mount từ VPC và account khác." },
 ]} />
 
 <Takeaway>Block (EBS): một instance, một AZ. File (EFS, FSx): nhiều instance dùng chung. Object (S3): bền nhất, rẻ nhất, truy cập qua API.</Takeaway>
@@ -59,10 +59,10 @@ Nhập yêu cầu như đề cho:
 
 <RequirementPicker client:visible items={[
   { need: "Môi trường test cần volume từ dữ liệu production, hiệu năng cao ngay lập tức", answer: "Snapshot + EBS fast snapshot restore",
-    why: "Volume tạo từ snapshot bật fast snapshot restore đạt hiệu năng đầy đủ ngay, không cần làm nóng.", refs: ["exam5_q64"] },
+    why: "Volume tạo từ snapshot bật fast snapshot restore đạt hiệu năng đầy đủ ngay, không cần làm nóng." },
   { need: "Chống xóa snapshot nhầm hoặc cố ý, ít công nhất", answer: "Recycle Bin với rule giữ snapshot 7 ngày",
-    why: "Snapshot bị xóa vào Recycle Bin và khôi phục được trong thời gian giữ.", refs: ["exam5_q16"] },
-  { need: "EBS bật encryption bảo vệ những gì?", answer: "Dữ liệu at rest, snapshot, và dữ liệu giữa volume với instance", why: "Cả ba đều được mã hóa.", refs: ["exam5_q40"] },
+    why: "Snapshot bị xóa vào Recycle Bin và khôi phục được trong thời gian giữ." },
+  { need: "EBS bật encryption bảo vệ những gì?", answer: "Dữ liệu at rest, snapshot, và dữ liệu giữa volume với instance", why: "Cả ba đều được mã hóa." },
 ]} />
 
 <Takeaway>Mặc định: gp3. IOPS trên 16.000 hoặc Multi-Attach: io1/io2. Tuần tự khối lớn: st1; ít truy cập: sc1; hai loại HDD không làm boot volume.</Takeaway>
@@ -72,13 +72,13 @@ Nhập yêu cầu như đề cho:
 <Scene id="s3" label="Cảnh 3/4" title="Amazon EFS" questions={["exam2_q64", "exam4_q55", "exam3_q11", "exam2_q60", "exam6_q39", "exam4_q24", "exam1_q12", "exam5_q47"]}>
 
 <RequirementPicker client:visible items={[
-  { need: "Big data chạy song song trên rất nhiều instance", answer: "Performance mode: Max I/O", why: "Mở rộng throughput tổng cho rất nhiều client.", refs: ["exam2_q64"] },
-  { need: "Tải lúc thấp lúc cao, không muốn tự cấp throughput", answer: "General Purpose + bursting throughput", why: "Throughput tăng theo dung lượng và có burst credit.", refs: ["exam4_q55"] },
-  { need: "Dữ liệu nhỏ (dưới 1 TB) nhưng đọc ghi tần suất rất cao", answer: "Provisioned throughput", why: "Cấp throughput độc lập với dung lượng lưu trữ.", refs: ["exam3_q11"] },
-  { need: "File ít dùng nhưng phải lấy được ngay, rẻ", answer: "EFS Infrequent Access (Standard-IA)", why: "Lớp lưu trữ rẻ hơn cho file ít truy cập.", refs: ["exam2_q60", "exam6_q39"] },
-  { need: "Mỗi EC2 truy cập EFS với độ trễ thấp nhất", answer: "Mount target ở mỗi AZ, EC2 mount target cùng AZ", why: "Tránh đi qua AZ khác.", refs: ["exam4_q24"] },
-  { need: "Chỉ một số EC2 được đọc EFS", answer: "Security group + IAM policy", why: "Security group kiểm soát mạng; IAM kiểm soát ai được mount.", refs: ["exam1_q12"] },
-  { need: "Bảo vệ dữ liệu EFS khỏi sự cố Region", answer: "AWS Backup sao lưu cross-Region", why: "Backup theo lịch sang Region khác.", refs: ["exam5_q47"] },
+  { need: "Big data chạy song song trên rất nhiều instance", answer: "Performance mode: Max I/O", why: "Mở rộng throughput tổng cho rất nhiều client." },
+  { need: "Tải lúc thấp lúc cao, không muốn tự cấp throughput", answer: "General Purpose + bursting throughput", why: "Throughput tăng theo dung lượng và có burst credit." },
+  { need: "Dữ liệu nhỏ (dưới 1 TB) nhưng đọc ghi tần suất rất cao", answer: "Provisioned throughput", why: "Cấp throughput độc lập với dung lượng lưu trữ." },
+  { need: "File ít dùng nhưng phải lấy được ngay, rẻ", answer: "EFS Infrequent Access (Standard-IA)", why: "Lớp lưu trữ rẻ hơn cho file ít truy cập." },
+  { need: "Mỗi EC2 truy cập EFS với độ trễ thấp nhất", answer: "Mount target ở mỗi AZ, EC2 mount target cùng AZ", why: "Tránh đi qua AZ khác." },
+  { need: "Chỉ một số EC2 được đọc EFS", answer: "Security group + IAM policy", why: "Security group kiểm soát mạng; IAM kiểm soát ai được mount." },
+  { need: "Bảo vệ dữ liệu EFS khỏi sự cố Region", answer: "AWS Backup sao lưu cross-Region", why: "Backup theo lịch sang Region khác." },
 ]} />
 
 <Takeaway>EFS: NFS dùng chung nhiều AZ. Max I/O cho rất nhiều client; provisioned throughput khi cần throughput cao trên dữ liệu nhỏ; IA cho file ít dùng.</Takeaway>
@@ -89,19 +89,19 @@ Nhập yêu cầu như đề cho:
 
 <RequirementPicker client:visible items={[
   { need: "File share SMB cho Windows, quyền NTFS, Active Directory", answer: "FSx for Windows File Server",
-    why: "Windows file system đầy đủ: SMB, NTFS ACL, join AD; Linux cũng mount được qua SMB.", refs: ["exam2_q12", "exam3_q5", "exam3_q43", "exam3_q56"] },
-  { need: "Thay thế DFS Replication / DFS Namespaces on-premises", answer: "FSx for Windows File Server", why: "Hỗ trợ DFS.", refs: ["exam2_q56", "exam1_q65"] },
+    why: "Windows file system đầy đủ: SMB, NTFS ACL, join AD; Linux cũng mount được qua SMB." },
+  { need: "Thay thế DFS Replication / DFS Namespaces on-premises", answer: "FSx for Windows File Server", why: "Hỗ trợ DFS." },
   { need: "HPC, thiết kế chip, cần độ trễ dưới mili giây và đọc song song cực nhanh", answer: "FSx for Lustre",
-    why: "File system song song hiệu năng cao, liên kết được với S3 để nạp dữ liệu.", refs: ["exam1_q24", "exam3_q61"] },
-  { need: "Đang dùng NetApp ONTAP on-premises, muốn chuyển lên ít vận hành", answer: "FSx for NetApp ONTAP", why: "Giữ nguyên tính năng ONTAP.", refs: ["exam3_q26"] },
-  { need: "Văn phòng cần SMB nhưng dữ liệu lưu trên S3", answer: "S3 File Gateway", why: "Xem bài Storage Gateway.", refs: ["exam3_q56"] },
+    why: "File system song song hiệu năng cao, liên kết được với S3 để nạp dữ liệu." },
+  { need: "Đang dùng NetApp ONTAP on-premises, muốn chuyển lên ít vận hành", answer: "FSx for NetApp ONTAP", why: "Giữ nguyên tính năng ONTAP." },
+  { need: "Văn phòng cần SMB nhưng dữ liệu lưu trên S3", answer: "S3 File Gateway", why: "Xem bài Storage Gateway." },
 ]} />
 
 <Takeaway>Windows, SMB, AD, DFS: FSx for Windows. HPC, tốc độ cực cao: FSx for Lustre. Đang dùng NetApp: FSx for ONTAP.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="Lưu trữ nào?">
+<Scene id="challenge" label="Thử thách" title="Lưu trữ nào?" questions={["exam3_q27", "exam1_q44", "exam3_q5", "exam2_q64"]}>
 
 <SortGame client:visible
   bins={[
@@ -119,19 +119,19 @@ Nhập yêu cầu như đề cho:
 <Quiz client:visible items={[
   { q: "Database trên EC2 cần tới 25.000 IOPS mỗi volume. Chọn volume nào?",
     opts: ["General Purpose SSD (gp2)", "Provisioned IOPS SSD (io1)", "Throughput Optimized HDD (st1)"],
-    a: 1, ref: "exam3_q27",
+    a: 1,
     why: "gp2 tối đa 16.000 IOPS; io1 cấp được IOPS cao ổn định." },
   { q: "Hai loại EBS nào không dùng làm boot volume được?",
     opts: ["gp3 và io2", "st1 và sc1", "gp2 và st1"],
-    a: 1, ref: "exam1_q44",
+    a: 1,
     why: "Hai loại HDD không làm boot volume." },
   { q: "Windows và Linux cùng truy cập một file share, giữ quyền NTFS và tích hợp AD. Chọn gì?",
     opts: ["Amazon EFS", "FSx for Windows File Server", "FSx for Lustre"],
-    a: 1, ref: "exam3_q5",
+    a: 1,
     why: "FSx for Windows hỗ trợ SMB, NTFS và AD; Linux mount qua SMB." },
   { q: "Big data chạy trên EFS với rất nhiều instance song song. Performance mode nào?",
     opts: ["General Purpose", "Max I/O", "Provisioned throughput"],
-    a: 1, ref: "exam2_q64",
+    a: 1,
     why: "Max I/O mở rộng throughput tổng cho rất nhiều client đồng thời." },
 ]} />
 

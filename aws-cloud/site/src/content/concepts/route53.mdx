@@ -43,11 +43,11 @@ Cả hai đều trỏ một tên tới một tên khác. Khác biệt đề hay 
 
 <RequirementPicker client:visible items={[
   { need: "Static website S3 + CloudFront, trỏ tên miền chính tới CloudFront", answer: "Alias record",
-    why: "Alias trỏ thẳng tới CloudFront distribution, dùng được ở zone apex, không tính phí truy vấn tới tài nguyên AWS.", refs: ["exam2_q2"] },
+    why: "Alias trỏ thẳng tới CloudFront distribution, dùng được ở zone apex, không tính phí truy vấn tới tài nguyên AWS." },
   { need: "Chuyển mọi truy cập shopviet.vn sang www.shopviet.vn, rẻ nhất", answer: "Alias record ở apex trỏ tới www",
-    why: "shopviet.vn là zone apex nên không đặt CNAME được. Alias trỏ được tới một record khác trong cùng hosted zone.", refs: ["exam3_q19"] },
+    why: "shopviet.vn là zone apex nên không đặt CNAME được. Alias trỏ được tới một record khác trong cùng hosted zone." },
   { need: "Cho www.shopviet.vn trỏ tới ứng dụng", answer: "CNAME record",
-    why: "www là subdomain, không phải apex, nên CNAME dùng được. Đây là đáp án của dạng câu này.", refs: ["exam3_q64"] },
+    why: "www là subdomain, không phải apex, nên CNAME dùng được. Đây là đáp án của dạng câu này." },
 ]} />
 
 <Takeaway>Zone apex: chỉ Alias. Trỏ tới CloudFront, ALB, S3 website: Alias (miễn phí truy vấn). Subdomain trỏ tới một tên khác: CNAME dùng được.</Takeaway>
@@ -88,7 +88,7 @@ Server trong VPC cần tìm database ở văn phòng (`db.corp.local`), còn h�
   <Confusions />
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="Chọn đúng loại record">
+<Scene id="challenge" label="Thử thách" title="Chọn đúng loại record" questions={["exam2_q6", "exam4_q61", "exam5_q56", "exam4_q3"]}>
 
 Xếp từng tình huống vào loại record phù hợp. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
 
@@ -109,19 +109,19 @@ Các câu dưới đây viết lại theo đúng dạng câu trong đề (mã c�
 <Quiz client:visible items={[
   { q: "Ứng dụng chạy ở us-east-1, khách châu Âu than chậm. Bạn dựng thêm web tier ở eu-west-1. Dùng routing policy nào để mỗi khách vào Region nhanh nhất với họ?",
     opts: ["Weighted", "Latency", "Geoproximity"],
-    a: 1, ref: "exam2_q6",
+    a: 1,
     why: "Latency routing trả về Region có độ trễ thấp nhất tới khách. Đáp án đầy đủ của câu này còn kèm Aurora read replica ở eu-west-1." },
   { q: "Bạn muốn mở rộng hoặc thu hẹp vùng địa lý mà Route 53 gửi traffic tới một tài nguyên. Dùng tính năng nào?",
     opts: ["Geolocation routing", "Geoproximity routing với bias", "Multivalue answer"],
-    a: 1, ref: "exam4_q61",
+    a: 1,
     why: "Bias của geoproximity nới rộng hoặc thu hẹp vùng phục vụ của tài nguyên." },
   { q: "Khi ALB hỏng, khách phải thấy trang báo lỗi tĩnh trên S3, thay đổi ít nhất. Cấu hình nào?",
     opts: ["Failover routing active-passive, secondary là S3", "Weighted routing, S3 nhận trọng số nhỏ", "Latency routing trỏ tới S3"],
-    a: 0, ref: "exam5_q56",
+    a: 0,
     why: "Health check thấy ALB hỏng thì Route 53 trả về record secondary là trang lỗi trên S3." },
   { q: "Đã đổi record trỏ sang load balancer mới nhưng nhiều người dùng vẫn vào load balancer cũ. Vì sao?",
     opts: ["Load balancer mới chưa có target", "TTL của record cũ vẫn còn hiệu lực", "Phải xóa hosted zone và tạo lại"],
-    a: 1, ref: "exam4_q3",
+    a: 1,
     why: "Client và resolver giữ câu trả lời cũ trong cache cho tới khi hết TTL." },
 ]} />
 

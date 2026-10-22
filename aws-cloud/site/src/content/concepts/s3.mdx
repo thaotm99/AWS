@@ -41,17 +41,17 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 
 <RequirementPicker client:visible items={[
   { need: "Dữ liệu tạo lại được, truy cập nhiều tuần đầu, sau đó ít nhưng vẫn phải lấy ngay", answer: "Lifecycle sang One Zone-IA sau 30 ngày",
-    why: "Tạo lại được nên chấp nhận lưu ở 1 AZ để rẻ hơn Standard-IA; vẫn lấy dữ liệu ngay lập tức.", refs: ["exam1_q8"] },
+    why: "Tạo lại được nên chấp nhận lưu ở 1 AZ để rẻ hơn Standard-IA; vẫn lấy dữ liệu ngay lập tức." },
   { need: "Hàng trăm TB, cần độ trễ mili giây, chỉ dùng vài lần mỗi năm", answer: "S3 Standard-IA",
-    why: "Trong các phương án của đề (Intelligent-Tiering, Standard, Deep Archive), Standard-IA rẻ mà vẫn lấy ngay. Deep Archive mất nhiều giờ để lấy.", refs: ["exam1_q15"] },
+    why: "Trong các phương án của đề (Intelligent-Tiering, Standard, Deep Archive), Standard-IA rẻ mà vẫn lấy ngay. Deep Archive mất nhiều giờ để lấy." },
   { need: "Kết quả trung gian được đọc lại liên tục trong pipeline", answer: "S3 Standard",
-    why: "Truy cập thường xuyên thì Standard rẻ nhất vì các lớp IA tính phí lấy dữ liệu.", refs: ["exam1_q28"] },
+    why: "Truy cập thường xuyên thì Standard rẻ nhất vì các lớp IA tính phí lấy dữ liệu." },
   { need: "Có ảnh xem nhiều, có ảnh nằm im, không đoán trước được", answer: "S3 Intelligent-Tiering",
-    why: "Tự chuyển object giữa các tầng theo mức truy cập, không phí lấy dữ liệu, ít can thiệp.", refs: ["exam6_q9", "exam5_q49"] },
+    why: "Tự chuyển object giữa các tầng theo mức truy cập, không phí lấy dữ liệu, ít can thiệp." },
   { need: "Lấy ngay khi cần, ít truy cập sau 30 ngày, xóa sau vài năm", answer: "Lifecycle sang Standard-IA sau 30 ngày + expiration",
-    why: "Standard-IA vẫn lấy ngay; rule expiration tự xóa khi hết hạn lưu.", refs: ["exam5_q51", "exam6_q28"] },
+    why: "Standard-IA vẫn lấy ngay; rule expiration tự xóa khi hết hạn lưu." },
   { need: "Dữ liệu thô sau khi đã xử lý, giữ cho chắc, gần như không đọc lại", answer: "Lifecycle sang Glacier Deep Archive",
-    why: "Lớp rẻ nhất cho dữ liệu lưu trữ dài hạn.", refs: ["exam2_q34"] },
+    why: "Lớp rẻ nhất cho dữ liệu lưu trữ dài hạn." },
 ]} />
 
 Lifecycle chỉ chuyển theo một chiều, xuống các lớp rẻ hơn. Thử các cặp đề hay hỏi, ví dụ Intelligent-Tiering → Standard hay One Zone-IA → Standard-IA:
@@ -66,13 +66,13 @@ Lifecycle chỉ chuyển theo một chiều, xuống các lớp rẻ hơn. Thử
 
 <RequirementPicker client:visible items={[
   { need: "Chống xóa nhầm và ghi đè, xóa vĩnh viễn phải xác thực thêm", answer: "Versioning + MFA Delete",
-    why: "Versioning giữ mọi phiên bản; MFA Delete bắt buộc MFA khi xóa phiên bản hoặc tắt versioning.", refs: ["exam1_q20"] },
+    why: "Versioning giữ mọi phiên bản; MFA Delete bắt buộc MFA khi xóa phiên bản hoặc tắt versioning." },
   { need: "Không ai, kể cả root và admin, được xóa hay sửa trong thời gian lưu", answer: "Object Lock ở Compliance mode",
-    why: "Compliance mode không ai bỏ qua được. Governance mode cho phép người có quyền đặc biệt bỏ qua.", refs: ["exam5_q50", "exam4_q64"] },
+    why: "Compliance mode không ai bỏ qua được. Governance mode cho phép người có quyền đặc biệt bỏ qua." },
   { need: "Đặt thời hạn lưu cho object", answer: "Retain Until Date cho từng phiên bản; mỗi phiên bản có thể có mode và thời hạn khác nhau",
-    why: "Retention áp dụng theo object version.", refs: ["exam1_q56"] },
+    why: "Retention áp dụng theo object version." },
   { need: "Lưu trữ giá rẻ nhiều năm, khóa không cho sửa xóa theo quy định", answer: "S3 Glacier Vault Lock",
-    why: "Vault lock policy sau khi khóa thì không sửa được nữa.", refs: ["exam4_q64", "exam5_q39"] },
+    why: "Vault lock policy sau khi khóa thì không sửa được nữa." },
 ]} />
 
 <Takeaway>Chống xóa nhầm: versioning + MFA Delete. Tuyệt đối không ai xóa được: Object Lock Compliance mode. Lưu trữ dài hạn có khóa: Glacier Vault Lock.</Takeaway>
@@ -83,16 +83,16 @@ Lifecycle chỉ chuyển theo một chiều, xuống các lớp rẻ hơn. Thử
 
 <RequirementPicker client:visible items={[
   { need: "Cho user trong account mình và account khác cùng truy cập bucket", answer: "Bucket policy",
-    why: "Bucket policy là resource policy, cấp quyền được cho principal ở account khác.", refs: ["exam4_q65"] },
+    why: "Bucket policy là resource policy, cấp quyền được cho principal ở account khác." },
   { need: "Nhiều dịch vụ phân tích, mỗi dịch vụ chỉ được đọc một prefix, dễ quản lý", answer: "S3 Access Points, mỗi dịch vụ một access point",
-    why: "Mỗi access point có policy riêng giới hạn theo prefix, thay vì một bucket policy khổng lồ.", refs: ["exam2_q24"] },
+    why: "Mỗi access point có policy riêng giới hạn theo prefix, thay vì một bucket policy khổng lồ." },
   { need: "Policy có IpAddress 54.240.143.0/24 và NotIpAddress 54.240.143.188/32", answer: "Cho cả dải IP trừ đúng một địa chỉ",
-    why: "Cả hai điều kiện phải đúng: nằm trong dải /24 và không phải .188.", refs: ["exam4_q8"] },
+    why: "Cả hai điều kiện phải đúng: nằm trong dải /24 và không phải .188." },
   { need: "Redshift UNLOAD ghi file vào bucket nhưng chủ bucket không đọc được", answer: "Object thuộc account đã upload, không tự thuộc chủ bucket",
-    why: "Đây là hành vi đề mô tả (ACL kiểu cũ). Bucket mới hiện mặc định Object Ownership = bucket owner enforced, ACL bị tắt và chủ bucket sở hữu mọi object.", refs: ["exam2_q15"] },
-  { need: "Tìm các bucket chưa bật versioning trên mọi Region và account", answer: "S3 Storage Lens (advanced metrics)", why: "Dashboard tổng hợp toàn Organization.", refs: ["exam6_q30"] },
-  { need: "Storage Class Analysis đề xuất được gì?", answer: "Chỉ đề xuất chuyển từ Standard sang Standard-IA", why: "Phân tích mẫu truy cập để chọn thời điểm chuyển sang Standard-IA.", refs: ["exam6_q3"] },
-  { need: "Chỉ cho đọc qua CloudFront", answer: "OAI/OAC + bucket policy", why: "Xem bài CloudFront.", refs: ["exam6_q54"] },
+    why: "Đây là hành vi đề mô tả (ACL kiểu cũ). Bucket mới hiện mặc định Object Ownership = bucket owner enforced, ACL bị tắt và chủ bucket sở hữu mọi object." },
+  { need: "Tìm các bucket chưa bật versioning trên mọi Region và account", answer: "S3 Storage Lens (advanced metrics)", why: "Dashboard tổng hợp toàn Organization." },
+  { need: "Storage Class Analysis đề xuất được gì?", answer: "Chỉ đề xuất chuyển từ Standard sang Standard-IA", why: "Phân tích mẫu truy cập để chọn thời điểm chuyển sang Standard-IA." },
+  { need: "Chỉ cho đọc qua CloudFront", answer: "OAI/OAC + bucket policy", why: "Xem bài CloudFront." },
 ]} />
 
 <Takeaway>Khác account: bucket policy. Nhiều đối tượng, nhiều prefix: access points. Theo dõi toàn tổ chức: Storage Lens.</Takeaway>
@@ -103,12 +103,12 @@ Lifecycle chỉ chuyển theo một chiều, xuống các lớp rẻ hơn. Thử
 
 <RequirementPicker client:visible items={[
   { need: "Key phải nằm trong ứng dụng on-premises, nhưng để S3 làm việc mã hóa", answer: "SSE-C",
-    why: "Bạn gửi key theo từng request; S3 mã hóa rồi bỏ key, không lưu.", refs: ["exam2_q10"] },
+    why: "Bạn gửi key theo từng request; S3 mã hóa rồi bỏ key, không lưu." },
   { need: "Phải mã hóa bằng thuật toán riêng của công ty", answer: "Client-side encryption",
-    why: "Chỉ mã hóa phía client mới cho bạn chọn thuật toán; dữ liệu lên S3 đã được mã hóa sẵn.", refs: ["exam6_q51"] },
-  { need: "Mỗi file một key khác nhau, đơn giản nhất", answer: "SSE-S3", why: "S3 mã hóa mỗi object bằng một key riêng.", refs: ["exam3_q24"] },
-  { need: "Cần audit việc dùng key", answer: "SSE-KMS", why: "Mọi lần dùng key được ghi vào CloudTrail.", refs: ["exam1_q22"] },
-  { need: "Giảm chi phí gọi KMS", answer: "S3 Bucket Keys", why: "Giữ SSE-KMS nhưng giảm số request tới KMS.", refs: ["exam5_q46"] },
+    why: "Chỉ mã hóa phía client mới cho bạn chọn thuật toán; dữ liệu lên S3 đã được mã hóa sẵn." },
+  { need: "Mỗi file một key khác nhau, đơn giản nhất", answer: "SSE-S3", why: "S3 mã hóa mỗi object bằng một key riêng." },
+  { need: "Cần audit việc dùng key", answer: "SSE-KMS", why: "Mọi lần dùng key được ghi vào CloudTrail." },
+  { need: "Giảm chi phí gọi KMS", answer: "S3 Bucket Keys", why: "Giữ SSE-KMS nhưng giảm số request tới KMS." },
 ]} />
 
 <Takeaway>Key của bạn, S3 mã hóa: SSE-C. Thuật toán của bạn: client-side. Audit: SSE-KMS. Đơn giản nhất: SSE-S3.</Takeaway>
@@ -119,23 +119,23 @@ Lifecycle chỉ chuyển theo một chiều, xuống các lớp rẻ hơn. Thử
 
 <RequirementPicker client:visible items={[
   { need: "Upload file rất lớn (hàng trăm GB tới TB)", answer: "Multipart upload",
-    why: "Chia file thành nhiều phần upload song song, phần lỗi thì gửi lại phần đó. Bắt buộc với object trên 5 GB.", refs: ["exam4_q14"] },
+    why: "Chia file thành nhiều phần upload song song, phần lỗi thì gửi lại phần đó. Bắt buộc với object trên 5 GB." },
   { need: "Văn phòng ở xa upload video lớn chậm, rẻ", answer: "S3 Transfer Acceleration + multipart upload",
-    why: "Transfer Acceleration đi qua edge location; multipart upload chạy song song.", refs: ["exam1_q18", "exam1_q64"] },
+    why: "Transfer Acceleration đi qua edge location; multipart upload chạy song song." },
   { need: "Bật Transfer Acceleration nhưng lần upload không được tăng tốc. Có tính phí không?", answer: "Không tính phí tăng tốc",
-    why: "S3 Transfer Acceleration chỉ tính phí khi việc truyền thực sự được tăng tốc.", refs: ["exam1_q40"] },
+    why: "S3 Transfer Acceleration chỉ tính phí khi việc truyền thực sự được tăng tốc." },
   { need: "Upload thất bại khi vượt 5.000 request/giây vào một bucket", answer: "Chia dữ liệu theo nhiều prefix",
-    why: "Giới hạn request tính theo từng prefix (khoảng 3.500 ghi và 5.500 đọc mỗi giây mỗi prefix), nhiều prefix thì tổng tăng.", refs: ["exam1_q51"] },
+    why: "Giới hạn request tính theo từng prefix (khoảng 3.500 ghi và 5.500 đọc mỗi giây mỗi prefix), nhiều prefix thì tổng tăng." },
   { need: "Chỉ cần đọc vài trăm byte đầu của hàng trăm nghìn file", answer: "Byte-range fetch",
-    why: "Đọc đúng đoạn byte cần thiết thay vì tải cả object.", refs: ["exam6_q20"] },
-  { need: "Người dùng toàn cầu upload và tải video lớn chậm", answer: "CloudFront + S3 Transfer Acceleration", why: "CloudFront cho tải về, Transfer Acceleration cho tải lên.", refs: ["exam5_q21"] },
+    why: "Đọc đúng đoạn byte cần thiết thay vì tải cả object." },
+  { need: "Người dùng toàn cầu upload và tải video lớn chậm", answer: "CloudFront + S3 Transfer Acceleration", why: "CloudFront cho tải về, Transfer Acceleration cho tải lên." },
 ]} />
 
 <Takeaway>File lớn: multipart upload. Ở xa: Transfer Acceleration (không tăng tốc thì không tính phí). Nhiều request: chia prefix. Đọc một phần: byte-range fetch.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="Compliance, Governance hay Legal hold?" questions={["exam5_q50", "exam1_q56"]}>
+<Scene id="challenge" label="Thử thách" title="Compliance, Governance hay Legal hold?" questions={["exam5_q50", "exam1_q56", "exam1_q19", "exam6_q9", "exam2_q10", "exam1_q51"]}>
 
 <SortGame client:visible
   bins={[
@@ -153,23 +153,23 @@ Lifecycle chỉ chuyển theo một chiều, xuống các lớp rẻ hơn. Thử
 <Quiz client:visible items={[
   { q: "Lifecycle transition nào KHÔNG hợp lệ?",
     opts: ["Standard → Intelligent-Tiering", "Intelligent-Tiering → Standard", "Standard-IA → One Zone-IA"],
-    a: 1, ref: "exam1_q19",
+    a: 1,
     why: "Lifecycle không chuyển ngược về Standard. Hai cặp còn lại hợp lệ." },
   { q: "Ảnh có cái xem nhiều, có cái để lâu không ai xem, không đoán trước được. Lớp lưu trữ rẻ nhất?",
     opts: ["Standard-IA", "Intelligent-Tiering", "One Zone-IA"],
-    a: 1, ref: "exam6_q9",
+    a: 1,
     why: "Intelligent-Tiering tự chuyển theo truy cập, không có phí lấy dữ liệu." },
   { q: "Không ai, kể cả root, được xóa dữ liệu trong 7 năm. Chọn gì?",
     opts: ["Object Lock Governance mode", "Object Lock Compliance mode", "Versioning"],
-    a: 1, ref: "exam5_q50",
+    a: 1,
     why: "Compliance mode không ai bỏ qua được trong thời gian lưu." },
   { q: "Key mã hóa phải ở trong ứng dụng on-premises, nhưng muốn S3 lo việc mã hóa. Chọn gì?",
     opts: ["SSE-KMS", "SSE-C", "Client-side encryption"],
-    a: 1, ref: "exam2_q10",
+    a: 1,
     why: "Với SSE-C bạn gửi key theo request, S3 mã hóa và không lưu key." },
   { q: "Upload hỏng vào giờ cao điểm khi có hơn 5.000 request/giây vào một bucket. Cách tối ưu?",
     opts: ["Tạo nhiều bucket ở nhiều Region", "Chia file theo prefix riêng cho từng khách hàng", "Chuyển sang EFS"],
-    a: 1, ref: "exam1_q51",
+    a: 1,
     why: "Giới hạn request tính theo prefix; thêm prefix là thêm năng lực." },
 ]} />
 

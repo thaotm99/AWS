@@ -38,7 +38,7 @@ const SERVICES: { name: string; scope: Scope; label: string; text: ReactNode; dr
       <text className="zone-t" x={516} y={128} textAnchor="end">VPC 10.0.0.0/16</text>
     </> },
   { name: "EFS", scope: "region", label: "Region",
-    text: <>File system EFS là tài nguyên cấp Region, có mount target ở từng AZ nên server ở AZ nào cũng mount được. Server ở Region khác vẫn truy cập được qua inter-region VPC peering, không cần copy dữ liệu (exam1_q42).</>,
+    text: <>File system EFS là tài nguyên cấp Region, có mount target ở từng AZ nên server ở AZ nào cũng mount được. Server ở Region khác vẫn truy cập được qua inter-region VPC peering, không cần copy dữ liệu.</>,
     draw: <><Token x={296} y={70} w={220} label="EFS: shopviet-shared" />{AZS.map((az) => <Token key={az.n} x={az.x + 20} y={200} w={100} label="mount target" ghost />)}</> },
   { name: "AMI", scope: "region", label: "Region",
     text: <>AMI <code>shopviet-web</code> chỉ dùng được trong Region đã tạo ra nó, nhưng dùng được ở mọi AZ của Region đó. Muốn launch ở Region khác phải copy AMI sang (Cảnh 1).</>,
@@ -50,7 +50,7 @@ const SERVICES: { name: string; scope: Scope; label: string; text: ReactNode; dr
       <text className="zone-t" x={120} y={188} textAnchor="middle">subnet 10.0.1.0/24</text>
     </> },
   { name: "NAT Gateway", scope: "az", label: "AZ",
-    text: <>NAT gateway được tạo trong public subnet của một AZ cụ thể. Nếu cả 3 AZ dùng chung một NAT gateway thì AZ đó sập kéo theo các AZ kia mất internet. Đề chọn: mỗi AZ một NAT gateway, mỗi AZ một route table riêng (exam3_q62).</>,
+    text: <>NAT gateway được tạo trong public subnet của một AZ cụ thể. Nếu cả 3 AZ dùng chung một NAT gateway thì AZ đó sập kéo theo các AZ kia mất internet. Cách đúng: mỗi AZ một NAT gateway, mỗi AZ một route table riêng.</>,
     draw: <>{AZS.map((az) => <Token key={az.n} x={az.x + 20} y={200} w={100} label="NAT gateway" ghost={az.n !== "a"} />)}</> },
   { name: "EC2", scope: "az", label: "AZ",
     text: <>Server <code>web-1</code> chạy trong một subnet, nên nằm trong đúng một AZ. AZ đó sập thì server sập theo. Cảnh 3 sẽ cho bạn thấy điều này.</>,

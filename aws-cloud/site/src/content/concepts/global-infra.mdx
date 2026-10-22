@@ -86,7 +86,7 @@ Chiều ngược lại, khi khách ở xa **upload** file lớn vào S3, đề c
 
 </Scene>
 
-<Scene id="s5" label="Cảnh 5/6" title="Global Accelerator: IP tĩnh, TCP/UDP và failover giữa Region" questions={["exam1_q59", "exam2_q7", "exam2_q22", "exam3_q8", "exam3_q45", "exam4_q58", "exam5_q4", "exam5_q30", "exam5_q55"]}>
+<Scene id="s5" label="Cảnh 5/6" title="Global Accelerator: IP tĩnh, TCP/UDP và failover giữa Region" questions={["exam1_q59", "exam2_q7", "exam2_q22", "exam3_q8", "exam3_q45", "exam4_q58", "exam5_q4", "exam5_q30", "exam5_q55", "exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
 
 **AWS Global Accelerator** cũng dùng edge location nhưng không cache. Nó cấp **2 IP tĩnh anycast**, nhận traffic TCP/UDP ở edge gần khách nhất rồi đưa qua mạng riêng của AWS tới endpoint khỏe gần nhất (ALB, NLB, EC2) ở một hoặc nhiều Region. Đề hỏi dịch vụ này 9 lần trong 6 đề. So sánh với cách chỉ dùng DNS:
 
@@ -96,23 +96,17 @@ Khi đọc đề, tìm từ khóa trong yêu cầu để chọn dịch vụ:
 
 <RequirementPicker client:visible items={[
   { need: "Giao thức UDP hoặc TCP không phải HTTP (game, IoT, VoIP)", answer: "Global Accelerator",
-    why: "CloudFront chỉ phục vụ HTTP/HTTPS. Global Accelerator nhận cả TCP và UDP rồi đưa vào mạng AWS.",
-    refs: ["exam1_q59", "exam3_q8", "exam5_q4"] },
+    why: "CloudFront chỉ phục vụ HTTP/HTTPS. Global Accelerator nhận cả TCP và UDP rồi đưa vào mạng AWS." },
   { need: "Cần IP tĩnh để khách hàng whitelist trên firewall", answer: "Global Accelerator",
-    why: "Global Accelerator cấp 2 IP tĩnh anycast đứng trước các ALB/NLB ở nhiều Region. IP của ALB thì thay đổi.",
-    refs: ["exam4_q58", "exam3_q45"] },
+    why: "Global Accelerator cấp 2 IP tĩnh anycast đứng trước các ALB/NLB ở nhiều Region. IP của ALB thì thay đổi." },
   { need: "Failover nhanh sang Region khác, không chờ DNS cache", answer: "Global Accelerator",
-    why: "Global Accelerator tự chuyển traffic sang endpoint khỏe ở Region khác mà client không phải phân giải DNS lại.",
-    refs: ["exam1_q59", "exam5_q55", "exam2_q22"] },
+    why: "Global Accelerator tự chuyển traffic sang endpoint khỏe ở Region khác mà client không phải phân giải DNS lại." },
   { need: "API HTTPS ở một Region, khách khắp thế giới gọi bị chậm", answer: "Global Accelerator",
-    why: "Khách vào mạng AWS ở edge gần nhất thay vì đi đường dài trên internet công cộng tới Region.",
-    refs: ["exam5_q30", "exam2_q7"] },
+    why: "Khách vào mạng AWS ở edge gần nhất thay vì đi đường dài trên internet công cộng tới Region." },
   { need: "Tăng tốc tải trang, ảnh, video cho người dùng ở xa", answer: "CloudFront",
-    why: "CloudFront cache nội dung tại edge location. Origin có thể là S3, ALB, hoặc server on-premises.",
-    refs: ["exam1_q62", "exam6_q5", "exam6_q58"] },
+    why: "CloudFront cache nội dung tại edge location. Origin có thể là S3, ALB, hoặc server on-premises." },
   { need: "Upload file lớn vào S3 từ nhiều nơi trên thế giới", answer: "S3 Transfer Acceleration",
-    why: "Dữ liệu đi vào edge location gần người upload rồi chạy trên mạng AWS tới bucket. Thường đi kèm multipart upload.",
-    refs: ["exam1_q18", "exam3_q37", "exam6_q58"] },
+    why: "Dữ liệu đi vào edge location gần người upload rồi chạy trên mạng AWS tới bucket. Thường đi kèm multipart upload." },
 ]} />
 
 <Takeaway>Thấy UDP, IP tĩnh để whitelist, failover nhanh giữa Region, hay DNS cache trên điện thoại: chọn Global Accelerator. Thấy cache nội dung HTTP: chọn CloudFront.</Takeaway>
@@ -133,7 +127,7 @@ Khi đọc đề, tìm từ khóa trong yêu cầu để chọn dịch vụ:
   <Confusions />
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="Xếp tài nguyên vào đúng phạm vi">
+<Scene id="challenge" label="Thử thách" title="Xếp tài nguyên vào đúng phạm vi" questions={["exam1_q41", "exam1_q59", "exam2_q62", "exam3_q47", "exam3_q62"]}>
 
 Kéo thẻ vào đúng ô. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
 
@@ -155,23 +149,23 @@ Các câu dưới đây viết lại theo đúng dạng câu trong đề (mã c�
 <Quiz client:visible items={[
   { q: "Bạn tạo AMI từ snapshot của một EC2 ở Region A, copy AMI sang Region B, rồi launch một EC2 từ AMI đó ở Region B. Lúc này Region B có những gì?",
     opts: ["1 EC2 và 1 AMI", "1 EC2, 1 AMI và 1 snapshot", "1 EC2 và 1 snapshot"],
-    a: 1, ref: "exam1_q41",
+    a: 1,
     why: "Copy AMI sang Region B sẽ tự tạo snapshot đi kèm ở Region B, cộng với AMI và EC2 vừa launch." },
   { q: "Game online dùng UDP, người chơi ở nhiều châu lục, cần failover nhanh khi một Region sập. Chọn dịch vụ nào?",
     opts: ["Amazon CloudFront", "AWS Global Accelerator", "S3 Transfer Acceleration"],
-    a: 1, ref: "exam1_q59",
+    a: 1,
     why: "CloudFront chỉ phục vụ HTTP/HTTPS. Global Accelerator hỗ trợ UDP và tự chuyển sang endpoint khỏe ở Region khác." },
   { q: "Phát biểu nào đúng về phí data transfer khi dùng RDS Read Replica?",
     opts: ["Replicate trong cùng Region bị tính phí", "Replicate giữa hai Region bị tính phí", "Replicate giữa hai Region miễn phí"],
-    a: 1, ref: "exam2_q62",
+    a: 1,
     why: "Replication tới Read Replica trong cùng Region không tính phí data transfer; Cross-Region Read Replica thì có." },
   { q: "EC2 ở private subnet đọc ghi rất nhiều dữ liệu với S3 cùng Region, hiện đi qua NAT gateway. Cách nào giảm chi phí tốt nhất?",
     opts: ["Thêm một NAT gateway nữa", "Tạo S3 gateway endpoint và cập nhật route table", "Chuyển EC2 sang public subnet"],
-    a: 1, ref: "exam3_q47",
+    a: 1,
     why: "Gateway endpoint cho S3 không tính phí thêm, traffic không còn đi qua NAT gateway nên hết phí xử lý dữ liệu của NAT." },
   { q: "VPC có public và private subnet ở 3 AZ. Private subnet cần ra internet để tải bản cập nhật, phải chịu được lỗi một AZ. Thiết kế nào đúng?",
     opts: ["Một NAT gateway dùng chung cho cả 3 AZ", "Mỗi AZ một NAT gateway trong public subnet, mỗi AZ một route table riêng", "Mỗi AZ một NAT gateway trong private subnet"],
-    a: 1, ref: "exam3_q62",
+    a: 1,
     why: "NAT gateway phải nằm ở public subnet và là tài nguyên cấp AZ, nên mỗi AZ cần một cái, với route table riêng trỏ tới NAT cùng AZ." },
 ]} />
 

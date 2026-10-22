@@ -39,19 +39,19 @@ ShopViet chạy nhiều EC2 sau một load balancer. Đề hỏi load balancer t
 
 <RequirementPicker client:visible items={[
   { need: "Web HTTP/HTTPS, định tuyến theo nội dung (path, host)", answer: "Application Load Balancer",
-    why: "ALB hoạt động ở tầng 7, đọc được URL và header để định tuyến.", refs: ["exam1_q2", "exam1_q48"] },
+    why: "ALB hoạt động ở tầng 7, đọc được URL và header để định tuyến." },
   { need: "Khách hàng (ngân hàng) cần whitelist IP public cố định của dịch vụ", answer: "Network Load Balancer + Auto Scaling group",
-    why: "NLB có IP tĩnh cho mỗi AZ (gắn được Elastic IP). IP của ALB thay đổi theo thời gian.", refs: ["exam4_q9"] },
+    why: "NLB có IP tĩnh cho mỗi AZ (gắn được Elastic IP). IP của ALB thay đổi theo thời gian." },
   { need: "Offload TLS khỏi EC2, an toàn nhất", answer: "NLB ở public subnet, Auto Scaling group ở private subnet",
-    why: "NLB làm TLS termination; instance nằm trong private subnet, không lộ ra internet.", refs: ["exam6_q43"] },
+    why: "NLB làm TLS termination; instance nằm trong private subnet, không lộ ra internet." },
   { need: "Chia sẻ một dịch vụ qua PrivateLink cho VPC khác", answer: "NLB phía cung cấp",
-    why: "PrivateLink (endpoint service) đặt sau NLB.", refs: ["exam1_q39"] },
+    why: "PrivateLink (endpoint service) đặt sau NLB." },
   { need: "Bastion host luôn sẵn sàng cho SSH", answer: "NLB public + ASG chạy bastion",
-    why: "SSH là TCP; NLB chuyển tiếp TCP, ALB thì không.", refs: ["exam6_q56"] },
+    why: "SSH là TCP; NLB chuyển tiếp TCP, ALB thì không." },
 ]} />
 
 <ScenarioFlow client:visible height={210} scenarios={[
-  { name: "Một load balancer cho hai Region?", refs: ["exam6_q7"],
+  { name: "Một load balancer cho hai Region?",
     boxes: [{ x: 20, y: 20, w: 330, h: 170, label: "us-east-1" }, { x: 410, y: 20, w: 330, h: 170, label: "us-west-1" }],
     nodes: [
       { id: "elb", x: 120, y: 60, label: "Load balancer", kind: "net" },
@@ -86,11 +86,11 @@ ShopViet chạy nhiều EC2 sau một load balancer. Đề hỏi load balancer t
 <Scene id="s3" label="Cảnh 3/4" title="Định tuyến và HTTPS trên ALB" questions={["exam1_q48", "exam4_q40", "exam4_q57", "exam2_q17", "exam1_q6"]}>
 
 <RequirementPicker client:visible items={[
-  { need: "/orders tới service này, /products tới service khác", answer: "Path-based routing", why: "Listener rule khớp đường dẫn URL rồi gửi tới target group tương ứng.", refs: ["exam1_q48"] },
-  { need: "Nhiều tên miền HTTPS trên cùng một ALB, ít cấu hình nhất", answer: "Nhiều chứng chỉ với SNI", why: "Server Name Indication cho ALB chọn đúng chứng chỉ theo tên miền client yêu cầu.", refs: ["exam4_q40"] },
-  { need: "Rule *.example.com khớp với tên nào?", answer: "test.example.com", why: "Wildcard khớp đúng một cấp subdomain; không khớp example.com hay a.b.example.com.", refs: ["exam4_q57"] },
-  { need: "Đăng nhập người dùng trước khi tới ứng dụng", answer: "ALB authenticate với Cognito user pool", why: "ALB lo xác thực, ứng dụng nhận request đã xác thực.", refs: ["exam2_q17"] },
-  { need: "Chặn truy cập từ một số quốc gia", answer: "AWS WAF gắn vào ALB", why: "Geo match rule trong WAF.", refs: ["exam1_q6"] },
+  { need: "/orders tới service này, /products tới service khác", answer: "Path-based routing", why: "Listener rule khớp đường dẫn URL rồi gửi tới target group tương ứng." },
+  { need: "Nhiều tên miền HTTPS trên cùng một ALB, ít cấu hình nhất", answer: "Nhiều chứng chỉ với SNI", why: "Server Name Indication cho ALB chọn đúng chứng chỉ theo tên miền client yêu cầu." },
+  { need: "Rule *.example.com khớp với tên nào?", answer: "test.example.com", why: "Wildcard khớp đúng một cấp subdomain; không khớp example.com hay a.b.example.com." },
+  { need: "Đăng nhập người dùng trước khi tới ứng dụng", answer: "ALB authenticate với Cognito user pool", why: "ALB lo xác thực, ứng dụng nhận request đã xác thực." },
+  { need: "Chặn truy cập từ một số quốc gia", answer: "AWS WAF gắn vào ALB", why: "Geo match rule trong WAF." },
 ]} />
 
 <Takeaway>ALB định tuyến theo path và host, phục vụ nhiều tên miền HTTPS bằng SNI, gắn được Cognito và WAF.</Takeaway>
@@ -101,20 +101,20 @@ ShopViet chạy nhiều EC2 sau một load balancer. Đề hỏi load balancer t
 
 <RequirementPicker client:visible items={[
   { need: "ALB đánh dấu instance unhealthy dù ứng dụng chạy bình thường", answer: "Security group của EC2 không cho ALB vào, hoặc đường dẫn health check sai",
-    why: "Health check của ALB bị chặn hoặc gọi vào path không tồn tại thì trả lỗi.", refs: ["exam4_q26"] },
+    why: "Health check của ALB bị chặn hoặc gọi vào path không tồn tại thì trả lỗi." },
   { need: "ALB loại instance unhealthy nhưng Auto Scaling không thay instance mới", answer: "ASG đang dùng EC2 health check, chưa dùng ELB health check",
-    why: "EC2 health check chỉ biết máy còn chạy. Bật ELB health check cho ASG thì ASG mới thay instance mà ALB báo hỏng.", refs: ["exam5_q1"] },
+    why: "EC2 health check chỉ biết máy còn chạy. Bật ELB health check cho ASG thì ASG mới thay instance mà ALB báo hỏng." },
   { need: "Instance mới chưa được thay dù đã unhealthy", answer: "Health check grace period chưa hết, hoặc instance đang impaired, hoặc fail ELB health check",
-    why: "Trong grace period, ASG chưa xét health check của instance vừa khởi động.", refs: ["exam2_q18"] },
+    why: "Trong grace period, ASG chưa xét health check của instance vừa khởi động." },
   { need: "NLB gửi traffic tới target (đăng ký bằng instance ID) qua địa chỉ nào?", answer: "Primary private IP của network interface chính",
-    why: "Đăng ký target bằng instance ID thì NLB route tới primary private IP của eth0.", refs: ["exam3_q13"] },
+    why: "Đăng ký target bằng instance ID thì NLB route tới primary private IP của eth0." },
 ]} />
 
 <Takeaway>Unhealthy thường do security group hoặc health check path. Muốn ASG thay instance mà load balancer báo hỏng: dùng ELB health check cho ASG.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="ALB hay NLB?">
+<Scene id="challenge" label="Thử thách" title="ALB hay NLB?" questions={["exam3_q14", "exam4_q9", "exam5_q1", "exam4_q40"]}>
 
 <SortGame client:visible
   bins={[
@@ -132,19 +132,19 @@ Các câu dưới đây viết lại theo đúng dạng câu trong đề (mã c�
 <Quiz client:visible items={[
   { q: "Load balancer trải 2 AZ: AZ A có 1 target, AZ B có 4 target. Cross-zone tắt. Target ở AZ A nhận bao nhiêu traffic?",
     opts: ["20%", "50%", "12,5%"],
-    a: 1, ref: "exam3_q14",
+    a: 1,
     why: "Mỗi AZ nhận 50%; AZ A chỉ có 1 target nên target đó nhận cả 50%. Nếu bật cross-zone thì mỗi target nhận 20%." },
   { q: "Khách hàng ngân hàng cần whitelist một IP public cố định của dịch vụ, dịch vụ phải HA và scale tới 10 instance. Chọn gì?",
     opts: ["ALB + Auto Scaling group", "NLB + Auto Scaling group", "Auto Scaling group gắn Elastic IP động"],
-    a: 1, ref: "exam4_q9",
+    a: 1,
     why: "NLB có IP tĩnh mỗi AZ; ALB không có IP cố định." },
   { q: "ALB loại instance unhealthy nhưng ASG không tạo instance thay thế. Vì sao?",
     opts: ["ASG dùng EC2 health check, ALB dùng ELB health check", "ALB chưa bật cross-zone", "Instance thiếu IAM role"],
-    a: 0, ref: "exam5_q1",
+    a: 0,
     why: "Với EC2 health check, ASG thấy instance vẫn chạy nên không thay." },
   { q: "Một ALB phục vụ nhiều tên miền HTTPS khác nhau, ít cấu hình nhất. Chọn gì?",
     opts: ["Mỗi tên miền một ALB", "Nhiều chứng chỉ trên một listener với SNI", "Chuyển sang NLB"],
-    a: 1, ref: "exam4_q40",
+    a: 1,
     why: "SNI cho phép một listener HTTPS chọn chứng chỉ theo tên miền." },
 ]} />
 

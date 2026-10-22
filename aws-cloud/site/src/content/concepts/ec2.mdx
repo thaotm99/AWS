@@ -38,7 +38,7 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 Server của ShopViet là các EC2 instance. Câu hỏi không còn là "có dùng EC2 không" mà là: mua kiểu gì cho rẻ, khởi động bao lâu, đặt các instance gần nhau hay xa nhau, lưu dữ liệu tạm ở đâu, và tự đứng dậy thế nào khi hỏng.
 </Story>
 
-<Scene id="s1" label="Cảnh 1/5" title="Phối hợp kiểu mua để tối ưu chi phí" questions={["exam2_q33", "exam2_q35", "exam4_q49", "exam5_q60", "exam1_q21", "exam4_q46"]}>
+<Scene id="s1" label="Cảnh 1/5" title="Phối hợp kiểu mua để tối ưu chi phí" questions={["exam2_q33", "exam2_q35", "exam4_q49", "exam5_q60", "exam1_q21", "exam4_q46", "exam2_q49", "exam6_q18", "exam2_q23", "exam6_q21", "exam6_q33", "exam6_q38"]}>
 
 ShopViet cần 80 instance chạy suốt ngày đêm, ban ngày cần thêm worker xử lý ảnh từ hàng đợi (chịu được gián đoạn). Chọn chiến lược mua:
 
@@ -48,17 +48,17 @@ Các kiểu mua còn lại đề hay hỏi:
 
 <RequirementPicker client:visible items={[
   { need: "Workload chịu gián đoạn, dừng rồi chạy lại được, rẻ nhất", answer: "Spot Instances",
-    why: "Rẻ tới 90% so với On-Demand, bị thu hồi với thông báo 2 phút.", refs: ["exam1_q21", "exam4_q46"] },
+    why: "Rẻ tới 90% so với On-Demand, bị thu hồi với thông báo 2 phút." },
   { need: "Batch chạy định kỳ, phân tán được trên nhiều loại server, chịu được server hỏng", answer: "Spot Fleet",
-    why: "Spot Fleet giữ target capacity bằng cách thay instance bị thu hồi, trộn nhiều loại instance.", refs: ["exam2_q49"] },
+    why: "Spot Fleet giữ target capacity bằng cách thay instance bị thu hồi, trộn nhiều loại instance." },
   { need: "Job dài phải chạy tiếp sau khi Spot bị thu hồi", answer: "Spot request kiểu persistent",
-    why: "Request persistent được mở lại sau khi instance bị gián đoạn.", refs: ["exam6_q18"] },
+    why: "Request persistent được mở lại sau khi instance bị gián đoạn." },
   { need: "Phần cứng single-tenant theo quy định, rẻ nhất", answer: "Dedicated Instances",
-    why: "Instance chạy trên phần cứng chỉ dành cho bạn. Rẻ hơn Dedicated Hosts vì không phải thuê nguyên server.", refs: ["exam2_q23", "exam6_q21"] },
+    why: "Instance chạy trên phần cứng chỉ dành cho bạn. Rẻ hơn Dedicated Hosts vì không phải thuê nguyên server." },
   { need: "Dùng license phần mềm tính theo socket/core của server (BYOL)", answer: "Dedicated Hosts",
-    why: "Bạn thấy và kiểm soát socket, core của server vật lý để dùng license sẵn có.", refs: ["exam6_q33"] },
+    why: "Bạn thấy và kiểm soát socket, core của server vật lý để dùng license sẵn có." },
   { need: "Giảm giá cho cả EC2, Fargate và Lambda", answer: "Compute Savings Plan",
-    why: "Cam kết mức chi tiêu theo giờ, áp dụng linh hoạt cho EC2, Fargate, Lambda.", refs: ["exam6_q38"] },
+    why: "Cam kết mức chi tiêu theo giờ, áp dụng linh hoạt cho EC2, Fargate, Lambda." },
 ]} />
 
 <Takeaway>Nền chạy 24/7: Reserved Instances (hoặc Savings Plans). Phần chịu được gián đoạn: Spot. Phần biến động không chịu gián đoạn: On-Demand. Single-tenant rẻ nhất: Dedicated Instances; license theo server: Dedicated Hosts.</Takeaway>
@@ -69,7 +69,7 @@ Các kiểu mua còn lại đề hay hỏi:
 
 Cài đặt đầy đủ một server ShopViet mất 45 phút. Auto Scaling cần instance mới sẵn sàng trong vài phút.
 
-<StepSim client:visible height={230} refs={["exam4_q1", "exam6_q11"]}
+<StepSim client:visible height={230}
   intro="Phần mềm gồm phần tĩnh (runtime, thư viện, agent) giống nhau mọi máy, và phần động (cấu hình theo môi trường) khác nhau mỗi lần chạy."
   nodes={[
     { id: "base", x: 30, y: 30, label: "AMI gốc của AWS", kind: "site" },
@@ -88,9 +88,9 @@ Cài đặt đầy đủ một server ShopViet mất 45 phút. Auto Scaling cầ
   ]} />
 
 <RequirementPicker client:visible items={[
-  { need: "Script tùy chỉnh chỉ chạy một lần khi instance được launch", answer: "User data", why: "Mặc định user data chạy ở lần boot đầu tiên.", refs: ["exam6_q11", "exam2_q19"] },
-  { need: "Tắt rồi bật lại mà không phải khởi động ứng dụng từ đầu", answer: "EC2 Hibernate", why: "Lưu nội dung RAM xuống EBS root volume, bật lại tiếp tục từ trạng thái cũ.", refs: ["exam2_q51"] },
-  { need: "Điều gì đúng với AMI?", answer: "Copy được sang Region khác, share được cho account khác, AMI từ snapshot mã hóa không thể copy thành bản không mã hóa", why: "AMI là tài nguyên cấp Region; copy và share được; mã hóa được giữ khi copy.", refs: ["exam3_q55"] },
+  { need: "Script tùy chỉnh chỉ chạy một lần khi instance được launch", answer: "User data", why: "Mặc định user data chạy ở lần boot đầu tiên." },
+  { need: "Tắt rồi bật lại mà không phải khởi động ứng dụng từ đầu", answer: "EC2 Hibernate", why: "Lưu nội dung RAM xuống EBS root volume, bật lại tiếp tục từ trạng thái cũ." },
+  { need: "Điều gì đúng với AMI?", answer: "Copy được sang Region khác, share được cho account khác, AMI từ snapshot mã hóa không thể copy thành bản không mã hóa", why: "AMI là tài nguyên cấp Region; copy và share được; mã hóa được giữ khi copy." },
 ]} />
 
 <Takeaway>Khởi động nhanh: golden AMI cho phần cố định + user data cho phần thay đổi. Giữ trạng thái RAM khi tắt: Hibernate.</Takeaway>
@@ -101,13 +101,13 @@ Cài đặt đầy đủ một server ShopViet mất 45 phút. Auto Scaling cầ
 
 <RequirementPicker client:visible items={[
   { need: "HPC cần độ trễ mạng thấp nhất, throughput cao nhất giữa các instance", answer: "Cluster placement group",
-    why: "Đặt các instance sát nhau trong cùng một AZ, mạng giữa chúng nhanh nhất. Đổi lại, cả nhóm cùng chịu rủi ro của một AZ.", refs: ["exam1_q23", "exam4_q20", "exam4_q60"] },
+    why: "Đặt các instance sát nhau trong cùng một AZ, mạng giữa chúng nhanh nhất. Đổi lại, cả nhóm cùng chịu rủi ro của một AZ." },
   { need: "Mạng cho HPC với giao tiếp giữa các node cực nhanh", answer: "Elastic Fabric Adapter (EFA)",
-    why: "Card mạng cho HPC, hỗ trợ giao tiếp liên node với độ trễ rất thấp.", refs: ["exam6_q36"] },
+    why: "Card mạng cho HPC, hỗ trợ giao tiếp liên node với độ trễ rất thấp." },
   { need: "Một instance duy nhất, tự thay khi hỏng và giữ nguyên IP public", answer: "ASG min=max=1 trải 2 AZ + Elastic IP gắn bằng user data + instance role",
-    why: "ASG thay instance hỏng; user data gọi API gắn lại Elastic IP; instance role cấp quyền gọi API đó.", refs: ["exam6_q57"] },
+    why: "ASG thay instance hỏng; user data gọi API gắn lại Elastic IP; instance role cấp quyền gọi API đó." },
   { need: "Giảm phí truyền dữ liệu replication giữa các instance", answer: "Dùng private IP thay vì public IP",
-    why: "Đi bằng public IP thì traffic ra rồi vào lại và bị tính phí.", refs: ["exam6_q59"] },
+    why: "Đi bằng public IP thì traffic ra rồi vào lại và bị tính phí." },
 ]} />
 
 <Takeaway>Hiệu năng mạng tối đa: cluster placement group (+ EFA cho HPC). IP cố định cho instance được thay: Elastic IP.</Takeaway>
@@ -118,11 +118,11 @@ Cài đặt đầy đủ một server ShopViet mất 45 phút. Auto Scaling cầ
 
 <RequirementPicker client:visible items={[
   { need: "Xử lý file tạm thật nhanh rồi upload kết quả lên S3, rẻ nhất", answer: "Instance store",
-    why: "Ổ gắn liền máy chủ vật lý, I/O cao nhất, đã tính trong giá instance. Dữ liệu tạm nên mất cũng không sao.", refs: ["exam5_q43"] },
+    why: "Ổ gắn liền máy chủ vật lý, I/O cao nhất, đã tính trong giá instance. Dữ liệu tạm nên mất cũng không sao." },
   { need: "Fleet xử lý dữ liệu đã được nhân bản ở tầng ứng dụng, cần hiệu năng I/O cao, rẻ", answer: "EC2 dùng instance store",
-    why: "Ứng dụng tự lo bản sao dữ liệu nên không cần độ bền của EBS.", refs: ["exam1_q43"] },
+    why: "Ứng dụng tự lo bản sao dữ liệu nên không cần độ bền của EBS." },
   { need: "Hiệu năng cao nhất + lưu bền + lưu trữ lâu dài", answer: "Instance store + S3 + S3 Glacier",
-    why: "Mỗi lớp lưu trữ đúng việc của nó: tạm, bền, lưu trữ dài hạn.", refs: ["exam5_q52"] },
+    why: "Mỗi lớp lưu trữ đúng việc của nó: tạm, bền, lưu trữ dài hạn." },
 ]} />
 
 <Takeaway>Instance store: nhanh nhất, rẻ, nhưng mất dữ liệu khi stop/terminate, không tháo ra gắn sang instance khác, không nằm trong AMI.</Takeaway>
@@ -133,24 +133,24 @@ Cài đặt đầy đủ một server ShopViet mất 45 phút. Auto Scaling cầ
 
 <RequirementPicker client:visible items={[
   { need: "Instance hỏng phần cứng phải tự phục hồi, giữ nguyên IP, downtime vài phút", answer: "CloudWatch alarm action: recover",
-    why: "Instance phục hồi giữ instance ID, private IP, Elastic IP và metadata; public IPv4 cũng được giữ. Chỉ áp dụng cho instance dùng EBS.", refs: ["exam3_q38", "exam3_q57"] },
+    why: "Instance phục hồi giữ instance ID, private IP, Elastic IP và metadata; public IPv4 cũng được giữ. Chỉ áp dụng cho instance dùng EBS." },
   { need: "Ứng dụng thỉnh thoảng treo, khởi động lại là chạy, chờ bản sửa", answer: "CloudWatch alarm action: reboot",
-    why: "Alarm theo dõi health check của instance và tự reboot.", refs: ["exam5_q19"] },
+    why: "Alarm theo dõi health check của instance và tự reboot." },
   { need: "Metric với độ phân giải dưới 2 phút, nhanh và ít bảo trì", answer: "Bật detailed monitoring",
-    why: "Detailed monitoring gửi metric mỗi 1 phút (mặc định 5 phút).", refs: ["exam5_q20"] },
+    why: "Detailed monitoring gửi metric mỗi 1 phút (mặc định 5 phút)." },
   { need: "SSH vào instance từ Console bằng key tạm thời", answer: "EC2 Instance Connect",
-    why: "Đẩy public key tạm thời vào instance rồi SSH qua public IP.", refs: ["exam5_q31"] },
+    why: "Đẩy public key tạm thời vào instance rồi SSH qua public IP." },
   { need: "Bastion host luôn sẵn sàng", answer: "NLB public + bastion trong Auto Scaling group",
-    why: "NLB chuyển tiếp SSH (TCP) tới bastion khỏe; ASG thay bastion hỏng.", refs: ["exam6_q56"] },
+    why: "NLB chuyển tiếp SSH (TCP) tới bastion khỏe; ASG thay bastion hỏng." },
   { need: "Chi phí cao, tìm instance nhàn rỗi và đổi loại instance phù hợp", answer: "Cost Optimization Hub + Compute Optimizer",
-    why: "Tìm instance dùng ít và đề xuất loại instance phù hợp hơn.", refs: ["exam4_q30"] },
+    why: "Tìm instance dùng ít và đề xuất loại instance phù hợp hơn." },
 ]} />
 
 <Takeaway>Hỏng phần cứng: recover (giữ ID, IP). Ứng dụng treo: reboot. Metric từng phút: detailed monitoring.</Takeaway>
 
 </Scene>
 
-<Scene id="challenge" label="Thử thách" title="Đúng về Spot Instance?" questions={["exam3_q51", "exam6_q2", "exam6_q42"]}>
+<Scene id="challenge" label="Thử thách" title="Đúng về Spot Instance?" questions={["exam3_q51", "exam6_q2", "exam6_q42", "exam2_q35", "exam1_q23", "exam4_q1", "exam3_q38", "exam6_q21"]}>
 
 <SortGame client:visible
   bins={[
@@ -170,23 +170,23 @@ Các câu dưới đây viết lại theo đúng dạng câu trong đề (mã c�
 <Quiz client:visible items={[
   { q: "Hệ thống cần 100 instance, trong đó 70 instance chạy liên tục và 30 instance xử lý batch có thể chậm trễ. Cách mua rẻ nhất?",
     opts: ["100 On-Demand", "70 Reserved Instances + 30 Spot", "100 Spot"],
-    a: 1, ref: "exam2_q35",
+    a: 1,
     why: "Phần liên tục dùng RI, phần batch chịu được gián đoạn dùng Spot." },
   { q: "Ứng dụng HPC cần độ trễ mạng thấp nhất giữa các instance. Cấu hình nào?",
     opts: ["Spread placement group", "Cluster placement group", "Trải instance qua 3 AZ"],
-    a: 1, ref: "exam1_q23",
+    a: 1,
     why: "Cluster đặt các instance sát nhau trong một AZ để mạng nhanh nhất." },
   { q: "Cài đặt ứng dụng mất 45 phút, cần instance mới sẵn sàng nhanh, phần cấu hình động thay đổi theo môi trường. Chọn hai cách kết hợp?",
     opts: ["Golden AMI cho phần tĩnh và user data cho phần động", "Chỉ dùng user data cài toàn bộ", "Dùng instance lớn hơn"],
-    a: 0, ref: "exam4_q1",
+    a: 0,
     why: "AMI rút ngắn thời gian cài; user data xử lý phần thay đổi lúc boot." },
   { q: "Ứng dụng chịu được downtime tối đa 10 phút. Cách tự phục hồi rẻ khi instance hỏng?",
     opts: ["CloudWatch alarm recover instance (instance dùng EBS)", "Chạy thêm một instance dự phòng 24/7", "Dùng instance store"],
-    a: 0, ref: "exam3_q38",
+    a: 0,
     why: "Recover đưa instance sang phần cứng khác, giữ nguyên ID và IP; cần instance dùng EBS." },
   { q: "Quy định yêu cầu phần cứng single-tenant. Cách rẻ nhất?",
     opts: ["Dedicated Hosts", "Dedicated Instances", "Cluster placement group"],
-    a: 1, ref: "exam6_q21",
+    a: 1,
     why: "Dedicated Instances đủ yêu cầu single-tenant và rẻ hơn thuê nguyên host." },
 ]} />
 
