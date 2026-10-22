@@ -89,10 +89,12 @@ const docParts = [
   <h1><L vi={title} en={titleEn} /></h1>
   {entry && <p class="lede"><L vi={entry.data.lede} en={entryEn?.data.lede ?? entry.data.lede} /></p>}
   <dl class="meta-row">
-    <div>
-      <dt><T k="shell.importance.label" /></dt>
-      <dd><Importance level={concept.importance} hint /></dd>
-    </div>
+    {!concept.intro && (
+      <div>
+        <dt><T k="shell.importance.label" /></dt>
+        <dd><Importance level={concept.importance} hint /></dd>
+      </div>
+    )}
     {entry && (
       <>
         <div>

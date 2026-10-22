@@ -1,0 +1,85 @@
+---
+title: "Bắt đầu: Bản đồ AWS cho người mới"
+lede: "Bài định hướng trước lộ trình: điện toán đám mây khác gì so với tự vận hành máy chủ, AWS đảm nhận phần việc nào, các nhóm dịch vụ phối hợp ra sao khi ShopViet xử lý một đơn hàng, và cách học trên AWS Thực Chiến."
+minutes: 15
+scenes: 4
+prerequisites: []
+docs:
+  - title: "What is cloud computing?"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/aws-overview/what-is-cloud-computing.html"
+  - title: "Six advantages of cloud computing"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/aws-overview/six-advantages-of-cloud-computing.html"
+  - title: "Types of cloud computing"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/aws-overview/types-of-cloud-computing.html"
+  - title: "Shared responsibility model"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/aws-risk-and-compliance/shared-responsibility-model.html"
+  - title: "Global infrastructure"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/aws-overview/global-infrastructure.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import MapHero from "../../components/scenes/aws-map/MapHero.astro";
+import ResponsibilitySim from "../../components/scenes/aws-map/ResponsibilitySim.tsx";
+import OrderJourney from "../../components/scenes/aws-map/OrderJourney.tsx";
+import GroupSort from "../../components/scenes/aws-map/GroupSort.tsx";
+import SiteTour from "../../components/scenes/aws-map/SiteTour.tsx";
+
+<MapHero />
+
+<Story toc={[
+  { href: "#s1", label: "1 · Ai vận hành phần nào" },
+  { href: "#s2", label: "2 · Hành trình một đơn hàng" },
+  { href: "#s3", label: "3 · Sáu nhóm dịch vụ" },
+  { href: "#s4", label: "4 · Cách học trên site" },
+]}>
+**ShopViet** là cửa hàng trực tuyến đồng hành qua toàn bộ lộ trình. Bài này đi qua hệ thống một lượt ở mức tổng quan: mỗi dịch vụ được nhắc tới chỉ giới thiệu trong một câu, và đều có bài riêng phân tích chi tiết ở các lớp sau.
+</Story>
+
+<Scene id="s1" label="Phần 1/4" title="Ai vận hành phần nào: máy chủ tự quản lý, managed service và serverless">
+
+<p class="scene-intro">Với máy chủ tự mua, doanh nghiệp tự đảm nhận mọi việc từ nguồn điện tới bản vá phần mềm; trên AWS, càng chọn dịch vụ ở mức cao thì AWS càng đảm nhận nhiều phần việc vận hành.</p>
+
+AWS gọi sự phân chia này là **shared responsibility model**: AWS chịu trách nhiệm về hạ tầng cloud, khách hàng chịu trách nhiệm về những gì đặt trên đó. Chọn từng cách triển khai database đơn hàng và quan sát các phần việc chuyển sang AWS.
+
+<ResponsibilitySim client:visible />
+
+<Takeaway>Managed service: AWS vận hành hạ tầng và phần mềm nền, bạn cấu hình và sử dụng. Serverless: không có máy chủ để quản lý, dịch vụ tự mở rộng và tính tiền theo lượng sử dụng. Code và dữ liệu luôn thuộc trách nhiệm của bạn.</Takeaway>
+
+</Scene>
+
+<Scene id="s2" label="Phần 2/4" title="Hành trình một đơn hàng qua các dịch vụ AWS">
+
+<p class="scene-intro">Một thao tác đơn giản của khách hàng đi qua nhiều dịch vụ, mỗi dịch vụ đảm nhận một việc riêng; nắm được đường đi này giúp hiểu vì sao lộ trình chia thành các lớp mạng, tính toán, database và tích hợp.</p>
+
+Mô phỏng tự chạy qua tám bước; có thể tạm dừng và đi từng bước. Mỗi bước dẫn tới bài học phân tích dịch vụ đó.
+
+<OrderJourney client:visible />
+
+<Takeaway>Mạng (Route 53, CloudFront) đưa request tới hệ thống, tính toán (load balancer, EC2, Lambda) xử lý, database (RDS) lưu dữ liệu, và tích hợp (SQS) tách các bước để hệ thống không phải chờ nhau.</Takeaway>
+
+</Scene>
+
+<Scene id="s3" label="Phần 3/4" title="Sáu nhóm dịch vụ và các lớp của lộ trình">
+
+<p class="scene-intro">AWS có hơn hai trăm dịch vụ, nhưng phần lớn thuộc một vài nhóm chức năng; xác định được nhóm của một dịch vụ là bước đầu để biết nó giải quyết vấn đề gì.</p>
+
+Lộ trình học được sắp theo đúng các nhóm này: Lớp 1 Networking, Lớp 2 Security & Identity, Lớp 3 Compute, Lớp 4 Storage, Lớp 5 Database và Lớp 6 Integration, Monitoring & vận hành. Xếp mười hai dịch vụ dưới đây vào nhóm tương ứng.
+
+<GroupSort client:visible />
+
+<Takeaway>Khi gặp một dịch vụ mới, xác định nhóm của nó trước: mạng, bảo mật, tính toán, lưu trữ, database hay tích hợp và vận hành. Nhóm cho biết dịch vụ giải quyết loại vấn đề nào.</Takeaway>
+
+</Scene>
+
+<Scene id="s4" label="Phần 4/4" title="Cách học trên AWS Thực Chiến">
+
+<p class="scene-intro">Mỗi bài học được tổ chức theo cùng một cấu trúc, nên khi đã quen với một phần thì mọi phần khác đều đọc theo cùng cách.</p>
+
+Chọn từng bước để xem thành phần tương ứng trong một phần của bài học.
+
+<SiteTour client:visible />
+
+<Takeaway>Thứ tự học trong mỗi phần: đọc từ khóa, đọc câu mở đầu, thử mô phỏng, ghi nhớ kết luận. Trang Thuật ngữ dùng để tra cứu bất cứ lúc nào. Bài tiếp theo, Global Infrastructure, đi sâu vào Region và Availability Zone.</Takeaway>
+
+</Scene>

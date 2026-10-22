@@ -17,6 +17,8 @@ export interface Concept {
   questions: number;
   /** true when counted from {id}/list_qa.md, false when it is overview.md's keyword estimate. */
   exact: boolean;
+  /** An orientation lesson (INTRO_LESSONS): no importance badge, no question set. */
+  intro: boolean;
 }
 
 /** What the browser gets: no counts from the source material. */
@@ -24,7 +26,7 @@ export interface RoadmapLayer {
   n: number;
   name: string;
   nameEn: string;
-  concepts: (Pick<Concept, "id" | "title" | "titleEn" | "importance"> & {
+  concepts: (Pick<Concept, "id" | "title" | "titleEn" | "importance" | "intro"> & {
     /** Size of the lesson's question set ("Kiểm tra"); 0 when it has none. */
     quiz: number;
   })[];
@@ -41,7 +43,7 @@ export interface Layer {
 // titles and question counts are read from overview.md and list_qa.md at build time
 // (see exam.ts), so the roadmap always matches the exam material.
 export const LAYERS: { n: number; name: string; nameEn: string; ids: string[] }[] = [
-  { n: 0, name: "Nền tảng", nameEn: "Foundations", ids: ["global-infra"] },
+  { n: 0, name: "Nền tảng", nameEn: "Foundations", ids: ["aws-map", "global-infra"] },
   { n: 1, name: "Networking", nameEn: "Networking", ids: ["vpc", "route53", "cloudfront"] },
   { n: 2, name: "Security & Identity", nameEn: "Security & Identity", ids: ["iam", "kms", "security", "cognito"] },
   { n: 3, name: "Compute", nameEn: "Compute", ids: ["ec2", "elb", "asg", "containers", "lambda"] },
@@ -52,13 +54,18 @@ export const LAYERS: { n: number; name: string; nameEn: string; ids: string[] }[
 
 /** English titles where the overview.md title is not already English. */
 export const TITLES_EN: Record<string, string> = {
+  "aws-map": "Start here: an AWS map for newcomers",
   others: "Cost tools + AI/ML + other services",
 };
 
 /** Lessons that are not a row in overview.md. */
 export const EXTRA_TITLES: Record<string, string> = {
+  "aws-map": "Bắt đầu: Bản đồ AWS cho người mới",
   "global-infra": "Global Infrastructure: Region, AZ, Edge",
 };
+
+/** Orientation lessons: they map the services instead of teaching one, so they rank no importance. */
+export const INTRO_LESSONS = new Set(["aws-map"]);
 
 export function findConcept(layers: Layer[], id: string) {
   for (const layer of layers) {

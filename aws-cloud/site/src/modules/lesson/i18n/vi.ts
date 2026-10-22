@@ -59,6 +59,9 @@ export const vi = {
     options: "Phương án",
     optionGroup: "Chọn phương án",
   },
+  awsMap: {
+    heroLabel: "Sáu nhóm dịch vụ AWS quanh hệ thống ShopViet",
+  },
   notFound: {
     title: "Không tìm thấy trang",
     body: "Đường dẫn này không tồn tại hoặc bài học đã được đổi tên. Quay về trang chủ để chọn bài khác.",

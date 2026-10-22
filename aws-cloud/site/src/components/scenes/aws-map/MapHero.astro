@@ -1,0 +1,34 @@
+---
+// Lesson 0 opening visual: the six service groups orbiting ShopViet. CSS-only motion (aws-map.css).
+import "./aws-map.css";
+import L from "../../L.astro";
+
+const GROUPS = [
+  { vi: "Mạng", en: "Networking", c: "#4cc2df" },
+  { vi: "Bảo mật", en: "Security", c: "#b29cff" },
+  { vi: "Tính toán", en: "Compute", c: "#f0a95a" },
+  { vi: "Lưu trữ", en: "Storage", c: "#5ccf94" },
+  { vi: "Database", en: "Database", c: "#7fb0ff" },
+  { vi: "Tích hợp", en: "Integration", c: "#f293b8" },
+].map((g, i, all) => {
+  const a = (i / all.length) * 360 - 90;
+  const r = (a * Math.PI) / 180;
+  return { ...g, a, x: 50 + Math.cos(r) * 36, y: 50 + Math.sin(r) * 36, d: i * 0.43, f: 3 + i * 0.4 };
+});
+---
+<div class="am-hero">
+  <div>
+    <span class="am-hero-eyebrow"><L vi="LỚP 0 · BẮT ĐẦU" en="LAYER 0 · START HERE" /></span>
+    <h2><L vi="Bản đồ AWS cho người mới" en="An AWS map for newcomers" /></h2>
+    <p><L vi="Nhìn toàn cảnh trước khi đi vào từng dịch vụ: cloud khác gì tự vận hành máy chủ, mỗi nhóm dịch vụ làm gì, và một đơn hàng của ShopViet đi qua những đâu." en="See the whole picture before the individual services: how cloud differs from running your own servers, what each group of services does, and where one ShopViet order travels." /></p>
+  </div>
+  <div class="am-orbit" role="img" aria-label="Sáu nhóm dịch vụ AWS quanh hệ thống ShopViet" data-i18n-attr="aria-label:lesson.awsMap.heroLabel">
+    <span class="am-orbit-ring"></span>
+    {GROUPS.map((g) => <span class="am-spoke" style={`--a:${g.a}deg; --c:${g.c}; --d:${g.d}s`}><i></i></span>)}
+    <span class="am-sat"></span>
+    <span class="am-core">ShopViet</span>
+    {GROUPS.map((g) => (
+      <span class="am-orb" style={`left:${g.x.toFixed(1)}%; top:${g.y.toFixed(1)}%; --c:${g.c}; --d:${g.d}s; --f:${g.f}s`}><L vi={g.vi} en={g.en} /></span>
+    ))}
+  </div>
+</div>

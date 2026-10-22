@@ -1,0 +1,85 @@
+---
+title: "Start here: an AWS map for newcomers"
+lede: "An orientation before the study path: how cloud computing differs from running your own servers, which tasks AWS takes over, how the groups of services work together when ShopViet handles an order, and how to study on AWS Thực Chiến."
+minutes: 15
+scenes: 4
+prerequisites: []
+docs:
+  - title: "What is cloud computing?"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/aws-overview/what-is-cloud-computing.html"
+  - title: "Six advantages of cloud computing"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/aws-overview/six-advantages-of-cloud-computing.html"
+  - title: "Types of cloud computing"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/aws-overview/types-of-cloud-computing.html"
+  - title: "Shared responsibility model"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/aws-risk-and-compliance/shared-responsibility-model.html"
+  - title: "Global infrastructure"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/aws-overview/global-infrastructure.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import MapHero from "../../components/scenes/aws-map/MapHero.astro";
+import ResponsibilitySim from "../../components/scenes/aws-map/ResponsibilitySim.tsx";
+import OrderJourney from "../../components/scenes/aws-map/OrderJourney.tsx";
+import GroupSort from "../../components/scenes/aws-map/GroupSort.tsx";
+import SiteTour from "../../components/scenes/aws-map/SiteTour.tsx";
+
+<MapHero />
+
+<Story toc={[
+  { href: "#en-s1", label: "1 · Who runs what" },
+  { href: "#en-s2", label: "2 · An order's journey" },
+  { href: "#en-s3", label: "3 · Six groups of services" },
+  { href: "#en-s4", label: "4 · How to study here" },
+]}>
+**ShopViet** is the online store that runs through the whole study path. This lesson walks through the system once at a high level: each service mentioned gets one sentence here and its own detailed lesson in a later layer.
+</Story>
+
+<Scene id="en-s1" label="Part 1/4" title="Who runs what: self-managed servers, managed services and serverless">
+
+<p class="scene-intro">With servers of its own, a company handles everything from power to software patches; on AWS, the higher-level the service you choose, the more of the operating work AWS takes over.</p>
+
+AWS calls this split the **shared responsibility model**: AWS is responsible for the cloud infrastructure, and the customer for what they put on it. Pick each way of running the order database and watch the tasks move to AWS.
+
+<ResponsibilitySim client:visible />
+
+<Takeaway>Managed service: AWS runs the infrastructure and the underlying software; you configure and use it. Serverless: there is no server to manage, and the service scales and bills for actual usage. Code and data are always your responsibility.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 2/4" title="One order's journey through AWS services">
+
+<p class="scene-intro">A simple customer action passes through several services, each doing one job; knowing this path explains why the study path is split into networking, compute, database and integration layers.</p>
+
+The simulation plays through eight steps on its own; pause it to go step by step. Each step links to the lesson about that service.
+
+<OrderJourney client:visible />
+
+<Takeaway>Networking (Route 53, CloudFront) brings the request in, compute (load balancer, EC2, Lambda) processes it, the database (RDS) stores the data, and integration (SQS) separates the steps so parts of the system do not wait on each other.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 3/4" title="Six groups of services and the study path's layers">
+
+<p class="scene-intro">AWS offers more than two hundred services, but most belong to a few functional groups; knowing a service's group is the first step to knowing what problem it solves.</p>
+
+The study path follows these groups: Layer 1 Networking, Layer 2 Security & Identity, Layer 3 Compute, Layer 4 Storage, Layer 5 Database and Layer 6 Integration, Monitoring & Operations. Sort the twelve services below into their groups.
+
+<GroupSort client:visible />
+
+<Takeaway>When you meet a new service, find its group first: networking, security, compute, storage, database, or integration and operations. The group tells you which kind of problem the service solves.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s4" label="Part 4/4" title="How to study on AWS Thực Chiến">
+
+<p class="scene-intro">Every lesson follows the same structure, so once one section feels familiar, every other section reads the same way.</p>
+
+Pick each step to see the matching part of a lesson section.
+
+<SiteTour client:visible />
+
+<Takeaway>The order inside each section: read the key terms, read the opening sentence, try the simulation, keep the key point. The glossary page is there for lookups at any time. The next lesson, Global Infrastructure, goes deeper into Regions and Availability Zones.</Takeaway>
+
+</Scene>
