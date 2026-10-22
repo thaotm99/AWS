@@ -3,9 +3,19 @@ name: aws-cloud
 on:
   push:
     branches: [master]
-    paths: ["aws-cloud/**", "solution-architect-aws/**/*.md", ".github/workflows/aws-cloud.yml"]
+    paths:
+      - "aws-cloud/**"
+      - "solution-architect-aws/**/*.md"
+      - "solution-architect-aws/*.html"
+      - "solution-architect-aws/translations/**"
+      - ".github/workflows/aws-cloud.yml"
   pull_request:
-    paths: ["aws-cloud/**", "solution-architect-aws/**/*.md", ".github/workflows/aws-cloud.yml"]
+    paths:
+      - "aws-cloud/**"
+      - "solution-architect-aws/**/*.md"
+      - "solution-architect-aws/*.html"
+      - "solution-architect-aws/translations/**"
+      - ".github/workflows/aws-cloud.yml"
   workflow_dispatch:
 
 permissions:
@@ -13,7 +23,8 @@ permissions:
 
 concurrency:
   group: aws-cloud-${{ github.ref }}
-  cancel-in-progress: true
+  # Superseded PR runs are cancelled; every push to master runs to completion.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # The site is deployed by Vercel (aws-cloud/site/vercel.json + middleware.ts Basic Auth).
 # The former S3 + CloudFront deploy job was removed: it published the copyrighted practice-test
@@ -27,12 +38,15 @@ jobs:
       run:
         working-directory: aws-cloud/site
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: aws-cloud/site/package-lock.json
+      - name: Validate Vietnamese translations of practice tests 1-6
+        working-directory: solution-architect-aws/translations
+        run: node tools/validate.mjs 1 2 3 4 5 6
       - run: npm ci
       # No artifact upload: dist/ holds the copyrighted practice tests, and nothing deploys from CI any more.
       - run: npm run build
@@ -44,8 +58,8 @@ jobs:
       run:
         working-directory: aws-cloud/infra
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm

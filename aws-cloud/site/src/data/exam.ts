@@ -1,36 +1,85 @@
 // Build-time only (uses fs): reads the SAA study folder so lessons stay tied to the
 // practice-test questions. Never import this from a client component.
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { EXTRA_TITLES, importanceOf, LAYERS, TITLES_EN, type Layer } from "./curriculum";
+import { SAA_PRACTICE_TEST_FILE } from "../modules/practice/content/QuizHtmlSource";
 
 const STUDY_DIR = resolve(process.cwd(), "../../solution-architect-aws");
-const QUESTION_ID = /^exam[1-6]_q\d{1,2}$/;
+/** A whole list_qa.md line naming one question: "exam3_q41". */
+const QUESTION_ID = /^exam(\d+)_q(\d{1,2})$/;
+/** Anything that looks like a question reference, to catch typos ("exam3-q41", "exam3_q41 ✓"). */
+const LOOKS_LIKE_REF = /exam\s*\d+\s*[_-]?\s*q\s*\d+/i;
 
+let examNumbers: Set<number> | undefined;
+
+/** Exam numbers that have a practice-test file in the study folder. */
+function knownExams(): Set<number> {
+  examNumbers ??= new Set(
+    readdirSync(STUDY_DIR).flatMap((f) => {
+      const m = SAA_PRACTICE_TEST_FILE.exec(f);
+      return m ? [Number(m[1])] : [];
+    }),
+  );
+  return examNumbers;
+}
+
+/**
+ * The question references in {service}/list_qa.md, in file order. A line that looks like a reference
+ * but is not exactly "examN_qM" for an existing test N, or a reference listed twice, fails the build.
+ */
 export function readListQa(id: string): string[] | undefined {
   const file = join(STUDY_DIR, id, "list_qa.md");
   if (!existsSync(file)) return undefined;
-  const refs = readFileSync(file, "utf8")
+  const refs: string[] = [];
+  readFileSync(file, "utf8")
     .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => QUESTION_ID.test(line));
-  const dup = refs.find((ref, i) => refs.indexOf(ref) !== i);
-  if (dup) throw new Error(`${file}: ${dup} is listed twice; remove the duplicate line`);
+    .forEach((raw, i) => {
+      const line = raw.trim();
+      const where = `${file}:${i + 1}`;
+      const m = QUESTION_ID.exec(line);
+      if (!m) {
+        if (LOOKS_LIKE_REF.test(line)) throw new Error(`${where}: "${line}" is not a question reference; write exactly examN_qM on its own line`);
+        return;
+      }
+      if (!knownExams().has(Number(m[1])) || Number(m[2]) < 1) {
+        throw new Error(`${where}: ${line} names a practice test or question that does not exist`);
+      }
+      if (refs.includes(line)) throw new Error(`${where}: ${line} is listed twice; remove the duplicate line`);
+      refs.push(line);
+    });
   return refs;
 }
 
-/** Rows of the service table in overview.md, keyed by folder id. */
-function readOverview(): Map<string, { title: string; estimate: number }> {
-  const rows = new Map<string, { title: string; estimate: number }>();
-  const text = readFileSync(join(STUDY_DIR, "overview.md"), "utf8");
-  for (const line of text.split("\n")) {
-    const cells = line.split("|").map((c) => c.trim());
-    // | Service | Folder | Status | Ngày học | Số câu đề thi |
-    const folder = cells[2]?.match(/^([a-z0-9-]+)\/$/);
-    if (folder && /^\d+$/.test(cells[5] ?? "")) {
-      rows.set(folder[1], { title: cells[1], estimate: Number(cells[5]) });
+const OVERVIEW_COLUMNS = { title: "Service", folder: "Folder", estimate: "Số câu đề thi" };
+
+/**
+ * Rows of the service table in overview.md, keyed by folder id. Columns are found by header name,
+ * so reordering or adding columns is safe. A row without a numeric count still gives its title.
+ */
+function readOverview(): Map<string, { title: string; estimate?: number }> {
+  const rows = new Map<string, { title: string; estimate?: number }>();
+  const file = join(STUDY_DIR, "overview.md");
+  let col: Record<keyof typeof OVERVIEW_COLUMNS, number> | undefined;
+  for (const line of readFileSync(file, "utf8").split("\n")) {
+    if (!line.trim().startsWith("|")) {
+      if (col) break; // end of the service table
+      continue;
     }
+    const cells = line.split("|").map((c) => c.trim());
+    if (!col) {
+      const at = (name: string) => cells.indexOf(name);
+      if (at(OVERVIEW_COLUMNS.folder) < 0) continue;
+      col = { title: at(OVERVIEW_COLUMNS.title), folder: at(OVERVIEW_COLUMNS.folder), estimate: at(OVERVIEW_COLUMNS.estimate) };
+      if (col.title < 0) throw new Error(`${file}: service table has no "${OVERVIEW_COLUMNS.title}" column`);
+      continue;
+    }
+    const folder = cells[col.folder]?.match(/^([a-z0-9-]+)\/$/);
+    if (!folder) continue; // the |---| separator
+    const count = col.estimate < 0 ? "" : (cells[col.estimate] ?? "");
+    rows.set(folder[1], { title: cells[col.title], estimate: /^\d+$/.test(count) ? Number(count) : undefined });
   }
+  if (!col) throw new Error(`${file}: no table with a "${OVERVIEW_COLUMNS.folder}" column`);
   return rows;
 }
 

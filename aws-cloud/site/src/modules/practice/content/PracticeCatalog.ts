@@ -43,6 +43,8 @@ export const CERTIFICATIONS: CertificationConfig[] = [
 
 export class PracticeCatalog {
   private readonly exams = new Map<string, Exam[]>();
+  /** Topic lists by certification id: building one reads every list_qa.md, so it happens once per build. */
+  private readonly topics = new Map<string, TopicConfig[]>();
 
   constructor(private readonly configs: CertificationConfig[]) {}
 
@@ -87,7 +89,9 @@ export class PracticeCatalog {
   }
 
   private topicsOf(config: CertificationConfig): TopicConfig[] {
-    return config.topics?.() ?? [];
+    let topics = this.topics.get(config.id);
+    if (!topics) this.topics.set(config.id, (topics = config.topics?.() ?? []));
+    return topics;
   }
 
   /**
