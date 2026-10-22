@@ -1,0 +1,2002 @@
+{
+  "test": 1,
+  "questions": [
+    {
+      "number": 1,
+      "id": "125222689",
+      "lessons": [
+        "cloudfront",
+        "elb",
+        "asg",
+        "s3",
+        "dynamodb"
+      ],
+      "keywords": [
+        {
+          "keyword": "DynamoDB Accelerator (DAX)",
+          "lesson": "dynamodb",
+          "status": "covered",
+          "where": "dynamodb.mdx#s2"
+        },
+        {
+          "keyword": "CloudFront caching for S3 origin",
+          "lesson": "cloudfront",
+          "status": "covered",
+          "where": "cloudfront.mdx#s1 / global-infra.mdx#s4"
+        },
+        {
+          "keyword": "ElastiCache for Redis OSS",
+          "lesson": "analytics",
+          "status": "covered",
+          "where": "analytics.mdx#s2"
+        },
+        {
+          "keyword": "ElastiCache for Memcached",
+          "lesson": "analytics",
+          "status": "covered",
+          "where": "analytics.mdx#s2"
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "id": "125222657",
+      "lessons": [
+        "global-infra",
+        "ec2",
+        "elb",
+        "asg"
+      ],
+      "keywords": [
+        {
+          "keyword": "Application Load Balancer content-based routing",
+          "lesson": "elb",
+          "status": "covered",
+          "where": "elb.mdx#s3"
+        },
+        {
+          "keyword": "Network Load Balancer",
+          "lesson": "elb",
+          "status": "covered",
+          "where": "elb.mdx#s1"
+        },
+        {
+          "keyword": "Auto Scaling group (replace unhealthy instance)",
+          "lesson": "asg",
+          "status": "covered",
+          "where": "asg.mdx#s4"
+        },
+        {
+          "keyword": "Elastic IP address",
+          "lesson": "ec2",
+          "status": "partial",
+          "where": "ec2.mdx#s4 / Ec2OpsSim"
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "id": "125222743",
+      "lessons": [
+        "rds"
+      ],
+      "keywords": [
+        {
+          "keyword": "Amazon RDS Custom for Oracle",
+          "lesson": "rds",
+          "status": "covered",
+          "where": "rds.mdx#s2 / RdsOpsSim"
+        },
+        {
+          "keyword": "RDS Multi-AZ deployment",
+          "lesson": "rds",
+          "status": "covered",
+          "where": "rds.mdx#s1"
+        },
+        {
+          "keyword": "RDS read replica",
+          "lesson": "rds",
+          "status": "covered",
+          "where": "rds.mdx#s1"
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "id": "125222685",
+      "lessons": [
+        "lambda",
+        "s3",
+        "others"
+      ],
+      "keywords": [
+        {
+          "keyword": "Amazon Comprehend (custom entity recognition)",
+          "lesson": "others",
+          "status": "covered",
+          "where": "others.mdx#s3"
+        },
+        {
+          "keyword": "S3 Event Notification",
+          "lesson": "lambda",
+          "status": "covered",
+          "where": "lambda.mdx#s1"
+        },
+        {
+          "keyword": "Amazon SageMaker",
+          "lesson": "others",
+          "status": "covered",
+          "where": "others.mdx#s3"
+        },
+        {
+          "keyword": "Amazon Transcribe",
+          "lesson": "others",
+          "status": "covered",
+          "where": "others.mdx#s3"
+        },
+        {
+          "keyword": "Amazon Lookout for Vision",
+          "lesson": "others",
+          "status": "missing",
+          "where": ""
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "id": "125222737",
+      "lessons": [
+        "iam",
+        "ec2",
+        "containers",
+        "s3"
+      ],
+      "keywords": [
+        {
+          "keyword": "EKS IAM Roles for Service Accounts (IRSA)",
+          "lesson": "containers",
+          "status": "covered",
+          "where": "containers.mdx#s2 / ContainerJobSim"
+        },
+        {
+          "keyword": "EC2 instance profile",
+          "lesson": "iam",
+          "status": "covered",
+          "where": "iam.mdx#s3"
+        },
+        {
+          "keyword": "Kubernetes RBAC",
+          "lesson": "containers",
+          "status": "missing",
+          "where": ""
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "id": "125222729",
+      "lessons": [
+        "vpc",
+        "security",
+        "ec2",
+        "elb"
+      ],
+      "keywords": [
+        {
+          "keyword": "AWS WAF geo match condition",
+          "lesson": "security",
+          "status": "covered",
+          "where": "security.mdx#s1 / WafSim"
+        },
+        {
+          "keyword": "AWS WAF on Application Load Balancer",
+          "lesson": "security",
+          "status": "covered",
+          "where": "security.mdx#s1 / WafSim"
+        },
+        {
+          "keyword": "CloudFront geo restriction",
+          "lesson": "cloudfront",
+          "status": "covered",
+          "where": "cloudfront.mdx#s3"
+        },
+        {
+          "keyword": "Security group (no geo filtering)",
+          "lesson": "vpc",
+          "status": "covered",
+          "where": "vpc.mdx#s1"
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "id": "125222745",
+      "lessons": [
+        "rds",
+        "dynamodb"
+      ],
+      "keywords": [
+        {
+          "keyword": "Aurora Global Database",
+          "lesson": "rds",
+          "status": "covered",
+          "where": "rds.mdx#s3"
+        },
+        {
+          "keyword": "DynamoDB global table",
+          "lesson": "dynamodb",
+          "status": "covered",
+          "where": "dynamodb.mdx#s5"
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "id": "125222699",
+      "lessons": [
+        "s3"
+      ],
+      "keywords": [
+        {
+          "keyword": "S3 One Zone-IA",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s1"
+        },
+        {
+          "keyword": "S3 Lifecycle minimum 30 days before transition to IA",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s1 / LifecycleValidator"
+        },
+        {
+          "keyword": "S3 Lifecycle rule",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s1 / LifecycleValidator"
+        }
+      ]
+    },
+    {
+      "number": 9,
+      "id": "125222717",
+      "lessons": [
+        "vpc",
+        "lambda",
+        "storage"
+      ],
+      "keywords": [
+        {
+          "keyword": "EFS cross-account access (file system policy)",
+          "lesson": "storage",
+          "status": "covered",
+          "where": "storage.mdx#s1"
+        },
+        {
+          "keyword": "EFS access point",
+          "lesson": "storage",
+          "status": "missing",
+          "where": ""
+        },
+        {
+          "keyword": "Lambda mounting EFS",
+          "lesson": "lambda",
+          "status": "missing",
+          "where": ""
+        },
+        {
+          "keyword": "VPC peering",
+          "lesson": "vpc",
+          "status": "covered",
+          "where": "vpc.mdx#s5"
+        },
+        {
+          "keyword": "Lambda layer",
+          "lesson": "lambda",
+          "status": "partial",
+          "where": "lambda.mdx#challenge"
+        },
+        {
+          "keyword": "S3 Access Points",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s3"
+        },
+        {
+          "keyword": "AWS DataSync",
+          "lesson": "storage-migration",
+          "status": "covered",
+          "where": "storage-migration.mdx#s2"
+        }
+      ]
+    },
+    {
+      "number": 10,
+      "id": "125222703",
+      "lessons": [
+        "iam",
+        "cognito"
+      ],
+      "keywords": [
+        {
+          "keyword": "AWS IAM Identity Center permission set",
+          "lesson": "iam",
+          "status": "covered",
+          "where": "cognito.mdx#s2"
+        },
+        {
+          "keyword": "AWS Directory Service AD Connector",
+          "lesson": "cognito",
+          "status": "covered",
+          "where": "cognito.mdx#s2"
+        },
+        {
+          "keyword": "AWS Managed Microsoft AD (trust relationship)",
+          "lesson": "cognito",
+          "status": "covered",
+          "where": "cognito.mdx#s2 / challenge"
+        },
+        {
+          "keyword": "SAML 2.0 federation",
+          "lesson": "iam",
+          "status": "missing",
+          "where": ""
+        },
+        {
+          "keyword": "AWS Control Tower",
+          "lesson": "iam",
+          "status": "covered",
+          "where": "iam.mdx#s4 / OrgGuardSim"
+        }
+      ]
+    },
+    {
+      "number": 11,
+      "id": "125222669",
+      "lessons": [
+        "containers",
+        "lambda"
+      ],
+      "keywords": [
+        {
+          "keyword": "Amazon ECS on AWS Fargate",
+          "lesson": "containers",
+          "status": "covered",
+          "where": "containers.mdx#s1"
+        },
+        {
+          "keyword": "Amazon API Gateway REST API with Lambda",
+          "lesson": "lambda",
+          "status": "covered",
+          "where": "lambda.mdx#s3"
+        },
+        {
+          "keyword": "Lambda 15-minute timeout limit",
+          "lesson": "lambda",
+          "status": "covered",
+          "where": "lambda.mdx#s2"
+        },
+        {
+          "keyword": "Amazon EKS Anywhere",
+          "lesson": "containers",
+          "status": "partial",
+          "where": "containers.mdx#s2"
+        },
+        {
+          "keyword": "Amazon Lightsail",
+          "lesson": "others",
+          "status": "missing",
+          "where": ""
+        },
+        {
+          "keyword": "EKS self-managed node group",
+          "lesson": "containers",
+          "status": "covered",
+          "where": "containers.mdx#s1"
+        }
+      ]
+    },
+    {
+      "number": 12,
+      "id": "125222641",
+      "lessons": [
+        "vpc",
+        "iam",
+        "ec2",
+        "storage"
+      ],
+      "keywords": [
+        {
+          "keyword": "EFS security group (mount target)",
+          "lesson": "storage",
+          "status": "covered",
+          "where": "storage.mdx#s3"
+        },
+        {
+          "keyword": "EFS IAM authorization policy",
+          "lesson": "storage",
+          "status": "covered",
+          "where": "storage.mdx#s3"
+        },
+        {
+          "keyword": "Network ACL (subnet level)",
+          "lesson": "vpc",
+          "status": "covered",
+          "where": "vpc.mdx#s1 / challenge"
+        },
+        {
+          "keyword": "Amazon GuardDuty",
+          "lesson": "security",
+          "status": "covered",
+          "where": "security.mdx#s2"
+        }
+      ]
+    },
+    {
+      "number": 13,
+      "id": "125222761",
+      "lessons": [
+        "messaging"
+      ],
+      "keywords": [
+        {
+          "keyword": "SQS FIFO queue (exactly-once)",
+          "lesson": "messaging",
+          "status": "covered",
+          "where": "messaging.mdx#s3 / FifoSim"
+        },
+        {
+          "keyword": "SQS standard queue (at-least-once)",
+          "lesson": "messaging",
+          "status": "covered",
+          "where": "messaging.mdx#s3 / FifoSim"
+        },
+        {
+          "keyword": "EventBridge at-least-once delivery",
+          "lesson": "messaging",
+          "status": "partial",
+          "where": "messaging.mdx#s4"
+        }
+      ]
+    },
+    {
+      "number": 14,
+      "id": "125222749",
+      "lessons": [
+        "ec2",
+        "containers",
+        "storage"
+      ],
+      "keywords": [
+        {
+          "keyword": "ECS EC2 launch type pricing (EC2 + EBS)",
+          "lesson": "containers",
+          "status": "covered",
+          "where": "containers.mdx#s1"
+        },
+        {
+          "keyword": "Fargate pricing (vCPU and memory)",
+          "lesson": "containers",
+          "status": "covered",
+          "where": "containers.mdx#s1"
+        }
+      ]
+    },
+    {
+      "number": 15,
+      "id": "125222767",
+      "lessons": [
+        "s3",
+        "messaging"
+      ],
+      "keywords": [
+        {
+          "keyword": "S3 Standard-IA",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s1 / messaging.mdx#s4"
+        },
+        {
+          "keyword": "S3 Intelligent-Tiering",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s1"
+        },
+        {
+          "keyword": "S3 Glacier Deep Archive",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s1 / LifecycleValidator"
+        },
+        {
+          "keyword": "AWS Step Functions",
+          "lesson": "messaging",
+          "status": "covered",
+          "where": "messaging.mdx#s4"
+        }
+      ]
+    },
+    {
+      "number": 16,
+      "id": "125222655",
+      "lessons": [
+        "iam",
+        "monitoring"
+      ],
+      "keywords": [
+        {
+          "keyword": "IAM MFA for privileged users",
+          "lesson": "iam",
+          "status": "covered",
+          "where": "iam.mdx#confuse / IamMythsSim"
+        },
+        {
+          "keyword": "CloudTrail logging IAM actions",
+          "lesson": "monitoring",
+          "status": "covered",
+          "where": "monitoring.mdx#s4"
+        },
+        {
+          "keyword": "IAM least privilege",
+          "lesson": "iam",
+          "status": "partial",
+          "where": "iam.mdx#s3"
+        },
+        {
+          "keyword": "IAM role for EC2 instead of access keys",
+          "lesson": "iam",
+          "status": "covered",
+          "where": "iam.mdx#s3"
+        }
+      ]
+    },
+    {
+      "number": 17,
+      "id": "125222645",
+      "lessons": [
+        "iam"
+      ],
+      "keywords": [
+        {
+          "keyword": "IAM cross-account role (AssumeRole)",
+          "lesson": "iam",
+          "status": "covered",
+          "where": "iam.mdx#s3"
+        },
+        {
+          "keyword": "STS temporary credentials",
+          "lesson": "iam",
+          "status": "covered",
+          "where": "iam.mdx#s3"
+        }
+      ]
+    },
+    {
+      "number": 18,
+      "id": "125222693",
+      "lessons": [
+        "global-infra",
+        "s3"
+      ],
+      "keywords": [
+        {
+          "keyword": "S3 Transfer Acceleration",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s5 / UploadSim"
+        },
+        {
+          "keyword": "S3 multipart upload",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s5 / UploadSim"
+        },
+        {
+          "keyword": "AWS Direct Connect",
+          "lesson": "vpc",
+          "status": "covered",
+          "where": "vpc.mdx#s6"
+        },
+        {
+          "keyword": "AWS Site-to-Site VPN",
+          "lesson": "vpc",
+          "status": "covered",
+          "where": "vpc.mdx#s6"
+        },
+        {
+          "keyword": "AWS Global Accelerator",
+          "lesson": "global-infra",
+          "status": "covered",
+          "where": "global-infra.mdx#s5"
+        }
+      ]
+    },
+    {
+      "number": 19,
+      "id": "125222681",
+      "lessons": [
+        "s3"
+      ],
+      "keywords": [
+        {
+          "keyword": "S3 Lifecycle supported transitions (waterfall)",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s1 / LifecycleValidator"
+        }
+      ]
+    },
+    {
+      "number": 20,
+      "id": "125222651",
+      "lessons": [
+        "iam",
+        "s3"
+      ],
+      "keywords": [
+        {
+          "keyword": "S3 Versioning (delete marker)",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s2 / DeleteGuardSim"
+        },
+        {
+          "keyword": "S3 MFA Delete",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s2 / DeleteGuardSim"
+        }
+      ]
+    },
+    {
+      "number": 21,
+      "id": "125222661",
+      "lessons": [
+        "ec2"
+      ],
+      "keywords": [
+        {
+          "keyword": "EC2 Spot Instance",
+          "lesson": "ec2",
+          "status": "covered",
+          "where": "ec2.mdx#s1 / Ec2CostSim"
+        },
+        {
+          "keyword": "Lambda 15-minute timeout limit",
+          "lesson": "lambda",
+          "status": "covered",
+          "where": "lambda.mdx#s2"
+        },
+        {
+          "keyword": "EC2 Reserved Instance",
+          "lesson": "ec2",
+          "status": "covered",
+          "where": "ec2.mdx#s1 / PurchaseMixSim"
+        }
+      ]
+    },
+    {
+      "number": 22,
+      "id": "125222765",
+      "lessons": [
+        "kms",
+        "s3"
+      ],
+      "keywords": [
+        {
+          "keyword": "SSE-KMS (audit trail via CloudTrail)",
+          "lesson": "kms",
+          "status": "covered",
+          "where": "kms.mdx#s1 / challenge"
+        },
+        {
+          "keyword": "SSE-S3",
+          "lesson": "kms",
+          "status": "covered",
+          "where": "kms.mdx#s1 / challenge"
+        },
+        {
+          "keyword": "SSE-C",
+          "lesson": "kms",
+          "status": "covered",
+          "where": "kms.mdx#s1 / challenge"
+        },
+        {
+          "keyword": "S3 client-side encryption",
+          "lesson": "kms",
+          "status": "covered",
+          "where": "s3.mdx#s4 / EncryptionSim"
+        }
+      ]
+    },
+    {
+      "number": 23,
+      "id": "125222705",
+      "lessons": [
+        "ec2"
+      ],
+      "keywords": [
+        {
+          "keyword": "EC2 cluster placement group",
+          "lesson": "ec2",
+          "status": "covered",
+          "where": "ec2.mdx#s3 / Ec2NetSim"
+        },
+        {
+          "keyword": "EC2 partition placement group",
+          "lesson": "ec2",
+          "status": "missing",
+          "where": ""
+        },
+        {
+          "keyword": "EC2 spread placement group",
+          "lesson": "ec2",
+          "status": "partial",
+          "where": "ec2.mdx#challenge"
+        }
+      ]
+    },
+    {
+      "number": 24,
+      "id": "125222659",
+      "lessons": [
+        "storage"
+      ],
+      "keywords": [
+        {
+          "keyword": "Amazon FSx for Lustre (S3 integration)",
+          "lesson": "storage",
+          "status": "covered",
+          "where": "storage.mdx#s4 / FsxSim"
+        },
+        {
+          "keyword": "Amazon FSx for Windows File Server",
+          "lesson": "storage",
+          "status": "covered",
+          "where": "storage.mdx#s4 / FsxSim"
+        },
+        {
+          "keyword": "Amazon EMR",
+          "lesson": "analytics",
+          "status": "covered",
+          "where": "analytics.mdx#s3"
+        },
+        {
+          "keyword": "AWS Glue",
+          "lesson": "analytics",
+          "status": "covered",
+          "where": "analytics.mdx#s3"
+        }
+      ]
+    },
+    {
+      "number": 25,
+      "id": "125222763",
+      "lessons": [
+        "iam"
+      ],
+      "keywords": [
+        {
+          "keyword": "IAM permissions boundary",
+          "lesson": "iam",
+          "status": "covered",
+          "where": "iam.mdx#s2 / PolicyEvaluator"
+        },
+        {
+          "keyword": "IAM root user best practice",
+          "lesson": "iam",
+          "status": "covered",
+          "where": "iam.mdx#confuse / IamMythsSim"
+        }
+      ]
+    },
+    {
+      "number": 26,
+      "id": "125222675",
+      "lessons": [
+        "s3",
+        "analytics"
+      ],
+      "keywords": [
+        {
+          "keyword": "Amazon Redshift Serverless",
+          "lesson": "analytics",
+          "status": "covered",
+          "where": "analytics.mdx#s3 / DataJobSim"
+        },
+        {
+          "keyword": "Amazon Redshift ML",
+          "lesson": "analytics",
+          "status": "covered",
+          "where": "analytics.mdx#s3 / DataJobSim"
+        },
+        {
+          "keyword": "Amazon Redshift (MPP data warehouse)",
+          "lesson": "analytics",
+          "status": "covered",
+          "where": "analytics.mdx#s3"
+        },
+        {
+          "keyword": "AWS Glue ETL job",
+          "lesson": "analytics",
+          "status": "covered",
+          "where": "analytics.mdx#s3 / DataJobSim"
+        },
+        {
+          "keyword": "Amazon EMR",
+          "lesson": "analytics",
+          "status": "covered",
+          "where": "analytics.mdx#s3"
+        },
+        {
+          "keyword": "Amazon Athena",
+          "lesson": "analytics",
+          "status": "covered",
+          "where": "analytics.mdx#s3 / DataJobSim"
+        },
+        {
+          "keyword": "AWS Glue Data Catalog",
+          "lesson": "analytics",
+          "status": "covered",
+          "where": "analytics.mdx#s3 / DataJobSim"
+        },
+        {
+          "keyword": "Amazon Aurora machine learning",
+          "lesson": "rds",
+          "status": "missing",
+          "where": ""
+        }
+      ]
+    },
+    {
+      "number": 27,
+      "id": "125222751",
+      "lessons": [
+        "global-infra",
+        "iam",
+        "containers",
+        "monitoring",
+        "others"
+      ],
+      "keywords": [
+        {
+          "keyword": "AWS Outposts",
+          "lesson": "others",
+          "status": "covered",
+          "where": "others.mdx#s4 / global-infra.mdx#deep / monitoring.mdx#s3"
+        },
+        {
+          "keyword": "Amazon EKS Anywhere",
+          "lesson": "containers",
+          "status": "partial",
+          "where": "containers.mdx#s2"
+        },
+        {
+          "keyword": "AWS Local Zones",
+          "lesson": "global-infra",
+          "status": "partial",
+          "where": "monitoring.mdx#s3"
+        },
+        {
+          "keyword": "AWS Snowball Edge Compute Optimized",
+          "lesson": "storage-migration",
+          "status": "covered",
+          "where": "others.mdx#s4 / storage-migration.mdx#s2"
+        },
+        {
+          "keyword": "AWS Direct Connect",
+          "lesson": "vpc",
+          "status": "covered",
+          "where": "vpc.mdx#s6"
+        }
+      ]
+    },
+    {
+      "number": 28,
+      "id": "125222747",
+      "lessons": [
+        "s3"
+      ],
+      "keywords": [
+        {
+          "keyword": "S3 Standard (no minimum storage duration, no retrieval fee)",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s1"
+        },
+        {
+          "keyword": "S3 Glacier Instant Retrieval (90-day minimum)",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s1"
+        },
+        {
+          "keyword": "S3 Standard-IA 30-day minimum storage charge",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s1 / LifecycleValidator"
+        }
+      ]
+    },
+    {
+      "number": 29,
+      "id": "125222727",
+      "lessons": [
+        "dynamodb",
+        "analytics"
+      ],
+      "keywords": [
+        {
+          "keyword": "ElastiCache for Redis OSS (leaderboard)",
+          "lesson": "analytics",
+          "status": "covered",
+          "where": "analytics.mdx#s1 / analytics.mdx#s2"
+        },
+        {
+          "keyword": "DynamoDB Accelerator (DAX)",
+          "lesson": "dynamodb",
+          "status": "covered",
+          "where": "dynamodb.mdx#s2"
+        },
+        {
+          "keyword": "Amazon Neptune",
+          "lesson": "analytics",
+          "status": "covered",
+          "where": "analytics.mdx#s3 / DataJobSim"
+        },
+        {
+          "keyword": "DynamoDB is not in-memory",
+          "lesson": "dynamodb",
+          "status": "covered",
+          "where": "dynamodb.mdx#s2"
+        }
+      ]
+    },
+    {
+      "number": 30,
+      "id": "125222653",
+      "lessons": [
+        "ec2",
+        "elb",
+        "asg"
+      ],
+      "keywords": [
+        {
+          "keyword": "Auto Scaling target tracking scaling policy",
+          "lesson": "asg",
+          "status": "covered",
+          "where": "asg.mdx#s1 / ScalingPolicySim"
+        },
+        {
+          "keyword": "Auto Scaling step scaling policy",
+          "lesson": "asg",
+          "status": "missing",
+          "where": ""
+        },
+        {
+          "keyword": "Auto Scaling simple scaling policy",
+          "lesson": "asg",
+          "status": "missing",
+          "where": ""
+        }
+      ]
+    },
+    {
+      "number": 31,
+      "id": "125222721",
+      "lessons": [
+        "iam"
+      ],
+      "keywords": [
+        {
+          "keyword": "IAM root user MFA",
+          "lesson": "iam",
+          "status": "covered",
+          "where": "iam.mdx#confuse / IamMythsSim"
+        },
+        {
+          "keyword": "IAM root user access keys (do not create)",
+          "lesson": "iam",
+          "status": "covered",
+          "where": "iam.mdx#confuse / IamMythsSim"
+        }
+      ]
+    },
+    {
+      "number": 32,
+      "id": "125222647",
+      "lessons": [
+        "ec2",
+        "asg"
+      ],
+      "keywords": [
+        {
+          "keyword": "Auto Scaling Standby state",
+          "lesson": "asg",
+          "status": "covered",
+          "where": "asg.mdx#s4 / MaintenanceSim"
+        },
+        {
+          "keyword": "Auto Scaling suspend ReplaceUnhealthy process",
+          "lesson": "asg",
+          "status": "covered",
+          "where": "asg.mdx#s4 / MaintenanceSim"
+        }
+      ]
+    },
+    {
+      "number": 33,
+      "id": "125222723",
+      "lessons": [
+        "lambda",
+        "dynamodb",
+        "messaging"
+      ],
+      "keywords": [
+        {
+          "keyword": "SQS with Lambda event source mapping (batch)",
+          "lesson": "lambda",
+          "status": "covered",
+          "where": "lambda.mdx#s1 / messaging.mdx#s1"
+        },
+        {
+          "keyword": "DynamoDB auto scaling / on-demand capacity",
+          "lesson": "dynamodb",
+          "status": "covered",
+          "where": "dynamodb.mdx#s2"
+        },
+        {
+          "keyword": "Kinesis Data Firehose destinations (no DynamoDB)",
+          "lesson": "kinesis",
+          "status": "covered",
+          "where": "kinesis.mdx#s3"
+        },
+        {
+          "keyword": "Kinesis Data Streams (consumer, shard provisioning)",
+          "lesson": "kinesis",
+          "status": "covered",
+          "where": "kinesis.mdx#s1 / ShardStreamSim"
+        }
+      ]
+    },
+    {
+      "number": 34,
+      "id": "125222679",
+      "lessons": [
+        "messaging"
+      ],
+      "keywords": [
+        {
+          "keyword": "SQS FIFO throughput (300 msg/s, 3000 with batching)",
+          "lesson": "messaging",
+          "status": "covered",
+          "where": "messaging.mdx#s3 / FifoBatchCalc"
+        },
+        {
+          "keyword": "SQS FIFO ordering",
+          "lesson": "messaging",
+          "status": "covered",
+          "where": "messaging.mdx#s3 / FifoSim"
+        }
+      ]
+    },
+    {
+      "number": 35,
+      "id": "125222643",
+      "lessons": [
+        "storage-migration"
+      ],
+      "keywords": [
+        {
+          "keyword": "AWS Storage Gateway S3 File Gateway",
+          "lesson": "storage-migration",
+          "status": "covered",
+          "where": "storage-migration.mdx#s1"
+        },
+        {
+          "keyword": "AWS Storage Gateway Volume Gateway (cached mode)",
+          "lesson": "storage-migration",
+          "status": "covered",
+          "where": "storage-migration.mdx#s1"
+        },
+        {
+          "keyword": "EFS lifecycle management (Infrequent Access)",
+          "lesson": "storage",
+          "status": "covered",
+          "where": "storage.mdx#s3"
+        },
+        {
+          "keyword": "AWS DataSync",
+          "lesson": "storage-migration",
+          "status": "covered",
+          "where": "storage-migration.mdx#s2"
+        },
+        {
+          "keyword": "S3 Lifecycle rule",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s1"
+        }
+      ]
+    },
+    {
+      "number": 36,
+      "id": "125222731",
+      "lessons": [
+        "security",
+        "ec2",
+        "s3"
+      ],
+      "keywords": [
+        {
+          "keyword": "Amazon GuardDuty (S3 malicious activity detection)",
+          "lesson": "security",
+          "status": "covered",
+          "where": "security.mdx#s2"
+        },
+        {
+          "keyword": "Amazon Inspector (EC2 vulnerability scanning)",
+          "lesson": "security",
+          "status": "covered",
+          "where": "security.mdx#s2"
+        }
+      ]
+    },
+    {
+      "number": 37,
+      "id": "125222733",
+      "lessons": [
+        "vpc"
+      ],
+      "keywords": [
+        {
+          "keyword": "AWS Direct Connect plus VPN (IPsec over DX)",
+          "lesson": "vpc",
+          "status": "covered",
+          "where": "vpc.mdx#s6"
+        },
+        {
+          "keyword": "AWS Site-to-Site VPN",
+          "lesson": "vpc",
+          "status": "covered",
+          "where": "vpc.mdx#s6"
+        },
+        {
+          "keyword": "AWS Transit Gateway",
+          "lesson": "vpc",
+          "status": "covered",
+          "where": "vpc.mdx#s5"
+        }
+      ]
+    },
+    {
+      "number": 38,
+      "id": "125222677",
+      "lessons": [
+        "route53",
+        "cloudfront"
+      ],
+      "keywords": [
+        {
+          "keyword": "Route 53 geolocation routing",
+          "lesson": "route53",
+          "status": "covered",
+          "where": "route53.mdx#s3"
+        },
+        {
+          "keyword": "CloudFront geo restriction",
+          "lesson": "cloudfront",
+          "status": "covered",
+          "where": "cloudfront.mdx#s3"
+        },
+        {
+          "keyword": "Route 53 latency-based routing",
+          "lesson": "route53",
+          "status": "covered",
+          "where": "route53.mdx#s3"
+        },
+        {
+          "keyword": "Route 53 weighted routing",
+          "lesson": "route53",
+          "status": "covered",
+          "where": "route53.mdx#s3"
+        },
+        {
+          "keyword": "Route 53 failover routing",
+          "lesson": "route53",
+          "status": "covered",
+          "where": "route53.mdx#s3"
+        }
+      ]
+    },
+    {
+      "number": 39,
+      "id": "125222687",
+      "lessons": [
+        "vpc",
+        "elb",
+        "rds"
+      ],
+      "keywords": [
+        {
+          "keyword": "AWS PrivateLink (endpoint service behind NLB)",
+          "lesson": "vpc",
+          "status": "covered",
+          "where": "vpc.mdx#s4"
+        },
+        {
+          "keyword": "VPC interface endpoint",
+          "lesson": "vpc",
+          "status": "covered",
+          "where": "vpc.mdx#s4"
+        },
+        {
+          "keyword": "VPC peering (no transitive routing)",
+          "lesson": "vpc",
+          "status": "covered",
+          "where": "vpc.mdx#s5"
+        },
+        {
+          "keyword": "NAT gateway",
+          "lesson": "vpc",
+          "status": "covered",
+          "where": "vpc.mdx#s3"
+        },
+        {
+          "keyword": "AWS Transit Gateway",
+          "lesson": "vpc",
+          "status": "covered",
+          "where": "vpc.mdx#s5"
+        },
+        {
+          "keyword": "RDS Proxy",
+          "lesson": "rds",
+          "status": "covered",
+          "where": "rds.mdx#s2 / RdsOpsSim"
+        }
+      ]
+    },
+    {
+      "number": 40,
+      "id": "125222735",
+      "lessons": [
+        "s3"
+      ],
+      "keywords": [
+        {
+          "keyword": "S3 Transfer Acceleration pricing (pay only when accelerated)",
+          "lesson": "s3",
+          "status": "partial",
+          "where": "s3.mdx#s5 / UploadSim"
+        },
+        {
+          "keyword": "Data transfer in from internet is free",
+          "lesson": "global-infra",
+          "status": "missing",
+          "where": ""
+        }
+      ]
+    },
+    {
+      "number": 41,
+      "id": "125222753",
+      "lessons": [
+        "global-infra",
+        "ec2"
+      ],
+      "keywords": [
+        {
+          "keyword": "AMI copy across Regions (creates snapshot)",
+          "lesson": "global-infra",
+          "status": "covered",
+          "where": "global-infra.mdx#s1 / AmiCopySim / challenge"
+        },
+        {
+          "keyword": "EBS snapshot (Regional resource)",
+          "lesson": "global-infra",
+          "status": "covered",
+          "where": "global-infra.mdx#s1 / AmiCopySim"
+        }
+      ]
+    },
+    {
+      "number": 42,
+      "id": "125222701",
+      "lessons": [
+        "global-infra",
+        "vpc",
+        "storage"
+      ],
+      "keywords": [
+        {
+          "keyword": "EFS access via inter-Region VPC peering",
+          "lesson": "global-infra",
+          "status": "covered",
+          "where": "global-infra.mdx#confuse / ScopeExplorer / GlobalMythsSim"
+        },
+        {
+          "keyword": "Amazon EFS (Regional, multi-AZ)",
+          "lesson": "storage",
+          "status": "covered",
+          "where": "storage.mdx#s1 / SharedStorageSim"
+        }
+      ]
+    },
+    {
+      "number": 43,
+      "id": "125222663",
+      "lessons": [
+        "ec2",
+        "storage"
+      ],
+      "keywords": [
+        {
+          "keyword": "EC2 instance store",
+          "lesson": "ec2",
+          "status": "covered",
+          "where": "ec2.mdx#s4 / Ec2OpsSim / challenge"
+        },
+        {
+          "keyword": "EBS Provisioned IOPS SSD (io1/io2)",
+          "lesson": "storage",
+          "status": "covered",
+          "where": "storage.mdx#s2 / VolumeChooser"
+        },
+        {
+          "keyword": "Amazon EFS",
+          "lesson": "storage",
+          "status": "covered",
+          "where": "storage.mdx#s1"
+        }
+      ]
+    },
+    {
+      "number": 44,
+      "id": "125222707",
+      "lessons": [
+        "ec2"
+      ],
+      "keywords": [
+        {
+          "keyword": "EBS st1/sc1 cannot be boot volume",
+          "lesson": "storage",
+          "status": "covered",
+          "where": "storage.mdx#s2 / VolumeChooser / challenge"
+        },
+        {
+          "keyword": "EBS gp2/gp3 volume",
+          "lesson": "storage",
+          "status": "covered",
+          "where": "storage.mdx#s2 / VolumeChooser"
+        },
+        {
+          "keyword": "EC2 instance store (boot volume)",
+          "lesson": "ec2",
+          "status": "partial",
+          "where": "ec2.mdx#s4"
+        }
+      ]
+    },
+    {
+      "number": 45,
+      "id": "125222683",
+      "lessons": [
+        "ec2",
+        "asg"
+      ],
+      "keywords": [
+        {
+          "keyword": "Auto Scaling scheduled action",
+          "lesson": "asg",
+          "status": "covered",
+          "where": "asg.mdx#s1 / ScalingPolicySim"
+        },
+        {
+          "keyword": "Auto Scaling desired capacity vs min/max",
+          "lesson": "asg",
+          "status": "partial",
+          "where": "asg.mdx#s1 / ScalingPolicySim"
+        },
+        {
+          "keyword": "Auto Scaling target tracking scaling policy",
+          "lesson": "asg",
+          "status": "covered",
+          "where": "asg.mdx#s1"
+        }
+      ]
+    },
+    {
+      "number": 46,
+      "id": "125222691",
+      "lessons": [
+        "s3",
+        "storage"
+      ],
+      "keywords": [
+        {
+          "keyword": "EBS pricing (provisioned capacity)",
+          "lesson": "storage",
+          "status": "covered",
+          "where": "storage.mdx#s1 / SharedStorageSim"
+        },
+        {
+          "keyword": "EFS Standard pricing (per GB used)",
+          "lesson": "storage",
+          "status": "covered",
+          "where": "storage.mdx#s1 / SharedStorageSim"
+        },
+        {
+          "keyword": "Relative per-GB price S3 Standard vs EFS vs EBS",
+          "lesson": "storage",
+          "status": "partial",
+          "where": "storage.mdx#s1"
+        }
+      ]
+    },
+    {
+      "number": 47,
+      "id": "125222755",
+      "lessons": [
+        "storage-migration",
+        "rds"
+      ],
+      "keywords": [
+        {
+          "keyword": "Babelfish for Aurora PostgreSQL",
+          "lesson": "rds",
+          "status": "covered",
+          "where": "storage-migration.mdx#s3"
+        },
+        {
+          "keyword": "AWS Schema Conversion Tool (SCT)",
+          "lesson": "storage-migration",
+          "status": "covered",
+          "where": "storage-migration.mdx#s3"
+        },
+        {
+          "keyword": "AWS Database Migration Service (DMS)",
+          "lesson": "storage-migration",
+          "status": "covered",
+          "where": "storage-migration.mdx#s3"
+        },
+        {
+          "keyword": "Aurora Global Database",
+          "lesson": "rds",
+          "status": "covered",
+          "where": "rds.mdx#s3"
+        },
+        {
+          "keyword": "AWS Glue (ETL, not query translation)",
+          "lesson": "analytics",
+          "status": "covered",
+          "where": "analytics.mdx#s3"
+        }
+      ]
+    },
+    {
+      "number": 48,
+      "id": "125222757",
+      "lessons": [
+        "ec2",
+        "elb"
+      ],
+      "keywords": [
+        {
+          "keyword": "ALB path-based routing",
+          "lesson": "elb",
+          "status": "covered",
+          "where": "elb.mdx#s3 / AlbRuleSim"
+        },
+        {
+          "keyword": "ALB host-based routing",
+          "lesson": "elb",
+          "status": "covered",
+          "where": "elb.mdx#s3 / AlbRuleSim"
+        },
+        {
+          "keyword": "ALB HTTP header-based routing",
+          "lesson": "elb",
+          "status": "covered",
+          "where": "elb.mdx#s1 / LbTypeSim"
+        },
+        {
+          "keyword": "ALB query string parameter-based routing",
+          "lesson": "elb",
+          "status": "missing",
+          "where": ""
+        }
+      ]
+    },
+    {
+      "number": 49,
+      "id": "125222637",
+      "lessons": [
+        "lambda"
+      ],
+      "keywords": [
+        {
+          "keyword": "API Gateway REST API (stateless)",
+          "lesson": "lambda",
+          "status": "covered",
+          "where": "lambda.mdx#s3"
+        },
+        {
+          "keyword": "API Gateway WebSocket API (stateful, full-duplex)",
+          "lesson": "lambda",
+          "status": "covered",
+          "where": "lambda.mdx#s3"
+        }
+      ]
+    },
+    {
+      "number": 50,
+      "id": "125222725",
+      "lessons": [
+        "lambda",
+        "messaging"
+      ],
+      "keywords": [
+        {
+          "keyword": "Lambda account concurrency quota (1000 per Region)",
+          "lesson": "lambda",
+          "status": "covered",
+          "where": "lambda.mdx#s2 / LambdaRunSim"
+        },
+        {
+          "keyword": "Amazon SNS invoking Lambda",
+          "lesson": "messaging",
+          "status": "covered",
+          "where": "messaging.mdx#s4"
+        }
+      ]
+    },
+    {
+      "number": 51,
+      "id": "125222665",
+      "lessons": [
+        "s3"
+      ],
+      "keywords": [
+        {
+          "keyword": "S3 request rate per prefix (3,500 PUT / 5,500 GET)",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s5 / challenge"
+        },
+        {
+          "keyword": "Amazon EFS",
+          "lesson": "storage",
+          "status": "covered",
+          "where": "storage.mdx#s1"
+        }
+      ]
+    },
+    {
+      "number": 52,
+      "id": "125222667",
+      "lessons": [
+        "rds"
+      ],
+      "keywords": [
+        {
+          "keyword": "RDS Multi-AZ synchronous replication",
+          "lesson": "rds",
+          "status": "covered",
+          "where": "rds.mdx#s1 / challenge"
+        },
+        {
+          "keyword": "RDS read replica asynchronous replication (cross-Region)",
+          "lesson": "rds",
+          "status": "covered",
+          "where": "rds.mdx#s1 / challenge"
+        }
+      ]
+    },
+    {
+      "number": 53,
+      "id": "125222711",
+      "lessons": [
+        "s3",
+        "analytics"
+      ],
+      "keywords": [
+        {
+          "keyword": "AWS Glue DataBrew (recipes, data profiling)",
+          "lesson": "analytics",
+          "status": "covered",
+          "where": "analytics.mdx#s3"
+        },
+        {
+          "keyword": "AWS Glue Studio",
+          "lesson": "analytics",
+          "status": "missing",
+          "where": ""
+        },
+        {
+          "keyword": "Amazon AppFlow",
+          "lesson": "analytics",
+          "status": "missing",
+          "where": ""
+        },
+        {
+          "keyword": "Amazon Athena",
+          "lesson": "analytics",
+          "status": "covered",
+          "where": "analytics.mdx#s3"
+        }
+      ]
+    },
+    {
+      "number": 54,
+      "id": "125222739",
+      "lessons": [
+        "ec2",
+        "elb",
+        "asg"
+      ],
+      "keywords": [
+        {
+          "keyword": "Auto Scaling AZ rebalancing (launch before terminate)",
+          "lesson": "asg",
+          "status": "partial",
+          "where": "asg.mdx#s3 / TerminationSim"
+        },
+        {
+          "keyword": "Auto Scaling unhealthy instance replacement (terminate then launch)",
+          "lesson": "asg",
+          "status": "partial",
+          "where": "asg.mdx#s4"
+        },
+        {
+          "keyword": "ELB health check with Auto Scaling",
+          "lesson": "asg",
+          "status": "covered",
+          "where": "asg.mdx#s4 / elb.mdx#s4"
+        }
+      ]
+    },
+    {
+      "number": 55,
+      "id": "125222719",
+      "lessons": [
+        "ec2",
+        "asg",
+        "rds",
+        "messaging"
+      ],
+      "keywords": [
+        {
+          "keyword": "RDS Proxy (connection pooling)",
+          "lesson": "rds",
+          "status": "covered",
+          "where": "rds.mdx#s2 / RdsOpsSim"
+        },
+        {
+          "keyword": "SQS queue decoupling with Auto Scaling workers",
+          "lesson": "messaging",
+          "status": "covered",
+          "where": "messaging.mdx#s1"
+        },
+        {
+          "keyword": "API Gateway throttling and usage plans",
+          "lesson": "lambda",
+          "status": "covered",
+          "where": "lambda.mdx#s3 / ApiGatewaySim"
+        },
+        {
+          "keyword": "ElastiCache (cache-aside, not a durable write store)",
+          "lesson": "analytics",
+          "status": "partial",
+          "where": "analytics.mdx#s1 / CacheSim"
+        },
+        {
+          "keyword": "Aurora cross-Region read replica (read-only)",
+          "lesson": "rds",
+          "status": "covered",
+          "where": "rds.mdx#s3"
+        }
+      ]
+    },
+    {
+      "number": 56,
+      "id": "125222639",
+      "lessons": [
+        "s3"
+      ],
+      "keywords": [
+        {
+          "keyword": "S3 Object Lock retention period (Retain Until Date per object version)",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s2 / DeleteGuardSim"
+        },
+        {
+          "keyword": "S3 Object Lock bucket default retention (duration, overridden by explicit setting)",
+          "lesson": "s3",
+          "status": "missing",
+          "where": ""
+        },
+        {
+          "keyword": "S3 Object Lock retention modes (governance, compliance)",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s2 / DeleteGuardSim / challenge"
+        }
+      ]
+    },
+    {
+      "number": 57,
+      "id": "125222697",
+      "lessons": [
+        "lambda",
+        "kinesis"
+      ],
+      "keywords": [
+        {
+          "keyword": "Amazon Kinesis Data Analytics (Managed Service for Apache Flink)",
+          "lesson": "kinesis",
+          "status": "covered",
+          "where": "kinesis.mdx#s3"
+        },
+        {
+          "keyword": "API Gateway REST API direct integration with AWS service (Kinesis)",
+          "lesson": "lambda",
+          "status": "partial",
+          "where": "lambda.mdx#s3 / ApiGatewaySim"
+        },
+        {
+          "keyword": "Amazon QuickSight",
+          "lesson": "analytics",
+          "status": "covered",
+          "where": "analytics.mdx#s3 / DataJobSim"
+        },
+        {
+          "keyword": "Amazon Athena",
+          "lesson": "analytics",
+          "status": "covered",
+          "where": "analytics.mdx#s3"
+        }
+      ]
+    },
+    {
+      "number": 58,
+      "id": "125222713",
+      "lessons": [
+        "iam",
+        "s3"
+      ],
+      "keywords": [
+        {
+          "keyword": "IAM policy Resource ARN (bucket vs bucket/*)",
+          "lesson": "iam",
+          "status": "covered",
+          "where": "iam.mdx#s1 / PolicyReader"
+        },
+        {
+          "keyword": "IAM least privilege",
+          "lesson": "iam",
+          "status": "partial",
+          "where": "iam.mdx#s3"
+        }
+      ]
+    },
+    {
+      "number": 59,
+      "id": "125222715",
+      "lessons": [
+        "global-infra",
+        "cloudfront"
+      ],
+      "keywords": [
+        {
+          "keyword": "AWS Global Accelerator (UDP, fast regional failover)",
+          "lesson": "global-infra",
+          "status": "covered",
+          "where": "global-infra.mdx#s5 / EdgeChoiceSim"
+        },
+        {
+          "keyword": "Global Accelerator vs CloudFront",
+          "lesson": "global-infra",
+          "status": "covered",
+          "where": "global-infra.mdx#s5 / cloudfront.mdx#s4"
+        },
+        {
+          "keyword": "Route 53 (DNS-based failover)",
+          "lesson": "route53",
+          "status": "covered",
+          "where": "route53.mdx#s3"
+        }
+      ]
+    },
+    {
+      "number": 60,
+      "id": "125222741",
+      "lessons": [
+        "lambda",
+        "kinesis"
+      ],
+      "keywords": [
+        {
+          "keyword": "Kinesis Data Streams ordering per shard",
+          "lesson": "kinesis",
+          "status": "covered",
+          "where": "kinesis.mdx#s1 / ShardStreamSim"
+        },
+        {
+          "keyword": "Lambda with Kinesis Data Streams event source mapping",
+          "lesson": "kinesis",
+          "status": "covered",
+          "where": "kinesis.mdx#s1"
+        },
+        {
+          "keyword": "Amazon DynamoDB",
+          "lesson": "dynamodb",
+          "status": "covered",
+          "where": "dynamodb.mdx#s1"
+        }
+      ]
+    },
+    {
+      "number": 61,
+      "id": "125222671",
+      "lessons": [
+        "messaging",
+        "monitoring"
+      ],
+      "keywords": [
+        {
+          "keyword": "CloudWatch Logs metric filter",
+          "lesson": "monitoring",
+          "status": "covered",
+          "where": "monitoring.mdx#s3 / LogPipelineSim / messaging.mdx#s4"
+        },
+        {
+          "keyword": "CloudTrail to CloudWatch Logs integration",
+          "lesson": "monitoring",
+          "status": "covered",
+          "where": "monitoring.mdx#s3 / messaging.mdx#s4"
+        },
+        {
+          "keyword": "CloudWatch alarm with SNS notification",
+          "lesson": "monitoring",
+          "status": "covered",
+          "where": "monitoring.mdx#s1"
+        },
+        {
+          "keyword": "CloudTrail Insights",
+          "lesson": "monitoring",
+          "status": "missing",
+          "where": ""
+        },
+        {
+          "keyword": "AWS Trusted Advisor (service limits checks)",
+          "lesson": "monitoring",
+          "status": "partial",
+          "where": "others.mdx#challenge / CostWatchSim"
+        },
+        {
+          "keyword": "Amazon Athena on CloudTrail logs",
+          "lesson": "analytics",
+          "status": "covered",
+          "where": "analytics.mdx#s3"
+        }
+      ]
+    },
+    {
+      "number": 62,
+      "id": "125222649",
+      "lessons": [
+        "global-infra",
+        "cloudfront"
+      ],
+      "keywords": [
+        {
+          "keyword": "CloudFront custom origin (on-premises server)",
+          "lesson": "cloudfront",
+          "status": "covered",
+          "where": "cloudfront.mdx#s2 / global-infra.mdx#s4"
+        },
+        {
+          "keyword": "S3 Cross-Region Replication",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "analytics.mdx#s4"
+        },
+        {
+          "keyword": "S3 static website hosting (static content only)",
+          "lesson": "s3",
+          "status": "partial",
+          "where": "cloudfront.mdx#s2"
+        },
+        {
+          "keyword": "Route 53 geoproximity routing",
+          "lesson": "route53",
+          "status": "covered",
+          "where": "route53.mdx#s3"
+        }
+      ]
+    },
+    {
+      "number": 63,
+      "id": "125222673",
+      "lessons": [
+        "vpc",
+        "route53"
+      ],
+      "keywords": [
+        {
+          "keyword": "Route 53 Resolver outbound endpoint",
+          "lesson": "route53",
+          "status": "covered",
+          "where": "route53.mdx#s4 / HybridDnsSim"
+        },
+        {
+          "keyword": "Route 53 Resolver inbound endpoint",
+          "lesson": "route53",
+          "status": "covered",
+          "where": "route53.mdx#s4 / HybridDnsSim"
+        },
+        {
+          "keyword": "Route 53 Resolver forwarding rule",
+          "lesson": "route53",
+          "status": "covered",
+          "where": "route53.mdx#s4 / HybridDnsSim"
+        },
+        {
+          "keyword": "Route 53 private hosted zone",
+          "lesson": "route53",
+          "status": "covered",
+          "where": "route53.mdx#s4"
+        }
+      ]
+    },
+    {
+      "number": 64,
+      "id": "125222695",
+      "lessons": [
+        "s3"
+      ],
+      "keywords": [
+        {
+          "keyword": "S3 multipart upload",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s5 / UploadSim"
+        },
+        {
+          "keyword": "S3 Transfer Acceleration",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s5 / UploadSim"
+        }
+      ]
+    },
+    {
+      "number": 65,
+      "id": "125222759",
+      "lessons": [
+        "storage"
+      ],
+      "keywords": [
+        {
+          "keyword": "Amazon FSx for Windows File Server (DFS support)",
+          "lesson": "storage",
+          "status": "covered",
+          "where": "storage.mdx#s4 / FsxSim"
+        },
+        {
+          "keyword": "Amazon FSx for Lustre",
+          "lesson": "storage",
+          "status": "covered",
+          "where": "storage.mdx#s4 / FsxSim"
+        },
+        {
+          "keyword": "AWS Managed Microsoft AD",
+          "lesson": "cognito",
+          "status": "covered",
+          "where": "cognito.mdx#s2 / challenge"
+        }
+      ]
+    }
+  ]
+}
