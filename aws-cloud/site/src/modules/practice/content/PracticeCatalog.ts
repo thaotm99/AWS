@@ -1,6 +1,5 @@
 // Build-time only (uses fs). Never import from a client component.
 // Serves the content behind the static /api/certifications… endpoints.
-import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 import type { Certification, CertificationDetail, ContentLocale, Exam } from "../domain/types";
 import type { ExamSource } from "./ExamSource";
@@ -95,18 +94,9 @@ export class PracticeCatalog {
   }
 
   /**
-   * Opaque id of a question inside one topic set: a short hash of the topic and the original id, so
-   * the topic JSON cannot be joined with the exam JSON on `id`. Stable across builds, so saved answers
-   * survive rebuilds; the same question gets a different id in each topic.
-   */
-  static topicQuestionId(topicId: string, questionId: string): string {
-    return "t" + createHash("sha256").update(`${topicId}\0${questionId}`).digest("hex").slice(0, 12);
-  }
-
-  /**
    * Every question about one service, numbered 1..N in study-path order. The practice-test references
-   * (examN_qM) stay on the server, and each question gets an opaque id (`topicQuestionId`) and its
-   * position in the set, so neither `id` nor `number` points back to an exam question.
+   * (examN_qM) stay on the server. Questions keep their original id, so answers and illustrations are
+   * looked up the same way as on the practice tests (the question text is the same in both anyway).
    */
   getTopic(certId: string, topicId: string, locale: ContentLocale = "en"): Exam {
     const config = this.config(certId);
@@ -120,7 +110,7 @@ export class PracticeCatalog {
       const [, n, m] = ref.match(/^exam(\d+)_q(\d+)$/)!;
       const q = exams.find((e) => e.number === Number(n))?.questions[Number(m) - 1];
       if (!q || q.number !== Number(m)) throw new Error(`${topicId}/list_qa.md: không tìm thấy ${ref}`);
-      return { ...q, id: PracticeCatalog.topicQuestionId(topic.id, q.id), number: i + 1 };
+      return { ...q, number: i + 1 };
     });
     return {
       id: `topic-${topic.id}`,
