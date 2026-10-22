@@ -24,4 +24,4 @@ Làm tuần tự từng đợt; hết đợt 4 thì rà lại toàn bộ 6 đề
 | 3 | lambda, containers, rds, monitoring, cloudfront | |
 | 4 | route53, analytics, dynamodb, iac, backup-dr, storage-migration, security, cognito, global-infra, others | |
 | 5 | Rà lại 6 đề, bổ sung phần còn sót; lặp tới khi đủ | |
-| — | Ghi chú đáp án theo khuyến nghị cũ cho đề 2 câu 64, đề 4 câu 15 | |
+| — | Ghi chú đáp án theo khuyến nghị cũ cho đề 2 câu 64, đề 4 câu 15 | ✅ xong |
