@@ -31,6 +31,18 @@ export const vi = {
     progress: "Tiến độ đọc",
     jump: "chuyển phần",
   },
+  donate: {
+    title: "Mời mình một ly cafe",
+    body: "AWS Thực Chiến là dự án cá nhân và hoàn toàn miễn phí. Nếu bài học giúp ích cho bạn, bạn có thể mời mình một ly cafe để có thêm động lực viết tiếp những bài mới. Hoàn toàn tự nguyện nhé, bạn vẫn học đầy đủ mọi nội dung như bình thường.",
+    bank: "Ngân hàng",
+    account: "Số tài khoản",
+    holder: "Chủ tài khoản",
+    note: "Nội dung chuyển khoản",
+    copy: "Sao chép",
+    copied: "Đã chép ✓",
+    hint: "Số tiền để trống, tuỳ tâm bạn. Cảm ơn bạn đã đồng hành cùng AWS Thực Chiến!",
+    scan: "Quét bằng ứng dụng ngân hàng, nội dung đã điền sẵn",
+  },
   roadmap: {
     title: "Lộ trình học",
     progress: "Đã hoàn thành {done}/{total} bài học",

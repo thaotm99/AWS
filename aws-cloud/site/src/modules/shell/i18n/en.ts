@@ -33,6 +33,18 @@ export const en: Messages<typeof vi> = {
     progress: "Reading progress",
     jump: "to jump",
   },
+  donate: {
+    title: "Buy me a coffee",
+    body: "AWS Thực Chiến is a personal project and completely free. If a lesson helped you, you can buy me a coffee to keep new lessons coming. It is entirely optional; every lesson stays fully open to you.",
+    bank: "Bank",
+    account: "Account number",
+    holder: "Account holder",
+    note: "Transfer note",
+    copy: "Copy",
+    copied: "Copied ✓",
+    hint: "Leave the amount blank and give what you like. Thank you for learning with AWS Thực Chiến!",
+    scan: "Scan with your banking app; the note is prefilled",
+  },
   roadmap: {
     title: "Study path",
     progress: "{done} of {total} lessons completed",

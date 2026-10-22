@@ -2,6 +2,7 @@
 import { getCollection, render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Scene from "../../components/Scene.astro";
+import Donate from "../../components/Donate.astro";
 import DoneButton from "../../components/DoneButton.tsx";
 import Importance from "../../components/Importance.astro";
 import T from "../../app/T.astro";
@@ -94,6 +95,7 @@ const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(layers,
           </div>
         </div>
       </Scene>
+      <Donate />
     </>
   ) : (
     <div class="placeholder">
