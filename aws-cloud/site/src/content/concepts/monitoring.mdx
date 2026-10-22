@@ -1,0 +1,179 @@
+---
+title: "Giám sát và vận hành: CloudWatch, CloudTrail, Config, Systems Manager"
+lede: "ShopViet đã chạy thật, giờ cần biết hệ thống đang ra sao và ai đã làm gì. Bài này đi qua năm việc: đặt alarm đủ nhanh để kịp phản ứng, để alarm tự sửa máy hỏng, giữ log khi máy bị thay, tra lại ai đổi gì và cấu hình có đúng chuẩn không, rồi vá hàng trăm máy mà không làm khách gặp lỗi."
+minutes: 30
+scenes: 5
+prerequisites: ["ec2", "asg", "iam"]
+docs:
+  - title: "What is Amazon CloudWatch?"
+    url: "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html"
+  - title: "Basic and detailed monitoring"
+    url: "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch-metrics-basic-detailed.html"
+  - title: "Using Amazon CloudWatch alarms"
+    url: "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/AlarmThatSendsEmail.html"
+  - title: "What is Amazon CloudWatch Logs?"
+    url: "https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/WhatIsCloudWatchLogs.html"
+  - title: "What is AWS CloudTrail?"
+    url: "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html"
+  - title: "What is AWS Config?"
+    url: "https://docs.aws.amazon.com/config/latest/developerguide/WhatIsConfig.html"
+  - title: "What is AWS Systems Manager?"
+    url: "https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
+import MetricAlarmSim from "../../components/scenes/monitoring/MetricAlarmSim.tsx";
+import AlarmActionSim from "../../components/scenes/monitoring/AlarmActionSim.tsx";
+import LogPipelineSim from "../../components/scenes/monitoring/LogPipelineSim.tsx";
+import WhoAnswersSim from "../../components/scenes/monitoring/WhoAnswersSim.tsx";
+import ConfigTimelineSim from "../../components/scenes/monitoring/ConfigTimelineSim.tsx";
+import GuardrailSim from "../../components/scenes/monitoring/GuardrailSim.tsx";
+import PatchWindowSim from "../../components/scenes/monitoring/PatchWindowSim.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#s1", label: "1 · Metric và alarm" },
+  { href: "#s2", label: "2 · Alarm tự sửa máy" },
+  { href: "#s3", label: "3 · Log không mất" },
+  { href: "#s4", label: "4 · Ai làm gì, cấu hình ra sao" },
+  { href: "#s5", label: "5 · Vá máy bằng Systems Manager" },
+  { href: "#challenge", label: "Thử thách" },
+]}>
+ShopViet đã có load balancer, Auto Scaling group, container và Lambda. Hệ thống chạy được rồi, nhưng đội vận hành vẫn hay hỏi: CPU đang bao nhiêu, ai vừa xoá cái security group kia, log của máy hôm qua đâu rồi, bao giờ vá máy? Bốn dịch vụ trả lời bốn kiểu câu hỏi đó: **CloudWatch** (số đo, log, alarm), **CloudTrail** (ai gọi API nào), **AWS Config** (cấu hình và mức tuân thủ), **Systems Manager** (thao tác trên chính các máy).
+</Story>
+
+<Scene id="s1" label="Cảnh 1/5" title="Alarm có kịp bật không?" questions={["exam5_q20", "exam4_q25", "exam3_q15"]}>
+
+Mỗi dịch vụ AWS gửi **metric** lên CloudWatch: CPU của EC2, số lần chạy của Lambda, CPU của một ECS service. Một **alarm** theo dõi một metric, so với ngưỡng, và khi vượt ngưỡng đủ lâu thì chạy **action**: gửi SNS, scale một nhóm, hay thao tác trên EC2.
+
+Điều ít người để ý: EC2 mặc định chỉ gửi metric **mỗi 5 phút** (basic monitoring). Chạy tình huống livestream hai lần, một lần tắt và một lần bật detailed monitoring:
+
+<MetricAlarmSim client:visible />
+
+Chọn đúng metric cũng quan trọng như chọn ngưỡng. Service ECS scale theo CPU của chính service đó. Lambda scale rất nhanh, nên đặt alarm trên `ConcurrentExecutions` hoặc `Invocations` để biết sớm khi có gì bất thường.
+
+<Takeaway>Cần thấy dữ liệu mỗi phút trên EC2: bật detailed monitoring, không cần dựng gì thêm. Alarm = metric + ngưỡng + số datapoint + action. ECS scale theo CPU của service; Lambda nên có alarm trên ConcurrentExecutions.</Takeaway>
+
+</Scene>
+
+<Scene id="s2" label="Cảnh 2/5" title="Để alarm tự sửa máy hỏng" questions={["exam3_q38", "exam3_q57", "exam5_q19", "exam4_q16"]}>
+
+Trang quản lý kho của ShopViet chạy trên **một** EC2, chưa đáng dựng Auto Scaling group. Máy thỉnh thoảng hỏng, và không ai muốn dậy lúc 3h sáng để bấm restart. Alarm của CloudWatch gọi thẳng được bốn action của EC2: **stop**, **terminate**, **reboot**, **recover**. Không cần Lambda hay script.
+
+EC2 có hai loại status check. **Instance status check** hỏng khi lỗi nằm trong máy (OS treo, hết RAM). **System status check** hỏng khi host vật lý của AWS có vấn đề. Mỗi loại cần một action khác nhau:
+
+<AlarmActionSim client:visible />
+
+<Takeaway>Lỗi trong máy (instance status check): action reboot. Lỗi host (system status check): action recover, chỉ cho instance dùng EBS. Recover giữ instance ID, private IP, Elastic IP, public IPv4, metadata; mất dữ liệu trong RAM; instance đã terminate thì không recover được. Alarm scale in: ASG bớt máy ở AZ đông nhất, rồi chọn máy có launch template cũ nhất.</Takeaway>
+
+</Scene>
+
+<Scene id="s3" label="Cảnh 3/5" title="Log không mất khi máy bị thay" questions={["exam5_q33", "exam1_q61", "exam1_q27"]}>
+
+Auto Scaling group của ShopViet scale rất nhanh, gần như ngày nào cũng thay máy mới. Hôm nay có khách báo lỗi thanh toán từ hôm kia, nhưng máy đó đã bị terminate. Và một đêm khác, ai đó dùng access key bị lộ gọi API liên tục. Hai chuyện, cùng một lời giải: đưa log ra khỏi máy, rồi để CloudWatch đọc nó.
+
+<LogPipelineSim client:visible />
+
+Một chuyện khác về nơi chạy. ShopViet mở thêm mảng ví điện tử, và quy định buộc dữ liệu cùng workload phải nằm trong data center của công ty. Đội vẫn muốn Kubernetes do AWS quản lý, IAM và CloudWatch như trên cloud. Lời giải là **AWS Outposts**: AWS đặt rack của mình ngay trong data center, chạy EC2 và Amazon EKS tại chỗ, dùng cùng API và công cụ. Direct Connect hay Local Zone vẫn đặt workload trên hạ tầng của AWS; Snowball Edge là thiết bị chuyển dữ liệu và xử lý tại biên, không phải nền tảng chạy lâu dài.
+
+<Takeaway>Log phải rời máy ngay khi được ghi: cài CloudWatch agent. Muốn cảnh báo gần thời gian thực về API call bất thường: CloudTrail gửi vào CloudWatch Logs, metric filter đếm lỗi, alarm báo qua SNS. Dữ liệu bắt buộc ở lại tại chỗ mà vẫn muốn dịch vụ AWS: Outposts.</Takeaway>
+
+</Scene>
+
+<Scene id="s4" label="Cảnh 4/5" title="Ai đã làm gì, cấu hình có đúng chuẩn không" questions={["exam1_q16", "exam3_q29", "exam2_q43", "exam2_q9"]}>
+
+Sau một sự cố, đội ShopViet có cả loạt câu hỏi. Mỗi câu chỉ một dịch vụ trả lời được. Chọn từng câu và gửi đi:
+
+<WhoAnswersSim client:visible />
+
+**CloudTrail** là nhật ký: mỗi API call là một event. **AWS Config** là cuốn album: mỗi lần tài nguyên đổi, Config chụp lại một **configuration item**, và **Config rule** chấm nó đúng hay sai chuẩn. Hai thứ đi cùng nhau rất hợp. Bấm từng mốc trong tuần của security group `sg-web`:
+
+<ConfigTimelineSim client:visible />
+
+Thấy vi phạm là một chuyện; chặn hoặc tự sửa là chuyện khác. Ba hàng rào ShopViet dựng cho các account của mình:
+
+<GuardrailSim client:visible />
+
+<Takeaway>Ai gọi API gì, lúc nào: CloudTrail (bật để ghi mọi IAM action). Tài nguyên trông thế nào theo thời gian, có đúng chuẩn không: AWS Config. Giữ trail chạy cả khi dev là root: SCP. Chứng chỉ import vào ACM không tự gia hạn: managed rule acm-certificate-expiration-check báo trước. Config rule gắn remediation để tự sửa.</Takeaway>
+
+</Scene>
+
+<Scene id="s5" label="Cảnh 5/5" title="Vá hàng trăm máy mà khách không biết" questions={["exam3_q6", "exam5_q34"]}>
+
+ShopViet có hơn 200 EC2. Mỗi tháng có bản vá bảo mật cho hệ điều hành. **Systems Manager** làm việc này qua **SSM Agent** chạy trên máy: Patch Manager vá theo lịch, Run Command chạy lệnh trên cả nhóm, Automation chạy runbook nhiều bước. Việc đầu tiên là cho agent quyền nói chuyện với Systems Manager. Các máy đã có IAM role riêng để đọc RDS và Secrets Manager:
+
+<ScenarioFlow client:visible height={230} legend={["Ít việc, không làm gián đoạn app", "Nhiều việc hoặc làm gián đoạn app"]} scenarios={[
+  { name: "Đưa 200 EC2 vào Systems Manager",
+    nodes: [
+      { id: "ssm", x: 20, y: 70, w: 170, label: "Systems Manager", sub: "Patch Manager", kind: "net" },
+      { id: "ec2", x: 290, y: 70, w: 190, label: "200 EC2", sub: "role app: RDS, Secrets", kind: "ec2" },
+      { id: "role", x: 560, y: 10, w: 170, label: "Role mới thay role app", kind: "warn" },
+      { id: "dhmc", x: 550, y: 170, w: 170, label: "Default Host Management", sub: "Quick Setup", kind: "edge" },
+    ],
+    options: [
+      { name: "Cài agent, cron từng máy", verdict: "bad", hide: ["role", "dhmc"],
+        flows: [{ path: ["ec2", "ssm"], tone: "bad", label: "không có báo cáo chung" }],
+        text: "Mỗi máy tự vá theo lịch riêng, 200 lịch cron phải tự theo dõi. Không biết máy nào đã vá, máy nào chưa." },
+      { name: "Thay IAM role của máy", verdict: "bad", hide: ["dhmc"],
+        flows: [{ path: ["role", "ec2"], tone: "bad", label: "gỡ role đang chạy" }, { path: ["ssm", "ec2"], tone: "neutral" }],
+        text: "Gỡ role cũ, gắn role mới gộp quyền: làm từng máy, và app có thể mất quyền đọc Secrets Manager trong lúc đổi." },
+      { name: "Bật Default Host Management", verdict: "good", hide: ["role"],
+        flows: [{ path: ["dhmc", "ec2"], tone: "good", label: "quyền cho SSM Agent" }, { path: ["ssm", "ec2"], tone: "good", label: "vá theo lịch" }],
+        text: "**Default Host Management Configuration** (bật trong Quick Setup) cấp quyền cho SSM Agent ở cấp account và Region, **không đụng vào role của instance**. Mọi EC2 thành managed node, vá theo lịch, có báo cáo tuân thủ chung." },
+    ] },
+]} />
+
+Lần vá trước, mọi bản vá đều báo thành công, vậy mà khách gặp lỗi và timeout. Vì máy reboot trong khi ALB vẫn gửi request vào. So sánh hai cách vá trong cùng một **Maintenance Window**:
+
+<PatchWindowSim client:visible />
+
+<Takeaway>Cho Systems Manager quản lý mọi EC2 mà không sửa role của máy: Default Host Management Configuration. Vá máy đứng sau load balancer: Automation runbook AWSEC2-PatchLoadBalancerInstance (gỡ khỏi target group, vá, đăng ký lại), chạy trong Maintenance Window.</Takeaway>
+
+</Scene>
+
+<Scene id="challenge" label="Thử thách" title="Hỏi đúng dịch vụ" questions={["exam1_q16", "exam3_q29", "exam5_q20", "exam1_q61", "exam3_q38", "exam5_q34"]}>
+
+Xếp từng việc của ShopViet vào dịch vụ làm được việc đó. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
+
+<SortGame client:visible
+  bins={[
+    { id: "cw", title: "CloudWatch", sub: "metric, log, alarm", hint: "Gợi ý: việc này là đo, đọc log hoặc tự phản ứng khi vượt ngưỡng." },
+    { id: "trail", title: "CloudTrail", sub: "API call", hint: "Gợi ý: việc này cần biết ai đã gọi API nào." },
+    { id: "config", title: "AWS Config", sub: "cấu hình, tuân thủ", hint: "Gợi ý: việc này cần biết tài nguyên trông thế nào hoặc có đúng chuẩn không." },
+  ]}
+  cards={[
+    ["Metric mỗi 1 phút cho EC2", "cw"], ["Tự reboot máy khi status check hỏng", "cw"], ["Gom log của mọi instance", "cw"],
+    ["Ai đã xoá security group", "trail"], ["Ghi mọi IAM action của admin mới", "trail"], ["Nguồn event cho metric filter AccessDenied", "trail"],
+    ["Security group trông thế nào tuần trước", "config"], ["Chứng chỉ import sắp hết hạn", "config"], ["Tự đóng cổng SSH mở ra Internet", "config"],
+  ]}
+/>
+
+Kiểm tra nhanh: nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
+
+<Quiz client:visible items={[
+  { q: "Trang quản lý kho chạy trên một EC2 (ổ EBS). Thỉnh thoảng host bên dưới hỏng. Cần tự hồi phục trong vài phút, rẻ nhất có thể. Làm thế nào?",
+    opts: ["Dựng Auto Scaling group 1 máy", "CloudWatch alarm trên system status check với action recover", "Lambda chạy mỗi 5 phút để kiểm tra và khởi động lại"],
+    a: 1,
+    why: "Action recover chuyển instance sang host khác, giữ instance ID, IP và Elastic IP. Không cần thêm dịch vụ nào." },
+  { q: "Một bug khiến app trên EC2 treo vài ngày một lần, máy vẫn chạy. Trong lúc chờ bản sửa, cách gọn nhất là gì?",
+    opts: ["Alarm trên instance status check với action reboot", "Alarm trên system status check với action recover", "EventBridge gọi Lambda reboot máy mỗi 5 phút"],
+    a: 0,
+    why: "Lỗi nằm trong máy thì reboot là đủ, và alarm tự gọi được action reboot. Reboot định kỳ thì làm gián đoạn cả khi máy không lỗi." },
+  { q: "Đội vận hành cần xem số đo EC2 với khoảng cách tối đa 2 phút trong đợt livestream, làm nhanh, ít bảo trì. Chọn gì?",
+    opts: ["Cài CloudWatch agent gửi custom metric độ phân giải cao", "Bật detailed monitoring cho các EC2", "Đẩy system log sang OpenSearch"],
+    a: 1,
+    why: "Detailed monitoring đổi chu kỳ metric của EC2 từ 5 phút xuống 1 phút, chỉ là một công tắc." },
+  { q: "Developer là root trong account riêng của mình (trong AWS Organizations). Làm sao để trail bắt buộc không bị sửa hay tắt?",
+    opts: ["Gắn IAM policy Deny vào root user", "SCP chặn mọi hành động sửa CloudTrail, gắn vào các account developer", "Bật Config rule kiểm tra trail"],
+    a: 1,
+    why: "SCP giới hạn cả root user của account thành viên. IAM policy không gắn được vào root. Config rule chỉ phát hiện sau khi đã sửa." },
+  { q: "Máy web đứng sau ALB, vá xong vẫn có lỗi 502 trong lúc vá. Sửa thế nào cho chắc chắn?",
+    opts: ["Đổi target group sang kiểu instance ID", "Automation runbook AWSEC2-PatchLoadBalancerInstance trong Maintenance Window", "Xem Logs Insights rồi gỡ máy khỏi ALB bằng tay"],
+    a: 1,
+    why: "Runbook gỡ máy khỏi target group, chờ request xong, vá, reboot, đăng ký lại. Maintenance Window chạy nó đúng giờ, từng máy một." },
+]} />
+
+</Scene>
