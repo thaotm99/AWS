@@ -1,6 +1,6 @@
 ---
 title: "EBS, EFS và FSx: chọn đúng loại lưu trữ"
-lede: "Bài viết từ 41 câu đề. Block, file hay object; chọn loại EBS volume theo IOPS và kiểu truy cập; các chế độ của EFS; và ba loại FSx đề hay hỏi (Windows File Server, Lustre, NetApp ONTAP)."
+lede: "Database của ShopViet cần ổ đĩa nhanh, web server cần thư mục dùng chung, phòng kế toán cần file share Windows, team dữ liệu cần file system cực nhanh. Bài này chọn giữa block, file và object, chọn loại EBS volume theo IOPS, cấu hình EFS, và chọn đúng loại FSx cho từng nhóm."
 minutes: 25
 scenes: 4
 prerequisites: ["ec2", "s3"]
@@ -15,93 +15,95 @@ docs:
     url: "https://docs.aws.amazon.com/fsx/latest/WindowsGuide/what-is.html"
   - title: "What is FSx for Lustre?"
     url: "https://docs.aws.amazon.com/fsx/latest/LustreGuide/what-is.html"
+  - title: "What is FSx for NetApp ONTAP?"
+    url: "https://docs.aws.amazon.com/fsx/latest/ONTAPGuide/what-is-fsx-ontap.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
 import Story from "../../components/lessons/global-infra/Story.astro";
+import SharedStorageSim from "../../components/scenes/storage/SharedStorageSim.tsx";
 import VolumeChooser from "../../components/scenes/storage/VolumeChooser.tsx";
+import FsxSim from "../../components/scenes/storage/FsxSim.tsx";
 import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#s1", label: "1 · Block, file hay object" },
-  { href: "#s2", label: "2 · EBS" },
-  { href: "#s3", label: "3 · EFS" },
-  { href: "#s4", label: "4 · FSx" },
+  { href: "#s2", label: "2 · Chọn EBS volume" },
+  { href: "#s3", label: "3 · Cấu hình EFS" },
+  { href: "#s4", label: "4 · FSx cho từng nhóm" },
   { href: "#challenge", label: "Thử thách" },
 ]}>
-Database của ShopViet cần ổ đĩa nhanh, các web server cần thư mục dùng chung, văn phòng cần file share cho Windows, team dữ liệu cần file system cực nhanh cho tính toán. Mỗi nhu cầu một loại lưu trữ.
+Database của ShopViet cần ổ đĩa nhanh, các web server cần thư mục dùng chung, văn phòng cần file share cho Windows, team dữ liệu cần file system cực nhanh cho tính toán. Mỗi nhu cầu hợp với một loại lưu trữ khác nhau.
 </Story>
 
-<Scene id="s1" label="Cảnh 1/4" title="Block, file hay object?" questions={["exam2_q29", "exam6_q15", "exam1_q46", "exam1_q9"]}>
+<Scene id="s1" label="Cảnh 1/4" title="Ba web server cùng cần một video" questions={["exam2_q29", "exam6_q15", "exam1_q46", "exam1_q9"]}>
 
-<RequirementPicker client:visible items={[
-  { need: "Nhiều EC2 cần cùng thấy video mà người dùng upload (đang lưu riêng trên EBS từng máy)", answer: "Chuyển sang S3 hoặc EFS",
-    why: "EBS chỉ gắn vào instance trong một AZ. S3 hoặc EFS cho mọi instance cùng truy cập. Đề chọn cả hai." },
-  { need: "Tài liệu phải sẵn sàng cao dù instance hỏng", answer: "EBS làm root volume, tài liệu lưu trên S3",
-    why: "S3 bền và không phụ thuộc instance hay AZ." },
-  { need: "So sánh chi phí lưu cùng một file trên ba dịch vụ", answer: "S3 Standard < EFS < EBS",
-    why: "EBS tính tiền theo dung lượng cấp phát; EFS và S3 theo dung lượng dùng, S3 rẻ nhất." },
-  { need: "Nhiều account cần mount chung một file system, ít vận hành", answer: "EFS với resource policy cho cross-account, mount qua VPC dùng chung hoặc peering",
-    why: "EFS cho phép mount từ VPC và account khác." },
-]} />
+ShopViet chạy ba web server ở hai AZ sau một load balancer. Khách upload video giới thiệu sản phẩm vào một server bất kỳ, rồi khách khác có thể vào trúng server nào cũng phải xem được. Thử lưu video ở ba nơi:
 
-<Takeaway>Block (EBS): một instance, một AZ. File (EFS, FSx): nhiều instance dùng chung. Object (S3): bền nhất, rẻ nhất, truy cập qua API.</Takeaway>
+<SharedStorageSim client:visible />
+
+Nếu nhiều account AWS (ví dụ account của từng shop con) cần mount chung một thư mục, EFS vẫn làm được: thêm file system policy cho account kia và mount qua VPC peering hoặc VPC dùng chung.
+
+<Takeaway>Block (EBS): ổ riêng của một instance trong một AZ, tính tiền theo dung lượng cấp phát. File (EFS, FSx): nhiều instance dùng chung. Object (S3): bền nhất, rẻ nhất, truy cập qua API. Lưu cùng một file: S3 Standard rẻ nhất, rồi tới EFS, đắt nhất là EBS.</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Cảnh 2/4" title="Chọn EBS volume type" questions={["exam3_q27", "exam5_q22", "exam1_q44", "exam6_q24", "exam4_q15", "exam5_q64", "exam5_q16", "exam5_q40"]}>
+<Scene id="s2" label="Cảnh 2/4" title="Chọn EBS volume cho database" questions={["exam3_q27", "exam5_q22", "exam1_q44", "exam6_q24", "exam4_q15", "exam5_q64", "exam5_q16", "exam5_q40"]}>
 
-Nhập yêu cầu như đề cho:
+Database đơn hàng của ShopViet chạy trên EC2 và cần ngày càng nhiều IOPS. Kéo thanh IOPS và bật các yêu cầu để xem loại volume phù hợp:
 
 <VolumeChooser client:visible />
 
+Ngoài chọn loại volume, vận hành EBS hằng ngày còn có những việc sau:
+
 <RequirementPicker client:visible items={[
-  { need: "Môi trường test cần volume từ dữ liệu production, hiệu năng cao ngay lập tức", answer: "Snapshot + EBS fast snapshot restore",
-    why: "Volume tạo từ snapshot bật fast snapshot restore đạt hiệu năng đầy đủ ngay, không cần làm nóng." },
-  { need: "Chống xóa snapshot nhầm hoặc cố ý, ít công nhất", answer: "Recycle Bin với rule giữ snapshot 7 ngày",
-    why: "Snapshot bị xóa vào Recycle Bin và khôi phục được trong thời gian giữ." },
-  { need: "EBS bật encryption bảo vệ những gì?", answer: "Dữ liệu at rest, snapshot, và dữ liệu giữa volume với instance", why: "Cả ba đều được mã hóa." },
+  { need: "Dựng môi trường test từ dữ liệu production, phải chạy nhanh ngay từ đầu", answer: "Snapshot + EBS fast snapshot restore",
+    why: "Volume tạo từ snapshot đã bật fast snapshot restore có ngay hiệu năng đầy đủ, không phải chờ dữ liệu được nạp dần." },
+  { need: "Có người lỡ xoá snapshot backup, muốn lấy lại mà không tốn công", answer: "Recycle Bin với rule giữ snapshot 7 ngày",
+    why: "Snapshot bị xoá vào Recycle Bin và khôi phục được trong thời gian giữ." },
+  { need: "Bật encryption cho EBS thì những gì được mã hoá?", answer: "Dữ liệu trên volume, snapshot, và dữ liệu đi giữa volume với instance",
+    why: "Cả ba đều được mã hoá bằng KMS key, không cần sửa ứng dụng." },
 ]} />
 
-<Takeaway>Mặc định: gp3. IOPS trên 16.000 hoặc Multi-Attach: io1/io2. Tuần tự khối lớn: st1; ít truy cập: sc1; hai loại HDD không làm boot volume.</Takeaway>
+<Takeaway>Mặc định: gp3. Cần trên 16.000 IOPS hoặc Multi-Attach: io1/io2. Đọc tuần tự khối lớn: st1; ít truy cập: sc1; hai loại HDD không làm boot volume. Test nhanh từ snapshot: fast snapshot restore.</Takeaway>
 
 </Scene>
 
-<Scene id="s3" label="Cảnh 3/4" title="Amazon EFS" questions={["exam2_q64", "exam4_q55", "exam3_q11", "exam2_q60", "exam6_q39", "exam4_q24", "exam1_q12", "exam5_q47"]}>
+<Scene id="s3" label="Cảnh 3/4" title="Cấu hình EFS cho đúng tải" questions={["exam2_q64", "exam4_q55", "exam3_q11", "exam2_q60", "exam6_q39", "exam4_q24", "exam1_q12", "exam5_q47"]}>
+
+Khi đã dùng EFS, ShopViet gặp tiếp các câu hỏi vận hành: tải lớn thì chỉnh gì, file cũ để đâu cho rẻ, ai được mount. Chọn từng tình huống:
 
 <RequirementPicker client:visible items={[
-  { need: "Big data chạy song song trên rất nhiều instance", answer: "Performance mode: Max I/O", why: "Mở rộng throughput tổng cho rất nhiều client." },
-  { need: "Tải lúc thấp lúc cao, không muốn tự cấp throughput", answer: "General Purpose + bursting throughput", why: "Throughput tăng theo dung lượng và có burst credit." },
-  { need: "Dữ liệu nhỏ (dưới 1 TB) nhưng đọc ghi tần suất rất cao", answer: "Provisioned throughput", why: "Cấp throughput độc lập với dung lượng lưu trữ." },
-  { need: "File ít dùng nhưng phải lấy được ngay, rẻ", answer: "EFS Infrequent Access (Standard-IA)", why: "Lớp lưu trữ rẻ hơn cho file ít truy cập." },
-  { need: "Mỗi EC2 truy cập EFS với độ trễ thấp nhất", answer: "Mount target ở mỗi AZ, EC2 mount target cùng AZ", why: "Tránh đi qua AZ khác." },
-  { need: "Chỉ một số EC2 được đọc EFS", answer: "Security group + IAM policy", why: "Security group kiểm soát mạng; IAM kiểm soát ai được mount." },
-  { need: "Bảo vệ dữ liệu EFS khỏi sự cố Region", answer: "AWS Backup sao lưu cross-Region", why: "Backup theo lịch sang Region khác." },
+  { need: "Job big data chạy song song trên rất nhiều instance cùng đọc ghi EFS", answer: "Performance mode: Max I/O", why: "Mở rộng throughput tổng cho rất nhiều client cùng lúc." },
+  { need: "Tải lúc thấp lúc cao, không muốn tự cấp throughput", answer: "General Purpose + bursting throughput", why: "Throughput tăng theo dung lượng lưu, có burst credit cho lúc cao điểm." },
+  { need: "Thư mục cấu hình nhỏ (dưới 1 TB) nhưng bị đọc ghi liên tục", answer: "Provisioned throughput", why: "Cấp throughput riêng, không phụ thuộc dung lượng đang lưu." },
+  { need: "Ảnh đơn hàng cũ ít ai mở nhưng thỉnh thoảng phải mở ngay, muốn rẻ", answer: "EFS Infrequent Access (lifecycle sang IA)", why: "Lớp lưu trữ rẻ hơn cho file ít truy cập, vẫn đọc được ngay." },
+  { need: "Mỗi web server đọc EFS với độ trễ thấp nhất", answer: "Mount target ở mỗi AZ, EC2 mount target cùng AZ", why: "Không phải đi vòng sang AZ khác." },
+  { need: "Chỉ các web server được mount, server khác thì không", answer: "Security group + IAM policy", why: "Security group của mount target kiểm soát mạng; IAM kiểm soát ai được mount." },
+  { need: "Sợ cả Region gặp sự cố, mất dữ liệu trên EFS", answer: "AWS Backup sao lưu sang Region khác", why: "Backup theo lịch và copy sang Region khác." },
 ]} />
 
-<Takeaway>EFS: NFS dùng chung nhiều AZ. Max I/O cho rất nhiều client; provisioned throughput khi cần throughput cao trên dữ liệu nhỏ; IA cho file ít dùng.</Takeaway>
+<Takeaway>EFS: thư mục NFS dùng chung giữa nhiều AZ. Rất nhiều client: Max I/O. Dữ liệu nhỏ nhưng cần throughput cao: provisioned throughput. File ít dùng: lớp IA. Mount target cùng AZ cho độ trễ thấp.</Takeaway>
 
 </Scene>
 
-<Scene id="s4" label="Cảnh 4/4" title="Ba loại FSx đề hay hỏi" questions={["exam2_q12", "exam2_q56", "exam1_q65", "exam3_q5", "exam3_q43", "exam3_q56", "exam1_q24", "exam3_q61", "exam3_q26"]}>
+<Scene id="s4" label="Cảnh 4/4" title="Bốn nhóm, bốn loại file system" questions={["exam2_q12", "exam2_q56", "exam1_q65", "exam3_q5", "exam3_q43", "exam3_q56", "exam1_q24", "exam3_q61", "exam3_q26"]}>
 
-<RequirementPicker client:visible items={[
-  { need: "File share SMB cho Windows, quyền NTFS, Active Directory", answer: "FSx for Windows File Server",
-    why: "Windows file system đầy đủ: SMB, NTFS ACL, join AD; Linux cũng mount được qua SMB." },
-  { need: "Thay thế DFS Replication / DFS Namespaces on-premises", answer: "FSx for Windows File Server", why: "Hỗ trợ DFS." },
-  { need: "HPC, thiết kế chip, cần độ trễ dưới mili giây và đọc song song cực nhanh", answer: "FSx for Lustre",
-    why: "File system song song hiệu năng cao, liên kết được với S3 để nạp dữ liệu." },
-  { need: "Đang dùng NetApp ONTAP on-premises, muốn chuyển lên ít vận hành", answer: "FSx for NetApp ONTAP", why: "Giữ nguyên tính năng ONTAP." },
-  { need: "Văn phòng cần SMB nhưng dữ liệu lưu trên S3", answer: "S3 File Gateway", why: "Xem bài Storage Gateway." },
-]} />
+Ngoài EFS, AWS có ba loại **FSx** cho những nhu cầu chuyên biệt. Bốn nhóm ở ShopViet mỗi nhóm có ba yêu cầu bắt buộc. Thử mount từng file system cho từng nhóm để xem cái nào đáp ứng đủ:
 
-<Takeaway>Windows, SMB, AD, DFS: FSx for Windows. HPC, tốc độ cực cao: FSx for Lustre. Đang dùng NetApp: FSx for ONTAP.</Takeaway>
+<FsxSim client:visible />
+
+Nếu văn phòng muốn giữ file share SMB tại chỗ nhưng lưu dữ liệu trên S3, dùng **S3 File Gateway** (xem bài Storage Gateway).
+
+<Takeaway>Windows, SMB, NTFS, Active Directory, DFS: FSx for Windows File Server. HPC, đọc song song, nạp từ S3: FSx for Lustre. Đang dùng NetApp, cần NFS + SMB + iSCSI: FSx for NetApp ONTAP. Thư mục chung đơn giản cho Linux: EFS.</Takeaway>
 
 </Scene>
 
 <Scene id="challenge" label="Thử thách" title="Lưu trữ nào?" questions={["exam3_q27", "exam1_q44", "exam3_q5", "exam2_q64"]}>
+
+Xếp từng đặc điểm vào đúng dịch vụ. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
 
 <SortGame client:visible
   bins={[
@@ -116,23 +118,25 @@ Nhập yêu cầu như đề cho:
   ]}
 />
 
+Kiểm tra nhanh: nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
+
 <Quiz client:visible items={[
-  { q: "Database trên EC2 cần tới 25.000 IOPS mỗi volume. Chọn volume nào?",
+  { q: "Database đơn hàng trên EC2 cần 25.000 IOPS ổn định cho mỗi volume. Chọn volume nào?",
     opts: ["General Purpose SSD (gp2)", "Provisioned IOPS SSD (io1)", "Throughput Optimized HDD (st1)"],
     a: 1,
-    why: "gp2 tối đa 16.000 IOPS; io1 cấp được IOPS cao ổn định." },
-  { q: "Hai loại EBS nào không dùng làm boot volume được?",
+    why: "gp2 tối đa 16.000 IOPS; io1 cấp được IOPS cao và ổn định." },
+  { q: "Bạn định dùng ổ HDD rẻ làm ổ boot cho server log. Hai loại EBS nào không làm boot volume được?",
     opts: ["gp3 và io2", "st1 và sc1", "gp2 và st1"],
     a: 1,
-    why: "Hai loại HDD không làm boot volume." },
-  { q: "Windows và Linux cùng truy cập một file share, giữ quyền NTFS và tích hợp AD. Chọn gì?",
+    why: "Hai loại HDD (st1, sc1) không làm boot volume." },
+  { q: "Phòng kế toán có cả máy Windows và Linux cùng dùng một file share, cần giữ quyền NTFS và đăng nhập bằng Active Directory. Chọn gì?",
     opts: ["Amazon EFS", "FSx for Windows File Server", "FSx for Lustre"],
     a: 1,
-    why: "FSx for Windows hỗ trợ SMB, NTFS và AD; Linux mount qua SMB." },
-  { q: "Big data chạy trên EFS với rất nhiều instance song song. Performance mode nào?",
+    why: "FSx for Windows hỗ trợ SMB, NTFS và AD; máy Linux mount qua SMB." },
+  { q: "Job phân tích của ShopViet chạy trên rất nhiều instance song song, cùng đọc ghi một EFS. Chọn performance mode nào?",
     opts: ["General Purpose", "Max I/O", "Provisioned throughput"],
     a: 1,
-    why: "Max I/O mở rộng throughput tổng cho rất nhiều client đồng thời." },
+    why: "Max I/O mở rộng throughput tổng cho rất nhiều client đồng thời. Provisioned throughput là throughput mode, không phải performance mode." },
 ]} />
 
 </Scene>
