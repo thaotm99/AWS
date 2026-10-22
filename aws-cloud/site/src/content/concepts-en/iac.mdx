@@ -71,6 +71,8 @@ Last week, a new ShopViet employee created a database in the console without ena
 
 <Scene id="en-s1" label="Part 1/4" title="Templates replace manual actions" questions={["exam4_q47", "exam4_q15", "exam4_q17"]}>
 
+<p class="scene-intro">Building infrastructure by clicking in the console is hard to repeat exactly; describing it in files lets environments be created, changed and rebuilt automatically.</p>
+
 A **template** is a YAML or JSON file that describes the resources to create. CloudFormation reads the template and creates a **stack**: a group of resources that are created, updated and deleted together. To change the infrastructure, update the template and perform an **update stack**; a **change set** lets you preview the changes CloudFormation will apply. Run three ShopViet scenarios:
 
 <StackSim client:visible />
@@ -85,6 +87,8 @@ Being able to read a template matters as much as being able to write one. Below 
 
 <Scene id="en-s2" label="Part 2/4" title="Applying one standard to every account and Region" questions={["exam3_q36"]}>
 
+<p class="scene-intro">When a company has many AWS accounts across many Regions, the same standard must apply everywhere without deploying it by hand in each place.</p>
+
 ShopViet now has several accounts in **AWS Organizations**: production, dev, data, and soon a branch in Japan. Each account operates in several Regions. Every environment must use the approved EC2 types and the standard IAM role for Lambda. Deploy the baseline template with three approaches, then add a new account:
 
 <StackSetSim client:visible />
@@ -95,6 +99,8 @@ ShopViet now has several accounts in **AWS Organizations**: production, dev, dat
 
 <Scene id="en-s3" label="Part 3/4" title="Elastic Beanstalk: starting a new instance in 2 minutes" questions={["exam4_q1"]}>
 
+<p class="scene-intro">Developers want to ship applications quickly without building servers, load balancers and scaling themselves; a service can take over that infrastructure.</p>
+
 ShopViet's main website runs on **Elastic Beanstalk**: the development team only uploads the code, and Beanstalk automatically creates the EC2 instances, load balancer and Auto Scaling group and monitors health. The team can still view and adjust the underlying resources. The problem is that installing the application takes 45 minutes: when traffic grows, Beanstalk adds instances, but new instances can only serve requests almost an hour later. Compare the timing of four startup approaches:
 
 <BootTimeSim client:visible />
@@ -104,6 +110,8 @@ ShopViet's main website runs on **Elastic Beanstalk**: the development team only
 </Scene>
 
 <Scene id="en-s4" label="Part 4/4" title="Service Catalog and services easily confused with IaC" questions={["exam6_q22", "exam6_q41", "exam2_q22"]}>
+
+<p class="scene-intro">Internal users need to create approved resources themselves without broad admin permissions; a catalog of ready-made products meets that need.</p>
 
 Part 1 puts the standards into a template, but people who use the template still need CloudFormation permissions and permissions on every service the template creates. **AWS Service Catalog** solves self-service: administrators import a CloudFormation template as a **product**, group products into a **portfolio**, and grant access to IAM users, groups or roles. A **template constraint** narrows the allowed values of the template's parameters (for example, only some EC2 instance types); a **launch constraint** specifies the IAM role Service Catalog assumes when it launches the product, so end users need no direct permissions on CloudFormation or the underlying services. Each launch produces a **provisioned product**, which is a CloudFormation stack.
 

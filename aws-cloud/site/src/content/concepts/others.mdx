@@ -100,6 +100,8 @@ ShopViet hiện có nhiều AWS account, nhiều đội kỹ thuật, và chi ph
 
 <Scene id="s1" label="Phần 1/5" title="Kiểm soát chi phí AWS" questions={["exam6_q22", "exam6_q1", "exam4_q30"]}>
 
+<p class="scene-intro">Chi phí AWS tăng theo mức sử dụng nên cần được theo dõi thường xuyên; mỗi công cụ quản lý chi phí trả lời một câu hỏi khác nhau.</p>
+
 Mỗi công cụ quản lý chi phí trả lời một câu hỏi khác nhau:
 
 - **Cost Explorer**: chi phí phát sinh ở đâu? Hiển thị biểu đồ, lọc theo service và theo account.
@@ -117,6 +119,8 @@ Chọn một vấn đề của ShopViet, chọn công cụ, sau đó chạy mô 
 
 <Scene id="s2" label="Phần 2/5" title="Lựa chọn loại cam kết sử dụng dài hạn" questions={["exam6_q38"]}>
 
+<p class="scene-intro">Khi mức sử dụng đã ổn định, cam kết dùng trong một hoặc ba năm giúp giảm đáng kể chi phí so với trả theo giờ.</p>
+
 Sau đợt ra mắt, tải của ShopViet đã ổn định. Cam kết sử dụng một mức chi phí mỗi giờ trong 1 hoặc 3 năm để nhận mức giá thấp hơn on-demand: đó là **Savings Plans**. AWS hiện có bốn loại:
 
 - **Compute Savings Plans**: linh hoạt nhất, giảm tới 66% so với on-demand. Áp dụng cho EC2 (mọi instance family, kích thước, OS, tenancy, Region), Fargate và Lambda.
@@ -133,6 +137,8 @@ Yêu cầu của ShopViet: mọi workload đều được giảm giá, với s�
 </Scene>
 
 <Scene id="s3" label="Phần 3/5" title="Xử lý văn bản và giọng nói không cần đội ngũ ML" questions={["exam1_q4", "exam2_q26", "exam5_q32", "exam5_q58"]}>
+
+<p class="scene-intro">Nhiều bài toán như nhận dạng giọng nói, dịch thuật hay phân tích văn bản không cần tự xây dựng mô hình machine learning; AWS có sẵn dịch vụ gọi qua API.</p>
 
 AWS cung cấp các AI service đã được huấn luyện sẵn, sử dụng thông qua lệnh gọi API mà không cần kiến thức machine learning:
 
@@ -154,6 +160,8 @@ Mỗi tình huống dưới đây là một luồng xử lý của ShopViet; vă
 </Scene>
 
 <Scene id="s4" label="Phần 4/5" title="Xử lý batch và dịch vụ AWS trong data center của doanh nghiệp" questions={["exam6_q55", "exam1_q27"]}>
+
+<p class="scene-intro">Một số nhu cầu không phù hợp với các dịch vụ đã học, như job xử lý chạy rất lâu hoặc hệ thống bắt buộc nằm trong data center của doanh nghiệp; AWS có dịch vụ riêng cho từng trường hợp.</p>
 
 Hai yêu cầu cuối của ShopViet không phù hợp với các dịch vụ đã trình bày. Đội nội dung cần xử lý hàng chục nghìn ảnh mỗi đêm (thay đổi kích thước, gắn watermark), mỗi job chạy lâu hơn giới hạn của Lambda. Đồng thời, ShopViet vừa mua lại một công ty ví điện tử: quy định bắt buộc dữ liệu và ứng dụng phải nằm trong data center của công ty này, nhưng đội kỹ thuật cần sử dụng EKS, CloudWatch, IAM thống nhất với phần còn lại của ShopViet.
 
@@ -205,6 +213,8 @@ Hai yêu cầu cuối của ShopViet không phù hợp với các dịch vụ đ
 </Scene>
 
 <Scene id="s5" label="Phần 5/5" title="Phân biệt nhanh: các dịch vụ dễ bị chọn nhầm" questions={["exam1_q4", "exam2_q26", "exam5_q32", "exam4_q33", "exam1_q11", "exam2_q4", "exam2_q40", "exam2_q47"]}>
+
+<p class="scene-intro">Nhiều dịch vụ có tên hoặc phạm vi gần với yêu cầu nhưng giải quyết vấn đề khác; phân biệt được chúng giúp tránh chọn nhầm.</p>
 
 Khi thiết kế các luồng xử lý của ShopViet, một số dịch vụ có tên hoặc phạm vi gần với yêu cầu nhưng giải quyết vấn đề khác. Chọn từng dịch vụ để xem phạm vi sử dụng, lý do không phù hợp với tình huống của ShopViet và phương án thay thế.
 

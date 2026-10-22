@@ -76,6 +76,8 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Scene id="s1" label="Phần 1/5" title="EC2 launch type và Fargate" questions={["exam1_q14", "exam4_q33", "exam3_q32", "exam2_q1"]}>
 
+<p class="scene-intro">Container gói ứng dụng cùng mọi thứ nó cần để chạy giống nhau ở mọi nơi; container vẫn cần máy chủ để chạy, và có thể tự quản lý máy chủ đó hoặc để AWS lo.</p>
+
 **Amazon ECS** và **Amazon EKS** đều cần hạ tầng tính toán để chạy container. Có hai lựa chọn: tự quản lý một nhóm EC2 instance, hoặc sử dụng **AWS Fargate** và chỉ khai báo lượng vCPU, RAM mà task yêu cầu. So sánh phạm vi trách nhiệm quản lý và cơ sở tính phí:
 
 <ScenarioFlow client:visible height={240} legend={["Chi phí vận hành thấp", "Tự quản lý máy chủ"]} scenarios={[
@@ -104,6 +106,8 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Scene id="s2" label="Phần 2/5" title="Năm tác vụ của ShopViet chạy bằng container" questions={["exam3_q32", "exam2_q27", "exam6_q35", "exam1_q5", "exam4_q56", "exam3_q15", "exam1_q27", "exam2_q1"]}>
 
+<p class="scene-intro">Không phải tác vụ nào cũng phù hợp với một máy chủ chạy liên tục; container phù hợp với nhiều kiểu tác vụ khác nhau, từ dịch vụ web tới job chạy theo lịch.</p>
+
 Chọn một tác vụ, chạy thử với phương án đơn giản nhất, sau đó bật tuỳ chọn để áp dụng tính năng AWS phù hợp:
 
 <ContainerJobSim client:visible />
@@ -120,6 +124,8 @@ Một số tình huống khác của ShopViet:
 </Scene>
 
 <Scene id="s3" label="Phần 3/5" title="Mở rộng theo hai tầng: Pod/task và node" questions={["exam4_q56", "exam5_q36", "exam3_q20"]}>
+
+<p class="scene-intro">Khi tải tăng, cần thêm cả bản sao của ứng dụng lẫn máy chủ để chứa các bản sao đó; hai việc này diễn ra ở hai tầng riêng biệt.</p>
 
 Trong đợt khuyến mãi, lưu lượng vào service web của ShopViet tăng gấp nhiều lần. Việc mở rộng diễn ra ở hai tầng tách biệt:
 
@@ -138,6 +144,8 @@ Hai điểm rút ra từ mô phỏng. Thứ nhất, HPA chỉ tăng số Pod; kh
 
 <Scene id="s4" label="Phần 4/5" title="Kubernetes tại data center của doanh nghiệp" questions={["exam1_q27", "exam1_q11"]}>
 
+<p class="scene-intro">Một số doanh nghiệp phải chạy ứng dụng trong data center của mình nhưng vẫn muốn dùng cùng công cụ quản lý container như trên AWS.</p>
+
 Amazon EKS có nhiều cách triển khai ngoài Region, khác nhau ở **vị trí của control plane**, **ai quản lý control plane** và **hạ tầng chạy node**:
 
 - **EKS on AWS Outposts**: Outposts là hạ tầng do AWS quản lý, đặt trong data center của doanh nghiệp. *Extended cluster*: control plane ở Region, node trên Outpost. *Local cluster*: cả control plane và node trên Outpost. Với cả hai, control plane do AWS quản lý hoàn toàn.
@@ -153,6 +161,8 @@ Chọn một tình huống của ShopViet và tìm phương án đáp ứng mọ
 </Scene>
 
 <Scene id="s5" label="Phần 5/5" title="Phân biệt nhanh" questions={["exam1_q5", "exam2_q14", "exam3_q20", "exam4_q56", "exam1_q11"]}>
+
+<p class="scene-intro">Nhiều dịch vụ có vẻ phù hợp để chạy container hoặc tác vụ nền; phân biệt được chúng giúp chọn đúng dịch vụ cho từng tình huống.</p>
 
 Một số dịch vụ và tính năng trông giống phương án đúng trong các tình huống của bài. Chọn từng mục để xem khi nào nên dùng và vì sao không phù hợp:
 

@@ -60,6 +60,8 @@ Hệ thống ShopViet ghi nhận các hành vi tấn công: bot dò SQL injectio
 
 <Scene id="s1" label="Phần 1/3" title="AWS WAF: lọc request độc hại trước khi tới ứng dụng" questions={["exam5_q13", "exam1_q6", "exam5_q45", "exam2_q30", "exam6_q60", "exam5_q57", "exam2_q32"]}>
 
+<p class="scene-intro">Một phần traffic tới website là traffic độc hại; bộ lọc đặt trước ứng dụng có thể chặn các request này trước khi chúng tới máy chủ.</p>
+
 Sáu loại request đang được gửi tới ShopViet, trong đó có một đối tác vận chuyển hợp lệ gọi từ nước ngoài bằng IP cố định. Kích hoạt từng rule, chọn tài nguyên liên kết với AWS WAF, sau đó gửi request.
 
 AWS WAF đánh giá các rule trong web ACL theo **priority** từ số nhỏ nhất trở lên, cho tới khi gặp một rule khớp có terminating action (Allow hoặc Block) hoặc đã xét hết rule. Vì vậy, khi chặn theo quốc gia bằng geo match nhưng vẫn cần cho phép một số IP của đối tác, ShopViet đặt rule IP set chứa các IP đó với action Allow ở priority nhỏ hơn rule geo match: request của đối tác được cho phép ngay và không còn được đánh giá bởi rule geo match.
@@ -72,6 +74,8 @@ AWS WAF đánh giá các rule trong web ACL theo **priority** từ số nhỏ nh
 
 <Scene id="s2" label="Phần 2/3" title="Sáu sự cố bảo mật và dịch vụ tương ứng" questions={["exam3_q58", "exam6_q4", "exam1_q36", "exam3_q1", "exam6_q14", "exam2_q44"]}>
 
+<p class="scene-intro">Không phải mọi sự cố bảo mật đều đến từ request web; nhiều sự cố xảy ra bên trong tài khoản, và mỗi loại sự cố có một dịch vụ chuyên phát hiện hoặc ngăn chặn.</p>
+
 AWS WAF chỉ lọc request web. Nhiều sự cố khác xảy ra **bên trong** account: một server bị chiếm quyền, một tệp nhạy cảm bị lưu sai vị trí, một account mới thiếu cấu hình. Chọn một sự cố, bật hoặc tắt dịch vụ tương ứng, sau đó mô phỏng sự cố.
 
 <IncidentSim client:visible />
@@ -81,6 +85,8 @@ AWS WAF chỉ lọc request web. Nhiều sự cố khác xảy ra **bên trong**
 </Scene>
 
 <Scene id="s3" label="Phần 3/3" title="Phân biệt nhanh: các dịch vụ dễ nhầm với lớp bảo vệ" questions={["exam5_q13", "exam5_q62"]}>
+
+<p class="scene-intro">Nhiều dịch vụ bảo mật có tên hoặc phạm vi gần nhau; xác định đúng dịch vụ cho từng vấn đề giúp tránh chồng chéo và chi phí không cần thiết.</p>
 
 Một số dịch vụ thường được cân nhắc cùng AWS WAF nhưng giải quyết vấn đề khác: tổng hợp cảnh báo, quản lý rule cho nhiều account, phân giải tên miền, hoặc lọc traffic không phải HTTP. Chọn từng mục để xem phạm vi sử dụng và phương án phù hợp với tình huống của ShopViet.
 

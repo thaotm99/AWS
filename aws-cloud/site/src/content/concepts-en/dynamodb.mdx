@@ -60,6 +60,8 @@ ShopViet's order and reporting data is already stored on Aurora. Shopping carts,
 
 <Scene id="en-s1" label="Part 1/5" title="Retrieving data by key" questions={["exam4_q10", "exam2_q29", "exam3_q11", "exam6_q17", "exam4_q23", "exam6_q65"]}>
 
+<p class="scene-intro">Not all data needs relational tables and complex SQL; for data always looked up by one key, such as a cart ID, a key-value database is faster and easier to scale.</p>
+
 A **table** contains **items**; each item is a set of **attributes**, and items do not have to share the same structure. Each item has a **primary key**:
 
 - **Partition key**: DynamoDB hashes this value to determine the partition that holds the item.
@@ -80,6 +82,8 @@ Some conclusions:
 </Scene>
 
 <Scene id="en-s2" label="Part 2/5" title="Capacity modes, hot partitions and DAX" questions={["exam4_q62", "exam4_q54", "exam1_q1", "exam6_q6", "exam1_q29", "exam6_q47", "exam5_q65", "exam5_q37"]}>
+
+<p class="scene-intro">DynamoDB measures capacity in reads and writes; the capacity mode you choose and how data is spread decide whether the system chokes when load rises.</p>
 
 DynamoDB measures read and write capacity in **RCUs** and **WCUs**. 1 RCU is one strongly consistent read per second (or two eventually consistent reads) for an item up to 4 KB. 1 WCU is one write per second for an item up to 1 KB. DynamoDB has two billing models:
 
@@ -103,6 +107,8 @@ DynamoDB itself stores data on SSDs; it is **not** an in-memory database. When y
 
 <Scene id="en-s3" label="Part 3/5" title="Data flowing in and out" questions={["exam1_q33", "exam5_q32", "exam5_q35"]}>
 
+<p class="scene-intro">A database does not stand alone: data has to come in, old data has to be cleaned out, and other components need to know when data changes.</p>
+
 When integrating DynamoDB with other components, ShopViet must answer three questions: how data gets in, how old data is deleted, and which component is notified when data changes.
 
 <DataFlowSim client:visible />
@@ -115,6 +121,8 @@ When integrating DynamoDB with other components, ShopViet must answer three ques
 </Scene>
 
 <Scene id="en-s4" label="Part 4/5" title="Recovering from bad writes and accidental deletes" questions={["exam3_q49", "exam4_q42"]}>
+
+<p class="scene-intro">The most common data incidents come from human actions such as bad writes or accidental deletes; a way to restore to a point before the incident must be ready in advance.</p>
 
 The two most common data incidents come not from hardware but from human actions: a deploy that writes bad data, and an accidental delete. Choose the measure ShopViet put in place, then run the simulation:
 
@@ -134,6 +142,8 @@ The two most common data incidents come not from hardware but from human actions
 </Scene>
 
 <Scene id="en-s5" label="Part 5/5" title="Expanding to multiple Regions" questions={["exam5_q59", "exam5_q27", "exam2_q5", "exam1_q7"]}>
+
+<p class="scene-intro">When an application serves customers on several continents, the data must also sit close to them and stay in sync across Regions.</p>
 
 ShopViet expands into the European and US markets. The application is deployed in each Region; the problem to solve is how to organize the data.
 

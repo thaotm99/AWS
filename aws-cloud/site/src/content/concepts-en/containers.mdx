@@ -76,6 +76,8 @@ The ShopViet team has packaged the web application, the workers and the reportin
 
 <Scene id="en-s1" label="Part 1/5" title="EC2 launch type and Fargate" questions={["exam1_q14", "exam4_q33", "exam3_q32", "exam2_q1"]}>
 
+<p class="scene-intro">A container packages an application with everything it needs to run the same way anywhere; containers still need servers to run on, which you can manage yourself or leave to AWS.</p>
+
 **Amazon ECS** and **Amazon EKS** both need compute infrastructure to run containers. There are two options: manage a group of EC2 instances yourself, or use **AWS Fargate** and declare only the vCPU and memory a task needs. Compare the scope of management responsibility and the billing basis:
 
 <ScenarioFlow client:visible height={240} legend={["Low operational cost", "Self-managed servers"]} scenarios={[
@@ -104,6 +106,8 @@ The ShopViet team has packaged the web application, the workers and the reportin
 
 <Scene id="en-s2" label="Part 2/5" title="Five ShopViet tasks that run in containers" questions={["exam3_q32", "exam2_q27", "exam6_q35", "exam1_q5", "exam4_q56", "exam3_q15", "exam1_q27", "exam2_q1"]}>
 
+<p class="scene-intro">Not every task suits a server that runs all the time; containers fit many kinds of work, from web services to scheduled jobs.</p>
+
 Pick a task, try it with the simplest option, then turn on the option to apply the matching AWS feature:
 
 <ContainerJobSim client:visible />
@@ -120,6 +124,8 @@ Some other ShopViet scenarios:
 </Scene>
 
 <Scene id="en-s3" label="Part 3/5" title="Scaling in two layers: Pods/tasks and nodes" questions={["exam4_q56", "exam5_q36", "exam3_q20"]}>
+
+<p class="scene-intro">When load rises, you need more copies of the application and more servers to hold those copies; the two happen at separate layers.</p>
 
 During a sale, traffic to ShopViet's web service grows several times over. Scaling happens in two separate layers:
 
@@ -138,6 +144,8 @@ Two lessons from the simulation. First, the HPA only adds Pods; when nodes run o
 
 <Scene id="en-s4" label="Part 4/5" title="Kubernetes in the company's data center" questions={["exam1_q27", "exam1_q11"]}>
 
+<p class="scene-intro">Some companies must run applications in their own data centers yet still want the same container management tools they use on AWS.</p>
+
 Amazon EKS has several deployment options outside a Region. They differ in **where the control plane runs**, **who manages it**, and **what infrastructure runs the nodes**:
 
 - **EKS on AWS Outposts**: Outposts is AWS-managed infrastructure placed in the company's data center. *Extended cluster*: control plane in the Region, nodes on the Outpost. *Local cluster*: both control plane and nodes on the Outpost. In both cases AWS fully manages the control plane.
@@ -153,6 +161,8 @@ Pick a ShopViet situation and find the option that meets every requirement:
 </Scene>
 
 <Scene id="en-s5" label="Part 5/5" title="Quick comparison" questions={["exam1_q5", "exam2_q14", "exam3_q20", "exam4_q56", "exam1_q11"]}>
+
+<p class="scene-intro">Several services seem suitable for running containers or background jobs; telling them apart helps you pick the right one for each case.</p>
 
 Some services and features look like the right choice in this lesson's situations. Pick each one to see when to use it and why it does not fit:
 

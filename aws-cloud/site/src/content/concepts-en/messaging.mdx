@@ -86,6 +86,8 @@ In its early days, ShopViet's web application called every component synchronous
 
 <Scene id="en-s1" label="Part 1/5" title="Placing a queue between two processing tiers" questions={["exam2_q47", "exam3_q39", "exam1_q55", "exam5_q26", "exam3_q54", "exam6_q52", "exam5_q60", "exam1_q33", "exam2_q14", "exam5_q32", "exam3_q7"]}>
 
+<p class="scene-intro">When the part that takes orders is faster than the part that processes them, a queue in between lets the first stop waiting while the second works through the backlog at its own pace.</p>
+
 The flash sale starts at 20:00. The web tier takes orders at a high rate, while the processing tier (payment, stock deduction) has much lower throughput. The simulation below compares three ways to connect these two tiers:
 
 <QueueBufferSim client:visible />
@@ -126,6 +128,8 @@ Some architectures that integrate a queue into the ShopViet system:
 
 <Scene id="en-s2" label="Part 2/5" title="The life of a message" questions={["exam4_q46", "exam5_q44", "exam3_q34", "exam6_q37", "exam6_q32", "exam6_q16"]}>
 
+<p class="scene-intro">A message in a queue is deleted only after it has been processed successfully; this ensures no work is lost when a worker fails midway.</p>
+
 When a worker receives a message, the message is **not yet deleted** from the queue; it is only hidden for a period called the **visibility timeout**. After processing, the worker must call `DeleteMessage`. If the worker fails during processing, the message becomes visible again so that another worker can process it. SQS features all revolve around this life cycle. Choose each ShopViet scenario and run the simulation:
 
 <MessageLifeSim client:visible />
@@ -139,6 +143,8 @@ A delay queue applies to every message in the queue. When only some messages nee
 </Scene>
 
 <Scene id="en-s3" label="Part 3/5" title="Guaranteed ordering and exactly-once processing: FIFO queues" questions={["exam1_q13", "exam1_q34", "exam3_q2", "exam2_q42"]}>
+
+<p class="scene-intro">For money transactions, order and exactly-once processing are mandatory; the default queue does not guarantee them, so another queue type is needed.</p>
 
 The default queue type is **standard**: very high throughput, but a message can be delivered **more than once** and **ordering is not guaranteed**. For orders, the worker can check for duplicates itself. For ShopViet's e-wallet this is not acceptable: a top-up must be processed before a payment, and each command must be processed exactly once. The simulation below compares three options:
 
@@ -158,6 +164,8 @@ Sending wallet commands through **EventBridge** does not meet the requirement ei
 
 <Scene id="en-s4" label="Part 4/5" title="Distributing events to multiple targets and orchestrating multi-step workflows" questions={["exam4_q35", "exam3_q30", "exam2_q27", "exam6_q55", "exam1_q15", "exam4_q51", "exam6_q61", "exam2_q1", "exam2_q9", "exam1_q61", "exam1_q50", "exam5_q17"]}>
 
+<p class="scene-intro">Not all communication is one sender and one receiver; some events must reach many places, some tasks run on a schedule, and some processes have several steps in sequence.</p>
+
 A queue follows a one-sender, one-receiver model. ShopViet has other needs too: one event must notify several components, events come from external software, jobs run on a schedule, workflows have several steps, or a legacy application uses its own protocol. Choose a scenario and change the setting to compare:
 
 <EventRouterSim client:visible />
@@ -174,6 +182,8 @@ Some problems ShopViet ran into in real operation:
 </Scene>
 
 <Scene id="en-s5" label="Part 5/5" title="Quick comparison: delivery guarantees and look-alike settings" questions={["exam1_q13", "exam3_q34", "exam3_q46"]}>
+
+<p class="scene-intro">Messaging services differ in delivery guarantees and operating settings; a wrong choice easily leads to lost data or unnecessary cost.</p>
 
 Three ShopViet situations: seller registration forms must be processed **exactly once, with no data loss** by the back-end processing tier; SQS costs are high because workers receive too many empty responses; a real-time data stream from the warehouse barcode scanners needs a scalable ingestion channel that allows reprocessing when the analytics tier fails. Choose each item to see what it is for and what fits instead.
 

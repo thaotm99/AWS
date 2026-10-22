@@ -85,6 +85,8 @@ Nhiều tác vụ của ShopViet chỉ chạy khi phát sinh sự kiện: ảnh 
 
 <Scene id="s1" label="Phần 1/4" title="Thực thi mã khi phát sinh sự kiện" questions={["exam5_q23", "exam2_q14", "exam1_q60", "exam5_q35", "exam6_q31", "exam3_q30", "exam1_q33"]}>
 
+<p class="scene-intro">Nhiều tác vụ chỉ cần chạy khi có việc xảy ra, ví dụ có ảnh mới hoặc đơn hàng mới; duy trì máy chủ chạy chờ cả ngày cho những tác vụ này là lãng phí.</p>
+
 Ba tác vụ của ShopViet: tạo thumbnail khi người bán tải ảnh lên, cập nhật bảng xếp hạng từ lượt xem, và dọn dữ liệu cũ hằng tuần. So sánh phương án "duy trì máy chủ chờ sẵn" với phương án để sự kiện kích hoạt Lambda:
 
 <ScenarioFlow client:visible height={220} legend={["Khuyến nghị", "Chi phí hoặc công vận hành cao"]} scenarios={[
@@ -142,6 +144,8 @@ Ba tác vụ của ShopViet: tạo thumbnail khi người bán tải ảnh lên,
 
 <Scene id="s2" label="Phần 2/4" title="Vận hành Lambda trong môi trường production" questions={["exam4_q25", "exam1_q50", "exam3_q20", "exam6_q35", "exam4_q39", "exam2_q16"]}>
 
+<p class="scene-intro">Một function chạy tốt khi thử nghiệm vẫn có thể gặp vấn đề trên môi trường thật: kết nối mạng, thời gian khởi động, giới hạn số lần chạy đồng thời và cách lưu mật khẩu.</p>
+
 Một số vấn đề chỉ xuất hiện khi triển khai lên production: function gắn vào VPC không truy cập được Internet, người dùng chờ lâu vào giờ cao điểm, thông báo bị throttle khi vượt concurrency quota, mật khẩu database lưu trong cấu hình. Chọn từng tình huống, chạy thử, sau đó bật tuỳ chọn để khắc phục:
 
 <LambdaRunSim client:visible />
@@ -153,6 +157,8 @@ Hai lưu ý bổ sung. Mỗi lần thực thi Lambda function tiêu chuẩn tố
 </Scene>
 
 <Scene id="sizing" label="Phần 3/4" title="Cấu hình tài nguyên và đóng gói function" questions={["exam4_q25", "exam3_q32", "exam1_q9"]}>
+
+<p class="scene-intro">Mỗi function được cấp một lượng tài nguyên cố định cho mỗi lần chạy; chọn đúng lượng tài nguyên ảnh hưởng trực tiếp tới tốc độ và chi phí.</p>
 
 Mỗi Lambda function có một số thiết lập quyết định tài nguyên của execution environment:
 
@@ -174,6 +180,8 @@ Layer không thay thế được nơi lưu dữ liệu. Khi team gợi ý sản 
 </Scene>
 
 <Scene id="s3" label="Phần 4/4" title="Cung cấp API cho ứng dụng và đối tác" questions={["exam1_q49", "exam3_q52", "exam3_q53", "exam2_q58", "exam4_q44", "exam5_q32", "exam1_q57", "exam1_q11"]}>
+
+<p class="scene-intro">Ứng dụng di động và đối tác cần một địa chỉ chung để gọi vào hệ thống; điểm vào đó cũng là nơi kiểm tra quyền và giới hạn lượng request trước khi chạy code.</p>
 
 Ứng dụng mobile, đối tác bán hàng và trang quản trị đều gọi tới `api.shopviet.vn`. **API Gateway** thực hiện một chuỗi bước kiểm tra trước khi request tới mã ứng dụng. Chọn tình huống và gửi request:
 

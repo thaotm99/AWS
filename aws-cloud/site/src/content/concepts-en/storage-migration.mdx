@@ -75,6 +75,8 @@ ShopViet's warehouse still runs its legacy systems in the office, including a ta
 
 <Scene id="en-s1" label="Part 1/4" title="Storage Gateway: on-premises applications using AWS storage" questions={["exam1_q35", "exam5_q28", "exam3_q31", "exam4_q37", "exam2_q59", "exam4_q36", "exam3_q56"]}>
 
+<p class="scene-intro">Not every system can move to the cloud at once; a bridge device lets office applications use AWS storage without changing how they work.</p>
+
 Storage Gateway is a virtual machine deployed at the warehouse. To existing applications, the gateway appears as a disk, a file share or a tape library, while the data itself is stored on AWS. Choose each gateway type to see the data flow:
 
 <ScenarioFlow client:visible height={230} legend={["Fits", "Does not fit"]} scenarios={[
@@ -109,6 +111,8 @@ Storage Gateway is a virtual machine deployed at the warehouse. To existing appl
 
 <Scene id="en-s2" label="Part 2/4" title="Transfer data over the network or ship devices" questions={["exam3_q3", "exam2_q11", "exam5_q48", "exam5_q5", "exam2_q41", "exam3_q61", "exam2_q4", "exam5_q62", "exam4_q29"]}>
 
+<p class="scene-intro">Data can move to AWS over the network or on physical devices shipped by courier; the choice depends on data size, bandwidth and the deadline.</p>
+
 The existing NAS at the warehouse holds product images and backup data accumulated over many years. The first question to answer: can the link bandwidth meet the deadline? Change the data size, bandwidth and destination, then compare the time of the two options:
 
 <TransferPlannerSim client:visible />
@@ -131,6 +135,8 @@ Snowball Edge is **no longer available to new customers**. The Storage Optimized
 </Scene>
 
 <Scene id="en-s3" label="Part 3/4" title="Migrating servers and databases to AWS" questions={["exam6_q48", "exam3_q4", "exam1_q47", "exam5_q8", "exam4_q27"]}>
+
+<p class="scene-intro">Running servers and databases can move to AWS without being reinstalled, with only a short interruption.</p>
 
 The warehouse management server is a virtual machine that has been running for many years and cannot be reinstalled. Migrating this server to EC2 with **Application Migration Service (MGN)** takes the following steps:
 
@@ -194,6 +200,8 @@ The other options each miss part of the requirement. **DMS Standard** uses a rep
 </Scene>
 
 <Scene id="en-s4" label="Part 4/4" title="Managed SFTP with AWS Transfer Family" questions={["exam5_q62"]}>
+
+<p class="scene-intro">Partners are used to sending files over SFTP; instead of running your own SFTP servers, a managed service keeps their workflow unchanged while storing files directly in AWS.</p>
 
 Suppliers send price lists and documents to ShopViet over SFTP. Today this runs on two Linux EC2 instances, each with an Elastic IP that the suppliers allow in their firewalls; Linux accounts are created by hand with file-level permissions; the data sits on a shared file system mounted on both instances. ShopViet wants a managed service but must keep three properties: fixed IP addresses, connections only from supplier IPs, and file-level permissions.
 

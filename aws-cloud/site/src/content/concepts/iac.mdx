@@ -71,6 +71,8 @@ Tuần trước, một nhân sự mới của ShopViet tạo database bằng con
 
 <Scene id="s1" label="Phần 1/4" title="Template thay thế thao tác thủ công" questions={["exam4_q47", "exam4_q15", "exam4_q17"]}>
 
+<p class="scene-intro">Tạo hạ tầng bằng thao tác tay trên console khó lặp lại chính xác; mô tả hạ tầng trong file giúp tạo, sửa và tái tạo môi trường một cách tự động.</p>
+
 **Template** là một file YAML hoặc JSON mô tả các tài nguyên cần tạo. CloudFormation đọc template và tạo một **stack**: nhóm tài nguyên được tạo, cập nhật và xoá cùng nhau. Để thay đổi hạ tầng, cập nhật template và thực hiện **update stack**; **change set** cho phép xem trước các thay đổi CloudFormation sẽ áp dụng. Chạy ba tình huống của ShopViet:
 
 <StackSim client:visible />
@@ -85,6 +87,8 @@ Khả năng đọc hiểu template quan trọng tương đương khả năng vi�
 
 <Scene id="s2" label="Phần 2/4" title="Áp dụng một tiêu chuẩn cho mọi account và Region" questions={["exam3_q36"]}>
 
+<p class="scene-intro">Khi doanh nghiệp có nhiều tài khoản AWS ở nhiều Region, cùng một tiêu chuẩn cần được áp dụng ở mọi nơi mà không phải triển khai thủ công từng chỗ.</p>
+
 ShopViet hiện có nhiều account trong **AWS Organizations**: production, dev, data, và sắp bổ sung chi nhánh tại Nhật Bản. Mỗi account hoạt động ở nhiều Region. Mọi môi trường phải sử dụng đúng loại EC2 đã được phê duyệt và IAM role tiêu chuẩn cho Lambda. Triển khai template baseline bằng ba phương án, sau đó bổ sung một account mới:
 
 <StackSetSim client:visible />
@@ -95,6 +99,8 @@ ShopViet hiện có nhiều account trong **AWS Organizations**: production, dev
 
 <Scene id="s3" label="Phần 3/4" title="Elastic Beanstalk: khởi động instance mới trong 2 phút" questions={["exam4_q1"]}>
 
+<p class="scene-intro">Đội phát triển muốn triển khai ứng dụng nhanh mà không phải tự dựng máy chủ, load balancer và cơ chế mở rộng; có dịch vụ đảm nhận phần hạ tầng đó.</p>
+
 Website chính của ShopViet chạy trên **Elastic Beanstalk**: đội phát triển chỉ cần tải mã nguồn lên, Beanstalk tự động tạo EC2, load balancer, Auto Scaling group và giám sát health. Đội vẫn có thể xem và điều chỉnh các tài nguyên bên dưới. Vấn đề là quá trình cài đặt ứng dụng mất 45 phút: khi lưu lượng tăng, Beanstalk bổ sung instance nhưng instance mới phải gần một giờ sau mới phục vụ được request. So sánh thời gian của bốn phương án khởi động:
 
 <BootTimeSim client:visible />
@@ -104,6 +110,8 @@ Website chính của ShopViet chạy trên **Elastic Beanstalk**: đội phát t
 </Scene>
 
 <Scene id="s4" label="Phần 4/4" title="Service Catalog và các dịch vụ dễ nhầm với IaC" questions={["exam6_q22", "exam6_q41", "exam2_q22"]}>
+
+<p class="scene-intro">Người dùng nội bộ cần tự tạo tài nguyên đã được phê duyệt mà không cần quyền quản trị rộng; một danh mục sản phẩm dựng sẵn giải quyết nhu cầu này.</p>
 
 Phần 1 đưa tiêu chuẩn vào template, nhưng người dùng template vẫn cần quyền CloudFormation và quyền trên mọi dịch vụ mà template tạo ra. **AWS Service Catalog** giải quyết bài toán self-service: quản trị viên nhập template CloudFormation thành **product**, gom product vào **portfolio** và cấp quyền cho IAM user, group hoặc role. **Template constraint** thu hẹp giá trị được phép của tham số trong template (ví dụ chỉ một số loại EC2); **launch constraint** chỉ định IAM role mà Service Catalog dùng khi tạo product, nên người dùng cuối không cần quyền trực tiếp trên CloudFormation và các dịch vụ bên dưới. Mỗi lần người dùng tạo product, kết quả là một **provisioned product**, tức một stack CloudFormation.
 

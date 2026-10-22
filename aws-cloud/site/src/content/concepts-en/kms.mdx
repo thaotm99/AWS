@@ -68,6 +68,8 @@ ShopViet's customer data must be encrypted, and the audit team requires informat
 
 <Scene id="en-s1" label="Part 1/4" title="Encrypting invoices stored on S3" questions={["exam1_q22", "exam2_q50", "exam4_q6", "exam5_q46", "exam5_q11", "exam2_q46", "exam3_q24"]}>
 
+<p class="scene-intro">Encrypted data cannot be read without the key, so the key questions are who holds the key and who may use it.</p>
+
 Every new object on S3 is encrypted. The decision to make is **who manages the key** and **who can track key usage**. Each scenario below is a real ShopViet requirement. Choose a scenario, change the configuration and press Run to watch the object's path and the services that are called.
 
 <S3EncryptSim client:visible />
@@ -77,6 +79,8 @@ Every new object on S3 is encrypted. The decision to make is **who manages the k
 </Scene>
 
 <Scene id="en-s2" label="Part 2/4" title="Sharing a copy of an encrypted database with the auditors" questions={["exam2_q57"]}>
+
+<p class="scene-intro">Sharing encrypted data with another account only works if that account may also use the key to decrypt it.</p>
 
 The auditors have their own AWS account and need a copy of an RDS database encrypted with KMS. Perform each step in turn:
 
@@ -108,6 +112,8 @@ The auditors have their own AWS account and need a copy of an RDS database encry
 
 <Scene id="en-s3" label="Part 3/4" title="Encryption at rest and in transit" questions={["exam2_q40", "exam4_q31", "exam2_q45", "exam5_q40", "exam5_q15", "exam2_q9"]}>
 
+<p class="scene-intro">Data needs protection in two states: while stored on disk and while moving over the network; each state uses a different encryption mechanism.</p>
+
 KMS protects data **at rest**. Data **in transit** between machines needs SSL/TLS, and HTTPS requires a valid certificate. A simulation of six situations ShopViet meets in operations:
 
 <DataGuardSim client:visible />
@@ -117,6 +123,8 @@ KMS protects data **at rest**. Data **in transit** between machines needs SSL/TL
 </Scene>
 
 <Scene id="en-s4" label="Part 4/4" title="Quick comparison: easily confused encryption choices" questions={["exam3_q24", "exam4_q6", "exam5_q46", "exam2_q46"]}>
+
+<p class="scene-intro">Many features sound like encryption but solve different problems; telling them apart avoids picking something more complex than needed.</p>
 
 Some features have names close to ShopViet's encryption requirements but solve a different problem, or add operational work. Choose each feature to see when to use it, why it does not fit the matching ShopViet situation, and what to choose instead:
 

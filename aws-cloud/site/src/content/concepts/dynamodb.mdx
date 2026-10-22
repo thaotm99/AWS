@@ -60,6 +60,8 @@ Dữ liệu đơn hàng và báo cáo của ShopViet đã được lưu trên Au
 
 <Scene id="s1" label="Phần 1/5" title="Truy xuất dữ liệu theo key" questions={["exam4_q10", "exam2_q29", "exam3_q11", "exam6_q17", "exam4_q23", "exam6_q65"]}>
 
+<p class="scene-intro">Không phải dữ liệu nào cũng cần bảng quan hệ và câu lệnh SQL phức tạp; với dữ liệu luôn được tra cứu theo một khoá như mã giỏ hàng, database kiểu key-value nhanh và dễ mở rộng hơn.</p>
+
 Một **table** chứa các **item**; mỗi item là một tập hợp **attribute**, các item không bắt buộc có cùng cấu trúc. Mỗi item có một **primary key**:
 
 - **Partition key**: DynamoDB băm giá trị này để xác định partition chứa item.
@@ -80,6 +82,8 @@ Một số kết luận:
 </Scene>
 
 <Scene id="s2" label="Phần 2/5" title="Capacity mode, hot partition và DAX" questions={["exam4_q62", "exam4_q54", "exam1_q1", "exam6_q6", "exam1_q29", "exam6_q47", "exam5_q65", "exam5_q37"]}>
+
+<p class="scene-intro">DynamoDB tính công suất theo số lần đọc và ghi; cách chọn chế độ công suất và cách phân bố dữ liệu quyết định hệ thống có bị nghẽn khi tải tăng hay không.</p>
 
 DynamoDB đo năng lực đọc ghi bằng **RCU** và **WCU**. 1 RCU tương ứng một lần đọc strongly consistent mỗi giây (hoặc hai lần đọc eventually consistent) cho item tối đa 4 KB. 1 WCU tương ứng một lần ghi mỗi giây cho item tối đa 1 KB. DynamoDB có hai mô hình tính phí:
 
@@ -103,6 +107,8 @@ Bản thân DynamoDB lưu dữ liệu trên SSD, **không phải** cơ sở dữ
 
 <Scene id="s3" label="Phần 3/5" title="Luồng dữ liệu vào và ra" questions={["exam1_q33", "exam5_q32", "exam5_q35"]}>
 
+<p class="scene-intro">Database không đứng một mình: dữ liệu cần được đưa vào, dữ liệu cũ cần được dọn đi, và các thành phần khác cần biết khi dữ liệu thay đổi.</p>
+
 Khi tích hợp DynamoDB với các thành phần khác, ShopViet cần trả lời ba câu hỏi: dữ liệu được đưa vào bằng phương thức nào, dữ liệu cũ được xoá như thế nào, và thành phần nào được thông báo khi dữ liệu thay đổi.
 
 <DataFlowSim client:visible />
@@ -115,6 +121,8 @@ Khi tích hợp DynamoDB với các thành phần khác, ShopViet cần trả l�
 </Scene>
 
 <Scene id="s4" label="Phần 4/5" title="Khôi phục sau ghi sai và xoá nhầm" questions={["exam3_q49", "exam4_q42"]}>
+
+<p class="scene-intro">Sự cố dữ liệu phổ biến nhất thường đến từ thao tác của con người như ghi sai hay xoá nhầm; cần chuẩn bị sẵn cách khôi phục về thời điểm trước sự cố.</p>
 
 Hai sự cố dữ liệu phổ biến nhất không xuất phát từ phần cứng mà từ thao tác của con người: một bản deploy ghi sai dữ liệu, và một thao tác xoá nhầm. Chọn biện pháp ShopViet đã chuẩn bị, sau đó chạy mô phỏng:
 
@@ -134,6 +142,8 @@ Hai sự cố dữ liệu phổ biến nhất không xuất phát từ phần c�
 </Scene>
 
 <Scene id="s5" label="Phần 5/5" title="Mở rộng sang nhiều Region" questions={["exam5_q59", "exam5_q27", "exam2_q5", "exam1_q7"]}>
+
+<p class="scene-intro">Khi ứng dụng phục vụ khách hàng ở nhiều châu lục, dữ liệu cũng cần nằm gần họ và được đồng bộ giữa các Region.</p>
 
 ShopViet mở rộng sang thị trường châu Âu và Hoa Kỳ. Ứng dụng được triển khai tại mỗi Region; vấn đề cần giải quyết là cách tổ chức dữ liệu.
 

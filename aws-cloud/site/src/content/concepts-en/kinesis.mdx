@@ -74,6 +74,8 @@ The Messaging lesson used SQS to distribute **tasks** to workers: each order nee
 
 <Scene id="en-s1" label="Part 1/4" title="Comparing queues and streams" questions={["exam3_q10", "exam3_q46", "exam1_q60", "exam2_q42"]}>
 
+<p class="scene-intro">A queue hands each message to one consumer and then deletes it; when many applications all need the full stream of events, you need a channel that keeps the data for everyone to read.</p>
+
 Three ShopViet applications all need to receive every purchase event. The simulation below sends 6 events from three users (A, B, C) to SQS and to Kinesis Data Streams in turn, to compare the data each application receives:
 
 <ShardStreamSim client:visible />
@@ -93,6 +95,8 @@ ShopViet monitors 5,000 point-of-sale terminals in its stores, each sending data
 
 <Scene id="en-s2" label="Part 2/4" title="When a stream exceeds its throughput limits" questions={["exam5_q53", "exam6_q31", "exam5_q38"]}>
 
+<p class="scene-intro">Every data stream has a throughput limit; when events exceed it, data is delayed or rejected unless capacity is adjusted.</p>
+
 Each shard has throughput limits: writes of **1,000 records or 1 MB per second**, reads of **2 MB per second** (total for all consumers using `GetRecords`). The simulation below shows three problems ShopViet ran into and the matching solutions. Run the simulation for 10 seconds, then turn on the fix:
 
 <ShardThroughputSim client:visible />
@@ -104,6 +108,8 @@ A stream has two **capacity modes**. **Provisioned**: the operator sets the numb
 </Scene>
 
 <Scene id="en-s3" label="Part 3/4" title="Connecting a stream to analytics, search and storage" questions={["exam4_q22", "exam1_q57", "exam5_q6", "exam4_q27", "exam5_q35", "exam6_q35", "exam6_q31", "exam1_q33"]}>
+
+<p class="scene-intro">Streaming data is only valuable once it reaches where it is used: analytics systems, search tools or long-term storage.</p>
 
 Kinesis Data Streams acts as the data channel: data sources in front, analytics, search and storage services behind. For each ShopViet requirement, choose a service for each step and run the simulation:
 
@@ -121,6 +127,8 @@ For applications already developed for **Apache Kafka**, use **Amazon MSK**: a f
 </Scene>
 
 <Scene id="en-s4" label="Part 4/4" title="Quick comparison: when the data is not a stream" questions={["exam5_q58"]}>
+
+<p class="scene-intro">Not all data is a continuous stream of events; for files already stored, batch processing or ready-made AI services usually fit better.</p>
 
 ShopViet's customer service department stores call recordings on S3 and wants to analyze customer sentiment automatically, then let analysts run **ad-hoc SQL queries** on the results. The data here is **stored audio files**, not a continuous event stream, so the streaming services in this lesson are not the main choice. Choose each item to see what it is for and what fits instead.
 

@@ -91,6 +91,8 @@ Hệ thống ShopViet có bốn nhu cầu lưu trữ khác nhau: database yêu c
 
 <Scene id="s1" label="Phần 1/5" title="Lưu trữ dùng chung cho nhiều web server" questions={["exam2_q29", "exam6_q15", "exam1_q46", "exam1_q9"]}>
 
+<p class="scene-intro">Khi nhiều máy chủ cùng phục vụ một website, dữ liệu do người dùng tải lên phải được lưu ở nơi mọi máy chủ đều đọc được.</p>
+
 ShopViet vận hành ba web server tại hai AZ phía sau một load balancer. Người dùng tải video giới thiệu sản phẩm lên một server bất kỳ, và người dùng khác được định tuyến tới server nào cũng phải xem được video đó. Thử lưu video tại ba vị trí:
 
 <SharedStorageSim client:visible />
@@ -106,6 +108,8 @@ Ba loại dịch vụ cũng khác nhau về cách tính phí lưu trữ. Đội 
 </Scene>
 
 <Scene id="s2" label="Phần 2/5" title="Lựa chọn EBS volume cho database" questions={["exam3_q27", "exam5_q22", "exam1_q44", "exam6_q24", "exam4_q15", "exam5_q64", "exam5_q16", "exam5_q40"]}>
+
+<p class="scene-intro">Ổ đĩa của database quyết định tốc độ đọc ghi của toàn hệ thống; AWS có nhiều loại ổ đĩa, khác nhau ở hiệu năng và giá.</p>
 
 Database đơn hàng của ShopViet chạy trên EC2 với nhu cầu IOPS tăng dần. Điều chỉnh thanh IOPS và bật các yêu cầu để xem loại volume phù hợp:
 
@@ -133,6 +137,8 @@ Ngoài việc lựa chọn loại volume, vận hành EBS còn bao gồm các t�
 </Scene>
 
 <Scene id="s3" label="Phần 3/5" title="Cấu hình EFS theo đặc điểm tải" questions={["exam2_q64", "exam4_q55", "exam3_q11", "exam2_q60", "exam6_q39", "exam4_q24", "exam1_q12", "exam5_q47", "exam1_q9"]}>
+
+<p class="scene-intro">File system dùng chung cũng cần được điều chỉnh khi tải thay đổi, khi dữ liệu cũ đi và khi phải giới hạn ai được truy cập.</p>
 
 Sau khi triển khai EFS, ShopViet cần giải quyết các vấn đề vận hành: điều chỉnh cấu hình khi tải lớn, tối ưu chi phí lưu trữ tệp cũ, và kiểm soát quyền mount. Chọn từng tình huống:
 
@@ -187,6 +193,8 @@ Các lưu ý khác khi Lambda chạy trong VPC (truy cập Internet, NAT gateway
 
 <Scene id="s4" label="Phần 4/5" title="Lựa chọn file system cho bốn nhóm người dùng" questions={["exam2_q12", "exam2_q56", "exam1_q65", "exam3_q5", "exam3_q43", "exam3_q56", "exam1_q24", "exam3_q61", "exam3_q26", "exam5_q47", "exam5_q54"]}>
 
+<p class="scene-intro">Ngoài file system dùng chung cho Linux, nhiều nhóm người dùng có yêu cầu riêng, ví dụ chia sẻ file Windows hoặc tính toán hiệu năng cao; mỗi yêu cầu có một loại file system phù hợp.</p>
+
 Ngoài EFS, AWS cung cấp bốn loại **FSx** cho các nhu cầu chuyên biệt. Mỗi nhóm trong bốn nhóm người dùng của ShopViet có ba yêu cầu bắt buộc. Thử mount từng file system cho từng nhóm để xác định file system đáp ứng đầy đủ yêu cầu:
 
 <FsxSim client:visible />
@@ -209,6 +217,8 @@ Các tính năng quản lý dữ liệu của FSx for NetApp ONTAP và FSx for O
 </Scene>
 
 <Scene id="s5" label="Phần 5/5" title="Truy cập dữ liệu S3 qua giao diện file" questions={["exam3_q5", "exam4_q24", "exam5_q28", "exam5_q47", "exam3_q32"]}>
+
+<p class="scene-intro">Một số ứng dụng cũ chỉ biết đọc ghi file trong thư mục, trong khi dữ liệu lại nằm trên S3; cần một lớp chuyển đổi để ứng dụng dùng được dữ liệu đó mà không phải viết lại.</p>
 
 Team dữ liệu ShopViet lưu toàn bộ ảnh sản phẩm và dữ liệu huấn luyện mô hình gợi ý trên S3. Một số ứng dụng cũ chỉ đọc ghi tệp, không gọi S3 API. **Mountpoint for Amazon S3** là file client mã nguồn mở, mount bucket thành thư mục cục bộ trên Linux và chuyển thao tác tệp (`open`, `read`) thành lời gọi S3 API. Mountpoint không phải file system POSIX đầy đủ: chạy thử các thao tác thường gặp trên Mountpoint và trên EFS:
 

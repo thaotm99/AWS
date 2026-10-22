@@ -119,6 +119,8 @@ The ShopViet system already has load balancers, Auto Scaling groups, containers 
 
 <Scene id="en-s1" label="Part 1/6" title="The detection delay of an alarm" questions={["exam5_q20", "exam4_q25", "exam3_q15"]}>
 
+<p class="scene-intro">A system should detect problems itself instead of waiting for customers to report them; this relies on continuously measured metrics and alert thresholds.</p>
+
 Each AWS service sends **metrics** to CloudWatch: EC2 CPU, Lambda invocations, the CPU of an ECS service. An **alarm** watches one metric, compares it with a threshold, and when the metric breaches the threshold for long enough it performs an **action**: sending a notification through SNS, scaling a group of resources, or acting on EC2.
 
 A point that is often overlooked: by default, EC2 sends metrics only **every 5 minutes** (basic monitoring, free of charge); detailed monitoring sends metrics every 1 minute and is charged. Run the livestream scenario twice, once with detailed monitoring off and once with it on:
@@ -133,6 +135,8 @@ Choosing the right metric matters as much as choosing the threshold. An ECS serv
 
 <Scene id="en-s2" label="Part 2/6" title="Recovering instances automatically with alarm actions" questions={["exam3_q38", "exam3_q57", "exam5_q19", "exam4_q16"]}>
 
+<p class="scene-intro">When a server failure is detected, the system can restart or recover the server itself without anyone on call.</p>
+
 ShopViet's warehouse management page runs on **one** EC2 instance; its scale does not yet need an Auto Scaling group. The instance occasionally fails, and restarting it manually outside working hours (for example at 3:00 a.m.) is undesirable. A CloudWatch alarm can call four EC2 actions directly: **stop**, **terminate**, **reboot**, **recover**, with no Lambda or script. In addition, for supported instance types, **simplified automatic recovery** is enabled by default at launch; CloudWatch action based recovery is an additional mechanism you configure, and it does not apply to instances in an Auto Scaling group.
 
 EC2 has two kinds of status checks. An **instance status check** fails when the problem is inside the instance (the operating system hangs, memory is exhausted). A **system status check** fails when the AWS infrastructure the instance runs on has a problem (loss of network connectivity, loss of power, hardware or software failure on the physical host). Each kind needs a different action:
@@ -144,6 +148,8 @@ EC2 has two kinds of status checks. An **instance status check** fails when the 
 </Scene>
 
 <Scene id="en-s3" label="Part 3/6" title="Preserving logs when instances are replaced" questions={["exam5_q33", "exam1_q61", "exam1_q27"]}>
+
+<p class="scene-intro">Servers can be replaced at any time, taking their local logs with them; logs must be shipped to a central store.</p>
 
 ShopViet's Auto Scaling group scales very frequently, with new instances replacing old ones almost every day. A user reports a payment error that happened two days ago, but the instance involved has already been terminated. In another incident, a leaked access key was used to call APIs continuously at night. Both incidents share a solution: move logs off the instance and let CloudWatch process them.
 
@@ -160,6 +166,8 @@ Another requirement concerns the deployment location: ShopViet is expanding into
 </Scene>
 
 <Scene id="en-s4" label="Part 4/6" title="Tracing actions and evaluating configuration compliance" questions={["exam1_q16", "exam3_q29", "exam2_q43", "exam2_q9"]}>
+
+<p class="scene-intro">After an incident, you need to know who did what and when, and whether the current configuration complies with policy; each question has a service that provides the data.</p>
 
 After an incident, the ShopViet operations team needs to answer many questions; each question can be answered by only one service. Choose each question and send the query:
 
@@ -184,6 +192,8 @@ To apply the same set of Config rules to many accounts, ShopViet uses a **confor
 </Scene>
 
 <Scene id="en-s5" label="Part 5/6" title="Patching hundreds of instances without service disruption" questions={["exam3_q6", "exam5_q34"]}>
+
+<p class="scene-intro">With hundreds of servers, patching and running commands by hand on each one is no longer feasible; you need a tool that does it in bulk, on a schedule and under control.</p>
 
 ShopViet has more than 200 EC2 instances; every month brings security patches for the operating system. **Systems Manager** does this through the **SSM Agent** running on the instances: Patch Manager patches on a schedule, Run Command runs commands on a whole group of instances, Automation runs multi-step runbooks. The first step is to grant the agent permission to communicate with Systems Manager. The instances already have their own IAM role to access RDS and Secrets Manager:
 
@@ -223,6 +233,8 @@ In the previous patch cycle, every patch reported success but users still saw er
 </Scene>
 
 <Scene id="en-s6" label="Part 6/6" title="Quick comparison: monitoring and operations features that are easy to confuse" questions={["exam1_q61", "exam2_q9", "exam2_q43", "exam3_q6", "exam4_q39", "exam5_q31", "exam6_q41"]}>
+
+<p class="scene-intro">Many monitoring and operations features have similar names; telling them apart helps you pick the right tool for each need.</p>
 
 Some CloudTrail, Config, Systems Manager and Trusted Advisor features have names close to the right solution but serve a different purpose. Choose each item to see what it is for and what fits the ShopViet situation.
 

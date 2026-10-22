@@ -109,6 +109,8 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Scene id="s1" label="Phần 1/7" title="Lựa chọn storage class theo loại dữ liệu" questions={["exam1_q8", "exam1_q15", "exam1_q28", "exam5_q49", "exam6_q9", "exam5_q51", "exam6_q28", "exam2_q34", "exam4_q43", "exam1_q19"]}>
 
+<p class="scene-intro">Dữ liệu được truy cập với tần suất khác nhau: ảnh sản phẩm được xem liên tục, hoá đơn cũ hầu như không ai mở; S3 cho phép lưu mỗi loại ở một mức giá phù hợp với tần suất đó.</p>
+
 Chi phí S3 gồm hai thành phần chính: phí lưu trữ tính theo GB và phí truy xuất dữ liệu. Storage class có phí lưu trữ càng thấp thì phí truy xuất càng cao hoặc thời gian truy xuất càng dài. Chọn từng loại dữ liệu của ShopViet để xem storage class phù hợp:
 
 <RequirementPicker client:visible items={[
@@ -142,6 +144,8 @@ Một lifecycle rule không nhất thiết áp dụng cho toàn bucket. Phần t
 
 <Scene id="s2" label="Phần 2/7" title="Bảo vệ hoá đơn khỏi thao tác xoá: versioning và Object Lock" questions={["exam1_q20", "exam5_q50", "exam1_q56", "exam4_q64", "exam5_q39"]}>
 
+<p class="scene-intro">Một số dữ liệu phải được giữ nguyên trong nhiều năm theo quy định; cần cơ chế ngăn việc xoá hoặc ghi đè, kể cả do nhầm lẫn hay do chính quản trị viên.</p>
+
 Quy định pháp lý yêu cầu ShopViet lưu giữ hoá đơn trong nhiều năm. Rủi ro mất dữ liệu đến từ thao tác xoá nhầm của nhân viên, script dọn dẹp bị lỗi, hoặc chính quản trị viên chủ động xoá. Chọn cơ chế bảo vệ bucket và chủ thể thực hiện xoá, sau đó quan sát lớp bảo vệ nào giữ lại hoá đơn:
 
 <DeleteGuardSim client:visible />
@@ -157,6 +161,8 @@ Retention period gắn với từng phiên bản object, do đó các phiên b�
 </Scene>
 
 <Scene id="s3" label="Phần 3/7" title="Kiểm soát truy cập bucket" questions={["exam4_q65", "exam2_q24", "exam4_q8", "exam2_q15", "exam6_q30", "exam6_q3", "exam6_q54", "exam6_q29", "exam4_q34", "exam5_q39", "exam5_q24"]}>
+
+<p class="scene-intro">Khi nhiều team và đối tác cùng dùng một kho dữ liệu, việc cấp quyền cần rõ ràng: ai được đọc, ai được ghi, và chỉ trong phạm vi nào.</p>
 
 Khi số lượng team và đối tác sử dụng dữ liệu tăng lên, việc cấp quyền cần được tổ chức gọn và rõ ràng. Chọn từng tình huống:
 
@@ -188,6 +194,8 @@ Khi số lượng team và đối tác sử dụng dữ liệu tăng lên, việ
 
 <Scene id="s4" label="Phần 4/7" title="Quản lý key mã hoá" questions={["exam2_q10", "exam6_q51", "exam3_q24", "exam1_q22", "exam5_q46"]}>
 
+<p class="scene-intro">Dữ liệu trên S3 luôn được mã hoá; điều cần quyết định là ai giữ key mã hoá và có cần ghi lại mỗi lần key được sử dụng hay không.</p>
+
 Mọi phương thức mã hoá đều khiến dữ liệu lưu trên đĩa không thể sử dụng nếu không có key. Điểm khác biệt nằm ở thành phần thực hiện mã hoá, nơi lưu trữ key, và việc mỗi lần sử dụng key có được ghi log hay không. Chọn yêu cầu của ShopViet, tải lên ba hoá đơn và quan sát vị trí dữ liệu chuyển sang trạng thái mã hoá:
 
 <EncryptionSim client:visible />
@@ -200,6 +208,8 @@ Khi chuyển kho hoá đơn từ trung tâm dữ liệu lên S3, bộ phận b�
 
 <Scene id="s5" label="Phần 5/7" title="Tối ưu tốc độ tải lên và khả năng chịu tải cao điểm" questions={["exam4_q14", "exam1_q64", "exam1_q18", "exam1_q40", "exam1_q51", "exam6_q20", "exam5_q21", "exam3_q37"]}>
 
+<p class="scene-intro">Khi khối lượng dữ liệu và số người dùng tăng, tốc độ tải lên và khả năng chịu tải cao điểm trở thành vấn đề; S3 có các tính năng riêng cho từng tình huống.</p>
+
 Phần này trình bày bốn sự cố ShopViet gặp phải khi khối lượng dữ liệu và số lượng người dùng tăng lên, cùng chi phí của một lần tải lên qua Transfer Acceleration. Chạy từng tình huống, sau đó bật tính năng S3 tương ứng để so sánh kết quả:
 
 <UploadSim client:visible />
@@ -211,6 +221,8 @@ Phần này trình bày bốn sự cố ShopViet gặp phải khi khối lượn
 </Scene>
 
 <Scene id="s6" label="Phần 6/7" title="Website tĩnh trên S3: website endpoint và trang dự phòng khi sự cố" questions={["exam5_q15", "exam1_q62", "exam4_q53", "exam5_q56"]}>
+
+<p class="scene-intro">Một website chỉ gồm HTML, CSS và ảnh không cần máy chủ chạy ứng dụng; các file có thể được phục vụ trực tiếp từ S3.</p>
 
 Trang khuyến mãi theo mùa của ShopViet chỉ gồm HTML, CSS, ảnh và client-side script, nên có thể được phục vụ trực tiếp từ bucket `shopviet-promo`. Khi bật **static website hosting**, bucket có thêm một **website endpoint** theo Region (`http://<bucket>.s3-website-<region>.amazonaws.com` hoặc `…s3-website.<region>…` tuỳ Region), tách biệt với **REST API endpoint** mà ứng dụng dùng để gửi request API. Hai endpoint xử lý cùng một request theo cách rất khác nhau. Gửi từng request qua mỗi endpoint để so sánh:
 
@@ -245,6 +257,8 @@ Website tĩnh trên S3 thường được dùng làm **trang dự phòng**: khi 
 </Scene>
 
 <Scene id="s7" label="Phần 7/7" title="Phân biệt nhanh: các tính năng S3 dễ nhầm lẫn" questions={["exam3_q48", "exam4_q29", "exam5_q49", "exam6_q30", "exam6_q20", "exam5_q39"]}>
+
+<p class="scene-intro">Nhiều tính năng của S3 có tên hoặc mô tả gần giống nhau; phân biệt được chúng giúp chọn đúng tính năng cho từng nhu cầu.</p>
 
 Một số tính năng S3 có tên hoặc mô tả gần với nhu cầu thực tế nhưng giải quyết một vấn đề khác. Chọn từng tính năng để xem trường hợp sử dụng, lý do không phù hợp trong tình huống ShopViet tương ứng, và phương án nên chọn:
 

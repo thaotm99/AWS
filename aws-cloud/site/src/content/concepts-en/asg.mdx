@@ -91,6 +91,8 @@ At night ShopViet needs only 2 instances; on Friday evening, during a sale, it n
 
 <Scene id="en-setup" label="Part 1/7" title="Configuring the Auto Scaling group for the ShopViet website" questions={["exam5_q36", "exam2_q33", "exam5_q61", "exam1_q45", "exam3_q45"]}>
 
+<p class="scene-intro">Instead of running a fixed number of servers, a system can add servers as load rises and remove them as it falls; to do that, it needs a ready description of how to build a new server.</p>
+
 ShopViet's reporting application used to run on a single On-Demand EC2 instance, and every load spike caused 5xx errors. To move it to an Auto Scaling group, the operations team creates an AMI from the current instance, declares that AMI in a **launch template**, then chooses the subnets and purchase options for the group. Try each choice below:
 
 <GroupSetupSim client:visible />
@@ -109,6 +111,8 @@ Three values decide the group's size. **Desired capacity** is the number of inst
 
 <Scene id="en-s1" label="Part 2/7" title="A scaling policy for each load pattern" questions={["exam1_q30", "exam3_q54", "exam6_q52", "exam1_q45", "exam4_q21", "exam3_q15", "exam4_q56", "exam4_q53"]}>
 
+<p class="scene-intro">Website load changes by hour, by day and with events; the rule for adding and removing servers must match the shape of that load so there are neither too few nor too many.</p>
+
 The ShopViet website has dynamic content that changes constantly and a cache cannot absorb all the load, so instances must be added when traffic rises. However, when to scale out depends on the load pattern. Pick a day of ShopViet operations, choose a scaling policy, then run the simulation for the whole day to find the hours when users have to wait:
 
 <ScalingPolicySim client:visible />
@@ -120,6 +124,8 @@ Containers scale in a similar way. When an ECS service is CPU-bound, turn on **S
 </Scene>
 
 <Scene id="en-dynamic" label="Part 3/7" title="Simple, step and target tracking under a sudden surge" questions={["exam1_q30", "exam3_q54", "exam4_q21"]}>
+
+<p class="scene-intro">When load spikes, what matters is how many servers to add and how fast; the scaling rule types answer that question in different ways.</p>
 
 All three dynamic scaling policies react to a CloudWatch metric, but they differ in how they calculate the instances to add and when they may react again. With simple and step scaling, the designer creates CloudWatch alarms with fixed thresholds; with target tracking, the designer only picks a metric and a target value, and Auto Scaling creates and manages the alarms. Run the same surge under each policy:
 
@@ -133,6 +139,8 @@ Two time settings are easy to confuse. The **cooldown** (300 seconds by default)
 
 <Scene id="en-s2" label="Part 4/7" title="How many instances to tolerate an AZ failure" questions={["exam2_q31", "exam5_q61"]}>
 
+<p class="scene-intro">To keep enough capacity when an AZ fails, the server count must be planned so the remaining AZs can carry the whole load on their own.</p>
+
 ShopViet must keep at least N instances running, even when one AZ fails. Adjust N, choose the number of AZs, then press "Simulate AZ 1 failure" to check.
 
 <AzCapacityCalc client:visible />
@@ -144,6 +152,8 @@ Two common cases. A minimum of 4 instances: 3 AZs × 2 = 6 is the lowest-cost op
 </Scene>
 
 <Scene id="en-s3" label="Part 5/7" title="Scale in: the order in which instances are terminated" questions={["exam4_q16", "exam2_q65", "exam1_q54", "exam5_q33"]}>
+
+<p class="scene-intro">When load falls, the system removes servers; which server goes first follows a fixed, predictable order.</p>
 
 After the sale, the ASG scales in. With the default termination policy, the ASG evaluates in a fixed order. Pick a scenario, predict which instance will be terminated, then follow each step.
 
@@ -159,6 +169,8 @@ The third scenario uses **instance scale-in protection**: a protected instance i
 
 <Scene id="en-s4" label="Part 6/7" title="Maintaining instances without the ASG replacing them" questions={["exam1_q32", "exam5_q1", "exam2_q18", "exam4_q49"]}>
 
+<p class="scene-intro">Automatically replacing broken servers is useful, but it can also replace a server that is under maintenance or still starting up; you need a way to pause it at the right moments.</p>
+
 The ASG replaces every instance it determines to be unhealthy. That works when an instance has really failed, but causes problems when an instance is being patched or a new instance has not finished starting. The ELB lesson explained that the ASG needs to use **ELB health checks** to follow the load balancer's results; in this part the ASG is using ELB health checks. Try three maintenance tasks:
 
 <MaintenanceSim client:visible />
@@ -170,6 +182,8 @@ On cost: ShopViet always needs at least 2 instances, more at peak hours. Set min
 </Scene>
 
 <Scene id="en-health" label="Part 7/7" title="When the ASG replaces a failed instance" questions={["exam2_q18", "exam1_q54"]}>
+
+<p class="scene-intro">Whether a failing server is replaced, and when, depends on how the failure is detected and what the system is doing at that moment.</p>
 
 A ShopViet instance shows signs of failure but the ASG has not replaced it, or replaces it in a different order than expected. The outcome depends on which health check detects the failure and which kind of activity the ASG performs. Run each situation, then switch the option to compare:
 

@@ -86,6 +86,8 @@ import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 
 <Scene id="s1" label="Phần 1/5" title="Đặt hàng đợi giữa hai tầng xử lý" questions={["exam2_q47", "exam3_q39", "exam1_q55", "exam5_q26", "exam3_q54", "exam6_q52", "exam5_q60", "exam1_q33", "exam2_q14", "exam5_q32", "exam3_q7"]}>
 
+<p class="scene-intro">Khi phần nhận đơn hàng nhanh hơn phần xử lý đơn hàng, đặt một hàng đợi ở giữa giúp phần nhận không phải chờ, và phần xử lý làm dần theo tốc độ của mình.</p>
+
 Flash sale bắt đầu lúc 20h. Web tier tiếp nhận đơn hàng với tốc độ cao, trong khi tầng xử lý (thanh toán, trừ tồn kho) có thông lượng thấp hơn nhiều. Mô phỏng dưới đây so sánh ba phương án kết nối hai tầng này:
 
 <QueueBufferSim client:visible />
@@ -126,6 +128,8 @@ Một số kiến trúc tích hợp queue vào hệ thống ShopViet:
 
 <Scene id="s2" label="Phần 2/5" title="Vòng đời của một message" questions={["exam4_q46", "exam5_q44", "exam3_q34", "exam6_q37", "exam6_q32", "exam6_q16"]}>
 
+<p class="scene-intro">Một message trong hàng đợi phải được xử lý thành công rồi mới bị xoá; cơ chế này bảo đảm không mất việc khi bên xử lý gặp sự cố giữa chừng.</p>
+
 Khi worker nhận một message, message **chưa bị xoá** khỏi queue mà chỉ bị ẩn trong một khoảng thời gian gọi là **visibility timeout**. Sau khi xử lý xong, worker phải gọi `DeleteMessage`. Nếu worker gặp sự cố trong quá trình xử lý, message hiển thị trở lại để worker khác xử lý. Các tính năng của SQS đều xoay quanh vòng đời này. Chọn từng tình huống của ShopViet và chạy mô phỏng:
 
 <MessageLifeSim client:visible />
@@ -139,6 +143,8 @@ Delay queue áp dụng cho mọi message của queue. Khi chỉ một số messa
 </Scene>
 
 <Scene id="s3" label="Phần 3/5" title="Đảm bảo thứ tự và xử lý đúng một lần: FIFO queue" questions={["exam1_q13", "exam1_q34", "exam3_q2", "exam2_q42"]}>
+
+<p class="scene-intro">Với giao dịch tiền, thứ tự và việc xử lý đúng một lần là bắt buộc; hàng đợi mặc định không bảo đảm điều này, nên cần loại hàng đợi khác.</p>
 
 Loại queue mặc định là **standard**: thông lượng rất cao, nhưng một message có thể được phân phối **nhiều hơn một lần** và **không đảm bảo thứ tự**. Với đơn hàng, worker có thể tự kiểm tra trùng lặp. Với ví điện tử của ShopViet, điều này không được chấp nhận: lệnh nạp tiền phải được xử lý trước lệnh thanh toán, và mỗi lệnh chỉ được xử lý đúng một lần. Mô phỏng dưới đây so sánh ba phương án:
 
@@ -158,6 +164,8 @@ Một queue standard đang vận hành không thể chuyển đổi sang FIFO. C
 
 <Scene id="s4" label="Phần 4/5" title="Phân phối sự kiện tới nhiều đích và điều phối quy trình nhiều bước" questions={["exam4_q35", "exam3_q30", "exam2_q27", "exam6_q55", "exam1_q15", "exam4_q51", "exam6_q61", "exam2_q1", "exam2_q9", "exam1_q61", "exam1_q50", "exam5_q17"]}>
 
+<p class="scene-intro">Không phải giao tiếp nào cũng là một bên gửi, một bên nhận; có sự kiện cần báo cho nhiều nơi, có tác vụ chạy theo lịch, có quy trình gồm nhiều bước nối tiếp.</p>
+
 Queue hoạt động theo mô hình một bên gửi, một bên nhận. ShopViet còn có các nhu cầu khác: một sự kiện cần thông báo tới nhiều thành phần, sự kiện phát sinh từ phần mềm bên ngoài, tác vụ chạy theo lịch, quy trình nhiều bước, hoặc ứng dụng cũ sử dụng giao thức riêng. Chọn tình huống và thay đổi cấu hình để so sánh:
 
 <EventRouterSim client:visible />
@@ -174,6 +182,8 @@ Một số vấn đề ShopViet gặp phải khi vận hành thực tế:
 </Scene>
 
 <Scene id="s5" label="Phần 5/5" title="Phân biệt nhanh: mức đảm bảo phân phối và các tham số dễ nhầm" questions={["exam1_q13", "exam3_q34", "exam3_q46"]}>
+
+<p class="scene-intro">Các dịch vụ truyền message khác nhau ở mức bảo đảm phân phối và ở các tham số vận hành; chọn sai dễ dẫn tới mất dữ liệu hoặc tốn chi phí không cần thiết.</p>
 
 Ba tình huống của ShopViet: biểu mẫu đăng ký người bán phải được xử lý **đúng một lần, không mất dữ liệu** ở tầng xử lý phía sau; chi phí SQS cao do worker nhận về quá nhiều phản hồi rỗng; luồng dữ liệu theo thời gian thực từ thiết bị quét mã tại kho cần một kênh tiếp nhận có thể co giãn và cho phép xử lý lại khi tầng phân tích gặp lỗi. Chọn từng mục để xem phạm vi sử dụng và phương án phù hợp.
 

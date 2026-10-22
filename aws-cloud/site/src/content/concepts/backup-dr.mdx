@@ -79,6 +79,8 @@ RPO và RTO càng nhỏ thì chi phí càng cao. Bài học hướng dẫn lựa
 
 <Scene id="s1" label="Phần 1/5" title="Bốn chiến lược chuẩn bị cho sự cố cấp Region" questions={["exam4_q41", "exam4_q5"]}>
 
+<p class="scene-intro">Sự cố mất cả một Region hiếm khi xảy ra nhưng có hậu quả lớn; mức độ chuẩn bị trước quyết định thời gian khôi phục và chi phí duy trì.</p>
+
 ShopViet chọn Tokyo làm Region dự phòng. Vấn đề cần xác định là những thành phần nào được duy trì tại Tokyo trong điều kiện bình thường. Càng nhiều thành phần đang chạy thì thời gian khôi phục càng ngắn và chi phí càng cao. Có bốn mức:
 
 1. **Backup & restore**: chỉ lưu giữ bản backup. Khi xảy ra sự cố, hệ thống được dựng lại từ đầu.
@@ -98,6 +100,8 @@ AMI chỉ sử dụng được trong Region chứa AMI đó. Để launch nhanh 
 
 <Scene id="s2" label="Phần 2/5" title="Đảm bảo database và cache duy trì qua sự cố" questions={["exam2_q61", "exam6_q23", "exam5_q42", "exam4_q32"]}>
 
+<p class="scene-intro">Máy chủ có thể dựng lại trong vài phút, nhưng dữ liệu đã mất thì không lấy lại được; mỗi loại dữ liệu cần một cơ chế bảo vệ riêng.</p>
+
 Web server có thể được dựng lại trong vài phút, nhưng dữ liệu thì không: đơn hàng đã mất không thể khôi phục. ShopViet có ba thành phần dữ liệu, mỗi thành phần cần một cơ chế bảo vệ riêng:
 
 - **Aurora** lưu đơn hàng: mục tiêu RPO ≤ 5 phút, RTO ≤ 15 phút khi toàn bộ Region gặp sự cố, và đội vận hành không muốn tự phát triển script.
@@ -113,6 +117,8 @@ Web server có thể được dựng lại trong vài phút, nhưng dữ liệu 
 </Scene>
 
 <Scene id="s3" label="Phần 3/5" title="AWS Backup cho file system dùng chung" questions={["exam5_q47", "exam5_q64", "exam5_q16"]}>
+
+<p class="scene-intro">Sao lưu cần chạy tự động, theo lịch và giữ đủ thời gian theo quy định; quản lý sao lưu tập trung giúp không bỏ sót tài nguyên nào.</p>
 
 Các service của ShopViet chạy trên ECS với Fargate, cùng đọc và ghi ảnh của người bán và hoá đơn trên một file system dùng chung. ShopViet lựa chọn **Amazon EFS**: file system POSIX (NFS), hoạt động trên nhiều AZ, task Fargate có thể mount trực tiếp. Yêu cầu tuân thủ: backup tự động, có bản sao tại Region khác, mất tối đa 8 giờ dữ liệu.
 
@@ -130,6 +136,8 @@ AWS Backup phục vụ bảo vệ dữ liệu và tuân thủ, không phải cô
 
 <Scene id="s4" label="Phần 4/5" title="Tự động khôi phục EC2 instance đơn lẻ" questions={["exam3_q38"]}>
 
+<p class="scene-intro">Không phải hệ thống nào cũng cần chiến lược khôi phục phức tạp; với một máy chủ đơn lẻ, cơ chế tự khôi phục đơn giản thường là đủ.</p>
+
 Trang admin nội bộ của ShopViet chạy trên duy nhất một EC2 instance. Số lượng người dùng ít, không cần tới Auto Scaling group hay chiến lược DR. Yêu cầu: khi instance gặp sự cố, hệ thống tự hoạt động trở lại trong khoảng 10 phút, với chi phí thấp và không cần can thiệp thủ công ngoài giờ làm việc.
 
 EC2 có hai loại status check. **System status check** phản ánh lỗi của hạ tầng AWS mà instance chạy trên đó (mất kết nối mạng, mất nguồn, lỗi phần cứng hoặc phần mềm trên host). **Instance status check** phản ánh lỗi bên trong instance (hệ điều hành bị treo, cạn bộ nhớ). Một **CloudWatch alarm** theo dõi status check có thể thực thi action: recover, reboot, stop hoặc terminate.
@@ -141,6 +149,8 @@ EC2 có hai loại status check. **System status check** phản ánh lỗi của
 </Scene>
 
 <Scene id="s5" label="Phần 5/5" title="Phân biệt nhanh: công cụ DR, migration và nhân bản dữ liệu" questions={["exam6_q48", "exam5_q64"]}>
+
+<p class="scene-intro">Nhiều dịch vụ có cơ chế sao chép dữ liệu giống nhau nhưng phục vụ mục đích khác: khôi phục sau sự cố, di chuyển hệ thống hoặc nhân bản dữ liệu.</p>
 
 Một số dịch vụ có cơ chế gần giống nhau (sao chép liên tục, restore từ bản sao) nhưng phục vụ mục đích khác. Chọn từng dịch vụ để xem trường hợp sử dụng, lý do không phù hợp trong tình huống ShopViet tương ứng, và phương án nên chọn:
 

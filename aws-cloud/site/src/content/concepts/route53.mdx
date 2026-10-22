@@ -58,6 +58,8 @@ ShopViet đã triển khai VPC và ALB. Các yêu cầu tiếp theo: người d�
 
 <Scene id="s1" label="Phần 1/4" title="Bản ghi Alias và CNAME" questions={["exam2_q2", "exam3_q19", "exam3_q64"]}>
 
+<p class="scene-intro">Người dùng ghi nhớ tên miền như shopviet.vn chứ không ghi nhớ địa chỉ IP; DNS là hệ thống chuyển tên miền thành địa chỉ, và mỗi dòng ánh xạ đó được gọi là một bản ghi (record).</p>
+
 ShopViet cần bốn record: tên miền chính trỏ tới CloudFront, tên miền chính trỏ theo www, www trỏ tới ALB, và blog trỏ tới trang WordPress bên ngoài. Cả **Alias** và **CNAME** đều ánh xạ một tên tới một đích khác, nhưng không phải trường hợp nào cũng tạo được. Chọn từng record và loại bản ghi, sau đó nhấn tạo để xem phản hồi của Route 53.
 
 <AliasCnameSim client:visible />
@@ -72,6 +74,8 @@ Alias và CNAME chỉ là hai trong số các loại record của một hosted z
 
 <Scene id="s2" label="Phần 2/4" title="TTL: người dùng vẫn truy cập đích cũ sau khi thay đổi bản ghi DNS" questions={["exam4_q3"]}>
 
+<p class="scene-intro">Để giảm số lần truy vấn, kết quả DNS được lưu tạm (cache) ở nhiều nơi trên đường đi; vì vậy một thay đổi bản ghi không có hiệu lực ngay với mọi người dùng.</p>
+
 ShopViet chuyển sang một load balancer mới và cập nhật record trên Route 53. Chọn giá trị TTL, sau đó thay đổi record và quan sát thời điểm từng client chuyển sang đích mới.
 
 <TtlSim client:visible />
@@ -81,6 +85,8 @@ ShopViet chuyển sang một load balancer mới và cập nhật record trên R
 </Scene>
 
 <Scene id="s3" label="Phần 3/4" title="Routing policy: phản hồi DNS theo từng người dùng" questions={["exam2_q6", "exam1_q38", "exam4_q61", "exam5_q56", "exam2_q59"]}>
+
+<p class="scene-intro">Khi hệ thống chạy ở nhiều nơi, DNS có thể trả về địa chỉ khác nhau cho từng người dùng, ví dụ địa chỉ gần họ nhất hoặc địa chỉ còn hoạt động.</p>
 
 ShopViet vận hành ALB tại Singapore, Frankfurt và N. Virginia. Chọn một routing policy, sau đó mô phỏng truy cập của ba người dùng tại ba khu vực.
 
@@ -92,6 +98,8 @@ ShopViet vận hành ALB tại Singapore, Frankfurt và N. Virginia. Chọn mộ
 
 <Scene id="s4" label="Phần 4/4" title="Hybrid DNS: phân giải tên miền giữa VPC và văn phòng" questions={["exam1_q63", "exam3_q35", "exam2_q20", "exam6_q63"]}>
 
+<p class="scene-intro">Mạng trong VPC và mạng văn phòng mỗi bên có hệ thống DNS riêng; để hai bên gọi được tên miền nội bộ của nhau, các truy vấn DNS cần được chuyển tiếp qua lại.</p>
+
 Server trong VPC cần phân giải địa chỉ database tại văn phòng (`db.corp.local`), trong khi hệ thống tại văn phòng cần gọi API nội bộ trong VPC (`api.shopviet.internal`, thuộc private hosted zone). **Route 53 Resolver** cung cấp hai loại endpoint tương ứng với hai chiều phân giải này.
 
 <HybridDnsSim client:visible />
@@ -101,6 +109,8 @@ Server trong VPC cần phân giải địa chỉ database tại văn phòng (`db
 </Scene>
 
 <Scene id="confuse" label="Lỗi thường gặp" title="Năm lỗi cấu hình DNS thường gặp" questions={["exam4_q59", "exam5_q56", "exam1_q38", "exam4_q61", "exam4_q53"]}>
+
+<p class="scene-intro">Lỗi DNS thường biểu hiện thành “website không truy cập được” dù máy chủ vẫn hoạt động bình thường, nên cần hiểu đúng cơ chế để xác định nguyên nhân.</p>
 
 Năm tình huống phát sinh khi ShopViet vận hành DNS. Thử phương án thường được lựa chọn đầu tiên, sau đó chuyển sang phương án khác để so sánh.
 

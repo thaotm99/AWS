@@ -109,6 +109,8 @@ ShopViet stores its product images, invoices, promotional videos, logs and analy
 
 <Scene id="en-s1" label="Part 1/7" title="Choosing a storage class for each type of data" questions={["exam1_q8", "exam1_q15", "exam1_q28", "exam5_q49", "exam6_q9", "exam5_q51", "exam6_q28", "exam2_q34", "exam4_q43", "exam1_q19"]}>
 
+<p class="scene-intro">Data is accessed at very different rates: product images are viewed constantly, old invoices almost never; S3 lets each kind sit at a price that fits how often it is read.</p>
+
 S3 cost has two main components: a storage charge per GB and a data retrieval charge. The lower a storage class's storage charge, the higher its retrieval charge or the longer its retrieval time. Choose each type of ShopViet data to see the right storage class:
 
 <RequirementPicker client:visible items={[
@@ -142,6 +144,8 @@ A lifecycle rule does not have to apply to the whole bucket. The rule's **filter
 
 <Scene id="en-s2" label="Part 2/7" title="Protecting invoices from deletion: versioning and Object Lock" questions={["exam1_q20", "exam5_q50", "exam1_q56", "exam4_q64", "exam5_q39"]}>
 
+<p class="scene-intro">Some data must stay untouched for years by regulation; it needs a mechanism that prevents deletion or overwriting, whether by mistake or by an administrator.</p>
+
 Regulations require ShopViet to keep invoices for many years. The risk of data loss comes from an employee deleting by mistake, a faulty cleanup script, or an administrator deleting on purpose. Choose how the bucket is protected and who deletes, then see which layer of protection keeps the invoice:
 
 <DeleteGuardSim client:visible />
@@ -157,6 +161,8 @@ Retention periods apply to individual object versions, so versions of the same k
 </Scene>
 
 <Scene id="en-s3" label="Part 3/7" title="Controlling bucket access" questions={["exam4_q65", "exam2_q24", "exam4_q8", "exam2_q15", "exam6_q30", "exam6_q3", "exam6_q54", "exam6_q29", "exam4_q34", "exam5_q39", "exam5_q24"]}>
+
+<p class="scene-intro">When many teams and partners share one data store, access must be clear: who may read, who may write, and within which scope.</p>
 
 As the number of teams and partners using the data grows, permissions need to be organized in a compact, clear way. Choose each scenario:
 
@@ -188,6 +194,8 @@ An **ACL** is S3's legacy access control mechanism: every bucket and object has 
 
 <Scene id="en-s4" label="Part 4/7" title="Managing encryption keys" questions={["exam2_q10", "exam6_q51", "exam3_q24", "exam1_q22", "exam5_q46"]}>
 
+<p class="scene-intro">Data in S3 is always encrypted; what must be decided is who holds the encryption key and whether each use of it must be logged.</p>
+
 Every encryption method makes data at rest unusable without the key. The differences lie in which component performs the encryption, where the key is stored, and whether each use of the key is logged. Choose a ShopViet requirement, upload three invoices and see where the data becomes encrypted:
 
 <EncryptionSim client:visible />
@@ -200,6 +208,8 @@ When the invoice archive moves from the data center to S3, the security team req
 
 <Scene id="en-s5" label="Part 5/7" title="Optimizing upload speed and peak-load capacity" questions={["exam4_q14", "exam1_q64", "exam1_q18", "exam1_q40", "exam1_q51", "exam6_q20", "exam5_q21", "exam3_q37"]}>
 
+<p class="scene-intro">As data and users grow, upload speed and peak-time load become problems; S3 has a specific feature for each situation.</p>
+
 This part presents four problems ShopViet ran into as data volume and the number of users grew, plus the cost of one upload through Transfer Acceleration. Run each scenario, then turn on the matching S3 feature to compare the results:
 
 <UploadSim client:visible />
@@ -211,6 +221,8 @@ This part presents four problems ShopViet ran into as data volume and the number
 </Scene>
 
 <Scene id="en-s6" label="Part 6/7" title="Static websites on S3: the website endpoint and a failover page" questions={["exam5_q15", "exam1_q62", "exam4_q53", "exam5_q56"]}>
+
+<p class="scene-intro">A website made only of HTML, CSS and images needs no application server; the files can be served straight from S3.</p>
 
 ShopViet's seasonal promotion site consists only of HTML, CSS, images and client-side scripts, so it can be served directly from the `shopviet-promo` bucket. When you enable **static website hosting**, the bucket gets a Region-specific **website endpoint** (`http://<bucket>.s3-website-<region>.amazonaws.com` or `…s3-website.<region>…`, depending on the Region), separate from the **REST API endpoint** that applications send API requests to. The two endpoints handle the same request very differently. Send each request through each endpoint to compare:
 
@@ -245,6 +257,8 @@ A static website on S3 is often used as a **failover page**: when the main websi
 </Scene>
 
 <Scene id="en-s7" label="Part 7/7" title="Quick comparison: S3 features that are easy to confuse" questions={["exam3_q48", "exam4_q29", "exam5_q49", "exam6_q30", "exam6_q20", "exam5_q39"]}>
+
+<p class="scene-intro">Many S3 features have similar names or descriptions; telling them apart helps you pick the right one for each need.</p>
 
 Some S3 features have names or descriptions close to a real need but solve a different problem. Choose each feature to see what it is for, why it does not fit the matching ShopViet situation, and what to choose instead:
 

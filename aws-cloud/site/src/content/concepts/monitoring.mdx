@@ -119,6 +119,8 @@ Hệ thống ShopViet đã có load balancer, Auto Scaling group, container và 
 
 <Scene id="s1" label="Phần 1/6" title="Độ trễ phát hiện của alarm" questions={["exam5_q20", "exam4_q25", "exam3_q15"]}>
 
+<p class="scene-intro">Hệ thống cần tự phát hiện khi có vấn đề thay vì chờ khách hàng báo; việc này dựa trên các chỉ số đo liên tục và ngưỡng cảnh báo.</p>
+
 Mỗi dịch vụ AWS gửi **metric** lên CloudWatch: CPU của EC2, số lần gọi của Lambda, CPU của một ECS service. Một **alarm** theo dõi một metric, so sánh với ngưỡng, và khi metric vượt ngưỡng trong khoảng thời gian đủ dài thì thực thi **action**: gửi thông báo qua SNS, scale một nhóm tài nguyên, hoặc thao tác trên EC2.
 
 Một điểm thường bị bỏ qua: theo mặc định, EC2 chỉ gửi metric **mỗi 5 phút** (basic monitoring, không tính phí); detailed monitoring gửi metric mỗi 1 phút và có tính phí. Chạy tình huống livestream hai lần, một lần tắt và một lần bật detailed monitoring:
@@ -133,6 +135,8 @@ Lựa chọn metric phù hợp quan trọng tương đương lựa chọn ngư�
 
 <Scene id="s2" label="Phần 2/6" title="Tự động khôi phục instance bằng alarm action" questions={["exam3_q38", "exam3_q57", "exam5_q19", "exam4_q16"]}>
 
+<p class="scene-intro">Khi phát hiện máy chủ gặp sự cố, hệ thống có thể tự khởi động lại hoặc khôi phục máy chủ mà không cần người trực.</p>
+
 Trang quản lý kho của ShopViet chạy trên **một** EC2 instance, quy mô chưa cần tới Auto Scaling group. Instance thỉnh thoảng gặp sự cố và việc khởi động lại thủ công ngoài giờ làm việc (ví dụ lúc 3h sáng) là không mong muốn. CloudWatch alarm có thể gọi trực tiếp bốn action của EC2: **stop**, **terminate**, **reboot**, **recover**, không cần Lambda hay script. Ngoài ra, với instance type được hỗ trợ, **simplified automatic recovery** được bật mặc định khi launch; CloudWatch action based recovery là cơ chế cấu hình thêm và không áp dụng cho instance thuộc Auto Scaling group.
 
 EC2 có hai loại status check. **Instance status check** thất bại khi lỗi nằm bên trong instance (hệ điều hành bị treo, cạn bộ nhớ). **System status check** thất bại khi hạ tầng AWS mà instance chạy trên đó gặp sự cố (mất kết nối mạng, mất nguồn, lỗi phần cứng hoặc phần mềm trên host vật lý). Mỗi loại cần một action khác nhau:
@@ -144,6 +148,8 @@ EC2 có hai loại status check. **Instance status check** thất bại khi lỗ
 </Scene>
 
 <Scene id="s3" label="Phần 3/6" title="Bảo toàn log khi instance bị thay thế" questions={["exam5_q33", "exam1_q61", "exam1_q27"]}>
+
+<p class="scene-intro">Máy chủ có thể bị thay thế bất cứ lúc nào, và log lưu trên máy chủ sẽ mất theo; log cần được gửi về một nơi lưu trữ tập trung.</p>
 
 Auto Scaling group của ShopViet scale với tần suất cao, gần như mỗi ngày đều có instance mới thay thế. Một người dùng báo lỗi thanh toán xảy ra hai ngày trước, nhưng instance liên quan đã bị terminate. Trong một sự cố khác, một access key bị lộ được dùng để gọi API liên tục vào ban đêm. Hai sự cố có chung giải pháp: chuyển log ra khỏi instance và để CloudWatch xử lý log.
 
@@ -160,6 +166,8 @@ Một yêu cầu khác liên quan tới vị trí triển khai: ShopViet mở r�
 </Scene>
 
 <Scene id="s4" label="Phần 4/6" title="Truy vết thao tác và đánh giá tuân thủ cấu hình" questions={["exam1_q16", "exam3_q29", "exam2_q43", "exam2_q9"]}>
+
+<p class="scene-intro">Sau một sự cố, cần trả lời được ai đã làm gì, lúc nào, và cấu hình hiện tại có tuân thủ quy định hay không; mỗi câu hỏi có một dịch vụ cung cấp dữ liệu tương ứng.</p>
 
 Sau một sự cố, đội vận hành ShopViet cần trả lời nhiều câu hỏi; mỗi câu hỏi chỉ một dịch vụ cung cấp được câu trả lời. Chọn từng câu hỏi và gửi truy vấn:
 
@@ -184,6 +192,8 @@ Khi cần áp dụng cùng một bộ Config rule cho nhiều account, ShopViet 
 </Scene>
 
 <Scene id="s5" label="Phần 5/6" title="Vá hàng trăm instance mà không gián đoạn dịch vụ" questions={["exam3_q6", "exam5_q34"]}>
+
+<p class="scene-intro">Với hàng trăm máy chủ, việc vá lỗi và chạy lệnh thủ công trên từng máy không còn khả thi; cần công cụ thực hiện đồng loạt, theo lịch và có kiểm soát.</p>
 
 ShopViet có hơn 200 EC2 instance; mỗi tháng đều có bản vá bảo mật cho hệ điều hành. **Systems Manager** thực hiện việc này thông qua **SSM Agent** chạy trên instance: Patch Manager vá theo lịch, Run Command thực thi lệnh trên cả nhóm instance, Automation thực thi runbook nhiều bước. Bước đầu tiên là cấp quyền để agent giao tiếp với Systems Manager. Các instance đã có IAM role riêng để truy cập RDS và Secrets Manager:
 
@@ -223,6 +233,8 @@ Trong đợt vá trước, mọi bản vá đều báo thành công nhưng ngư�
 </Scene>
 
 <Scene id="s6" label="Phần 6/6" title="Phân biệt nhanh: các tính năng dễ nhầm trong giám sát và vận hành" questions={["exam1_q61", "exam2_q9", "exam2_q43", "exam3_q6", "exam4_q39", "exam5_q31", "exam6_q41"]}>
+
+<p class="scene-intro">Nhiều tính năng giám sát và vận hành có tên gần giống nhau; phân biệt được chúng giúp chọn đúng công cụ cho từng nhu cầu.</p>
 
 Một số tính năng của CloudTrail, Config, Systems Manager và Trusted Advisor có tên gần với giải pháp đúng nhưng phục vụ mục đích khác. Chọn từng mục để xem phạm vi sử dụng và phương án phù hợp với tình huống của ShopViet.
 
