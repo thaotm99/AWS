@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 924 (96%) · 🟡 18 (2%) · ❌ 18 (2%).
+Có **960 keyword** khác nhau: ✅ 926 (96%) · 🟡 18 (2%) · ❌ 16 (2%).
 
 ### Theo bài học
 
@@ -42,7 +42,7 @@ Có **960 keyword** khác nhau: ✅ 924 (96%) · 🟡 18 (2%) · ❌ 18 (2%).
 | [messaging](#messaging) | 50 | 47 | 3 | 0 | 94% |
 | [kinesis](#kinesis) | 26 | 25 | 1 | 0 | 96% |
 | [monitoring](#monitoring) | 33 | 33 | 0 | 0 | 100% |
-| [iac](#iac) | 9 | 7 | 0 | 2 | 78% |
+| [iac](#iac) | 9 | 9 | 0 | 0 | 100% |
 | [backup-dr](#backup-dr) | 12 | 10 | 1 | 1 | 83% |
 | [others](#others) | 26 | 18 | 3 | 5 | 69% |
 
@@ -51,11 +51,11 @@ Có **960 keyword** khác nhau: ✅ 924 (96%) · 🟡 18 (2%) · ❌ 18 (2%).
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
 | Đề 1 | 217 | 3 | 4 |
-| Đề 2 | 191 | 2 | 5 |
+| Đề 2 | 192 | 2 | 4 |
 | Đề 3 | 217 | 3 | 2 |
 | Đề 4 | 229 | 4 | 3 |
 | Đề 5 | 213 | 6 | 2 |
-| Đề 6 | 207 | 0 | 3 |
+| Đề 6 | 209 | 0 | 1 |
 
 ## global-infra
 
@@ -1084,9 +1084,9 @@ Có **960 keyword** khác nhau: ✅ 924 (96%) · 🟡 18 (2%) · ❌ 18 (2%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | AWS Service Catalog | ❌ Thiếu | 2 | exam6_q22, exam6_q41 |  |
-| [ ] | AWS CodeDeploy | ❌ Thiếu | 1 | exam2_q22 |  |
+| [ ] | AWS Service Catalog | ✅ Đã có | 2 | exam6_q22, exam6_q41 | iac.mdx#s4 / QuickCompare; iac.mdx#challenge / Quiz<br>iac.mdx#s4 / QuickCompare |
 | [ ] | AWS CloudFormation | ✅ Đã có | 1 | exam2_q59 | iac.mdx / StackSim |
+| [ ] | AWS CodeDeploy | ✅ Đã có | 1 | exam2_q22 | iac.mdx#s4 / QuickCompare |
 | [ ] | CloudFormation (no extra charge) | ✅ Đã có | 1 | exam4_q15 | iac.mdx#challenge |
 | [ ] | CloudFormation stack and template | ✅ Đã có | 1 | exam3_q36 | iac.mdx#s1 / StackSim |
 | [ ] | CloudFormation StackSets | ✅ Đã có | 1 | exam3_q36 | iac.mdx#s2 / StackSetSim |

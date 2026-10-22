@@ -317,3 +317,21 @@ Checked 2026-10-22 against the pages below (keyword → claim → URL).
 | Amazon Cloud Directory | Multi-tenant directory-based store, multiple hierarchies, for developers (org charts, device registries, catalogs) via API; not a directory service for IT administrators; **no longer open to new customers, end of support July 24, 2027**; alternatives DynamoDB and Neptune (s3) | https://docs.aws.amazon.com/clouddirectory/latest/developerguide/what_is_cloud_directory.html |
 
 Doc vs exam note: the practice-test explanation recommends Simple AD as "the least expensive option ... for 5,000 or fewer users". Current docs say Simple AD and Amazon Cloud Directory are no longer open to new customers; the lesson teaches that status. The correct answer of the question (AWS Managed Microsoft AD) is unaffected.
+
+## iac
+
+Checked 2026-10-22 against the pages below (keyword → claim → URL).
+
+| Keyword | Claim written | Source |
+|---|---|---|
+| AWS Service Catalog | Catalogs of approved IT services; administrators assemble portfolios of products, add constraints and tags, grant access through IAM users and groups (s4) | https://docs.aws.amazon.com/servicecatalog/latest/adminguide/introduction.html |
+| AWS Service Catalog | A product is created by importing a CloudFormation template; a provisioned product is a stack (s4) | https://docs.aws.amazon.com/servicecatalog/latest/adminguide/what-is_concepts.html |
+| AWS Service Catalog | Template constraint narrows allowable values for parameters of the product's CloudFormation template (e.g. EC2 instance types) (s4, quiz) | https://docs.aws.amazon.com/servicecatalog/latest/adminguide/catalogs_constraints_template-constraints.html |
+| AWS Service Catalog | Launch constraint specifies the IAM role Service Catalog assumes when an end user launches, updates or terminates a product; without it, users need permissions for CloudFormation and the underlying services (s4, quiz) | https://docs.aws.amazon.com/servicecatalog/latest/adminguide/constraints-launch.html |
+| AWS Service Catalog (cost control row) | Budget actions apply an IAM policy or SCP, or target EC2/RDS instances, automatically or after approval, when a threshold is exceeded | https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-controls.html |
+| AWS Service Catalog (VPC row) | Control Tower orchestrates Organizations, Service Catalog and IAM Identity Center to build a landing zone, applies controls (guardrails), provisions accounts with Account Factory | https://docs.aws.amazon.com/controltower/latest/userguide/what-is-control-tower.html |
+| AWS Service Catalog (VPC row) | VPC owner shares subnets with participant accounts in the same organization; reduces the number of VPCs to manage | https://docs.aws.amazon.com/vpc/latest/userguide/vpc-sharing.html |
+| AWS CodeDeploy | Deploys application content to EC2, on-premises instances, Lambda or ECS; in-place or blue/green; EC2 blue/green registers replacement instances with Elastic Load Balancing load balancers to reroute traffic (s4) | https://docs.aws.amazon.com/codedeploy/latest/userguide/welcome.html |
+| AWS CodeDeploy | Global Accelerator traffic dial sets the percentage of traffic to each endpoint group (Region), default 100; applies only to new connections; usable for blue/green testing across Regions (s4 "instead") | https://docs.aws.amazon.com/global-accelerator/latest/dg/about-endpoint-groups-traffic-dial.html |
+
+Doc vs exam note: the explanation of the Control Tower question says Service Catalog "lacks native account provisioning". Current docs say Control Tower orchestrates Organizations, Service Catalog and IAM Identity Center and provisions accounts through Account Factory; the lesson only states that Service Catalog alone does not create new accounts, which is consistent with both.

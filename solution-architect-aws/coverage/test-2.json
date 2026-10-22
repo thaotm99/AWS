@@ -718,8 +718,8 @@
         {
           "keyword": "AWS CodeDeploy",
           "lesson": "iac",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "iac.mdx#s4 / QuickCompare"
         }
       ]
     },

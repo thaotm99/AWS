@@ -649,8 +649,8 @@
         {
           "keyword": "AWS Service Catalog",
           "lesson": "iac",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "iac.mdx#s4 / QuickCompare; iac.mdx#challenge / Quiz"
         }
       ]
     },
@@ -1193,8 +1193,8 @@
         {
           "keyword": "AWS Service Catalog",
           "lesson": "iac",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "iac.mdx#s4 / QuickCompare"
         },
         {
           "keyword": "AWS Config conformance pack",
