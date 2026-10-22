@@ -131,8 +131,8 @@
         {
           "keyword": "Amazon AppFlow",
           "lesson": "others",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "others.mdx#s5 / QuickCompare; storage-migration.mdx#s2"
         },
         {
           "keyword": "Route 53 private hosted zone",
@@ -820,8 +820,8 @@
         {
           "keyword": "Amazon Rekognition",
           "lesson": "others",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "others.mdx#s3, #s5 / QuickCompare, challenge Quiz"
         },
         {
           "keyword": "Amazon Athena and QuickSight",
@@ -1206,8 +1206,8 @@
         {
           "keyword": "Amazon Timestream",
           "lesson": "others",
-          "status": "partial",
-          "where": "others.mdx (Database Savings Plans list, name only)"
+          "status": "covered",
+          "where": "others.mdx#s5 / QuickCompare; rds.mdx#s1"
         }
       ]
     },
@@ -1392,8 +1392,8 @@
         {
           "keyword": "AWS IoT Core rule",
           "lesson": "others",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "others.mdx#s5 / QuickCompare; messaging.mdx#s1"
         },
         {
           "keyword": "Amazon SNS (push, no polling)",

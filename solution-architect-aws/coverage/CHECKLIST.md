@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 926 (96%) · 🟡 18 (2%) · ❌ 16 (2%).
+Có **960 keyword** khác nhau: ✅ 934 (97%) · 🟡 15 (2%) · ❌ 11 (1%).
 
 ### Theo bài học
 
@@ -44,17 +44,17 @@ Có **960 keyword** khác nhau: ✅ 926 (96%) · 🟡 18 (2%) · ❌ 16 (2%).
 | [monitoring](#monitoring) | 33 | 33 | 0 | 0 | 100% |
 | [iac](#iac) | 9 | 9 | 0 | 0 | 100% |
 | [backup-dr](#backup-dr) | 12 | 10 | 1 | 1 | 83% |
-| [others](#others) | 26 | 18 | 3 | 5 | 69% |
+| [others](#others) | 26 | 26 | 0 | 0 | 100% |
 
 ### Theo đề (số lượt keyword, chưa gộp)
 
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
-| Đề 1 | 217 | 3 | 4 |
-| Đề 2 | 192 | 2 | 4 |
+| Đề 1 | 219 | 3 | 2 |
+| Đề 2 | 196 | 1 | 1 |
 | Đề 3 | 217 | 3 | 2 |
-| Đề 4 | 229 | 4 | 3 |
-| Đề 5 | 213 | 6 | 2 |
+| Đề 4 | 230 | 3 | 3 |
+| Đề 5 | 214 | 5 | 2 |
 | Đề 6 | 209 | 0 | 1 |
 
 ## global-infra
@@ -1115,27 +1115,27 @@ Có **960 keyword** khác nhau: ✅ 926 (96%) · 🟡 18 (2%) · ❌ 16 (2%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | Amazon AppFlow | ❌ Thiếu | 1 | exam2_q4 |  |
-| [ ] | Amazon Lightsail | ❌ Thiếu | 1 | exam1_q11 |  |
-| [ ] | Amazon Lookout for Vision | ❌ Thiếu | 1 | exam1_q4 |  |
-| [ ] | Amazon Rekognition | ❌ Thiếu | 1 | exam2_q26 |  |
-| [ ] | AWS IoT Core rule | ❌ Thiếu | 1 | exam2_q47 |  |
-| [ ] | Amazon SageMaker | 🟡 Một phần ⚠ | 2 | exam1_q4, exam4_q33 | others.mdx#s3 |
-| [ ] | Amazon Timestream | 🟡 Một phần | 1 | exam2_q40 | others.mdx (Database Savings Plans list, name only) |
-| [ ] | Amazon Transcribe / Amazon Translate (wrong tool) | 🟡 Một phần | 1 | exam5_q32 | others.mdx#s3 / AiPipelineSim |
+| [ ] | Amazon SageMaker | ✅ Đã có | 2 | exam1_q4, exam4_q33 | others.mdx#s3<br>others.mdx#s3, #s5 / QuickCompare; containers.mdx#s1 |
 | [ ] | Amazon Transcribe | ✅ Đã có | 2 | exam1_q4, exam5_q58 | others.mdx#s3<br>others.mdx#s3 / AiPipelineSim; analytics.mdx#s3 / DataJobSim |
 | [ ] | AWS Batch | ✅ Đã có | 2 | exam2_q27, exam6_q55 | others.mdx#s4 |
 | [ ] | AWS Compute Optimizer | ✅ Đã có | 2 | exam4_q30, exam6_q1 | others.mdx#s1<br>others.mdx#s1 / CostWatchSim |
 | [ ] | AWS Outposts | ✅ Đã có | 2 | exam1_q27, exam2_q58 | others.mdx#s4 / global-infra.mdx#deep / monitoring.mdx#s3<br>others.mdx#s4; global-infra.mdx#deep |
 | [ ] | AWS Trusted Advisor | ✅ Đã có | 2 | exam4_q30, exam4_q47 | others.mdx#s1 / CostWatchSim |
+| [ ] | Amazon AppFlow | ✅ Đã có | 1 | exam2_q4 | others.mdx#s5 / QuickCompare; storage-migration.mdx#s2 |
 | [ ] | Amazon Comprehend (custom entity recognition) | ✅ Đã có | 1 | exam1_q4 | others.mdx#s3 |
 | [ ] | Amazon Comprehend (sentiment analysis) | ✅ Đã có | 1 | exam5_q32 | others.mdx#s3 / AiPipelineSim |
 | [ ] | Amazon Comprehend (sentiment, entities) | ✅ Đã có | 1 | exam2_q26 | others.mdx (AI services section) / AiPipelineSim |
+| [ ] | Amazon Lightsail | ✅ Đã có | 1 | exam1_q11 | others.mdx#s5 / QuickCompare; containers.mdx#s1 |
+| [ ] | Amazon Lookout for Vision | ✅ Đã có | 1 | exam1_q4 | others.mdx#s5 / QuickCompare |
+| [ ] | Amazon Rekognition | ✅ Đã có | 1 | exam2_q26 | others.mdx#s3, #s5 / QuickCompare, challenge Quiz |
 | [ ] | Amazon SageMaker (custom model) | ✅ Đã có | 1 | exam2_q26 | others.mdx (AI services section) |
 | [ ] | Amazon Textract | ✅ Đã có | 1 | exam2_q26 | others.mdx (AI services section) / AiPipelineSim |
+| [ ] | Amazon Timestream | ✅ Đã có | 1 | exam2_q40 | others.mdx#s5 / QuickCompare; rds.mdx#s1 |
+| [ ] | Amazon Transcribe / Amazon Translate (wrong tool) | ✅ Đã có | 1 | exam5_q32 | others.mdx#s3, #s5 / QuickCompare, AiPipelineSim |
 | [ ] | AWS Budgets budget action (apply IAM policy) | ✅ Đã có | 1 | exam6_q22 | others.mdx#s1 / CostWatchSim; iam.mdx#s4 / OrgGuardSim |
 | [ ] | AWS Budgets Savings Plans coverage budget | ✅ Đã có | 1 | exam6_q1 | others.mdx#s1 / CostWatchSim |
 | [ ] | AWS Cost Explorer | ✅ Đã có | 1 | exam6_q22 | others.mdx#s1 / CostWatchSim |
+| [ ] | AWS IoT Core rule | ✅ Đã có | 1 | exam2_q47 | others.mdx#s5 / QuickCompare; messaging.mdx#s1 |
 | [ ] | Compute Savings Plan | ✅ Đã có | 1 | exam6_q1 | others.mdx#s2 / SavingsPlanSim |
 | [ ] | Compute Savings Plan (EC2, Fargate, Lambda) | ✅ Đã có | 1 | exam6_q38 | others.mdx#s2 / SavingsPlanSim |
 | [ ] | Cost Optimization Hub | ✅ Đã có | 1 | exam4_q30 | others.mdx#s1 / CostWatchSim |

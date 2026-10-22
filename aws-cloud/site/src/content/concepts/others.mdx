@@ -1,8 +1,8 @@
 ---
 title: "Quản lý chi phí, AI services và các dịch vụ khác"
 lede: "Quy mô ShopViet tăng lên: chi phí AWS cần được kiểm soát chặt chẽ, và lượng dữ liệu từ người dùng vượt quá khả năng xử lý thủ công. Bài học trình bày cách kiểm soát chi phí bằng AWS Budgets, Cost Optimization Hub, Compute Optimizer và Savings Plans; sử dụng Comprehend, Transcribe, Textract khi không có đội ngũ ML; và giới thiệu AWS Batch cùng AWS Outposts."
-minutes: 20
-scenes: 4
+minutes: 25
+scenes: 5
 prerequisites: ["iam", "ec2", "lambda", "containers"]
 docs:
   - title: "Managing your costs with AWS Budgets"
@@ -45,6 +45,36 @@ docs:
     url: "https://docs.aws.amazon.com/quicksight/latest/user/welcome.html"
   - title: "Using time to live (TTL) in DynamoDB"
     url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/TTL.html"
+  - title: "What is Amazon Rekognition?"
+    url: "https://docs.aws.amazon.com/rekognition/latest/dg/what-is.html"
+  - title: "What is Amazon Translate?"
+    url: "https://docs.aws.amazon.com/translate/latest/dg/what-is.html"
+  - title: "Supported languages (Amazon Translate)"
+    url: "https://docs.aws.amazon.com/translate/latest/dg/what-is-languages.html"
+  - title: "What is Amazon Polly?"
+    url: "https://docs.aws.amazon.com/polly/latest/dg/what-is.html"
+  - title: "What is Amazon SageMaker AI?"
+    url: "https://docs.aws.amazon.com/sagemaker/latest/dg/whatis.html"
+  - title: "Services in full shutdown (AWS General Reference)"
+    url: "https://docs.aws.amazon.com/general/latest/gr/full_shutdown_services.html"
+  - title: "Exploring alternatives and migrating data from Amazon Lookout for Vision"
+    url: "https://aws.amazon.com/blogs/machine-learning/exploring-alternatives-and-seamlessly-migrating-data-from-amazon-lookout-for-vision/"
+  - title: "What is Amazon Lightsail?"
+    url: "https://docs.aws.amazon.com/lightsail/latest/userguide/what-is-amazon-lightsail.html"
+  - title: "What is Amazon AppFlow?"
+    url: "https://docs.aws.amazon.com/appflow/latest/userguide/what-is-appflow.html"
+  - title: "Supported source and destination applications (Amazon AppFlow)"
+    url: "https://docs.aws.amazon.com/appflow/latest/userguide/app-specific.html"
+  - title: "What is Amazon Timestream for LiveAnalytics?"
+    url: "https://docs.aws.amazon.com/timestream/latest/developerguide/what-is-timestream.html"
+  - title: "Amazon Timestream for LiveAnalytics availability change"
+    url: "https://docs.aws.amazon.com/timestream/latest/developerguide/AmazonTimestreamForLiveAnalytics-availability-change.html"
+  - title: "Rules for AWS IoT"
+    url: "https://docs.aws.amazon.com/iot/latest/developerguide/iot-rules.html"
+  - title: "AWS IoT rule actions"
+    url: "https://docs.aws.amazon.com/iot/latest/developerguide/iot-rule-actions.html"
+  - title: "What is Amazon SNS?"
+    url: "https://docs.aws.amazon.com/sns/latest/dg/welcome.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -53,6 +83,7 @@ import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
 import CostWatchSim from "../../components/scenes/others/CostWatchSim.tsx";
 import SavingsPlanSim from "../../components/scenes/others/SavingsPlanSim.tsx";
 import AiPipelineSim from "../../components/scenes/others/AiPipelineSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
@@ -61,12 +92,13 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s2", label: "2 · Savings Plans" },
   { href: "#s3", label: "3 · AI services dựng sẵn" },
   { href: "#s4", label: "4 · AWS Batch và Outposts" },
+  { href: "#s5", label: "5 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
 ShopViet hiện có nhiều AWS account, nhiều đội kỹ thuật, và chi phí hằng tháng liên tục tăng. Đồng thời, mỗi ngày phát sinh hàng nghìn đánh giá, cuộc gọi tổng đài và tài liệu scan vượt quá khả năng xử lý thủ công, trong khi ShopViet không có chuyên gia machine learning. Bài học tổng hợp các dịch vụ đáp ứng những nhu cầu này: công cụ quản lý chi phí, AI services dựng sẵn, và hai dịch vụ cho các yêu cầu đặc thù.
 </Story>
 
-<Scene id="s1" label="Phần 1/4" title="Kiểm soát chi phí AWS" questions={["exam6_q22", "exam6_q1", "exam4_q30"]}>
+<Scene id="s1" label="Phần 1/5" title="Kiểm soát chi phí AWS" questions={["exam6_q22", "exam6_q1", "exam4_q30"]}>
 
 Mỗi công cụ quản lý chi phí trả lời một câu hỏi khác nhau:
 
@@ -83,7 +115,7 @@ Chọn một vấn đề của ShopViet, chọn công cụ, sau đó chạy mô 
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/4" title="Lựa chọn loại cam kết sử dụng dài hạn" questions={["exam6_q38"]}>
+<Scene id="s2" label="Phần 2/5" title="Lựa chọn loại cam kết sử dụng dài hạn" questions={["exam6_q38"]}>
 
 Sau đợt ra mắt, tải của ShopViet đã ổn định. Cam kết sử dụng một mức chi phí mỗi giờ trong 1 hoặc 3 năm để nhận mức giá thấp hơn on-demand: đó là **Savings Plans**. AWS hiện có bốn loại:
 
@@ -100,25 +132,28 @@ Yêu cầu của ShopViet: mọi workload đều được giảm giá, với s�
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/4" title="Xử lý văn bản và giọng nói không cần đội ngũ ML" questions={["exam1_q4", "exam2_q26", "exam5_q32", "exam5_q58"]}>
+<Scene id="s3" label="Phần 3/5" title="Xử lý văn bản và giọng nói không cần đội ngũ ML" questions={["exam1_q4", "exam2_q26", "exam5_q32", "exam5_q58"]}>
 
 AWS cung cấp các AI service đã được huấn luyện sẵn, sử dụng thông qua lệnh gọi API mà không cần kiến thức machine learning:
 
 - **Amazon Comprehend**: phân tích **văn bản**: cảm xúc (sentiment), thực thể (entity), cụm từ khoá. Hỗ trợ **custom entity recognition** để nhận diện loại thực thể riêng của doanh nghiệp. Comprehend chỉ hỗ trợ một số ngôn ngữ (tiếng Anh, Tây Ban Nha, Pháp, Đức, Ý, Bồ Đào Nha, Nhật, Hàn, Hindi, Ả Rập, Trung); tiếng Việt chưa nằm trong danh sách.
 - **Amazon Transcribe**: chuyển **giọng nói** thành văn bản, có khả năng phân tách từng người nói.
 - **Amazon Textract**: trích xuất văn bản, bảng, form từ **ảnh scan và PDF**; nhận dạng văn bản tiếng Anh, Pháp, Đức, Ý, Bồ Đào Nha và Tây Ban Nha.
+- **Amazon Rekognition**: phân tích **ảnh và video**: đối tượng, cảnh, khuôn mặt, nội dung không phù hợp, chữ xuất hiện trong ảnh. Rekognition không phân tích cảm xúc hay chủ đề của một đoạn văn bản.
+- **Amazon Translate**: **dịch** văn bản giữa các ngôn ngữ (có hỗ trợ tiếng Việt). Translate không xác định cảm xúc; khi cần phân tích đánh giá tiếng Việt, có thể dịch sang tiếng Anh bằng Translate rồi chuyển sang Comprehend.
+- **Amazon Polly**: chiều ngược lại của Transcribe, chuyển **văn bản thành giọng nói**. Transcribe chỉ nhận âm thanh làm đầu vào.
 
 Mỗi tình huống dưới đây là một luồng xử lý của ShopViet; văn bản đưa vào Comprehend và Textract là tiếng Anh (gian hàng quốc tế của ShopViet), do giới hạn ngôn ngữ nêu trên. Gửi một tài liệu và quan sát kết quả đầu ra tại từng bước xử lý:
 
 <AiPipelineSim client:visible />
 
-Tự huấn luyện model trên SageMaker cũng đáp ứng được các yêu cầu trên, nhưng cần nhân sự có chuyên môn ML và chi phí vận hành cao hơn. Khi đã có service dựng sẵn phù hợp, nên ưu tiên sử dụng service đó.
+**Amazon SageMaker AI** là dịch vụ ML được quản lý toàn phần để xây dựng, huấn luyện và triển khai model ML. Tự huấn luyện model trên SageMaker AI cũng đáp ứng được các yêu cầu trên, nhưng cần nhân sự có chuyên môn ML và chi phí vận hành cao hơn. Khi đã có service dựng sẵn phù hợp, nên ưu tiên sử dụng service đó. SageMaker AI cũng không phải nơi chạy API container của ứng dụng: việc đó thuộc về [ECS hoặc EKS trên Fargate](/concepts/containers/#s1).
 
-<Takeaway>Văn bản → cảm xúc, thực thể: Comprehend (loại thực thể riêng: custom entity recognition). Giọng nói → văn bản: Transcribe, sau đó truy vấn SQL bằng Athena. Ảnh scan, PDF → văn bản: Textract, sau đó chuyển sang Comprehend. Lưu lượng dữ liệu tăng đột biến: đặt SQS giữa API Gateway và Lambda; tự động xoá dữ liệu sau một năm: TTL của DynamoDB (item hết hạn thường bị xoá trong vòng vài ngày).</Takeaway>
+<Takeaway>Văn bản → cảm xúc, thực thể: Comprehend (loại thực thể riêng: custom entity recognition). Ảnh, video: Rekognition. Dịch ngôn ngữ: Translate. Văn bản → giọng nói: Polly. Giọng nói → văn bản: Transcribe, sau đó truy vấn SQL bằng Athena. Ảnh scan, PDF → văn bản: Textract, sau đó chuyển sang Comprehend. Lưu lượng dữ liệu tăng đột biến: đặt SQS giữa API Gateway và Lambda; tự động xoá dữ liệu sau một năm: TTL của DynamoDB (item hết hạn thường bị xoá trong vòng vài ngày).</Takeaway>
 
 </Scene>
 
-<Scene id="s4" label="Phần 4/4" title="Xử lý batch và dịch vụ AWS trong data center của doanh nghiệp" questions={["exam6_q55", "exam1_q27"]}>
+<Scene id="s4" label="Phần 4/5" title="Xử lý batch và dịch vụ AWS trong data center của doanh nghiệp" questions={["exam6_q55", "exam1_q27"]}>
 
 Hai yêu cầu cuối của ShopViet không phù hợp với các dịch vụ đã trình bày. Đội nội dung cần xử lý hàng chục nghìn ảnh mỗi đêm (thay đổi kích thước, gắn watermark), mỗi job chạy lâu hơn giới hạn của Lambda. Đồng thời, ShopViet vừa mua lại một công ty ví điện tử: quy định bắt buộc dữ liệu và ứng dụng phải nằm trong data center của công ty này, nhưng đội kỹ thuật cần sử dụng EKS, CloudWatch, IAM thống nhất với phần còn lại của ShopViet.
 
@@ -169,7 +204,56 @@ Hai yêu cầu cuối của ShopViet không phù hợp với các dịch vụ đ
 
 </Scene>
 
-<Scene id="challenge" label="Bài tập" title="Phân loại tác vụ theo dịch vụ" questions={["exam6_q22", "exam4_q30", "exam6_q38", "exam5_q58", "exam1_q27"]}>
+<Scene id="s5" label="Phần 5/5" title="Phân biệt nhanh: các dịch vụ dễ bị chọn nhầm" questions={["exam1_q4", "exam2_q26", "exam5_q32", "exam4_q33", "exam1_q11", "exam2_q4", "exam2_q40", "exam2_q47"]}>
+
+Khi thiết kế các luồng xử lý của ShopViet, một số dịch vụ có tên hoặc phạm vi gần với yêu cầu nhưng giải quyết vấn đề khác. Chọn từng dịch vụ để xem phạm vi sử dụng, lý do không phù hợp với tình huống của ShopViet và phương án thay thế.
+
+<QuickCompare client:visible items={[
+  { name: "Amazon Rekognition",
+    use: "Phân tích **ảnh và video** lưu trên S3 hoặc video streaming: nhận diện đối tượng, cảnh, khuôn mặt, nội dung không phù hợp, chữ in hoặc viết tay xuất hiện trong ảnh; Custom Labels cho đối tượng riêng như logo, sản phẩm. Không cần chuyên môn ML.",
+    notHere: "Đội nội dung cần đánh giá sắc thái và chủ đề của hàng nghìn bài báo đã được Textract trích xuất thành văn bản. Rekognition là dịch vụ thị giác máy tính, không phân tích cảm xúc của văn bản.",
+    instead: "Textract trích xuất văn bản từ PDF, **Amazon Comprehend** phân tích sentiment và entity, kết quả lưu trên S3." },
+  { name: "Amazon Translate",
+    use: "Dịch văn bản giữa các ngôn ngữ theo yêu cầu: nội dung do doanh nghiệp soạn, chat chăm sóc khách hàng, tài liệu lưu trên S3. Hỗ trợ tiếng Việt.",
+    notHere: "Yêu cầu là xác định phản hồi của người dùng là tích cực hay tiêu cực. Translate chỉ chuyển ngôn ngữ, không trả về sentiment.",
+    instead: "**Amazon Comprehend** (DetectSentiment). Translate chỉ cần thêm vào trước Comprehend khi văn bản ở ngôn ngữ Comprehend chưa hỗ trợ, ví dụ tiếng Việt." },
+  { name: "Amazon Transcribe và Amazon Polly",
+    use: "Transcribe: âm thanh → văn bản (ghi âm trên S3 hoặc streaming). Polly: văn bản → giọng nói.",
+    notHere: "Phản hồi và mô tả sản phẩm đã ở dạng văn bản. Chuyển văn bản thành âm thanh rồi chuyển ngược lại bằng Transcribe chỉ thêm bước xử lý; Transcribe cũng không thể tạo âm thanh từ văn bản.",
+    instead: "Gửi trực tiếp văn bản tới **Amazon Comprehend** (custom entity recognition khi cần loại thực thể riêng)." },
+  { name: "Amazon Lookout for Vision",
+    use: "Từng là dịch vụ xây dựng model thị giác máy tính để phát hiện lỗi trên **ảnh** sản phẩm trong kiểm tra chất lượng. Đã ngừng nhận khách hàng mới từ 10/10/2024 và kết thúc hỗ trợ ngày 31/10/2025; AWS gợi ý SageMaker AI hoặc giải pháp đối tác thay thế.",
+    notHere: "Dịch vụ không còn hoạt động, và kể cả trước đây cũng chỉ xử lý ảnh, không trích xuất thực thể từ file văn bản.",
+    instead: "File mô tả trên S3 kích hoạt Lambda, Lambda gọi **Comprehend custom entity recognition**." },
+  { name: "Amazon SageMaker AI",
+    use: "Xây dựng, huấn luyện và triển khai model ML với hạ tầng được quản lý; phù hợp khi cần model riêng và có đội ngũ ML.",
+    notHere: "Đội API của ShopViet cần nơi chạy container Docker mà không quản lý máy chủ. SageMaker AI không phải dịch vụ điều phối container cho ứng dụng; với bài toán phân tích văn bản phổ biến, tự huấn luyện model tốn công hơn dùng AI service dựng sẵn.",
+    instead: "Container API: **ECS hoặc EKS với Fargate**. Phân tích văn bản không có đội ML: **Comprehend**." },
+  { name: "Amazon Lightsail",
+    use: "Cách đơn giản nhất để bắt đầu với AWS cho website và ứng dụng web: instance (virtual private server), container service, managed database, load balancer, CDN với mức giá cố định hằng tháng.",
+    notHere: "Backend xử lý giao dịch của ví điện tử cần nhiều compute và bộ nhớ, chạy dài và co giãn theo lưu lượng, trong khi đội kỹ thuật không muốn cấp phát hay vá máy chủ ảo. Chạy trên Lightsail instance nghĩa là vẫn quản lý một nhóm máy chủ ảo.",
+    instead: "API Gateway + Lambda để kiểm tra hợp lệ, backend chạy dài hạn trên **ECS với Fargate**." },
+  { name: "Amazon AppFlow",
+    use: "Trao đổi dữ liệu giữa ứng dụng SaaS (Salesforce, Zendesk, Slack, ServiceNow…) và dịch vụ AWS như S3, Redshift; flow chạy theo lịch, theo sự kiện hoặc theo yêu cầu. Có Custom Connector SDK để kết nối API riêng hoặc hệ thống on-premises.",
+    notHere: "Các nhà cung cấp của ShopViet chủ động đẩy file bằng phần mềm SFTP sẵn có và không thay đổi quy trình. AppFlow chủ động lấy dữ liệu qua API của ứng dụng nguồn; SFTP không có trong danh sách ứng dụng được hỗ trợ.",
+    instead: "**AWS Transfer Family** (SFTP endpoint được quản lý, lưu thẳng vào S3, IAM role theo từng nhà cung cấp)." },
+  { name: "Amazon Timestream",
+    use: "Database chuỗi thời gian (time series) serverless cho dữ liệu đo lường như telemetry, metric. Timestream for LiveAnalytics đã đóng với khách hàng mới từ 20/6/2025; AWS khuyến nghị Timestream for InfluxDB.",
+    notHere: "Hệ thống back-office đang dùng Microsoft SQL Server với stored procedure, transaction và quan hệ giữa các bảng. Database chuỗi thời gian không thay thế được database quan hệ này.",
+    instead: "**Amazon RDS for SQL Server** Multi-AZ, mã hoá khi lưu trữ bằng KMS key." },
+  { name: "AWS IoT Core rule → Amazon SNS",
+    use: "IoT rule đọc message MQTT của thiết bị và thực hiện action: ghi DynamoDB, lưu S3, gửi Kinesis, gọi Lambda, gửi SQS, publish SNS… SNS **đẩy** message tới subscriber (SQS, Lambda, HTTP(S), email…).",
+    notHere: "Ứng dụng trên EC2 bị quá tải và mất dữ liệu vị trí. Ứng dụng không chủ động đọc (poll) message từ SNS topic mà nhận message do SNS đẩy tới; SNS không phải hàng đợi để ứng dụng lấy message theo tốc độ xử lý của mình.",
+    instead: "**Amazon SQS** làm lớp đệm, ứng dụng poll hàng đợi theo tốc độ của mình. Khi thiết bị đi qua IoT Core, có thể dùng action SQS của IoT rule." },
+]} />
+
+Chi tiết các phương án thay thế: [ECS và EKS với Fargate](/concepts/containers/#s1), [AWS Transfer Family](/concepts/storage-migration/#s2), [RDS Multi-AZ](/concepts/rds/#s1), [SQS làm lớp đệm](/concepts/messaging/#s1).
+
+<Takeaway>Văn bản: Comprehend. Ảnh, video: Rekognition. Dịch: Translate. Giọng nói ↔ văn bản: Transcribe (vào là âm thanh), Polly (ra là âm thanh). Container không quản lý máy chủ: ECS/EKS với Fargate, không phải SageMaker AI hay Lightsail. Nhà cung cấp gửi file qua SFTP: Transfer Family, không phải AppFlow. Database quan hệ: RDS, không phải Timestream. Cần lớp đệm để không mất dữ liệu: SQS, không phải SNS.</Takeaway>
+
+</Scene>
+
+<Scene id="challenge" label="Bài tập" title="Phân loại tác vụ theo dịch vụ" questions={["exam6_q22", "exam4_q30", "exam6_q38", "exam5_q58", "exam1_q27", "exam2_q26"]}>
 
 Phân loại từng tác vụ của ShopViet vào service tương ứng. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
@@ -213,6 +297,10 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Snowball Edge", "EKS trong Region qua Direct Connect", "AWS Outposts"],
     a: 2,
     why: "Outposts mở rộng hạ tầng và dịch vụ AWS tới data center của doanh nghiệp; dữ liệu được lưu và xử lý tại chỗ. Với Direct Connect, workload vẫn chạy trong Region." },
+  { q: "Đội nội dung đã dùng Textract trích xuất văn bản từ hàng nghìn bài báo PDF và cần biết sắc thái, chủ đề của từng bài mà không xây dựng model. Phương án nào phù hợp?",
+    opts: ["Rekognition phân tích bố cục trang để xác định sắc thái", "Comprehend phân tích sentiment và entity, kết quả lưu trên S3", "Translate chuyển văn bản sang tiếng Anh rồi lưu vào DynamoDB"],
+    a: 1,
+    why: "Comprehend là AI service phân tích văn bản (sentiment, entity, key phrase). Rekognition phân tích ảnh và video; Translate chỉ dịch ngôn ngữ, không trả về sentiment." },
 ]} />
 
 </Scene>

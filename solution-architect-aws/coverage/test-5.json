@@ -1010,8 +1010,8 @@
         {
           "keyword": "Amazon Transcribe / Amazon Translate (wrong tool)",
           "lesson": "others",
-          "status": "partial",
-          "where": "others.mdx#s3 / AiPipelineSim"
+          "status": "covered",
+          "where": "others.mdx#s3, #s5 / QuickCompare, AiPipelineSim"
         }
       ]
     },

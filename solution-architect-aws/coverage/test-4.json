@@ -1083,8 +1083,8 @@
         {
           "keyword": "Amazon SageMaker",
           "lesson": "others",
-          "status": "partial",
-          "where": "others.mdx#s3"
+          "status": "covered",
+          "where": "others.mdx#s3, #s5 / QuickCompare; containers.mdx#s1"
         }
       ]
     },

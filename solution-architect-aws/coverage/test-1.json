@@ -137,8 +137,8 @@
         {
           "keyword": "Amazon Lookout for Vision",
           "lesson": "others",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "others.mdx#s5 / QuickCompare"
         }
       ]
     },
@@ -385,8 +385,8 @@
         {
           "keyword": "Amazon Lightsail",
           "lesson": "others",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "others.mdx#s5 / QuickCompare; containers.mdx#s1"
         },
         {
           "keyword": "EKS self-managed node group",
