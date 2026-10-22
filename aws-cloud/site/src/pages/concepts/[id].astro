@@ -113,9 +113,9 @@ const docs = [...(entry?.data.docs ?? []), ...(entryEn?.data.docs ?? [])].filter
             <h3><T k="lesson.frame.practice" /></h3>
             <ul>
               {concept.exact && concept.questions > 0 && (
-                <li><a href={`/concepts/${id}/kiem-tra/`}><T k="lesson.frame.quizLink" params={{ n: concept.questions }} /></a></li>
+                <li><a href={`/concepts/${id}/quiz/`}><T k="lesson.frame.quizLink" params={{ n: concept.questions }} /></a></li>
               )}
-              <li><a href="/on-tap/"><T k="lesson.frame.practiceLink" /></a></li>
+              <li><a href="/practice/"><T k="lesson.frame.practiceLink" /></a></li>
             </ul>
           </div>
           <div class="next-col">

@@ -19,7 +19,7 @@ const { cert } = Astro.props;
   section="practice"
   sidebar={false}
 >
-  <div class="crumbs"><a href="/on-tap/"><T k="practice.catalog.crumb" /></a><span aria-hidden="true">/</span><b>{cert.code}</b></div>
+  <div class="crumbs"><a href="/practice/"><T k="practice.catalog.crumb" /></a><span aria-hidden="true">/</span><b>{cert.code}</b></div>
   <h1><T k="practice.catalog.title" /></h1>
   <p class="lede"><T k="practice.catalog.lede" /></p>
   <CatalogPage client:only="react" certId={cert.id} />
