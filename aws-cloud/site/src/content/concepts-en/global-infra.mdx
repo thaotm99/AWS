@@ -168,7 +168,7 @@ The four requirements below look simple but are often configured wrongly as Shop
 
 <GlobalMythsSim client:visible />
 
-<Takeaway>EFS can be accessed from another Region through inter-Region VPC peering, without copying data. A public NAT gateway in zonal mode is placed in a public subnet (regional mode does not need a public subnet); an egress-only internet gateway is for IPv6 only. To identify the same AZ as another account: use the AZ ID. To accelerate both downloads and uploads: use CloudFront and S3 Transfer Acceleration together.</Takeaway>
+<Takeaway>EFS can be accessed from another Region through inter-Region VPC peering, without copying data. A public NAT gateway in zonal mode is placed in a public subnet (regional mode does not need a public subnet); an egress-only internet gateway is for IPv6 only. To identify the same AZ as another account: use the AZ ID. Content that many users view repeatedly: cache it with CloudFront; long-distance transfers to or from a bucket (uploads and downloads alike): S3 Transfer Acceleration; an application that needs both combines them.</Takeaway>
 
 </Scene>
 

@@ -168,7 +168,7 @@ Bốn yêu cầu dưới đây có vẻ đơn giản nhưng thường bị cấu
 
 <GlobalMythsSim client:visible />
 
-<Takeaway>EFS truy cập được từ Region khác thông qua inter-region VPC peering, không cần copy dữ liệu. Public NAT gateway ở chế độ zonal được đặt trong public subnet (chế độ regional không cần public subnet); egress-only internet gateway chỉ dành cho IPv6. Để xác định cùng một AZ với account khác: sử dụng AZ ID. Tăng tốc cả chiều truy xuất lẫn chiều tải lên: sử dụng đồng thời CloudFront và S3 Transfer Acceleration.</Takeaway>
+<Takeaway>EFS truy cập được từ Region khác thông qua inter-region VPC peering, không cần copy dữ liệu. Public NAT gateway ở chế độ zonal được đặt trong public subnet (chế độ regional không cần public subnet); egress-only internet gateway chỉ dành cho IPv6. Để xác định cùng một AZ với account khác: sử dụng AZ ID. Nội dung được nhiều người dùng xem lặp lại: cache bằng CloudFront; truyền dữ liệu đường dài tới hoặc từ bucket (cả tải lên lẫn tải xuống): S3 Transfer Acceleration; ứng dụng cần cả hai thì kết hợp cả hai.</Takeaway>
 
 </Scene>
 
