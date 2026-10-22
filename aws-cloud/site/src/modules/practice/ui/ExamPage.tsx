@@ -38,6 +38,8 @@ function ExamView({ certId, examId, topic }: Props) {
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.metaKey || e.ctrlKey || e.altKey || store.getState().view !== "question") return;
+      // A full-screen diagram or the phone menu is on top: keys belong to it, not to the question.
+      if (document.documentElement.matches(".zoom-open, .drawer-open")) return;
       const target = e.target as HTMLElement;
       if (target.closest("input, textarea, select, button, a, summary")) return;
       const q = store.question;
