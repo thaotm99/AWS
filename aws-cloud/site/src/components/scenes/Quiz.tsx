@@ -28,7 +28,7 @@ function Question({ item, n }: { item: QuizItem; n: number }) {
       </div>
       {answered && (
         <div className={"explain" + (correct ? "" : " miss")}>
-          <b>{correct ? "Đúng." : "Chưa đúng."}</b> {item.why}
+          <b>{correct ? "Chính xác." : "Không chính xác."}</b> {item.why}
         </div>
       )}
     </div>

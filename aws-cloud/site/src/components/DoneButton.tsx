@@ -12,7 +12,7 @@ export default function DoneButton({ id }: { id: string }) {
 
   return (
     <button className="btn done-btn" aria-pressed={on} onClick={toggle}>
-      {on ? "Đã học ✓" : "Đánh dấu đã học"}
+      {on ? "Đã hoàn thành ✓" : "Đánh dấu hoàn thành"}
     </button>
   );
 }
