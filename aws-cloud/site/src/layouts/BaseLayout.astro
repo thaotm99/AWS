@@ -3,6 +3,11 @@ import "../styles/global.css";
 import Roadmap from "../components/Roadmap.tsx";
 import { getCollection } from "astro:content";
 import { getCurriculum } from "../data/exam";
+import T from "../app/T.astro";
+import type { SiteMessageKey } from "../app/i18n";
+import type { MessageParams } from "../core/i18n/types";
+import LanguageSwitch from "../modules/shell/ui/LanguageSwitch.astro";
+import { BrowserLocalePreference } from "../core/i18n/LocalePreference";
 
 interface Props {
   title: string;
@@ -12,6 +17,9 @@ interface Props {
   section?: "theory" | "practice";
   /** Practice pages have no lesson roadmap. */
   sidebar?: boolean;
+  /** Translated <title>; `title` stays as the default-language text. */
+  titleKey?: SiteMessageKey;
+  titleParams?: MessageParams;
 }
 
 const {
@@ -20,17 +28,22 @@ const {
   current,
   section = "theory",
   sidebar = true,
+  titleKey,
+  titleParams,
 } = Astro.props;
+// Runs before first paint: hide translatable text until the chosen language is applied.
+const earlyLocale = `try{var l=localStorage.getItem(${JSON.stringify(BrowserLocalePreference.storageKey)});if(l&&l!=="vi"){var h=document.documentElement;h.lang=l;h.classList.add("i18n-pending");setTimeout(function(){h.classList.remove("i18n-pending")},2000)}}catch(e){}`;
 const ready = (await getCollection("concepts")).map((e) => e.id);
 const layers = getCurriculum();
 ---
 <!doctype html>
-<html lang="vi">
+<html lang="vi" data-i18n-title={titleKey} data-i18n-params={titleParams ? JSON.stringify(titleParams) : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content={description} />
     <title>{title}</title>
+    <script is:inline set:html={earlyLocale} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -45,18 +58,19 @@ const layers = getCurriculum();
           </span>
           <span class="brand-text">AWS Từ Nền</span>
         </a>
-        <nav class="topnav" aria-label="Chính">
-          <a href="/" aria-current={section === "theory" ? "page" : undefined}>Lý thuyết</a>
-          <a href="#" class="soon" data-soon="Trang Tình huống">Tình huống</a>
-          <a href="/on-tap/" aria-current={section === "practice" ? "page" : undefined}>Ôn tập</a>
+        <nav class="topnav" aria-label="Chính" data-i18n-attr="aria-label:shell.nav.main">
+          <a href="/" aria-current={section === "theory" ? "page" : undefined}><T k="shell.nav.theory" /></a>
+          <a href="#" class="soon" data-soon="shell.nav.scenarios"><T k="shell.nav.scenarios" /></a>
+          <a href="/on-tap/" aria-current={section === "practice" ? "page" : undefined}><T k="shell.nav.practice" /></a>
         </nav>
-        {sidebar && <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="sidebar">Lộ trình học</button>}
+        <LanguageSwitch />
+        {sidebar && <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="sidebar"><T k="shell.nav.roadmap" /></button>}
       </div>
     </header>
 
     <div class:list={["shell", { single: !sidebar }]}>
       {sidebar && (
-        <aside class="sidebar" id="sidebar" aria-label="Lộ trình học">
+        <aside class="sidebar" id="sidebar" aria-label="Lộ trình học" data-i18n-attr="aria-label:shell.nav.roadmap">
           <Roadmap client:load layers={layers} current={current} ready={ready} />
         </aside>
       )}
@@ -67,22 +81,10 @@ const layers = getCurriculum();
     <div class="toast" id="toast" hidden></div>
 
     <script>
-      const menuBtn = document.getElementById("menuBtn");
-      menuBtn?.addEventListener("click", () => {
-        const open = document.getElementById("sidebar")!.classList.toggle("open");
-        menuBtn!.setAttribute("aria-expanded", String(open));
-      });
-      let timer: ReturnType<typeof setTimeout>;
-      document.querySelectorAll<HTMLAnchorElement>("[data-soon]").forEach((a) =>
-        a.addEventListener("click", (e) => {
-          e.preventDefault();
-          const t = document.getElementById("toast")!;
-          t.textContent = `${a.dataset.soon} đang được xây dựng.`;
-          t.hidden = false;
-          clearTimeout(timer);
-          timer = setTimeout(() => (t.hidden = true), 2400);
-        }),
-      );
+      import { i18n } from "../app/i18n";
+      import { ShellController } from "../modules/shell/ui/ShellController";
+
+      new ShellController(i18n).start();
     </script>
   </body>
 </html>

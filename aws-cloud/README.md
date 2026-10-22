@@ -19,12 +19,46 @@ aws-cloud/
 │   ├── src/content/concepts/     mỗi bài 1 file .mdx, tên file = id trong curriculum.ts
 │   ├── src/components/scenes/    các cảnh tương tác dùng lại được (React)
 │   ├── src/components/lessons/   phần minh họa riêng của từng bài
-│   ├── src/practice/             trang Ôn tập (luyện đề), xem mục "Ôn tập" bên dưới
-│   ├── src/data/practice/        đọc file đề lúc build, khai báo các chứng chỉ
+│   ├── src/core/                 hạ tầng dùng chung: api, state, i18n (không biết tính năng nào)
+│   ├── src/modules/              mỗi tính năng một module: shell (khung trang), practice (Ôn tập)
+│   ├── src/app/                  ghép các module: api.ts, i18n.ts, T.astro
 │   └── src/pages/                trang chủ, trang bài học, /on-tap/, /api/*.json, 404
 └── infra/                        AWS CDK (TypeScript)
     └── lib/static-site-stack.ts  S3, CloudFront, IAM role cho GitHub, Budget
 ```
+
+## Kiến trúc module
+
+```
+src/core/      hạ tầng, không phụ thuộc tính năng
+  api/         ApiClient (abstract) ─ HttpApiClient, StaticApiClient, CompositeApiClient; ApiService (abstract)
+  api/local/   LocalApiClient + LocalResource (abstract): "server giả" chạy trong trình duyệt
+  api/storage/ StorageDriver (abstract) ─ IndexedDbDriver, LocalStorageDriver, MemoryDriver
+  state/       EventBus, Store (abstract), Controller (abstract), useStore
+  i18n/        I18n, Translator, LocalePreference (abstract), DomTranslator, defineMessages/combineMessages
+src/modules/<tên>/   một tính năng, tự chứa đủ các tầng
+  domain/      kiểu dữ liệu + quy tắc nghiệp vụ
+  api/         LocalResource của module (route REST trả lời trong trình duyệt)
+  services/    gọi API như REST thường
+  app/         event, store, controller
+  ui/          React/Astro: đọc store, phát event, không gọi service
+  i18n/        vi.ts (nguồn) + en.ts, cùng bộ key
+src/app/       ghép nối: api.ts (một ApiClient cho cả site), i18n.ts (gom từ điển các module)
+```
+
+Thêm một module: tạo `src/modules/<tên>/` theo cấu trúc trên, rồi đăng ký LocalResource của nó trong
+`app/api.ts` và từ điển của nó trong `app/i18n.ts`.
+
+## Ngôn ngữ (VI / EN)
+
+Nút **VI | EN** trên thanh menu. Lựa chọn được lưu qua API (`PATCH /preferences`, module `shell`), kèm một
+bản trong localStorage để trang hiện đúng ngôn ngữ ngay từ lúc mở.
+
+- Mỗi module có `i18n/vi.ts` (nguồn) và `i18n/en.ts`. TypeScript báo lỗi nếu `en.ts` thiếu hoặc thừa key.
+- Trong React: `useI18n()`, hoặc `useT()` của module (key ngắn như `"exam.check"`). Trong Astro: `<T k="practice.catalog.title" />`.
+- Bản tiếng Anh dùng đúng thuật ngữ của AWS exam guide và của đề ("Practice Test", "Select TWO", "Correct option",
+  "minimum passing score"). Câu chữ ở cả hai ngôn ngữ viết đơn giản nhất có thể, chỉ giữ nguyên thuật ngữ chuyên ngành.
+- Câu hỏi và lời giải của đề giữ nguyên bản tiếng Anh gốc. Nội dung các bài lý thuyết hiện chỉ có tiếng Việt.
 
 ## Ôn tập (`/on-tap/`)
 
@@ -32,7 +66,7 @@ Luyện đề từng câu: chọn chứng chỉ → chọn đề → chọn đá
 câu tiếp theo → kết quả theo từng domain. Trang này hiển thị **nguyên văn** câu hỏi từ các file đề
 trong repo, nên site chỉ dùng riêng, không chia sẻ công khai.
 
-Các tầng trong `site/src/practice/`, mỗi tầng chỉ gọi tầng ngay dưới:
+Các tầng trong `site/src/modules/practice/`, mỗi tầng chỉ gọi tầng ngay dưới:
 
 ```
 ui/          React: đọc store, phát event (không gọi service)
@@ -40,10 +74,10 @@ ui/          React: đọc store, phát event (không gọi service)
 app/         EventBus → Controller (CatalogController, ExamController) → Store
   │ gọi service
 services/    CatalogService, AttemptService: gọi API như REST thường (get/post/put)
-  │ ApiClient (abstract)
-api/         CompositeApiClient
-               ├─ /attempts/**  → LocalApiClient → AttemptResource → StorageDriver
-               │                                     (IndexedDB → localStorage → memory)
+  │ ApiClient (abstract, src/core/api)
+app/api.ts   CompositeApiClient
+               ├─ /attempts/**, /preferences → LocalApiClient → AttemptResource, PreferenceResource
+               │                               → StorageDriver (IndexedDB → localStorage → memory)
                └─ còn lại       → StaticApiClient → /api/**.json (Astro build từ file đề)
 domain/      kiểu dữ liệu dùng chung + Scoring (chấm điểm)
 ```
@@ -59,10 +93,12 @@ API (cùng đường dẫn cho bản tĩnh và server sau này):
 | GET | `/attempts/latest?certId=&examId=` | lượt làm mới nhất (404 nếu chưa có) |
 | POST | `/attempts` | bắt đầu lượt mới `{certId, examId, questionCount}` |
 | PUT | `/attempts/:id/answers/:questionId` | lưu một câu trả lời `{chosen, correct}` |
+| GET | `/preferences` | cài đặt của người xem (module shell) |
+| PATCH | `/preferences` | đổi cài đặt, ví dụ `{locale: "en"}` |
 
-- **Chuyển lưu trữ lên server:** viết server theo bảng trên, rồi trong `api/createApiClient.ts` trả về
+- **Chuyển lưu trữ lên server:** viết server theo bảng trên, rồi trong `src/app/api.ts` trả về
   `new HttpApiClient({ baseUrl })` (có `headers` để gắn token khi có đăng nhập). Service và UI không đổi.
-- **Thêm chứng chỉ:** thêm một mục vào `CERTIFICATIONS` trong `src/data/practice/PracticeCatalog.ts`, trỏ tới
+- **Thêm chứng chỉ:** thêm một mục vào `CERTIFICATIONS` trong `src/modules/practice/content/PracticeCatalog.ts`, trỏ tới
   thư mục đề. File đề dạng khác thì viết một lớp con của `ExamSource`.
 - HTML trong đề được lọc lúc build (`HtmlSanitizer`), chỉ giữ thẻ định dạng, link và ảnh.
 

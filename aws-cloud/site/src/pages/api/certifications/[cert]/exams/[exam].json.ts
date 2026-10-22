@@ -1,5 +1,5 @@
 import type { APIRoute, GetStaticPaths } from "astro";
-import { practiceCatalog } from "../../../../../data/practice/PracticeCatalog";
+import { practiceCatalog } from "../../../../../modules/practice/content/PracticeCatalog";
 
 // GET /certifications/:cert/exams/:exam
 export const getStaticPaths = (() =>

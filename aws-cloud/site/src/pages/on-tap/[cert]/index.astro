@@ -1,7 +1,8 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
-import CatalogPage from "../../../practice/ui/CatalogPage.tsx";
-import { practiceCatalog } from "../../../data/practice/PracticeCatalog";
+import T from "../../../app/T.astro";
+import CatalogPage from "../../../modules/practice/ui/CatalogPage.tsx";
+import { practiceCatalog } from "../../../modules/practice/content/PracticeCatalog";
 import "../../../styles/practice.css";
 
 export function getStaticPaths() {
@@ -10,9 +11,16 @@ export function getStaticPaths() {
 
 const { cert } = Astro.props;
 ---
-<BaseLayout title={`Ôn tập ${cert.code} · AWS Từ Nền`} description={`Luyện đề ${cert.code} ${cert.name} từng câu.`} section="practice" sidebar={false}>
-  <div class="crumbs"><a href="/on-tap/">Ôn tập</a><span aria-hidden="true">/</span><b>{cert.code}</b></div>
-  <h1>Luyện đề chứng chỉ AWS</h1>
-  <p class="lede">Chọn đề, làm từng câu. Bấm Kiểm tra để xem đúng sai cùng lời giải, rồi sang câu tiếp theo. Tiến độ được lưu trên trình duyệt này.</p>
+<BaseLayout
+  title={`Ôn tập ${cert.code} · AWS Từ Nền`}
+  titleKey="practice.catalog.certPageTitle"
+  titleParams={{ code: cert.code }}
+  description={`Luyện đề ${cert.code} ${cert.name} từng câu.`}
+  section="practice"
+  sidebar={false}
+>
+  <div class="crumbs"><a href="/on-tap/"><T k="practice.catalog.crumb" /></a><span aria-hidden="true">/</span><b>{cert.code}</b></div>
+  <h1><T k="practice.catalog.title" /></h1>
+  <p class="lede"><T k="practice.catalog.lede" /></p>
   <CatalogPage client:only="react" certId={cert.id} />
 </BaseLayout>

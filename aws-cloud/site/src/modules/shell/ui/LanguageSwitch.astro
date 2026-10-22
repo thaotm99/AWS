@@ -1,0 +1,10 @@
+---
+import { LOCALES } from "../../../core/i18n/types";
+---
+<div class="lang-switch" role="group" aria-label="Ngôn ngữ" data-i18n-attr="aria-label:shell.nav.language">
+  {LOCALES.map((locale) => (
+    <button type="button" data-locale={locale} aria-pressed={locale === "vi" ? "true" : "false"} lang={locale}>
+      {locale.toUpperCase()}
+    </button>
+  ))}
+</div>
