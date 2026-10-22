@@ -108,7 +108,7 @@
           "keyword": "AWS Managed Microsoft AD (two-way trust)",
           "lesson": "cognito",
           "status": "covered",
-          "where": "cognito.mdx#s2 / StaffSignInSim"
+          "where": "iam.mdx#s5 / FederationSim; cognito.mdx#s2 / StaffSignInSim"
         },
         {
           "keyword": "Cognito identity pool",
@@ -302,6 +302,12 @@
           "lesson": "asg",
           "status": "covered",
           "where": "asg.mdx#s1"
+        },
+        {
+          "keyword": "Classic Load Balancer",
+          "lesson": "elb",
+          "status": "missing",
+          "where": ""
         }
       ]
     },
@@ -926,13 +932,13 @@
           "keyword": "S3 Batch Replication",
           "lesson": "storage-migration",
           "status": "covered",
-          "where": "storage-migration.mdx#s2 / RequirementPicker"
+          "where": "s3.mdx#s7 / QuickCompare; storage-migration.mdx#s2 / RequirementPicker"
         },
         {
           "keyword": "S3 Transfer Acceleration",
           "lesson": "s3",
           "status": "covered",
-          "where": "s3.mdx#s5"
+          "where": "s3.mdx#s7 / QuickCompare; s3.mdx#s5"
         },
         {
           "keyword": "Snowball Edge",
@@ -2024,8 +2030,8 @@
         {
           "keyword": "Glacier Vault Lock",
           "lesson": "s3",
-          "status": "covered",
-          "where": "s3.mdx#s2"
+          "status": "partial",
+          "where": "s3.mdx#s7 / QuickCompare (ACL row, name only)"
         },
         {
           "keyword": "S3 Glacier Flexible Retrieval",

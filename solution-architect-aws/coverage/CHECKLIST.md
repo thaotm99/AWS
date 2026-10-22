@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **977 keyword** khác nhau: ✅ 962 (98%) · 🟡 6 (1%) · ❌ 9 (1%).
+Có **978 keyword** khác nhau: ✅ 961 (98%) · 🟡 7 (1%) · ❌ 10 (1%).
 
 ### Theo bài học
 
@@ -29,11 +29,11 @@ Có **977 keyword** khác nhau: ✅ 962 (98%) · 🟡 6 (1%) · ❌ 9 (1%).
 | [security](#security) | 27 | 27 | 0 | 0 | 100% |
 | [cognito](#cognito) | 15 | 15 | 0 | 0 | 100% |
 | [ec2](#ec2) | 58 | 57 | 0 | 1 | 98% |
-| [elb](#elb) | 42 | 42 | 0 | 0 | 100% |
+| [elb](#elb) | 43 | 42 | 0 | 1 | 98% |
 | [asg](#asg) | 47 | 44 | 2 | 1 | 94% |
 | [containers](#containers) | 23 | 23 | 0 | 0 | 100% |
 | [lambda](#lambda) | 37 | 37 | 0 | 0 | 100% |
-| [s3](#s3) | 71 | 69 | 2 | 0 | 97% |
+| [s3](#s3) | 71 | 68 | 3 | 0 | 96% |
 | [storage](#storage) | 70 | 69 | 1 | 0 | 99% |
 | [storage-migration](#storage-migration) | 35 | 34 | 0 | 1 | 97% |
 | [rds](#rds) | 61 | 58 | 0 | 3 | 95% |
@@ -53,7 +53,7 @@ Có **977 keyword** khác nhau: ✅ 962 (98%) · 🟡 6 (1%) · ❌ 9 (1%).
 | Đề 1 | 223 | 2 | 1 |
 | Đề 2 | 198 | 1 | 5 |
 | Đề 3 | 221 | 3 | 3 |
-| Đề 4 | 236 | 0 | 0 |
+| Đề 4 | 235 | 1 | 1 |
 | Đề 5 | 221 | 0 | 0 |
 | Đề 6 | 217 | 0 | 0 |
 
@@ -392,7 +392,7 @@ Có **977 keyword** khác nhau: ✅ 962 (98%) · 🟡 6 (1%) · ❌ 9 (1%).
 | [ ] | AWS Directory Service AD Connector | ✅ Đã có | 1 | exam1_q10 | cognito.mdx#s2 |
 | [ ] | AWS Managed Microsoft AD (trust relationship) | ✅ Đã có | 1 | exam1_q10 | cognito.mdx#s2 / challenge |
 | [ ] | AWS Managed Microsoft AD (trust with on-premises AD) | ✅ Đã có | 1 | exam6_q44 | cognito.mdx#s2 / StaffSignInSim |
-| [ ] | AWS Managed Microsoft AD (two-way trust) | ✅ Đã có | 1 | exam4_q4 | cognito.mdx#s2 / StaffSignInSim |
+| [ ] | AWS Managed Microsoft AD (two-way trust) | ✅ Đã có | 1 | exam4_q4 | iam.mdx#s5 / FederationSim; cognito.mdx#s2 / StaffSignInSim |
 | [ ] | Cognito identity pool (temporary AWS credentials) | ✅ Đã có | 1 | exam6_q50 | cognito.mdx#s1 |
 | [ ] | Cognito user pool | ✅ Đã có | 1 | exam6_q50 | cognito.mdx#s1 |
 | [ ] | Cognito user pool with ALB authentication | ✅ Đã có | 1 | exam2_q17 | cognito.mdx#s1 / ScenarioFlow; elb.mdx#s3 / AlbRuleSim |
@@ -465,6 +465,7 @@ Có **977 keyword** khác nhau: ✅ 962 (98%) · 🟡 6 (1%) · ❌ 9 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
+| [ ] | Classic Load Balancer | ❌ Thiếu | 1 | exam4_q9 |  |
 | [ ] | ALB health check | ✅ Đã có | 2 | exam4_q26, exam5_q1 | elb.mdx#s4 / HealthCheckSim |
 | [ ] | ALB sticky sessions | ✅ Đã có | 2 | exam5_q37, exam6_q60 | analytics.mdx#s1 / CacheSim<br>elb.mdx#s7 / QuickCompare |
 | [ ] | Application Load Balancer (HTTP/HTTPS only) | ✅ Đã có | 2 | exam5_q4, exam6_q56 | elb.mdx#s1 / LbTypeSim |
@@ -635,6 +636,7 @@ Có **977 keyword** khác nhau: ✅ 962 (98%) · 🟡 6 (1%) · ❌ 9 (1%).
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
 | [ ] | CloudFront vs S3 Transfer Acceleration for large uploads | 🟡 Một phần | 1 | exam3_q37 | global-infra.mdx#s4; global-infra.mdx#s5 / EdgeChoiceSim; s3.mdx#s5 / UploadSim |
+| [ ] | Glacier Vault Lock | 🟡 Một phần | 1 | exam4_q64 | s3.mdx#s7 / QuickCompare (ACL row, name only) |
 | [ ] | S3 Lifecycle minimum 30 days before transition to IA | 🟡 Một phần | 1 | exam1_q8 | s3.mdx#s1 / LifecycleValidator (teaches only the 30-day minimum storage charge in IA; validator accepts Standard→IA after 7 days; neither the old 30-day transition rule nor its July 2026 removal is mentioned) |
 | [ ] | S3 Transfer Acceleration | ✅ Đã có | 9 | exam1_q18, exam1_q64, exam2_q12, exam3_q37, exam4_q18, exam4_q29, exam5_q21, exam5_q48, exam6_q58 | s3.mdx#s5 / UploadSim<br>s3.mdx#s5 |
 | [ ] | S3 One Zone-IA | ✅ Đã có | 5 | exam1_q8, exam4_q43, exam5_q49, exam5_q51, exam6_q28 | s3.mdx#s1<br>s3.mdx#s1 / LifecycleValidator |
@@ -656,7 +658,6 @@ Có **977 keyword** khác nhau: ✅ 962 (98%) · 🟡 6 (1%) · ❌ 9 (1%).
 | [ ] | S3 Standard | ✅ Đã có | 2 | exam2_q29, exam5_q52 | s3.mdx#s1; storage.mdx#s1<br>s3.mdx#s1 |
 | [ ] | S3 Storage Class Analysis | ✅ Đã có | 2 | exam4_q30, exam6_q3 | s3.mdx#s3 / RequirementPicker |
 | [ ] | Access control list (ACL) | ✅ Đã có | 1 | exam4_q34 | s3.mdx#s3 |
-| [ ] | Glacier Vault Lock | ✅ Đã có | 1 | exam4_q64 | s3.mdx#s2 |
 | [ ] | S3 access control list (ACL) | ✅ Đã có | 1 | exam5_q39 | s3.mdx#s2 / s3.mdx#s7 / QuickCompare |
 | [ ] | S3 Access Point | ✅ Đã có | 1 | exam2_q24 | s3.mdx#s3 / RequirementPicker |
 | [ ] | S3 Batch Operations | ✅ Đã có | 1 | exam3_q48 | s3.mdx#s7 / QuickCompare |
@@ -807,7 +808,7 @@ Có **977 keyword** khác nhau: ✅ 962 (98%) · 🟡 6 (1%) · ❌ 9 (1%).
 | [ ] | AWS Transfer Family | ✅ Đã có | 1 | exam3_q3 | storage-migration.mdx#s2 / RequirementPicker |
 | [ ] | Heterogeneous database migration (SCT + DMS) | ✅ Đã có | 1 | exam3_q4 | storage-migration.mdx#s3 |
 | [ ] | MGN test instance and cutover | ✅ Đã có | 1 | exam6_q48 | storage-migration.mdx#s3 / StepSim |
-| [ ] | S3 Batch Replication | ✅ Đã có | 1 | exam4_q29 | storage-migration.mdx#s2 / RequirementPicker |
+| [ ] | S3 Batch Replication | ✅ Đã có | 1 | exam4_q29 | s3.mdx#s7 / QuickCompare; storage-migration.mdx#s2 / RequirementPicker |
 | [ ] | Snowball Edge | ✅ Đã có | 1 | exam4_q29 | storage-migration.mdx#s2 / TransferPlannerSim |
 | [ ] | Snowball import to S3 then Lifecycle to Glacier Deep Archive | ✅ Đã có | 1 | exam2_q41 | storage-migration.mdx#s2 / TransferPlannerSim |
 | [ ] | Snowball import to S3 then S3 Lifecycle to Glacier | ✅ Đã có | 1 | exam5_q5 | storage-migration.mdx#s2 / TransferPlannerSim |
