@@ -1,0 +1,122 @@
+---
+title: "Kinesis + MSK: dữ liệu chảy liên tục"
+lede: "Mỗi giây ShopViet có hàng nghìn click, lượt xem, giao dịch và vị trí shipper. Bài này đưa dòng dữ liệu đó vào Kinesis để nhiều app cùng đọc theo đúng thứ tự, giữ stream không nghẽn khi tải tăng vọt, và nối nó tới phân tích, tìm kiếm, lưu trữ."
+minutes: 20
+scenes: 3
+prerequisites: ["messaging", "lambda"]
+docs:
+  - title: "What is Amazon Kinesis Data Streams?"
+    url: "https://docs.aws.amazon.com/streams/latest/dev/introduction.html"
+  - title: "Quotas and limits (Kinesis Data Streams)"
+    url: "https://docs.aws.amazon.com/streams/latest/dev/service-sizes-and-limits.html"
+  - title: "Develop enhanced fan-out consumers with dedicated throughput"
+    url: "https://docs.aws.amazon.com/streams/latest/dev/enhanced-consumers.html"
+  - title: "What is Amazon Data Firehose?"
+    url: "https://docs.aws.amazon.com/firehose/latest/dev/what-is-this-service.html"
+  - title: "What is Amazon Managed Service for Apache Flink?"
+    url: "https://docs.aws.amazon.com/managed-flink/latest/java/what-is.html"
+  - title: "What is Amazon MSK?"
+    url: "https://docs.aws.amazon.com/msk/latest/developerguide/what-is-msk.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import ShardStreamSim from "../../components/scenes/kinesis/ShardStreamSim.tsx";
+import ShardThroughputSim from "../../components/scenes/kinesis/ShardThroughputSim.tsx";
+import StreamPipelineSim from "../../components/scenes/kinesis/StreamPipelineSim.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#s1", label: "1 · Queue hay stream" },
+  { href: "#s2", label: "2 · Khi stream nghẽn" },
+  { href: "#s3", label: "3 · Từ stream tới phân tích" },
+  { href: "#challenge", label: "Thử thách" },
+]}>
+Bài Messaging dùng SQS để chia **việc** cho worker: mỗi đơn chỉ cần một worker làm. Dữ liệu click và giao dịch của ShopViet thì khác: bảng xếp hạng, gợi ý sản phẩm và chống gian lận đều cần đọc **cùng một dòng sự kiện**, đúng thứ tự, gần như ngay lập tức. Đó là việc của **stream**.
+</Story>
+
+<Scene id="s1" label="Cảnh 1/3" title="Queue hay stream?" questions={["exam3_q10", "exam3_q46", "exam1_q60"]}>
+
+Ba app của ShopViet cần mọi sự kiện mua hàng. Gửi 6 sự kiện của ba khách (A, B, C) vào SQS rồi vào Kinesis Data Streams, xem mỗi app nhận được gì:
+
+<ShardStreamSim client:visible />
+
+Những gì vừa thấy trong **Kinesis Data Streams**:
+
+- Stream chia thành **shard**. Producer gửi mỗi record kèm một **partition key**; Kinesis băm key để chọn shard. Cùng key thì cùng shard, nên các sự kiện của một khách luôn đúng thứ tự.
+- Đọc xong record **không bị xoá**. Mỗi app (consumer) tự giữ vị trí đọc. Record được giữ 24 giờ, tăng được tới 365 ngày, nên app lỗi có thể đọc lại.
+- Consumer có thể là app tự viết, hoặc **Lambda**: Lambda tự hỏi stream, đọc theo batch, nhớ vị trí và thử lại khi lỗi. Bảng xếp hạng của game khuyến mãi ShopViet chỉ cần Kinesis → Lambda → DynamoDB, không có server nào.
+
+<Takeaway>Chia việc, mỗi việc một worker: SQS. Nhiều app cùng đọc một dòng dữ liệu, đúng thứ tự theo key, đọc lại được: Kinesis Data Streams. Partition key quyết định shard; thứ tự chỉ được giữ trong một shard.</Takeaway>
+
+</Scene>
+
+<Scene id="s2" label="Cảnh 2/3" title="Khi stream bị nghẽn" questions={["exam5_q53", "exam6_q31", "exam5_q38"]}>
+
+Mỗi shard có giới hạn: ghi **1.000 record hoặc 1 MB mỗi giây**, đọc **2 MB mỗi giây**. Ba chuyện ShopViet đã gặp, mỗi chuyện một cách sửa. Chạy 10 giây, rồi bật công tắc:
+
+<ShardThroughputSim client:visible />
+
+Stream có hai **capacity mode**. **Provisioned**: bạn tự đặt số shard, trả tiền theo shard-giờ; hợp khi lưu lượng đều và đoán được. **On-demand**: Kinesis tự lo capacity, trả tiền theo lượng dữ liệu; hợp khi tải lên xuống thất thường. Kết hợp on-demand với Lambda làm consumer là cách ít vận hành nhất để xử lý clickstream theo thời gian thực.
+
+<Takeaway>ProvisionedThroughput<wbr />ExceededException vì gửi từng record nhỏ: gom lại trước khi gửi, rẻ hơn thêm shard. Tải khó đoán: on-demand capacity mode. Nhiều consumer đọc chậm: enhanced fan-out, mỗi consumer 2 MB/s mỗi shard.</Takeaway>
+
+</Scene>
+
+<Scene id="s3" label="Cảnh 3/3" title="Từ stream tới phân tích" questions={["exam4_q22", "exam1_q57", "exam5_q6", "exam4_q27", "exam5_q35", "exam6_q35", "exam6_q31"]}>
+
+Kinesis Data Streams chỉ là đường ống. Phía trước nó là nguồn dữ liệu, phía sau là nơi phân tích, tìm kiếm, lưu trữ. Với mỗi nhu cầu của ShopViet, chọn dịch vụ cho từng bước rồi chạy thử:
+
+<StreamPipelineSim client:visible />
+
+Hai dịch vụ hay bị nhầm với Data Streams:
+
+- **Amazon Data Firehose** (tên cũ Kinesis Data Firehose): gom dữ liệu rồi **giao tới đích** như S3, Redshift, OpenSearch, có thể đổi định dạng trên đường đi. Không viết consumer, không đọc lại. App của bạn không đọc được từ Firehose.
+- **Amazon Managed Service for Apache Flink** (tên cũ Kinesis Data Analytics): chạy truy vấn SQL hoặc code Flink **liên tục** trên stream, ví dụ đếm click theo từng phút.
+
+Đội nào đã viết app cho **Apache Kafka** thì dùng **Amazon MSK**: Kafka do AWS quản lý, giữ nguyên code. Đừng tự dựng Kafka trên EC2 rồi viết script scale bằng tay.
+
+<Takeaway>Phân tích stream bằng SQL: Kinesis Data Analytics (Managed Service for Apache Flink). Lưu stream vào S3 không cần code: Firehose. Tìm kiếm full-text: OpenSearch, dashboard: QuickSight. Từ S3 vào stream: AWS DMS. Job dài hơn 15 phút: Fargate thay Lambda. Đã có Kafka: Amazon MSK.</Takeaway>
+
+</Scene>
+
+<Scene id="challenge" label="Thử thách" title="ShopViet chọn gì?" questions={["exam3_q10", "exam5_q38", "exam5_q53", "exam4_q22"]}>
+
+Xếp từng đặc điểm vào dịch vụ có nó. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
+
+<SortGame client:visible
+  bins={[
+    { id: "kds", title: "Kinesis Data Streams", sub: "Stream nhiều consumer", hint: "Gợi ý: đặc điểm này nói về shard, thứ tự hoặc nhiều app cùng đọc." },
+    { id: "fh", title: "Amazon Data Firehose", sub: "Giao tới đích", hint: "Gợi ý: đặc điểm này nói về việc đưa dữ liệu tới nơi lưu mà không viết code." },
+    { id: "sqs", title: "Amazon SQS", sub: "Hàng đợi", hint: "Gợi ý: đặc điểm này nói về một message cho một worker." },
+  ]}
+  cards={[
+    ["Nhiều app cùng đọc một dữ liệu", "kds"], ["Đọc lại dữ liệu cũ", "kds"], ["Partition key giữ thứ tự", "kds"], ["Enhanced fan-out", "kds"],
+    ["Ghi thẳng vào S3, Redshift, OpenSearch", "fh"], ["Gom theo lô trước khi ghi", "fh"], ["Không phải viết consumer", "fh"],
+    ["Mỗi message một worker xử lý", "sqs"], ["Visibility timeout", "sqs"], ["Dead-letter queue", "sqs"],
+  ]}
+/>
+
+Nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
+
+<Quiz client:visible items={[
+  { q: "ShopViet muốn tự viết ba app phân tích chạy song song trên cùng một dòng click theo thời gian thực.",
+    opts: ["Amazon SQS", "Kinesis Data Streams", "Amazon Data Firehose"],
+    a: 1,
+    why: "Data Streams cho nhiều consumer tự viết cùng đọc một stream, mỗi consumer giữ vị trí riêng." },
+  { q: "App di động gửi từng sự kiện nhỏ một và gặp ProvisionedThroughput\u200BExceededException. Cách rẻ nhất?",
+    opts: ["Tăng số shard", "Gom nhiều sự kiện vào một lần gửi", "Giảm thời gian giữ dữ liệu"],
+    a: 1,
+    why: "Gom (aggregation, PutRecords) giảm số record mỗi giây trên shard mà không phải trả thêm shard." },
+  { q: "Năm app cùng đọc một stream và đều chậm dần so với producer.",
+    opts: ["Bật enhanced fan-out", "Đổi sang SQS FIFO", "Đổi sang Firehose"],
+    a: 0,
+    why: "Mỗi consumer enhanced fan-out có 2 MB/s mỗi shard cho riêng mình, không chia với app khác." },
+  { q: "Click cần được truy vấn bằng SQL ngay khi tới, kết quả lưu vào S3.",
+    opts: ["Data Streams → Kinesis Data Analytics → Firehose → S3", "Data Streams → QuickSight → S3", "Firehose → S3 → Athena mỗi giờ"],
+    a: 0,
+    why: "Kinesis Data Analytics (Flink) chạy SQL liên tục trên stream; Firehose lưu kết quả vào S3." },
+]} />
+
+</Scene>
