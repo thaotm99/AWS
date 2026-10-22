@@ -96,8 +96,8 @@ export default function PacketPath() {
           </g>
           <g className={"gate" + (on.naclIn && on.naclOut ? "" : " warn")}>
             <rect x={284} y={102} width={16} height={56} rx={4} className="gate-nacl" />
-            <text className="ts" x={292} y={192} textAnchor="middle">NACL</text>
-            <text className="ts" x={292} y={204} textAnchor="middle">(stateless)</text>
+            <text className="ts" x={276} y={192} textAnchor="end">NACL</text>
+            <text className="ts" x={276} y={204} textAnchor="end">(stateless)</text>
           </g>
           <circle cx={640} cy={130} r={74} className={"sg-ring" + (on.sgIn ? "" : " warn")} />
           <text className="ts" x={640} y={222} textAnchor="middle">Security Group (stateful)</text>

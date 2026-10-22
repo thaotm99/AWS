@@ -116,7 +116,7 @@ export default function QuestionCard({ question: translated, original, total, an
       <div className="pr-actions">
         {answer ? (
           <>
-            <span className="pr-muted">{t("exam.pressEnter")}</span>
+            <span className="pr-muted pr-keys-hint">{t("exam.pressEnter")}</span>
             <button type="button" className="btn primary" onClick={() => dispatch({ type: "exam/next" })}>
               {isLast ? t("exam.showResults") : t("exam.next")}
             </button>
@@ -125,8 +125,10 @@ export default function QuestionCard({ question: translated, original, total, an
           <>
             <span className="pr-muted">
               {multi ? t("exam.pickN", { n: q.selectCount, picked: selection.length }) : t("exam.pickOne")}
-              {" · "}
-              {t("exam.keys", { last: label(lastKey) })}
+              <span className="pr-keys-hint">
+                {" · "}
+                {t("exam.keys", { last: label(lastKey) })}
+              </span>
             </span>
             <button
               type="button"

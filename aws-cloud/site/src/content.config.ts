@@ -9,7 +9,7 @@ const lessonSchema = z.object({
     minutes: z.number(),
     scenes: z.number(),
     prerequisites: z.array(z.string()).default([]),
-    docs: z.array(z.object({ title: z.string(), url: z.string().url() })).default([]),
+    docs: z.array(z.object({ title: z.string(), url: z.string().url(), service: z.string().optional() })).default([]),
 });
 
 const concepts = defineCollection({

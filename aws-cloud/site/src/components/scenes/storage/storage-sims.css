@@ -1,7 +1,7 @@
 /* Storage lesson simulations (storage/SharedStorageSim, storage/FsxSim). Theme tokens only. */
 .stx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
 .stx-row + .stx-row { padding-top: 8px; }
-.stx-lbl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
+.stx-lbl { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
 .stx-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; overflow-wrap: anywhere; }
 .stx-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
 .stx .stage-bar { margin-top: 12px; border-top: 1px solid var(--line); }

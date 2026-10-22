@@ -2,7 +2,7 @@
 .bps .stage-bar + .stage-bar { border-top: 0; padding-top: 0; }
 .bps-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; margin-right: 8px; }
 .bps-events { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
-.bps-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
+.bps-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
 .bps-events .bps-play { margin-left: auto; }
 .bps-about { margin: 8px 16px 0; font-size: var(--step--1); color: var(--muted); }
 .bps-cap { fill: var(--muted); font-family: var(--font-body); font-size: 11.5px; font-weight: 600; }

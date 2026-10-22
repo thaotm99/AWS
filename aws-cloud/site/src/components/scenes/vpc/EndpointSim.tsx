@@ -66,7 +66,7 @@ export default function EndpointSim() {
           <svg viewBox="0 0 760 300" role="img" aria-label={L({ vi: `EC2 trong private subnet gửi request tới ${m.target}: ${L(m.label)}`, en: `EC2 in a private subnet sends a request to ${m.target}: ${L(m.label)}` })}>
             <path className="cloud" d="M340 60 a18 18 0 0 1 10 -32 a24 24 0 0 1 44 -6 a18 18 0 0 1 26 22 a14 14 0 0 1 -6 16 z" />
             <rect className="region" x={30} y={60} width={470} height={230} rx={12} />
-            <text className="t" x={46} y={286}>VPC</text>
+            <text className="t" x={46} y={84}>VPC</text>
             <rect className="subnet pub" x={190} y={66} width={140} height={40} rx={6} />
             <rect className="subnet" x={50} y={150} width={330} height={130} rx={6} />
             <text className="ts" x={60} y={168}>private subnet</text>

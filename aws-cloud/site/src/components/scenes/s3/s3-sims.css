@@ -31,7 +31,7 @@
 .s3x-rt-row .btn { justify-self: start; display: inline-flex; align-items: center; gap: 8px; }
 .s3x-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
 .s3x-row + .s3x-row { padding-top: 8px; }
-.s3x-lbl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
+.s3x-lbl { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
 .s3x-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; overflow-wrap: anywhere; }
 .s3x-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
 .s3x .stage-bar { margin-top: 12px; border-top: 1px solid var(--line); }
@@ -45,7 +45,7 @@
 .s3x-node.block rect, .s3x-node.bad rect { fill: var(--bad-soft); stroke: var(--bad); }
 .s3x-node.change rect, .s3x-node.warn rect { fill: var(--edge-soft); stroke: var(--edge); }
 .s3x-node.on rect { stroke: var(--accent); fill: var(--accent-soft); }
-.s3x-node.skip, .s3x-node.off { opacity: .4; }
+.s3x-node.skip, .s3x-node.off { opacity: .6; }
 .s3x-t { fill: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
 .s3x-s { fill: var(--muted); font-family: var(--font-body); font-size: 10px; }
 .s3x-m { fill: var(--muted); font-family: var(--font-mono); font-size: 10.5px; }
