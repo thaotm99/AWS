@@ -1,8 +1,8 @@
 ---
 title: "Kinesis + MSK: processing continuous data streams"
 lede: "Every second, the ShopViet system produces thousands of clicks, views, transactions and courier locations. This lesson shows how to bring this data stream into Kinesis so that several applications can read it in order, how to keep the stream's throughput up when load spikes, and how to connect the stream to analytics, search and storage services."
-minutes: 20
-scenes: 3
+minutes: 23
+scenes: 4
 prerequisites: ["messaging", "lambda"]
 docs:
   - title: "What is Amazon Kinesis Data Streams?"
@@ -39,6 +39,10 @@ docs:
     url: "https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Target.Kinesis.html"
   - title: "What is Amazon Quick?"
     url: "https://docs.aws.amazon.com/quicksight/latest/user/welcome.html"
+  - title: "Analyzing call center audio with Call Analytics (Amazon Transcribe)"
+    url: "https://docs.aws.amazon.com/transcribe/latest/dg/call-analytics.html"
+  - title: "What is Amazon Athena?"
+    url: "https://docs.aws.amazon.com/athena/latest/ug/what-is.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -48,17 +52,19 @@ import ShardThroughputSim from "../../components/scenes/kinesis/ShardThroughputS
 import StreamPipelineSim from "../../components/scenes/kinesis/StreamPipelineSim.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 
 <Story toc={[
   { href: "#en-s1", label: "1 · Queues and streams" },
   { href: "#en-s2", label: "2 · Handling throughput limits" },
   { href: "#en-s3", label: "3 · Connecting a stream to analytics" },
+  { href: "#en-s4", label: "4 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
 The Messaging lesson used SQS to distribute **tasks** to workers: each order needs only one worker to process it. ShopViet's click and transaction data has different requirements: the leaderboard, product recommendations and fraud detection all need to read **the same event stream**, in order, with near-instant latency. This is the domain of **streams**.
 </Story>
 
-<Scene id="en-s1" label="Part 1/3" title="Comparing queues and streams" questions={["exam3_q10", "exam3_q46", "exam1_q60"]}>
+<Scene id="en-s1" label="Part 1/4" title="Comparing queues and streams" questions={["exam3_q10", "exam3_q46", "exam1_q60"]}>
 
 Three ShopViet applications all need to receive every purchase event. The simulation below sends 6 events from three users (A, B, C) to SQS and to Kinesis Data Streams in turn, to compare the data each application receives:
 
@@ -74,7 +80,7 @@ The characteristics of **Kinesis Data Streams** shown in the simulation:
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/3" title="When a stream exceeds its throughput limits" questions={["exam5_q53", "exam6_q31", "exam5_q38"]}>
+<Scene id="en-s2" label="Part 2/4" title="When a stream exceeds its throughput limits" questions={["exam5_q53", "exam6_q31", "exam5_q38"]}>
 
 Each shard has throughput limits: writes of **1,000 records or 1 MB per second**, reads of **2 MB per second** (total for all consumers using `GetRecords`). The simulation below shows three problems ShopViet ran into and the matching solutions. Run the simulation for 10 seconds, then turn on the fix:
 
@@ -86,7 +92,7 @@ A stream has two **capacity modes**. **Provisioned**: the operator sets the numb
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/3" title="Connecting a stream to analytics, search and storage" questions={["exam4_q22", "exam1_q57", "exam5_q6", "exam4_q27", "exam5_q35", "exam6_q35", "exam6_q31"]}>
+<Scene id="en-s3" label="Part 3/4" title="Connecting a stream to analytics, search and storage" questions={["exam4_q22", "exam1_q57", "exam5_q6", "exam4_q27", "exam5_q35", "exam6_q35", "exam6_q31"]}>
 
 Kinesis Data Streams acts as the data channel: data sources in front, analytics, search and storage services behind. For each ShopViet requirement, choose a service for each step and run the simulation:
 
@@ -100,6 +106,31 @@ Two services that are often confused with Data Streams:
 For applications already developed for **Apache Kafka**, use **Amazon MSK**: a fully managed Kafka service, and applications keep using the Kafka API. With MSK Serverless, MSK manages the brokers and the cluster capacity.
 
 <Takeaway>Continuous stream analytics, including with SQL: Amazon Managed Service for Apache Flink (Kinesis Data Analytics for SQL Applications has been discontinued). Store a stream in S3 without writing code: Firehose. Full-text search: OpenSearch Service; dashboards: Amazon Quick Sight (formerly Amazon QuickSight). Move data from S3 into a stream: AWS DMS (full load of existing files; new changes must be CDC files in the DMS format). Jobs longer than 15 minutes: Fargate instead of Lambda. Systems already using Kafka: Amazon MSK.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s4" label="Part 4/4" title="Quick comparison: when the data is not a stream" questions={["exam5_q58"]}>
+
+ShopViet's customer service department stores call recordings on S3 and wants to analyze customer sentiment automatically, then let analysts run **ad-hoc SQL queries** on the results. The data here is **stored audio files**, not a continuous event stream, so the streaming services in this lesson are not the main choice. Choose each item to see what it is for and what fits instead.
+
+<QuickCompare client:visible items={[
+  { name: "Amazon Managed Service for Apache Flink",
+    use: "Processes and analyzes **streaming data** with Java, Scala, Python or SQL: time-series analytics, feeding real-time dashboards, computing metrics. Suits long-running applications such as streaming ETL. Former name: Amazon Kinesis Data Analytics for Apache Flink.",
+    notHere: "Flink does not convert speech to text. A Flink application runs continuously on a data stream; the requirement here is for analysts to run individual ad-hoc SQL queries on stored transcripts.",
+    instead: "Amazon Transcribe converts the recordings to text; Transcribe **Call Analytics** is designed for call center audio and provides sentiment analysis out of the box. The output is stored on S3, and analysts query it with **Amazon Athena**: standard SQL directly on S3, serverless, pay per query." },
+  { name: "Managed Service for Apache Flink Studio",
+    use: "Notebooks that query data streams **interactively** in real time with SQL, Python or Scala; suited to ad-hoc exploration of streaming data or private real-time dashboards.",
+    notHere: "Studio queries data flowing through a stream. The recordings on S3 must first be converted to text, and ad-hoc queries on stored files do not need a stream.",
+    instead: "Transcribe (Call Analytics) → transcripts on S3 → Athena." },
+  { name: "Kinesis Data Streams",
+    use: "Ingests a continuous flow of records, retains them for 24 hours up to 365 days, and lets several applications read them in order within each shard (Part 1).",
+    notHere: "Data Streams only carries and retains records; it does not convert speech to text and does not run SQL queries. Putting a stream in front of files that are already on S3 only adds an unnecessary step.",
+    instead: "Transcribe reads the files directly from S3 (post-call analytics); Athena queries the results." },
+]} />
+
+The Transcribe → S3 → Athena pipeline is simulated in [the Analytics lesson, Part 3](/concepts/analytics/#en-s3).
+
+<Takeaway>Analyzing a continuous data stream: Managed Service for Apache Flink (Studio for interactive queries on a stream). Call recordings that need sentiment analysis and ad-hoc SQL: Amazon Transcribe (Call Analytics) converts them to text on S3, and Amazon Athena runs the SQL. Kinesis does not convert speech to text.</Takeaway>
 
 </Scene>
 
@@ -139,6 +170,10 @@ Check your understanding: as the designer of the ShopViet system, which option f
     opts: ["Data Streams → Managed Service for Apache Flink → Firehose → S3", "Data Streams → Quick Sight → S3", "Firehose → S3 → Athena every hour"],
     a: 0,
     why: "Managed Service for Apache Flink (formerly Kinesis Data Analytics for Apache Flink) processes streams continuously and supports SQL; Firehose delivers the results to S3." },
+  { q: "Customer service call recordings are stored on S3; customer sentiment must be analyzed and analysts must be able to run ad-hoc SQL on the results. Which architecture fits?",
+    opts: ["Kinesis Data Streams → Managed Service for Apache Flink", "Amazon Transcribe → S3 → Amazon Athena", "Kinesis Data Streams → Amazon Data Firehose → S3"],
+    a: 1,
+    why: "Transcribe (Call Analytics) converts the recordings to text and provides sentiment analysis; Athena runs ad-hoc SQL directly on S3. Kinesis and Flink process data streams and do not convert speech to text." },
 ]} />
 
 </Scene>

@@ -376,3 +376,18 @@ Checked 2026-10-22 against the pages below (keyword → claim → URL).
 Doc-vs-exam notes:
 - Test 3 Q46 explanation says SNS "does not support robust retry mechanisms". Current SNS docs define a delivery retry policy for every protocol (up to 100,015 attempts over 23 days for Lambda/SQS) plus subscription DLQs. The lesson teaches the docs: SNS retries, but a standard topic does not persist messages for consumers to read at their own pace or re-read, which is why Kinesis Data Streams fits streaming ingestion.
 - Test 1 Q13 explanation says EventBridge has no ordering and only at-least-once delivery. True for the classic event bus; since Sep 2026 the enhanced custom event bus adds EventGroupId ordering and optional content-based deduplication. The lesson states both; SQS FIFO remains the fit for a durable buffer between two tiers.
+
+## kinesis
+
+Checked 2026-10-22 against the pages below (keyword → claim → URL).
+
+| Keyword | Claim written | Source |
+|---|---|---|
+| Amazon Managed Service for Apache Flink (Kinesis Data Analytics) | Processes and analyzes streaming data with Java, Scala, Python or SQL; time-series analytics, real-time dashboards, metrics; long-running applications such as streaming ETL (s4) | https://docs.aws.amazon.com/managed-flink/latest/java/what-is.html |
+| Amazon Managed Service for Apache Flink (Kinesis Data Analytics) | Flink Studio: query streaming data interactively in real time with SQL, Python, Scala; ad-hoc data exploration, private real-time dashboards (s4) | https://docs.aws.amazon.com/managed-flink/latest/java/what-is.html |
+| Amazon Managed Service for Apache Flink (Kinesis Data Analytics) | Transcribe Call Analytics is designed for call center audio; sentiment analysis; post-call when transcribing a file in S3, real-time for audio streams (s4, quiz) | https://docs.aws.amazon.com/transcribe/latest/dg/call-analytics.html |
+| Amazon Managed Service for Apache Flink (Kinesis Data Analytics) | Athena: standard SQL ad-hoc queries directly on S3, serverless, pay only for the queries you run (s4, quiz) | https://docs.aws.amazon.com/athena/latest/ug/what-is.html |
+| Amazon Managed Service for Apache Flink (Kinesis Data Analytics) | KDS retention 24 hours default, up to 365 days (s4) | https://docs.aws.amazon.com/streams/latest/dev/kinesis-extended-retention.html |
+
+Doc-vs-exam notes:
+- Test 5 Q58 option names "Amazon Kinesis Data Analytics"; the service is now Amazon Managed Service for Apache Flink, and Kinesis Data Analytics for SQL Applications is discontinued (already stated in s3). No contradiction with the correct answer (Transcribe + Athena).

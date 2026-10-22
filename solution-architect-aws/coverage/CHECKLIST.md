@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 937 (98%) · 🟡 12 (1%) · ❌ 11 (1%).
+Có **960 keyword** khác nhau: ✅ 938 (98%) · 🟡 11 (1%) · ❌ 11 (1%).
 
 ### Theo bài học
 
@@ -40,7 +40,7 @@ Có **960 keyword** khác nhau: ✅ 937 (98%) · 🟡 12 (1%) · ❌ 11 (1%).
 | [dynamodb](#dynamodb) | 23 | 22 | 0 | 1 | 96% |
 | [analytics](#analytics) | 47 | 37 | 5 | 5 | 79% |
 | [messaging](#messaging) | 50 | 50 | 0 | 0 | 100% |
-| [kinesis](#kinesis) | 26 | 25 | 1 | 0 | 96% |
+| [kinesis](#kinesis) | 26 | 26 | 0 | 0 | 100% |
 | [monitoring](#monitoring) | 33 | 33 | 0 | 0 | 100% |
 | [iac](#iac) | 9 | 9 | 0 | 0 | 100% |
 | [backup-dr](#backup-dr) | 12 | 10 | 1 | 1 | 83% |
@@ -54,7 +54,7 @@ Có **960 keyword** khác nhau: ✅ 937 (98%) · 🟡 12 (1%) · ❌ 11 (1%).
 | Đề 2 | 196 | 1 | 1 |
 | Đề 3 | 219 | 1 | 2 |
 | Đề 4 | 230 | 3 | 3 |
-| Đề 5 | 214 | 5 | 2 |
+| Đề 5 | 215 | 4 | 2 |
 | Đề 6 | 209 | 0 | 1 |
 
 ## global-infra
@@ -1015,9 +1015,9 @@ Có **960 keyword** khác nhau: ✅ 937 (98%) · 🟡 12 (1%) · ❌ 11 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | Amazon Managed Service for Apache Flink (Kinesis Data Analytics) | 🟡 Một phần ⚠ | 3 | exam3_q46, exam4_q22, exam5_q58 | kinesis.mdx#s3<br>kinesis.mdx#s3 / StreamPipelineSim |
 | [ ] | Kinesis Data Streams | ✅ Đã có | 7 | exam3_q10, exam3_q39, exam3_q46, exam4_q22, exam4_q51, exam5_q6, exam6_q35 | kinesis.mdx#s1 / ShardStreamSim<br>kinesis.mdx#s1 |
 | [ ] | Amazon Data Firehose | ✅ Đã có | 3 | exam2_q47, exam3_q10, exam4_q22 | kinesis.mdx / StreamPipelineSim<br>kinesis.mdx#s3 |
+| [ ] | Amazon Managed Service for Apache Flink (Kinesis Data Analytics) | ✅ Đã có | 3 | exam3_q46, exam4_q22, exam5_q58 | kinesis.mdx#s3<br>kinesis.mdx#s3 / StreamPipelineSim |
 | [ ] | Amazon Data Firehose (buffered delivery) | ✅ Đã có | 1 | exam6_q31 | kinesis.mdx#s3 / StreamPipelineSim |
 | [ ] | Amazon Data Firehose (no consumers) | ✅ Đã có | 1 | exam5_q38 | kinesis.mdx#s3 |
 | [ ] | Amazon Data Firehose (single destination, no consumers) | ✅ Đã có | 1 | exam5_q35 | kinesis.mdx#s3 |

@@ -1776,8 +1776,8 @@
         {
           "keyword": "Amazon Managed Service for Apache Flink (Kinesis Data Analytics)",
           "lesson": "kinesis",
-          "status": "partial",
-          "where": "kinesis.mdx#s3 / StreamPipelineSim"
+          "status": "covered",
+          "where": "kinesis.mdx#s3 / StreamPipelineSim; kinesis.mdx#s4 / QuickCompare"
         }
       ]
     },
