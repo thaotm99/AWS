@@ -43,6 +43,14 @@ docs:
     url: "https://docs.aws.amazon.com/transfer/latest/userguide/service-managed-users.html"
   - title: "AWS WAF"
     url: "https://docs.aws.amazon.com/waf/latest/developerguide/waf-chapter.html"
+  - title: "Best practices for AWS Database Migration Service"
+    url: "https://docs.aws.amazon.com/dms/latest/userguide/CHAP_BestPractices.html"
+  - title: "Creating a task (AWS DMS: target table preparation mode)"
+    url: "https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Tasks.Creating.html"
+  - title: "Converting database schemas using DMS Schema Conversion"
+    url: "https://docs.aws.amazon.com/dms/latest/userguide/CHAP_SchemaConversion.html"
+  - title: "What is the AWS Schema Conversion Tool?"
+    url: "https://docs.aws.amazon.com/SchemaConversionTool/latest/userguide/CHAP_Welcome.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -152,7 +160,10 @@ Database được di chuyển bằng bộ công cụ riêng. Chọn từng tình
   { need: "Hệ thống kế toán chạy SQL Server cần chuyển sang Aurora PostgreSQL với mức thay đổi code T-SQL tối thiểu", answer: "Babelfish for Aurora PostgreSQL", why: "Aurora PostgreSQL hiểu được T-SQL và giao thức của SQL Server." },
   { need: "Đồng bộ liên tục từ Oracle tại kho sang RDS, khối lượng thay đổi biến động", answer: "AWS DMS Serverless", why: "Tự động cấp phát tài nguyên theo khối lượng thực tế, không phải lựa chọn kích thước replication instance." },
   { need: "Chuyển tệp log có sẵn trên S3 và log mới sang Kinesis Data Streams nhanh nhất", answer: "DMS với nguồn S3, đích Kinesis", why: "DMS hỗ trợ S3 làm nguồn và Kinesis Data Streams làm đích." },
+  { need: "Database thương mại tính phí license chuyển sang engine mã nguồn mở, cần giữ secondary index, foreign key và stored procedure", answer: "AWS SCT (hoặc DMS Schema Conversion) + AWS DMS", why: "Bản thân DMS chỉ tạo các đối tượng cần để di chuyển dữ liệu: bảng, primary key và trong một số trường hợp unique index; không tạo secondary index, foreign key, constraint khác hay giá trị mặc định của cột. SCT / DMS Schema Conversion chuyển đổi bảng, view, stored procedure, function; DMS di chuyển dữ liệu." },
 ]} />
+
+Khi target table preparation mode là "Drop tables on target", DMS chỉ tạo **bảng, primary key và trong một số trường hợp unique index** trên đích (basic schema migration); DMS **không** tự tạo secondary index, foreign key, constraint không phải primary key, giá trị mặc định của cột hay user account. Vì vậy, khi database có secondary index, foreign key và stored procedure: cùng engine thì chuyển schema bằng công cụ gốc (Oracle SQL Developer, MySQL Workbench, pgAdmin 4); khác engine thì dùng **DMS Schema Conversion** (tính năng của DMS) hoặc **AWS SCT** để chuyển đổi bảng, view, stored procedure, function, sau đó DMS di chuyển dữ liệu. Với full load + CDC, AWS khuyến nghị bỏ index và ràng buộc tham chiếu trong lúc full load, sau đó tạm dừng task trước pha CDC để tạo secondary index và ràng buộc tham chiếu rồi mới tiếp tục.
 
 Với database Oracle tại kho, ShopViet cần chuyển **dữ liệu hiện có** sang RDS for Oracle và tiếp tục đồng bộ **các giao dịch mới** cho tới ngày chuyển đổi; khối lượng thay đổi biến động mạnh trong ngày. Chạy từng bước của một **DMS Serverless replication**:
 
@@ -178,7 +189,7 @@ Với database Oracle tại kho, ShopViet cần chuyển **dữ liệu hiện c�
 
 Các phương án khác đều thiếu một phần của yêu cầu. **DMS Standard** dùng replication instance (EC2 instance do DMS tạo trong VPC): người vận hành phải ước lượng capacity, chọn instance class và thay đổi kích thước khi tải thay đổi, đúng những tác vụ mà DMS Serverless loại bỏ; replication instance cũng không phải EC2 instance thuộc Auto Scaling group của ShopViet để gắn scaling policy. AWS Glue (ETL) và Lambda không có sẵn cơ chế đọc redo log của Oracle để sao chép thay đổi theo transaction; ShopViet sẽ phải tự xây dựng phần ghi nhận thay đổi.
 
-<Takeaway>Server: MGN (agent → test → cutover). Database khác engine: SCT + DMS. SQL Server sang Aurora PostgreSQL với mức thay đổi code tối thiểu: Babelfish. Dữ liệu hiện có và thay đổi liên tục: migration type full load + CDC (DMS đọc transaction log của nguồn). Khối lượng thay đổi biến động, không muốn chọn kích thước replication instance: DMS Serverless (tự scale trong khoảng Min–Max DCU).</Takeaway>
+<Takeaway>Server: MGN (agent → test → cutover). Database khác engine: SCT (hoặc DMS Schema Conversion) + DMS; DMS chỉ tạo bảng và primary key, không tạo secondary index, foreign key hay stored procedure. SQL Server sang Aurora PostgreSQL với mức thay đổi code tối thiểu: Babelfish. Dữ liệu hiện có và thay đổi liên tục: migration type full load + CDC (DMS đọc transaction log của nguồn). Khối lượng thay đổi biến động, không muốn chọn kích thước replication instance: DMS Serverless (tự scale trong khoảng Min–Max DCU).</Takeaway>
 
 </Scene>
 

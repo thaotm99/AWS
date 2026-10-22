@@ -43,6 +43,14 @@ docs:
     url: "https://docs.aws.amazon.com/transfer/latest/userguide/service-managed-users.html"
   - title: "AWS WAF"
     url: "https://docs.aws.amazon.com/waf/latest/developerguide/waf-chapter.html"
+  - title: "Best practices for AWS Database Migration Service"
+    url: "https://docs.aws.amazon.com/dms/latest/userguide/CHAP_BestPractices.html"
+  - title: "Creating a task (AWS DMS: target table preparation mode)"
+    url: "https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Tasks.Creating.html"
+  - title: "Converting database schemas using DMS Schema Conversion"
+    url: "https://docs.aws.amazon.com/dms/latest/userguide/CHAP_SchemaConversion.html"
+  - title: "What is the AWS Schema Conversion Tool?"
+    url: "https://docs.aws.amazon.com/SchemaConversionTool/latest/userguide/CHAP_Welcome.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -152,7 +160,10 @@ Databases are migrated with a separate set of tools. Choose each ShopViet scenar
   { need: "The accounting system runs on SQL Server and must move to Aurora PostgreSQL with minimal T-SQL code changes", answer: "Babelfish for Aurora PostgreSQL", why: "Aurora PostgreSQL understands T-SQL and the SQL Server wire protocol." },
   { need: "Continuous replication from the warehouse Oracle database to RDS, with a fluctuating volume of changes", answer: "AWS DMS Serverless", why: "Automatically provisions resources for the actual workload; there is no replication instance size to choose." },
   { need: "Move existing log files in S3 and new logs to Kinesis Data Streams as fast as possible", answer: "DMS with an S3 source and a Kinesis target", why: "DMS supports S3 as a source and Kinesis Data Streams as a target." },
+  { need: "A licensed commercial database moves to an open-source engine and must keep its secondary indexes, foreign keys and stored procedures", answer: "AWS SCT (or DMS Schema Conversion) + AWS DMS", why: "DMS by itself creates only the objects required to migrate the data: tables, primary keys and in some cases unique indexes; it does not create secondary indexes, foreign keys, other constraints or column defaults. SCT / DMS Schema Conversion converts tables, views, stored procedures and functions; DMS migrates the data." },
 ]} />
+
+With the "Drop tables on target" target table preparation mode, DMS creates only **tables, primary keys and in some cases unique indexes** on the target (basic schema migration); DMS does **not** create secondary indexes, foreign keys, nonprimary key constraints, column data defaults or user accounts. So when a database has secondary indexes, foreign keys and stored procedures: for the same engine, migrate the schema with native tools (Oracle SQL Developer, MySQL Workbench, pgAdmin 4); for a different engine, use **DMS Schema Conversion** (a DMS feature) or **AWS SCT** to convert tables, views, stored procedures and functions, then DMS migrates the data. For full load + CDC, AWS recommends leaving out indexes and referential integrity constraints during the full load, then pausing the task before the CDC phase to build the secondary indexes and referential integrity constraints before resuming.
 
 For the Oracle database at the warehouse, ShopViet must move the **existing data** to RDS for Oracle and keep replicating **new transactions** until the cutover date; the volume of changes fluctuates strongly during the day. Run each step of a **DMS Serverless replication**:
 
@@ -178,7 +189,7 @@ For the Oracle database at the warehouse, ShopViet must move the **existing data
 
 The other options each miss part of the requirement. **DMS Standard** uses a replication instance (an EC2 instance that DMS creates in a VPC): the operations team must estimate capacity, pick an instance class and resize it as the load changes, which are exactly the tasks DMS Serverless removes; the replication instance is also not an EC2 instance in one of ShopViet's Auto Scaling groups that could take a scaling policy. AWS Glue (ETL) and Lambda have no built-in way to read the Oracle redo logs and replicate changes transaction by transaction; ShopViet would have to build the change capture itself.
 
-<Takeaway>Servers: MGN (agent → test → cutover). Databases with a different engine: SCT + DMS. SQL Server to Aurora PostgreSQL with minimal code changes: Babelfish. Existing data plus ongoing changes: the full load + CDC migration type (DMS reads the source transaction logs). A fluctuating volume of changes and no wish to size a replication instance: DMS Serverless (scales within the Min–Max DCU range).</Takeaway>
+<Takeaway>Servers: MGN (agent → test → cutover). Databases with a different engine: SCT (or DMS Schema Conversion) + DMS; DMS alone creates only tables and primary keys, not secondary indexes, foreign keys or stored procedures. SQL Server to Aurora PostgreSQL with minimal code changes: Babelfish. Existing data plus ongoing changes: the full load + CDC migration type (DMS reads the source transaction logs). A fluctuating volume of changes and no wish to size a replication instance: DMS Serverless (scales within the Min–Max DCU range).</Takeaway>
 
 </Scene>
 

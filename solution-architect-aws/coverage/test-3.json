@@ -119,8 +119,8 @@
         {
           "keyword": "DMS Basic Schema Copy (no secondary indexes, foreign keys, stored procedures)",
           "lesson": "storage-migration",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "storage-migration.mdx#s3 / RequirementPicker row + prose + Takeaway"
         }
       ]
     },

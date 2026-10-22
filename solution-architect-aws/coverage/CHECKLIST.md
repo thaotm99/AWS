@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **983 keyword** khác nhau: ✅ 975 (99%) · 🟡 6 (1%) · ❌ 2 (0%).
+Có **983 keyword** khác nhau: ✅ 976 (99%) · 🟡 6 (1%) · ❌ 1 (0%).
 
 ### Theo bài học
 
@@ -35,7 +35,7 @@ Có **983 keyword** khác nhau: ✅ 975 (99%) · 🟡 6 (1%) · ❌ 2 (0%).
 | [lambda](#lambda) | 37 | 37 | 0 | 0 | 100% |
 | [s3](#s3) | 72 | 68 | 4 | 0 | 94% |
 | [storage](#storage) | 70 | 68 | 2 | 0 | 97% |
-| [storage-migration](#storage-migration) | 35 | 34 | 0 | 1 | 97% |
+| [storage-migration](#storage-migration) | 35 | 35 | 0 | 0 | 100% |
 | [rds](#rds) | 61 | 61 | 0 | 0 | 100% |
 | [dynamodb](#dynamodb) | 25 | 25 | 0 | 0 | 100% |
 | [analytics](#analytics) | 48 | 48 | 0 | 0 | 100% |
@@ -52,7 +52,7 @@ Có **983 keyword** khác nhau: ✅ 975 (99%) · 🟡 6 (1%) · ❌ 2 (0%).
 |---|---:|---:|---:|
 | Đề 1 | 225 | 1 | 0 |
 | Đề 2 | 203 | 0 | 1 |
-| Đề 3 | 224 | 2 | 1 |
+| Đề 3 | 225 | 2 | 0 |
 | Đề 4 | 236 | 1 | 0 |
 | Đề 5 | 224 | 2 | 0 |
 | Đề 6 | 217 | 0 | 0 |
@@ -789,7 +789,6 @@ Có **983 keyword** khác nhau: ✅ 975 (99%) · 🟡 6 (1%) · ❌ 2 (0%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | DMS Basic Schema Copy (no secondary indexes, foreign keys, stored procedures) | ❌ Thiếu | 1 | exam3_q4 |  |
 | [ ] | AWS DataSync | ✅ Đã có | 6 | exam1_q9, exam1_q35, exam3_q3, exam4_q36, exam5_q41, exam5_q48 | storage-migration.mdx#s2<br>storage-migration.mdx#s2 / TransferPlannerSim |
 | [ ] | Storage Gateway S3 File Gateway | ✅ Đã có | 3 | exam1_q35, exam3_q3, exam3_q43 | storage-migration.mdx#s1<br>storage-migration.mdx#s1 / ScenarioFlow |
 | [ ] | Amazon S3 File Gateway | ✅ Đã có | 2 | exam5_q28, exam5_q48 | storage-migration.mdx#s1<br>storage-migration.mdx#s1; storage-migration.mdx#s2 |
@@ -809,6 +808,7 @@ Có **983 keyword** khác nhau: ✅ 975 (99%) · 🟡 6 (1%) · ❌ 2 (0%).
 | [ ] | AWS Snowball Edge import | ✅ Đã có | 1 | exam3_q61 | storage-migration.mdx#s2 |
 | [ ] | AWS Storage Gateway Volume Gateway (cached mode) | ✅ Đã có | 1 | exam1_q35 | storage-migration.mdx#s1 |
 | [ ] | AWS Transfer Family | ✅ Đã có | 1 | exam3_q3 | storage-migration.mdx#s2 / RequirementPicker |
+| [ ] | DMS Basic Schema Copy (no secondary indexes, foreign keys, stored procedures) | ✅ Đã có | 1 | exam3_q4 | storage-migration.mdx#s3 / RequirementPicker row + prose + Takeaway |
 | [ ] | Heterogeneous database migration (SCT + DMS) | ✅ Đã có | 1 | exam3_q4 | storage-migration.mdx#s3 |
 | [ ] | MGN test instance and cutover | ✅ Đã có | 1 | exam6_q48 | storage-migration.mdx#s3 / StepSim |
 | [ ] | S3 Batch Replication | ✅ Đã có | 1 | exam4_q29 | s3.mdx#s7 / QuickCompare; storage-migration.mdx#s2 / RequirementPicker |
