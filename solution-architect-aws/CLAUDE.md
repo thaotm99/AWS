@@ -246,8 +246,10 @@ Tạo ngay sau khi hoàn thành từng câu hỏi.
 
 - **Nguồn chính: AWS official documentation** (docs.aws.amazon.com) — dùng WebFetch/WebSearch
 - **KHÔNG dùng PDF slide** (`AWS Certified Solutions Architect Slides v47.pdf`) làm nguồn
-  lý thuyết — slide có thể chứa lỗi hoặc thông tin lỗi thời (đã phát hiện: slide ghi sai
-  Max S3 Object Size là 50TB, AWS docs ghi đúng là 5TB)
+  lý thuyết — slide có thể chứa lỗi hoặc thông tin lỗi thời
+- **Mọi con số, giới hạn, hành vi mặc định luôn tra lại AWS docs tại thời điểm viết**, không
+  lấy từ trí nhớ, từ slide hay từ ví dụ trong các file của repo — AWS thay đổi giới hạn theo
+  thời gian (ví dụ: kích thước object S3 tối đa từng là 5 TB, hiện nay AWS docs ghi 50 TB)
 - File PDF trong repo chỉ giữ lại để tham khảo lịch sử, không dùng trong workflow học nữa
 
 ## Nguyên tắc luyện đề

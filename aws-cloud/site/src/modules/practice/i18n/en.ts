@@ -80,6 +80,14 @@ export const en: Messages<typeof vi> = {
     works: "Meets the requirements.",
     fails: "Does not meet the requirements.",
   },
+  crash: {
+    title: "The practice page could not be shown",
+    body: "Something went wrong while showing this page. Reload it; if the error persists, you can clear the practice progress saved in this browser and start again.",
+    reload: "Reload page",
+    reset: "Clear saved progress",
+    confirmReset: "Clear all practice progress saved in this browser?",
+    details: "Error details",
+  },
   topic: {
     crumb: "Quiz",
     title: "Quiz: {title}",

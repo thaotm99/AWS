@@ -21,7 +21,7 @@ export interface CertificationConfig extends Omit<Certification, "examCount"> {
 
 const REPO = resolve(process.cwd(), "../..");
 
-/** Add a certification here, with a folder of practice tests, to list it on /on-tap/. */
+/** Add a certification here, with a folder of practice tests, to list it on /practice/. */
 export const CERTIFICATIONS: CertificationConfig[] = [
   {
     id: "saa-c03",

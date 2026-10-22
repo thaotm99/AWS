@@ -81,7 +81,7 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
         <nav class="topnav" aria-label="Chính" data-i18n-attr="aria-label:shell.nav.main">
           <a href="/" aria-current={section === "theory" ? "page" : undefined}><T k="shell.nav.theory" /></a>
           <a href="#" class="soon" data-soon="shell.nav.scenarios"><T k="shell.nav.scenarios" /></a>
-          <a href="/on-tap/" aria-current={section === "practice" ? "page" : undefined}><T k="shell.nav.practice" /></a>
+          <a href="/practice/" aria-current={section === "practice" ? "page" : undefined}><T k="shell.nav.practice" /></a>
         </nav>
         <LanguageSwitch />
         <ThemeToggle />
@@ -95,7 +95,7 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
         <nav class="drawer-nav" aria-label="Chính" data-i18n-attr="aria-label:shell.nav.main">
           <a href="/" aria-current={section === "theory" ? "page" : undefined}><T k="shell.nav.theory" /></a>
           <a href="#" class="soon" data-soon="shell.nav.scenarios"><T k="shell.nav.scenarios" /></a>
-          <a href="/on-tap/" aria-current={section === "practice" ? "page" : undefined}><T k="shell.nav.practice" /></a>
+          <a href="/practice/" aria-current={section === "practice" ? "page" : undefined}><T k="shell.nav.practice" /></a>
         </nav>
         {sidebar && <Roadmap client:load layers={layers} current={current} currentQuiz={currentQuiz} ready={ready} />}
       </aside>

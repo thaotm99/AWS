@@ -74,7 +74,7 @@ export default function Roadmap({ layers, current, currentQuiz = false, ready }:
                     {ready.includes(c.id) && c.quiz > 0 && (
                       <a
                         className="concept-quiz"
-                        href={`/concepts/${c.id}/kiem-tra/`}
+                        href={`/concepts/${c.id}/quiz/`}
                         aria-current={here && currentQuiz ? "page" : undefined}
                       >
                         <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true">

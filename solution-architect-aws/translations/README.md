@@ -49,6 +49,9 @@ Văn phong của tài liệu kỹ thuật: câu hoàn chỉnh, chính xác, tran
 | ingest | tiếp nhận |
 | via - | via - (giữ nguyên, đứng trước link nguồn ảnh) |
 
+**Trung thành với bản gốc**
+- Dịch đúng những gì bản gốc viết, kể cả khi bản gốc có chỗ nhầm (ví dụ đề 4 câu 52 ghi "Auto Scaling group" ở chỗ có lẽ muốn nói Application Load Balancer): không tự sửa nội dung trong bản dịch.
+
 **HTML**
 - Giữ nguyên mọi thẻ và thứ tự thẻ (`<p>`, `<strong>`, `<a href>`, `<img src>`, `<code>`, `<pre>`, `<li>`…), chỉ dịch phần chữ bên trong.
 - Không đổi `href`, `src`, nội dung `<code>`/`<pre>`.

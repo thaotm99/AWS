@@ -178,7 +178,7 @@ node docs/diagrams/generate.mjs
 ```bash
 cd aws-cloud/site
 npm ci
-npm run dev       # http://localhost:4321/on-tap/
+npm run dev       # http://localhost:4321/practice/
 npm run build     # astro check (kiểu TypeScript, key i18n) + build ra dist/
 ```
 

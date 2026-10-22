@@ -4,5 +4,27 @@
   "installCommand": "npm ci",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "trailingSlash": true
+  "trailingSlash": true,
+  "redirects": [
+    {
+      "source": "/on-tap",
+      "destination": "/practice/",
+      "permanent": true
+    },
+    {
+      "source": "/on-tap/:path*",
+      "destination": "/practice/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/concepts/:id/kiem-tra",
+      "destination": "/concepts/:id/quiz/",
+      "permanent": true
+    },
+    {
+      "source": "/concepts/:id/kiem-tra/",
+      "destination": "/concepts/:id/quiz/",
+      "permanent": true
+    }
+  ]
 }

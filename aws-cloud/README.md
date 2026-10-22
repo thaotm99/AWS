@@ -22,7 +22,7 @@ aws-cloud/
 │   ├── src/core/                 hạ tầng dùng chung: api, state, i18n (không biết tính năng nào)
 │   ├── src/modules/              mỗi tính năng một module: shell (khung trang), practice (Luyện đề)
 │   ├── src/app/                  ghép các module: api.ts, i18n.ts, T.astro
-│   └── src/pages/                trang chủ, trang bài học, /on-tap/, /api/*.json, 404
+│   └── src/pages/                trang chủ, trang bài học, /practice/, /api/*.json, 404
 └── infra/                        AWS CDK (TypeScript)
     └── lib/static-site-stack.ts  S3, CloudFront, IAM role cho GitHub, Budget
 ```
@@ -48,7 +48,7 @@ bản trong localStorage để trang hiện đúng ngôn ngữ ngay từ lúc m�
   "minimum passing score"). Câu chữ ở cả hai ngôn ngữ viết đơn giản nhất có thể, chỉ giữ nguyên thuật ngữ chuyên ngành.
 - Câu hỏi và lời giải của đề giữ nguyên bản tiếng Anh gốc. Nội dung các bài lý thuyết hiện chỉ có tiếng Việt.
 
-## Luyện đề (`/on-tap/`)
+## Luyện đề (`/practice/`)
 
 Luyện đề từng câu: chọn chứng chỉ → chọn đề → chọn đáp án, bấm Kiểm tra để xem đúng sai và lời giải →
 câu tiếp theo → kết quả theo từng domain. Trang này hiển thị **nguyên văn** câu hỏi từ các file đề
