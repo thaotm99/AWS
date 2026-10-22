@@ -1,6 +1,6 @@
 ---
 title: "Elastic Load Balancing: ALB, NLB và cách chia tải"
-lede: "Bài viết từ 54 câu đề nhắc tới load balancer. Chọn ALB hay NLB, tính phần trăm traffic khi bật hoặc tắt cross-zone, định tuyến và HTTPS trên ALB, và gỡ lỗi khi target bị đánh dấu unhealthy."
+lede: "ShopViet đã có nhiều server, giờ cần một load balancer đứng trước. Bài này đi qua bốn việc thật: chọn ALB hay NLB cho từng nhu cầu, biết mỗi server nhận bao nhiêu traffic, chia request theo URL và tên miền trên một ALB, và sửa lỗi server khỏe mà vẫn bị báo unhealthy."
 minutes: 20
 scenes: 4
 prerequisites: ["vpc", "ec2"]
@@ -20,35 +20,30 @@ import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
 import Story from "../../components/lessons/global-infra/Story.astro";
 import CrossZoneCalc from "../../components/scenes/elb/CrossZoneCalc.tsx";
+import LbTypeSim from "../../components/scenes/elb/LbTypeSim.tsx";
+import AlbRuleSim from "../../components/scenes/elb/AlbRuleSim.tsx";
+import HealthCheckSim from "../../components/scenes/elb/HealthCheckSim.tsx";
 import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
-import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#s1", label: "1 · ALB hay NLB" },
   { href: "#s2", label: "2 · Cross-zone" },
-  { href: "#s3", label: "3 · Định tuyến, HTTPS" },
+  { href: "#s3", label: "3 · Chia theo URL, HTTPS" },
   { href: "#s4", label: "4 · Unhealthy target" },
   { href: "#challenge", label: "Thử thách" },
 ]}>
-ShopViet chạy nhiều EC2 sau một load balancer. Đề hỏi load balancer theo bốn hướng: chọn loại nào, traffic chia cho từng server bao nhiêu phần trăm, định tuyến theo URL và chứng chỉ ra sao, và vì sao server khỏe vẫn bị đánh dấu unhealthy.
+ShopViet đã chạy nhiều EC2 ở hai AZ. Khách không nên phải biết server nào đang sống, nên cần một **load balancer** đứng trước. Câu hỏi tiếp theo đến rất nhanh: dùng loại nào, mỗi server gánh bao nhiêu, một load balancer phục vụ nhiều service và nhiều tên miền ra sao, và vì sao server đang chạy tốt lại bị loại ra.
 </Story>
 
-<Scene id="s1" label="Cảnh 1/4" title="ALB hay NLB?" questions={["exam1_q2", "exam1_q48", "exam4_q9", "exam6_q43", "exam1_q39", "exam6_q56", "exam6_q7"]}>
+<Scene id="s1" label="Cảnh 1/4" title="ALB hay NLB cho từng việc?" questions={["exam1_q2", "exam1_q48", "exam4_q9", "exam6_q43", "exam1_q39", "exam6_q56", "exam6_q7"]}>
 
-<RequirementPicker client:visible items={[
-  { need: "Web HTTP/HTTPS, định tuyến theo nội dung (path, host)", answer: "Application Load Balancer",
-    why: "ALB hoạt động ở tầng 7, đọc được URL và header để định tuyến." },
-  { need: "Khách hàng (ngân hàng) cần whitelist IP public cố định của dịch vụ", answer: "Network Load Balancer + Auto Scaling group",
-    why: "NLB có IP tĩnh cho mỗi AZ (gắn được Elastic IP). IP của ALB thay đổi theo thời gian." },
-  { need: "Offload TLS khỏi EC2, an toàn nhất", answer: "NLB ở public subnet, Auto Scaling group ở private subnet",
-    why: "NLB làm TLS termination; instance nằm trong private subnet, không lộ ra internet." },
-  { need: "Chia sẻ một dịch vụ qua PrivateLink cho VPC khác", answer: "NLB phía cung cấp",
-    why: "PrivateLink (endpoint service) đặt sau NLB." },
-  { need: "Bastion host luôn sẵn sàng cho SSH", answer: "NLB public + ASG chạy bastion",
-    why: "SSH là TCP; NLB chuyển tiếp TCP, ALB thì không." },
-]} />
+**Application Load Balancer** (ALB) đọc được request HTTP: đường dẫn, tên miền, header. **Network Load Balancer** (NLB) chỉ chuyển tiếp kết nối TCP/UDP, nhưng có IP tĩnh và rất nhanh. Thử từng việc ShopViet cần làm, lần lượt với ALB và NLB:
+
+<LbTypeSim client:visible />
+
+ShopViet sắp mở thêm Region ở Mỹ. Một load balancer có chia được cho cả hai Region không?
 
 <ScenarioFlow client:visible height={210} scenarios={[
   { name: "Một load balancer cho hai Region?",
@@ -65,56 +60,47 @@ ShopViet chạy nhiều EC2 sau một load balancer. Đề hỏi load balancer t
         text: "Load balancer trải qua nhiều AZ **trong một Region** là cấu hình chuẩn." },
       { name: "Target ở Region khác", verdict: "bad", verdictLabel: "Không được phép",
         flows: [{ path: ["elb", "a"], tone: "good" }, { path: ["elb", "c"], blocked: true, label: "không vượt Region" }],
-        text: "Elastic Load Balancing là dịch vụ **cấp Region**, không phân phối tới instance ở Region khác. Cần nhiều Region thì dùng Route 53 hoặc Global Accelerator phía trước." },
+        text: "Elastic Load Balancing là dịch vụ **cấp Region**, không gửi traffic tới instance ở Region khác. Cần nhiều Region thì đặt Route 53 hoặc Global Accelerator phía trước." },
     ] },
 ]} />
 
-<Takeaway>HTTP và định tuyến theo nội dung: ALB. TCP/UDP, IP tĩnh, PrivateLink, hiệu năng cực cao: NLB. Load balancer chỉ trong một Region.</Takeaway>
+<Takeaway>Web cần chia theo URL, tên miền: ALB. TCP/UDP thuần, IP cố định cho đối tác, PrivateLink: NLB. Server để ở private subnet, chỉ load balancer ở public subnet. Mỗi load balancer chỉ phục vụ trong một Region.</Takeaway>
 
 </Scene>
 
 <Scene id="s2" label="Cảnh 2/4" title="Mỗi server nhận bao nhiêu phần trăm traffic?" questions={["exam3_q14", "exam4_q59"]}>
 
-Đề cho số target ở từng AZ rồi hỏi phần trăm traffic. Kéo thanh trượt và bật/tắt cross-zone. Thử đúng số của đề: 1 target ở AZ A, 4 target ở AZ B; rồi 4 và 6.
+Đợt khuyến mãi, ShopViet thêm gấp server ở AZ B nhưng AZ A vẫn chỉ có 1 server. Server lẻ đó có bị quá tải không? Kéo thanh trượt và bật/tắt cross-zone. Thử 1 server ở AZ A, 4 server ở AZ B; rồi 4 và 6.
 
 <CrossZoneCalc client:visible />
 
-<Takeaway>DNS chia đều cho node của từng AZ. Cross-zone bật: chia đều cho mọi target. Cross-zone tắt: mỗi AZ nhận một phần bằng nhau rồi chia cho target trong AZ đó.</Takeaway>
+<Takeaway>DNS chia đều cho node của load balancer ở từng AZ. Cross-zone bật: chia đều cho mọi target. Cross-zone tắt: mỗi AZ nhận một phần bằng nhau rồi chia cho target trong AZ đó, nên AZ ít server sẽ bị dồn tải.</Takeaway>
 
 </Scene>
 
-<Scene id="s3" label="Cảnh 3/4" title="Định tuyến và HTTPS trên ALB" questions={["exam1_q48", "exam4_q40", "exam4_q57", "exam2_q17", "exam1_q6"]}>
+<Scene id="s3" label="Cảnh 3/4" title="Một ALB, nhiều service và nhiều tên miền" questions={["exam1_q48", "exam4_q40", "exam4_q57", "exam2_q17", "exam1_q6"]}>
 
-<RequirementPicker client:visible items={[
-  { need: "/orders tới service này, /products tới service khác", answer: "Path-based routing", why: "Listener rule khớp đường dẫn URL rồi gửi tới target group tương ứng." },
-  { need: "Nhiều tên miền HTTPS trên cùng một ALB, ít cấu hình nhất", answer: "Nhiều chứng chỉ với SNI", why: "Server Name Indication cho ALB chọn đúng chứng chỉ theo tên miền client yêu cầu." },
-  { need: "Rule *.example.com khớp với tên nào?", answer: "test.example.com", why: "Wildcard khớp đúng một cấp subdomain; không khớp example.com hay a.b.example.com." },
-  { need: "Đăng nhập người dùng trước khi tới ứng dụng", answer: "ALB authenticate với Cognito user pool", why: "ALB lo xác thực, ứng dụng nhận request đã xác thực." },
-  { need: "Chặn truy cập từ một số quốc gia", answer: "AWS WAF gắn vào ALB", why: "Geo match rule trong WAF." },
-]} />
+ShopViet tách hệ thống thành service đơn hàng, service sản phẩm và các microsite khuyến mãi, mỗi thứ một target group. Tất cả vẫn đứng sau **một** ALB. Mỗi request đi qua listener HTTPS theo thứ tự: chọn chứng chỉ, AWS WAF, đăng nhập, rồi listener rule chọn target group. Chọn tình huống và gửi request:
 
-<Takeaway>ALB định tuyến theo path và host, phục vụ nhiều tên miền HTTPS bằng SNI, gắn được Cognito và WAF.</Takeaway>
+<AlbRuleSim client:visible />
+
+<Takeaway>Listener rule chia theo path (`/orders/*`) và host (`*.shopviet.vn`; dấu `*` không khớp tên gốc). Nhiều tên miền HTTPS trên một listener: thêm nhiều chứng chỉ, ALB chọn bằng SNI. ALB tự lo đăng nhập với Cognito và gắn được AWS WAF.</Takeaway>
 
 </Scene>
 
 <Scene id="s4" label="Cảnh 4/4" title="Server khỏe mà vẫn unhealthy?" questions={["exam4_q26", "exam5_q1", "exam2_q18", "exam3_q13"]}>
 
-<RequirementPicker client:visible items={[
-  { need: "ALB đánh dấu instance unhealthy dù ứng dụng chạy bình thường", answer: "Security group của EC2 không cho ALB vào, hoặc đường dẫn health check sai",
-    why: "Health check của ALB bị chặn hoặc gọi vào path không tồn tại thì trả lỗi." },
-  { need: "ALB loại instance unhealthy nhưng Auto Scaling không thay instance mới", answer: "ASG đang dùng EC2 health check, chưa dùng ELB health check",
-    why: "EC2 health check chỉ biết máy còn chạy. Bật ELB health check cho ASG thì ASG mới thay instance mà ALB báo hỏng." },
-  { need: "Instance mới chưa được thay dù đã unhealthy", answer: "Health check grace period chưa hết, hoặc instance đang impaired, hoặc fail ELB health check",
-    why: "Trong grace period, ASG chưa xét health check của instance vừa khởi động." },
-  { need: "NLB gửi traffic tới target (đăng ký bằng instance ID) qua địa chỉ nào?", answer: "Primary private IP của network interface chính",
-    why: "Đăng ký target bằng instance ID thì NLB route tới primary private IP của eth0." },
-]} />
+Một buổi sáng, ALB báo i-2 unhealthy dù kỹ sư SSH vào thấy app vẫn chạy. Load balancer chỉ tin vào **health check**: nó gọi một đường dẫn trên từng server theo chu kỳ. Xem health check đi đâu và bị chặn ở đâu:
 
-<Takeaway>Unhealthy thường do security group hoặc health check path. Muốn ASG thay instance mà load balancer báo hỏng: dùng ELB health check cho ASG.</Takeaway>
+<HealthCheckSim client:visible />
+
+<Takeaway>Unhealthy mà app vẫn chạy: kiểm tra security group có cho load balancer vào không, và health check path có đúng không. Muốn ASG thay server mà load balancer báo hỏng: đổi health check của ASG sang ELB.</Takeaway>
 
 </Scene>
 
 <Scene id="challenge" label="Thử thách" title="ALB hay NLB?" questions={["exam3_q14", "exam4_q9", "exam5_q1", "exam4_q40"]}>
+
+Xếp từng đặc điểm vào đúng loại load balancer. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
 
 <SortGame client:visible
   bins={[
@@ -127,25 +113,25 @@ ShopViet chạy nhiều EC2 sau một load balancer. Đề hỏi load balancer t
   ]}
 />
 
-Các câu dưới đây viết lại theo đúng dạng câu trong đề (mã câu hiện sau khi trả lời).
+Kiểm tra nhanh: nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
 
 <Quiz client:visible items={[
-  { q: "Load balancer trải 2 AZ: AZ A có 1 target, AZ B có 4 target. Cross-zone tắt. Target ở AZ A nhận bao nhiêu traffic?",
+  { q: "ShopViet có 1 server ở AZ A và 4 server ở AZ B, cross-zone đang tắt. Server ở AZ A gánh bao nhiêu phần trăm traffic?",
     opts: ["20%", "50%", "12,5%"],
     a: 1,
-    why: "Mỗi AZ nhận 50%; AZ A chỉ có 1 target nên target đó nhận cả 50%. Nếu bật cross-zone thì mỗi target nhận 20%." },
-  { q: "Khách hàng ngân hàng cần whitelist một IP public cố định của dịch vụ, dịch vụ phải HA và scale tới 10 instance. Chọn gì?",
+    why: "Mỗi AZ nhận 50%; AZ A chỉ có 1 server nên server đó nhận cả 50%. Bật cross-zone thì mỗi server nhận 20%." },
+  { q: "Ngân hàng đối tác chỉ mở firewall cho một IP cố định của ShopViet. Dịch vụ vẫn phải chịu lỗi và scale tới 10 instance. Dựng thế nào?",
     opts: ["ALB + Auto Scaling group", "NLB + Auto Scaling group", "Auto Scaling group gắn Elastic IP động"],
     a: 1,
-    why: "NLB có IP tĩnh mỗi AZ; ALB không có IP cố định." },
-  { q: "ALB loại instance unhealthy nhưng ASG không tạo instance thay thế. Vì sao?",
-    opts: ["ASG dùng EC2 health check, ALB dùng ELB health check", "ALB chưa bật cross-zone", "Instance thiếu IAM role"],
+    why: "NLB có IP tĩnh mỗi AZ, gắn được Elastic IP. IP của ALB thay đổi theo thời gian." },
+  { q: "ALB đã loại một server bị treo, nhưng Auto Scaling group không tạo server thay thế. Vì sao?",
+    opts: ["ASG đang dùng EC2 health check", "ALB chưa bật cross-zone", "Server thiếu IAM role"],
     a: 0,
-    why: "Với EC2 health check, ASG thấy instance vẫn chạy nên không thay." },
-  { q: "Một ALB phục vụ nhiều tên miền HTTPS khác nhau, ít cấu hình nhất. Chọn gì?",
-    opts: ["Mỗi tên miền một ALB", "Nhiều chứng chỉ trên một listener với SNI", "Chuyển sang NLB"],
+    why: "EC2 health check chỉ xem máy còn chạy. Đổi sang ELB health check để ASG nghe theo ALB." },
+  { q: "ShopViet có shopviet.vn, blog.shopviet.vn và shopviet.com.vn, đều chạy HTTPS. Muốn ít cấu hình nhất. Làm thế nào?",
+    opts: ["Mỗi tên miền một ALB", "Nhiều chứng chỉ trên một listener HTTPS, ALB chọn bằng SNI", "Chuyển sang NLB"],
     a: 1,
-    why: "SNI cho phép một listener HTTPS chọn chứng chỉ theo tên miền." },
+    why: "SNI cho một listener HTTPS chọn đúng chứng chỉ theo tên miền khách gọi." },
 ]} />
 
 </Scene>
