@@ -30,8 +30,8 @@ const KM: Record<Uid, Record<Rid, number>> = {
 
 const POLICIES: Record<Policy, { label: string; text: ReactNode }> = {
   simple: { label: "Simple", text: <>Một record, một đích. Không có health check, không quan tâm khách ở đâu: ai cũng tới ALB Singapore.</> },
-  latency: { label: "Latency", text: <>Trả về Region có độ trễ thấp nhất tới khách. Đề dùng khi ứng dụng chạy ở nhiều Region và muốn khách ở châu Âu được phục vụ từ Region châu Âu.</> },
-  geolocation: { label: "Geolocation", text: <>Trả lời theo <b>vị trí của khách</b> (quốc gia, châu lục). Ở đây chỉ có record cho Việt Nam và châu Âu (nơi có bản quyền nội dung), không có record mặc định, nên khách ở Mỹ không nhận được câu trả lời. Đề dùng để giới hạn phân phối nội dung theo vùng.</> },
+  latency: { label: "Latency", text: <>Trả về Region có độ trễ thấp nhất tới khách. Dùng khi ứng dụng chạy ở nhiều Region và muốn khách ở châu Âu được phục vụ từ Region châu Âu.</> },
+  geolocation: { label: "Geolocation", text: <>Trả lời theo <b>vị trí của khách</b> (quốc gia, châu lục). Ở đây chỉ có record cho Việt Nam và châu Âu (nơi có bản quyền nội dung), không có record mặc định, nên khách ở Mỹ không nhận được câu trả lời. Dùng để giới hạn phân phối nội dung theo vùng.</> },
   geoproximity: { label: "Geoproximity", text: <>Theo khoảng cách giữa khách và tài nguyên, có thể <b>nới rộng hoặc thu hẹp vùng</b> của một tài nguyên bằng bias. Khoảng cách tính lại = khoảng cách thật × (1 − bias/100). Kéo bias của Singapore lên để thấy vùng phục vụ của nó lan rộng.</> },
   failover: { label: "Failover", text: <>Active-passive: record primary trỏ ALB, record secondary trỏ trang lỗi tĩnh trên S3. Route 53 health check thấy ALB không khỏe thì trả về secondary. Bấm "ALB không khỏe" để thử.</> },
 };

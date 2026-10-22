@@ -52,7 +52,7 @@ export default function SgChain() {
       await travel(layer, [TIERS.alb, TIERS.ec2], 500, "pkt-bad", 6);
       flashText(layer, TIERS.ec2[0] - 6, TIERS.ec2[1] - 40, "✕", "err-t", 1500);
       setVerdict({ cls: "bad", title: "ALB báo target unhealthy",
-        text: "Security Group của EC2 không cho ALB vào, nên cả health check lẫn request đều bị chặn. Đây là nguyên nhân hay gặp khi đề hỏi vì sao instance bị đánh dấu unhealthy." });
+        text: "Security Group của EC2 không cho ALB vào, nên cả health check lẫn request đều bị chặn. Đây là lý do hay gặp nhất khi target bị đánh dấu unhealthy." });
       return setBusy(false);
     }
     await travel(layer, [TIERS.alb, TIERS.ec2], 500, "pkt", 6);
@@ -78,8 +78,8 @@ export default function SgChain() {
     }));
     setVerdict(exposed.length
       ? { cls: "warn", title: "Chạy được nhưng không an toàn",
-          text: "Mở 0.0.0.0/0 cho EC2 hoặc RDS thì bất kỳ ai trên internet cũng gọi thẳng được vào tầng đó, bỏ qua ALB. Đề luôn chọn phương án tham chiếu Security Group của tầng phía trước." }
-      : { cls: "ok", title: "Đúng đáp án đề chọn",
+          text: "Mở 0.0.0.0/0 cho EC2 hoặc RDS thì bất kỳ ai trên internet cũng gọi thẳng được vào tầng đó, bỏ qua ALB. Cách an toàn là tham chiếu Security Group của tầng phía trước." }
+      : { cls: "ok", title: "Chạy được và an toàn",
           text: "Chỉ ALB mở 443 cho internet. EC2 chỉ nhận từ sg-alb, RDS chỉ nhận từ sg-web. Kẻ tấn công gọi thẳng EC2 bị chặn. Tham chiếu Security Group thay vì dải IP nên instance mới trong Auto Scaling group tự được phép." });
     setBusy(false);
   }

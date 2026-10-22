@@ -32,17 +32,17 @@ export default function HybridDnsSim() {
       } else {
         await travel(layer, [EC2, RESOLVER, OUTBOUND, ONPREM_DNS], 1600, "pkt", 6);
         await travel(layer, [ONPREM_DNS, OUTBOUND, RESOLVER, EC2], 1400, "pkt-back", 6);
-        setMsg(<>EC2 hỏi <code>db.corp.local</code>. Forwarding rule của Resolver chuyển truy vấn ra <b>outbound endpoint</b> tới DNS server on-premises. Đề dùng khi workload trong VPC cần phân giải tên miền nội bộ on-premises.</>);
+        setMsg(<>EC2 hỏi <code>db.corp.local</code>. Forwarding rule của Resolver chuyển truy vấn ra <b>outbound endpoint</b> tới DNS server on-premises. Dùng khi workload trong VPC cần phân giải tên miền nội bộ ở văn phòng.</>);
       }
     } else {
       await travel(layer, [ONPREM_DNS, INBOUND, RESOLVER], 1200, "pkt", 6);
       if (!support || !hostnames) {
         await travel(layer, [RESOLVER, PHZ], 500, "pkt-bad", 6);
         flashText(layer, PHZ[0] - 6, PHZ[1] - 26, "✕", "err-t", 1500);
-        setMsg(<>Private hosted zone chỉ hoạt động khi VPC bật <b>cả</b> enableDnsHostnames và enableDnsSupport. Đề hỏi đúng hai cờ này khi private hosted zone không phân giải được.</>);
+        setMsg(<>Private hosted zone chỉ hoạt động khi VPC bật <b>cả</b> enableDnsHostnames và enableDnsSupport. Thiếu một trong hai cờ là private hosted zone không phân giải được.</>);
       } else {
         await travel(layer, [RESOLVER, PHZ, RESOLVER, INBOUND, ONPREM_DNS], 1800, "pkt-back", 6);
-        setMsg(<>DNS server on-premises chuyển truy vấn <code>api.shopviet.internal</code> tới <b>inbound endpoint</b>. Resolver trả lời từ private hosted zone. Đề dùng khi on-premises cần phân giải tên miền trong VPC.</>);
+        setMsg(<>DNS server on-premises chuyển truy vấn <code>api.shopviet.internal</code> tới <b>inbound endpoint</b>. Resolver trả lời từ private hosted zone. Dùng khi hệ thống ở văn phòng cần phân giải tên miền trong VPC.</>);
       }
     }
     setBusy(false);

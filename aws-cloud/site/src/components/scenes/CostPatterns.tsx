@@ -1,7 +1,7 @@
 // Source questions: exam2_q62, exam3_q47, exam5_q2.
 import { useState, type ReactNode } from "react";
 
-// Data transfer cost patterns exactly as the practice tests ask them.
+// Three places where ShopViet pays for data transfer, each with a cheaper layout.
 type Node = { x: number; y: number; w: number; label: string; sub?: string; kind: "db" | "ec2" | "net" | "store" | "site" };
 type Flow = { d: string; paid: boolean; heavy?: boolean; label: string; lx: number; ly: number };
 type Option = { name: string; verdict: "cheap" | "costly"; flows: Flow[]; hide?: string[]; text: ReactNode };

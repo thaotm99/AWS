@@ -63,7 +63,7 @@ const POLICIES: Pol[] = [
     ],
   },
   {
-    name: "Lỗi ARN hay gặp",
+    name: "Lỗi ARN hay mắc",
     json: `{
   "Version": "2012-10-17",
   "Statement": [{
