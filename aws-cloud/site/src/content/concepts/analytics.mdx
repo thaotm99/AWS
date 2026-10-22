@@ -75,6 +75,12 @@ docs:
     url: "https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Serverless.html"
   - title: "What is AWS Database Migration Service?"
     url: "https://docs.aws.amazon.com/dms/latest/userguide/Welcome.html"
+  - title: "Use Machine Learning (ML) with Amazon Athena"
+    url: "https://docs.aws.amazon.com/athena/latest/ug/querying-mlmodel.html"
+  - title: "Use ML with Athena syntax"
+    url: "https://docs.aws.amazon.com/athena/latest/ug/ml-syntax.html"
+  - title: "Machine learning (Amazon Redshift ML)"
+    url: "https://docs.aws.amazon.com/redshift/latest/dg/machine_learning.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -176,7 +182,7 @@ Khi data lake cần thêm một bản sao tại Region khác để dự phòng s
 
 </Scene>
 
-<Scene id="s6" label="Phần 6/6" title="Phân biệt nhanh: các dịch vụ dữ liệu dễ nhầm lẫn" questions={["exam1_q53", "exam2_q44", "exam4_q50", "exam5_q59"]}>
+<Scene id="s6" label="Phần 6/6" title="Phân biệt nhanh: các dịch vụ dữ liệu dễ nhầm lẫn" questions={["exam1_q53", "exam2_q44", "exam4_q50", "exam5_q59", "exam1_q26"]}>
 
 Một số dịch vụ có tên hoặc tính năng gần với nhu cầu của ShopViet nhưng giải quyết vấn đề khác. Chọn từng dịch vụ để xem trường hợp sử dụng, lý do không phù hợp trong tình huống tương ứng, và phương án nên chọn:
 
@@ -201,11 +207,15 @@ Một số dịch vụ có tên hoặc tính năng gần với nhu cầu của S
     use: "Graph database cho dữ liệu **nhiều quan hệ đan xen**: gợi ý sản phẩm, phát hiện gian lận, knowledge graph. **Neptune global database**: một cluster primary ghi dữ liệu, tối đa 5 cluster chỉ đọc ở Region khác, độ trễ replication thường dưới một giây.",
     notHere: "Đơn hàng toàn cầu của ShopViet không phải dữ liệu đồ thị, và ứng dụng ở mỗi Region cần **ghi** cục bộ. Neptune global database chỉ ghi được tại Region primary; tự xây dựng replication bằng Lambda và SQS làm tăng độ phức tạp.",
     instead: "**DynamoDB global tables**: mỗi Region có bảng replica đọc và ghi được (bài DynamoDB, phần 5)." },
+  { name: "Amazon Athena ML",
+    use: "Gọi **endpoint của mô hình SageMaker AI** ngay trong câu lệnh SQL: khai báo hàm bằng mệnh đề `USING EXTERNAL FUNCTION … RETURNS … SAGEMAKER '<endpoint>'`, sau đó câu `SELECT` truyền giá trị cho mô hình và nhận kết quả inference, ví dụ đánh dấu giao dịch bất thường ngay trên dữ liệu S3. Endpoint phải nhận và trả về `text/csv`; người chạy truy vấn cần quyền `sagemaker:InvokeEndpoint`.",
+    notHere: "Analyst của ShopViet cần **xây dựng và huấn luyện** mô hình bằng SQL, trên một data warehouse MPP được nạp dữ liệu mỗi sáng. Athena ML chỉ chạy inference trên mô hình **đã được triển khai** sẵn thành endpoint SageMaker AI (vẫn cần người xây dựng và triển khai mô hình), và Athena truy vấn trực tiếp file trên S3 chứ không phải data warehouse.",
+    instead: "**Glue → Redshift Serverless → Redshift ML**: lệnh `CREATE MODEL` bằng SQL dùng dữ liệu trong Redshift để tạo mô hình trong SageMaker AI, sau đó dự đoán bằng hàm SQL (phần 4). Athena ML phù hợp khi đã có endpoint và chỉ cần gọi inference từ truy vấn ad-hoc trên S3." },
 ]} />
 
 Chi tiết về Security Lake: [bài Security, phần 2](/concepts/security/#s2). Chi tiết về global tables: [bài DynamoDB, phần 5](/concepts/dynamodb/#s5).
 
-<Takeaway>Xây dựng ETL job trực quan: Glue Studio; chuẩn bị dữ liệu có profiling và recipe dùng chung: DataBrew. Đưa dữ liệu từ SaaS vào AWS: AppFlow. Phân quyền chi tiết trên data lake: Lake Formation; tập trung log bảo mật: Security Lake. Vị trí cập nhật liên tục: Redis geospatial; tìm kiếm và bản đồ: OpenSearch. Đồ thị: Neptune; ghi đa Region: DynamoDB global tables.</Takeaway>
+<Takeaway>Xây dựng ETL job trực quan: Glue Studio; chuẩn bị dữ liệu có profiling và recipe dùng chung: DataBrew. Đưa dữ liệu từ SaaS vào AWS: AppFlow. Phân quyền chi tiết trên data lake: Lake Formation; tập trung log bảo mật: Security Lake. Vị trí cập nhật liên tục: Redis geospatial; tìm kiếm và bản đồ: OpenSearch. Đồ thị: Neptune; ghi đa Region: DynamoDB global tables. Gọi endpoint SageMaker AI có sẵn từ SQL trên S3: Athena ML; huấn luyện mô hình bằng SQL trên data warehouse: Redshift ML.</Takeaway>
 
 </Scene>
 

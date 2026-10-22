@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **983 keyword** khác nhau: ✅ 974 (99%) · 🟡 6 (1%) · ❌ 3 (0%).
+Có **983 keyword** khác nhau: ✅ 975 (99%) · 🟡 6 (1%) · ❌ 2 (0%).
 
 ### Theo bài học
 
@@ -38,7 +38,7 @@ Có **983 keyword** khác nhau: ✅ 974 (99%) · 🟡 6 (1%) · ❌ 3 (0%).
 | [storage-migration](#storage-migration) | 35 | 34 | 0 | 1 | 97% |
 | [rds](#rds) | 61 | 61 | 0 | 0 | 100% |
 | [dynamodb](#dynamodb) | 25 | 25 | 0 | 0 | 100% |
-| [analytics](#analytics) | 48 | 47 | 0 | 1 | 98% |
+| [analytics](#analytics) | 48 | 48 | 0 | 0 | 100% |
 | [messaging](#messaging) | 51 | 51 | 0 | 0 | 100% |
 | [kinesis](#kinesis) | 28 | 28 | 0 | 0 | 100% |
 | [monitoring](#monitoring) | 34 | 34 | 0 | 0 | 100% |
@@ -50,7 +50,7 @@ Có **983 keyword** khác nhau: ✅ 974 (99%) · 🟡 6 (1%) · ❌ 3 (0%).
 
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
-| Đề 1 | 224 | 1 | 1 |
+| Đề 1 | 225 | 1 | 0 |
 | Đề 2 | 203 | 0 | 1 |
 | Đề 3 | 224 | 2 | 1 |
 | Đề 4 | 236 | 1 | 0 |
@@ -925,7 +925,6 @@ Có **983 keyword** khác nhau: ✅ 974 (99%) · 🟡 6 (1%) · ❌ 3 (0%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | Amazon Athena ML (SageMaker inference from SQL) | ❌ Thiếu | 1 | exam1_q26 |  |
 | [ ] | Amazon Athena | ✅ Đã có | 10 | exam1_q26, exam1_q53, exam1_q57, exam2_q34, exam4_q22, exam5_q6, exam5_q11, exam5_q12, exam5_q58, exam6_q26 | analytics.mdx#s3 / DataJobSim<br>analytics.mdx#s3 |
 | [ ] | Amazon EMR | ✅ Đã có | 5 | exam1_q24, exam1_q26, exam4_q33, exam5_q12, exam6_q18 | analytics.mdx#s3<br>analytics.mdx#s3 / DataJobSim |
 | [ ] | Amazon Neptune | ✅ Đã có | 5 | exam1_q29, exam2_q53, exam4_q10, exam4_q11, exam5_q59 | analytics.mdx#s3 / DataJobSim<br>analytics.mdx#s6 / QuickCompare; analytics.mdx#s3 / DataJobSim |
@@ -941,6 +940,7 @@ Có **983 keyword** khác nhau: ✅ 974 (99%) · 🟡 6 (1%) · ❌ 3 (0%).
 | [ ] | ElastiCache for Redis OSS | ✅ Đã có | 2 | exam1_q1, exam6_q47 | analytics.mdx#s2<br>analytics.mdx#s2 / CacheEngineSim |
 | [ ] | ElastiCache for Redis OSS geospatial | ✅ Đã có | 2 | exam4_q50, exam5_q65 | analytics.mdx#s1 / CacheSim |
 | [ ] | Amazon AppFlow | ✅ Đã có | 1 | exam1_q53 | analytics.mdx#s6 / QuickCompare |
+| [ ] | Amazon Athena ML (SageMaker inference from SQL) | ✅ Đã có | 1 | exam1_q26 | analytics.mdx#s6 / QuickCompare (Amazon Athena ML) + Takeaway |
 | [ ] | Amazon Athena on CloudTrail logs | ✅ Đã có | 1 | exam1_q61 | analytics.mdx#s3 |
 | [ ] | Amazon OpenSearch Service (full-text search) | ✅ Đã có | 1 | exam5_q6 | analytics.mdx#s3 / DataJobSim; kinesis.mdx#s3 / StreamPipelineSim |
 | [ ] | Amazon QuickSight (visualization, not SQL analysis) | ✅ Đã có | 1 | exam5_q58 | analytics.mdx#s3 / DataJobSim |

@@ -552,3 +552,11 @@ Checked 2026-10-22 against the pages below (keyword → claim → URL).
 - Kinesis Data Streams consumer parallelism bounded by shard count → "Each shard is bound to only one worker by a lease at any given time and each worker can hold one or more leases" → https://docs.aws.amazon.com/streams/latest/dev/kcl-concepts.html ; Lambda processes records in each shard in order, add shards to increase speed, ParallelizationFactor 1 (default) to 10 concurrent batches per shard, in-order processing kept at partition-key level → https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html ; SQS FIFO: messages in the same message group processed one at a time in strict order, never two of the same group simultaneously → https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagegroupid-property.html ; several message groups let several consumers read simultaneously → https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/interleaving-multiple-ordered-message-groups.html
 - Doc vs exam: test 2 Q42 explanation says Kinesis allows "only as many consumers as shards". Docs: within one KCL application one worker per shard, while Lambda can run up to 10 concurrent batches per shard (ParallelizationFactor); parallelism is still bounded by the shard count, so the conclusion (SQS FIFO with group ID) is unchanged. The lesson states the Lambda nuance.
 - Simulation-free scenario (5,000 POS terminals) is illustrative.
+
+## analytics (wave 6)
+
+Checked 2026-10-22 against the pages below (keyword → claim → URL).
+
+- Amazon Athena ML (SageMaker inference from SQL) → SQL statements that run ML inference using SageMaker AI; function defined with USING EXTERNAL FUNCTION pointing to the SageMaker AI model endpoint; endpoint must accept and return text/csv; principal needs sagemaker:InvokeEndpoint → https://docs.aws.amazon.com/athena/latest/ug/querying-mlmodel.html ; syntax `USING EXTERNAL FUNCTION name(var type, …) RETURNS type SAGEMAKER 'endpoint' SELECT …` → https://docs.aws.amazon.com/athena/latest/ug/ml-syntax.html
+- Redshift ML (the contrast in the same QuickCompare item) → you provide training data, Redshift ML creates models in SageMaker AI, then generates predictions for new input → https://docs.aws.amazon.com/redshift/latest/dg/machine_learning.html
+- No exam-vs-docs discrepancy found for test 1 Q26.

@@ -75,6 +75,12 @@ docs:
     url: "https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Serverless.html"
   - title: "What is AWS Database Migration Service?"
     url: "https://docs.aws.amazon.com/dms/latest/userguide/Welcome.html"
+  - title: "Use Machine Learning (ML) with Amazon Athena"
+    url: "https://docs.aws.amazon.com/athena/latest/ug/querying-mlmodel.html"
+  - title: "Use ML with Athena syntax"
+    url: "https://docs.aws.amazon.com/athena/latest/ug/ml-syntax.html"
+  - title: "Machine learning (Amazon Redshift ML)"
+    url: "https://docs.aws.amazon.com/redshift/latest/dg/machine_learning.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -176,7 +182,7 @@ When the data lake needs another copy in a different Region for disaster recover
 
 </Scene>
 
-<Scene id="en-s6" label="Part 6/6" title="Quick comparison: data services that are easy to confuse" questions={["exam1_q53", "exam2_q44", "exam4_q50", "exam5_q59"]}>
+<Scene id="en-s6" label="Part 6/6" title="Quick comparison: data services that are easy to confuse" questions={["exam1_q53", "exam2_q44", "exam4_q50", "exam5_q59", "exam1_q26"]}>
 
 Some services have names or features close to a ShopViet need but solve a different problem. Choose each service to see when to use it, why it does not fit the matching situation, and what to choose instead:
 
@@ -201,11 +207,15 @@ Some services have names or features close to a ShopViet need but solve a differ
     use: "A graph database for **highly connected data**: product recommendations, fraud detection, knowledge graphs. A **Neptune global database** has one primary cluster that takes writes and up to 5 read-only clusters in other Regions, with replication latency typically under a second.",
     notHere: "ShopViet's global orders are not graph data, and the application in every Region needs to **write** locally. A Neptune global database accepts writes only in the primary Region; building replication yourself with Lambda and SQS adds complexity.",
     instead: "**DynamoDB global tables**: every Region has a replica table that accepts reads and writes (DynamoDB lesson, part 5)." },
+  { name: "Amazon Athena ML",
+    use: "Calls a **SageMaker AI model endpoint** from a SQL statement: define a function with the `USING EXTERNAL FUNCTION … RETURNS … SAGEMAKER '<endpoint>'` clause, then the `SELECT` passes values to the model and gets inference results back, for example flagging anomalous transactions directly on S3 data. The endpoint must accept and return `text/csv`; the principal running the query needs `sagemaker:InvokeEndpoint`.",
+    notHere: "ShopViet's analysts need to **build and train** models with SQL, on an MPP data warehouse loaded every morning. Athena ML only runs inference against a model **already deployed** to a SageMaker AI endpoint (someone still has to build and deploy the model), and Athena queries files on S3 in place rather than being a data warehouse.",
+    instead: "**Glue → Redshift Serverless → Redshift ML**: a SQL `CREATE MODEL` statement uses data in Redshift to create a model in SageMaker AI, then predictions run as a SQL function (part 4). Athena ML fits when an endpoint already exists and you only need inference from ad-hoc queries on S3." },
 ]} />
 
 More on Security Lake: [Security lesson, part 2](/concepts/security/#en-s2). More on global tables: [DynamoDB lesson, part 5](/concepts/dynamodb/#en-s5).
 
-<Takeaway>Building ETL jobs visually: Glue Studio; preparing data with profiling and shared recipes: DataBrew. Bringing SaaS data into AWS: AppFlow. Fine-grained permissions on a data lake: Lake Formation; centralizing security logs: Security Lake. Constantly updated locations: Redis geospatial; search and maps: OpenSearch. Graphs: Neptune; multi-Region writes: DynamoDB global tables.</Takeaway>
+<Takeaway>Building ETL jobs visually: Glue Studio; preparing data with profiling and shared recipes: DataBrew. Bringing SaaS data into AWS: AppFlow. Fine-grained permissions on a data lake: Lake Formation; centralizing security logs: Security Lake. Constantly updated locations: Redis geospatial; search and maps: OpenSearch. Graphs: Neptune; multi-Region writes: DynamoDB global tables. Calling an existing SageMaker AI endpoint from SQL on S3: Athena ML; training models with SQL in a data warehouse: Redshift ML.</Takeaway>
 
 </Scene>
 

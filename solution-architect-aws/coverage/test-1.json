@@ -849,8 +849,8 @@
         {
           "keyword": "Amazon Athena ML (SageMaker inference from SQL)",
           "lesson": "analytics",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "analytics.mdx#s6 / QuickCompare (Amazon Athena ML) + Takeaway"
         }
       ]
     },
