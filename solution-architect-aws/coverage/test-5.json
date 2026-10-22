@@ -968,8 +968,8 @@
         {
           "keyword": "Systems Manager Session Manager",
           "lesson": "monitoring",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "monitoring.mdx#s6 / QuickCompare"
         }
       ]
     },

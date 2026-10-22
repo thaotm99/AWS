@@ -1272,8 +1272,8 @@
         {
           "keyword": "SSM Parameter Store",
           "lesson": "monitoring",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "monitoring.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "Security group referencing",

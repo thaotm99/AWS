@@ -1199,8 +1199,8 @@
         {
           "keyword": "AWS Config conformance pack",
           "lesson": "monitoring",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "monitoring.mdx#s4 / monitoring.mdx#s6 QuickCompare"
         }
       ]
     },

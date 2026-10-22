@@ -315,8 +315,8 @@
         {
           "keyword": "ACM DaysToExpiry CloudWatch metric",
           "lesson": "monitoring",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "monitoring.mdx#s4 / monitoring.mdx#s6 QuickCompare"
         },
         {
           "keyword": "Amazon SNS notification",
@@ -1276,8 +1276,8 @@
         {
           "keyword": "CloudTrail organization trail",
           "lesson": "monitoring",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "monitoring.mdx#s4 / monitoring.mdx#s6 QuickCompare"
         },
         {
           "keyword": "IAM service-linked role",

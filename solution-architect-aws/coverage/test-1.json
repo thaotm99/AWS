@@ -1865,14 +1865,14 @@
         {
           "keyword": "CloudTrail Insights",
           "lesson": "monitoring",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "monitoring.mdx#s3 / monitoring.mdx#s6 QuickCompare"
         },
         {
           "keyword": "AWS Trusted Advisor (service limits checks)",
           "lesson": "monitoring",
-          "status": "partial",
-          "where": "others.mdx#challenge / CostWatchSim"
+          "status": "covered",
+          "where": "monitoring.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "Amazon Athena on CloudTrail logs",

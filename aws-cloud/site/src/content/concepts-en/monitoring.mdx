@@ -1,8 +1,8 @@
 ---
 title: "Monitoring and operations: CloudWatch, CloudTrail, Config, Systems Manager"
-lede: "The ShopViet system now runs in production and needs to observe the state of the system and trace actions. This lesson covers five topics: configuring alarms with a low enough detection delay, using alarm actions to recover instances automatically, preserving logs when instances are replaced, tracing changes and evaluating configuration compliance, and patching hundreds of instances without causing errors for users."
-minutes: 30
-scenes: 5
+lede: "The ShopViet system now runs in production and needs to observe the state of the system and trace actions. This lesson covers five topics: configuring alarms with a low enough detection delay, using alarm actions to recover instances automatically, preserving logs when instances are replaced, tracing changes and evaluating configuration compliance, and patching hundreds of instances without causing errors for users; the last part tells apart features that are easy to confuse."
+minutes: 35
+scenes: 6
 prerequisites: ["ec2", "asg", "iam"]
 docs:
   - title: "What is Amazon CloudWatch?"
@@ -49,6 +49,46 @@ docs:
     url: "https://docs.aws.amazon.com/outposts/latest/userguide/what-is-outposts.html"
   - title: "What is Snowball Edge?"
     url: "https://docs.aws.amazon.com/snowball/latest/developer-guide/whatisedge.html"
+  - title: "Working with CloudTrail Insights"
+    url: "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-insights-events-with-cloudtrail.html"
+  - title: "How CloudTrail works"
+    url: "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/how-cloudtrail-works.html"
+  - title: "Sending CloudTrail events to CloudWatch Logs"
+    url: "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/send-cloudtrail-events-to-cloudwatch-logs.html"
+  - title: "Creating a trail for an organization"
+    url: "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/creating-trail-organization.html"
+  - title: "CloudWatch alarms for AWS Trusted Advisor metrics"
+    url: "https://docs.aws.amazon.com/awssupport/latest/user/cloudwatch-metrics-ta.html"
+  - title: "Trusted Advisor service limits checks"
+    url: "https://docs.aws.amazon.com/awssupport/latest/user/service-limits.html"
+  - title: "ACM supported CloudWatch metrics"
+    url: "https://docs.aws.amazon.com/acm/latest/userguide/cloudwatch-metrics.html"
+  - title: "Amazon EventBridge support for ACM"
+    url: "https://docs.aws.amazon.com/acm/latest/userguide/supported-events.html"
+  - title: "Managed certificate renewal in ACM"
+    url: "https://docs.aws.amazon.com/acm/latest/userguide/managed-renewal.html"
+  - title: "Conformance packs for AWS Config"
+    url: "https://docs.aws.amazon.com/config/latest/developerguide/conformance-packs.html"
+  - title: "Managing conformance packs across an organization"
+    url: "https://docs.aws.amazon.com/config/latest/developerguide/conformance-pack-organization-apis.html"
+  - title: "What is AWS Control Tower?"
+    url: "https://docs.aws.amazon.com/controltower/latest/userguide/what-is-control-tower.html"
+  - title: "Systems Manager hybrid activations"
+    url: "https://docs.aws.amazon.com/systems-manager/latest/userguide/activations.html"
+  - title: "Managing nodes in hybrid and multicloud environments"
+    url: "https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-hybrid-multicloud.html"
+  - title: "Configure instance permissions required for Systems Manager"
+    url: "https://docs.aws.amazon.com/systems-manager/latest/userguide/setup-instance-permissions.html"
+  - title: "Use instance profiles (IAM)"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html"
+  - title: "AWS Systems Manager Parameter Store"
+    url: "https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html"
+  - title: "IAM database authentication for MariaDB, MySQL, and PostgreSQL"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.html"
+  - title: "AWS Systems Manager Session Manager"
+    url: "https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html"
+  - title: "Connect to a Linux instance using EC2 Instance Connect"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/connect-linux-inst-eic.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -63,6 +103,7 @@ import GuardrailSim from "../../components/scenes/monitoring/GuardrailSim.tsx";
 import PatchWindowSim from "../../components/scenes/monitoring/PatchWindowSim.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 
 <Story toc={[
   { href: "#en-s1", label: "1 · Metrics and alarms" },
@@ -70,12 +111,13 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s3", label: "3 · Preserving logs" },
   { href: "#en-s4", label: "4 · API tracing and configuration compliance" },
   { href: "#en-s5", label: "5 · Patching instances with Systems Manager" },
+  { href: "#en-s6", label: "6 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
 The ShopViet system already has load balancers, Auto Scaling groups, containers and Lambda. It runs stably, but the operations team regularly needs to answer questions: what is the current CPU utilization, who just deleted a security group, where are yesterday's instance logs stored, when should operating system patches be applied. Four services correspond to these four groups of questions: **CloudWatch** (metrics, logs, alarms), **CloudTrail** (who called which API), **AWS Config** (configuration and compliance), **Systems Manager** (acting directly on instances).
 </Story>
 
-<Scene id="en-s1" label="Part 1/5" title="The detection delay of an alarm" questions={["exam5_q20", "exam4_q25", "exam3_q15"]}>
+<Scene id="en-s1" label="Part 1/6" title="The detection delay of an alarm" questions={["exam5_q20", "exam4_q25", "exam3_q15"]}>
 
 Each AWS service sends **metrics** to CloudWatch: EC2 CPU, Lambda invocations, the CPU of an ECS service. An **alarm** watches one metric, compares it with a threshold, and when the metric breaches the threshold for long enough it performs an **action**: sending a notification through SNS, scaling a group of resources, or acting on EC2.
 
@@ -89,7 +131,7 @@ Choosing the right metric matters as much as choosing the threshold. An ECS serv
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/5" title="Recovering instances automatically with alarm actions" questions={["exam3_q38", "exam3_q57", "exam5_q19", "exam4_q16"]}>
+<Scene id="en-s2" label="Part 2/6" title="Recovering instances automatically with alarm actions" questions={["exam3_q38", "exam3_q57", "exam5_q19", "exam4_q16"]}>
 
 ShopViet's warehouse management page runs on **one** EC2 instance; its scale does not yet need an Auto Scaling group. The instance occasionally fails, and restarting it manually outside working hours (for example at 3:00 a.m.) is undesirable. A CloudWatch alarm can call four EC2 actions directly: **stop**, **terminate**, **reboot**, **recover**, with no Lambda or script. In addition, for supported instance types, **simplified automatic recovery** is enabled by default at launch; CloudWatch action based recovery is an additional mechanism you configure, and it does not apply to instances in an Auto Scaling group.
 
@@ -101,19 +143,23 @@ EC2 has two kinds of status checks. An **instance status check** fails when the 
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/5" title="Preserving logs when instances are replaced" questions={["exam5_q33", "exam1_q61", "exam1_q27"]}>
+<Scene id="en-s3" label="Part 3/6" title="Preserving logs when instances are replaced" questions={["exam5_q33", "exam1_q61", "exam1_q27"]}>
 
 ShopViet's Auto Scaling group scales very frequently, with new instances replacing old ones almost every day. A user reports a payment error that happened two days ago, but the instance involved has already been terminated. In another incident, a leaked access key was used to call APIs continuously at night. Both incidents share a solution: move logs off the instance and let CloudWatch process them.
 
 <LogPipelineSim client:visible />
 
+A trail delivers events to an S3 bucket, and can also deliver them to **CloudWatch Logs** and **EventBridge**; Kinesis is not one of these destinations. CloudTrail delivers logs within an average of about 5 minutes of an API call (this time is not guaranteed). The alert threshold in the scenario above is known in advance (the number of calls denied with `AccessDenied`), so a metric filter and an alarm are the most direct mechanism.
+
+**CloudTrail Insights** solves a different problem, for when the threshold is not known in advance: Insights analyzes past management and data events to establish a **baseline** of API call rates and API error rates, then generates **Insights events** when current activity deviates from the baseline. Insights is charged separately; after Insights is enabled on a trail for the first time, CloudTrail may take up to 36 hours to begin delivering Insights events. Insights events can also be sent to CloudWatch Logs together with the trail's other events.
+
 Another requirement concerns the deployment location: ShopViet is expanding into e-wallets, and regulations require the data and workloads to stay in the company's data center. The engineering team still needs AWS-managed Kubernetes, along with IAM and CloudWatch as in the cloud. The solution is **AWS Outposts**: AWS installs an Outpost at the customer's site, extending AWS infrastructure, services, APIs and tools there; EC2, EBS, ECS, RDS and Amazon EKS run on premises, while AWS operates and monitors this capacity as part of the Region. Direct Connect and Local Zones still place workloads on AWS infrastructure; Snowball Edge is a device for data transfer and edge processing, and it is no longer available to new customers.
 
-<Takeaway>Logs must be moved off an instance before it is terminated: install the CloudWatch agent to send logs to CloudWatch Logs. Near-real-time alerts on unusual API calls: CloudTrail sends to CloudWatch Logs, a metric filter counts the errors, an alarm notifies through SNS. Data that must stay on premises but still needs AWS services: Outposts.</Takeaway>
+<Takeaway>Logs must be moved off an instance before it is terminated: install the CloudWatch agent to send logs to CloudWatch Logs. Near-real-time alerts on unusual API calls: CloudTrail sends to CloudWatch Logs, a metric filter counts the errors, an alarm notifies through SNS. Trail destinations: S3, CloudWatch Logs, EventBridge (not Kinesis). Detect API call rates or error rates that deviate from a baseline without setting a threshold: CloudTrail Insights (charged separately). Data that must stay on premises but still needs AWS services: Outposts.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/5" title="Tracing actions and evaluating configuration compliance" questions={["exam1_q16", "exam3_q29", "exam2_q43", "exam2_q9"]}>
+<Scene id="en-s4" label="Part 4/6" title="Tracing actions and evaluating configuration compliance" questions={["exam1_q16", "exam3_q29", "exam2_q43", "exam2_q9"]}>
 
 After an incident, the ShopViet operations team needs to answer many questions; each question can be answered by only one service. Choose each question and send the query:
 
@@ -127,11 +173,17 @@ Detecting a violation is different from preventing it or remediating it automati
 
 <GuardrailSim client:visible />
 
-<Takeaway>Who called which API, and when: CloudTrail (IAM operations are management events, recorded by a trail by default). Resource configuration over time and compliance: AWS Config. Make sure a trail always keeps running even when developers have root access: SCP. Certificates imported into ACM are not renewed automatically: the acm-certificate-expiration-check managed rule warns in advance. Config rules combined with remediation fix violations automatically.</Takeaway>
+The `org-audit-trail` trail in the scenario above can be created as an **organization trail**. An organization trail can only be created from the **management account** or a CloudTrail **delegated administrator** account; it is applied automatically to every member account, including accounts that join the organization later. Users in member accounts can see the organization trail, but cannot delete it, turn logging on or off, or change it in any way. By contrast, a trail that a developer creates inside their own account is an ordinary trail of that account, and the root user can delete it; for trails in member accounts, an SCP remains the necessary layer of protection.
+
+For certificates, ACM offers two more signal sources besides the Config rule. The **`DaysToExpiry`** metric (namespace `AWS/CertificateManager`, dimension `CertificateArn`) is published by ACM to CloudWatch twice per day for every certificate until it expires; because the metric is tied to a single ARN, each certificate needs its own alarm, and every certificate imported later needs one more alarm. EventBridge receives a daily **ACM Certificate Approaching Expiration** event, starting 45 days before expiration for private or imported certificates and 30 days for public certificates. The `acm-certificate-expiration-check` managed rule evaluates every certificate in the account against the same threshold and keeps a compliance history, with no alarm to create per certificate.
+
+To apply the same set of Config rules to many accounts, ShopViet uses a **conformance pack**: a collection of Config rules and remediation actions, written in a YAML template and deployed as a single entity in an account and Region or across the whole organization. When it is deployed from the management account, member accounts cannot modify those rules and remediation actions. A conformance pack only evaluates and remediates configuration; it does not create accounts and does not build shared network infrastructure.
+
+<Takeaway>Who called which API, and when: CloudTrail (IAM operations are management events, recorded by a trail by default). Resource configuration over time and compliance: AWS Config. Make sure a trail always keeps running even when developers have root access: SCP. An organization trail can only be created from the management account or a delegated administrator; member accounts cannot change it. Certificates imported into ACM are not renewed automatically: the acm-certificate-expiration-check managed rule warns in advance (the DaysToExpiry metric needs one alarm per certificate). Config rules combined with remediation fix violations automatically; a conformance pack deploys one set of rules and remediations to the whole organization.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s5" label="Part 5/5" title="Patching hundreds of instances without service disruption" questions={["exam3_q6", "exam5_q34"]}>
+<Scene id="en-s5" label="Part 5/6" title="Patching hundreds of instances without service disruption" questions={["exam3_q6", "exam5_q34"]}>
 
 ShopViet has more than 200 EC2 instances; every month brings security patches for the operating system. **Systems Manager** does this through the **SSM Agent** running on the instances: Patch Manager patches on a schedule, Run Command runs commands on a whole group of instances, Automation runs multi-step runbooks. The first step is to grant the agent permission to communicate with Systems Manager. The instances already have their own IAM role to access RDS and Secrets Manager:
 
@@ -141,26 +193,73 @@ ShopViet has more than 200 EC2 instances; every month brings security patches fo
       { id: "ssm", x: 20, y: 70, w: 170, label: "Systems Manager", sub: "Patch Manager", kind: "net" },
       { id: "ec2", x: 290, y: 70, w: 190, label: "200 EC2", sub: "app role: RDS, Secrets", kind: "ec2" },
       { id: "role", x: 560, y: 10, w: 170, label: "New role (merged)", kind: "warn" },
+      { id: "hyb", x: 560, y: 90, w: 170, label: "Hybrid Activation", sub: "second role", kind: "warn" },
       { id: "dhmc", x: 550, y: 170, w: 170, label: "Default Host Management", sub: "Quick Setup", kind: "edge" },
     ],
     options: [
-      { name: "Install the agent, cron on each instance", verdict: "bad", hide: ["role", "dhmc"],
+      { name: "Install the agent, cron on each instance", verdict: "bad", hide: ["role", "dhmc", "hyb"],
         flows: [{ path: ["ec2", "ssm"], tone: "bad", label: "not centralized" }],
         text: "Each instance patches itself on its own schedule, and 200 cron schedules must be tracked manually. There is no way to tell which instances have been patched and which have not." },
-      { name: "Replace the instances' IAM role", verdict: "bad", hide: ["dhmc"],
+      { name: "Replace the instances' IAM role", verdict: "bad", hide: ["dhmc", "hyb"],
         flows: [{ path: ["role", "ec2"], tone: "bad", label: "removes current role" }, { path: ["ssm", "ec2"], tone: "neutral" }],
         text: "Removing the old role and attaching a new role with merged permissions: this is done instance by instance, and the application can lose permission to read Secrets Manager during the change." },
-      { name: "Enable Default Host Management", verdict: "good", hide: ["role"],
+      { name: "Add a role through Hybrid Activation", verdict: "bad", hide: ["role", "dhmc"],
+        flows: [{ path: ["hyb", "ec2"], tone: "bad", label: "second role" }],
+        text: "Not possible. An instance profile can contain only **one** IAM role, and this limit cannot be increased; an EC2 instance cannot take the application role and a second role at the same time. A **hybrid activation** registers **non-EC2** machines (on-premises servers, edge devices, VMs in other clouds) as managed nodes: you create an activation, receive an activation code and ID, then install SSM Agent with these two values on each machine." },
+      { name: "Enable Default Host Management", verdict: "good", hide: ["role", "hyb"],
         flows: [{ path: ["dhmc", "ec2"], tone: "good", label: "permissions for SSM Agent" }, { path: ["ssm", "ec2"], tone: "good", label: "scheduled patching" }],
         text: "**Default Host Management Configuration** (enabled in Fleet Manager, or through Quick Setup for the whole organization) creates and applies a default IAM role so that Systems Manager manages every EC2 instance in the account and Region, **without creating or replacing instance profiles**. Conditions: the instance uses IMDSv2, SSM Agent 3.2.582.0 or later, and the instance's existing role does not allow `ssm:UpdateInstanceInformation` (if it does, the agent uses the instance profile's permissions). The instance becomes a managed node that Patch Manager scans and patches on a schedule." },
     ] },
 ]} />
 
+Granting permissions per instance is still supported: attach the **`AmazonSSMManagedInstanceCore`** managed policy to the role that the instance profile uses (it can be added to the existing role; the role does not need to be replaced). Systems Manager recommends granting access at the account level with Default Host Management Configuration when the use case allows, because no role has to be edited. After it is turned on, instances can take up to 30 minutes to use the credentials of the default role, and the setting must be turned on in each Region.
+
 In the previous patch cycle, every patch reported success but users still saw errors and timeouts, because instances rebooted while the ALB kept routing requests to them. Compare two patching approaches in the same **Maintenance Window**:
 
 <PatchWindowSim client:visible />
 
-<Takeaway>Manage every EC2 instance with Systems Manager without creating instance profiles: Default Host Management Configuration (requires IMDSv2, SSM Agent 3.2.582.0 or later). Patch instances behind a load balancer: the Automation runbook AWSEC2-PatchLoadBalancerInstance (removes the instance from the load balancer or target group, waits for connection draining, runs AWS-RunPatchBaseline, reattaches it), run in a Maintenance Window.</Takeaway>
+<Takeaway>Manage every EC2 instance with Systems Manager without creating instance profiles: Default Host Management Configuration (requires IMDSv2, SSM Agent 3.2.582.0 or later). Per-instance permissions: add AmazonSSMManagedInstanceCore to the existing role (an instance profile contains only one role). Hybrid activations are only for non-EC2 machines. Patch instances behind a load balancer: the Automation runbook AWSEC2-PatchLoadBalancerInstance (removes the instance from the load balancer or target group, waits for connection draining, runs AWS-RunPatchBaseline, reattaches it), run in a Maintenance Window.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s6" label="Part 6/6" title="Quick comparison: monitoring and operations features that are easy to confuse" questions={["exam1_q61", "exam2_q9", "exam2_q43", "exam3_q6", "exam4_q39", "exam5_q31", "exam6_q41"]}>
+
+Some CloudTrail, Config, Systems Manager and Trusted Advisor features have names close to the right solution but serve a different purpose. Choose each item to see what it is for and what fits the ShopViet situation.
+
+<QuickCompare client:visible items={[
+  { name: "Trusted Advisor: Service limits",
+    use: "The **Service limits** checks compare usage with each service's quota per Region: yellow at 80%, red at 100%. When checks are refreshed, Trusted Advisor publishes metrics (for example `ServiceLimitUsage`) to CloudWatch in the US East (N. Virginia) Region, and alarms can watch these metrics.",
+    notHere: "The security team needs near-real-time alerts when many unauthorized API calls are made. The service limits checks measure quota usage, not denied calls; the values are based on a snapshot and can take up to 24 hours to reflect changes.",
+    instead: "CloudTrail sends events to CloudWatch Logs, a metric filter counts `errorCode`, and an alarm notifies through SNS (part 3)." },
+  { name: "CloudTrail Insights",
+    use: "Analyzes management and data events to establish a baseline of API call rates and API error rates; generates Insights events when activity deviates from the baseline. Suited to cases where the abnormal threshold is not known in advance.",
+    notHere: "ShopViet already knows exactly which error codes and which threshold to watch. Insights is charged separately, and after it is first enabled it may take up to 36 hours to begin delivering Insights events.",
+    instead: "A metric filter on the trail's log group and an alarm with a fixed threshold. A trail delivers events to S3, CloudWatch Logs and EventBridge; Kinesis is not a trail destination." },
+  { name: "ACM: DaysToExpiry metric",
+    use: "ACM publishes the `DaysToExpiry` metric (namespace `AWS/CertificateManager`, dimension `CertificateArn`) twice per day for every certificate until it expires. EventBridge also receives a daily ACM Certificate Approaching Expiration event, starting 45 days before expiration for imported certificates.",
+    notHere: "Each alarm watches one certificate (one `CertificateArn`); every newly imported certificate needs another alarm. Certificates issued by ACM are renewed automatically by ACM when eligible; imported certificates are not.",
+    instead: "The `acm-certificate-expiration-check` managed rule (`daysToExpiration = 30`) evaluates every certificate in the account and notifies through EventBridge and SNS (part 4)." },
+  { name: "Organization trail created in a developer account",
+    use: "An organization trail logs events for the management account and every member account, and is applied automatically to accounts that join later. Member accounts can see the trail but cannot change it, turn logging on or off, or delete it.",
+    notHere: "An organization trail can only be created from the management account or a delegated administrator, not from inside a developer account. A trail that a developer creates in their own account is an ordinary trail, and the root user can delete it.",
+    instead: "Attach an SCP that blocks CloudTrail modification actions to the developers' OU (part 4); an organization trail, if used, is created from the management account." },
+  { name: "AWS Config conformance pack",
+    use: "A collection of Config rules and remediation actions in a YAML template, deployed as a single entity in an account and Region or across an organization; when deployed from the management account, member accounts cannot modify the rules.",
+    notHere: "The requirement is to create dev, test and production accounts with guardrails in place, and to manage subnets and gateways centrally. A conformance pack only evaluates and remediates configuration; combining it with a separate VPC in every account duplicates NAT gateways, internet gateways and route tables.",
+    instead: "AWS Control Tower sets up the landing zone, creates accounts through Account Factory and applies controls; a network account shares the subnets of a central VPC through AWS RAM." },
+  { name: "Systems Manager hybrid activation",
+    use: "Registers non-EC2 machines (on-premises servers, edge devices, VMs in other clouds) as managed nodes: create an activation, receive an activation code and ID, and install SSM Agent with these two values.",
+    notHere: "The machines to patch are EC2 instances. A hybrid activation does not attach roles to EC2, and an instance profile contains only one IAM role.",
+    instead: "Default Host Management Configuration, or add `AmazonSSMManagedInstanceCore` to the instance's existing role (part 5)." },
+  { name: "SSM Parameter Store",
+    use: "A centralized configuration store of named parameters: String, StringList, SecureString (encrypted with AWS KMS). Suited to AMI IDs, endpoint URLs and environment variables. Parameter Store has no credential rotation; for database passwords, AWS recommends Secrets Manager.",
+    notHere: "Lambda needs short-lived credentials to connect to RDS PostgreSQL. Storing a password in Parameter Store and writing your own rotation logic is still authentication with a long-lived password.",
+    instead: "IAM database authentication: Lambda uses the function's IAM role to generate an authentication token (lifetime 15 minutes) instead of a password." },
+  { name: "Session Manager",
+    use: "Opens a shell on a managed node from the console or the AWS CLI with no open inbound ports, no bastion hosts and no SSH keys to manage; access is controlled with IAM policies, and activity is logged through CloudTrail, S3 or CloudWatch Logs. The instance must run SSM Agent and be a managed node.",
+    notHere: "The DevOps team needs a temporary **SSH** session from the Console to an instance that already has a public IP, with a key used only for that session.",
+    instead: "EC2 Instance Connect: the API pushes an SSH public key to the instance metadata, where it remains for 60 seconds; every connection request is logged to CloudTrail; no additional cost." },
+]} />
 
 </Scene>
 
@@ -176,8 +275,8 @@ Sort each ShopViet task into the service that handles it. On mobile devices: cho
   ]}
   cards={[
     ["1-minute metrics for EC2", "cw"], ["Reboot an instance automatically when a status check fails", "cw"], ["Centralize the logs of every instance", "cw"],
-    ["Who deleted the security group", "trail"], ["Record every IAM action of a new admin", "trail"], ["Event source for an AccessDenied metric filter", "trail"],
-    ["Security group configuration last week", "config"], ["Imported certificate about to expire", "config"], ["Automatically close SSH ports open to the internet", "config"],
+    ["Who deleted the security group", "trail"], ["Record every IAM action of a new admin", "trail"], ["Event source for an AccessDenied metric filter", "trail"], ["Detect API call rates that deviate from a baseline", "trail"],
+    ["Security group configuration last week", "config"], ["Imported certificate about to expire", "config"], ["Automatically close SSH ports open to the internet", "config"], ["One set of rules and remediations for every account", "config"],
   ]}
 />
 
@@ -204,6 +303,14 @@ Check your understanding: as the designer of the ShopViet system, which option f
     opts: ["Change the target group to the instance ID type", "The Automation runbook AWSEC2-PatchLoadBalancerInstance in a Maintenance Window", "Analyze with Logs Insights, then remove instances from the ALB manually"],
     a: 1,
     why: "The runbook removes the instance from the load balancer or target group, waits for the connection draining timeout, calls AWS-RunPatchBaseline to patch, then reattaches the instance. The Maintenance Window runs the runbook on schedule; set concurrency to 1 to patch instances one at a time." },
+  { q: "The EC2 instances already have an application role (RDS, Secrets Manager access). One proposal is to attach a second role with AmazonSSMManagedInstanceCore through a Systems Manager hybrid activation. Which statement is correct?",
+    opts: ["Feasible, because a hybrid activation allows multiple roles", "Not feasible: an instance profile contains only one role, and hybrid activations are for non-EC2 machines", "Feasible if the instances use IMDSv1"],
+    a: 1,
+    why: "An instance profile can contain only one IAM role, and this limit cannot be increased. A hybrid activation registers on-premises servers, edge devices or VMs in other clouds. For EC2: Default Host Management Configuration, or add AmazonSSMManagedInstanceCore to the existing role." },
+  { q: "ShopViet needs an alert within minutes when the number of API calls denied with AccessDenied exceeds 10 in 5 minutes. Which option is the most direct?",
+    opts: ["Enable CloudTrail Insights", "A metric filter on the trail's log group and a CloudWatch alarm", "An alarm on the Trusted Advisor service limits metric"],
+    a: 1,
+    why: "The threshold is known in advance, so a metric filter that counts errorCode and a threshold alarm are enough. Insights detects deviations from a baseline, is charged separately and may take up to 36 hours to start; Trusted Advisor measures quota usage." },
 ]} />
 
 </Scene>

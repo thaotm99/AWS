@@ -185,14 +185,14 @@
         {
           "keyword": "SSM Agent and AmazonSSMManagedInstanceCore policy",
           "lesson": "monitoring",
-          "status": "partial",
-          "where": "monitoring.mdx#s5"
+          "status": "covered",
+          "where": "monitoring.mdx#s5 / ScenarioFlow"
         },
         {
           "keyword": "Systems Manager hybrid activation",
           "lesson": "monitoring",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "monitoring.mdx#s5 / ScenarioFlow, monitoring.mdx#s6 QuickCompare"
         },
         {
           "keyword": "EC2 instance profile (one IAM role per instance)",

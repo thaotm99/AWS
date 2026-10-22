@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 911 (95%) · 🟡 22 (2%) · ❌ 27 (3%).
+Có **960 keyword** khác nhau: ✅ 920 (96%) · 🟡 20 (2%) · ❌ 20 (2%).
 
 ### Theo bài học
 
@@ -41,7 +41,7 @@ Có **960 keyword** khác nhau: ✅ 911 (95%) · 🟡 22 (2%) · ❌ 27 (3%).
 | [analytics](#analytics) | 47 | 37 | 5 | 5 | 79% |
 | [messaging](#messaging) | 50 | 47 | 3 | 0 | 94% |
 | [kinesis](#kinesis) | 26 | 25 | 1 | 0 | 96% |
-| [monitoring](#monitoring) | 33 | 24 | 2 | 7 | 73% |
+| [monitoring](#monitoring) | 33 | 33 | 0 | 0 | 100% |
 | [iac](#iac) | 9 | 7 | 0 | 2 | 78% |
 | [backup-dr](#backup-dr) | 12 | 10 | 1 | 1 | 83% |
 | [others](#others) | 26 | 18 | 3 | 5 | 69% |
@@ -50,12 +50,12 @@ Có **960 keyword** khác nhau: ✅ 911 (95%) · 🟡 22 (2%) · ❌ 27 (3%).
 
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
-| Đề 1 | 215 | 4 | 5 |
-| Đề 2 | 189 | 2 | 7 |
-| Đề 3 | 213 | 5 | 4 |
-| Đề 4 | 228 | 4 | 4 |
-| Đề 5 | 210 | 7 | 4 |
-| Đề 6 | 206 | 0 | 4 |
+| Đề 1 | 217 | 3 | 4 |
+| Đề 2 | 191 | 2 | 5 |
+| Đề 3 | 215 | 4 | 3 |
+| Đề 4 | 229 | 4 | 3 |
+| Đề 5 | 211 | 7 | 3 |
+| Đề 6 | 207 | 0 | 3 |
 
 ## global-infra
 
@@ -1046,24 +1046,20 @@ Có **960 keyword** khác nhau: ✅ 911 (95%) · 🟡 22 (2%) · ❌ 27 (3%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | ACM DaysToExpiry CloudWatch metric | ❌ Thiếu | 1 | exam2_q9 |  |
-| [ ] | AWS Config conformance pack | ❌ Thiếu | 1 | exam6_q41 |  |
-| [ ] | CloudTrail Insights | ❌ Thiếu | 1 | exam1_q61 |  |
-| [ ] | CloudTrail organization trail | ❌ Thiếu | 1 | exam2_q43 |  |
-| [ ] | SSM Parameter Store | ❌ Thiếu | 1 | exam4_q39 |  |
-| [ ] | Systems Manager hybrid activation | ❌ Thiếu | 1 | exam3_q6 |  |
-| [ ] | Systems Manager Session Manager | ❌ Thiếu | 1 | exam5_q31 |  |
-| [ ] | AWS Trusted Advisor (service limits checks) | 🟡 Một phần | 1 | exam1_q61 | others.mdx#challenge / CostWatchSim |
-| [ ] | SSM Agent and AmazonSSMManagedInstanceCore policy | 🟡 Một phần | 1 | exam3_q6 | monitoring.mdx#s5 |
 | [ ] | AWS Config | ✅ Đã có | 2 | exam3_q29, exam5_q17 | monitoring.mdx#s4 / ConfigTimelineSim<br>monitoring.mdx#s4 / WhoAnswersSim, ConfigTimelineSim |
 | [ ] | CloudWatch alarm EC2 recover action | ✅ Đã có | 2 | exam3_q38, exam5_q19 | monitoring.mdx#s2 / AlarmActionSim; backup-dr.mdx#s4 / Ec2RecoverSim<br>monitoring.mdx#s2 / AlarmActionSim |
+| [ ] | ACM DaysToExpiry CloudWatch metric | ✅ Đã có | 1 | exam2_q9 | monitoring.mdx#s4 / monitoring.mdx#s6 QuickCompare |
 | [ ] | Amazon CloudWatch | ✅ Đã có | 1 | exam3_q29 | monitoring.mdx#s1 |
 | [ ] | AWS CloudTrail | ✅ Đã có | 1 | exam3_q29 | monitoring.mdx#s4 / WhoAnswersSim |
+| [ ] | AWS Config conformance pack | ✅ Đã có | 1 | exam6_q41 | monitoring.mdx#s4 / monitoring.mdx#s6 QuickCompare |
 | [ ] | AWS Config managed rule acm-certificate-expiration-check | ✅ Đã có | 1 | exam2_q9 | monitoring.mdx (Config scene Takeaway) / ConfigTimelineSim; kms.mdx#s3 |
 | [ ] | AWS Config rule with Systems Manager Automation remediation | ✅ Đã có | 1 | exam5_q18 | monitoring.mdx#s4 / GuardrailSim |
 | [ ] | AWS Trusted Advisor | ✅ Đã có | 1 | exam3_q38 | backup-dr.mdx#challenge / Quiz |
+| [ ] | AWS Trusted Advisor (service limits checks) | ✅ Đã có | 1 | exam1_q61 | monitoring.mdx#s6 / QuickCompare |
 | [ ] | CloudTrail + EventBridge rule on API calls | ✅ Đã có | 1 | exam6_q30 | monitoring.mdx#s4 / WhoAnswersSim |
+| [ ] | CloudTrail Insights | ✅ Đã có | 1 | exam1_q61 | monitoring.mdx#s3 / monitoring.mdx#s6 QuickCompare |
 | [ ] | CloudTrail logging IAM actions | ✅ Đã có | 1 | exam1_q16 | monitoring.mdx#s4 |
+| [ ] | CloudTrail organization trail | ✅ Đã có | 1 | exam2_q43 | monitoring.mdx#s4 / monitoring.mdx#s6 QuickCompare |
 | [ ] | CloudTrail to CloudWatch Logs integration | ✅ Đã có | 1 | exam1_q61 | monitoring.mdx#s3 / messaging.mdx#s4 |
 | [ ] | CloudWatch agent (custom high-resolution metrics) | ✅ Đã có | 1 | exam5_q20 | monitoring.mdx#challenge, monitoring.mdx#s3 / LogPipelineSim |
 | [ ] | CloudWatch agent sending logs to CloudWatch Logs | ✅ Đã có | 1 | exam5_q33 | monitoring.mdx#s3 / LogPipelineSim |
@@ -1075,10 +1071,14 @@ Có **960 keyword** khác nhau: ✅ 911 (95%) · 🟡 22 (2%) · ❌ 27 (3%).
 | [ ] | CloudWatch metrics (utilization) | ✅ Đã có | 1 | exam4_q15 | monitoring.mdx#s1 |
 | [ ] | EC2 detailed monitoring (1-minute metrics) | ✅ Đã có | 1 | exam5_q20 | monitoring.mdx#s1 / MetricAlarmSim |
 | [ ] | EC2 instance status check vs system status check | ✅ Đã có | 1 | exam5_q19 | monitoring.mdx#s2 / AlarmActionSim |
+| [ ] | SSM Agent and AmazonSSMManagedInstanceCore policy | ✅ Đã có | 1 | exam3_q6 | monitoring.mdx#s5 / ScenarioFlow |
+| [ ] | SSM Parameter Store | ✅ Đã có | 1 | exam4_q39 | monitoring.mdx#s6 / QuickCompare |
 | [ ] | Systems Manager Automation runbook AWSEC2-PatchLoadBalancerInstance | ✅ Đã có | 1 | exam5_q34 | monitoring.mdx#s5 / PatchWindowSim |
 | [ ] | Systems Manager Default Host Management Configuration | ✅ Đã có | 1 | exam3_q6 | monitoring.mdx#s5 / ScenarioFlow |
+| [ ] | Systems Manager hybrid activation | ✅ Đã có | 1 | exam3_q6 | monitoring.mdx#s5 / ScenarioFlow, monitoring.mdx#s6 QuickCompare |
 | [ ] | Systems Manager Maintenance Windows | ✅ Đã có | 1 | exam5_q34 | monitoring.mdx#s5 / PatchWindowSim |
 | [ ] | Systems Manager Patch Manager | ✅ Đã có | 1 | exam3_q6 | monitoring.mdx#s5 / PatchWindowSim |
+| [ ] | Systems Manager Session Manager | ✅ Đã có | 1 | exam5_q31 | monitoring.mdx#s6 / QuickCompare |
 
 ## iac
 
