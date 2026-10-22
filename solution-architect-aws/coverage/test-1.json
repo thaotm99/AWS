@@ -1502,8 +1502,8 @@
         {
           "keyword": "ALB query string parameter-based routing",
           "lesson": "elb",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "elb.mdx#s3 / RuleMatchSim"
         }
       ]
     },

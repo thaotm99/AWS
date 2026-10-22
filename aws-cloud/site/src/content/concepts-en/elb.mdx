@@ -1,8 +1,8 @@
 ---
 title: "Elastic Load Balancing: ALB, NLB and how load is distributed"
-lede: "The ShopViet system already has many servers and needs a load balancer in front of them. This lesson covers four topics: choosing an ALB or an NLB for each requirement, working out the share of traffic each target receives, routing requests by URL and domain name on one ALB, and fixing targets that work normally but are marked unhealthy."
-minutes: 20
-scenes: 4
+lede: "The ShopViet system already has many servers and needs a load balancer in front of them. This lesson covers: choosing an ALB or an NLB for each requirement, the share of traffic each target receives, routing requests with listener rules, fixing targets marked unhealthy, HTTPS for multiple domain names, and sending traffic through firewalls with a Gateway Load Balancer."
+minutes: 35
+scenes: 7
 prerequisites: ["vpc", "ec2"]
 docs:
   - title: "What is Elastic Load Balancing?"
@@ -10,7 +10,45 @@ docs:
   - title: "Cross-zone load balancing"
     url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/how-elastic-load-balancing-works.html#cross-zone-load-balancing"
   - title: "Listener rules for your Application Load Balancer"
-    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/listener-update-rules.html"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/listener-rules.html"
+  - title: "Action types for listener rules (redirect, fixed-response)"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/rule-action-types.html"
+  - title: "Security policies for your Application Load Balancer"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/describe-ssl-policies.html"
+  - title: "Target group attributes: sticky sessions"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/edit-target-group-attributes.html"
+  - title: "Integrations for your Application Load Balancer (AWS WAF)"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-integrations.html"
+  - title: "Target groups for your Network Load Balancers (ip target type, on-premises)"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html"
+  - title: "What is a Gateway Load Balancer?"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/introduction.html"
+  - title: "Target groups for your Gateway Load Balancers"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/target-groups.html"
+  - title: "Access an inspection system using a Gateway Load Balancer endpoint"
+    url: "https://docs.aws.amazon.com/vpc/latest/privatelink/gateway-load-balancer-endpoints.html"
+  - title: "Gateway endpoints (Amazon S3, DynamoDB)"
+    url: "https://docs.aws.amazon.com/vpc/latest/privatelink/gateway-endpoints.html"
+  - title: "AWS WAF rate-based rule statements"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-rate-based-high-level-settings.html"
+  - title: "AWS WAF rate-based rule aggregation options"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-rate-based-aggregation-options.html"
+  - title: "Automating application layer DDoS mitigation with Shield Advanced"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/ddos-automatic-app-layer-response.html"
+  - title: "API Gateway usage plans and API keys"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-api-usage-plans.html"
+  - title: "Throttle requests to your REST APIs (API Gateway)"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling.html"
+  - title: "Control subnet traffic with network ACLs"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-network-acls.html"
+  - title: "Share your VPC subnets with other accounts"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-sharing.html"
+  - title: "Create a usage plan (API Gateway)"
+    url: "https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-create-usage-plans.html"
+  - title: "What is AWS Control Tower?"
+    url: "https://docs.aws.amazon.com/controltower/latest/userguide/what-is-control-tower.html"
+  - title: "How AWS Global Accelerator works"
+    url: "https://docs.aws.amazon.com/global-accelerator/latest/dg/introduction-how-it-works.html"
   - title: "SSL certificates for your Application Load Balancer (SNI)"
     url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/https-listener-certificates.html"
   - title: "Health checks for your target groups"
@@ -31,6 +69,10 @@ import CrossZoneCalc from "../../components/scenes/elb/CrossZoneCalc.tsx";
 import LbTypeSim from "../../components/scenes/elb/LbTypeSim.tsx";
 import AlbRuleSim from "../../components/scenes/elb/AlbRuleSim.tsx";
 import HealthCheckSim from "../../components/scenes/elb/HealthCheckSim.tsx";
+import RuleMatchSim from "../../components/scenes/elb/RuleMatchSim.tsx";
+import HttpsListenerSim from "../../components/scenes/elb/HttpsListenerSim.tsx";
+import GwlbSim from "../../components/scenes/elb/GwlbSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
@@ -38,16 +80,19 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 <Story toc={[
   { href: "#en-s1", label: "1 · Choosing ALB or NLB" },
   { href: "#en-s2", label: "2 · Cross-zone load balancing" },
-  { href: "#en-s3", label: "3 · Routing by URL and HTTPS" },
+  { href: "#en-s3", label: "3 · Listener rules and AWS WAF" },
   { href: "#en-s4", label: "4 · Handling unhealthy targets" },
+  { href: "#en-s5", label: "5 · HTTPS for multiple domains" },
+  { href: "#en-s6", label: "6 · Gateway Load Balancer" },
+  { href: "#en-s7", label: "7 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-ShopViet already runs many EC2 instances across two AZs. Users do not need to know which instance is serving them, so a **load balancer** is needed in front. The next design questions are: which type of load balancer to use, how much load each instance takes, how one load balancer serves many services and many domain names, and why an instance that works normally is removed from the target group.
+ShopViet already runs many EC2 instances across two AZs. Users do not need to know which instance is serving them, so a **load balancer** is needed in front. The next design questions are: which type of load balancer to use, how much load each instance takes, how one load balancer serves many services and many domain names, why an instance that works normally is removed from the target group, and how to send all traffic entering the system through a third-party firewall.
 </Story>
 
-<Scene id="en-s1" label="Part 1/4" title="Choosing an ALB or an NLB for each requirement" questions={["exam1_q2", "exam1_q48", "exam4_q9", "exam6_q43", "exam1_q39", "exam6_q56", "exam6_q7"]}>
+<Scene id="en-s1" label="Part 1/7" title="Choosing an ALB or an NLB for each requirement" questions={["exam1_q2", "exam1_q48", "exam4_q9", "exam6_q43", "exam1_q39", "exam6_q56", "exam6_q7", "exam5_q4"]}>
 
-An **Application Load Balancer** (ALB) inspects the content of HTTP requests: path, domain name, headers. A **Network Load Balancer** (NLB) works at layer 4 (TCP, UDP, TLS and QUIC listeners) and does not inspect HTTP content; an NLB has one IP per AZ (which can be an Elastic IP) and can handle millions of requests per second. Try each ShopViet requirement, first with an ALB and then with an NLB:
+An **Application Load Balancer** (ALB) inspects the content of HTTP requests: path, domain name, headers. A **Network Load Balancer** (NLB) works at layer 4 (TCP, UDP, TLS and QUIC listeners) and does not inspect HTTP content; an NLB has one IP per AZ (which can be an Elastic IP) and can handle millions of requests per second. Besides EC2, a target group with the **ip** target type also accepts on-premises servers connected through Direct Connect or Site-to-Site VPN (private IPs only). Try each ShopViet requirement, first with an ALB and then with an NLB:
 
 <LbTypeSim client:visible />
 
@@ -72,11 +117,11 @@ ShopViet plans to expand to a Region in the United States. The question: can one
     ] },
 ]} />
 
-<Takeaway>Web applications that need routing by URL or domain name: ALB. Plain TCP/UDP, a fixed IP for partners, PrivateLink: NLB. Servers sit in private subnets; only the load balancer is in public subnets. Multiple Regions: one load balancer per Region, with Route 53 or Global Accelerator in front.</Takeaway>
+<Takeaway>Web applications that need routing by URL or domain name: ALB. Plain TCP/UDP, a fixed IP for partners, PrivateLink: NLB. UDP servers in a data center: NLB with a UDP listener and the ip target type (private IPs, over Direct Connect or VPN). Servers sit in private subnets; only the load balancer is in public subnets. Multiple Regions: one load balancer per Region, with Route 53 or Global Accelerator in front.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/4" title="Share of traffic per target" questions={["exam3_q14", "exam4_q59"]}>
+<Scene id="en-s2" label="Part 2/7" title="Share of traffic per target" questions={["exam3_q14", "exam4_q59"]}>
 
 During a sale, ShopViet urgently adds servers in AZ B, while AZ A still has only 1 server. The question: is the single server in AZ A overloaded? Adjust the sliders and turn cross-zone on or off. Try 1 server in AZ A and 4 in AZ B; then 4 and 6.
 
@@ -86,17 +131,21 @@ During a sale, ShopViet urgently adds servers in AZ B, while AZ A still has only
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/4" title="One ALB for many services and many domain names" questions={["exam1_q48", "exam4_q40", "exam4_q57", "exam2_q17", "exam1_q6"]}>
+<Scene id="en-s3" label="Part 3/7" title="One ALB for many services and many domain names" questions={["exam1_q48", "exam4_q40", "exam4_q57", "exam2_q17", "exam1_q6", "exam3_q53", "exam6_q60"]}>
 
 ShopViet splits its system into an orders service, a products service and promotional microsites, each with its own target group. They all still sit behind **one** ALB. Each request goes through the HTTPS listener: certificate selection (SNI), AWS WAF, then the listener rule whose conditions (path, host) match performs the rule's actions: authentication (if there is an authenticate action), then forward to a target group. Pick a scenario and send a request:
 
 <AlbRuleSim client:visible />
 
-<Takeaway>Listener rules route by path (`/orders/*`) and host (`*.shopviet.vn` matches `khuyenmai.shopviet.vn` but not the apex domain `shopviet.vn`). Multiple HTTPS domain names on one listener: add multiple certificates; the ALB selects a certificate using SNI. The ALB integrates authentication with Cognito and supports associating AWS WAF.</Takeaway>
+Besides path and host, listener rules have four more condition types: **http-header**, **http-request-method**, **query-string** and **source-ip** (in CIDR form). Each rule has a priority; the ALB evaluates rules from the lowest priority value to the highest, stops at the first rule whose conditions all match, and always evaluates the default rule last. An action can be forward, **redirect** (301 or 302; HTTP to HTTPS is allowed, HTTPS to HTTP is not), **fixed-response** (returns a 2XX, 4XX or 5XX code at the ALB) or authenticate. Pick a request and see which rule handles it:
+
+<RuleMatchSim client:visible />
+
+<Takeaway>Listener rules route by path (`/orders/*`, the query string is not considered), host (`*.shopviet.vn` matches `khuyenmai.shopviet.vn` but not the apex domain `shopviet.vn`), header, method, query string and source IP; a rule with a lower priority value is evaluated first. The HTTP :80 listener uses a redirect action to move clients to HTTPS. The ALB has no built-in request rate limiting: associate AWS WAF and use a rate-based rule (counts by source IP by default, evaluation window of 1, 2, 5 or 10 minutes, minimum limit of 10 requests). The ALB integrates authentication with Cognito.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/4" title="Targets that work normally but are marked unhealthy" questions={["exam4_q26", "exam5_q1", "exam2_q18", "exam3_q13"]}>
+<Scene id="en-s4" label="Part 4/7" title="Targets that work normally but are marked unhealthy" questions={["exam4_q26", "exam5_q1", "exam2_q18", "exam3_q13"]}>
 
 The ALB marks i-2 as unhealthy, while an engineer who connects to the instance over SSH confirms the application still works. The load balancer relies only on **health check** results: it calls a path on each target periodically (every 30 seconds by default for the instance or ip target type). Follow the health check's path and see where it is blocked:
 
@@ -106,7 +155,66 @@ The ALB marks i-2 as unhealthy, while an engineer who connects to the instance o
 
 </Scene>
 
-<Scene id="en-challenge" label="Exercise" title="Classify the features: ALB and NLB" questions={["exam3_q14", "exam4_q9", "exam5_q1", "exam4_q40"]}>
+<Scene id="en-s5" label="Part 5/7" title="HTTPS for multiple domain names on one ALB" questions={["exam4_q40", "exam4_q57"]}>
+
+ShopViet splits its system into microservices behind one ALB: `checkout.shopviet.vn`, `www.shopviet.vn`, plus `shopviet.com.vn/profile` and `shopviet.com.vn/search` for its second brand. Every URL must use HTTPS. The operations team considers four settings: one wildcard certificate, a list of certificates chosen by SNI, an HTTP to HTTPS redirect, and a different security policy. Each setting solves a different problem; change them one at a time and watch the result for every client:
+
+<HttpsListenerSim client:visible />
+
+An HTTPS listener always has one **default certificate**. When you add a certificate list, the ALB uses **SNI** to pick the certificate that matches the domain name the client requests; the default certificate is used only when the client sends no SNI or no certificate matches. A wildcard certificate `*.shopviet.vn` protects only one subdomain level; it does not protect the apex domain `shopviet.vn` or a different domain such as `shopviet.com.vn`. A **security policy** is the combination of protocols and ciphers used to negotiate TLS between the client and the ALB: a listener created in the console defaults to `ELBSecurityPolicy-TLS13-1-2-Res-PQ-2025-09` (TLS 1.3 and 1.2); one created with the AWS CLI or CloudFormation defaults to `ELBSecurityPolicy-2016-08` (TLS 1.0 to 1.2).
+
+<Takeaway>Several different domain names over HTTPS on one ALB with minimal configuration: add certificates to the certificate list and let the ALB choose by SNI. A wildcard fits only when every name is a one-level subdomain of the same domain. An HTTP to HTTPS redirect only forces clients onto HTTPS; a security policy only decides protocols and ciphers. Neither adds a domain name to the listener.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s6" label="Part 6/7" title="Sending all traffic through firewalls with a Gateway Load Balancer" questions={["exam3_q53", "exam3_q47", "exam6_q41"]}>
+
+ShopViet's security team requires all internet traffic to the application to pass the firewall and IPS of a third-party vendor, running on EC2. The number of appliances must grow with the load and survive the failure of one appliance. A **Gateway Load Balancer** (GWLB) meets this requirement: it works at layer 3, accepts every IP packet on every port, exchanges traffic with the appliances using the **GENEVE protocol on port 6081**, keeps every packet of a flow on the same appliance (5-tuple by default), and sends traffic only to healthy appliances. The application in another VPC connects to the GWLB through a **Gateway Load Balancer endpoint** (a VPC endpoint powered by AWS PrivateLink), and route tables decide which traffic goes through that endpoint.
+
+<GwlbSim client:visible />
+
+<Takeaway>Deploy and scale a fleet of third-party appliances (firewalls, IDS/IPS, deep packet inspection) transparently: Gateway Load Balancer + GWLB endpoint, with route tables using the endpoint as the next hop. A GWLB does not parse HTTP and has no API keys or per-client request limits. A GWLB endpoint is billed hourly and per GB of data processed; it is not a path to S3 (S3 uses a gateway endpoint).</Takeaway>
+
+</Scene>
+
+<Scene id="en-s7" label="Part 7/7" title="Quick comparison: options that are easy to confuse with a load balancer" questions={["exam3_q47", "exam3_q53", "exam6_q60", "exam6_q41"]}>
+
+Some services and features are often considered together with a load balancer but solve a different problem. Pick each item to see what it is for and what fits ShopViet's situation.
+
+<QuickCompare client:visible items={[
+  { name: "AWS WAF rate-based rule",
+    use: "Counts requests by source IP (the default) or by another key (header, query argument, method…) over an evaluation window of 1, 2, 5 or 10 minutes (5 minutes by default); above the limit (minimum 10) it applies an action such as Block to further requests. The web ACL is associated with an ALB, CloudFront or API Gateway.",
+    notHere: "It cannot tell API customers apart by API key and has no monthly quota per partner.",
+    instead: "One IP sends 100 requests per second to the website behind the ALB: a rate-based rule on the ALB's web ACL. Separate limits and quotas for each API partner: an API Gateway usage plan." },
+  { name: "API Gateway usage plan + API key",
+    use: "Each client gets an API key; a usage plan sets throttling (requests per second, burst) and a quota (total requests per period, for example per month) for each key. Clients over the limit get 429 Too Many Requests errors. AWS notes that usage plan throttling and quotas are applied on a best-effort basis, not as hard limits.",
+    notHere: "It applies only to APIs published through API Gateway; ALB, NLB and GWLB have no API keys, usage plans or per-client quotas.",
+    instead: "Partners' mobile apps call the ShopViet API with a different limit for each partner: an API Gateway usage plan." },
+  { name: "AWS Shield Advanced",
+    use: "A paid subscription that extends DDoS protection for the resources you choose; it can automatically mitigate application layer attacks by adding a rule group to an AWS WAF web ACL.",
+    notHere: "A rate-based rule is an AWS WAF rule; Shield Advanced customers also add their own rate-based rules to the web ACL. Blocking a group of IPs that send too many requests does not require a Shield Advanced subscription.",
+    instead: "AWS WAF with a rate-based rule on the ALB." },
+  { name: "Network ACL",
+    use: "Allows or denies inbound and outbound traffic at the **subnet** level, by IP, protocol and port.",
+    notHere: "It cannot be attached to an ALB and does not count requests; it can only block IP ranges known in advance, while attacking IPs keep changing.",
+    instead: "An AWS WAF rate-based rule blocks every IP over the limit automatically." },
+  { name: "Sticky sessions",
+    use: "Binds a user's session to the same target with a cookie (`AWSALB` generated by the ALB, duration 1 second to 7 days, or an application cookie). Useful for servers that keep session state in memory. Turned on at the target group level; the client must support cookies.",
+    notHere: "It does not limit requests; if an attacker keeps the cookie, all of its requests pile onto one target.",
+    instead: "Block abnormal request rates: an AWS WAF rate-based rule. Session state: store it outside the servers (ElastiCache, DynamoDB) so it does not depend on sticky sessions." },
+  { name: "Gateway Load Balancer endpoint",
+    use: "Sends traffic from the application VPC to the inspection appliances behind a GWLB, according to route tables. Billed hourly and per GB of data processed.",
+    notHere: "EC2 instances in a private subnet read and write large volumes of S3 data through a NAT gateway. A GWLB endpoint is not a path to S3 and does not reduce cost.",
+    instead: "A **gateway endpoint** for S3: adds a route to S3 in the route table, needs no internet gateway or NAT device, and has no additional charge." },
+  { name: "Central GWLB for many accounts",
+    use: "Centralized inspection of traffic through third-party appliances for many VPCs.",
+    notHere: "The requirement is to separate dev, test and production into accounts and manage subnets and gateways centrally with low operational overhead; adding a GWLB and appliances to every traffic path makes the architecture more complex without serving the requirement.",
+    instead: "A network account owns the central VPC and shares subnets with the other accounts in the same AWS Organizations organization through VPC sharing (AWS RAM); accounts are created and governed with AWS Control Tower." },
+]} />
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Classify the features: ALB, NLB and GWLB" questions={["exam3_q14", "exam4_q9", "exam5_q1", "exam4_q40", "exam5_q4", "exam3_q53", "exam6_q60"]}>
 
 Sort each feature into the matching load balancer type. On a mobile device: tap a card, then tap the target box.
 
@@ -114,10 +222,13 @@ Sort each feature into the matching load balancer type. On a mobile device: tap 
   bins={[
     { id: "alb", title: "Application Load Balancer", sub: "Layer 7", hint: "Hint: this feature requires inspecting HTTP content." },
     { id: "nlb", title: "Network Load Balancer", sub: "Layer 4", hint: "Hint: this feature relates to TCP/UDP and static IPs." },
+    { id: "gwlb", title: "Gateway Load Balancer", sub: "Layer 3", hint: "Hint: this feature relates to packet inspection appliances." },
   ]}
   cards={[
     ["Path-based routing", "alb"], ["Host-based routing", "alb"], ["Authentication with Cognito", "alb"], ["Cross-zone on by default", "alb"],
-    ["Static IP / Elastic IP per AZ", "nlb"], ["UDP support", "nlb"], ["Backend for a PrivateLink endpoint service", "nlb"], ["Cross-zone off by default", "nlb"],
+    ["Query string routing", "alb"], ["HTTP to HTTPS redirect", "alb"],
+    ["Static IP / Elastic IP per AZ", "nlb"], ["UDP support", "nlb"], ["Backend for an interface endpoint (PrivateLink)", "nlb"], ["UDP to on-premises servers (ip target type)", "nlb"],
+    ["GENEVE on port 6081", "gwlb"], ["Third-party firewalls and IPS", "gwlb"], ["Route table uses an endpoint as next hop", "gwlb"],
   ]}
 />
 
@@ -140,6 +251,14 @@ Check your understanding: as the designer of the ShopViet system, which option f
     opts: ["One ALB per domain name", "Multiple certificates on one HTTPS listener, with the ALB choosing by SNI", "Switch to an NLB"],
     a: 1,
     why: "SNI lets one HTTPS listener select the certificate that matches the domain name the client requests." },
+  { q: "A group of IPs sends more than 100 requests per second to the website behind the ALB, while normal customers send about 5 requests per second. What is the most effective way to block them?",
+    opts: ["Turn on sticky sessions on the target group", "Associate AWS WAF with the ALB and add a rate-based rule", "Add a listener rule that limits requests"],
+    a: 1,
+    why: "The ALB has no built-in rate limiting; listener rules have only conditions and the forward, redirect, fixed-response and authenticate actions. An AWS WAF rate-based rule counts requests per IP and blocks IPs over the limit. Sticky sessions only bind a session to one target." },
+  { q: "ShopViet uses a wildcard certificate *.shopviet.vn on the ALB. Which URL gets a certificate error?",
+    opts: ["https://checkout.shopviet.vn", "https://shopviet.com.vn/profile", "https://www.shopviet.vn"],
+    a: 1,
+    why: "A wildcard protects only one subdomain level of shopviet.vn. shopviet.com.vn is a different domain; add its certificate to the certificate list so the ALB can choose it by SNI." },
 ]} />
 
 </Scene>

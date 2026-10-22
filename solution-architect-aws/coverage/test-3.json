@@ -1455,8 +1455,8 @@
         {
           "keyword": "Gateway Load Balancer endpoint",
           "lesson": "elb",
-          "status": "partial",
-          "where": "elb.mdx#s1 / LbTypeSim"
+          "status": "covered",
+          "where": "elb.mdx#s6 / GwlbSim, elb.mdx#s7 / QuickCompare"
         }
       ]
     },
@@ -1637,14 +1637,14 @@
         {
           "keyword": "Gateway Load Balancer (third-party appliances)",
           "lesson": "elb",
-          "status": "partial",
-          "where": "elb.mdx#s1 / LbTypeSim"
+          "status": "covered",
+          "where": "elb.mdx#s6 / GwlbSim"
         },
         {
           "keyword": "ALB has no built-in rate limiting",
           "lesson": "elb",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "elb.mdx#s3 / AlbRuleSim, elb.mdx#s7 / QuickCompare"
         }
       ]
     },

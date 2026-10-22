@@ -105,8 +105,8 @@
         {
           "keyword": "NLB IP target type (on-premises targets)",
           "lesson": "elb",
-          "status": "partial",
-          "where": "elb.mdx#s1, elb.mdx#s4 / HealthCheckSim"
+          "status": "covered",
+          "where": "elb.mdx#s1 / LbTypeSim"
         },
         {
           "keyword": "AWS PrivateLink (TCP only)",

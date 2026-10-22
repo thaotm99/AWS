@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 844 (88%) · 🟡 58 (6%) · ❌ 58 (6%).
+Có **960 keyword** khác nhau: ✅ 854 (89%) · 🟡 52 (5%) · ❌ 54 (6%).
 
 ### Theo bài học
 
@@ -29,7 +29,7 @@ Có **960 keyword** khác nhau: ✅ 844 (88%) · 🟡 58 (6%) · ❌ 58 (6%).
 | [security](#security) | 27 | 25 | 1 | 1 | 93% |
 | [cognito](#cognito) | 15 | 13 | 1 | 1 | 87% |
 | [ec2](#ec2) | 57 | 57 | 0 | 0 | 100% |
-| [elb](#elb) | 42 | 32 | 6 | 4 | 76% |
+| [elb](#elb) | 42 | 42 | 0 | 0 | 100% |
 | [asg](#asg) | 44 | 44 | 0 | 0 | 100% |
 | [containers](#containers) | 22 | 17 | 2 | 3 | 77% |
 | [lambda](#lambda) | 37 | 29 | 4 | 4 | 78% |
@@ -50,12 +50,12 @@ Có **960 keyword** khác nhau: ✅ 844 (88%) · 🟡 58 (6%) · ❌ 58 (6%).
 
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
-| Đề 1 | 205 | 10 | 9 |
+| Đề 1 | 206 | 10 | 8 |
 | Đề 2 | 180 | 9 | 9 |
-| Đề 3 | 202 | 9 | 11 |
-| Đề 4 | 212 | 11 | 13 |
-| Đề 5 | 194 | 17 | 10 |
-| Đề 6 | 197 | 5 | 8 |
+| Đề 3 | 205 | 7 | 10 |
+| Đề 4 | 215 | 10 | 11 |
+| Đề 5 | 195 | 16 | 10 |
+| Đề 6 | 199 | 3 | 8 |
 
 ## global-infra
 
@@ -463,27 +463,21 @@ Có **960 keyword** khác nhau: ✅ 844 (88%) · 🟡 58 (6%) · ❌ 58 (6%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | ALB has no built-in rate limiting | ❌ Thiếu | 1 | exam3_q53 |  |
-| [ ] | ALB HTTP to HTTPS redirect | ❌ Thiếu | 1 | exam4_q40 |  |
-| [ ] | ALB query string parameter-based routing | ❌ Thiếu | 1 | exam1_q48 |  |
-| [ ] | ELB SSL security policy | ❌ Thiếu | 1 | exam4_q40 |  |
-| [ ] | ALB sticky sessions | 🟡 Một phần ⚠ | 2 | exam5_q37, exam6_q60 | analytics.mdx#s1 / CacheSim<br>analytics.mdx#s1 / CacheSim (one line) |
-| [ ] | Gateway Load Balancer | 🟡 Một phần | 1 | exam6_q41 | elb.mdx#s2 / CrossZoneCalc (cross-zone default only) |
-| [ ] | Gateway Load Balancer (third-party appliances) | 🟡 Một phần | 1 | exam3_q53 | elb.mdx#s1 / LbTypeSim |
-| [ ] | Gateway Load Balancer endpoint | 🟡 Một phần | 1 | exam3_q47 | elb.mdx#s1 / LbTypeSim |
-| [ ] | NLB IP target type (on-premises targets) | 🟡 Một phần | 1 | exam5_q4 | elb.mdx#s1, elb.mdx#s4 / HealthCheckSim |
-| [ ] | Wildcard SSL certificate | 🟡 Một phần | 1 | exam4_q40 | elb.mdx#s3 |
 | [ ] | ALB health check | ✅ Đã có | 2 | exam4_q26, exam5_q1 | elb.mdx#s4 / HealthCheckSim |
+| [ ] | ALB sticky sessions | ✅ Đã có | 2 | exam5_q37, exam6_q60 | analytics.mdx#s1 / CacheSim<br>elb.mdx#s7 / QuickCompare |
 | [ ] | Network Load Balancer | ✅ Đã có | 2 | exam1_q2, exam3_q13 | elb.mdx#s1<br>elb.mdx#s1 / LbTypeSim |
 | [ ] | ALB (no static IP) | ✅ Đã có | 1 | exam4_q9 | elb.mdx#challenge |
 | [ ] | ALB authenticate-cognito listener rule action | ✅ Đã có | 1 | exam2_q17 | elb.mdx#s3 / AlbRuleSim |
 | [ ] | ALB cannot be assigned an Elastic IP | ✅ Đã có | 1 | exam3_q45 | elb.mdx#s1 / LbTypeSim |
 | [ ] | ALB cross-zone load balancing | ✅ Đã có | 1 | exam2_q7 | elb.mdx#s2 / CrossZoneCalc |
+| [ ] | ALB has no built-in rate limiting | ✅ Đã có | 1 | exam3_q53 | elb.mdx#s3 / AlbRuleSim, elb.mdx#s7 / QuickCompare |
 | [ ] | ALB host-based routing | ✅ Đã có | 1 | exam1_q48 | elb.mdx#s3 / AlbRuleSim |
 | [ ] | ALB host-based routing (wildcard host condition) | ✅ Đã có | 1 | exam4_q57 | elb.mdx#s3 / AlbRuleSim |
 | [ ] | ALB HTTP header-based routing | ✅ Đã có | 1 | exam1_q48 | elb.mdx#s1 / LbTypeSim |
+| [ ] | ALB HTTP to HTTPS redirect | ✅ Đã có | 1 | exam4_q40 | elb.mdx#s3 / RuleMatchSim, elb.mdx#s5 / HttpsListenerSim |
 | [ ] | ALB HTTPS termination | ✅ Đã có | 1 | exam2_q55 | elb.mdx#s3 / AlbRuleSim |
 | [ ] | ALB path-based routing | ✅ Đã có | 1 | exam1_q48 | elb.mdx#s3 / AlbRuleSim |
+| [ ] | ALB query string parameter-based routing | ✅ Đã có | 1 | exam1_q48 | elb.mdx#s3 / RuleMatchSim |
 | [ ] | ALB SNI (multiple certificates) | ✅ Đã có | 1 | exam4_q40 | elb.mdx#s3 / AlbRuleSim |
 | [ ] | ALB target group deregistration during patching | ✅ Đã có | 1 | exam5_q34 | monitoring.mdx#s5 / PatchWindowSim |
 | [ ] | Application Load Balancer (HTTP/HTTPS only) | ✅ Đã có | 1 | exam5_q4 | elb.mdx#s1 / LbTypeSim |
@@ -492,7 +486,11 @@ Có **960 keyword** khác nhau: ✅ 844 (88%) · 🟡 58 (6%) · ❌ 58 (6%).
 | [ ] | ELB across multiple AZs | ✅ Đã có | 1 | exam2_q8 | global-infra.mdx#s3 / AzFailureSim; elb.mdx#s1 |
 | [ ] | ELB cross-zone load balancing | ✅ Đã có | 1 | exam3_q14 | elb.mdx#s2 / CrossZoneCalc |
 | [ ] | ELB scope: single Region, multiple AZs | ✅ Đã có | 1 | exam6_q7 | elb.mdx#s1 |
+| [ ] | ELB SSL security policy | ✅ Đã có | 1 | exam4_q40 | elb.mdx#s5 / HttpsListenerSim |
 | [ ] | ELB target type ip | ✅ Đã có | 1 | exam3_q13 | elb.mdx#s4 / HealthCheckSim |
+| [ ] | Gateway Load Balancer | ✅ Đã có | 1 | exam6_q41 | elb.mdx#s6 / GwlbSim, elb.mdx#s7 / QuickCompare |
+| [ ] | Gateway Load Balancer (third-party appliances) | ✅ Đã có | 1 | exam3_q53 | elb.mdx#s6 / GwlbSim |
+| [ ] | Gateway Load Balancer endpoint | ✅ Đã có | 1 | exam3_q47 | elb.mdx#s6 / GwlbSim, elb.mdx#s7 / QuickCompare |
 | [ ] | Load balancer in public subnet, instances in private subnet | ✅ Đã có | 1 | exam6_q43 | elb.mdx#s1 / LbTypeSim |
 | [ ] | Load balancer is single-Region | ✅ Đã có | 1 | exam5_q7 | elb.mdx#s1 |
 | [ ] | Network Load Balancer (TCP) for bastion host | ✅ Đã có | 1 | exam6_q56 | elb.mdx#s1 / LbTypeSim; ec2.mdx#s3 / Ec2NetSim |
@@ -502,9 +500,11 @@ Có **960 keyword** khác nhau: ✅ 844 (88%) · 🟡 58 (6%) · ❌ 58 (6%).
 | [ ] | NLB cross-zone load balancing (disabled) | ✅ Đã có | 1 | exam4_q59 | elb.mdx#s2; route53.mdx#confuse |
 | [ ] | NLB Elastic IP | ✅ Đã có | 1 | exam4_q58 | elb.mdx#s1 |
 | [ ] | NLB instance ID target routes to primary private IP | ✅ Đã có | 1 | exam3_q13 | elb.mdx#s4 / HealthCheckSim |
+| [ ] | NLB IP target type (on-premises targets) | ✅ Đã có | 1 | exam5_q4 | elb.mdx#s1 / LbTypeSim |
 | [ ] | NLB static IP (Elastic IP per AZ) | ✅ Đã có | 1 | exam4_q9 | elb.mdx#s1 / LbTypeSim; elb.mdx#challenge |
 | [ ] | NLB with Elastic IP per AZ | ✅ Đã có | 1 | exam3_q45 | elb.mdx#s1 / LbTypeSim |
 | [ ] | Security group referencing (ALB to EC2) | ✅ Đã có | 1 | exam4_q26 | elb.mdx#s4 / HealthCheckSim; vpc.mdx#s2 / SgChain |
+| [ ] | Wildcard SSL certificate | ✅ Đã có | 1 | exam4_q40 | elb.mdx#s5 / HttpsListenerSim |
 
 ## asg
 

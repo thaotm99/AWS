@@ -1187,8 +1187,8 @@
         {
           "keyword": "Gateway Load Balancer",
           "lesson": "elb",
-          "status": "partial",
-          "where": "elb.mdx#s2 / CrossZoneCalc (cross-zone default only)"
+          "status": "covered",
+          "where": "elb.mdx#s6 / GwlbSim, elb.mdx#s7 / QuickCompare"
         },
         {
           "keyword": "AWS Service Catalog",
@@ -1764,8 +1764,8 @@
         {
           "keyword": "ALB sticky sessions",
           "lesson": "elb",
-          "status": "partial",
-          "where": "analytics.mdx#s1 / CacheSim (one line)"
+          "status": "covered",
+          "where": "elb.mdx#s7 / QuickCompare"
         },
         {
           "keyword": "Network ACL (subnet-level, not on ALB)",
