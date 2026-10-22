@@ -9,6 +9,11 @@ import { next } from "@vercel/functions";
 // Fails closed: one of the two set without the other is a misconfiguration (500), and
 // production with neither set is refused too (500) unless SITE_PUBLIC=1 says the site is
 // meant to be public. Preview/development deployments with neither set stay public.
+//
+// SITE_PROTECT narrows the lock to some paths: a comma-separated list of globs such as
+// "/practice/**, **/quiz/**" (`*` stays inside one path segment, `**` crosses them).
+// Unset or empty locks the whole site. /api/** is always added, because the practice
+// pages load their question data from there.
 
 const REALM = 'Basic realm="AWS Thuc Chien", charset="UTF-8"';
 
@@ -32,6 +37,46 @@ function credentials(request: Request): { user: string; password: string } | nul
   }
 }
 
+/** Turns one glob into an anchored regex over the path without its leading slash. */
+function globToRegExp(glob: string): RegExp {
+  const g = glob.trim().replace(/^\/+/, "");
+  let re = "";
+  for (let i = 0; i < g.length; i++) {
+    const c = g[i];
+    if (c === "*" && g[i + 1] === "*") {
+      const before = i === 0 || g[i - 1] === "/";
+      const after = g[i + 2] === "/" || i + 2 === g.length;
+      i++;
+      if (before && g[i + 1] === "/") { re += "(?:.*/)?"; i++; }        // "**/" : any leading dirs, or none
+      else if (before && after && re.endsWith("/")) re = re.slice(0, -1) + "(?:/.*)?"; // "/**" at the end: the dir itself too
+      else re += ".*";
+    } else if (c === "*") re += "[^/]*";
+    else re += c.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
+  }
+  return new RegExp(`^${re}$`, "i");
+}
+
+function protectedPaths(): RegExp[] | null {
+  const list = (process.env.SITE_PROTECT ?? "").split(",").map((p) => p.trim()).filter(Boolean);
+  return list.length ? [...list, "/api/**"].map(globToRegExp) : null;
+}
+
+/**
+ * null rules = the whole site. Matches the decoded path, ignoring case and a trailing slash, so
+ * /practice, /Practice/ and /%70ractice/ are all caught. A path that will not decode is locked.
+ */
+function isProtected(pathname: string, rules: RegExp[] | null): boolean {
+  if (!rules) return true;
+  let path: string;
+  try {
+    path = decodeURIComponent(pathname).replace(/^\/+/, "");
+  } catch {
+    return true;
+  }
+  const trimmed = path.replace(/\/+$/, "");
+  return rules.some((r) => r.test(path) || r.test(trimmed) || r.test(trimmed + "/"));
+}
+
 function misconfigured(): Response {
   return new Response("Site auth misconfigured", { status: 500, headers: { "Content-Type": "text/plain; charset=utf-8" } });
 }
@@ -44,6 +89,8 @@ export default function middleware(request: Request): Response {
     if (process.env.SITE_PUBLIC === "1" || process.env.VERCEL_ENV !== "production") return next();
     return misconfigured();
   }
+
+  if (!isProtected(new URL(request.url).pathname, protectedPaths())) return next();
 
   const given = credentials(request);
   if (given && same(given.user, user) && same(given.password, password)) return next();
