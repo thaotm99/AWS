@@ -49,7 +49,7 @@ function groupDocs(list: typeof docs) {
   return groups;
 }
 // At most MAX_DOCS links show up front; the rest sit behind a "show more" disclosure, still grouped by service.
-const MAX_DOCS = 5;
+const MAX_DOCS = 3;
 function splitGroups(groups: ReturnType<typeof groupDocs>) {
   let left = MAX_DOCS;
   const shown: typeof groups = [];
