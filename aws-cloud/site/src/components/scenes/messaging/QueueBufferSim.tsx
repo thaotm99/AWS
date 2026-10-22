@@ -1,0 +1,205 @@
+import { useEffect, useRef, useState } from "react";
+import { flashText, prefersReducedMotion, travel, type Pt } from "../../../lib/animate";
+import { rich } from "../diagram";
+import "./messaging-sims.css";
+
+// Flash sale at 20h, minute by minute. The web tier takes orders as fast as customers
+// click; the processing tier (payment, stock) only handles a few per worker per minute.
+// Without a queue the overflow times out and is lost. With an SQS queue nothing is lost
+// and the backlog drains later. Scaling the workers on backlog per instance drains it fast.
+
+type Mode = "direct" | "queue" | "scale";
+
+const ARRIVE = [4, 6, 10, 16, 22, 24, 22, 18, 14, 10, 8, 6, 5, 4, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2];
+const PER_WORKER = 4;
+const MIN_W = 2;
+const MAX_W = 8;
+/** Acceptable backlog per instance for the target tracking policy. */
+const TARGET = 8;
+
+const MODES: { id: Mode; name: string }[] = [
+  { id: "direct", name: "Web gọi thẳng tầng xử lý" },
+  { id: "queue", name: "Có SQS, 2 worker cố định" },
+  { id: "scale", name: "SQS + scale theo backlog" },
+];
+
+interface Tick { arrive: number; done: number; lost: number; backlog: number; workers: number }
+
+function simulate(mode: Mode): Tick[] {
+  const out: Tick[] = [];
+  let backlog = 0;
+  let workers = MIN_W;
+  for (const arrive of ARRIVE) {
+    if (mode === "direct") {
+      const done = Math.min(arrive, workers * PER_WORKER);
+      out.push({ arrive, done, lost: arrive - done, backlog: 0, workers });
+      continue;
+    }
+    backlog += arrive;
+    const done = Math.min(backlog, workers * PER_WORKER);
+    backlog -= done;
+    out.push({ arrive, done, lost: 0, backlog, workers });
+    // New instances join one minute after the metric moves.
+    if (mode === "scale") workers = Math.max(MIN_W, Math.min(MAX_W, Math.ceil(backlog / TARGET)));
+  }
+  return out;
+}
+
+const RESULT: Record<Mode, (s: { lost: number; left: number; peak: number }) => { ok: boolean; text: string }> = {
+  direct: ({ lost }) => ({ ok: false,
+    text: `**${lost} đơn bị mất.** Tầng xử lý chỉ nhận được ${MIN_W * PER_WORKER} đơn mỗi phút; phần dư bị timeout, khách thấy lỗi và không có cách nào chạy lại.` }),
+  queue: ({ left, peak }) => ({ ok: left === 0,
+    text: `**Không mất đơn nào.** SQS giữ đơn cho tới khi có worker rảnh, lúc đông nhất có ${peak} đơn chờ. Nhưng 2 worker xử lý chậm: hết giờ vẫn còn ${left} đơn trong queue, khách chờ lâu.` }),
+  scale: ({ left, peak }) => ({ ok: left === 0,
+    text: `**Không mất đơn, chờ ngắn.** Auto Scaling group dùng target tracking theo **backlog per instance** (số message chờ ÷ số worker, mục tiêu ${TARGET}). Queue dài ra là thêm worker; cao nhất ${peak} đơn chờ, hết giờ còn ${left}.` }),
+};
+
+const X0 = 40;
+const W = 740;
+const CH_Y = 205;
+const CH_H = 50;
+const bw = W / ARRIVE.length;
+const LANE = 110;
+const WEB: Pt = [100, LANE];
+const Q_IN: Pt = [220, LANE];
+const Q_OUT: Pt = [520, LANE];
+const wpos = (i: number): Pt => [628 + (i % 2) * 82, 62 + Math.floor(i / 2) * 30];
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+export default function QueueBufferSim() {
+  const fx = useRef<SVGGElement>(null);
+  const alive = useRef(true);
+  const [mode, setMode] = useState<Mode>("direct");
+  const [shown, setShown] = useState(-1);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => () => { alive.current = false; }, []);
+
+  const ticks = simulate(mode);
+  const cur = shown >= 0 ? ticks[shown] : undefined;
+  const sum = (k: keyof Tick) => ticks.slice(0, shown + 1).reduce((s, t) => s + t[k], 0);
+  const done = shown === ticks.length - 1;
+  const peak = Math.max(...ticks.map((t) => t.backlog));
+  const maxY = Math.max(10, peak, ...ticks.map((t) => t.lost));
+  const res = RESULT[mode]({ lost: sum("lost"), left: ticks[ticks.length - 1].backlog, peak });
+
+  function pick(m: Mode) {
+    if (busy) return;
+    setMode(m);
+    setShown(-1);
+  }
+
+  async function run() {
+    if (busy) return;
+    setBusy(true);
+    setShown(-1);
+    const fast = prefersReducedMotion();
+    for (let i = 0; i < ticks.length; i++) {
+      if (!alive.current) return;
+      const t = ticks[i];
+      const layer = fx.current;
+      const moves: Promise<void>[] = [];
+      if (layer && !fast) {
+        const dots = Math.min(4, Math.ceil(t.arrive / 5));
+        for (let k = 0; k < dots; k++) {
+          const lostDot = mode === "direct" && k >= dots - Math.ceil((t.lost / Math.max(1, t.arrive)) * dots) && t.lost > 0;
+          const w = wpos(k % t.workers);
+          const path: Pt[] = mode === "direct" ? [WEB, [560, LANE], [560, w[1]], [w[0] - 30, w[1]]] : [WEB, Q_IN];
+          moves.push(sleep(k * 70).then(() => travel(layer, lostDot ? [WEB, [400, LANE]] : path, 320, lostDot ? "pkt-bad" : "pkt", 5)));
+        }
+        if (t.lost) flashText(layer, 400, LANE - 16, `${t.lost} timeout`, "flash-bad", 360);
+        if (mode !== "direct" && t.done) {
+          for (let k = 0; k < Math.min(t.workers, 4); k++) {
+            const w = wpos(k);
+            moves.push(sleep(120 + k * 50).then(() => travel(layer, [Q_OUT, [560, LANE], [560, w[1]], [w[0] - 30, w[1]]], 300, "pkt-back", 5)));
+          }
+        }
+      }
+      setShown(i);
+      await Promise.all(moves);
+      if (!fast) await sleep(90);
+    }
+    setBusy(false);
+  }
+
+  const backlog = cur?.backlog ?? 0;
+  const workers = cur?.workers ?? MIN_W;
+  const cells = Math.min(backlog, 60);
+  const y = (v: number) => CH_Y + CH_H - (v / maxY) * CH_H;
+  const line = ticks.slice(0, shown + 1).map((t, i) => `${i ? "L" : "M"}${X0 + i * bw + bw / 2} ${y(t.backlog)}`).join(" ");
+
+  return (
+    <div className="stage qbs">
+      <div className="qbs-row" role="group" aria-label="Cách nối web với tầng xử lý">
+        {MODES.map((m) => (
+          <button key={m.id} className="chip" aria-pressed={m.id === mode} disabled={busy && m.id !== mode} onClick={() => pick(m.id)}>
+            {m.name}
+          </button>
+        ))}
+      </div>
+      <div className="stage-bar">
+        <span className="qbs-about">Flash sale 20h: số đơn mỗi phút tăng gấp 6 trong vài phút.</span>
+        <button className="btn primary" onClick={run} disabled={busy}>Chạy flash sale</button>
+      </div>
+      <div className="svg-wrap">
+        <svg viewBox="0 20 820 262" role="img" aria-label="Đơn hàng đi từ web tier qua hàng đợi SQS tới các worker xử lý; biểu đồ bên dưới là số đơn chờ theo từng phút">
+          <path className="qbs-link" d={`M${WEB[0]} ${LANE} H${Q_IN[0]} M${Q_OUT[0]} ${LANE} H560`} />
+          <path className="qbs-link" d={`M560 ${wpos(0)[1]} V${wpos(MAX_W - 1)[1]}`} />
+          {Array.from({ length: MAX_W / 2 }, (_, r) => (
+            <path key={r} className="qbs-link" d={`M560 ${wpos(r * 2)[1]} H${wpos(0)[0] - 36}`} />
+          ))}
+          <g className="qbs-node">
+            <rect x={40} y={LANE - 25} width={120} height={50} rx={8} />
+            <text className="qbs-l1" x={100} y={LANE - 3} textAnchor="middle">Web tier</text>
+            <text className="qbs-l2" x={100} y={LANE + 13} textAnchor="middle">{cur ? `+${cur.arrive} đơn/phút` : "nhận đơn"}</text>
+          </g>
+          <g className={"qbs-queue" + (mode === "direct" ? " off" : "")}>
+            <rect x={Q_IN[0]} y={LANE - 30} width={Q_OUT[0] - Q_IN[0]} height={60} rx={10} />
+            <text className="qbs-l2" x={Q_IN[0] + 8} y={LANE - 36}>
+              {mode === "direct" ? "không có hàng đợi" : `Amazon SQS · ${backlog} đơn đang chờ`}
+            </text>
+            {Array.from({ length: cells }, (_, i) => (
+              <rect key={i} className="qbs-msg" x={Q_OUT[0] - 16 - (i % 20) * 14.5} y={LANE - 23 + Math.floor(i / 20) * 16} width={11} height={12} rx={2} />
+            ))}
+            {backlog > 60 && <text className="qbs-more" x={Q_IN[0] + 6} y={LANE + 46}>+{backlog - 60}</text>}
+          </g>
+          <text className="qbs-l2" x={wpos(0)[0] - 36} y={42}>{mode === "direct" ? "Tầng xử lý" : "Worker EC2"} · {workers} máy</text>
+          {Array.from({ length: MAX_W }, (_, i) => {
+            const [cx, cy] = wpos(i);
+            const on = i < workers;
+            const cls = !on ? "ghost" : cur && cur.done > i * PER_WORKER ? "busy" : "";
+            return (
+              <g key={i} className={`qbs-worker ${cls}`}>
+                <rect x={cx - 36} y={cy - 11} width={72} height={22} rx={5} />
+                <text x={cx} y={cy + 4} textAnchor="middle">{on ? `worker ${i + 1}` : "—"}</text>
+              </g>
+            );
+          })}
+          <line className="qbs-axis" x1={X0} x2={X0 + W} y1={CH_Y + CH_H} y2={CH_Y + CH_H} />
+          {ticks.map((t, i) => i <= shown && t.lost > 0 && (
+            <rect key={i} className="qbs-lost" x={X0 + i * bw + 4} y={y(t.lost)} width={bw - 8} height={CH_Y + CH_H - y(t.lost)} rx={2} />
+          ))}
+          {shown >= 0 && mode !== "direct" && <path className="qbs-line" d={line} />}
+          {[0, 6, 12, 18].map((m) => (
+            <text key={m} className="ts" x={X0 + m * bw + bw / 2} y={CH_Y + CH_H + 15} textAnchor="middle">20:{String(m).padStart(2, "0")}</text>
+          ))}
+          <text className="ts" x={X0} y={CH_Y - 6}>{mode === "direct" ? "đơn bị mất mỗi phút" : "số đơn chờ trong queue"}</text>
+          <g ref={fx} />
+        </svg>
+      </div>
+      <div className="readout" aria-live="polite">
+        {!cur ? (
+          <p className="qbs-hint">Chọn cách nối rồi bấm <b>Chạy flash sale</b>. So sánh cả ba cách.</p>
+        ) : (
+          <>
+            <div className="status">
+              <span className="count">20:{String(shown).padStart(2, "0")} · nhận {sum("arrive")} · xong {sum("done")}</span>
+              <span className={"pill " + (sum("lost") ? "bad" : "ok")}><i />{sum("lost")} đơn mất</span>
+              {mode !== "direct" && <span className="pill qbs-wait"><i />{backlog} đơn chờ</span>}
+            </div>
+            {done && <p className={`qbs-result ${res.ok ? "ok" : "bad"}`}>{rich(res.text)}</p>}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
