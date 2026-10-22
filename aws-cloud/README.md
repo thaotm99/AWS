@@ -27,27 +27,10 @@ aws-cloud/
     └── lib/static-site-stack.ts  S3, CloudFront, IAM role cho GitHub, Budget
 ```
 
-## Kiến trúc module
+## Kiến trúc app
 
-```
-src/core/      hạ tầng, không phụ thuộc tính năng
-  api/         ApiClient (abstract) ─ HttpApiClient, StaticApiClient, CompositeApiClient; ApiService (abstract)
-  api/local/   LocalApiClient + LocalResource (abstract): "server giả" chạy trong trình duyệt
-  api/storage/ StorageDriver (abstract) ─ IndexedDbDriver, LocalStorageDriver, MemoryDriver
-  state/       EventBus, Store (abstract), Controller (abstract), useStore
-  i18n/        I18n, Translator, LocalePreference (abstract), DomTranslator, defineMessages/combineMessages
-src/modules/<tên>/   một tính năng, tự chứa đủ các tầng
-  domain/      kiểu dữ liệu + quy tắc nghiệp vụ
-  api/         LocalResource của module (route REST trả lời trong trình duyệt)
-  services/    gọi API như REST thường
-  app/         event, store, controller
-  ui/          React/Astro: đọc store, phát event, không gọi service
-  i18n/        vi.ts (nguồn) + en.ts, cùng bộ key
-src/app/       ghép nối: api.ts (một ApiClient cho cả site), i18n.ts (gom từ điển các module)
-```
-
-Thêm một module: tạo `src/modules/<tên>/` theo cấu trúc trên, rồi đăng ký LocalResource của nó trong
-`app/api.ts` và từ điển của nó trong `app/i18n.ts`.
+Xem [`site/README.md`](site/README.md): core / modules / app, các tầng trong một module, luồng dữ liệu,
+API, i18n, cách thêm module và chuyển dữ liệu lên server. Có hình minh hoạ chuyển động.
 
 ## Ngôn ngữ (VI / EN)
 

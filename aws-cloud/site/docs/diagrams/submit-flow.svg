@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 560" width="980" height="560" role="img" aria-labelledby="title desc">
+<title id="title">Luồng bấm Kiểm tra</title>
+<desc id="desc">Từ nút Kiểm tra, event đi qua controller, service, API client tới IndexedDB, rồi kết quả quay về store và UI vẽ lại.</desc>
+<style>
+.bg{fill:#f6f8f9}
+.band{fill:#ebf1f3}
+.panel{fill:#ffffff;stroke:#d8e1e5}
+.box{fill:#ffffff;stroke:#c3d0d6;stroke-width:1.2}
+.box.core{fill:#eef4f6}
+.chip{fill:#eef4f6;stroke:#d0dce2}
+.t{font:600 13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:#14212b}
+.tc{font:500 11.5px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:#14212b}
+.s{font:12px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;fill:#586973}
+.h{font:600 14px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;fill:#14212b}
+.lbl{font:700 10.5px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;letter-spacing:.08em;fill:#586973}
+.n{font:700 11px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;fill:#ffffff}
+.wire{fill:none;stroke:#9fb2bc;stroke-width:1.5}
+.wire.back{stroke:#2b7a4b;stroke-dasharray:5 4;opacity:.7}
+.flow{fill:none;stroke:#0a6a85;stroke-width:1.6;stroke-dasharray:6 5;animation:dash 1.2s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-11}}
+.arrow{fill:#9fb2bc}
+.arrow.a{fill:#0a6a85}
+.tok{fill:#0a6a85;stroke:#ffffff;stroke-width:2}
+.tok.ok{fill:#2b7a4b}
+.tok.edge{fill:#b46c0c}
+.hl{fill:none;stroke:#0a6a85;stroke-width:2.5}
+.hl.ok{stroke:#2b7a4b}
+.stepbg{fill:#dfeff3}
+.stepbg.ok{fill:#e1f2e7}
+.num{fill:#0a6a85}
+.num.ok{fill:#2b7a4b}
+.pill{fill:#e1f2e7;stroke:#2b7a4b}
+.pilltext{font:700 12px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;fill:#2b7a4b}
+.db{fill:#f7ead6;stroke:#b46c0c}
+@media (prefers-color-scheme: dark){
+.bg{fill:#0e161b}.band{fill:#131e25}.panel{fill:#152129;stroke:#26353e}
+.box{fill:#152129;stroke:#33454f}.box.core{fill:#14252e}.chip{fill:#1a2a33;stroke:#2c3d47}
+.t,.tc,.h{fill:#e2eaee}.s,.lbl{fill:#91a3ad}
+.wire{stroke:#4b5f69}.arrow{fill:#4b5f69}.flow{stroke:#52b6d1}.arrow.a{fill:#52b6d1}
+.tok{fill:#52b6d1;stroke:#0e161b}.tok.ok{fill:#63c48f}.tok.edge{fill:#e3a14c}
+.hl{stroke:#52b6d1}.hl.ok{stroke:#63c48f}.stepbg{fill:#143140}.stepbg.ok{fill:#173426}
+.num{fill:#52b6d1}.num.ok{fill:#63c48f}.n{fill:#0e161b}
+.pill{fill:#173426;stroke:#63c48f}.pilltext{fill:#63c48f}.db{fill:#3a2a14;stroke:#e3a14c}
+.wire.back{stroke:#63c48f}
+}
+@media (prefers-reduced-motion: reduce){.flow{animation:none}}
+</style>
+<defs>
+  <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrow" d="M0,0 L10,5 L0,10 z"/></marker>
+  <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrow a" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<rect class="bg" width="980" height="560" rx="12"/>
+
+<rect class="band" x="16" y="16" width="640" height="88" rx="10"/><text class="lbl" x="30" y="64">UI · REACT</text>
+<rect class="band" x="16" y="116" width="640" height="88" rx="10"/><text class="lbl" x="30" y="164">APP · EVENT</text>
+<rect class="band" x="16" y="216" width="640" height="88" rx="10"/><text class="lbl" x="30" y="264">SERVICES</text>
+<rect class="band" x="16" y="316" width="640" height="88" rx="10"/><text class="lbl" x="30" y="364">API CLIENT</text>
+<rect class="band" x="16" y="416" width="640" height="88" rx="10"/><text class="lbl" x="30" y="464">LƯU TRỮ</text>
+<path class="wire" d="M225,60 L225,160 L400,160 L400,260 L400,310 L225,310 L225,360 L400,360 L575,360 L575,460 L400,460" marker-end="url(#arr)"/>
+<path class="wire back" d="M400,160 L575,160 L575,110 L225,110 L225,86" marker-end="url(#arr)"/>
+<rect class="box" x="150" y="36" width="150" height="48" rx="8"/><text class="t" x="225" y="56" text-anchor="middle">QuestionCard</text><text class="s" x="225" y="73" text-anchor="middle">nút Kiểm tra</text>
+<rect class="box" x="150" y="136" width="150" height="48" rx="8"/><text class="t" x="225" y="164" text-anchor="middle">EventBus</text>
+<rect class="box" x="325" y="136" width="150" height="48" rx="8"/><text class="t" x="400" y="164" text-anchor="middle">ExamController</text>
+<rect class="box" x="500" y="136" width="150" height="48" rx="8"/><text class="t" x="575" y="164" text-anchor="middle">ExamStore</text>
+<rect class="box" x="325" y="236" width="150" height="48" rx="8"/><text class="t" x="400" y="264" text-anchor="middle">AttemptService</text>
+<rect class="box" x="145" y="336" width="160" height="48" rx="8"/><text class="t" x="225" y="356" text-anchor="middle">CompositeApiClient</text><text class="s" x="225" y="373" text-anchor="middle">chọn client</text>
+<rect class="box" x="325" y="336" width="150" height="48" rx="8"/><text class="t" x="400" y="364" text-anchor="middle">LocalApiClient</text>
+<rect class="box" x="500" y="336" width="150" height="48" rx="8"/><text class="t" x="575" y="364" text-anchor="middle">AttemptResource</text>
+<rect class="box" x="500" y="436" width="150" height="48" rx="8"/><text class="t" x="575" y="464" text-anchor="middle">StorageDriver</text>
+<path class="db" d="M335,440 a65,8 0 0,1 130,0 v40 a65,8 0 0,1 -130,0 z"/>
+<path class="db" fill="none" d="M335,440 a65,8 0 0,0 130,0"/>
+<text class="t" x="400" y="464" text-anchor="middle">IndexedDB</text>
+<rect class="hl" x="147" y="33" width="156" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.012;0.024;0.0622;0.0742;1"/></rect>
+<rect class="hl" x="147" y="133" width="156" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.0502;0.0622;0.1184;0.1304;1"/></rect>
+<rect class="hl" x="322" y="133" width="156" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.1064;0.1184;0.1506;0.1626;1"/></rect>
+<rect class="hl" x="322" y="233" width="156" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.1386;0.1506;0.239;0.251;1"/></rect>
+<rect class="hl" x="142" y="333" width="166" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.227;0.239;0.2953;0.3073;1"/></rect>
+<rect class="hl" x="322" y="333" width="156" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.2833;0.2953;0.3516;0.3636;1"/></rect>
+<rect class="hl" x="497" y="333" width="156" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.3396;0.3516;0.3837;0.3957;1"/></rect>
+<rect class="hl" x="497" y="433" width="156" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.3717;0.3837;0.44;0.452;1"/></rect>
+<rect class="hl" x="332" y="429" width="136" height="62" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.428;0.44;0.52;0.532;1"/></rect>
+<rect class="hl ok" x="322" y="133" width="156" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.7095;0.7215;0.7603;0.7723;1"/></rect>
+<rect class="hl ok" x="497" y="133" width="156" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.7483;0.7603;0.7714;0.7834;1"/></rect>
+<rect class="hl ok" x="147" y="33" width="156" height="54" rx="10" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.848;0.86;0.97;0.982;1"/></rect>
+<circle class="tok" r="7" opacity="0">
+  <animateMotion dur="12s" repeatCount="indefinite" calcMode="linear" path="M225,60 L225,160 L400,160 L400,260 L400,310 L225,310 L225,360 L400,360 L575,360 L575,460 L400,460" keyPoints="0;0;1;1" keyTimes="0;0.03;0.44;1"/>
+  <animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.018;0.03;0.45;0.462;1"/>
+</circle>
+<circle class="tok ok" r="7" opacity="0">
+  <animateMotion dur="12s" repeatCount="indefinite" calcMode="linear" path="M400,460 L575,460 L575,360 L400,360 L225,360 L225,310 L400,310 L400,260 L400,160 L575,160 L575,110 L225,110 L225,60" keyPoints="0;0;1;1" keyTimes="0;0.5;0.86;1"/>
+  <animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.488;0.5;0.87;0.882;1"/>
+</circle>
+<rect class="pill" x="312" y="47" width="116" height="26" rx="13" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.848;0.86;0.97;0.982;1"/></rect>
+<text class="pilltext" x="370" y="65" text-anchor="middle" opacity="0">✓ Chính xác<animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.848;0.86;0.97;0.982;1"/></text>
+<rect class="stepbg" x="676" y="16" width="288" height="52" rx="8" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.012;0.024;0.0622;0.0742;1"/></rect>
+<circle class="num" cx="694" cy="34" r="10"/><text class="n" x="694" y="38" text-anchor="middle">1</text>
+<text class="tc" x="712" y="38">dispatch({type:"exam/submit"})</text><text class="s" x="712" y="56">Bấm Kiểm tra: UI chỉ phát event</text>
+<rect class="stepbg" x="676" y="74" width="288" height="52" rx="8" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.0502;0.0622;0.1506;0.1626;1"/></rect>
+<circle class="num" cx="694" cy="92" r="10"/><text class="n" x="694" y="96" text-anchor="middle">2</text>
+<text class="tc" x="712" y="96">ExamController.submit()</text><text class="s" x="712" y="114">Chấm đúng/sai bằng Scoring</text>
+<rect class="stepbg" x="676" y="132" width="288" height="52" rx="8" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.1386;0.1506;0.239;0.251;1"/></rect>
+<circle class="num" cx="694" cy="150" r="10"/><text class="n" x="694" y="154" text-anchor="middle">3</text>
+<text class="tc" x="712" y="154">AttemptService.answer()</text><text class="s" x="712" y="172">Gọi api.put(...) như REST thường</text>
+<rect class="stepbg" x="676" y="190" width="288" height="52" rx="8" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.227;0.239;0.2953;0.3073;1"/></rect>
+<circle class="num" cx="694" cy="208" r="10"/><text class="n" x="694" y="212" text-anchor="middle">4</text>
+<text class="tc" x="712" y="212">PUT /attempts/:id/answers/:q</text><text class="s" x="712" y="230">CompositeApiClient chọn LocalApiClient</text>
+<rect class="stepbg" x="676" y="248" width="288" height="52" rx="8" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.2833;0.2953;0.3837;0.3957;1"/></rect>
+<circle class="num" cx="694" cy="266" r="10"/><text class="n" x="694" y="270" text-anchor="middle">5</text>
+<text class="tc" x="712" y="270">AttemptResource.answer()</text><text class="s" x="712" y="288">LocalApiClient khớp route</text>
+<rect class="stepbg" x="676" y="306" width="288" height="52" rx="8" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.3717;0.3837;0.52;0.532;1"/></rect>
+<circle class="num" cx="694" cy="324" r="10"/><text class="n" x="694" y="328" text-anchor="middle">6</text>
+<text class="tc" x="712" y="328">StorageDriver.put()</text><text class="s" x="712" y="346">Ghi lượt làm bài vào IndexedDB</text>
+<rect class="stepbg ok" x="676" y="364" width="288" height="52" rx="8" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.508;0.52;0.7215;0.7335;1"/></rect>
+<circle class="num ok" cx="694" cy="382" r="10"/><text class="n" x="694" y="386" text-anchor="middle">7</text>
+<text class="tc" x="712" y="386">← Attempt (JSON)</text><text class="s" x="712" y="404">Kết quả đi ngược lên controller</text>
+<rect class="stepbg ok" x="676" y="422" width="288" height="52" rx="8" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.7095;0.7215;0.7714;0.7834;1"/></rect>
+<circle class="num ok" cx="694" cy="440" r="10"/><text class="n" x="694" y="444" text-anchor="middle">8</text>
+<text class="tc" x="712" y="444">ExamStore.saved(attempt)</text><text class="s" x="712" y="462">Store báo cho nơi đang theo dõi</text>
+<rect class="stepbg ok" x="676" y="480" width="288" height="52" rx="8" opacity="0"><animate attributeName="opacity" dur="12s" repeatCount="indefinite" calcMode="linear" values="0;0;1;1;0;0" keyTimes="0;0.7594;0.7714;0.97;0.982;1"/></rect>
+<circle class="num ok" cx="694" cy="498" r="10"/><text class="n" x="694" y="502" text-anchor="middle">9</text>
+<text class="tc" x="712" y="502">useStore → vẽ lại</text><text class="s" x="712" y="520">QuestionCard hiện đúng/sai + giải thích</text>
+<text class="s" x="16" y="544">Xanh dương: yêu cầu đi xuống · Xanh lá: kết quả đi lên. Mỗi tầng chỉ gọi tầng ngay dưới nó.</text>
+
+</svg>
