@@ -10,7 +10,7 @@
 - Geolocation routing: giới hạn nội dung theo vị trí người dùng (exam1_q38)
 - Geoproximity routing: thay đổi kích thước vùng địa lý bằng bias (exam4_q61)
 - Failover (active-passive) + health check, trang lỗi tĩnh làm backup (exam5_q56, exam2_q59)
-- Phân phối traffic tới các target sau load balancer theo AZ (exam4_q59)
+- Route 53 chia đều cho các node NLB (mỗi AZ một node); cross-zone tắt thì mỗi node chỉ chia cho target cùng AZ: 4 target ở AZ-A nhận 50% / 4 = 12,5% mỗi target (exam4_q59)
 
 ## DNS lai (hybrid)
 - Route 53 Resolver inbound endpoint (on-prem hỏi DNS của VPC) và outbound endpoint + forwarding rule (VPC hỏi DNS on-prem) (exam1_q63, exam3_q35)
