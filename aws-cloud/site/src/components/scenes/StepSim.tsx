@@ -1,3 +1,4 @@
+import { useI18n } from "../../app/i18n";
 import { useId, useRef, useState } from "react";
 import { travel } from "../../lib/animate";
 import { Boxes, DiagramDefs, Flows, Nodes, flowPoints, rich, type DBox, type DFlow, type DNode } from "./diagram";
@@ -28,6 +29,7 @@ interface Props {
 export default function StepSim({ nodes, boxes = [], initial, intro, steps, height = 260 }: Props) {
   const [done, setDone] = useState(0);
   const [busy, setBusy] = useState(false);
+  const { t } = useI18n();
   const pk = useRef<SVGGElement>(null);
   const uid = useId().replace(/:/g, "");
   const byId = Object.fromEntries(nodes.map((n) => [n.id, n]));
@@ -52,11 +54,11 @@ export default function StepSim({ nodes, boxes = [], initial, intro, steps, heig
       <div className="stage-bar">
         {done < steps.length
           ? <button className="btn primary" onClick={next} disabled={busy}>{steps[done].button}</button>
-          : <button className="btn" onClick={() => setDone(0)}>Đặt lại</button>}
-        <span className="count">Bước {Math.min(done, steps.length)}/{steps.length}</span>
+          : <button className="btn" onClick={() => setDone(0)}>{t("lesson.step.reset")}</button>}
+        <span className="count">{t("lesson.step.count", { n: Math.min(done, steps.length), total: steps.length })}</span>
       </div>
       <div className="svg-wrap">
-        <svg viewBox={`0 0 760 ${height}`} role="img" aria-label={done ? steps[done - 1].button : "Trạng thái ban đầu"}>
+        <svg viewBox={`0 0 760 ${height}`} role="img" aria-label={done ? steps[done - 1].button : t("lesson.step.initial")}>
           <DiagramDefs id={uid} />
           <Boxes boxes={boxes} />
           <g key={done}><Flows id={uid} nodes={byId} flows={flows} /></g>

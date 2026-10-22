@@ -46,10 +46,11 @@ const earlyPreferences = `(function(){var h=document.documentElement,t=${JSON.st
 const toc = Astro.slots.has("toc");
 const ready = (await getCollection("concepts")).map((e) => e.id);
 // Only what the roadmap shows reaches the browser.
-const layers = getCurriculum().map(({ n, name, concepts }) => ({
+const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
   n,
   name,
-  concepts: concepts.map(({ id, title, importance, questions, exact }) => ({ id, title, importance, quiz: exact ? questions : 0 })),
+  nameEn,
+  concepts: concepts.map(({ id, title, titleEn, importance, questions, exact }) => ({ id, title, titleEn, importance, quiz: exact ? questions : 0 })),
 }));
 ---
 <!doctype html>

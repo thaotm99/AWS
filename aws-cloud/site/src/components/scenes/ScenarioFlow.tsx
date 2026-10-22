@@ -1,3 +1,4 @@
+import { useI18n } from "../../app/i18n";
 import { useId, useState } from "react";
 import { Boxes, DiagramDefs, Flows, Nodes, rich, type DBox, type DFlow, type DNode } from "./diagram";
 
@@ -25,8 +26,10 @@ interface Props {
 }
 
 /** Compare answer options on one architecture diagram, scenario by scenario. */
-export default function ScenarioFlow({ scenarios, height = 260, legend = ["Giải pháp đề xuất", "Giải pháp không phù hợp"] }: Props) {
+export default function ScenarioFlow({ scenarios, height = 260, legend: custom }: Props) {
   const [si, setSi] = useState(0);
+  const { t } = useI18n();
+  const legend = custom ?? [t("lesson.flow.good"), t("lesson.flow.bad")];
   const [oi, setOi] = useState(0);
   const uid = useId().replace(/:/g, "");
   const s = scenarios[si];
@@ -37,15 +40,15 @@ export default function ScenarioFlow({ scenarios, height = 260, legend = ["Giả
   return (
     <div className="stage">
       {scenarios.length > 1 && (
-        <div className="stage-bar" role="group" aria-label="Chọn tình huống">
-          <span className="label">Tình huống</span>
+        <div className="stage-bar" role="group" aria-label={t("lesson.flow.scenarioGroup")}>
+          <span className="label">{t("lesson.flow.scenarios")}</span>
           {scenarios.map((x, i) => (
             <button key={x.name} className="btn" aria-pressed={i === si} onClick={() => { setSi(i); setOi(0); }}>{x.name}</button>
           ))}
         </div>
       )}
-      <div className="stage-bar" role="group" aria-label="Chọn phương án">
-        <span className="label">Phương án</span>
+      <div className="stage-bar" role="group" aria-label={t("lesson.flow.optionGroup")}>
+        <span className="label">{t("lesson.flow.options")}</span>
         {s.options.map((x, i) => (
           <button key={x.name} className="btn" aria-pressed={i === oi} onClick={() => setOi(i)}>{x.name}</button>
         ))}

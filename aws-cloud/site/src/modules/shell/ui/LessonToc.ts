@@ -14,12 +14,19 @@ export class LessonToc {
   ) {}
 
   start(): void {
-    this.sections = [...this.content.querySelectorAll<HTMLElement>("section.scene[id]")];
+    this.collect();
     if (!this.sections.length) {
       this.root.hidden = true;
       return;
     }
     this.renderList();
+    this.root.querySelector("ol")!.addEventListener("click", (e) => {
+      const a = (e.target as HTMLElement).closest("a");
+      const i = a ? this.links.indexOf(a as HTMLAnchorElement) : -1;
+      if (i < 0) return;
+      e.preventDefault();
+      this.jump(i);
+    });
     const update = () => {
       cancelAnimationFrame(this.frame);
       this.frame = requestAnimationFrame(() => this.update());
@@ -28,6 +35,31 @@ export class LessonToc {
     addEventListener("resize", update);
     addEventListener("keydown", (e) => this.onKey(e));
     this.update();
+  }
+
+  /** Rebuild for the language now on screen (each language has its own copy of the lesson). */
+  refresh(): void {
+    this.collect();
+    this.links = [];
+    this.root.querySelector("ol")!.replaceChildren();
+    this.active = -1;
+    this.renderList();
+    this.update();
+    // The page <title> is static Vietnamese; follow the lesson title shown in the panel.
+    const shown = [...this.root.querySelectorAll<HTMLElement>(".toc-lesson [data-lang]")].find((el) => el.getClientRects().length > 0);
+    const title = (shown ?? this.root.querySelector(".toc-lesson"))?.textContent?.trim();
+    if (title) document.title = `${title} · AWS Thực Chiến`;
+  }
+
+  /** Scenes of the visible language only: a hidden copy has no layout box. */
+  private collect(): void {
+    this.sections = [...this.content.querySelectorAll<HTMLElement>("section.scene[id]")].filter((s) => s.getClientRects().length > 0);
+  }
+
+  private jump(i: number): void {
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    this.sections[i].scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    history.replaceState(null, "", `#${this.sections[i].id}`);
   }
 
   private renderList(): void {
@@ -62,7 +94,7 @@ export class LessonToc {
     let active = 0;
     this.sections.forEach((s, i) => s.getBoundingClientRect().top <= line && (active = i));
     if (max > 0 && scrollY >= max - 2) active = this.sections.length - 1;
-    if (active === this.active) return;
+    if (active === this.active || !this.links[active]) return;
     this.active = active;
     this.links.forEach((a, i) => (i === active ? a.setAttribute("aria-current", "true") : a.removeAttribute("aria-current")));
     const list = this.root.querySelector("ol")!;
@@ -78,9 +110,6 @@ export class LessonToc {
     if (target.closest("input, textarea, select, [contenteditable]")) return;
     const key = e.key.toLowerCase();
     if (key !== "j" && key !== "k") return;
-    const next = Math.min(this.sections.length - 1, Math.max(0, this.active + (key === "j" ? 1 : -1)));
-    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    this.sections[next].scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
-    history.replaceState(null, "", `#${this.sections[next].id}`);
+    this.jump(Math.min(this.sections.length - 1, Math.max(0, this.active + (key === "j" ? 1 : -1))));
   }
 }

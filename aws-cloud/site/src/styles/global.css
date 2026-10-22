@@ -418,6 +418,12 @@ body { font-size: 15px; }
 a.concept { text-decoration: none; color: var(--ink); }
 a.concept[aria-current="page"] { color: var(--accent); }
 .brand { text-decoration: none; color: var(--ink); }
+/* Bilingual content: both languages are in the page, <html lang> picks one (see components/L.astro). */
+[data-lang="en"] { display: none; }
+:root[lang="en"] [data-lang="vi"] { display: none; }
+:root[lang="en"] [data-lang="en"] { display: revert; }
+.untranslated { font-size: var(--step--1); color: var(--muted); border-left: 3px solid var(--edge); padding: 6px 12px; background: var(--edge-soft); border-radius: 0 8px 8px 0; }
+
 /* Home */
 .hero { padding: 18px 0 8px; }
 .hero-eyebrow { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin: 0; }

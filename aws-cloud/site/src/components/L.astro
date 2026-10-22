@@ -1,0 +1,10 @@
+---
+// Text with a Vietnamese and an English form: both are rendered, CSS shows the one for <html lang>.
+// For data-driven text (lesson titles, frontmatter); fixed UI text uses <T k="…"> instead.
+interface Props {
+  vi: string;
+  en?: string;
+}
+const { vi, en = vi } = Astro.props;
+---
+{vi === en ? vi : <><span data-lang="vi">{vi}</span><span data-lang="en">{en}</span></>}

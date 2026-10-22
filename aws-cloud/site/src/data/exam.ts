@@ -2,7 +2,7 @@
 // practice-test questions. Never import this from a client component.
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { EXTRA_TITLES, importanceOf, LAYERS, type Layer } from "./curriculum";
+import { EXTRA_TITLES, importanceOf, LAYERS, TITLES_EN, type Layer } from "./curriculum";
 
 const STUDY_DIR = resolve(process.cwd(), "../../solution-architect-aws");
 const QUESTION_ID = /^exam[1-6]_q\d{1,2}$/;
@@ -39,16 +39,17 @@ export function getCurriculum(): Layer[] {
   const placed = new Set(LAYERS.flatMap((l) => l.ids));
   const unplaced = [...overview.keys()].filter((id) => !placed.has(id));
   if (unplaced.length) throw new Error(`curriculum: overview.md lists ${unplaced.join(", ")} but LAYERS does not`);
-  cached = LAYERS.map(({ n, name, ids }) => ({
+  cached = LAYERS.map(({ n, name, nameEn, ids }) => ({
     n,
     name,
+    nameEn,
     concepts: ids.map((id) => {
       const row = overview.get(id);
       const title = EXTRA_TITLES[id] ?? row?.title;
       if (!title) throw new Error(`curriculum: "${id}" is neither in overview.md nor EXTRA_TITLES`);
       const listed = readListQa(id);
       const questions = listed ? listed.length : (row?.estimate ?? 0);
-      return { id, title, importance: importanceOf(questions), questions, exact: Boolean(listed) };
+      return { id, title, titleEn: TITLES_EN[id] ?? title, importance: importanceOf(questions), questions, exact: Boolean(listed) };
     }),
   }));
   return cached;

@@ -1,68 +1,53 @@
 ---
 import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import T from "../app/T.astro";
 import { getCurriculum } from "../data/exam";
 import ArchitectureMap from "../components/home/ArchitectureMap.tsx";
 import { practiceCatalog } from "../modules/practice/content/PracticeCatalog";
 
 const layers = getCurriculum();
+const concepts = layers.flatMap((l) => l.concepts);
 const ready = new Set((await getCollection("concepts")).map((e) => e.id));
-const lessons = layers.flatMap((l) => l.concepts).filter((c) => ready.has(c.id)).length;
-const first = layers.flatMap((l) => l.concepts).find((c) => ready.has(c.id));
+const lessons = concepts.filter((c) => ready.has(c.id)).length;
+const first = concepts.find((c) => ready.has(c.id));
 const certs = practiceCatalog.listCertifications();
 const exams = certs.reduce((s, c) => s + c.examCount, 0);
 const questions = certs.reduce((s, c) => s + c.examCount * c.questionCount, 0);
 // Lesson titles for the map's links, keyed by lesson id.
-const titles = Object.fromEntries(layers.flatMap((l) => l.concepts).map((c) => [c.id, c.title]));
-
-const features = [
-  {
-    title: "Học từ tình huống thực tế",
-    body: "Mỗi bài học xuất phát từ một yêu cầu cụ thể của ShopViet: độ trễ, tính sẵn sàng, bảo mật hay chi phí. Từ yêu cầu đó, bài học so sánh các dịch vụ AWS và chỉ ra phương án phù hợp.",
-  },
-  {
-    title: "Mô phỏng tương tác",
-    body: "Cơ chế hoạt động của từng dịch vụ được trình bày bằng mô phỏng: request đi qua các thành phần nào, điều gì xảy ra khi một Availability Zone gặp sự cố, chính sách nào cho phép hoặc từ chối truy cập.",
-  },
-  {
-    title: "Luyện đề song ngữ",
-    body: "Bộ đề luyện tập theo định dạng kỳ thi AWS Certified Solutions Architect – Associate, có lời giải cho từng phương án và có thể chuyển giữa tiếng Việt và bản gốc tiếng Anh.",
-  },
-];
+const titles = Object.fromEntries(concepts.map((c) => [c.id, c.title]));
+const titlesEn = Object.fromEntries(concepts.map((c) => [c.id, c.titleEn]));
+const features = [1, 2, 3] as const;
 ---
 <BaseLayout title="AWS Thực Chiến" sidebar={false} wide>
   <section class="hero">
-    <p class="hero-eyebrow">Kiến trúc AWS qua một hệ thống thực tế</p>
-    <h1>Thiết kế hệ thống trên AWS từ yêu cầu đến kiến trúc hoàn chỉnh</h1>
-    <p class="lede">
-      AWS Thực Chiến xây dựng kiến thức kiến trúc AWS thông qua ShopViet, một hệ thống thương mại điện tử giả định.
-      Lộ trình đi từ hạ tầng toàn cầu, mạng và bảo mật đến tính toán, lưu trữ, cơ sở dữ liệu và vận hành;
-      mỗi quyết định thiết kế được phân tích từ yêu cầu và minh hoạ bằng mô phỏng tương tác.
-    </p>
+    <p class="hero-eyebrow"><T k="shell.home.eyebrow" /></p>
+    <h1><T k="shell.home.title" /></h1>
+    <p class="lede"><T k="shell.home.lede" /></p>
     <div class="hero-actions">
-      {first && <a class="btn primary cta" href={`/concepts/${first.id}/`}>Bắt đầu học</a>}
-      <a class="btn cta" href="/on-tap/">Luyện đề</a>
+      {first && <a class="btn primary cta" href={`/concepts/${first.id}/`}><T k="shell.home.start" /></a>}
+      <a class="btn cta" href="/on-tap/"><T k="shell.home.practice" /></a>
     </div>
     <dl class="hero-stats">
-      <div><dt>Bài học</dt><dd>{lessons}</dd></div>
-      <div><dt>Đề luyện tập</dt><dd>{exams}</dd></div>
-      <div><dt>Câu hỏi có lời giải</dt><dd>{questions}</dd></div>
-      <div><dt>Ngôn ngữ</dt><dd>VI · EN</dd></div>
+      <div><dt><T k="shell.home.statLessons" /></dt><dd>{lessons}</dd></div>
+      <div><dt><T k="shell.home.statExams" /></dt><dd>{exams}</dd></div>
+      <div><dt><T k="shell.home.statQuestions" /></dt><dd>{questions}</dd></div>
+      <div><dt><T k="shell.home.statLanguages" /></dt><dd>VI · EN</dd></div>
     </dl>
   </section>
 
   <section class="home-map" aria-labelledby="map-title">
-    <h2 id="map-title">Kiến trúc tổng thể của ShopViet</h2>
-    <p class="home-sub">Sơ đồ mô tả luồng xử lý request qua các dịch vụ AWS trong hệ thống. Chọn một luồng để theo dõi, hoặc chọn một dịch vụ để mở bài học tương ứng.</p>
-    <ArchitectureMap client:visible titles={titles} />
+    <h2 id="map-title"><T k="shell.home.mapTitle" /></h2>
+    <p class="home-sub"><T k="shell.home.mapLede" /></p>
+    <ArchitectureMap client:visible titles={titles} titlesEn={titlesEn} />
   </section>
 
-  <section class="home-features" aria-label="Cách học trên AWS Thực Chiến">
-    {features.map((f, i) => (
+  <section class="home-features" aria-label="Cách học trên AWS Thực Chiến" data-i18n-attr="aria-label:shell.home.features">
+    {features.map((n) => (
       <article class="feature">
-        <span class="feature-n">0{i + 1}</span>
-        <h3>{f.title}</h3>
-        <p>{f.body}</p>
+        <span class="feature-n">0{n}</span>
+        <h3><T k={`shell.home.f${n}Title`} /></h3>
+        <p><T k={`shell.home.f${n}Body`} /></p>
       </article>
     ))}
   </section>

@@ -1,8 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import T from "../app/T.astro";
 ---
-<BaseLayout title="Không tìm thấy trang · AWS Thực Chiến">
-  <h1>Không tìm thấy trang</h1>
-  <p class="lede">Đường dẫn này không tồn tại hoặc bài học đã được đổi tên. Quay về lộ trình để chọn bài khác.</p>
-  <a class="btn primary cta" href="/">Về lộ trình học</a>
+<BaseLayout title="Không tìm thấy trang · AWS Thực Chiến" titleKey="lesson.notFound.title">
+  <h1><T k="lesson.notFound.title" /></h1>
+  <p class="lede"><T k="lesson.notFound.body" /></p>
+  <a class="btn primary cta" href="/"><T k="lesson.notFound.cta" /></a>
 </BaseLayout>

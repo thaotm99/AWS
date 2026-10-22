@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { getDone, setDone } from "../lib/progress";
+import { useI18n } from "../app/i18n";
 
 export default function DoneButton({ id }: { id: string }) {
   const [on, setOn] = useState(false);
+  const { t } = useI18n();
   useEffect(() => setOn(getDone().has(id)), [id]);
 
   function toggle() {
@@ -12,7 +14,7 @@ export default function DoneButton({ id }: { id: string }) {
 
   return (
     <button className="btn done-btn" aria-pressed={on} onClick={toggle}>
-      {on ? "Đã hoàn thành ✓" : "Đánh dấu hoàn thành"}
+      {on ? t("lesson.done.done") : t("lesson.done.mark")}
     </button>
   );
 }

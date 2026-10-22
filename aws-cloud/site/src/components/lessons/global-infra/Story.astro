@@ -1,4 +1,6 @@
 ---
+import T from "../../../app/T.astro";
+
 interface Props {
   toc: { href: string; label: string }[];
 }
@@ -14,9 +16,9 @@ const { toc } = Astro.props;
     <text x="75" y="31" text-anchor="middle" fill="var(--on-accent)" font-family="var(--font-body)" font-size="12" font-weight="700">ShopViet</text>
   </svg>
   <div>
-    <div class="eyebrow">Bối cảnh hệ thống</div>
+    <div class="eyebrow"><T k="lesson.story.eyebrow" /></div>
     <p><slot /></p>
-    <nav class="toc" aria-label="Các cảnh">
+    <nav class="toc" aria-label="Các phần của bài học" data-i18n-attr="aria-label:lesson.story.toc">
       {toc.map((t) => <a href={t.href}>{t.label}</a>)}
     </nav>
   </div>

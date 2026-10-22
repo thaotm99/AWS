@@ -2,12 +2,13 @@ import { I18n } from "../core/i18n/I18n";
 import { combineMessages } from "../core/i18n/messages";
 import { DEFAULT_LOCALE, isLocale, type MessageKey } from "../core/i18n/types";
 import { useTranslator } from "../core/i18n/useTranslator";
+import { lessonMessages } from "../modules/lesson/i18n";
 import { practiceMessages } from "../modules/practice/i18n";
 import { shellMessages } from "../modules/shell/i18n";
 import { viewerPreference } from "./preferences";
 
 // Each module owns its messages; the site registers them here under a namespace.
-const messages = combineMessages({ shell: shellMessages, practice: practiceMessages });
+const messages = combineMessages({ shell: shellMessages, lesson: lessonMessages, practice: practiceMessages });
 
 export type SiteMessages = (typeof messages)["vi"];
 export type SiteMessageKey = MessageKey<SiteMessages>;
