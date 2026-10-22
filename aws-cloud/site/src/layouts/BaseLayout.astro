@@ -18,7 +18,7 @@ interface Props {
   /** The page is the current lesson's question set, not the lesson itself. */
   currentQuiz?: boolean;
   /** Top-nav section this page belongs to. */
-  section?: "theory" | "practice";
+  section?: "theory" | "practice" | "glossary";
   /** Practice pages have no lesson roadmap. */
   sidebar?: boolean;
   /** Full-width content (home page map); only used without the sidebar. */
@@ -82,6 +82,7 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
           <a href="/" aria-current={section === "theory" ? "page" : undefined}><T k="shell.nav.theory" /></a>
           <a href="#" class="soon" data-soon="shell.nav.scenarios"><T k="shell.nav.scenarios" /></a>
           <a href="/practice/" aria-current={section === "practice" ? "page" : undefined}><T k="shell.nav.practice" /></a>
+          <a href="/glossary/" aria-current={section === "glossary" ? "page" : undefined}><T k="shell.nav.glossary" /></a>
         </nav>
         <LanguageSwitch />
         <ThemeToggle />
@@ -96,6 +97,7 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
           <a href="/" aria-current={section === "theory" ? "page" : undefined}><T k="shell.nav.theory" /></a>
           <a href="#" class="soon" data-soon="shell.nav.scenarios"><T k="shell.nav.scenarios" /></a>
           <a href="/practice/" aria-current={section === "practice" ? "page" : undefined}><T k="shell.nav.practice" /></a>
+          <a href="/glossary/" aria-current={section === "glossary" ? "page" : undefined}><T k="shell.nav.glossary" /></a>
         </nav>
         {sidebar && <Roadmap client:load layers={layers} current={current} currentQuiz={currentQuiz} ready={ready} />}
       </aside>
