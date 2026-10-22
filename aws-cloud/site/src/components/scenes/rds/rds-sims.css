@@ -1,7 +1,7 @@
 /* RDS lesson simulations (rds/RdsOpsSim, rds/AuroraSim). Theme tokens only. */
 .rdx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
 .rdx-row + .rdx-row { padding-top: 8px; }
-.rdx-lbl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
+.rdx-lbl { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
 .rdx-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; overflow-wrap: anywhere; }
 .rdx-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
 .rdx .stage-bar { margin-top: 12px; border-top: 1px solid var(--line); }
