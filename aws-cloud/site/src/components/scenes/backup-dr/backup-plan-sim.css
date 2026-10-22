@@ -1,0 +1,41 @@
+/* One AWS Backup plan against four incidents (backup-dr/BackupPlanSim) */
+.bps .stage-bar + .stage-bar { border-top: 0; padding-top: 0; }
+.bps-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; margin-right: 8px; }
+.bps-events { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
+.bps-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
+.bps-events .bps-play { margin-left: auto; }
+.bps-about { margin: 8px 16px 0; font-size: var(--step--1); color: var(--muted); }
+.bps-cap { fill: var(--muted); font-family: var(--font-body); font-size: 11.5px; font-weight: 600; }
+.bps-axis { stroke: var(--muted); stroke-width: 1.2; }
+.bps-job { stroke: var(--accent); stroke-width: 2; }
+.bps-gap.ok { fill: var(--ok-soft); stroke: var(--ok); }
+.bps-gap.bad { fill: var(--bad-soft); stroke: var(--bad); }
+.bps-gap-t { font-family: var(--font-body); font-size: 11px; font-weight: 600; }
+.bps-gap-t.ok { fill: var(--ok); }
+.bps-gap-t.bad { fill: var(--bad); }
+.bps-box rect { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 5 4; }
+.bps-box text { fill: var(--muted); font-family: var(--font-body); font-size: 11.5px; font-weight: 600; }
+.bps-box.edge rect { fill: var(--edge-soft); fill-opacity: .25; stroke: var(--edge); }
+.bps-box.edge text { fill: var(--edge); }
+.bps-box.acct rect { fill: var(--accent-soft); fill-opacity: .25; stroke: var(--accent); }
+.bps-box.acct text { fill: var(--accent); }
+.bps-link { fill: none; stroke: var(--line); stroke-width: 2; transition: opacity .2s; }
+.bps-link.off { stroke-dasharray: 4 5; opacity: .5; }
+.bps-node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill .25s, stroke .25s, opacity .25s; }
+.bps-node.vault rect { stroke: var(--accent); }
+.bps-node.off { opacity: .45; }
+.bps-node.off rect { stroke: var(--line); stroke-dasharray: 3 4; }
+.bps-node.ok rect, .bps-node.use rect { fill: var(--ok-soft); stroke: var(--ok); }
+.bps-node.bad rect { fill: var(--bad-soft); stroke: var(--bad); }
+.bps-t { fill: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
+.bps-s { fill: var(--muted); font-family: var(--font-body); font-size: 10px; }
+.bps-lock rect { fill: var(--accent); }
+.bps-lock path { fill: none; stroke: var(--accent); stroke-width: 2; }
+.bps-flash { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; fill: var(--ok); font-family: var(--font-mono); font-size: 13px; font-weight: 700; text-anchor: middle; }
+.bps-flash.bad { fill: var(--bad); }
+.bps-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
+.bps-hint b { color: var(--ink); }
+.bps-log li { display: block; }
+.bps-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 8px; font-size: var(--step--1); }
+.bps-result.ok { background: var(--ok-soft); }
+.bps-result.bad { background: var(--bad-soft); }
