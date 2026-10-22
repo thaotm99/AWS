@@ -7,12 +7,17 @@ import type { I18n } from "../../../core/i18n/I18n";
  *
  * Lesson simulations and the home map are Astro islands: the button goes in a bar just before the
  * island (outside React's tree) and the island itself is what opens. Other views (practice
- * illustrations) call open() with their own element.
+ * illustrations) call open() with their own element. Pictures inside practice questions and
+ * explanations (IMAGES) get a button too; they open as a copy of the picture.
  */
+const IMAGES = ".pr-html img";
+
 export class DiagramZoom<M> {
   private current: HTMLElement | null = null;
   private closeBtn: HTMLButtonElement | null = null;
   private readonly bars: HTMLButtonElement[] = [];
+  /** Copy of a picture shown full screen; removed on close. */
+  private sheet: HTMLElement | null = null;
 
   constructor(private readonly i18n: I18n<M>) {}
 
@@ -34,11 +39,50 @@ export class DiagramZoom<M> {
       island.before(bar);
       this.bars.push(btn);
     }
+    // Question text is rendered by React and replaced on every question: watch for new pictures.
+    this.markImages();
+    new MutationObserver(() => this.markImages()).observe(document.body, { childList: true, subtree: true });
     addEventListener("keydown", (e) => e.key === "Escape" && this.close());
     addEventListener("resize", () => this.fitRotation());
     document.addEventListener("fullscreenchange", () => !document.fullscreenElement && this.current && this.close());
     this.i18n.subscribe(() => this.label());
     this.label();
+  }
+
+  /** A "Phóng to" button under each picture large enough to be a diagram. */
+  private markImages(): void {
+    let added = false;
+    for (const img of document.querySelectorAll<HTMLImageElement>(IMAGES)) {
+      if (img.dataset.zoom) continue;
+      added = true;
+      img.dataset.zoom = "1";
+      img.addEventListener("click", () => this.openImage(img));
+      const bar = document.createElement("span");
+      bar.className = "zoom-bar zoom-bar-img";
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "zoom-btn";
+      btn.addEventListener("click", () => this.openImage(img));
+      bar.append(btn);
+      img.after(bar);
+      this.bars.push(btn);
+    }
+    if (!added) return; // also keeps the observer from reacting to its own label changes
+    this.bars.splice(0, this.bars.length, ...this.bars.filter((b) => b.isConnected));
+    this.label();
+  }
+
+  openImage(img: HTMLImageElement): void {
+    this.close();
+    const sheet = document.createElement("div");
+    sheet.className = "zoom-image";
+    const copy = document.createElement("img");
+    copy.src = img.currentSrc || img.src;
+    copy.alt = img.alt;
+    sheet.append(copy);
+    document.body.append(sheet);
+    this.sheet = sheet;
+    void this.open(sheet);
   }
 
   private lookup(key: string): string {
@@ -47,8 +91,9 @@ export class DiagramZoom<M> {
 
   private label(): void {
     const phone = DiagramZoom.phone;
+    const text = this.lookup(phone ? "shell.zoom.rotate" : "shell.zoom.open");
     for (const b of this.bars) {
-      b.textContent = this.lookup(phone ? "shell.zoom.rotate" : "shell.zoom.open");
+      if (b.textContent !== text) b.textContent = text;
       b.dataset.icon = phone ? "rotate" : "expand";
     }
     if (this.closeBtn) {
@@ -60,7 +105,7 @@ export class DiagramZoom<M> {
   }
 
   async open(el: HTMLElement): Promise<void> {
-    if (this.current) this.close();
+    if (this.current && this.current !== el) this.close();
     this.current = el;
     el.classList.add("zoomed");
     document.documentElement.classList.add("zoom-open");
@@ -93,13 +138,17 @@ export class DiagramZoom<M> {
     this.closeBtn = null;
     const el = this.current;
     this.current = null;
+    if (this.sheet) {
+      this.sheet.remove();
+      this.sheet = null;
+    }
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     try {
       screen.orientation?.unlock?.();
     } catch {
       /* nothing to unlock */
     }
-    el.scrollIntoView({ block: "nearest" });
+    if (el.isConnected) el.scrollIntoView({ block: "nearest" });
   }
 
   /** Rotate with CSS only while a phone is still held upright. */
