@@ -1060,8 +1060,8 @@
         {
           "keyword": "Kinesis Data Firehose destinations (no DynamoDB)",
           "lesson": "kinesis",
-          "status": "partial",
-          "where": "kinesis.mdx#s3 (destinations listed only as examples \"như S3, Redshift, OpenSearch, Splunk, HTTP endpoint\"; never says DynamoDB is not a destination)"
+          "status": "covered",
+          "where": "kinesis.mdx#s3 / prose (documented Firehose destination list; DynamoDB not a destination)"
         },
         {
           "keyword": "Kinesis Data Streams (consumer, shard provisioning)",

@@ -1,7 +1,7 @@
 ---
 title: "Kinesis + MSK: processing continuous data streams"
 lede: "Every second, the ShopViet system produces thousands of clicks, views, transactions and courier locations. This lesson shows how to bring this data stream into Kinesis so that several applications can read it in order, how to keep the stream's throughput up when load spikes, and how to connect the stream to analytics, search and storage services."
-minutes: 23
+minutes: 24
 scenes: 4
 prerequisites: ["messaging", "lambda"]
 docs:
@@ -43,6 +43,14 @@ docs:
     url: "https://docs.aws.amazon.com/transcribe/latest/dg/call-analytics.html"
   - title: "What is Amazon Athena?"
     url: "https://docs.aws.amazon.com/athena/latest/ug/what-is.html"
+  - title: "Configure destination settings (Amazon Data Firehose)"
+    url: "https://docs.aws.amazon.com/firehose/latest/dev/create-destination.html"
+  - title: "KCL concepts (worker, lease, record processor)"
+    url: "https://docs.aws.amazon.com/streams/latest/dev/kcl-concepts.html"
+  - title: "Using the message group ID with Amazon SQS FIFO queues"
+    url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagegroupid-property.html"
+  - title: "Interleaving multiple ordered message groups in Amazon SQS"
+    url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/interleaving-multiple-ordered-message-groups.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -64,7 +72,7 @@ import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 The Messaging lesson used SQS to distribute **tasks** to workers: each order needs only one worker to process it. ShopViet's click and transaction data has different requirements: the leaderboard, product recommendations and fraud detection all need to read **the same event stream**, in order, with near-instant latency. This is the domain of **streams**.
 </Story>
 
-<Scene id="en-s1" label="Part 1/4" title="Comparing queues and streams" questions={["exam3_q10", "exam3_q46", "exam1_q60"]}>
+<Scene id="en-s1" label="Part 1/4" title="Comparing queues and streams" questions={["exam3_q10", "exam3_q46", "exam1_q60", "exam2_q42"]}>
 
 Three ShopViet applications all need to receive every purchase event. The simulation below sends 6 events from three users (A, B, C) to SQS and to Kinesis Data Streams in turn, to compare the data each application receives:
 
@@ -75,8 +83,11 @@ The characteristics of **Kinesis Data Streams** shown in the simulation:
 - A stream is divided into **shards**. The producer sends each record with a **partition key**; Kinesis hashes the key with MD5 to determine the shard. Records with the same key are written to the same shard, so one user's events always stay in order.
 - Records are **not deleted** after being read. Each application (consumer) manages its own read position. Records are retained for 24 hours by default, extendable up to 365 days (with additional charges beyond 24 hours), so a failed application can reread the data.
 - A consumer can be a self-developed application or **Lambda**: the Lambda event source mapping automatically polls each shard, reads records in batches and invokes the function with each batch. The ShopViet promotion leaderboard needs only a Kinesis → Lambda → DynamoDB architecture, with no servers to manage.
+- **The number of parallel consumers is bounded by the shard count.** With the Kinesis Client Library (KCL), each shard is bound to only **one worker** at any given time by a *lease* (a worker can hold several leases); adding more workers than shards does not increase parallelism. With Lambda, the event source mapping processes the records in each shard in order; the `ParallelizationFactor` setting (1 by default, up to 10) allows up to 10 concurrent batches per shard, and Lambda still processes records in order at the partition-key level. To process faster, add shards.
 
-<Takeaway>Distributing tasks, each handled by one worker: SQS. Several applications reading one data stream, in order by key, with the ability to reread: Kinesis Data Streams. The partition key determines the shard; ordering is guaranteed only within one shard.</Takeaway>
+ShopViet monitors 5,000 point-of-sale terminals in its stores, each sending data every minute. Each terminal's data must be processed in order, independently of the others, and the number of consumers must scale to roughly the number of terminals. Kinesis with the terminal ID as the partition key keeps the order, but the number of parallel consumers only equals the number of shards (far fewer than 5,000 terminals). An **SQS FIFO** queue with the terminal ID as the **message group ID** fits better: messages in the same group are always processed one at a time, in strict order, never two at once; different groups are read by several consumers simultaneously, so parallelism grows with the number of groups. If every message uses the same group ID, the whole queue is processed sequentially; an SQS standard queue does not guarantee order.
+
+<Takeaway>Distributing tasks, each handled by one worker: SQS. Several applications reading one data stream, in order by key, with the ability to reread: Kinesis Data Streams. The partition key determines the shard; ordering is guaranteed only within one shard, and the number of parallel consumers is bounded by the shard count. Per-device ordering with consumers scaling to the number of devices: SQS FIFO with the device ID as the message group ID.</Takeaway>
 
 </Scene>
 
@@ -92,7 +103,7 @@ A stream has two **capacity modes**. **Provisioned**: the operator sets the numb
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/4" title="Connecting a stream to analytics, search and storage" questions={["exam4_q22", "exam1_q57", "exam5_q6", "exam4_q27", "exam5_q35", "exam6_q35", "exam6_q31"]}>
+<Scene id="en-s3" label="Part 3/4" title="Connecting a stream to analytics, search and storage" questions={["exam4_q22", "exam1_q57", "exam5_q6", "exam4_q27", "exam5_q35", "exam6_q35", "exam6_q31", "exam1_q33"]}>
 
 Kinesis Data Streams acts as the data channel: data sources in front, analytics, search and storage services behind. For each ShopViet requirement, choose a service for each step and run the simulation:
 
@@ -100,12 +111,12 @@ Kinesis Data Streams acts as the data channel: data sources in front, analytics,
 
 Two services that are often confused with Data Streams:
 
-- **Amazon Data Firehose** (formerly Amazon Kinesis Data Firehose): **delivers data to destinations** such as S3, Redshift, OpenSearch, Splunk or an HTTP endpoint, and can transform data before delivery. No consumer to develop; the Firehose API has only write operations (`PutRecord`, `PutRecordBatch`), with no operation for applications to read or reread data.
+- **Amazon Data Firehose** (formerly Amazon Kinesis Data Firehose): **delivers data to destinations**, and can transform data before delivery. The documented destinations are Amazon S3, Apache Iceberg Tables, Amazon Redshift, Amazon OpenSearch Service, Amazon OpenSearch Serverless, Snowflake, Splunk, Splunk Observability Cloud, custom HTTP endpoints and the HTTP endpoints of supported third-party providers (Datadog, Dynatrace, New Relic, MongoDB Atlas, Sumo Logic, Elastic and others). **DynamoDB is not a Firehose destination**: to write sensor data into a DynamoDB table without provisioning capacity yourself, use SQS with Lambda reading in batches and writing to the table. No consumer to develop; the Firehose API has only write operations (`PutRecord`, `PutRecordBatch`), with no operation for applications to read or reread data.
 - **Amazon Managed Service for Apache Flink** (formerly Amazon Kinesis Data Analytics for Apache Flink): processes streams **continuously** in Java, Scala, Python or SQL, for example counting clicks per minute; **Managed Service for Apache Flink Studio** lets you query streams interactively with SQL. The separate **Kinesis Data Analytics for SQL Applications** service has been discontinued: since 15 October 2025 no new applications can be created, and since 27 January 2026 applications are deleted; AWS recommends moving to Managed Service for Apache Flink or Flink Studio.
 
 For applications already developed for **Apache Kafka**, use **Amazon MSK**: a fully managed Kafka service, and applications keep using the Kafka API. With MSK Serverless, MSK manages the brokers and the cluster capacity.
 
-<Takeaway>Continuous stream analytics, including with SQL: Amazon Managed Service for Apache Flink (Kinesis Data Analytics for SQL Applications has been discontinued). Store a stream in S3 without writing code: Firehose. Full-text search: OpenSearch Service; dashboards: Amazon Quick Sight (formerly Amazon QuickSight). Move data from S3 into a stream: AWS DMS (full load of existing files; new changes must be CDC files in the DMS format). Jobs longer than 15 minutes: Fargate instead of Lambda. Systems already using Kafka: Amazon MSK.</Takeaway>
+<Takeaway>Continuous stream analytics, including with SQL: Amazon Managed Service for Apache Flink (Kinesis Data Analytics for SQL Applications has been discontinued). Store a stream in S3 without writing code: Firehose (DynamoDB is not a destination). Full-text search: OpenSearch Service; dashboards: Amazon Quick Sight (formerly Amazon QuickSight). Move data from S3 into a stream: AWS DMS (full load of existing files; new changes must be CDC files in the DMS format). Jobs longer than 15 minutes: Fargate instead of Lambda. Systems already using Kafka: Amazon MSK.</Takeaway>
 
 </Scene>
 

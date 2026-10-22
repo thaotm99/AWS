@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **983 keyword** khác nhau: ✅ 972 (99%) · 🟡 7 (1%) · ❌ 4 (0%).
+Có **983 keyword** khác nhau: ✅ 974 (99%) · 🟡 6 (1%) · ❌ 3 (0%).
 
 ### Theo bài học
 
@@ -40,7 +40,7 @@ Có **983 keyword** khác nhau: ✅ 972 (99%) · 🟡 7 (1%) · ❌ 4 (0%).
 | [dynamodb](#dynamodb) | 25 | 25 | 0 | 0 | 100% |
 | [analytics](#analytics) | 48 | 47 | 0 | 1 | 98% |
 | [messaging](#messaging) | 51 | 51 | 0 | 0 | 100% |
-| [kinesis](#kinesis) | 28 | 26 | 1 | 1 | 93% |
+| [kinesis](#kinesis) | 28 | 28 | 0 | 0 | 100% |
 | [monitoring](#monitoring) | 34 | 34 | 0 | 0 | 100% |
 | [iac](#iac) | 9 | 9 | 0 | 0 | 100% |
 | [backup-dr](#backup-dr) | 13 | 13 | 0 | 0 | 100% |
@@ -50,8 +50,8 @@ Có **983 keyword** khác nhau: ✅ 972 (99%) · 🟡 7 (1%) · ❌ 4 (0%).
 
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
-| Đề 1 | 223 | 2 | 1 |
-| Đề 2 | 202 | 0 | 2 |
+| Đề 1 | 224 | 1 | 1 |
+| Đề 2 | 203 | 0 | 1 |
 | Đề 3 | 224 | 2 | 1 |
 | Đề 4 | 236 | 1 | 0 |
 | Đề 5 | 224 | 2 | 0 |
@@ -1034,8 +1034,6 @@ Có **983 keyword** khác nhau: ✅ 972 (99%) · 🟡 7 (1%) · ❌ 4 (0%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | Kinesis Data Streams consumer parallelism bounded by shard count | ❌ Thiếu | 1 | exam2_q42 |  |
-| [ ] | Kinesis Data Firehose destinations (no DynamoDB) | 🟡 Một phần | 1 | exam1_q33 | kinesis.mdx#s3 (destinations listed only as examples "như S3, Redshift, OpenSearch, Splunk, HTTP endpoint"; never says DynamoDB is not a destination) |
 | [ ] | Kinesis Data Streams | ✅ Đã có | 7 | exam3_q10, exam3_q39, exam3_q46, exam4_q22, exam4_q51, exam5_q6, exam6_q35 | kinesis.mdx#s1 / ShardStreamSim<br>kinesis.mdx#s1 |
 | [ ] | Amazon Data Firehose | ✅ Đã có | 3 | exam2_q47, exam3_q10, exam4_q22 | kinesis.mdx#s3 / StreamPipelineSim<br>kinesis.mdx#s3 |
 | [ ] | Amazon Managed Service for Apache Flink (Kinesis Data Analytics) | ✅ Đã có | 3 | exam3_q46, exam4_q22, exam5_q58 | kinesis.mdx#s3<br>kinesis.mdx#s3 / StreamPipelineSim |
@@ -1046,7 +1044,9 @@ Có **983 keyword** khác nhau: ✅ 972 (99%) · 🟡 7 (1%) · ❌ 4 (0%).
 | [ ] | Amazon MSK (vs self-managed Kafka on EC2) | ✅ Đã có | 1 | exam6_q31 | kinesis.mdx#s3; kinesis.mdx#s4 |
 | [ ] | Amazon QuickSight | ✅ Đã có | 1 | exam4_q22 | kinesis.mdx#s3 / StreamPipelineSim |
 | [ ] | AWS DMS (S3 source, Kinesis target) | ✅ Đã có | 1 | exam4_q27 | kinesis.mdx#s3 / StreamPipelineSim; storage-migration.mdx#s3 |
+| [ ] | Kinesis Data Firehose destinations (no DynamoDB) | ✅ Đã có | 1 | exam1_q33 | kinesis.mdx#s3 / prose (documented Firehose destination list; DynamoDB not a destination) |
 | [ ] | Kinesis Data Streams (consumer, shard provisioning) | ✅ Đã có | 1 | exam1_q33 | kinesis.mdx#s1 / ShardStreamSim |
+| [ ] | Kinesis Data Streams consumer parallelism bounded by shard count | ✅ Đã có | 1 | exam2_q42 | kinesis.mdx#s1 / prose + Takeaway (KCL lease per shard, Lambda ParallelizationFactor, SQS FIFO message group ID) |
 | [ ] | Kinesis Data Streams enhanced fan-out | ✅ Đã có | 1 | exam5_q38 | kinesis.mdx#s2 / ShardThroughputSim |
 | [ ] | Kinesis Data Streams multiple consumers | ✅ Đã có | 1 | exam5_q35 | kinesis.mdx#s3 / StreamPipelineSim |
 | [ ] | Kinesis Data Streams on-demand capacity mode | ✅ Đã có | 1 | exam6_q31 | kinesis.mdx#s2 / ShardThroughputSim |

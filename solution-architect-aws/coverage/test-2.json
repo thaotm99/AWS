@@ -1272,8 +1272,8 @@
         {
           "keyword": "Kinesis Data Streams consumer parallelism bounded by shard count",
           "lesson": "kinesis",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "kinesis.mdx#s1 / prose + Takeaway (KCL lease per shard, Lambda ParallelizationFactor, SQS FIFO message group ID)"
         }
       ]
     },
