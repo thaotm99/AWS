@@ -1,0 +1,73 @@
+/* CloudFormation stack events (iac/StackSim) */
+.sks-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
+.sks .stage-bar .sks-play { margin-left: auto; }
+.sks-status { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+.sks-status.ok { background: var(--ok-soft); color: var(--ok); border-color: var(--ok); }
+.sks-status.bad { background: var(--bad-soft); color: var(--bad); border-color: var(--bad); }
+.sks-template { margin: 12px 14px 0; padding: 10px 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; font-family: var(--font-mono); font-size: 0.78rem; line-height: 1.5; overflow-x: auto; color: var(--ink); }
+.sks-line { display: inline; }
+.sks-line.key { color: var(--accent); }
+.sks-line.add { background: var(--ok-soft); color: var(--ok); }
+.sks-line.del, .sks-line.bad { background: var(--bad-soft); color: var(--bad); }
+.sks-stack { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 4 4; }
+.sks-stack-label { fill: var(--muted); font-family: var(--font-body); font-size: 11.5px; font-weight: 600; }
+.sks-res rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 5 4; transition: fill .25s, stroke .25s, opacity .25s; }
+.sks-res.progress rect { fill: var(--accent-soft); stroke: var(--accent); }
+.sks-res.done rect { fill: var(--ok-soft); stroke: var(--ok); stroke-dasharray: none; }
+.sks-res.failed rect { fill: var(--bad-soft); stroke: var(--bad); stroke-dasharray: none; }
+.sks-res.deleted { opacity: .45; }
+.sks-id { fill: var(--ink); font-family: var(--font-body); font-size: 13px; font-weight: 600; }
+.sks-type { fill: var(--muted); font-family: var(--font-mono); font-size: 10.5px; }
+.sks-st { fill: var(--ink); font-family: var(--font-body); font-size: 11px; }
+.sks-res.failed .sks-st { fill: var(--bad); font-weight: 600; }
+.sks-res.done .sks-st { fill: var(--ok); font-weight: 600; }
+.sks-change { margin: 0 0 8px; padding: 6px 10px; border-radius: 8px; background: var(--accent-soft); font-size: var(--step--1); }
+.sks-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
+.sks .log li.sks-result { margin-top: 6px; padding: 8px 10px; border-radius: 8px; display: block; }
+.sks-result.ok { background: var(--ok-soft); }
+.sks-result.bad { background: var(--bad-soft); }
+
+/* One template, many accounts and Regions (iac/StackSetSim) */
+.sts .stage-bar .sts-play { margin-left: auto; }
+.sts-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
+.sts-head { fill: var(--muted); font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; }
+.sts-acc { fill: var(--ink); font-family: var(--font-mono); font-size: 12px; font-weight: 600; }
+.sts-acc.new { fill: var(--accent); }
+.sts-cell rect { fill: var(--bg); stroke: var(--line); stroke-width: 1.2; stroke-dasharray: 4 4; transition: fill .25s, stroke .25s; }
+.sts-cell text { fill: var(--muted); font-family: var(--font-body); font-size: 11.5px; }
+.sts-cell.busy rect { fill: var(--accent-soft); stroke: var(--accent); }
+.sts-cell.done rect { fill: var(--ok-soft); stroke: var(--ok); stroke-dasharray: none; }
+.sts-cell.done text { fill: var(--ok); font-weight: 600; }
+.sts-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
+.sts-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 8px; font-size: var(--step--1); }
+.sts-result.ok { background: var(--ok-soft); }
+.sts-result.bad { background: var(--bad-soft); }
+
+/* Racing instance launches (iac/BootTimeSim) */
+.bts .stage-bar .bts-play { margin-left: auto; }
+.bts-grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
+.bts-target { stroke: var(--ok); stroke-width: 2; stroke-dasharray: 6 4; }
+.bts-target-label { fill: var(--ok); font-family: var(--font-mono); font-size: 11px; font-weight: 600; }
+.bts-lane { cursor: pointer; }
+.bts-lane:focus-visible { outline: none; }
+.bts-hit { fill: transparent; }
+.bts-lane.on .bts-hit, .bts-lane:focus-visible .bts-hit { fill: var(--accent-soft); opacity: .5; }
+.bts-name { fill: var(--ink); font-family: var(--font-body); font-size: 12.5px; font-weight: 600; }
+.bts-seg.boot, .bts-sw.boot { fill: var(--muted); background: var(--muted); }
+.bts-seg.static, .bts-sw.static { fill: var(--bad); background: var(--bad); }
+.bts-seg.dynamic, .bts-sw.dynamic { fill: var(--ok); background: var(--ok); }
+.bts-seg.fetch, .bts-sw.fetch { fill: var(--edge); background: var(--edge); }
+.bts-end { font-family: var(--font-mono); font-size: 11.5px; font-weight: 700; }
+.bts-end.ok { fill: var(--ok); }
+.bts-end.bad { fill: var(--bad); }
+.bts-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 0 16px 10px; font-size: var(--step--1); color: var(--muted); }
+.bts-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.bts-sw { width: 14px; height: 10px; border-radius: 3px; display: inline-block; }
+.bts-pick { margin: 0 0 6px; font-size: var(--step--1); color: var(--muted); }
+.bts-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
+.bts-result { margin: 0; padding: 8px 10px; border-radius: 8px; font-size: var(--step--1); }
+.bts-result.ok { background: var(--ok-soft); }
+.bts-result.bad { background: var(--bad-soft); }
+
+/* Security group snippet read by sending traffic (iac/SgRuleSim) */
+.sgr-template { margin: 12px 0 0; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.5; overflow-x: auto; color: var(--ink); }

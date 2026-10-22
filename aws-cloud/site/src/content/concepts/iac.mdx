@@ -1,0 +1,108 @@
+---
+title: "CloudFormation và Elastic Beanstalk: hạ tầng thành code"
+lede: "ShopViet có nhiều người mới và nhiều account hơn, và việc click tay trong console bắt đầu gây sự cố. Bài này đi qua ba việc: mô tả hạ tầng bằng template CloudFormation rồi tạo, sửa, rollback qua stack; đưa cùng một chuẩn tới mọi account và Region bằng StackSets; và làm instance mới của Elastic Beanstalk lên trong 2 phút."
+minutes: 15
+scenes: 3
+prerequisites: ["ec2", "vpc", "rds"]
+docs:
+  - title: "What is AWS CloudFormation?"
+    url: "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html"
+  - title: "Update CloudFormation stacks using change sets"
+    url: "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-changesets.html"
+  - title: "Managing stacks across accounts and Regions with StackSets"
+    url: "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/what-is-cfnstacksets.html"
+  - title: "What is AWS Elastic Beanstalk?"
+    url: "https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/Welcome.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import StackSim from "../../components/scenes/iac/StackSim.tsx";
+import SgRuleSim from "../../components/scenes/iac/SgRuleSim.tsx";
+import StackSetSim from "../../components/scenes/iac/StackSetSim.tsx";
+import BootTimeSim from "../../components/scenes/iac/BootTimeSim.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#s1", label: "1 · Template và stack" },
+  { href: "#s2", label: "2 · Nhiều account, nhiều Region" },
+  { href: "#s3", label: "3 · Beanstalk lên nhanh" },
+  { href: "#challenge", label: "Thử thách" },
+]}>
+Tuần trước một bạn mới vào ShopViet tạo database bằng console, quên bật Multi-AZ và backup. Database hỏng, đơn hàng mất nửa ngày. Bài học: hạ tầng nên được **viết ra** như code, review như code, và tạo lại y hệt bao nhiêu lần cũng được. **CloudFormation** làm việc đó cho mọi loại tài nguyên; **Elastic Beanstalk** lo phần chạy ứng dụng web cho người không muốn tự ghép từng mảnh.
+</Story>
+
+<Scene id="s1" label="Cảnh 1/3" title="Một template thay cho click tay" questions={["exam4_q47", "exam4_q15", "exam4_q17"]}>
+
+**Template** là một file YAML hoặc JSON mô tả tài nguyên cần có. CloudFormation đọc template và tạo một **stack**: nhóm tài nguyên được tạo, sửa và xoá cùng nhau. Muốn đổi gì thì sửa template rồi **update stack**; **change set** cho xem trước CloudFormation sẽ đổi những gì. Chạy ba tình huống của ShopViet:
+
+<StackSim client:visible />
+
+Đọc được template cũng quan trọng như viết. Đây là security group của nhóm web trong template của ShopViet. Gửi thử từng kết nối để xem mỗi rule làm gì:
+
+<SgRuleSim client:visible />
+
+<Takeaway>Muốn mọi người tạo tài nguyên theo cùng chuẩn: đưa chuẩn vào template CloudFormation, chỉ để người dùng chọn tham số trong danh sách cho phép. Sửa hạ tầng bằng cách sửa template rồi update stack. Tạo lỗi giữa chừng thì stack tự rollback. CloudFormation không tính phí riêng. SecurityGroupIngress là inbound rule của security group, chỉ có rule cho phép.</Takeaway>
+
+</Scene>
+
+<Scene id="s2" label="Cảnh 2/3" title="Cùng một chuẩn cho mọi account và Region" questions={["exam3_q36"]}>
+
+ShopViet giờ có nhiều account trong **AWS Organizations**: production, dev, data, và sắp có chi nhánh Nhật. Mỗi account chạy ở nhiều Region. Mọi nơi phải dùng đúng kiểu EC2 đã duyệt và IAM role chuẩn cho Lambda. Thử triển khai template baseline bằng ba cách, rồi thêm một account mới:
+
+<StackSetSim client:visible />
+
+<Takeaway>Một template, nhiều account và nhiều Region, một thao tác: CloudFormation StackSets. Bật automatic deployment để account mới vào OU tự nhận stack. AWS RAM chỉ chia sẻ tài nguyên có sẵn, không triển khai template.</Takeaway>
+
+</Scene>
+
+<Scene id="s3" label="Cảnh 3/3" title="Elastic Beanstalk: instance mới lên trong 2 phút" questions={["exam4_q1"]}>
+
+Trang web chính của ShopViet chạy trên **Elastic Beanstalk**: đội chỉ tải code lên, Beanstalk tự dựng EC2, load balancer, Auto Scaling group và theo dõi health. Đội vẫn xem và chỉnh được các tài nguyên bên dưới. Vấn đề là ứng dụng cài mất 45 phút: lúc đông khách, Beanstalk thêm máy nhưng máy mới gần một tiếng sau mới phục vụ được. Cho bốn cách khởi động chạy đua:
+
+<BootTimeSim client:visible />
+
+<Takeaway>Cài lâu làm instance mới lên chậm: đưa phần tĩnh vào golden AMI (Beanstalk cho dùng custom AMI), để user data chỉ sinh phần động lúc khởi động.</Takeaway>
+
+</Scene>
+
+<Scene id="challenge" label="Thử thách" title="Làm ở đâu cho đúng?" questions={["exam3_q36", "exam4_q1", "exam4_q47"]}>
+
+Xếp từng việc vào nơi nên làm. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
+
+<SortGame client:visible
+  bins={[
+    { id: "template", title: "Template CloudFormation", sub: "một stack", hint: "Gợi ý: việc này là mô tả và sửa tài nguyên trong một account, một Region." },
+    { id: "stackset", title: "StackSets", sub: "nhiều account, Region", hint: "Gợi ý: việc này cần lặp lại ở nhiều account hoặc nhiều Region." },
+    { id: "boot", title: "Golden AMI + user data", sub: "lúc khởi động", hint: "Gợi ý: việc này nói về điều xảy ra khi một instance khởi động." },
+  ]}
+  cards={[
+    ["Database luôn Multi-AZ và mã hoá", "template"], ["Đổi io1 sang gp2 qua update stack", "template"], ["Xem trước thay đổi bằng change set", "template"],
+    ["Baseline IAM cho mọi account", "stackset"], ["Account mới vào OU tự có baseline", "stackset"], ["Cùng cấu hình ở 3 Region", "stackset"],
+    ["Cài sẵn phần mềm nặng", "boot"], ["Sinh file cấu hình theo từng instance", "boot"],
+  ]}
+/>
+
+Kiểm tra nhanh: nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
+
+<Quiz client:visible items={[
+  { q: "Người mới hay cấu hình sai RDS. ShopViet muốn mọi database đều theo đúng các thiết lập an toàn, dùng lại được cho cả công ty. Làm gì?",
+    opts: ["Gửi email nhắc nhở mỗi khi thấy database sai", "Quản lý RDS bằng template CloudFormation chứa sẵn các thiết lập chuẩn", "Cấm người mới tạo RDS"],
+    a: 1,
+    why: "Template biến chuẩn thành code: ai tạo cũng ra cùng cấu hình, và template được review như code." },
+  { q: "Các phòng ban dùng account riêng ở nhiều Region. Cần mỗi nơi dùng cùng kiểu EC2 và IAM role chuẩn. Dùng gì?",
+    opts: ["Một stack CloudFormation", "CloudFormation StackSets", "AWS RAM"],
+    a: 1,
+    why: "StackSets tạo stack từ một template trong nhiều account và Region bằng một thao tác. Stack thường chỉ ở một nơi; RAM chỉ chia sẻ tài nguyên." },
+  { q: "Ổ io1 chiếm phần lớn chi phí, CloudWatch cho thấy chỉ thỉnh thoảng mới có I/O cao. Hạ tầng quản lý bằng CloudFormation. Giảm chi phí thế nào?",
+    opts: ["Bỏ CloudFormation vì nó tính phí cao", "Đổi ổ sang gp2 trong template rồi update stack", "Giữ io1 và đổi EC2 sang cỡ nhỏ hơn"],
+    a: 1,
+    why: "gp2 có burst cho những lúc I/O cao và rẻ hơn io1 nhiều. CloudFormation không tính phí riêng; EC2 chỉ chiếm phần nhỏ chi phí." },
+  { q: "Ứng dụng trên Elastic Beanstalk cài mất 45 phút, gồm phần tĩnh và phần phải sinh lúc khởi động. Muốn instance mới chạy trong dưới 2 phút. Làm gì?",
+    opts: ["Để file cài trên S3", "Golden AMI có sẵn phần tĩnh, user data sinh phần động", "User data cài toàn bộ khi khởi động"],
+    a: 1,
+    why: "Phần tốn thời gian là cài đặt, nên phải cài sẵn vào AMI. Phần thay đổi theo instance thì để user data làm lúc khởi động." },
+]} />
+
+</Scene>
