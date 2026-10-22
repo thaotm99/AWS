@@ -53,6 +53,11 @@ const TIMEOUTS = [3, 10, 60, 300, 900];
 const ZIP_LIMIT = 250;
 const IMAGE_LIMIT = 10240;
 const VCPU_MB = 1769;
+// The docs give one ratio only (1,769 MB = one vCPU), so above it the readout says "more than 1", not a number.
+const vcpuLabel = (mem: number, vi: boolean) =>
+  mem > VCPU_MB ? (vi ? "hơn 1" : "more than 1")
+  : mem === VCPU_MB ? "1"
+  : "≈ " + (mem / VCPU_MB).toLocaleString(vi ? "vi-VN" : "en-US", { maximumFractionDigits: 2 });
 
 interface Check { level: Level; label: Bi | string; msg: Bi }
 
@@ -61,7 +66,7 @@ const n = (v: number, vi: boolean) => v.toLocaleString(vi ? "vi-VN" : "en-US");
 function evaluate(w: Workload, c: { mem: number; tmp: number; timeout: number; pkg: Pkg; layer: boolean; store: Store }, vi: boolean): Check[] {
   const out: Check[] = [];
   const f = (v: number) => n(v, vi);
-  const cpu = (c.mem / VCPU_MB).toLocaleString(vi ? "vi-VN" : "en-US", { maximumFractionDigits: 2 });
+  const cpu = vcpuLabel(c.mem, vi);
 
   // Package type and size.
   if (c.pkg === "zip") {
@@ -92,10 +97,10 @@ function evaluate(w: Workload, c: { mem: number; tmp: number; timeout: number; p
   // Memory and CPU.
   if (w.minMem && c.mem < w.minMem) {
     out.push({ level: "bad", label: "Memory",
-      msg: { vi: `${f(c.mem)} MB tương đương khoảng ${cpu} vCPU. Lambda cấp CPU **tỷ lệ với memory** (1.769 MB tương đương 1 vCPU); không có thiết lập CPU riêng. Tăng memory lên tối thiểu 1.769 MB.`, en: `${f(c.mem)} MB is about ${cpu} vCPU. Lambda allocates CPU **in proportion to memory** (1,769 MB is the equivalent of one vCPU); there is no separate CPU setting. Raise memory to at least 1,769 MB.` } });
+      msg: { vi: `${f(c.mem)} MB tương đương ${cpu} vCPU. Lambda cấp CPU **tỷ lệ với memory** (1.769 MB tương đương 1 vCPU); không có thiết lập CPU riêng. Tăng memory lên tối thiểu 1.769 MB.`, en: `${f(c.mem)} MB is ${cpu} vCPU. Lambda allocates CPU **in proportion to memory** (1,769 MB is the equivalent of one vCPU); there is no separate CPU setting. Raise memory to at least 1,769 MB.` } });
   } else {
     out.push({ level: "ok", label: "Memory",
-      msg: { vi: `${f(c.mem)} MB, tương đương khoảng ${cpu} vCPU.`, en: `${f(c.mem)} MB, about ${cpu} vCPU.` } });
+      msg: { vi: `${f(c.mem)} MB, tương đương ${cpu} vCPU.`, en: `${f(c.mem)} MB, ${cpu} vCPU.` } });
   }
 
   // Ephemeral storage.
@@ -203,7 +208,7 @@ export default function FunctionConfigSim() {
         <div className="lfx-env" aria-label={L({ vi: "Môi trường thực thi của function", en: "The function's execution environment" })}>
           <span className="lfx-lbl">{L({ vi: "Môi trường thực thi", en: "Execution environment" })}</span>
           {meter("Memory", `${f(mem)} MB`, (mem / 10240) * 100, "", w.minMem ? (w.minMem / 10240) * 100 : undefined)}
-          {meter("CPU", `≈ ${(mem / VCPU_MB).toLocaleString(vi ? "vi-VN" : "en-US", { maximumFractionDigits: 2 })} vCPU`, (mem / 10240) * 100, "cpu")}
+          {meter("CPU", `${vcpuLabel(mem, vi)} vCPU`, (mem / 10240) * 100, "cpu")}
           {meter("/tmp", `${f(tmp)} MB`, (tmp / 10240) * 100, w.tmp && tmp < w.tmp ? "bad" : "", w.tmp ? (w.tmp / 10240) * 100 : undefined)}
           {meter(L({ vi: "Gói mã", en: "Package" }), `${f(w.pkg)} / ${f(limit)} MB`, (w.pkg / limit) * 100, over ? "bad" : "pkg")}
           {meter("Timeout", `${f(timeout)} s`, (timeout / 900) * 100, timeout < w.dur ? "bad" : "", (w.dur / 900) * 100)}
