@@ -7,7 +7,9 @@ import T from "../app/T.astro";
 import type { SiteMessageKey } from "../app/i18n";
 import type { MessageParams } from "../core/i18n/types";
 import LanguageSwitch from "../modules/shell/ui/LanguageSwitch.astro";
-import { BrowserLocalePreference } from "../core/i18n/LocalePreference";
+import ThemeToggle from "../modules/shell/ui/ThemeToggle.astro";
+import { DEFAULT_LOCALE } from "../core/i18n/types";
+import { DEFAULT_THEME, THEMES } from "../core/theme/types";
 
 interface Props {
   title: string;
@@ -31,8 +33,10 @@ const {
   titleKey,
   titleParams,
 } = Astro.props;
-// Runs before first paint: hide translatable text until the chosen language is applied.
-const earlyLocale = `try{var l=localStorage.getItem(${JSON.stringify(BrowserLocalePreference.storageKey)});if(l&&l!=="vi"){var h=document.documentElement;h.lang=l;h.classList.add("i18n-pending");setTimeout(function(){h.classList.remove("i18n-pending")},2000)}}catch(e){}`;
+// Runs before first paint, before any bundle: apply the saved theme (no flash of the
+// wrong colors) and hide translatable text until the saved language is applied.
+// Keys match the preference fields in modules/shell (localStorage "theme", "locale").
+const earlyPreferences = `(function(){var h=document.documentElement,t=${JSON.stringify(DEFAULT_THEME)};try{var s=localStorage.getItem("theme");if(${JSON.stringify(THEMES)}.indexOf(s)>=0)t=s;var l=localStorage.getItem("locale");if(l&&l!==${JSON.stringify(DEFAULT_LOCALE)}){h.lang=l;h.classList.add("i18n-pending");setTimeout(function(){h.classList.remove("i18n-pending")},2000)}}catch(e){}h.dataset.theme=t})();`;
 const ready = (await getCollection("concepts")).map((e) => e.id);
 const layers = getCurriculum();
 ---
@@ -43,7 +47,7 @@ const layers = getCurriculum();
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content={description} />
     <title>{title}</title>
-    <script is:inline set:html={earlyLocale} />
+    <script is:inline set:html={earlyPreferences} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -54,7 +58,7 @@ const layers = getCurriculum();
       <div class="topbar-inner">
         <a class="brand" href="/">
           <span class="brand-mark" aria-hidden="true">
-            <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="9" width="14" height="5" rx="1" fill="#fff"/><rect x="3" y="4" width="10" height="4" rx="1" fill="#fff" opacity=".75"/><rect x="5" y="1" width="6" height="2" rx="1" fill="#fff" opacity=".5"/></svg>
+            <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="9" width="14" height="5" rx="1" fill="currentColor"/><rect x="3" y="4" width="10" height="4" rx="1" fill="currentColor" opacity=".75"/><rect x="5" y="1" width="6" height="2" rx="1" fill="currentColor" opacity=".5"/></svg>
           </span>
           <span class="brand-text">AWS Từ Nền</span>
         </a>
@@ -64,6 +68,7 @@ const layers = getCurriculum();
           <a href="/on-tap/" aria-current={section === "practice" ? "page" : undefined}><T k="shell.nav.practice" /></a>
         </nav>
         <LanguageSwitch />
+        <ThemeToggle />
         {sidebar && <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="sidebar"><T k="shell.nav.roadmap" /></button>}
       </div>
     </header>
@@ -82,9 +87,10 @@ const layers = getCurriculum();
 
     <script>
       import { i18n } from "../app/i18n";
+      import { theme } from "../app/theme";
       import { ShellController } from "../modules/shell/ui/ShellController";
 
-      new ShellController(i18n).start();
+      new ShellController(i18n, theme).start();
     </script>
   </body>
 </html>

@@ -11,6 +11,10 @@ export const en: Messages<typeof vi> = {
     language: "Language",
     soon: "{page} is coming soon.",
   },
+  theme: {
+    toDark: "Switch to dark mode",
+    toLight: "Switch to light mode",
+  },
   roadmap: {
     title: "SAA-C03 study path",
     note: "Number on the right: questions in the 6 practice tests. ~ means estimated.",

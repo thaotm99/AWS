@@ -9,6 +9,10 @@ export const vi = {
     language: "Ngôn ngữ",
     soon: "{page} đang được xây dựng.",
   },
+  theme: {
+    toDark: "Bật chế độ tối",
+    toLight: "Bật chế độ sáng",
+  },
   roadmap: {
     title: "Lộ trình SAA-C03",
     note: "Số bên phải: số câu trong 6 đề luyện thi. Dấu ~ là ước lượng.",

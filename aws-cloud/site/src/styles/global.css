@@ -7,12 +7,14 @@
   --line: #d8e1e5;
   --accent: #0a6a85;
   --accent-soft: #dfeff3;
-  --edge: #b46c0c;
+  --edge: #945607;
   --edge-soft: #f7ead6;
   --ok: #2b7a4b;
   --ok-soft: #e1f2e7;
   --bad: #b03a3a;
   --bad-soft: #f8e3e3;
+  --on-accent: #ffffff;
+  --shadow: 0 1px 2px rgb(20 33 43 / .06), 0 8px 24px rgb(20 33 43 / .06);
   --font-body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
   --step--1: 0.8125rem;
@@ -21,20 +23,26 @@
   --step-2: 1.5rem;
   --step-3: 2.125rem;
 }
+/* Theme is set on <html data-theme> before first paint (BaseLayout); the media query only covers no-JS. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0e161b; --surface: #152129; --ink: #e2eaee; --muted: #91a3ad; --line: #26353e;
-    --accent: #52b6d1; --accent-soft: #143140; --edge: #e3a14c; --edge-soft: #3a2a14;
-    --ok: #63c48f; --ok-soft: #173426; --bad: #e27f7f; --bad-soft: #3c1d1d;
+    /* Dark: deep blue-slate ground, brighter cyan accent; text pairs keep contrast ≥ 4.5:1. */
+    --bg: #0b1218; --surface: #111b22; --ink: #e4ecf0; --muted: #90a4af; --line: #22323c;
+    --accent: #4cc2df; --accent-soft: #0f2f3b; --on-accent: #06121a; --edge: #f0a95a; --edge-soft: #33240f;
+    --ok: #5ccf94; --ok-soft: #10301f; --bad: #f08585; --bad-soft: #3a1b1e;
+    --shadow: 0 1px 2px rgb(0 0 0 / .5), 0 8px 24px rgb(0 0 0 / .25);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0e161b; --surface: #152129; --ink: #e2eaee; --muted: #91a3ad; --line: #26353e;
-  --accent: #52b6d1; --accent-soft: #143140; --edge: #e3a14c; --edge-soft: #3a2a14;
-  --ok: #63c48f; --ok-soft: #173426; --bad: #e27f7f; --bad-soft: #3c1d1d;
+  /* Dark: deep blue-slate ground, brighter cyan accent; text pairs keep contrast ≥ 4.5:1. */
+  --bg: #0b1218; --surface: #111b22; --ink: #e4ecf0; --muted: #90a4af; --line: #22323c;
+  --accent: #4cc2df; --accent-soft: #0f2f3b; --on-accent: #06121a; --edge: #f0a95a; --edge-soft: #33240f;
+  --ok: #5ccf94; --ok-soft: #10301f; --bad: #f08585; --bad-soft: #3a1b1e;
+  --shadow: 0 1px 2px rgb(0 0 0 / .5), 0 8px 24px rgb(0 0 0 / .25);
   color-scheme: dark;
 }
+html.theme-switching, html.theme-switching *, html.theme-switching *::before { transition: background-color .25s ease, border-color .25s ease, color .25s ease, fill .25s ease, stroke .25s ease !important; }
 
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: var(--step-0); line-height: 1.65; }
@@ -49,7 +57,7 @@ button { font: inherit; color: inherit; }
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 .topbar-inner { max-width: 1240px; margin: 0 auto; height: 56px; display: flex; align-items: center; gap: 16px; }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -0.01em; }
-.brand-mark { width: 26px; height: 26px; border-radius: 6px; background: var(--accent); display: grid; place-items: center; }
+.brand-mark { width: 26px; height: 26px; border-radius: 6px; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; }
 .brand small { font-weight: 500; color: var(--muted); font-size: var(--step--1); }
 .topnav { margin-left: auto; display: flex; gap: 4px; }
 .topnav a { text-decoration: none; color: var(--muted); padding: 6px 12px; border-radius: 6px; font-size: var(--step--1); font-weight: 500; }
@@ -60,6 +68,10 @@ button { font: inherit; color: inherit; }
 .lang-switch button { border: 0; background: var(--surface); color: var(--muted); padding: 4px 9px; font-size: 0.75rem; font-weight: 600; font-family: var(--font-mono); cursor: pointer; }
 .lang-switch button + button { border-left: 1px solid var(--line); }
 .lang-switch button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.theme-toggle { flex: none; width: 32px; height: 30px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); color: var(--muted); cursor: pointer; }
+.theme-toggle:hover { color: var(--ink); border-color: var(--accent); }
+.theme-toggle svg { display: none; }
+:root[data-theme="dark"] .theme-toggle .icon-sun, :root:not([data-theme="dark"]) .theme-toggle .icon-moon { display: block; }
 .menu-btn { white-space: nowrap; display: none; border: 1px solid var(--line); background: var(--surface); padding: 6px 12px; border-radius: 6px; font-size: var(--step--1); cursor: pointer; margin-left: auto; }
 
 /* Shell */
@@ -109,7 +121,7 @@ p { margin: 0 0 12px; max-width: 68ch; }
 .btn { border: 1px solid var(--line); background: var(--surface); border-radius: 7px; padding: 6px 12px; cursor: pointer; font-size: var(--step--1); font-weight: 500; }
 .btn:hover:not(:disabled) { border-color: var(--accent); }
 .btn:disabled { opacity: 0.5; cursor: default; }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .btn.danger { color: var(--bad); }
 .btn[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .done-btn[aria-pressed="true"] { background: var(--ok-soft); color: var(--ok); border-color: var(--ok); }

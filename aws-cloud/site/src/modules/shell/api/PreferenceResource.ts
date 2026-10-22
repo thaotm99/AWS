@@ -1,6 +1,7 @@
 import { ApiError } from "../../../core/api/ApiClient";
 import { LocalResource, type LocalRoute } from "../../../core/api/local/LocalResource";
 import { isLocale } from "../../../core/i18n/types";
+import { isTheme } from "../../../core/theme/types";
 import type { Preferences } from "../domain/types";
 
 const COLLECTION = "preferences";
@@ -25,6 +26,7 @@ export class PreferenceResource extends LocalResource {
   private async patch(body: unknown): Promise<Preferences> {
     const input = body as Partial<Preferences>;
     if (input?.locale !== undefined && !isLocale(input.locale)) throw new ApiError(400, "Unsupported locale");
+    if (input?.theme !== undefined && !isTheme(input.theme)) throw new ApiError(400, "Unsupported theme");
     const next = { ...(await this.read()), ...input };
     await this.storage.put(COLLECTION, KEY, next);
     return next;

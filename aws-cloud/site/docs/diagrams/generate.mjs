@@ -135,10 +135,12 @@ function moduleMap() {
   const practiceChips = ["ui/", "app/", "services/", "api/", "domain/", "i18n/", "content/"]
     .map((c, i) => chip(574 + (i % 3) * 116, 192 + Math.floor(i / 3) * 32, 108, c)).join("");
   const coreBoxes = [
-    ["api/", "ApiClient · LocalApiClient · StorageDriver"],
-    ["state/", "EventBus · Store · Controller"],
-    ["i18n/", "I18n · Translator · LocalePreference"],
-  ].map(([t, s], i) => box({ cx: 180 + i * 300, cy: 408, w: 280, h: 54, title: t, sub: s, cls: "box" })).join("");
+    ["api/", "ApiClient · StorageDriver"],
+    ["state/", "Store · Controller"],
+    ["i18n/", "I18n · Translator"],
+    ["preferences/", "Preference · Choice"],
+    ["theme/", "ThemeManager"],
+  ].map(([t, s], i) => box({ cx: 113 + i * 184, cy: 408, w: 172, h: 54, title: t, sub: s, cls: "box" })).join("");
 
   const body = `
 <rect class="panel" x="20" y="20" width="920" height="64" rx="10"/>
@@ -147,9 +149,10 @@ function moduleMap() {
 
 <rect class="panel" x="20" y="134" width="250" height="172" rx="10"/>
 <text class="lbl" x="36" y="158">SRC/APP · GHÉP NỐI</text>
-<text class="tc" x="36" y="190">api.ts</text><text class="s" x="96" y="190">một ApiClient cho cả site</text>
-<text class="tc" x="36" y="222">i18n.ts</text><text class="s" x="96" y="222">gom từ điển các module</text>
-<text class="tc" x="36" y="254">T.astro</text><text class="s" x="96" y="254">chữ dịch được trong Astro</text>
+<text class="tc" x="36" y="190">api.ts</text><text class="s" x="104" y="190">một ApiClient cho cả site</text>
+<text class="tc" x="36" y="222">i18n.ts</text><text class="s" x="104" y="222">gom từ điển các module</text>
+<text class="tc" x="36" y="254">theme.ts</text><text class="s" x="104" y="254">sáng / tối</text>
+<text class="tc" x="36" y="286">T.astro</text><text class="s" x="104" y="286">chữ dịch được trong Astro</text>
 
 <rect class="panel" x="310" y="134" width="630" height="172" rx="10"/>
 <text class="lbl" x="326" y="158">SRC/MODULES · MỖI TÍNH NĂNG MỘT MODULE</text>
@@ -357,7 +360,7 @@ function languageFlow() {
   const W = 960, H = 400;
   const BT = { cx: 80, cy: 180, w: 120, title: "VI | EN", sub: "bấm EN" };
   const SL = { cx: 265, cy: 180, w: 170, title: "i18n.setLocale()" };
-  const PF = { cx: 500, cy: 80, w: 200, title: "ApiLocalePreference" };
+  const PF = { cx: 500, cy: 80, w: 200, title: "ApiPreference", sub: "field: locale" };
   const LS = { cx: 800, cy: 44, w: 280, title: "localStorage['locale']", sub: "đọc ngay khi mở trang" };
   const PA = { cx: 800, cy: 116, w: 280, title: "PATCH /preferences", sub: "→ IndexedDB (sau này: server)" };
   const RE = { cx: 500, cy: 230, w: 200, title: "useI18n()" };

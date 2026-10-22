@@ -14,6 +14,7 @@ Các hình bên dưới là SVG có chuyển động. Chúng tự chạy trên G
 - [Một lần bấm Kiểm tra](#một-lần-bấm-kiểm-tra)
 - [API và lưu trữ](#api-và-lưu-trữ)
 - [Ngôn ngữ VI / EN](#ngôn-ngữ-vi--en)
+- [Giao diện sáng / tối](#giao-diện-sáng--tối)
 - [Thêm một module mới](#thêm-một-module-mới)
 - [Chuyển dữ liệu lên server](#chuyển-dữ-liệu-lên-server)
 - [Sửa hình minh hoạ](#sửa-hình-minh-hoạ)
@@ -24,9 +25,9 @@ Các hình bên dưới là SVG có chuyển động. Chúng tự chạy trên G
 
 | Thư mục | Vai trò | Được import từ đâu |
 |---|---|---|
-| `src/core/` | Hạ tầng dùng chung: API client, lưu trữ, event/store/controller, i18n. Không biết có tính năng nào. | mọi nơi |
+| `src/core/` | Hạ tầng dùng chung: API client, lưu trữ, event/store/controller, i18n, lựa chọn của người xem (`preferences/`), giao diện sáng/tối (`theme/`). Không biết có tính năng nào. | mọi nơi |
 | `src/modules/<tên>/` | Một tính năng, tự chứa đủ các tầng. Hiện có `shell` (khung trang, cài đặt) và `practice` (Ôn tập). | `app/`, `pages/` |
-| `src/app/` | Tầng ghép nối: tạo **một** `ApiClient` cho cả site (`api.ts`) và gom từ điển của các module (`i18n.ts`). | module (lấy i18n, ApiClient), `pages/` |
+| `src/app/` | Tầng ghép nối: tạo **một** `ApiClient` cho cả site (`api.ts`), gom từ điển của các module (`i18n.ts`), tạo `theme` (`theme.ts`). | module (lấy i18n, ApiClient), `pages/` |
 | `src/pages/`, `src/layouts/` | Trang Astro tĩnh. Gắn component React của module, sinh `/api/*.json` lúc build. | không ai |
 
 Phần lý thuyết cũ (`src/content/`, `src/components/`, `src/data/`) vẫn giữ cấu trúc cũ. Phần đó chưa có dữ liệu người dùng nào cần lưu.
@@ -38,7 +39,7 @@ Phần lý thuyết cũ (`src/content/`, `src/components/`, `src/data/`) vẫn g
    - Service chỉ gọi `ApiClient`, không chạm vào IndexedDB.
 2. **Mọi việc đọc và ghi dữ liệu đều đi qua API kiểu REST** (`api.get/post/put/patch`), kể cả khi dữ liệu đang nằm trong trình duyệt. Nhờ vậy, chuyển lên server chỉ phải đổi một chỗ.
 3. **Hướng đối tượng, TypeScript strict.**
-   - Mỗi điểm mở rộng là một lớp `abstract`: `ApiClient`, `StorageDriver`, `LocalResource`, `Store`, `Controller`, `ApiService`, `LocalePreference`, `ExamSource`.
+   - Mỗi điểm mở rộng là một lớp `abstract`: `ApiClient`, `StorageDriver`, `LocalResource`, `Store`, `Controller`, `ApiService`, `Preference`, `Choice`, `ExamSource`.
    - Phần cài đặt cụ thể là lớp con của các lớp đó.
 4. **`core` không import gì từ `modules` hay `app`.** Một module không import module khác.
 5. **Chữ hiển thị nằm trong từ điển của module** (`i18n/vi.ts`, `i18n/en.ts`), không viết thẳng trong component. Lỗi cũng là mã lỗi; UI mới dịch mã đó ra chữ.
@@ -88,7 +89,7 @@ Lưu thất bại thì store nhận mã lỗi `saveAnswer`. UI dịch mã đó s
 | GET | `/attempts/latest?certId=&examId=` | `LocalApiClient` → `AttemptResource` | lượt mới nhất (404 nếu chưa có) |
 | POST | `/attempts` | `LocalApiClient` → `AttemptResource` | lượt làm mới |
 | PUT | `/attempts/:id/answers/:questionId` | `LocalApiClient` → `AttemptResource` | lượt làm sau khi lưu câu trả lời |
-| GET | `/preferences` | `LocalApiClient` → `PreferenceResource` | cài đặt của người xem |
+| GET | `/preferences` | `LocalApiClient` → `PreferenceResource` | cài đặt của người xem (`locale`, `theme`) |
 | PATCH | `/preferences` | `LocalApiClient` → `PreferenceResource` | cài đặt sau khi đổi |
 
 Các lớp dùng chung nằm trong `src/core/api/`:
@@ -106,7 +107,7 @@ Các lớp dùng chung nằm trong `src/core/api/`:
 
 **Các thành phần:**
 - `I18n` (`core/i18n`) giữ từ điển của mọi ngôn ngữ và ngôn ngữ đang chọn. Lớp này báo cho React (`useI18n`) và cho `DomTranslator` (chữ trong trang Astro) mỗi khi ngôn ngữ đổi.
-- Lựa chọn ngôn ngữ được lưu qua API: `PATCH /preferences` (`ApiLocalePreference` của module `shell`). Ngoài ra có một bản sao trong localStorage để script trong `<head>` đọc trước khi trang hiện ra.
+- Lựa chọn ngôn ngữ được lưu qua API: `PATCH /preferences` (`ApiPreference` của module `shell`, field `locale`). Ngoài ra có một bản sao trong localStorage để script trong `<head>` đọc trước khi trang hiện ra.
 - Mỗi module có từ điển riêng. `app/i18n.ts` gom các từ điển đó lại theo tên module (`shell.*`, `practice.*`).
 - `en.ts` có kiểu `Messages<typeof vi>`, nên thiếu hoặc thừa key sẽ không qua được `astro check`.
 
@@ -117,6 +118,26 @@ Các lớp dùng chung nằm trong `src/core/api/`:
 **Quy ước câu chữ:**
 - Tiếng Anh dùng đúng thuật ngữ của AWS exam guide và của đề, ví dụ "Practice Test", "Select TWO", "Correct option", "minimum passing score".
 - Cả hai ngôn ngữ dùng từ đơn giản nhất có thể, chỉ giữ thuật ngữ chuyên ngành.
+
+## Giao diện sáng / tối
+
+Nút mặt trời / mặt trăng ở cuối thanh menu. Mặc định là **tối**, vì đa số người đọc là developer.
+
+**Cách hoạt động:**
+- `ThemeManager` (`core/theme`) giữ giao diện hiện tại và ghi `data-theme="dark|light"` lên `<html>`.
+- Lựa chọn được lưu giống ngôn ngữ: `ApiPreference` với field `theme` → `PATCH /preferences`, kèm bản sao trong localStorage.
+- `ThemeManager` và `I18n` cùng kế thừa `Choice<T>` (`core/preferences`). Lớp này giữ một giá trị, báo thay đổi và lưu qua một `Preference<T>`.
+
+**Không nháy màu khi mở trang:**
+- Script inline trong `<head>` đọc localStorage và đặt `data-theme` trước khi trang được vẽ, trước cả mọi bundle JavaScript.
+
+**Đổi chế độ không làm vỡ giao diện:**
+- Mọi màu trong CSS là token (`--bg`, `--surface`, `--ink`, `--muted`, `--line`, `--accent`, `--ok`, `--bad`, `--edge`, `--on-accent`, `--shadow`). Các token được khai báo lại trong `:root[data-theme="dark"]`.
+- Component không tự kiểm tra đang ở chế độ nào và không dùng mã màu cố định.
+- Khi cần chữ trên nền accent, dùng `--on-accent` (trắng ở chế độ sáng, gần đen ở chế độ tối).
+- Mọi cặp chữ/nền ở cả hai chế độ đạt độ tương phản ≥ 4.5:1.
+- Lúc bấm đổi, class `theme-switching` bật hiệu ứng chuyển màu 0,25 giây. Lúc tải trang thì không có hiệu ứng này.
+- Chỉ phần nào không dùng được CSS (ví dụ canvas) mới cần `useTheme()` từ `app/theme.ts`.
 
 ## Thêm một module mới
 

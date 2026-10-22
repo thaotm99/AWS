@@ -57,9 +57,10 @@
 
 <rect class="panel" x="20" y="134" width="250" height="172" rx="10"/>
 <text class="lbl" x="36" y="158">SRC/APP · GHÉP NỐI</text>
-<text class="tc" x="36" y="190">api.ts</text><text class="s" x="96" y="190">một ApiClient cho cả site</text>
-<text class="tc" x="36" y="222">i18n.ts</text><text class="s" x="96" y="222">gom từ điển các module</text>
-<text class="tc" x="36" y="254">T.astro</text><text class="s" x="96" y="254">chữ dịch được trong Astro</text>
+<text class="tc" x="36" y="190">api.ts</text><text class="s" x="104" y="190">một ApiClient cho cả site</text>
+<text class="tc" x="36" y="222">i18n.ts</text><text class="s" x="104" y="222">gom từ điển các module</text>
+<text class="tc" x="36" y="254">theme.ts</text><text class="s" x="104" y="254">sáng / tối</text>
+<text class="tc" x="36" y="286">T.astro</text><text class="s" x="104" y="286">chữ dịch được trong Astro</text>
 
 <rect class="panel" x="310" y="134" width="630" height="172" rx="10"/>
 <text class="lbl" x="326" y="158">SRC/MODULES · MỖI TÍNH NĂNG MỘT MODULE</text>
@@ -70,7 +71,7 @@
 
 <rect class="panel" x="20" y="356" width="920" height="104" rx="10"/>
 <text class="lbl" x="36" y="374">SRC/CORE · HẠ TẦNG DÙNG CHUNG, KHÔNG BIẾT TÍNH NĂNG NÀO</text>
-<rect class="box" x="40" y="381" width="280" height="54" rx="8"/><text class="t" x="180" y="404" text-anchor="middle">api/</text><text class="s" x="180" y="421" text-anchor="middle">ApiClient · LocalApiClient · StorageDriver</text><rect class="box" x="340" y="381" width="280" height="54" rx="8"/><text class="t" x="480" y="404" text-anchor="middle">state/</text><text class="s" x="480" y="421" text-anchor="middle">EventBus · Store · Controller</text><rect class="box" x="640" y="381" width="280" height="54" rx="8"/><text class="t" x="780" y="404" text-anchor="middle">i18n/</text><text class="s" x="780" y="421" text-anchor="middle">I18n · Translator · LocalePreference</text>
+<rect class="box" x="27" y="381" width="172" height="54" rx="8"/><text class="t" x="113" y="404" text-anchor="middle">api/</text><text class="s" x="113" y="421" text-anchor="middle">ApiClient · StorageDriver</text><rect class="box" x="211" y="381" width="172" height="54" rx="8"/><text class="t" x="297" y="404" text-anchor="middle">state/</text><text class="s" x="297" y="421" text-anchor="middle">Store · Controller</text><rect class="box" x="395" y="381" width="172" height="54" rx="8"/><text class="t" x="481" y="404" text-anchor="middle">i18n/</text><text class="s" x="481" y="421" text-anchor="middle">I18n · Translator</text><rect class="box" x="579" y="381" width="172" height="54" rx="8"/><text class="t" x="665" y="404" text-anchor="middle">preferences/</text><text class="s" x="665" y="421" text-anchor="middle">Preference · Choice</text><rect class="box" x="763" y="381" width="172" height="54" rx="8"/><text class="t" x="849" y="404" text-anchor="middle">theme/</text><text class="s" x="849" y="421" text-anchor="middle">ThemeManager</text>
 
 <path class="flow" d="M145,84 L145,130" marker-end="url(#arrA)"/>
 <path class="flow" d="M625,84 L625,130" marker-end="url(#arrA)"/>

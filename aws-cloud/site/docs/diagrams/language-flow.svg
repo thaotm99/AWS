@@ -61,7 +61,7 @@
 <path class="wire" d="M600,310 L658,310" marker-end="url(#arr)"/>
 <rect class="box" x="20" y="156" width="120" height="48" rx="8"/><text class="t" x="80" y="176" text-anchor="middle">VI | EN</text><text class="s" x="80" y="193" text-anchor="middle">bấm EN</text>
 <rect class="box" x="180" y="156" width="170" height="48" rx="8"/><text class="t" x="265" y="184" text-anchor="middle">i18n.setLocale()</text>
-<rect class="box" x="400" y="56" width="200" height="48" rx="8"/><text class="t" x="500" y="84" text-anchor="middle">ApiLocalePreference</text>
+<rect class="box" x="400" y="56" width="200" height="48" rx="8"/><text class="t" x="500" y="76" text-anchor="middle">ApiPreference</text><text class="s" x="500" y="93" text-anchor="middle">field: locale</text>
 <rect class="box" x="660" y="20" width="280" height="48" rx="8"/><text class="t" x="800" y="40" text-anchor="middle">localStorage['locale']</text><text class="s" x="800" y="57" text-anchor="middle">đọc ngay khi mở trang</text>
 <rect class="box" x="660" y="92" width="280" height="48" rx="8"/><text class="t" x="800" y="112" text-anchor="middle">PATCH /preferences</text><text class="s" x="800" y="129" text-anchor="middle">→ IndexedDB (sau này: server)</text>
 <rect class="box" x="400" y="206" width="200" height="48" rx="8"/><text class="t" x="500" y="234" text-anchor="middle">useI18n()</text>
