@@ -14,7 +14,7 @@ export default function AzCapacityCalc() {
   return (
     <div className="stage">
       <div className="stage-bar">
-        <label className="label" htmlFor="needN">Luôn cần ít nhất: {need} instance</label>
+        <label className="label" htmlFor="needN">Số instance tối thiểu: {need}</label>
         <input id="needN" type="range" min={2} max={12} value={need} onChange={(e) => setNeed(Number(e.target.value))} />
         <span className="sep" />
         <span className="label">Số AZ</span>
@@ -22,7 +22,7 @@ export default function AzCapacityCalc() {
           <button key={k} className="btn" aria-pressed={k === azs} onClick={() => setAzs(k)}>{k} AZ</button>
         ))}
         <span className="sep" />
-        <button className="btn danger" aria-pressed={down} onClick={() => setDown(!down)}>{down ? "Khôi phục AZ 1" : "Sập AZ 1"}</button>
+        <button className="btn danger" aria-pressed={down} onClick={() => setDown(!down)}>{down ? "Khôi phục AZ 1" : "Mô phỏng sự cố AZ 1"}</button>
       </div>
       <div className="cap-grid">
         {Array.from({ length: azs }, (_, i) => (
@@ -38,10 +38,10 @@ export default function AzCapacityCalc() {
       <div className="readout" aria-live="polite">
         <div className="status">
           <span className="count">Tổng: {total} instance · còn lại khi mất 1 AZ: {total - perAz}</span>
-          <span className={"pill " + (total === best ? "ok" : "bad")}><i />{total === best ? "Rẻ nhất" : `Chưa rẻ nhất (tối thiểu ${best})`}</span>
+          <span className={"pill " + (total === best ? "ok" : "bad")}><i />{total === best ? "Chi phí thấp nhất" : `Chưa tối ưu chi phí (tối thiểu ${best})`}</span>
         </div>
         <p style={{ margin: "8px 0 0" }}>
-          Mỗi AZ cần ⌈{need} ÷ ({azs} − 1)⌉ = {perAz} instance để khi mất một AZ vẫn còn đủ {need}.
+          Mỗi AZ cần ⌈{need} ÷ ({azs} − 1)⌉ = {perAz} instance để khi mất một AZ vẫn duy trì đủ {need} instance.
           So sánh: {options.map((o) => `${o.k} AZ → ${o.total}`).join(", ")}.
         </p>
       </div>
