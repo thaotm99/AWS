@@ -1027,8 +1027,8 @@
         {
           "keyword": "Amazon S3 cannot be mounted as a file system",
           "lesson": "storage",
-          "status": "partial",
-          "where": "storage.mdx#s1; storage.mdx#s5 / MountpointSim"
+          "status": "covered",
+          "where": "storage.mdx#s5 / RequirementPicker (Fargate volume types EFS/EBS/bind mount/S3 Files; bucket is not a volume, Mountpoint is a host client; S3 Files nuance)"
         }
       ]
     },

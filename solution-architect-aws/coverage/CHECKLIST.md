@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **983 keyword** khác nhau: ✅ 980 (100%) · 🟡 2 (0%) · ❌ 1 (0%).
+Có **983 keyword** khác nhau: ✅ 982 (100%) · 🟡 0 (0%) · ❌ 1 (0%).
 
 ### Theo bài học
 
@@ -34,7 +34,7 @@ Có **983 keyword** khác nhau: ✅ 980 (100%) · 🟡 2 (0%) · ❌ 1 (0%).
 | [containers](#containers) | 23 | 23 | 0 | 0 | 100% |
 | [lambda](#lambda) | 37 | 37 | 0 | 0 | 100% |
 | [s3](#s3) | 72 | 72 | 0 | 0 | 100% |
-| [storage](#storage) | 70 | 68 | 2 | 0 | 97% |
+| [storage](#storage) | 70 | 70 | 0 | 0 | 100% |
 | [storage-migration](#storage-migration) | 35 | 35 | 0 | 0 | 100% |
 | [rds](#rds) | 61 | 61 | 0 | 0 | 100% |
 | [dynamodb](#dynamodb) | 25 | 25 | 0 | 0 | 100% |
@@ -52,9 +52,9 @@ Có **983 keyword** khác nhau: ✅ 980 (100%) · 🟡 2 (0%) · ❌ 1 (0%).
 |---|---:|---:|---:|
 | Đề 1 | 226 | 0 | 0 |
 | Đề 2 | 203 | 0 | 1 |
-| Đề 3 | 226 | 1 | 0 |
+| Đề 3 | 227 | 0 | 0 |
 | Đề 4 | 237 | 0 | 0 |
-| Đề 5 | 225 | 1 | 0 |
+| Đề 5 | 226 | 0 | 0 |
 | Đề 6 | 217 | 0 | 0 |
 
 ## global-infra
@@ -714,8 +714,7 @@ Có **983 keyword** khác nhau: ✅ 980 (100%) · 🟡 2 (0%) · ❌ 1 (0%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | Amazon FSx for Lustre | 🟡 Một phần ⚠ | 6 | exam1_q65, exam2_q56, exam3_q5, exam3_q43, exam5_q28, exam5_q47 | storage.mdx#s4 / FsxSim<br>storage.mdx#s4 / FsxSim (taught as HPC; never says FSx for Lustre is single-AZ, which rules it out here) |
-| [ ] | Amazon S3 cannot be mounted as a file system | 🟡 Một phần | 1 | exam3_q32 | storage.mdx#s1; storage.mdx#s5 / MountpointSim |
+| [ ] | Amazon FSx for Lustre | ✅ Đã có | 6 | exam1_q65, exam2_q56, exam3_q5, exam3_q43, exam5_q28, exam5_q47 | storage.mdx#s4 / FsxSim<br>storage.mdx#s4 / RequirementPicker (every Lustre deployment type takes one subnet, file server in one AZ; vs EFS Regional / FSx Windows, ONTAP, OpenZFS Multi-AZ) |
 | [ ] | Amazon EFS | ✅ Đã có | 3 | exam1_q43, exam1_q51, exam2_q56 | storage.mdx#s1<br>storage.mdx#s1, #s3 |
 | [ ] | Amazon FSx for Windows File Server | ✅ Đã có | 3 | exam1_q24, exam3_q5, exam4_q37 | storage.mdx#s4 / FsxSim<br>storage.mdx#s4 |
 | [ ] | EBS Provisioned IOPS SSD (io1/io2) | ✅ Đã có | 3 | exam1_q43, exam3_q27, exam5_q22 | storage.mdx#s2 / VolumeChooser |
@@ -751,6 +750,7 @@ Có **983 keyword** khác nhau: ✅ 980 (100%) · 🟡 2 (0%) · ❌ 1 (0%).
 | [ ] | Amazon FSx for Windows File Server (Active Directory integration) | ✅ Đã có | 1 | exam3_q43 | storage.mdx#s4 / FsxSim |
 | [ ] | Amazon FSx for Windows File Server (DFS support) | ✅ Đã có | 1 | exam1_q65 | storage.mdx#s4 / FsxSim |
 | [ ] | Amazon S3 as highly available document store | ✅ Đã có | 1 | exam6_q15 | storage.mdx#s1 / SharedStorageSim |
+| [ ] | Amazon S3 cannot be mounted as a file system | ✅ Đã có | 1 | exam3_q32 | storage.mdx#s5 / RequirementPicker (Fargate volume types EFS/EBS/bind mount/S3 Files; bucket is not a volume, Mountpoint is a host client; S3 Files nuance) |
 | [ ] | EBS Cold HDD (sc1) | ✅ Đã có | 1 | exam3_q27 | storage.mdx#s2 / VolumeChooser |
 | [ ] | EBS encryption (at rest, in transit, snapshots) | ✅ Đã có | 1 | exam5_q40 | storage.mdx#s2 |
 | [ ] | EBS fast snapshot restore | ✅ Đã có | 1 | exam5_q64 | storage.mdx#s2 |

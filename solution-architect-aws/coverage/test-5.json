@@ -1467,8 +1467,8 @@
         {
           "keyword": "Amazon FSx for Lustre",
           "lesson": "storage",
-          "status": "partial",
-          "where": "storage.mdx#s4 / FsxSim (taught as HPC; never says FSx for Lustre is single-AZ, which rules it out here)"
+          "status": "covered",
+          "where": "storage.mdx#s4 / RequirementPicker (every Lustre deployment type takes one subnet, file server in one AZ; vs EFS Regional / FSx Windows, ONTAP, OpenZFS Multi-AZ)"
         },
         {
           "keyword": "Amazon FSx for NetApp ONTAP (SnapMirror cross-Region)",

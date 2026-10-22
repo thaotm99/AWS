@@ -51,6 +51,18 @@ docs:
     url: "https://aws.amazon.com/efs/pricing/"
   - title: "Amazon EBS pricing"
     url: "https://aws.amazon.com/ebs/pricing/"
+  - title: "Storage options for Amazon ECS tasks"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_data_volumes.html"
+  - title: "Fargate task ephemeral storage for Amazon ECS"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-task-storage.html"
+  - title: "Configuring S3 Files for Amazon ECS"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/s3files-volumes.html"
+  - title: "Working with Amazon S3 Files"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-files.html"
+  - title: "Deployment and storage class options for FSx for Lustre file systems"
+    url: "https://docs.aws.amazon.com/fsx/latest/LustreGuide/using-fsx-lustre.html"
+  - title: "CreateFileSystem (Amazon FSx API Reference)"
+    url: "https://docs.aws.amazon.com/fsx/latest/APIReference/API_CreateFileSystem.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -187,15 +199,16 @@ Data management features of FSx for NetApp ONTAP and FSx for OpenZFS in ShopViet
   { need: "The warehouse uses FSx for ONTAP; most files are accessed only in their first month, and SSD cost must come down", answer: "Volume tiering to the capacity pool", why: "ONTAP has two storage tiers: a provisioned SSD tier for active data, and an elastic, low-cost capacity pool for infrequently accessed data. The tiering policy is set per volume: Auto moves cold data after the cooling period (31 days by default, configurable from 2 to 183 days), Snapshot Only moves only snapshots, All keeps all data in the capacity pool. Metadata always stays on the SSD tier." },
   { need: "Replicate an ONTAP volume to another Region for disaster recovery", answer: "NetApp SnapMirror (volume-level)", why: "SnapMirror replicates on a schedule, as often as every 5 minutes, between two file systems in the same or another Region. You schedule it with NetApp Console or the ONTAP CLI; FSx for ONTAP supports only volume-level SnapMirror, not Synchronous SnapMirror." },
   { need: "Microservices on Fargate need a shared POSIX file system across multiple AZs and cross-Region backups with an 8-hour RPO", answer: "Amazon EFS + AWS Backup (copy to another Region)", why: "Fargate tasks mount EFS directly, and EFS stores data across multiple AZs; AWS Backup runs scheduled backups and copies them to another Region. FSx for ONTAP replicates across Regions with SnapMirror, configured with NetApp tools." },
+  { need: "An engineer proposes FSx for Lustre as the shared file system for microservices that must survive the loss of an AZ", answer: "Not suitable: FSx for Lustre file servers sit in one AZ", why: "Every FSx for Lustre deployment type (Scratch, Persistent 1, Persistent 2) takes exactly one subnet, and the file server is launched in that subnet's AZ; clients in other AZs of the same VPC can still mount it, but their traffic crosses into that AZ. Persistent SSD and HDD file systems replicate data within the same AZ; Intelligent-Tiering replicates data across multiple AZs but the file servers are still in one subnet; Scratch does not replicate data. File systems that tolerate an AZ failure: EFS Regional (a mount target in each AZ), or FSx for Windows File Server, ONTAP or OpenZFS with a Multi-AZ deployment type. FSx for Lustre is also not among the ECS volume types." },
   { need: "Move an on-premises Linux file server running ZFS to AWS, keeping snapshots and clones, with Linux and macOS clients over NFS", answer: "FSx for OpenZFS", why: "AWS recommends FSx for OpenZFS for ZFS or other Linux-based file servers. Access is over NFS v3, v4.0, v4.1, v4.2 from Linux, Windows and macOS; latency of hundreds of microseconds; Multi-AZ (HA), Single-AZ (HA) and Single-AZ (non-HA) deployment types. No SMB: when you need both SMB and NFS, choose FSx for NetApp ONTAP." },
   { need: "A long-term archive of design images on EFS Standard-IA; the application can change to the S3 API; lowest cost wanted", answer: "Amazon S3 (Intelligent-Tiering)", why: "Once the application can change, S3 bills for the data actually stored and moves objects between tiers by access pattern automatically (see the S3 lesson). FSx for ONTAP still needs a provisioned SSD tier and suits enterprise NAS workloads already on NetApp." },
 ]} />
 
-<Takeaway>Windows, SMB, NTFS, Active Directory, DFS: FSx for Windows File Server. HPC, parallel reads, loading data from S3: FSx for Lustre. Already on NetApp, needs NFS + SMB + iSCSI, SnapMirror, tiering to a capacity pool: FSx for NetApp ONTAP. ZFS or Linux file servers that need only NFS: FSx for OpenZFS. A simple shared folder for Linux: EFS.</Takeaway>
+<Takeaway>Windows, SMB, NTFS, Active Directory, DFS: FSx for Windows File Server. HPC, parallel reads, loading data from S3: FSx for Lustre. Already on NetApp, needs NFS + SMB + iSCSI, SnapMirror, tiering to a capacity pool: FSx for NetApp ONTAP. ZFS or Linux file servers that need only NFS: FSx for OpenZFS. A simple shared folder for Linux: EFS. FSx for Lustre has no Multi-AZ deployment type (file servers in one subnet, one AZ); to tolerate an AZ failure: EFS Regional, or FSx for Windows, ONTAP or OpenZFS Multi-AZ.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s5" label="Part 5/5" title="Accessing S3 data through a file interface" questions={["exam3_q5", "exam4_q24", "exam5_q28", "exam5_q47"]}>
+<Scene id="en-s5" label="Part 5/5" title="Accessing S3 data through a file interface" questions={["exam3_q5", "exam4_q24", "exam5_q28", "exam5_q47", "exam3_q32"]}>
 
 The ShopViet data team keeps all product images and the recommendation model's training data in S3. Some older applications only read and write files and cannot call the S3 API. **Mountpoint for Amazon S3** is an open source file client that mounts a bucket as a local directory on Linux and translates file operations (`open`, `read`) into S3 API calls. Mountpoint is not a fully POSIX file system: try common operations on Mountpoint and on EFS:
 
@@ -207,11 +220,14 @@ Mountpoint suits large-scale, read-heavy applications: data lakes, machine learn
   { need: "A training job on EC2 Linux reads terabytes of S3 data sequentially; the application only reads files", answer: "Mountpoint for Amazon S3", why: "Mount the bucket as a directory and read at S3's elastic throughput, with no data copy. The job only reads and creates new result files, so Mountpoint's limits do not apply." },
   { need: "Render servers in the data center need frequent, low-latency access to large media files in S3", answer: "Amazon S3 File Gateway", why: "File Gateway runs on premises (VM or hardware appliance), exposes NFS/SMB file shares, and provides low-latency access through transparent local caching; the data stays in S3." },
   { need: "Microservices on Fargate append to log files and need a shared POSIX file system across multiple AZs", answer: "Amazon EFS", why: "Mountpoint cannot modify existing files and has no file locking; EFS supports full reads and writes over NFSv4 and stores data across multiple AZs." },
+  { need: "A risk analytics tool runs in Docker with a locally mounted volume and moves to ECS on Fargate to avoid managing servers; one proposal is a script that mounts an S3 bucket into the container", answer: "An EFS volume declared in the task definition", why: "A Fargate task uses only the volume types ECS supports: EFS (persistent, shared), EBS (can persist when attached to a standalone task, ephemeral for a task maintained by a service), bind mounts on Fargate ephemeral storage (20 GiB by default, up to 200 GiB, lost when the task stops), and Amazon S3 Files. An S3 bucket by itself is not a volume type; Mountpoint for Amazon S3 is a file client installed on a Linux host, not a task volume. To mount S3 data you first create an S3 file system linked to the bucket and declare it in the task definition, not a script that mounts the bucket." },
   { need: "An EC2 cluster across several AZs needs a shared file system with frequent, low-latency reads and writes", answer: "EFS, with a mount target in each AZ", why: "Each instance mounts through the mount target in its own AZ. Mountpoint lacks the full write and locking semantics of a shared file system." },
   { need: "Windows and Linux machines share one file share and must keep NTFS permissions and Active Directory", answer: "FSx for Windows File Server", why: "Mountpoint runs only on Linux and has no NTFS permissions; EFS does not support Windows (part 4)." },
 ]} />
 
-<Takeaway>Mountpoint for Amazon S3: a Linux file client that reads large files and creates new files at S3 throughput; it cannot modify existing files or delete directories, and does not support symbolic links or file locking. File access to S3 from the data center with a local cache: S3 File Gateway. Full POSIX: EFS, or FSx for Lustre linked to S3 for HPC.</Takeaway>
+**Amazon S3 Files** is a shared file system, built using Amazon EFS, linked to a bucket or a prefix: applications read and write files with full file system semantics, and S3 Files synchronizes changes between the file system and the bucket. An S3 file system can be mounted on EC2 and Lambda, and declared as a volume (`s3filesVolumeConfiguration`) for ECS tasks on Fargate, ECS Managed Instances and EC2; a task IAM role and encryption in transit are mandatory. Older study material states that "S3 cannot be mounted as a file system"; with S3 Files, S3 data can be mounted through a separate file system resource, but the bucket itself is still not a volume type you attach to a task. For microservices that need a shared POSIX directory across AZs and whose data does not need to live in S3, EFS remains the most direct option.
+
+<Takeaway>Fargate tasks: EFS, EBS, bind mount (ephemeral storage) or S3 Files volumes; no script that mounts a bucket. Mountpoint for Amazon S3: a Linux file client that reads large files and creates new files at S3 throughput; it cannot modify existing files or delete directories, and does not support symbolic links or file locking. File access to S3 from the data center with a local cache: S3 File Gateway. Full POSIX: EFS, or FSx for Lustre linked to S3 for HPC.</Takeaway>
 
 </Scene>
 

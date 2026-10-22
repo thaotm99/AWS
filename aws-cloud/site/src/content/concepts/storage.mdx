@@ -51,6 +51,18 @@ docs:
     url: "https://aws.amazon.com/efs/pricing/"
   - title: "Amazon EBS pricing"
     url: "https://aws.amazon.com/ebs/pricing/"
+  - title: "Storage options for Amazon ECS tasks"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_data_volumes.html"
+  - title: "Fargate task ephemeral storage for Amazon ECS"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-task-storage.html"
+  - title: "Configuring S3 Files for Amazon ECS"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/s3files-volumes.html"
+  - title: "Working with Amazon S3 Files"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-files.html"
+  - title: "Deployment and storage class options for FSx for Lustre file systems"
+    url: "https://docs.aws.amazon.com/fsx/latest/LustreGuide/using-fsx-lustre.html"
+  - title: "CreateFileSystem (Amazon FSx API Reference)"
+    url: "https://docs.aws.amazon.com/fsx/latest/APIReference/API_CreateFileSystem.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -187,15 +199,16 @@ Các tính năng quản lý dữ liệu của FSx for NetApp ONTAP và FSx for O
   { need: "Kho hàng dùng FSx for ONTAP; phần lớn tệp chỉ truy cập trong tháng đầu, cần giảm chi phí SSD", answer: "Volume tiering sang capacity pool", why: "ONTAP có hai storage tier: SSD tier cấp phát trước cho dữ liệu hoạt động, và capacity pool co giãn, chi phí thấp cho dữ liệu ít truy cập. Tiering policy đặt theo volume: Auto chuyển dữ liệu lạnh sau cooling period (mặc định 31 ngày, cấu hình 2 đến 183 ngày), Snapshot Only chỉ chuyển snapshot, All lưu mọi dữ liệu ở capacity pool. Metadata luôn ở SSD tier." },
   { need: "Sao chép volume ONTAP sang Region khác để khôi phục sau thảm hoạ", answer: "NetApp SnapMirror (volume-level)", why: "SnapMirror sao chép theo lịch, tối đa mỗi 5 phút, giữa hai file system cùng Region hoặc khác Region. Lịch sao chép được cấu hình bằng NetApp Console hoặc ONTAP CLI; FSx for ONTAP chỉ hỗ trợ SnapMirror cấp volume, không hỗ trợ Synchronous SnapMirror." },
   { need: "Microservice trên Fargate cần file system POSIX dùng chung giữa nhiều AZ và backup sang Region khác với RPO 8 giờ", answer: "Amazon EFS + AWS Backup (copy sang Region khác)", why: "EFS mount trực tiếp từ Fargate task, lưu dữ liệu tại nhiều AZ; AWS Backup chạy backup theo lịch và copy sang Region khác. FSx for ONTAP sao chép khác Region bằng SnapMirror, phải cấu hình bằng công cụ NetApp." },
+  { need: "Một kỹ sư đề xuất FSx for Lustre làm file system dùng chung cho microservice phải chịu được sự cố mất một AZ", answer: "Không phù hợp: file server của FSx for Lustre nằm trong một AZ", why: "Mọi deployment type của FSx for Lustre (Scratch, Persistent 1, Persistent 2) chỉ nhận đúng một subnet, và file server chạy trong AZ của subnet đó; client ở AZ khác trong cùng VPC vẫn mount được, nhưng traffic phải đi sang AZ đó. Persistent với SSD hoặc HDD sao chép dữ liệu trong cùng AZ; Intelligent-Tiering sao chép dữ liệu qua nhiều AZ nhưng file server vẫn ở một subnet; Scratch không sao chép dữ liệu. File system chịu lỗi cấp AZ: EFS Regional (mount target tại mỗi AZ), hoặc FSx for Windows File Server, ONTAP, OpenZFS với deployment type Multi-AZ. Danh sách loại volume của ECS cũng không có FSx for Lustre." },
   { need: "Chuyển file server Linux dùng ZFS tại chỗ lên AWS, giữ snapshot và clone, client Linux và macOS truy cập qua NFS", answer: "FSx for OpenZFS", why: "AWS khuyến nghị FSx for OpenZFS cho ZFS hoặc file server Linux. Truy cập qua NFS v3, v4.0, v4.1, v4.2 từ Linux, Windows, macOS; độ trễ vài trăm micro giây; deployment type Multi-AZ (HA), Single-AZ (HA), Single-AZ (non-HA). Không hỗ trợ SMB: khi cần cả SMB và NFS, chọn FSx for NetApp ONTAP." },
   { need: "Kho ảnh thiết kế lưu trữ lâu dài trên EFS Standard-IA; ứng dụng có thể sửa để dùng S3 API; cần chi phí thấp nhất", answer: "Amazon S3 (Intelligent-Tiering)", why: "Khi ứng dụng sửa được, S3 tính phí theo dung lượng thực tế và tự chuyển object giữa các tier theo mức truy cập (xem bài S3). FSx for ONTAP vẫn phải cấp phát trước SSD tier, phù hợp hơn với NAS doanh nghiệp đang dùng NetApp." },
 ]} />
 
-<Takeaway>Windows, SMB, NTFS, Active Directory, DFS: FSx for Windows File Server. HPC, đọc song song, nạp dữ liệu từ S3: FSx for Lustre. Đang sử dụng NetApp, cần NFS + SMB + iSCSI, SnapMirror, tiering sang capacity pool: FSx for NetApp ONTAP. File server ZFS hoặc Linux, chỉ cần NFS: FSx for OpenZFS. Thư mục dùng chung đơn giản cho Linux: EFS.</Takeaway>
+<Takeaway>Windows, SMB, NTFS, Active Directory, DFS: FSx for Windows File Server. HPC, đọc song song, nạp dữ liệu từ S3: FSx for Lustre. Đang sử dụng NetApp, cần NFS + SMB + iSCSI, SnapMirror, tiering sang capacity pool: FSx for NetApp ONTAP. File server ZFS hoặc Linux, chỉ cần NFS: FSx for OpenZFS. Thư mục dùng chung đơn giản cho Linux: EFS. FSx for Lustre không có deployment type Multi-AZ (file server trong một subnet, một AZ); cần chịu lỗi cấp AZ: EFS Regional hoặc FSx for Windows, ONTAP, OpenZFS Multi-AZ.</Takeaway>
 
 </Scene>
 
-<Scene id="s5" label="Phần 5/5" title="Truy cập dữ liệu S3 qua giao diện file" questions={["exam3_q5", "exam4_q24", "exam5_q28", "exam5_q47"]}>
+<Scene id="s5" label="Phần 5/5" title="Truy cập dữ liệu S3 qua giao diện file" questions={["exam3_q5", "exam4_q24", "exam5_q28", "exam5_q47", "exam3_q32"]}>
 
 Team dữ liệu ShopViet lưu toàn bộ ảnh sản phẩm và dữ liệu huấn luyện mô hình gợi ý trên S3. Một số ứng dụng cũ chỉ đọc ghi tệp, không gọi S3 API. **Mountpoint for Amazon S3** là file client mã nguồn mở, mount bucket thành thư mục cục bộ trên Linux và chuyển thao tác tệp (`open`, `read`) thành lời gọi S3 API. Mountpoint không phải file system POSIX đầy đủ: chạy thử các thao tác thường gặp trên Mountpoint và trên EFS:
 
@@ -207,11 +220,14 @@ Mountpoint phù hợp với ứng dụng đọc nhiều trên quy mô lớn: dat
   { need: "Job huấn luyện trên EC2 Linux đọc tuần tự hàng TB dữ liệu từ S3, ứng dụng chỉ biết đọc tệp", answer: "Mountpoint for Amazon S3", why: "Mount bucket thành thư mục, đọc với throughput co giãn của S3, không phải sao chép dữ liệu. Job chỉ đọc và tạo tệp kết quả mới nên không gặp giới hạn của Mountpoint." },
   { need: "Server render tại trung tâm dữ liệu cần truy cập thường xuyên, độ trễ thấp tới tệp media lớn trên S3", answer: "Amazon S3 File Gateway", why: "File Gateway triển khai tại chỗ (VM hoặc thiết bị phần cứng), cung cấp file share NFS/SMB và cache cục bộ trong suốt để truy cập với độ trễ thấp; dữ liệu vẫn lưu trên S3." },
   { need: "Microservice trên Fargate ghi log nối tiếp và cần file system POSIX dùng chung giữa nhiều AZ", answer: "Amazon EFS", why: "Mountpoint không sửa được tệp đã có và không có file locking; EFS hỗ trợ đọc ghi đầy đủ qua NFSv4 và lưu dữ liệu tại nhiều AZ." },
+  { need: "Công cụ phân tích rủi ro chạy Docker với volume cục bộ, chuyển lên ECS Fargate để không quản lý server; một đề xuất là chạy script mount bucket S3 vào container", answer: "Volume EFS khai báo trong task definition", why: "Fargate task chỉ dùng các loại volume ECS hỗ trợ: EFS (bền vững, dùng chung), EBS (giữ lại được khi gắn cho standalone task, tạm thời khi task thuộc service), bind mount trên ephemeral storage của Fargate (mặc định 20 GiB, tối đa 200 GiB, mất khi task dừng), và Amazon S3 Files. Bucket S3 bản thân không phải loại volume; Mountpoint for Amazon S3 là file client cài trên máy Linux, không phải volume của task. Muốn mount dữ liệu S3 phải tạo trước một S3 file system liên kết với bucket rồi khai báo trong task definition, không dùng script mount bucket." },
   { need: "Cụm EC2 tại nhiều AZ cần file system dùng chung, đọc ghi thường xuyên với độ trễ thấp", answer: "EFS, mount target tại mỗi AZ", why: "Mỗi instance mount qua mount target cùng AZ. Mountpoint không có đầy đủ ngữ nghĩa ghi và khoá tệp của một shared file system." },
   { need: "Máy Windows và Linux dùng chung file share, giữ quyền NTFS và Active Directory", answer: "FSx for Windows File Server", why: "Mountpoint chỉ chạy trên Linux và không có quyền NTFS; EFS không hỗ trợ Windows (phần 4)." },
 ]} />
 
-<Takeaway>Mountpoint for Amazon S3: file client cho Linux, đọc tệp lớn và tạo tệp mới với throughput của S3; không sửa tệp đã có, không xoá thư mục, không hỗ trợ symbolic link và file locking. Truy cập S3 dạng file từ trung tâm dữ liệu với cache cục bộ: S3 File Gateway. Cần POSIX đầy đủ: EFS, hoặc FSx for Lustre liên kết S3 cho HPC.</Takeaway>
+**Amazon S3 Files** là file system dùng chung, xây dựng trên Amazon EFS, liên kết với một bucket hoặc một prefix: ứng dụng đọc ghi tệp với đầy đủ ngữ nghĩa file system, còn S3 Files tự đồng bộ thay đổi giữa file system và bucket. S3 file system mount được trên EC2, Lambda, và được khai báo làm volume (`s3filesVolumeConfiguration`) cho ECS task trên Fargate, ECS Managed Instances và EC2; bắt buộc có task IAM role và mã hoá khi truyền. Tài liệu ôn tập cũ khẳng định "S3 không mount được như file system"; với S3 Files, dữ liệu S3 mount được qua một tài nguyên file system riêng, nhưng bucket vẫn không phải loại volume để gắn thẳng vào task. Với microservice cần thư mục POSIX dùng chung giữa nhiều AZ mà dữ liệu không cần nằm trong S3, EFS vẫn là phương án trực tiếp nhất.
+
+<Takeaway>Fargate task: volume EFS, EBS, bind mount (ephemeral storage) hoặc S3 Files; không mount bucket bằng script. Mountpoint for Amazon S3: file client cho Linux, đọc tệp lớn và tạo tệp mới với throughput của S3; không sửa tệp đã có, không xoá thư mục, không hỗ trợ symbolic link và file locking. Truy cập S3 dạng file từ trung tâm dữ liệu với cache cục bộ: S3 File Gateway. Cần POSIX đầy đủ: EFS, hoặc FSx for Lustre liên kết S3 cho HPC.</Takeaway>
 
 </Scene>
 
