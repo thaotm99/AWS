@@ -16,6 +16,7 @@ export const vi = {
     quizLink: "Kiểm tra: {n} câu hỏi về chủ đề này",
     practiceLink: "Làm bài ở trang Luyện đề",
     docs: "Tài liệu AWS",
+    docsMore: "Xem thêm {n} tài liệu",
     placeholder: "Bài học này đang được biên soạn. Có thể bắt đầu từ bài nền tảng Global Infrastructure.",
     placeholderCta: "Học bài Global Infrastructure",
     /** Shown above the Vietnamese text while a lesson has no English version. */

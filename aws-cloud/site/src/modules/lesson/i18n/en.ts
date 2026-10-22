@@ -17,6 +17,7 @@ export const en: Messages<typeof vi> = {
     quizLink: "Quiz: {n} questions on this topic",
     practiceLink: "Go to the practice tests",
     docs: "AWS documentation",
+    docsMore: "Show {n} more",
     placeholder: "This lesson is being written. You can start with the Global Infrastructure lesson.",
     placeholderCta: "Start Global Infrastructure",
     untranslated: "This lesson is not available in English yet, so it is shown in Vietnamese.",

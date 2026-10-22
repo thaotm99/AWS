@@ -48,8 +48,25 @@ function groupDocs(list: typeof docs) {
   }
   return groups;
 }
-const docGroups = groupDocs(docs);
-const docGroupsEn = groupDocs(docsEn);
+// At most MAX_DOCS links show up front; the rest sit behind a "show more" disclosure, still grouped by service.
+const MAX_DOCS = 5;
+function splitGroups(groups: ReturnType<typeof groupDocs>) {
+  let left = MAX_DOCS;
+  const shown: typeof groups = [];
+  const rest: typeof groups = [];
+  for (const g of groups) {
+    const head = g.items.slice(0, Math.max(left, 0));
+    const tail = g.items.slice(head.length);
+    left -= head.length;
+    if (head.length) shown.push({ service: g.service, items: head });
+    if (tail.length) rest.push({ service: g.service, items: tail });
+  }
+  return { shown, rest, more: rest.reduce((n, g) => n + g.items.length, 0) };
+}
+const docParts = [
+  { lang: "vi", ...splitGroups(groupDocs(docs)) },
+  { lang: "en", ...splitGroups(groupDocs(docsEn)) },
+];
 ---
 <BaseLayout title={`${concept.title} · AWS Thực Chiến`} description={entry?.data.lede} current={id}>
   {entry && (
@@ -136,14 +153,25 @@ const docGroupsEn = groupDocs(docsEn);
           </div>
           <div class="next-col">
             <h3><T k="lesson.frame.docs" /></h3>
-            {([{ lang: "vi", groups: docGroups }, { lang: "en", groups: docGroupsEn }]).map(({ lang, groups }) => (
+            {docParts.map(({ lang, shown, rest, more }) => (
               <div class="doc-groups" data-lang={lang}>
-                {groups.map((g) => (
+                {shown.map((g) => (
                   <div class="doc-group">
                     {g.service && <h4 class="doc-service">{g.service}</h4>}
                     <ul>{g.items.map((d) => <li><a href={d.url} target="_blank" rel="noopener">{d.title}</a></li>)}</ul>
                   </div>
                 ))}
+                {more > 0 && (
+                  <details class="doc-more">
+                    <summary><T k="lesson.frame.docsMore" params={{ n: more }} /></summary>
+                    {rest.map((g) => (
+                      <div class="doc-group">
+                        {g.service && <h4 class="doc-service">{g.service}</h4>}
+                        <ul>{g.items.map((d) => <li><a href={d.url} target="_blank" rel="noopener">{d.title}</a></li>)}</ul>
+                      </div>
+                    ))}
+                  </details>
+                )}
               </div>
             ))}
           </div>
