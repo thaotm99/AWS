@@ -2,11 +2,15 @@ import { useState } from "react";
 import { useLang, type Bi } from "../../../lib/lang";
 
 // Default termination policy, step by step (exam4_q16, exam2_q65):
-// 1. AZ with the most instances; 2. outdated configurations: launch configuration first,
-// then the oldest launch template version; 3. if several remain, closest to the next billing hour.
+// 1. AZ with the most instances; 2. outdated configurations. For groups that use a launch
+// template: launch configuration first, then the oldest launch template version. For groups that
+// use a launch configuration (legacy): instances with the oldest launch configuration.
+// 3. if several remain, closest to the next billing hour.
+// Source: docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-termination-policies.html
 interface Inst { id: string; az: string; kind: "LT" | "LC"; age: number; label: string | Bi; billing: number; prot?: boolean }
 
 type Lang = ReturnType<typeof useLang>;
+type GroupKind = "LT" | "LC";
 
 const SCENARIOS: { name: Bi; instances: Inst[] }[] = [
   {
@@ -44,7 +48,7 @@ const SCENARIOS: { name: Bi; instances: Inst[] }[] = [
   },
 ];
 
-function decide(L: Lang, list: Inst[]) {
+function decide(L: Lang, list: Inst[], group: GroupKind) {
   const steps: { text: string; keep: string[] }[] = [];
   const counts: Record<string, number> = {};
   list.forEach((i) => (counts[i.az] = (counts[i.az] ?? 0) + 1));
@@ -58,7 +62,11 @@ function decide(L: Lang, list: Inst[]) {
     ? L({ vi: `${skipped.join(", ")} : mọi instance đều được bật scale-in protection, nên AZ này bị bỏ qua dù có nhiều instance hơn. Chọn AZ có nhiều instance nhất còn instance không được bảo vệ: ${azs.join(", ")}.`, en: `${skipped.join(", ")} : every instance is protected from scale in, so this AZ is skipped even though it has more instances. Pick the AZ with the most instances that has an unprotected instance: ${azs.join(", ")}.` })
     : L({ vi: `Chọn AZ có nhiều instance nhất: ${azs.join(", ")} (${max} instance), nhằm duy trì cân bằng giữa các AZ.`, en: `Pick the AZ with the most instances: ${azs.join(", ")} (${max} instances), to keep the AZs balanced.` }), keep: pool.map((i) => i.id) });
   const lc = pool.filter((i) => i.kind === "LC");
-  if (lc.length) {
+  if (group === "LC" && lc.length) {
+    const oldestLc = Math.max(...lc.map((i) => i.age));
+    pool = lc.filter((i) => i.age === oldestLc);
+    steps.push({ text: L({ vi: "Nhóm dùng launch configuration: chọn instance dùng launch configuration cũ nhất.", en: "The group uses a launch configuration: pick the instances that use the oldest launch configuration." }), keep: pool.map((i) => i.id) });
+  } else if (lc.length) {
     pool = lc;
     steps.push({ text: L({ vi: "Cấu hình lỗi thời: instance dùng launch configuration được xét trước instance dùng launch template.", en: "Outdated configuration: instances using a launch configuration are considered before instances using a launch template." }), keep: pool.map((i) => i.id) });
   } else {
@@ -79,8 +87,10 @@ export default function TerminationSim() {
   const [si, setSi] = useState(0);
   const [guess, setGuess] = useState<string | null>(null);
   const [shown, setShown] = useState(0);
+  const [group, setGroup] = useState<GroupKind>("LT");
   const sc = SCENARIOS[si];
-  const { steps, victim } = decide(L, sc.instances);
+  const hasLc = sc.instances.some((i) => i.kind === "LC");
+  const { steps, victim } = decide(L, sc.instances, hasLc ? group : "LT");
   const keep = shown ? steps[shown - 1].keep : sc.instances.map((i) => i.id);
   const azs = [...new Set(sc.instances.map((i) => i.az))];
   const done = shown === steps.length;
@@ -97,6 +107,13 @@ export default function TerminationSim() {
           {shown === 0 ? L({ vi: "Scale in: quan sát từng bước đánh giá", en: "Scale in: follow each evaluation step" }) : L({ vi: "Bước tiếp theo", en: "Next step" })}
         </button>
       </div>
+      {hasLc && (
+        <div className="stage-bar">
+          <span className="label">{L({ vi: "Nhóm được cấu hình bằng", en: "The group is configured with" })}</span>
+          <button className="btn" aria-pressed={group === "LT"} onClick={() => { setGroup("LT"); setShown(0); }}>launch template</button>
+          <button className="btn" aria-pressed={group === "LC"} onClick={() => { setGroup("LC"); setShown(0); }}>{L({ vi: "launch configuration (cơ chế cũ)", en: "launch configuration (legacy)" })}</button>
+        </div>
+      )}
       <div className="term-grid">
         {azs.map((az) => (
           <div key={az} className="term-az">

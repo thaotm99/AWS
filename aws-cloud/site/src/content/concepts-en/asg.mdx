@@ -53,6 +53,14 @@ docs:
     url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-maintenance-policy.html"
   - title: "Rebalancing activities (Amazon EC2 Auto Scaling benefits)"
     url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-benefits.html"
+  - title: "Launch configurations"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-configurations.html"
+  - title: "Elastic IP addresses"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html"
+  - title: "Amazon EC2 Auto Scaling lifecycle hooks"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/lifecycle-hooks.html"
+  - title: "Create a Network Load Balancer"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-network-load-balancer.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -81,7 +89,7 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 At night ShopViet needs only 2 instances; on Friday evening, during a sale, it needs 12. Running 12 instances all day wastes money, while running only 2 increases latency for users. An **Auto Scaling group** (ASG) automatically adjusts the number of EC2 instances to the load. The designer needs to configure when to scale out, the minimum capacity, and which instance is removed on scale in.
 </Story>
 
-<Scene id="en-setup" label="Part 1/7" title="Configuring the Auto Scaling group for the ShopViet website" questions={["exam5_q36", "exam2_q33", "exam5_q61", "exam1_q45"]}>
+<Scene id="en-setup" label="Part 1/7" title="Configuring the Auto Scaling group for the ShopViet website" questions={["exam5_q36", "exam2_q33", "exam5_q61", "exam1_q45", "exam3_q45"]}>
 
 ShopViet's reporting application used to run on a single On-Demand EC2 instance, and every load spike caused 5xx errors. To move it to an Auto Scaling group, the operations team creates an AMI from the current instance, declares that AMI in a **launch template**, then chooses the subnets and purchase options for the group. Try each choice below:
 
@@ -89,11 +97,13 @@ ShopViet's reporting application used to run on a single On-Demand EC2 instance,
 
 Three points matter. First, a **launch template** describes how to launch an instance (AMI, instance type, key pair, security groups…) and has multiple versions; a launch configuration is the legacy mechanism, cannot be modified after creation and does not support combining On-Demand and Spot or multiple instance types. Second, an ASG is a regional construct: it can span Availability Zones but **cannot span AWS Regions**; a multi-Region system needs one ASG in each Region. Third, a **mixed instances policy** lets one ASG run both On-Demand and Spot: an On-Demand base for the steady load, and capacity above the base split by percentage. When the steady load stays at a known level all year, buy Reserved Instances (or a Savings Plan) for it; do not use Spot for the baseline, because EC2 can reclaim a Spot Instance when capacity is no longer available.
 
+A payment partner asks ShopViet for fixed IP addresses to add to its firewall. **An Elastic IP address cannot be assigned to an Auto Scaling group**: an Elastic IP address is associated with an instance or a network interface, while an ASG is only a group that manages instances that are constantly launched and replaced. If each instance really must have an Elastic IP address, you associate it yourself at launch (for example a user data script or a launch lifecycle hook that calls the AssociateAddress API). The more common approach is a static IP in front: an internet-facing **NLB** lets you select one Elastic IP address per AZ, or **AWS Global Accelerator** provides static IP addresses across Regions ([ELB lesson, part 1](/concepts/elb/#en-s1)).
+
 Three values decide the group's size. **Desired capacity** is the number of instances the ASG tries to maintain; **minimum** and **maximum** are limits that scaling policies and scheduled actions cannot cross. The accounting team needs exactly 10 instances during the month-end payroll hour:
 
 <CapacityRangeSim client:visible />
 
-<Takeaway>Launch template: defines the instance, is versioned, and is required to combine On-Demand and Spot. An ASG spans multiple AZs in one Region, never across Regions. A specific number of instances at a specific time: a scheduled action sets desired capacity; min/max are only the limits of the scaling range. Fixed baseline load: Reserved Instances; the variable part: On-Demand and Spot through a mixed instances policy.</Takeaway>
+<Takeaway>Launch template: defines the instance, is versioned, and is required to combine On-Demand and Spot. An ASG spans multiple AZs in one Region, never across Regions. A specific number of instances at a specific time: a scheduled action sets desired capacity; min/max are only the limits of the scaling range. Fixed baseline load: Reserved Instances; the variable part: On-Demand and Spot through a mixed instances policy. An Elastic IP address attaches to an instance or network interface, never to an ASG; static IPs for the whole group: an NLB with Elastic IPs or Global Accelerator.</Takeaway>
 
 </Scene>
 
@@ -139,9 +149,11 @@ After the sale, the ASG scales in. With the default termination policy, the ASG 
 
 <TerminationSim client:visible />
 
+The second scenario adds a choice of how the group is configured. In a group that uses a **launch template**, every instance still running from a launch configuration counts as outdated and is considered first (B and C), and only then the billing-hour criterion applies. In a group that uses a **launch configuration**, the ASG picks the instances with the **oldest launch configuration** (B). Launch configurations are legacy: since January 1, 2023 they do not support new instance types, accounts created on or after October 1, 2024 cannot create new launch configurations by any method, and AWS recommends migrating to launch templates.
+
 The third scenario uses **instance scale-in protection**: a protected instance is not selected on scale in. It can be enabled for the whole group (new instances inherit the setting) or for individual instances. Scale-in protection does **not** protect an instance from health check replacement, Spot interruptions or manual termination. When engineers need the logs of an instance that was scaled in, the durable solution is to ship logs to CloudWatch Logs with the CloudWatch agent (Monitoring lesson), not to keep the instance around.
 
-<Takeaway>Default order: the AZ with the most instances → instances with an outdated configuration (launch configuration first, then a launch template other than the current one, then the oldest version of the current template) → if several instances remain: the one closest to the next billing hour (AWS notes this criterion has little effect because most EC2 usage is billed per second). The ASG also automatically rebalances across AZs and replaces unhealthy instances.</Takeaway>
+<Takeaway>Default order: the AZ with the most instances → instances with an outdated configuration (group with a launch template: launch configuration first, then a launch template other than the current one, then the oldest version of the current template; group with a launch configuration: the oldest launch configuration) → if several instances remain: the one closest to the next billing hour (AWS notes this criterion has little effect because most EC2 usage is billed per second). The ASG also automatically rebalances across AZs and replaces unhealthy instances.</Takeaway>
 
 </Scene>
 

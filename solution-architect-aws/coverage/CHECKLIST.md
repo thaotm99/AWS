@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **983 keyword** khác nhau: ✅ 963 (98%) · 🟡 12 (1%) · ❌ 8 (1%).
+Có **983 keyword** khác nhau: ✅ 966 (98%) · 🟡 10 (1%) · ❌ 7 (1%).
 
 ### Theo bài học
 
@@ -30,7 +30,7 @@ Có **983 keyword** khác nhau: ✅ 963 (98%) · 🟡 12 (1%) · ❌ 8 (1%).
 | [cognito](#cognito) | 15 | 15 | 0 | 0 | 100% |
 | [ec2](#ec2) | 58 | 57 | 0 | 1 | 98% |
 | [elb](#elb) | 43 | 42 | 0 | 1 | 98% |
-| [asg](#asg) | 47 | 44 | 2 | 1 | 94% |
+| [asg](#asg) | 47 | 47 | 0 | 0 | 100% |
 | [containers](#containers) | 23 | 23 | 0 | 0 | 100% |
 | [lambda](#lambda) | 37 | 37 | 0 | 0 | 100% |
 | [s3](#s3) | 72 | 68 | 4 | 0 | 94% |
@@ -51,8 +51,8 @@ Có **983 keyword** khác nhau: ✅ 963 (98%) · 🟡 12 (1%) · ❌ 8 (1%).
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
 | Đề 1 | 223 | 2 | 1 |
-| Đề 2 | 200 | 1 | 3 |
-| Đề 3 | 222 | 3 | 2 |
+| Đề 2 | 202 | 0 | 2 |
+| Đề 3 | 223 | 2 | 2 |
 | Đề 4 | 235 | 1 | 1 |
 | Đề 5 | 220 | 5 | 1 |
 | Đề 6 | 217 | 0 | 0 |
@@ -515,11 +515,9 @@ Có **983 keyword** khác nhau: ✅ 963 (98%) · 🟡 12 (1%) · ❌ 8 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | ASG termination: oldest launch configuration (groups using a launch configuration) | ❌ Thiếu | 1 | exam2_q65 |  |
-| [ ] | ASG default termination policy | 🟡 Một phần ⚠ | 2 | exam2_q65, exam4_q16 | asg.mdx#s3 / TerminationSim; asg.mdx#challenge / Quiz<br>asg.mdx#s3 / TerminationSim |
-| [ ] | Elastic IP cannot be assigned to an Auto Scaling group | 🟡 Một phần | 1 | exam3_q45 | elb.mdx#challenge / Quiz |
 | [ ] | ASG scheduled action | ✅ Đã có | 3 | exam3_q54, exam4_q21, exam6_q52 | asg.mdx#s1 / ScalingPolicySim<br>asg.mdx#s1 |
 | [ ] | Auto Scaling group | ✅ Đã có | 3 | exam4_q9, exam4_q53, exam6_q43 | asg.mdx#s1<br>asg.mdx#s1 / ScalingPolicySim |
+| [ ] | ASG default termination policy | ✅ Đã có | 2 | exam2_q65, exam4_q16 | asg.mdx#s3 / TerminationSim (launch template / launch configuration toggle); asg.mdx#challenge / Quiz<br>asg.mdx#s3 / TerminationSim |
 | [ ] | Auto Scaling group across multiple AZs behind ALB | ✅ Đã có | 2 | exam2_q32, exam5_q7 | global-infra.mdx#s3 / AzFailureSim<br>asg.mdx#s2 / AzCapacityCalc |
 | [ ] | Auto Scaling target tracking scaling policy | ✅ Đã có | 2 | exam1_q30, exam1_q45 | asg.mdx#s1 / ScalingPolicySim<br>asg.mdx#s1 |
 | [ ] | ASG custom health check (SetInstanceHealth) | ✅ Đã có | 1 | exam2_q18 | asg.mdx#health / HealthReplaceSim |
@@ -536,6 +534,7 @@ Có **983 keyword** khác nhau: ✅ 963 (98%) · 🟡 12 (1%) · ❌ 8 (1%).
 | [ ] | ASG target tracking on SQS backlog (ApproximateNumberOfMessages) | ✅ Đã có | 1 | exam6_q52 | asg.mdx#s1; messaging.mdx#s1 / QueueBufferSim |
 | [ ] | ASG target tracking on SQS backlog per instance | ✅ Đã có | 1 | exam3_q54 | asg.mdx#s1 / ScalingPolicySim |
 | [ ] | ASG target tracking scaling policy | ✅ Đã có | 1 | exam4_q21 | asg.mdx#s1 |
+| [ ] | ASG termination: oldest launch configuration (groups using a launch configuration) | ✅ Đã có | 1 | exam2_q65 | asg.mdx#s3 / TerminationSim (launch configuration group) + Takeaway |
 | [ ] | Auto Scaling AZ rebalancing (launch before terminate) | ✅ Đã có | 1 | exam1_q54 | asg.mdx#health / HealthReplaceSim |
 | [ ] | Auto Scaling based on SQS queue depth (backlog per instance) | ✅ Đã có | 1 | exam5_q26 | asg.mdx#s1 / ScalingPolicySim |
 | [ ] | Auto Scaling desired capacity vs min/max | ✅ Đã có | 1 | exam1_q45 | asg.mdx#setup / CapacityRangeSim |
@@ -558,6 +557,7 @@ Có **983 keyword** khác nhau: ✅ 963 (98%) · 🟡 12 (1%) · ❌ 8 (1%).
 | [ ] | Auto Scaling unhealthy instance replacement (terminate then launch) | ✅ Đã có | 1 | exam1_q54 | asg.mdx#health / HealthReplaceSim |
 | [ ] | EC2 instance Impaired status (ASG delays termination) | ✅ Đã có | 1 | exam2_q18 | asg.mdx#health / HealthReplaceSim |
 | [ ] | EC2 launch template | ✅ Đã có | 1 | exam3_q21 | ec2.mdx#s2 |
+| [ ] | Elastic IP cannot be assigned to an Auto Scaling group | ✅ Đã có | 1 | exam3_q45 | asg.mdx#setup (Elastic IP paragraph + Takeaway); elb.mdx#challenge / Quiz |
 | [ ] | ELB health check with Auto Scaling | ✅ Đã có | 1 | exam1_q54 | asg.mdx#s4 / elb.mdx#s4 |
 | [ ] | Multi-AZ capacity planning (survive one AZ failure) | ✅ Đã có | 1 | exam2_q31 | asg.mdx#s2 / AzCapacityCalc |
 | [ ] | Reserved Instance for ASG baseline | ✅ Đã có | 1 | exam4_q49 | asg.mdx#s4 |

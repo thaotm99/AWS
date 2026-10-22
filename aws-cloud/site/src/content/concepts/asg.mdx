@@ -53,6 +53,14 @@ docs:
     url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-maintenance-policy.html"
   - title: "Rebalancing activities (Amazon EC2 Auto Scaling benefits)"
     url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-benefits.html"
+  - title: "Launch configurations"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-configurations.html"
+  - title: "Elastic IP addresses"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html"
+  - title: "Amazon EC2 Auto Scaling lifecycle hooks"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/lifecycle-hooks.html"
+  - title: "Create a Network Load Balancer"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-network-load-balancer.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -81,7 +89,7 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 Ban đêm ShopViet chỉ cần 2 instance; tối thứ Sáu có chương trình khuyến mãi thì cần 12. Duy trì 12 instance cả ngày gây lãng phí chi phí, trong khi chỉ duy trì 2 instance làm tăng độ trễ cho người dùng. **Auto Scaling group** (ASG) tự động điều chỉnh số EC2 instance theo tải. Người thiết kế cần cấu hình: thời điểm scale out, capacity tối thiểu, và instance nào bị loại khi scale in.
 </Story>
 
-<Scene id="setup" label="Phần 1/7" title="Cấu hình Auto Scaling group cho website ShopViet" questions={["exam5_q36", "exam2_q33", "exam5_q61", "exam1_q45"]}>
+<Scene id="setup" label="Phần 1/7" title="Cấu hình Auto Scaling group cho website ShopViet" questions={["exam5_q36", "exam2_q33", "exam5_q61", "exam1_q45", "exam3_q45"]}>
 
 Trước đây ứng dụng báo cáo của ShopViet chạy trên một EC2 On-Demand duy nhất, và mỗi đợt tăng tải đều gây lỗi 5xx. Để chuyển sang Auto Scaling group, nhóm vận hành tạo AMI từ instance hiện tại, khai báo AMI đó trong một **launch template**, sau đó chọn subnet và purchase options cho nhóm. Thử từng lựa chọn dưới đây:
 
@@ -89,11 +97,13 @@ Trước đây ứng dụng báo cáo của ShopViet chạy trên một EC2 On-D
 
 Ba điểm cần nắm. Thứ nhất, **launch template** mô tả cách launch instance (AMI, instance type, key pair, security group…) và có nhiều phiên bản; launch configuration là cơ chế cũ, không sửa được sau khi tạo và không hỗ trợ kết hợp On-Demand với Spot hay nhiều instance type. Thứ hai, ASG là tài nguyên theo Region: trải được trên nhiều AZ nhưng **không trải được trên nhiều Region**; hệ thống đa Region cần một ASG tại mỗi Region. Thứ ba, **mixed instances policy** cho phép một ASG chạy cả On-Demand và Spot: phần base On-Demand cho tải nền, phần vượt base chia theo tỉ lệ. Khi tải nền ổn định ở một mức suốt năm, mua Reserved Instances (hoặc Savings Plans) cho phần nền đó; không dùng Spot cho phần nền vì EC2 có thể thu hồi Spot Instance khi không còn capacity.
 
+Đối tác thanh toán yêu cầu ShopViet cung cấp IP cố định để đưa vào firewall. **Elastic IP không gán được cho Auto Scaling group**: Elastic IP chỉ được associate với một instance hoặc một network interface, trong khi ASG chỉ là nhóm quản lý các instance được tạo và thay thế liên tục. Nếu bắt buộc từng instance có Elastic IP, phải tự gắn khi instance khởi động (ví dụ script trong user data hoặc một launch lifecycle hook gọi API AssociateAddress). Cách thông dụng hơn là đặt IP tĩnh ở tầng phía trước: **NLB** internet-facing cho phép chọn một Elastic IP cho mỗi AZ, hoặc **AWS Global Accelerator** cung cấp IP tĩnh cho nhiều Region ([bài ELB, phần 1](/concepts/elb/#s1)).
+
 Kích thước nhóm do ba giá trị quyết định. **Desired capacity** là số instance ASG cố gắng duy trì; **minimum** và **maximum** là giới hạn mà scaling policy và scheduled action không được vượt qua. Phòng kế toán cần đúng 10 instance vào giờ chạy bảng lương cuối tháng:
 
 <CapacityRangeSim client:visible />
 
-<Takeaway>Launch template: định nghĩa instance, có phiên bản, bắt buộc khi kết hợp On-Demand với Spot. ASG trải trên nhiều AZ trong một Region, không trải qua Region. Cần một số instance cụ thể vào một thời điểm: scheduled action đặt desired capacity; min/max chỉ là giới hạn của khoảng co giãn. Tải nền cố định: Reserved Instances; phần dao động: On-Demand và Spot qua mixed instances policy.</Takeaway>
+<Takeaway>Launch template: định nghĩa instance, có phiên bản, bắt buộc khi kết hợp On-Demand với Spot. ASG trải trên nhiều AZ trong một Region, không trải qua Region. Cần một số instance cụ thể vào một thời điểm: scheduled action đặt desired capacity; min/max chỉ là giới hạn của khoảng co giãn. Tải nền cố định: Reserved Instances; phần dao động: On-Demand và Spot qua mixed instances policy. Elastic IP gắn với instance hoặc network interface, không gắn với ASG; IP tĩnh cho cả nhóm: NLB với Elastic IP hoặc Global Accelerator.</Takeaway>
 
 </Scene>
 
@@ -139,9 +149,11 @@ Sau đợt khuyến mãi, ASG thực hiện scale in. Với default termination 
 
 <TerminationSim client:visible />
 
+Kịch bản thứ hai có thêm lựa chọn loại cấu hình của nhóm. Với nhóm dùng **launch template**, mọi instance còn chạy bằng launch configuration đều bị xem là lỗi thời và được xét trước (B và C), sau đó mới tới tiêu chí giờ tính phí. Với nhóm dùng **launch configuration**, ASG chọn instance dùng **launch configuration cũ nhất** (B). Launch configuration là cơ chế cũ: từ 01/01/2023 không hỗ trợ instance type mới, account tạo từ 01/10/2024 không tạo được launch configuration mới bằng bất kỳ cách nào, và AWS khuyến nghị chuyển sang launch template.
+
 Kịch bản thứ ba dùng **instance scale-in protection**: instance được bảo vệ không bị chọn khi scale in. Có thể bật cho cả nhóm (instance mới kế thừa thiết lập) hoặc cho từng instance. Scale-in protection **không** bảo vệ instance khỏi health check replacement, Spot interruption hay thao tác terminate thủ công. Khi kỹ sư cần log của một instance đã bị scale in, giải pháp bền vững là gửi log ra CloudWatch Logs bằng CloudWatch agent (bài Monitoring), không phải giữ instance lại.
 
-<Takeaway>Thứ tự mặc định: AZ có nhiều instance nhất → instance dùng cấu hình lỗi thời (launch configuration trước, sau đó launch template khác template hiện tại, rồi phiên bản cũ nhất của template hiện tại) → nếu còn nhiều instance: gần giờ tính phí tiếp theo nhất (AWS lưu ý tiêu chí này ít tác dụng vì phần lớn EC2 tính phí theo giây). ASG cũng tự động cân bằng lại giữa các AZ và thay thế instance unhealthy.</Takeaway>
+<Takeaway>Thứ tự mặc định: AZ có nhiều instance nhất → instance dùng cấu hình lỗi thời (nhóm dùng launch template: launch configuration trước, sau đó launch template khác template hiện tại, rồi phiên bản cũ nhất của template hiện tại; nhóm dùng launch configuration: launch configuration cũ nhất) → nếu còn nhiều instance: gần giờ tính phí tiếp theo nhất (AWS lưu ý tiêu chí này ít tác dụng vì phần lớn EC2 tính phí theo giây). ASG cũng tự động cân bằng lại giữa các AZ và thay thế instance unhealthy.</Takeaway>
 
 </Scene>
 

@@ -1403,8 +1403,8 @@
         {
           "keyword": "Elastic IP cannot be assigned to an Auto Scaling group",
           "lesson": "asg",
-          "status": "partial",
-          "where": "elb.mdx#challenge / Quiz"
+          "status": "covered",
+          "where": "asg.mdx#setup (Elastic IP paragraph + Takeaway); elb.mdx#challenge / Quiz"
         }
       ]
     },

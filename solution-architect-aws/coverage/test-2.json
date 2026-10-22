@@ -1879,14 +1879,14 @@
         {
           "keyword": "ASG default termination policy",
           "lesson": "asg",
-          "status": "partial",
-          "where": "asg.mdx#s3 / TerminationSim; asg.mdx#challenge / Quiz"
+          "status": "covered",
+          "where": "asg.mdx#s3 / TerminationSim (launch template / launch configuration toggle); asg.mdx#challenge / Quiz"
         },
         {
           "keyword": "ASG termination: oldest launch configuration (groups using a launch configuration)",
           "lesson": "asg",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "asg.mdx#s3 / TerminationSim (launch configuration group) + Takeaway"
         }
       ]
     }
