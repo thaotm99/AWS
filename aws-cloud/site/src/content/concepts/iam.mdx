@@ -1,0 +1,182 @@
+---
+title: "IAM + Organizations: ai được làm gì"
+lede: "Bài viết từ 39 câu đề. Đọc policy JSON như đề cho, hiểu vì sao một request bị từ chối khi đi qua nhiều lớp (SCP, permissions boundary, identity policy, resource policy), dùng IAM role thay cho access key, và quản trị nhiều account bằng Organizations."
+minutes: 30
+scenes: 4
+prerequisites: ["global-infra"]
+docs:
+  - title: "Policy evaluation logic"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html"
+  - title: "Permissions boundaries for IAM entities"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html"
+  - title: "Service control policies (SCPs)"
+    url: "https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html"
+  - title: "IAM roles for Amazon EC2"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html"
+  - title: "Security best practices in IAM"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import PolicyReader from "../../components/scenes/iam/PolicyReader.tsx";
+import PolicyEvaluator from "../../components/scenes/iam/PolicyEvaluator.tsx";
+import StepSim from "../../components/scenes/StepSim.tsx";
+import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#s1", label: "1 · Đọc policy" },
+  { href: "#s2", label: "2 · Nhiều lớp quyền" },
+  { href: "#s3", label: "3 · IAM role" },
+  { href: "#s4", label: "4 · Organizations" },
+  { href: "#challenge", label: "Thử thách" },
+]}>
+ShopViet có thêm developer, thêm account production, thêm cả kiểm toán viên. Mỗi người, mỗi ứng dụng chỉ được làm đúng việc của mình. Đó là việc của **IAM** trong một account và **AWS Organizations** khi có nhiều account.
+</Story>
+
+<Scene id="s1" label="Cảnh 1/4" title="Đọc policy JSON như đề cho" questions={["exam2_q37", "exam2_q38", "exam2_q48", "exam2_q54", "exam1_q58"]}>
+
+Đề hay đưa nguyên một policy rồi hỏi nó cho phép gì. Chọn policy, đoán trước, rồi bấm từng request để kiểm tra.
+
+<PolicyReader client:visible />
+
+<Takeaway>Không có Allow khớp thì bị từ chối ngầm định. aws:SourceIp là IP của người gọi, aws:RequestedRegion là Region nhận API call. ListBucket dùng ARN của bucket, GetObject/DeleteObject dùng bucket/*.</Takeaway>
+
+</Scene>
+
+<Scene id="s2" label="Cảnh 2/4" title="Request phải qua những lớp quyền nào?" questions={["exam3_q59", "exam1_q25", "exam2_q39", "exam2_q16"]}>
+
+Một request có thể bị chặn ở nhiều chỗ: **SCP** của Organizations giới hạn cả account, **permissions boundary** giới hạn quyền tối đa của một user/role, **identity policy** cấp quyền, và khi khác account thì **resource policy** (ví dụ bucket policy) cũng phải cho phép. Đổi từng lớp và xem kết quả.
+
+<PolicyEvaluator client:visible />
+
+<Takeaway>Deny rõ ràng luôn thắng. SCP giới hạn cả root của member account nhưng không ảnh hưởng service-linked role. Permissions boundary chặn leo thang đặc quyền (developer tự gắn AdministratorAccess). Khác account: cần cả identity policy bên gọi lẫn resource policy bên tài nguyên.</Takeaway>
+
+</Scene>
+
+<Scene id="s3" label="Cảnh 3/4" title="IAM role thay cho access key" questions={["exam2_q3", "exam3_q23", "exam1_q17", "exam4_q34", "exam1_q5", "exam4_q39"]}>
+
+Server của ShopViet cần đọc DynamoDB. Cách sai là lưu access key trong code. Cách đề chọn:
+
+<StepSim client:visible height={220} refs={["exam2_q3", "exam3_q23"]}
+  intro="EC2 web-1 cần đọc bảng orders trong DynamoDB. Đi từng bước để gắn quyền mà không lưu access key nào trên server."
+  nodes={[
+    { id: "ec2", x: 40, y: 90, label: "EC2 web-1", kind: "ec2" },
+    { id: "role", x: 250, y: 30, label: "IAM role", sub: "qua instance profile", kind: "net" },
+    { id: "sts", x: 250, y: 150, label: "AWS STS", sub: "credentials tạm", kind: "edge" },
+    { id: "ddb", x: 560, y: 90, label: "DynamoDB", sub: "bảng orders", kind: "db" },
+  ]}
+  initial={["ec2", "ddb"]}
+  steps={[
+    { button: "1. Gắn IAM role vào EC2", show: ["role"], flows: [{ path: ["role", "ec2"], tone: "good", label: "instance profile" }],
+      note: "Tạo IAM role có quyền đọc bảng orders, gắn vào EC2 qua **instance profile**. Trust policy của role cho phép dịch vụ EC2 assume nó." },
+    { button: "2. Ứng dụng lấy credentials tạm", show: ["sts"], flows: [{ path: ["ec2", "sts"], tone: "good", label: "tự động, tự xoay vòng" }],
+      note: "SDK trên EC2 tự lấy **credentials tạm thời** từ STS thông qua instance metadata. Credentials hết hạn và được làm mới tự động." },
+    { button: "3. Gọi DynamoDB", flows: [{ path: ["ec2", "ddb"], tone: "good", label: "đã có quyền" }], move: ["ec2", "ddb"],
+      note: "EC2 gọi DynamoDB với quyền của role. Không có access key nào nằm trong code hay trên ổ đĩa. Đây là đáp án **an toàn nhất** của dạng câu này." },
+  ]} />
+
+Cùng ý tưởng cho các trường hợp khác:
+
+<RequirementPicker client:visible items={[
+  { need: "Developer ở account dev cần truy cập tài nguyên ở account production", answer: "Tạo role ở production, developer assume role đó",
+    why: "Role ở account đích có trust policy tin account dev. Developer dùng credentials tạm của role, không tạo user mới ở production.", refs: ["exam1_q17"] },
+  { need: "Lambda ở account A đọc S3 ở account B", answer: "Execution role của Lambda + bucket policy ở account B",
+    why: "Execution role cấp quyền phía Lambda, bucket policy phía account B phải cho phép role đó.", refs: ["exam2_q16"] },
+  { need: "Pod trên EKS chỉ được truy cập đúng dịch vụ của nó", answer: "IAM Roles for Service Accounts (IRSA)",
+    why: "Mỗi Kubernetes service account map tới một IAM role riêng, least privilege cho từng Pod.", refs: ["exam1_q5"] },
+  { need: "Lambda kết nối RDS PostgreSQL không dùng mật khẩu cứng", answer: "IAM database authentication + IAM role cho Lambda",
+    why: "Lambda dùng role để lấy token xác thực ngắn hạn vào RDS.", refs: ["exam4_q39"] },
+  { need: "Resource-based policy duy nhất của chính IAM", answer: "Trust policy của role",
+    why: "Trust policy gắn vào role và quy định ai được assume role đó.", refs: ["exam4_q34"] },
+]} />
+
+<Takeaway>Ứng dụng trên AWS dùng IAM role, không dùng access key. Khác account: tạo role ở account đích và assume role.</Takeaway>
+
+</Scene>
+
+<Scene id="s4" label="Cảnh 4/4" title="Nhiều account: Organizations và các công cụ quản trị" questions={["exam2_q43", "exam5_q18", "exam6_q41", "exam3_q36", "exam6_q22", "exam5_q17", "exam2_q36", "exam3_q17"]}>
+
+<RequirementPicker client:visible items={[
+  { need: "Developer có quyền admin ở account của họ nhưng không được sửa CloudTrail", answer: "SCP chặn thay đổi CloudTrail",
+    why: "SCP giới hạn mọi principal trong account, kể cả admin và root của member account.", refs: ["exam2_q43"] },
+  { need: "Bắt buộc gắn tag dataClassification với giá trị hợp lệ", answer: "Tag policy + SCP từ chối khi thiếu tag",
+    why: "Tag policy chuẩn hóa giá trị; SCP chặn ec2:RunInstances khi request không có tag và chặn xóa tag.", refs: ["exam5_q18"] },
+  { need: "Tạo và quản trị nhiều account theo chuẩn, ít vận hành", answer: "AWS Control Tower",
+    why: "Dựng landing zone, account mới theo guardrail; kết hợp AWS RAM để chia sẻ mạng.", refs: ["exam6_q41"] },
+  { need: "Triển khai cùng một template ra nhiều account và Region", answer: "CloudFormation StackSets",
+    why: "Một thao tác tạo stack ở nhiều account/Region.", refs: ["exam3_q36"] },
+  { need: "Tự động phản ứng khi developer tiêu vượt ngân sách", answer: "AWS Budgets + Budgets actions",
+    why: "Cảnh báo khi thực tế hoặc dự báo vượt ngưỡng, và tự áp policy hạn chế.", refs: ["exam6_q22"] },
+  { need: "Tìm tài nguyên đang bị chia sẻ ra ngoài account hoặc organization", answer: "IAM Access Analyzer",
+    why: "Phân tích resource policy và identity policy để chỉ ra đường truy cập ngoài ý muốn.", refs: ["exam5_q17"] },
+  { need: "Instance ở nhiều account cùng Organization cần nói chuyện riêng, rẻ nhất", answer: "VPC sharing qua AWS RAM",
+    why: "Một VPC chia sẻ subnet cho các account; không cần peering.", refs: ["exam2_q36", "exam3_q17"] },
+]} />
+
+<Takeaway>SCP: giới hạn trần cho cả account. Tag policy: chuẩn hóa tag. Control Tower: quản trị nhiều account. StackSets: triển khai nhiều account/Region. Access Analyzer: tìm chia sẻ ngoài ý muốn.</Takeaway>
+
+</Scene>
+
+<Scene id="confuse" label="Dễ nhầm" title="Những chỗ đáp án sai hay gài" questions={["exam1_q31", "exam6_q40", "exam1_q16", "exam6_q29", "exam1_q25"]}>
+<div class="confuse">
+  <div class="confuse-item">
+    <h3>Root user: không tạo access key</h3>
+    <p>Khi tạo account: đặt mật khẩu mạnh và bật MFA cho root. Email của root nên là alias tới hộp thư tập trung do nhóm quản trị theo dõi. <code>exam1_q31</code> <code>exam6_q40</code></p>
+  </div>
+  <div class="confuse-item">
+    <h3>Best practice IAM đề hay chọn</h3>
+    <p>Bật MFA cho người dùng đặc quyền và dùng CloudTrail ghi lại mọi hành động IAM. <code>exam1_q16</code></p>
+  </div>
+  <div class="confuse-item">
+    <h3>Cấp quyền cho 50 người nhanh nhất</h3>
+    <p>Tạo IAM group, gắn policy vào group, thêm user vào group. Không gắn policy cho từng user. <code>exam6_q29</code></p>
+  </div>
+  <div class="confuse-item">
+    <h3>Ngăn lỡ tay xóa tài nguyên production</h3>
+    <p>Dùng permissions boundary để giới hạn quyền tối đa mà nhân viên có thể cấp cho principal. <code>exam1_q25</code></p>
+  </div>
+</div>
+</Scene>
+
+<Scene id="challenge" label="Thử thách" title="Lớp quyền nào làm việc này?">
+
+Xếp từng tác dụng vào đúng loại policy. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
+
+<SortGame client:visible
+  bins={[
+    { id: "scp", title: "SCP", sub: "Trần cho cả account", hint: "Gợi ý: thứ này áp dụng cho mọi principal trong account thành viên của Organizations." },
+    { id: "boundary", title: "Permissions boundary", sub: "Trần cho một user/role", hint: "Gợi ý: thứ này giới hạn quyền tối đa của từng user hoặc role." },
+    { id: "resource", title: "Resource policy", sub: "Gắn vào tài nguyên", hint: "Gợi ý: thứ này gắn vào tài nguyên và nêu ai được truy cập nó." },
+  ]}
+  cards={[
+    ["Giới hạn cả root của member account", "scp"], ["Không ảnh hưởng service-linked role", "scp"], ["Chặn sửa CloudTrail ở mọi account dev", "scp"],
+    ["Chặn developer tự gắn AdministratorAccess", "boundary"], ["Gắn cho từng IAM user hoặc role", "boundary"],
+    ["Bucket policy cho account khác đọc", "resource"], ["Trust policy của IAM role", "resource"],
+  ]}
+/>
+
+Các câu dưới đây viết lại theo đúng dạng câu trong đề (mã câu hiện sau khi trả lời).
+
+<Quiz client:visible items={[
+  { q: "Ứng dụng trên EC2 cần truy cập S3 và DynamoDB. Cách an toàn nhất?",
+    opts: ["Lưu access key của một IAM user trong file cấu hình", "Gắn IAM role vào EC2 qua instance profile", "Dùng access key của root user"],
+    a: 1, ref: "exam2_q3",
+    why: "Role cấp credentials tạm, tự xoay vòng, không lưu khóa nào trên server." },
+  { q: "Một policy cho phép ec2:RunInstances với điều kiện aws:RequestedRegion = eu-west-1. Điều gì đúng?",
+    opts: ["Chỉ chạy được EC2 ở eu-west-1, gọi API từ đâu cũng được", "Chỉ gọi được API khi người dùng ở châu Âu", "Chạy EC2 ở mọi Region nhưng phải gọi từ eu-west-1"],
+    a: 0, ref: "exam2_q38",
+    why: "aws:RequestedRegion là Region mà API call nhắm tới, không phải vị trí người gọi." },
+  { q: "IAM policy của một user cho phép hành động X, nhưng SCP của account không cho phép X. Kết quả?",
+    opts: ["Được phép vì identity policy cho phép", "Bị từ chối", "Được phép nếu user là admin"],
+    a: 1, ref: "exam3_q59",
+    why: "SCP đặt trần cho cả account. Ngoài trần thì không ai làm được, kể cả admin và root của member account." },
+  { q: "Developer được tự gắn managed policy cho mình nhưng không được tự nâng lên AdministratorAccess. Làm thế nào?",
+    opts: ["Gắn permissions boundary cho mỗi developer", "Dùng SCP chặn cả account", "Xóa quyền IAM của developer"],
+    a: 0, ref: "exam2_q39",
+    why: "Boundary giới hạn quyền tối đa; dù tự gắn AdministratorAccess, quyền hiệu lực vẫn không vượt quá boundary." },
+]} />
+
+</Scene>

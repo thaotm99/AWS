@@ -1,0 +1,53 @@
+<div class="confuse">
+  <div class="confuse-item">
+    <svg viewBox="0 0 220 90" aria-hidden="true">
+      <rect x="6" y="10" width="96" height="70" rx="8" fill="var(--bg)" stroke="var(--muted)"/>
+      <text class="ts" x="14" y="26">us-east-1</text>
+      <rect x="18" y="38" width="72" height="26" rx="5" fill="var(--accent-soft)" stroke="var(--accent)"/>
+      <text class="ts" x="54" y="55" text-anchor="middle" style="fill:var(--accent)">EFS</text>
+      <rect x="118" y="10" width="96" height="70" rx="8" fill="var(--bg)" stroke="var(--muted)"/>
+      <text class="ts" x="126" y="26">ap-southeast-1</text>
+      <rect x="130" y="38" width="72" height="26" rx="5" fill="var(--ok-soft)" stroke="var(--ok)"/>
+      <text class="ts" x="166" y="55" text-anchor="middle" style="fill:var(--ok)">EC2</text>
+      <path d="M90 51 H130" stroke="var(--accent)" stroke-width="2" stroke-dasharray="4 3"/>
+      <text class="ts" x="110" y="88" text-anchor="middle">VPC peering</text>
+    </svg>
+    <h3>EFS là regional, nhưng không bị "khóa" trong Region</h3>
+    <p>Không cần copy file sang EFS ở Region khác. Server ở Region khác mount được qua inter-region VPC peering. <code>exam1_q42</code></p>
+  </div>
+  <div class="confuse-item">
+    <svg viewBox="0 0 220 90" aria-hidden="true">
+      <rect x="6" y="8" width="208" height="34" rx="6" fill="var(--bg)" stroke="var(--muted)"/>
+      <text class="ts" x="14" y="29">public subnet</text>
+      <rect x="120" y="14" width="86" height="22" rx="4" fill="var(--accent)"/>
+      <text x="163" y="29" text-anchor="middle" style="fill:var(--surface);font-family:var(--font-mono);font-size:10px">NAT gateway</text>
+      <rect x="6" y="50" width="208" height="34" rx="6" fill="var(--bg)" stroke="var(--muted)"/>
+      <text class="ts" x="14" y="71">private subnet → route 0.0.0.0/0</text>
+      <path d="M163 50 V36" stroke="var(--accent)" stroke-width="2"/>
+    </svg>
+    <h3>NAT gateway nằm ở public subnet, mỗi AZ một cái</h3>
+    <p>Đáp án sai hay gặp: đặt NAT gateway trong private subnet, hoặc dùng egress-only internet gateway (chỉ dành cho IPv6). <code>exam3_q62</code></p>
+  </div>
+  <div class="confuse-item">
+    <svg viewBox="0 0 220 90" aria-hidden="true">
+      <circle cx="110" cy="45" r="16" fill="var(--edge-soft)" stroke="var(--edge)" stroke-width="1.5"/>
+      <text class="ts" x="110" y="80" text-anchor="middle">Edge location</text>
+      <path d="M20 30 H90" stroke="var(--ok)" stroke-width="2"/><text class="ts" x="20" y="22">tải về: CloudFront</text>
+      <path d="M200 60 H130" stroke="var(--accent)" stroke-width="2"/><text class="ts" x="200" y="74" text-anchor="end">tải lên: S3TA</text>
+    </svg>
+    <h3>CloudFront cho tải về, S3 Transfer Acceleration cho tải lên</h3>
+    <p>Cả hai đều đi qua edge location. Khi đề cần tăng tốc cả xem ảnh lẫn upload ảnh, đáp án dùng cả hai cùng lúc. <code>exam6_q58</code></p>
+  </div>
+  <div class="confuse-item">
+    <svg viewBox="0 0 220 90" aria-hidden="true">
+      <text class="ts" x="10" y="16">Account A</text><text class="ts" x="120" y="16">Account B</text>
+      <rect x="10" y="24" width="90" height="26" rx="5" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="55" y="41" text-anchor="middle" class="ts" style="fill:var(--accent)">us-east-1a</text>
+      <rect x="120" y="24" width="90" height="26" rx="5" fill="var(--accent-soft)" stroke="var(--accent)"/><text x="165" y="41" text-anchor="middle" class="ts" style="fill:var(--accent)">us-east-1a</text>
+      <path d="M55 50 V64" stroke="var(--muted)"/><path d="M165 50 V64" stroke="var(--muted)"/>
+      <rect x="20" y="64" width="70" height="22" rx="4" fill="var(--bg)" stroke="var(--muted)"/><text x="55" y="79" text-anchor="middle" class="ts">use1-az2</text>
+      <rect x="130" y="64" width="70" height="22" rx="4" fill="var(--bg)" stroke="var(--muted)"/><text x="165" y="79" text-anchor="middle" class="ts">use1-az4</text>
+    </svg>
+    <h3>Cùng tên AZ chưa chắc cùng AZ</h3>
+    <p>Tên <code>us-east-1a</code> được ánh xạ khác nhau ở mỗi account. Muốn đặt tài nguyên của nhiều account vào đúng cùng một AZ, dùng AZ ID. <code>exam3_q22</code></p>
+  </div>
+</div>

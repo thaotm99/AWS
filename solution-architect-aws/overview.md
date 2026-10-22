@@ -9,35 +9,36 @@
 
 | Service | Folder | Status | Ngày học | Số câu đề thi |
 |---------|--------|--------|----------|--------------|
-| S3 | s3/ | [ ] | 4-5, 23 | 78 |
-| VPC | vpc/ | [ ] | 1-3, 8 | 48 |
-| Route 53 | route53/ | [ ] | 6 | 12 |
-| CloudFront + Global Accelerator | cloudfront/ | [ ] | 7 | 8 |
-| IAM | iam/ | [ ] | 10-11 | 22 |
-| KMS + ACM | kms/ | [ ] | 12 | 6 |
-| WAF + Shield + GuardDuty | security/ | [ ] | 13 | 4 |
-| Cognito + IAM Identity Center | cognito/ | [ ] | 14 | 4 |
-| EC2 | ec2/ | [ ] | 17-18 | 130 |
-| ELB | elb/ | [ ] | 18-19 | 38 |
-| Auto Scaling (ASG) | asg/ | [ ] | 19 | 22 |
-| ECS + EKS + Fargate | containers/ | [ ] | 20 | 8 |
-| Lambda + API Gateway | lambda/ | [ ] | 21 | 15 |
-| EBS + EFS + FSx | storage/ | [ ] | 24 | 20 |
-| Storage Gateway + Snow Family | storage-migration/ | [ ] | 25 | 3 |
-| RDS + Aurora | rds/ | [ ] | 26-27 | 46 |
+| S3 | s3/ | [ ] | 4-5, 23 | 79 |
+| VPC + VPN + Direct Connect + Transit Gateway | vpc/ | [ ] | 1-3, 8 | 67 |
+| Route 53 | route53/ | [ ] | 6 | 14 |
+| CloudFront + Global Accelerator | cloudfront/ | [ ] | 7 | 28 |
+| IAM + Organizations | iam/ | [ ] | 10-11 | 39 |
+| KMS + ACM + Secrets Manager | kms/ | [ ] | 12 | 14 |
+| WAF + Shield + GuardDuty + Macie | security/ | [ ] | 13 | 14 |
+| Cognito + IAM Identity Center + Directory Service | cognito/ | [ ] | 14 | 10 |
+| EC2 | ec2/ | [ ] | 17-18 | 148 |
+| ELB | elb/ | [ ] | 18-19 | 54 |
+| Auto Scaling (ASG) | asg/ | [ ] | 19 | 39 |
+| ECS + EKS + Fargate | containers/ | [ ] | 20 | 15 |
+| Lambda + API Gateway | lambda/ | [ ] | 21 | 31 |
+| EBS + EFS + FSx | storage/ | [ ] | 24 | 41 |
+| Storage Gateway + Snow Family + DataSync + DMS | storage-migration/ | [ ] | 25 | 21 |
+| RDS + Aurora | rds/ | [ ] | 26-27 | 54 |
 | DynamoDB | dynamodb/ | [ ] | 27-28 | 23 |
-| ElastiCache + Redshift + Athena | analytics/ | [ ] | 29 | 5 |
-| SQS + SNS + EventBridge | messaging/ | [ ] | 30 | 13 |
-| Kinesis | kinesis/ | [ ] | 31 | 3 |
-| CloudWatch + CloudTrail + Config | monitoring/ | [ ] | 32 | 7 |
-| CloudFormation + Elastic Beanstalk | iac/ | [ ] | 33 | 3 |
+| ElastiCache + Redshift + Athena + Glue/EMR | analytics/ | [ ] | 29 | 19 |
+| SQS + SNS + EventBridge + Step Functions | messaging/ | [ ] | 30 | 33 |
+| Kinesis + MSK | kinesis/ | [ ] | 31 | 12 |
+| CloudWatch + CloudTrail + Config + Systems Manager | monitoring/ | [ ] | 32 | 17 |
+| CloudFormation + Elastic Beanstalk | iac/ | [ ] | 33 | 5 |
+| AWS Backup + Disaster Recovery strategies | backup-dr/ | [ ] | - | 8 |
+| Cost tools + AI/ML + dịch vụ khác | others/ | [ ] | - | 10 |
 
-> **Về số câu đề thi:** đếm bằng keyword-matching trên nội dung câu hỏi (không tính
-> phần giải thích/đáp án sai) từ 390 câu trong 6 đề — dùng để ước lượng khối lượng,
-> số chính xác sẽ chốt khi tạo `list_qa.md` thủ công cho từng service (Bước 1 mỗi
-> session). Một câu có thể thuộc nhiều service cùng lúc (vd: câu hỏi vừa có EC2 vừa
-> có RDS) nên tổng các dòng > 390. Có 90/390 câu không khớp keyword của 22 service
-> trên (thuộc service khác ngoài phạm vi ôn, ví dụ Systems Manager, Step Functions...).
+> **Về số câu đề thi:** số chính xác, đếm từ `{service}/list_qa.md`. Mỗi `list_qa.md` được tạo bằng
+> cách quét toàn bộ 390 câu trong 6 đề: một câu thuộc service khi service đó xuất hiện trong đề bài
+> hoặc trong đáp án đúng (không tính đáp án sai). Một câu có thể thuộc nhiều service nên tổng các
+> dòng > 390; cả 390 câu đều nằm trong ít nhất một `list_qa.md`. `s3/` và `dynamodb/` giữ nguyên
+> danh sách đã soạn tay trong các buổi học. Khái niệm mỗi service nằm trong `{service}/keyword.md`.
 
 ## Full Mock Tests (từ Ngày 35)
 

@@ -1,0 +1,20 @@
+---
+import { assertListed } from "../data/exam";
+
+interface Props {
+  id: string;
+  label: string;
+  title: string;
+  /** Practice-test questions this scene teaches for, e.g. "exam1_q41". */
+  questions?: string[];
+}
+const { id, label, title, questions = [] } = Astro.props;
+assertListed(questions, `Scene "${id}"`);
+---
+<section class="scene prose" id={id}>
+  <div class="scene-head"><span class="scene-no">{label}</span><h2>{title}</h2></div>
+  {questions.length > 0 && (
+    <p class="exam-refs"><span>Đề hỏi ở</span>{questions.map((q) => <code>{q}</code>)}</p>
+  )}
+  <slot />
+</section>

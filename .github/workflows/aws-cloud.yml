@@ -1,0 +1,88 @@
+name: aws-cloud
+
+on:
+  push:
+    branches: [master]
+    paths: ["aws-cloud/**", "solution-architect-aws/**/*.md", ".github/workflows/aws-cloud.yml"]
+  pull_request:
+    paths: ["aws-cloud/**", "solution-architect-aws/**/*.md", ".github/workflows/aws-cloud.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aws-cloud-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  site:
+    name: Build site
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: aws-cloud/site
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: aws-cloud/site/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: aws-cloud/site/dist
+          retention-days: 7
+
+  infra:
+    name: Check infra
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: aws-cloud/infra
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: aws-cloud/infra/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      # Synth without credentials: proves the stack renders; deploying infra stays a manual `cdk deploy`.
+      - run: npx cdk synth --quiet
+        env:
+          CDK_DEFAULT_ACCOUNT: "000000000000"
+
+  deploy:
+    name: Deploy to S3 + CloudFront
+    needs: [site, infra]
+    # Runs only on master, and only once the repo variables from aws-cloud/README.md are set.
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master' && vars.AWS_DEPLOY_ROLE_ARN != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      BUCKET: ${{ vars.SITE_BUCKET }}
+      DISTRIBUTION_ID: ${{ vars.DISTRIBUTION_ID }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: dist
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'ap-southeast-1' }}
+      - name: Upload hashed assets (cached for a year)
+        run: aws s3 sync dist/_astro "s3://$BUCKET/_astro" --cache-control "public,max-age=31536000,immutable"
+      - name: Upload pages (always revalidated)
+        run: aws s3 sync dist "s3://$BUCKET" --exclude "_astro/*" --cache-control "public,max-age=0,must-revalidate"
+      - name: Remove files no longer in the build
+        run: aws s3 sync dist "s3://$BUCKET" --delete
+      - name: Invalidate CloudFront
+        run: aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths "/*"

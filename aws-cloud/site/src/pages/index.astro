@@ -1,0 +1,32 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getCurriculum } from "../data/exam";
+
+const layers = getCurriculum();
+const ready = new Set((await getCollection("concepts")).map((e) => e.id));
+const lessons = layers.reduce((s, l) => s + l.concepts.length, 0);
+---
+<BaseLayout title="AWS Từ Nền">
+  <div class="crumbs"><b>Lộ trình SAA-C03</b></div>
+  <h1>Ôn thi Solutions Architect Associate bằng cách bấm và xem</h1>
+  <p class="lede">{lessons} bài theo thứ tự học từ nền lên. Mỗi bài chỉ dạy những khái niệm mà 6 đề luyện thi thực sự hỏi, và ghi rõ câu đề nào dùng tới. Lý thuyết đối chiếu với AWS docs.</p>
+  <a class="btn primary cta" href="/concepts/global-infra/">Bắt đầu: Global Infrastructure</a>
+
+  <div class="layer-grid">
+    {layers.map((layer) => (
+      <section class="layer-card">
+        <h2><span class="layer-num">Lớp {layer.n}</span>{layer.name}</h2>
+        <div class="concept-cards">
+          {layer.concepts.map((c) => (
+            <a class={"concept-card " + (ready.has(c.id) ? "ready" : "soon")} href={`/concepts/${c.id}/`}>
+              <span class="title">{c.title}</span>
+              <span class="q-badge">{c.exact ? "" : "~"}{c.questions} câu đề</span>
+              <span class="state">{ready.has(c.id) ? "Có bài · học ngay" : "Sắp có"}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+    ))}
+  </div>
+</BaseLayout>

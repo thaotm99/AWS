@@ -1,0 +1,129 @@
+---
+title: "Cognito, IAM Identity Center và Directory Service"
+lede: "Bài viết từ 10 câu đề. Đăng nhập cho người dùng ứng dụng bằng Cognito (user pool và identity pool khác nhau thế nào), đăng nhập một lần vào nhiều AWS account cho nhân viên, và nối AWS với Active Directory."
+minutes: 15
+scenes: 2
+prerequisites: ["iam"]
+docs:
+  - title: "Amazon Cognito user pools"
+    url: "https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools.html"
+  - title: "Amazon Cognito identity pools"
+    url: "https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-identity.html"
+  - title: "Authenticate users using an Application Load Balancer"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/listener-authenticate-users.html"
+  - title: "What is IAM Identity Center?"
+    url: "https://docs.aws.amazon.com/singlesignon/latest/userguide/what-is.html"
+  - title: "AWS Directory Service options"
+    url: "https://docs.aws.amazon.com/directoryservice/latest/admin-guide/what_is.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
+import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#s1", label: "1 · Người dùng ứng dụng" },
+  { href: "#s2", label: "2 · Nhân viên và Active Directory" },
+  { href: "#challenge", label: "Thử thách" },
+]}>
+Có hai nhóm người cần đăng nhập vào ShopViet: **khách hàng** dùng web và app, và **nhân viên** cần vào các AWS account và hệ thống nội bộ đang dùng Active Directory. Mỗi nhóm một bộ công cụ.
+</Story>
+
+<Scene id="s1" label="Cảnh 1/2" title="Khách hàng: Cognito user pool và identity pool" questions={["exam2_q17", "exam6_q50"]}>
+
+**User pool** là danh bạ người dùng: đăng ký, đăng nhập, trả về token (JWT). **Identity pool** đổi danh tính đã đăng nhập thành **credentials AWS tạm thời** để gọi thẳng dịch vụ AWS như S3. Đề hỏi hai dạng sau:
+
+<ScenarioFlow client:visible height={230} scenarios={[
+  { name: "Xác thực trước khi vào app", refs: ["exam2_q17"],
+    nodes: [
+      { id: "user", x: 30, y: 90, label: "Khách", kind: "user" },
+      { id: "alb", x: 230, y: 90, label: "ALB", sub: "listener HTTPS", kind: "net" },
+      { id: "pool", x: 230, y: 175, label: "Cognito user pool", kind: "edge" },
+      { id: "app", x: 520, y: 90, label: "EC2 ứng dụng", sub: "chỉ lo nghiệp vụ", kind: "ec2" },
+      { id: "code", x: 520, y: 10, label: "Code đăng nhập tự viết", kind: "warn" },
+    ],
+    options: [
+      { name: "Tự viết login trong app", verdict: "bad", hide: ["pool"],
+        flows: [{ path: ["user", "alb", "app"], tone: "neutral" }, { path: ["app", "code"], tone: "bad", label: "phải tự bảo trì" }],
+        text: "Mỗi server phải tự xử lý đăng nhập, phiên, mật khẩu. Tốn công phát triển và dễ sai." },
+      { name: "ALB + Cognito user pool", verdict: "good", hide: ["code"],
+        flows: [{ path: ["user", "alb"], tone: "good" }, { path: ["alb", "pool"], tone: "good", label: "authenticate" }, { path: ["alb", "app"], tone: "good", label: "đã xác thực" }],
+        text: "Cấu hình **authenticate-cognito** trên listener của ALB. ALB lo đăng nhập, ứng dụng chỉ nhận request đã xác thực. Đề chọn vì **ít công phát triển nhất**." },
+    ] },
+  { name: "App ghi thẳng vào S3", refs: ["exam6_q50"],
+    nodes: [
+      { id: "user", x: 30, y: 90, label: "Người dùng app", kind: "user" },
+      { id: "idp", x: 250, y: 20, label: "Cognito identity pool", kind: "edge" },
+      { id: "key", x: 250, y: 170, label: "Access key nhúng trong app", kind: "warn" },
+      { id: "vpce", x: 470, y: 90, label: "S3 VPC endpoint", kind: "net" },
+      { id: "s3", x: 640, y: 90, w: 100, label: "S3", kind: "store" },
+    ],
+    options: [
+      { name: "Nhúng access key", verdict: "bad", hide: ["idp", "vpce"],
+        flows: [{ path: ["user", "key", "s3"], tone: "bad", label: "lộ key là mất" }],
+        text: "Ai giải nén app ra cũng lấy được access key dài hạn." },
+      { name: "Identity pool + VPC endpoint", verdict: "good", hide: ["key"],
+        flows: [{ path: ["user", "idp"], tone: "good", label: "đổi token lấy credentials tạm" }, { path: ["idp", "vpce", "s3"], tone: "good" }],
+        text: "**Identity pool** cấp credentials AWS tạm thời cho người dùng đã đăng nhập (federated). Phía ứng dụng trong VPC dùng **S3 VPC endpoint** để đi đường riêng. Đề chọn cả hai." },
+    ] },
+]} />
+
+<Takeaway>User pool: đăng nhập, trả token, tích hợp được với ALB. Identity pool: đổi token lấy credentials AWS tạm thời để gọi S3, DynamoDB…</Takeaway>
+
+</Scene>
+
+<Scene id="s2" label="Cảnh 2/2" title="Nhân viên: Identity Center và Active Directory" questions={["exam6_q10", "exam4_q4", "exam1_q10", "exam3_q28", "exam6_q44", "exam3_q5", "exam2_q4"]}>
+
+<RequirementPicker client:visible items={[
+  { need: "Nhân viên đăng nhập một lần vào nhiều AWS account, quyền theo nhóm, least privilege", answer: "IAM Identity Center + permission sets",
+    why: "Kết nối với thư mục người dùng của công ty; permission set định nghĩa quyền cho từng nhóm trên từng account.", refs: ["exam6_q10", "exam4_q4"] },
+  { need: "Dùng Active Directory on-premises để vào AWS, không lưu dữ liệu thư mục trên AWS", answer: "AD Connector + IAM Identity Center",
+    why: "AD Connector là proxy chuyển yêu cầu xác thực về AD on-premises, ít vận hành nhất.", refs: ["exam1_q10"] },
+  { need: "Chạy workload cần AD trên AWS và tạo trust với AD on-premises", answer: "AWS Managed Microsoft AD",
+    why: "Một Active Directory thật do AWS quản lý, tạo được trust relationship với domain on-premises.", refs: ["exam3_q28", "exam6_q44", "exam4_q4"] },
+  { need: "File share cho Windows và Linux, giữ quyền NTFS và tích hợp AD", answer: "FSx for Windows File Server",
+    why: "Hỗ trợ SMB, NTFS ACL và join domain Active Directory.", refs: ["exam3_q5"] },
+  { need: "Đối tác upload qua SFTP, xác thực bằng nhà cung cấp danh tính riêng", answer: "Transfer Family + Cognito / custom identity provider",
+    why: "Transfer Family nhận SFTP và ghi vào S3; danh tính người dùng tích hợp Cognito hoặc IdP tùy chỉnh, quyền qua IAM role.", refs: ["exam2_q4"] },
+]} />
+
+<Takeaway>Nhân viên vào nhiều account: IAM Identity Center. Chỉ cần mượn AD on-premises: AD Connector. Cần AD chạy trên AWS và trust với on-premises: AWS Managed Microsoft AD.</Takeaway>
+
+</Scene>
+
+<Scene id="challenge" label="Thử thách" title="Dùng cái nào?">
+
+<SortGame client:visible
+  bins={[
+    { id: "up", title: "Cognito user pool", sub: "Đăng nhập, token", hint: "Gợi ý: thứ này lo đăng ký, đăng nhập người dùng ứng dụng." },
+    { id: "ip", title: "Cognito identity pool", sub: "Credentials AWS tạm", hint: "Gợi ý: thứ này đổi danh tính thành quyền gọi dịch vụ AWS." },
+    { id: "ic", title: "IAM Identity Center", sub: "Nhân viên, nhiều account", hint: "Gợi ý: thứ này dành cho nhân viên vào nhiều AWS account." },
+  ]}
+  cards={[
+    ["Trả về JWT sau khi đăng nhập", "up"], ["Tích hợp xác thực vào ALB", "up"], ["Đăng ký, quên mật khẩu", "up"],
+    ["App mobile ghi thẳng vào S3", "ip"], ["Người dùng federated nhận credentials tạm", "ip"],
+    ["Permission sets", "ic"], ["Single sign-on vào nhiều AWS account", "ic"],
+  ]}
+/>
+
+Các câu dưới đây viết lại theo đúng dạng câu trong đề (mã câu hiện sau khi trả lời).
+
+<Quiz client:visible items={[
+  { q: "Đội phát triển muốn ALB lo việc đăng nhập để server chỉ xử lý nghiệp vụ, ít công phát triển nhất. Chọn gì?",
+    opts: ["Cognito user pool tích hợp với ALB", "Viết module đăng nhập trên từng EC2", "IAM user cho từng khách hàng"],
+    a: 0, ref: "exam2_q17",
+    why: "ALB hỗ trợ authenticate bằng Cognito user pool ngay trên listener." },
+  { q: "Công ty cần chạy ứng dụng phụ thuộc AD trên AWS và tạo trust với AD on-premises. Dịch vụ nào?",
+    opts: ["AD Connector", "AWS Managed Microsoft AD", "Simple AD"],
+    a: 1, ref: "exam6_q44",
+    why: "Managed Microsoft AD là AD thật, tạo được trust. AD Connector chỉ là proxy, không chạy workload AD." },
+  { q: "Nhân viên cần đăng nhập một lần vào nhiều AWS account với quyền tối thiểu theo nhóm, ít quản trị nhất. Chọn gì?",
+    opts: ["IAM user riêng ở từng account", "IAM Identity Center với permission sets", "Cognito identity pool"],
+    a: 1, ref: "exam6_q10",
+    why: "Identity Center quản lý đăng nhập tập trung; permission set gán quyền theo nhóm và account." },
+]} />
+
+</Scene>

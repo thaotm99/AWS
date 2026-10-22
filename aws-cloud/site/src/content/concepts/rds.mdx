@@ -1,0 +1,151 @@
+---
+title: "RDS + Aurora: sẵn sàng cao, đọc nhiều và nhiều Region"
+lede: "Bài viết từ 54 câu đề. Multi-AZ khác Read Replica thế nào khi ghi, khi đọc, khi hỏng và khi bảo trì; các tính năng RDS hay gặp; Aurora Replica, Global Database, Serverless; và mã hóa một database đang chạy."
+minutes: 30
+scenes: 4
+prerequisites: ["vpc", "kms"]
+docs:
+  - title: "Multi-AZ DB instance deployments"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.MultiAZSingleStandby.html"
+  - title: "Working with DB instance read replicas"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html"
+  - title: "Amazon RDS Proxy"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-proxy.html"
+  - title: "Using Amazon Aurora global databases"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html"
+  - title: "Encrypting Amazon RDS resources"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.Encryption.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import MultiAzSim from "../../components/scenes/rds/MultiAzSim.tsx";
+import StepSim from "../../components/scenes/StepSim.tsx";
+import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#s1", label: "1 · Multi-AZ và Read Replica" },
+  { href: "#s2", label: "2 · Tính năng RDS" },
+  { href: "#s3", label: "3 · Aurora" },
+  { href: "#s4", label: "4 · Mã hóa DB đang chạy" },
+  { href: "#challenge", label: "Thử thách" },
+]}>
+Database đơn hàng của ShopViet không được mất dữ liệu, không được sập, và không được chậm khi phòng kế toán chạy báo cáo. **RDS** và **Aurora** giải ba bài toán đó bằng những cơ chế khác nhau, và đề hay hỏi đúng chỗ khác nhau ấy.
+</Story>
+
+<Scene id="s1" label="Cảnh 1/4" title="Multi-AZ và Read Replica khác nhau ở đâu?" questions={["exam1_q52", "exam5_q25", "exam6_q49", "exam2_q25", "exam3_q63", "exam3_q41"]}>
+
+Ghi một đơn hàng, chạy báo cáo, rồi cho primary sập và thử hai kiểu bảo trì:
+
+<MultiAzSim client:visible />
+
+<Takeaway>Multi-AZ: đồng bộ, một standby không đọc được, để chịu lỗi; failover bằng cách đổi CNAME. Read Replica: bất đồng bộ, đọc được, để giảm tải đọc. Bảo trì OS làm standby trước; nâng cấp engine thì cả hai cùng lúc.</Takeaway>
+
+</Scene>
+
+<Scene id="s2" label="Cảnh 2/4" title="Các tính năng RDS đề hay hỏi" questions={["exam2_q13", "exam6_q19", "exam6_q46", "exam4_q19", "exam1_q3", "exam1_q55", "exam2_q63", "exam4_q47", "exam5_q42", "exam2_q62"]}>
+
+<RequirementPicker client:visible items={[
+  { need: "Tách tải đọc của báo cáo khỏi database chính, rẻ nhất", answer: "Read Replica cùng Region, trỏ báo cáo vào endpoint của replica",
+    why: "Replica cùng Region không tính phí truyền dữ liệu replication; nên cùng cấu hình compute và storage với primary để theo kịp.", refs: ["exam2_q13", "exam6_q19", "exam6_q46"] },
+  { need: "SQL Server lên AWS, sẵn sàng cao nhất, ít quản trị", answer: "RDS for SQL Server Multi-AZ", why: "AWS lo standby và failover.", refs: ["exam4_q19"] },
+  { need: "Oracle cần chỉnh sửa hệ điều hành, vẫn muốn managed và HA", answer: "RDS Custom for Oracle Multi-AZ", why: "RDS Custom cho phép truy cập OS và môi trường database.", refs: ["exam1_q3"] },
+  { need: "Lambda hoặc rất nhiều kết nối ngắn làm database quá tải connection", answer: "Amazon RDS Proxy", why: "Gom và tái sử dụng connection.", refs: ["exam1_q55"] },
+  { need: "Dung lượng database có thể vượt dự kiến, không muốn theo dõi thủ công", answer: "Storage auto scaling", why: "RDS tự tăng dung lượng khi gần đầy.", refs: ["exam2_q63"] },
+  { need: "Chuẩn hóa cấu hình RDS đúng best practice cho mọi người", answer: "Template CloudFormation", why: "Mọi database được tạo từ cùng một template đã kiểm tra.", refs: ["exam4_q47"] },
+  { need: "Disaster recovery cho database", answer: "Cross-Region Read Replica + automated backups sang Region khác", why: "Có bản sao ở Region khác để promote khi Region chính hỏng.", refs: ["exam5_q42"] },
+  { need: "Phí truyền dữ liệu của Read Replica", answer: "Chỉ tính phí khi replicate khác Region", why: "Cùng Region không tính phí replication.", refs: ["exam2_q62"] },
+]} />
+
+<Takeaway>Đọc nhiều: Read Replica. Sẵn sàng cao: Multi-AZ. Quá nhiều connection: RDS Proxy. DR khác Region: cross-Region replica.</Takeaway>
+
+</Scene>
+
+<Scene id="s3" label="Cảnh 3/4" title="Aurora: replica, Global Database, Serverless" questions={["exam5_q3", "exam2_q52", "exam3_q50", "exam2_q5", "exam1_q7", "exam2_q61", "exam6_q23", "exam6_q17", "exam2_q53", "exam4_q2", "exam6_q5", "exam5_q7"]}>
+
+<RequirementPicker client:visible items={[
+  { need: "Phân tải đọc trên Aurora và có sẵn mục tiêu failover", answer: "Aurora Replica ở AZ khác + reader endpoint",
+    why: "Reader endpoint chia kết nối đọc cho các replica; replica cũng là mục tiêu failover.", refs: ["exam5_q3", "exam5_q7", "exam6_q5"] },
+  { need: "Replication lag của read replica MySQL quá cao", answer: "Chuyển sang Aurora MySQL, dùng Aurora Replicas + Aurora Auto Scaling",
+    why: "Aurora Replica dùng chung storage nên độ trễ rất thấp; Auto Scaling thêm replica theo tải.", refs: ["exam3_q50"] },
+  { need: "Tạo database dev từ dữ liệu production nhanh", answer: "Restore từ automated backup của Aurora", why: "Không ảnh hưởng cluster production.", refs: ["exam2_q52"] },
+  { need: "Đọc độ trễ thấp ở nhiều Region, RPO vài giây, RTO khoảng một phút", answer: "Aurora Global Database",
+    why: "Sao chép sang Region khác với độ trễ thường dưới một giây; có managed failover giữa Region.", refs: ["exam2_q5", "exam2_q61", "exam6_q23"] },
+  { need: "Một bảng dùng toàn cầu, các bảng khác chỉ trong Region", answer: "Aurora Global Database cho bảng toàn cầu, Aurora thường cho phần còn lại", why: "Tách theo phạm vi dữ liệu.", refs: ["exam1_q7"] },
+  { need: "Tải lên xuống thất thường, không đoán trước", answer: "Aurora Serverless (v2)", why: "Tự co giãn năng lực theo tải.", refs: ["exam6_q17", "exam2_q53"] },
+  { need: "I/O cao, muốn chi phí dự đoán được, không tính phí theo I/O", answer: "Aurora I/O-Optimized", why: "Không có phí theo từng I/O.", refs: ["exam4_q2"] },
+]} />
+
+<Takeaway>Aurora Replica + reader endpoint cho đọc và failover. Nhiều Region, RPO giây: Global Database. Tải thất thường: Serverless v2.</Takeaway>
+
+</Scene>
+
+<Scene id="s4" label="Cảnh 4/4" title="Mã hóa một database đang chạy" questions={["exam2_q45", "exam4_q31", "exam4_q39", "exam2_q57"]}>
+
+Không thể bật encryption trực tiếp trên một RDS instance đang chạy. Làm như đề chọn:
+
+<StepSim client:visible height={210} refs={["exam2_q45"]}
+  intro="Kiểm tra bảo mật phát hiện database đơn hàng chưa mã hóa."
+  nodes={[
+    { id: "old", x: 30, y: 80, label: "RDS chưa mã hóa", kind: "warn" },
+    { id: "snap", x: 220, y: 80, label: "Snapshot", sub: "chưa mã hóa", kind: "site" },
+    { id: "enc", x: 400, y: 80, label: "Bản copy snapshot", sub: "mã hóa bằng KMS", kind: "edge" },
+    { id: "new", x: 590, y: 80, label: "RDS mới", sub: "đã mã hóa", kind: "db" },
+  ]}
+  initial={["old"]}
+  steps={[
+    { button: "1. Tạo snapshot", show: ["snap"], flows: [{ path: ["old", "snap"], tone: "neutral" }], note: "Snapshot của database chưa mã hóa cũng chưa mã hóa." },
+    { button: "2. Copy snapshot có bật encryption", show: ["enc"], flows: [{ path: ["snap", "enc"], tone: "good", label: "copy + KMS" }], note: "Khi copy snapshot, chọn mã hóa bằng một KMS key." },
+    { button: "3. Restore thành instance mới", show: ["new"], flows: [{ path: ["enc", "new"], tone: "good", label: "restore" }],
+      note: "Restore từ snapshot đã mã hóa ra instance mới đã mã hóa, chuyển ứng dụng sang, rồi xóa instance cũ." },
+  ]} />
+
+<RequirementPicker client:visible items={[
+  { need: "Database đã mã hóa at rest, cần bảo vệ dữ liệu trên đường truyền", answer: "Kết nối bằng SSL/TLS", why: "KMS chỉ bảo vệ at rest.", refs: ["exam4_q31"] },
+  { need: "Lambda kết nối PostgreSQL không lưu mật khẩu", answer: "IAM database authentication + IAM role", why: "Token ngắn hạn thay mật khẩu.", refs: ["exam4_q39"] },
+  { need: "Chia sẻ bản sao database đã mã hóa cho account khác", answer: "Share snapshot + cấp quyền KMS key", why: "Xem bài KMS.", refs: ["exam2_q57"] },
+]} />
+
+<Takeaway>Mã hóa database đang chạy: snapshot → copy có mã hóa → restore. In transit: SSL. Không mật khẩu: IAM DB authentication.</Takeaway>
+
+</Scene>
+
+<Scene id="challenge" label="Thử thách" title="Multi-AZ hay Read Replica?" questions={["exam1_q52"]}>
+
+<SortGame client:visible
+  bins={[
+    { id: "maz", title: "Multi-AZ", sub: "Để chịu lỗi", hint: "Gợi ý: đặc điểm này phục vụ high availability." },
+    { id: "rr", title: "Read Replica", sub: "Để đọc nhiều", hint: "Gợi ý: đặc điểm này phục vụ mở rộng đọc." },
+  ]}
+  cards={[
+    ["Sao chép đồng bộ", "maz"], ["Standby không phục vụ đọc", "maz"], ["Failover tự động bằng CNAME", "maz"], ["Ghi mỗi giao dịch trên ít nhất hai node", "maz"],
+    ["Sao chép bất đồng bộ", "rr"], ["Có endpoint riêng để đọc", "rr"], ["Đặt được ở Region khác", "rr"], ["Dùng cho báo cáo, analytics", "rr"],
+  ]}
+/>
+
+<Quiz client:visible items={[
+  { q: "Phát biểu nào đúng về Multi-AZ và Read Replica của RDS?",
+    opts: ["Multi-AZ bất đồng bộ, Read Replica đồng bộ", "Multi-AZ đồng bộ trong một Region; Read Replica bất đồng bộ, có thể cùng AZ, khác AZ hoặc khác Region", "Cả hai đều phục vụ đọc"],
+    a: 1, ref: "exam1_q52",
+    why: "Multi-AZ để HA, đồng bộ; Read Replica để đọc, bất đồng bộ." },
+  { q: "Primary của RDS Multi-AZ hỏng. Điều gì xảy ra?",
+    opts: ["Phải restore từ snapshot", "Bản ghi CNAME của endpoint trỏ sang standby", "Read Replica tự thành primary"],
+    a: 1, ref: "exam5_q25",
+    why: "RDS promote standby và đổi CNAME; ứng dụng giữ nguyên endpoint." },
+  { q: "Báo cáo analytics làm chậm database bán hàng. Cách rẻ nhất?",
+    opts: ["Read Replica cùng Region, chạy báo cáo trên đó", "Multi-AZ", "Tăng instance lên gấp đôi"],
+    a: 0, ref: "exam6_q19",
+    why: "Replica cùng Region tách tải đọc và không tính phí replication." },
+  { q: "Cần RPO vài giây và RTO khoảng một phút khi cả Region hỏng, dùng Aurora. Chọn gì?",
+    opts: ["Aurora Replica trong cùng Region", "Aurora Global Database", "Snapshot hằng ngày copy sang Region khác"],
+    a: 1, ref: "exam2_q61",
+    why: "Global Database replicate sang Region khác với độ trễ rất thấp và failover nhanh." },
+  { q: "Database RDS đang chạy chưa mã hóa. Làm sao mã hóa?",
+    opts: ["Bật encryption trong cấu hình instance", "Snapshot, copy có mã hóa, restore instance mới", "Bật SSL"],
+    a: 1, ref: "exam2_q45",
+    why: "Không bật được encryption tại chỗ; phải đi qua snapshot đã mã hóa." },
+]} />
+
+</Scene>

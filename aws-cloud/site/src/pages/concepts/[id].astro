@@ -1,0 +1,89 @@
+---
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Scene from "../../components/Scene.astro";
+import DoneButton from "../../components/DoneButton.tsx";
+import { findConcept } from "../../data/curriculum";
+import { getCurriculum } from "../../data/exam";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("concepts");
+  const ids = getCurriculum().flatMap((l) => l.concepts.map((c) => c.id));
+  const orphan = entries.find((e) => !ids.includes(e.id));
+  if (orphan) throw new Error(`concepts/${orphan.id}.mdx has no matching id in curriculum.ts`);
+  return ids.map((id) => ({ params: { id }, props: { entry: entries.find((e) => e.id === id) } }));
+}
+
+const { id } = Astro.params;
+const { entry } = Astro.props;
+const layers = getCurriculum();
+const concept = findConcept(layers, id)!;
+const { Content } = entry ? await render(entry) : { Content: null };
+
+const all = layers.flatMap((l) => l.concepts);
+const index = all.findIndex((c) => c.id === id);
+const next = all.slice(index + 1, index + 4);
+const ready = new Set((await getCollection("concepts")).map((e) => e.id));
+const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(layers, p)).filter(Boolean);
+---
+<BaseLayout title={`${concept.title} · AWS Từ Nền`} description={entry?.data.lede} current={id}>
+  <div class="crumbs">
+    <span>Lớp {concept.layer.n} · {concept.layer.name}</span><span aria-hidden="true">/</span><b>{concept.title}</b>
+  </div>
+  <h1>{entry?.data.title ?? concept.title}</h1>
+  {entry && <p class="lede">{entry.data.lede}</p>}
+  <dl class="meta-row">
+    <div>
+      <dt>Câu đề liên quan</dt>
+      <dd>{concept.exact ? `${concept.questions} câu trong 6 đề` : `khoảng ${concept.questions} câu (ước lượng)`}</dd>
+    </div>
+    {entry && (
+      <>
+        <div>
+          <dt>Cần biết trước</dt>
+          <dd>
+            {prereqs.length
+              ? prereqs.map((p) => <a href={`/concepts/${p!.id}/`}>{p!.title}</a>)
+              : "Không có. Đây là điểm bắt đầu"}
+          </dd>
+        </div>
+        <div><dt>Thời gian</dt><dd>~{entry.data.minutes} phút, {entry.data.scenes} cảnh tương tác</dd></div>
+        <div><dt>Tiến độ</dt><dd><DoneButton client:load id={id} /></dd></div>
+      </>
+    )}
+  </dl>
+
+  {Content ? (
+    <>
+      <Content />
+      <Scene id="next" label="Đọc tiếp" title="Bài tiếp theo trong lộ trình">
+        <div class="next">
+          <div class="next-col">
+            <h3>Lý thuyết tiếp theo</h3>
+            <ul>
+              {next.map((c) => (
+                <li>
+                  <a href={`/concepts/${c.id}/`}>{c.title}</a>
+                  {!ready.has(c.id) && <span class="tag-soon">sắp có</span>}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div class="next-col">
+            <h3>Luyện đề</h3>
+            <ul><li>Làm các câu trong <code>solution-architect-aws/{id}/list_qa.md</code></li></ul>
+          </div>
+          <div class="next-col">
+            <h3>AWS docs gốc</h3>
+            <ul>{entry!.data.docs.map((d) => <li><a href={d.url} target="_blank" rel="noopener">{d.title}</a></li>)}</ul>
+          </div>
+        </div>
+      </Scene>
+    </>
+  ) : (
+    <div class="placeholder">
+      <p>Bài này chưa viết. Nội dung sẽ được dựng từ các câu đề trong <code>solution-architect-aws/{id}/list_qa.md</code> và đối chiếu với AWS docs, theo cùng cách học với bài Global Infrastructure.</p>
+      <a class="btn cta" href="/concepts/global-infra/">Học bài Global Infrastructure</a>
+    </div>
+  )}
+</BaseLayout>

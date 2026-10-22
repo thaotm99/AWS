@@ -45,6 +45,7 @@ exam4_q29
 exam4_q30
 exam4_q43
 exam4_q48
+exam4_q64
 exam4_q65
 exam5_q11
 exam5_q12
@@ -79,4 +80,4 @@ exam6_q58
 exam6_q64
 exam6_q65
 
-Tổng: 78 câu
+Tổng: 79 câu

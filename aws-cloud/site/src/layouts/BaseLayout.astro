@@ -1,0 +1,76 @@
+---
+import "../styles/global.css";
+import Roadmap from "../components/Roadmap.tsx";
+import { getCollection } from "astro:content";
+import { getCurriculum } from "../data/exam";
+
+interface Props {
+  title: string;
+  description?: string;
+  current?: string;
+}
+
+const { title, description = "Ôn thi AWS Solutions Architect Associate (SAA-C03) qua hình minh họa và mô phỏng tương tác, bám theo câu hỏi đề thi.", current } = Astro.props;
+const ready = (await getCollection("concepts")).map((e) => e.id);
+const layers = getCurriculum();
+---
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="/">
+          <span class="brand-mark" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="9" width="14" height="5" rx="1" fill="#fff"/><rect x="3" y="4" width="10" height="4" rx="1" fill="#fff" opacity=".75"/><rect x="5" y="1" width="6" height="2" rx="1" fill="#fff" opacity=".5"/></svg>
+          </span>
+          AWS Từ Nền
+        </a>
+        <nav class="topnav" aria-label="Chính">
+          <a href="/" aria-current="page">Lý thuyết</a>
+          <a href="#" class="soon" data-soon="Trang Tình huống">Tình huống</a>
+          <a href="#" class="soon" data-soon="Trang Ôn tập">Ôn tập</a>
+        </nav>
+        <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="sidebar">Lộ trình học</button>
+      </div>
+    </header>
+
+    <div class="shell">
+      <aside class="sidebar" id="sidebar" aria-label="Lộ trình học">
+        <Roadmap client:load layers={layers} current={current} ready={ready} />
+      </aside>
+      <main class="article">
+        <slot />
+      </main>
+    </div>
+    <div class="toast" id="toast" hidden></div>
+
+    <script>
+      const menuBtn = document.getElementById("menuBtn")!;
+      menuBtn.addEventListener("click", () => {
+        const open = document.getElementById("sidebar")!.classList.toggle("open");
+        menuBtn.setAttribute("aria-expanded", String(open));
+      });
+      let timer: ReturnType<typeof setTimeout>;
+      document.querySelectorAll<HTMLAnchorElement>("[data-soon]").forEach((a) =>
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          const t = document.getElementById("toast")!;
+          t.textContent = `${a.dataset.soon} đang được xây dựng.`;
+          t.hidden = false;
+          clearTimeout(timer);
+          timer = setTimeout(() => (t.hidden = true), 2400);
+        }),
+      );
+    </script>
+  </body>
+</html>

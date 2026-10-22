@@ -1,0 +1,10 @@
+{
+  "app": "npx ts-node --prefer-ts-exts bin/app.ts",
+  "watch": { "include": ["bin/**", "lib/**"] },
+  "context": {
+    "githubRepo": "thaotm99/AWS",
+    "githubBranch": "master",
+    "createGithubOidcProvider": true,
+    "monthlyBudgetUsd": 5
+  }
+}
