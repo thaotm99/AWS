@@ -1,8 +1,8 @@
 ---
 title: "Cognito, IAM Identity Center and Directory Service"
 lede: "ShopViet's customers, employees and partners have different authentication requirements. This lesson covers authentication for web and mobile applications with Amazon Cognito (user pools versus identity pools), single sign-on for employees into multiple AWS accounts, reusing on-premises Active Directory, and receiving partner files over SFTP."
-minutes: 15
-scenes: 2
+minutes: 18
+scenes: 3
 prerequisites: ["iam"]
 docs:
   - title: "Amazon Cognito user pools"
@@ -21,24 +21,30 @@ docs:
     url: "https://docs.aws.amazon.com/directoryservice/latest/admin-guide/directory_ad_connector.html"
   - title: "Working with custom identity providers (AWS Transfer Family)"
     url: "https://docs.aws.amazon.com/transfer/latest/userguide/custom-idp-intro.html"
+  - title: "Simple AD"
+    url: "https://docs.aws.amazon.com/directoryservice/latest/admin-guide/directory_simple_ad.html"
+  - title: "What is Amazon Cloud Directory?"
+    url: "https://docs.aws.amazon.com/clouddirectory/latest/developerguide/what_is_cloud_directory.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
 import Story from "../../components/lessons/global-infra/Story.astro";
 import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
 import StaffSignInSim from "../../components/scenes/cognito/StaffSignInSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#en-s1", label: "1 · Authenticating application users" },
   { href: "#en-s2", label: "2 · Employees, Active Directory and partners" },
+  { href: "#en-s3", label: "3 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
 The ShopViet system has two groups of identities to authenticate: **customers** who use the web and mobile applications, and **employees** who need access to AWS accounts and to internal systems that use Active Directory. Each group uses its own set of services.
 </Story>
 
-<Scene id="en-s1" label="Part 1/2" title="Authenticating customers: Cognito user pools and identity pools" questions={["exam2_q17", "exam6_q50"]}>
+<Scene id="en-s1" label="Part 1/3" title="Authenticating customers: Cognito user pools and identity pools" questions={["exam2_q17", "exam6_q50"]}>
 
 A **user pool** is a user directory: it provides sign-up and sign-in and returns tokens (JWTs). An **identity pool** exchanges an authenticated identity for **temporary AWS credentials** to call AWS services such as S3 directly. ShopViet has both requirements. Pick a scenario and compare the two options:
 
@@ -80,13 +86,40 @@ A **user pool** is a user directory: it provides sign-up and sign-in and returns
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/2" title="Authenticating employees, Active Directory and partners" questions={["exam6_q10", "exam4_q4", "exam1_q10", "exam3_q28", "exam6_q44", "exam3_q5", "exam2_q4"]}>
+<Scene id="en-s2" label="Part 2/3" title="Authenticating employees, Active Directory and partners" questions={["exam6_q10", "exam4_q4", "exam1_q10", "exam3_q28", "exam6_q44", "exam3_q5", "exam2_q4"]}>
 
 Cognito serves the application's customers. Employees and partners have different requirements: single sign-on into multiple AWS accounts, reusing on-premises Active Directory accounts, accessing file shares, and transferring files over SFTP. Pick each scenario, change the configuration, then press Sign in.
 
 <StaffSignInSim client:visible />
 
 <Takeaway>Employees accessing multiple accounts: IAM Identity Center + permission sets. Use on-premises AD for authentication without synchronizing the directory to AWS: AD Connector. AD running on AWS with a trust to on-premises AD: AWS Managed Microsoft AD. File share with NTFS permissions: FSx for Windows File Server. Partners transferring files over SFTP: AWS Transfer Family.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 3/3" title="Quick comparison: directory options that are easy to confuse" questions={["exam3_q28"]}>
+
+ShopViet's accounting application runs SQL Server on AWS and needs an Active Directory domain on AWS with a **trust** to the on-premises AD, so employees get single sign-on to resources in either domain. The right option is AWS Managed Microsoft AD (Part 2). The options below also carry the word "directory" or "AD" but do not meet this requirement. Select each item to see what it is for.
+
+<QuickCompare client:visible items={[
+  { name: "AD Connector",
+    use: "A proxy that forwards sign-in requests to on-premises domain controllers; on-premises users sign in to AWS applications and services with their existing AD credentials, with no directory synchronization. Supports seamless domain join of EC2 instances to the on-premises domain.",
+    notHere: "AD Connector creates no domain on AWS, so there is no domain to set up a trust with, and it is not compatible with RDS for SQL Server.",
+    instead: "**AWS Managed Microsoft AD**: an actual Active Directory operated by AWS that runs AD-aware workloads such as SQL Server and sets up trusts with the on-premises AD." },
+  { name: "Simple AD",
+    use: "A standalone Active Directory-compatible directory powered by Samba 4 with basic features: users, groups, joining Linux and Windows EC2 instances, Kerberos SSO, group policies. Two sizes: Small (up to 500 users) and Large (up to 5,000 users). Simple AD is **no longer open to new customers**.",
+    notHere: "Simple AD does not support trust relationships with other domains, MFA or schema extensions, and is not compatible with RDS for SQL Server or IAM Identity Center.",
+    instead: "**AWS Managed Microsoft AD** (Standard Edition for businesses with up to about 5,000 employees, Enterprise Edition for larger organizations)." },
+  { name: "Amazon Cloud Directory",
+    use: "A multi-hierarchy directory-based store for developers to keep application objects (org charts, device registries, catalogs) through an API. Cloud Directory is **no longer open to new customers** and reaches end of support on July 24, 2027; AWS suggests DynamoDB or Neptune as alternatives.",
+    notHere: "Cloud Directory is not a directory service for IT administrators: it is not Active Directory, cannot join a domain and cannot set up a trust with the on-premises AD.",
+    instead: "**AWS Managed Microsoft AD** for the domain and trust; DynamoDB or Neptune if you only need to store hierarchical application data." },
+  { name: "Amazon Cognito user pool",
+    use: "A highly scalable directory to manage and authenticate application users (customers, SaaS subscribers), with support for social identity providers.",
+    notHere: "Cognito is not Active Directory: it has no domain, Kerberos or trusts, so an AD-dependent SQL Server application cannot join it.",
+    instead: "**AWS Managed Microsoft AD** for employees and Windows workloads; Cognito for customers of the web and mobile applications (Part 1)." },
+]} />
+
+<Takeaway>A domain on AWS with a trust to the on-premises AD, AD-aware workloads (SQL Server): AWS Managed Microsoft AD. Only using on-premises AD accounts to sign in to AWS services: AD Connector. Simple AD does not support trusts and is no longer open to new customers. Amazon Cloud Directory is a data store for applications, not Active Directory, and is also no longer open to new customers.</Takeaway>
 
 </Scene>
 
@@ -117,7 +150,7 @@ Check your understanding: as the designer of the ShopViet system, which option f
   { q: "ShopViet's accounting application needs to join a domain on AWS, and that domain must have a trust with the on-premises AD. Which service meets the requirement?",
     opts: ["AD Connector", "AWS Managed Microsoft AD", "Simple AD"],
     a: 1,
-    why: "AWS Managed Microsoft AD is an Active Directory operated by AWS that supports trusts with on-premises AD. AD Connector is only a directory gateway that forwards requests to the on-premises AD; it does not create a domain on AWS and does not support transitive trusts." },
+    why: "AWS Managed Microsoft AD is an Active Directory operated by AWS that supports trusts with on-premises AD. AD Connector is only a directory gateway that forwards requests to the on-premises AD; it does not create a domain on AWS and does not support transitive trusts. Simple AD does not support trust relationships with other domains." },
   { q: "40 ShopViet employees need single sign-on into multiple AWS accounts, with each group granted only the permissions it needs. Which option has the lowest administrative overhead?",
     opts: ["A separate IAM user in each account", "IAM Identity Center with permission sets", "Cognito identity pool"],
     a: 1,

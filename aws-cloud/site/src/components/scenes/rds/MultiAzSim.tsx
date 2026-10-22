@@ -4,13 +4,14 @@ import { useLang, type Bi } from "../../../lib/lang";
 
 // RDS Multi-AZ (synchronous standby, automatic failover by flipping the endpoint's
 // CNAME) vs Read Replicas (asynchronous, readable) and how maintenance behaves
+// Automated backups are taken from the standby (aws.amazon.com/rds/faqs).
 // (exam1_q52, exam5_q25, exam6_q49, exam2_q25, exam3_q63, exam3_q41).
 type Role = "primary" | "standby";
 
 const APP: Pt = [90, 150];
 const ENDPOINT: Pt = [260, 150];
 const POS = { a: [470, 90] as Pt, b: [470, 230] as Pt, replica: [680, 150] as Pt };
-const INTRO: Bi<ReactNode> = { vi: "Primary tại AZ a, standby tại AZ b, cùng một Read Replica. Thực hiện lần lượt từng thao tác phía trên.", en: "Primary in AZ a, standby in AZ b, plus one Read Replica. Try each action above in turn." };
+const INTRO: Bi<ReactNode> = { vi: "Multi-AZ DB instance deployment: primary tại AZ a, standby tại AZ b, cùng một Read Replica. Thực hiện lần lượt từng thao tác phía trên.", en: "Multi-AZ DB instance deployment: primary in AZ a, standby in AZ b, plus one Read Replica. Try each action above in turn." };
 
 export default function MultiAzSim() {
   const [primaryAz, setPrimaryAz] = useState<"a" | "b">("a");
@@ -41,7 +42,7 @@ export default function MultiAzSim() {
     setBusy(true);
     await travel(layer, [APP, [APP[0], 280], [POS.replica[0], 280], POS.replica], 1000, "pkt", 6);
     await travel(layer, [POS.replica, [POS.replica[0], 280], [APP[0], 280], APP], 900, "pkt-back", 6);
-    setNote({ vi: <>Tác vụ báo cáo và analytics đọc từ <b>Read Replica</b> qua endpoint riêng của replica, không ảnh hưởng hiệu năng của primary. Standby của Multi-AZ <b>không phục vụ đọc</b>.</>, en: <>Reporting and analytics jobs read from the <b>Read Replica</b> through the replica&apos;s own endpoint, without affecting the primary&apos;s performance. The Multi-AZ standby <b>does not serve reads</b>.</> });
+    setNote({ vi: <>Tác vụ báo cáo và analytics đọc từ <b>Read Replica</b> qua endpoint riêng của replica, không ảnh hưởng hiệu năng của primary. Standby của Multi-AZ DB instance deployment <b>không phục vụ đọc</b> (Multi-AZ DB cluster deployment thì có hai reader phục vụ đọc).</>, en: <>Reporting and analytics jobs read from the <b>Read Replica</b> through the replica&apos;s own endpoint, without affecting the primary&apos;s performance. The standby of a Multi-AZ DB instance deployment <b>does not serve reads</b> (a Multi-AZ DB cluster deployment has two readers that do).</> });
     setBusy(false);
   }
 
@@ -59,6 +60,18 @@ export default function MultiAzSim() {
 
   function maintainOs() {
     setNote({ vi: <>Bảo trì hệ điều hành với Multi-AZ: RDS thực hiện trên <b>standby trước</b>, sau đó promote standby thành primary, cuối cùng bảo trì primary cũ (hiện là standby). Downtime chỉ phát sinh trong thời gian failover.</>, en: <>OS maintenance with Multi-AZ: RDS patches the <b>standby first</b>, then promotes the standby to primary, and finally patches the old primary (now the standby). Downtime occurs only during the failover.</> });
+  }
+
+  async function backup() {
+    const layer = pk.current!;
+    setBusy(true);
+    const sb = POS[standbyAz];
+    flashText(layer, sb[0], sb[1] + 44, "snapshot", "ok-t", 1400);
+    flashText(layer, primaryPos[0] - 60, primaryPos[1] - 34, L({ vi: "I/O không bị tạm dừng", en: "I/O not suspended" }), "ok-t", 1400);
+    await travel(layer, [APP, ENDPOINT, primaryPos], 700, "pkt", 6);
+    await travel(layer, [primaryPos, ENDPOINT, APP], 600, "pkt-back", 6);
+    setNote({ vi: <>Trong backup window, automated backup và DB snapshot của Multi-AZ được <b>lấy từ standby</b>, nên I/O trên primary không bị tạm dừng. Với Single-AZ, storage I/O có thể bị tạm dừng trong thời gian ngắn (thường dưới vài giây) khi quá trình backup khởi tạo. Cả hai kiểu triển khai đều có thể có độ trễ I/O tăng trong vài phút khi backup.</>, en: <>During the backup window, Multi-AZ automated backups and DB snapshots are <b>taken from the standby</b>, so I/O on the primary is not suspended. With Single-AZ, storage I/O may be briefly suspended (typically under a few seconds) while the backup initializes. Both deployment types can see increased I/O latency for a few minutes during backups.</> });
+    setBusy(false);
   }
 
   function upgradeEngine() {
@@ -91,6 +104,7 @@ export default function MultiAzSim() {
         <button className="btn" onClick={report} disabled={busy}>{L({ vi: "Chạy báo cáo", en: "Run a report" })}</button>
         <button className="btn danger" onClick={fail} disabled={busy || !!down}>{L({ vi: "Sự cố primary", en: "Primary failure" })}</button>
         <button className="btn" onClick={maintainOs} disabled={busy}>{L({ vi: "Bảo trì OS", en: "OS maintenance" })}</button>
+        <button className="btn" onClick={backup} disabled={busy || !!down}>{L({ vi: "Automated backup", en: "Automated backup" })}</button>
         <button className="btn" onClick={upgradeEngine} disabled={busy}>{L({ vi: "Nâng cấp engine", en: "Engine upgrade" })}</button>
         <button className="btn" onClick={reset} disabled={busy}>{L({ vi: "Đặt lại", en: "Reset" })}</button>
       </div>

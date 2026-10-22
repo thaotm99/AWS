@@ -3,7 +3,7 @@ import CaseSim, { type CaseScenario } from "./CaseSim";
 
 // Four things that are easy to get wrong when ShopViet spreads across Regions and
 // AZs: EFS across Regions, where a NAT gateway lives, AZ names vs AZ IDs, and
-// using CloudFront together with S3 Transfer Acceleration.
+// using CloudFront (edge cache for repeated views) together with S3 Transfer Acceleration (transfers to and from the bucket).
 
 type Lang = ReturnType<typeof useLang>;
 
@@ -141,13 +141,13 @@ function scenarios(L: Lang): CaseScenario[] {
           ok: false, result: L({ vi: "Truy xuất nhanh nhưng tải lên vẫn chậm. Cần bổ sung S3 Transfer Acceleration.", en: "Fetching is fast but uploads are still slow. S3 Transfer Acceleration must be added." }) };
         if (v === 1) return { hide: ["cf"], back: false,
           steps: [
-            { at: "s3", state: "change", tag: L({ vi: "CHẬM", en: "SLOW" }), msg: L({ vi: "Không có cache: mọi request truy xuất đều được chuyển về Singapore.", en: "No cache: every fetch request goes back to Singapore." }) },
-            { at: "user", state: "pass", tag: L({ vi: "NHẬN", en: "RECEIVED" }), msg: L({ vi: "Ảnh hiển thị với độ trễ cao.", en: "The image is displayed with high latency." }) },
+            { at: "s3", state: "change", tag: L({ vi: "CHẬM", en: "SLOW" }), msg: L({ vi: "Không có cache: mỗi lượt xem đều lấy ảnh từ bucket ở Singapore. Transfer Acceleration rút ngắn đường truyền nhưng không lưu ảnh tại edge.", en: "No cache: every view fetches the image from the bucket in Singapore. Transfer Acceleration shortens the network path but does not store the image at the edge." }) },
+            { at: "user", state: "pass", tag: L({ vi: "NHẬN", en: "RECEIVED" }), msg: L({ vi: "Ảnh được xem lặp lại vẫn phải đi về bucket mỗi lần, chậm hơn lấy từ edge cache.", en: "A repeatedly viewed image still travels from the bucket every time, slower than serving it from the edge cache." }) },
             ...fastUp,
           ],
-          ok: false, result: L({ vi: "Tải lên nhanh nhưng truy xuất vẫn chậm. Cần bổ sung CloudFront.", en: "Uploads are fast but fetching is still slow. CloudFront must be added." }) };
+          ok: false, result: L({ vi: "Tải lên nhanh, nhưng ảnh được xem lặp lại không được cache. Bổ sung CloudFront để cache ảnh tại edge location.", en: "Uploads are fast, but repeatedly viewed images are not cached. Add CloudFront to cache the images at edge locations." }) };
         return { hide: ["direct"], back: false, steps: [...view, ...fastUp],
-          ok: true, result: L({ vi: "Cả hai chiều đều được tăng tốc: CloudFront cho chiều tải xuống, S3 Transfer Acceleration cho chiều tải lên.", en: "Both directions are accelerated: CloudFront for downloads, S3 Transfer Acceleration for uploads." }) };
+          ok: true, result: L({ vi: "CloudFront cache ảnh được xem lặp lại tại edge location; S3 Transfer Acceleration tăng tốc truyền dữ liệu tới và từ bucket, ở tình huống này là chiều tải lên.", en: "CloudFront caches the repeatedly viewed images at edge locations; S3 Transfer Acceleration speeds up transfers to and from the bucket, here the uploads." }) };
       },
     },
   ];

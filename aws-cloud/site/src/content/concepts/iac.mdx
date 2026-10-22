@@ -1,8 +1,8 @@
 ---
 title: "CloudFormation và Elastic Beanstalk: Infrastructure as Code"
 lede: "Số lượng nhân sự mới và số account của ShopViet tăng lên, và các thao tác thủ công trên console bắt đầu gây sự cố. Bài học trình bày ba nội dung: mô tả hạ tầng bằng template CloudFormation và quản lý việc tạo, cập nhật, rollback thông qua stack; áp dụng cùng một tiêu chuẩn cho mọi account và Region bằng StackSets; và rút ngắn thời gian khởi động instance mới của Elastic Beanstalk xuống 2 phút."
-minutes: 15
-scenes: 3
+minutes: 19
+scenes: 4
 prerequisites: ["ec2", "vpc", "rds"]
 docs:
   - title: "What is AWS CloudFormation?"
@@ -29,6 +29,24 @@ docs:
     url: "https://docs.aws.amazon.com/ram/latest/userguide/what-is.html"
   - title: "Using a custom Amazon machine image (AMI) in Elastic Beanstalk"
     url: "https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/using-features.customenv.html"
+  - title: "What is AWS Service Catalog?"
+    url: "https://docs.aws.amazon.com/servicecatalog/latest/adminguide/introduction.html"
+  - title: "AWS Service Catalog concepts"
+    url: "https://docs.aws.amazon.com/servicecatalog/latest/adminguide/what-is_concepts.html"
+  - title: "AWS Service Catalog template constraints"
+    url: "https://docs.aws.amazon.com/servicecatalog/latest/adminguide/catalogs_constraints_template-constraints.html"
+  - title: "AWS Service Catalog launch constraints"
+    url: "https://docs.aws.amazon.com/servicecatalog/latest/adminguide/constraints-launch.html"
+  - title: "What is CodeDeploy?"
+    url: "https://docs.aws.amazon.com/codedeploy/latest/userguide/welcome.html"
+  - title: "Global Accelerator traffic dials"
+    url: "https://docs.aws.amazon.com/global-accelerator/latest/dg/about-endpoint-groups-traffic-dial.html"
+  - title: "Configuring budget actions"
+    url: "https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-controls.html"
+  - title: "What is AWS Control Tower?"
+    url: "https://docs.aws.amazon.com/controltower/latest/userguide/what-is-control-tower.html"
+  - title: "Share your VPC subnets with other accounts"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-sharing.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -37,6 +55,7 @@ import StackSim from "../../components/scenes/iac/StackSim.tsx";
 import SgRuleSim from "../../components/scenes/iac/SgRuleSim.tsx";
 import StackSetSim from "../../components/scenes/iac/StackSetSim.tsx";
 import BootTimeSim from "../../components/scenes/iac/BootTimeSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
@@ -44,12 +63,13 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s1", label: "1 · Template và stack" },
   { href: "#s2", label: "2 · Triển khai đa account, đa Region" },
   { href: "#s3", label: "3 · Thời gian khởi động trên Elastic Beanstalk" },
+  { href: "#s4", label: "4 · Service Catalog và phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
 Tuần trước, một nhân sự mới của ShopViet tạo database bằng console nhưng không bật Multi-AZ và backup. Khi database gặp sự cố, dữ liệu đơn hàng của nửa ngày bị mất. Từ sự cố này, hạ tầng cần được **định nghĩa bằng mã nguồn**, được review như mã nguồn và có thể tái tạo chính xác với số lần bất kỳ. **CloudFormation** đáp ứng yêu cầu này cho mọi loại tài nguyên; **Elastic Beanstalk** đảm nhiệm việc vận hành ứng dụng web cho các nhóm không muốn tự kết hợp từng thành phần hạ tầng.
 </Story>
 
-<Scene id="s1" label="Phần 1/3" title="Template thay thế thao tác thủ công" questions={["exam4_q47", "exam4_q15", "exam4_q17"]}>
+<Scene id="s1" label="Phần 1/4" title="Template thay thế thao tác thủ công" questions={["exam4_q47", "exam4_q15", "exam4_q17"]}>
 
 **Template** là một file YAML hoặc JSON mô tả các tài nguyên cần tạo. CloudFormation đọc template và tạo một **stack**: nhóm tài nguyên được tạo, cập nhật và xoá cùng nhau. Để thay đổi hạ tầng, cập nhật template và thực hiện **update stack**; **change set** cho phép xem trước các thay đổi CloudFormation sẽ áp dụng. Chạy ba tình huống của ShopViet:
 
@@ -63,7 +83,7 @@ Khả năng đọc hiểu template quan trọng tương đương khả năng vi�
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/3" title="Áp dụng một tiêu chuẩn cho mọi account và Region" questions={["exam3_q36"]}>
+<Scene id="s2" label="Phần 2/4" title="Áp dụng một tiêu chuẩn cho mọi account và Region" questions={["exam3_q36"]}>
 
 ShopViet hiện có nhiều account trong **AWS Organizations**: production, dev, data, và sắp bổ sung chi nhánh tại Nhật Bản. Mỗi account hoạt động ở nhiều Region. Mọi môi trường phải sử dụng đúng loại EC2 đã được phê duyệt và IAM role tiêu chuẩn cho Lambda. Triển khai template baseline bằng ba phương án, sau đó bổ sung một account mới:
 
@@ -73,13 +93,44 @@ ShopViet hiện có nhiều account trong **AWS Organizations**: production, dev
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/3" title="Elastic Beanstalk: khởi động instance mới trong 2 phút" questions={["exam4_q1"]}>
+<Scene id="s3" label="Phần 3/4" title="Elastic Beanstalk: khởi động instance mới trong 2 phút" questions={["exam4_q1"]}>
 
 Website chính của ShopViet chạy trên **Elastic Beanstalk**: đội phát triển chỉ cần tải mã nguồn lên, Beanstalk tự động tạo EC2, load balancer, Auto Scaling group và giám sát health. Đội vẫn có thể xem và điều chỉnh các tài nguyên bên dưới. Vấn đề là quá trình cài đặt ứng dụng mất 45 phút: khi lưu lượng tăng, Beanstalk bổ sung instance nhưng instance mới phải gần một giờ sau mới phục vụ được request. So sánh thời gian của bốn phương án khởi động:
 
 <BootTimeSim client:visible />
 
 <Takeaway>Thời gian cài đặt dài làm chậm quá trình khởi động instance mới: đưa phần tĩnh vào golden AMI (Beanstalk hỗ trợ custom AMI), để user data chỉ tạo phần động khi khởi động.</Takeaway>
+
+</Scene>
+
+<Scene id="s4" label="Phần 4/4" title="Service Catalog và các dịch vụ dễ nhầm với IaC" questions={["exam6_q22", "exam6_q41", "exam2_q22"]}>
+
+Phần 1 đưa tiêu chuẩn vào template, nhưng người dùng template vẫn cần quyền CloudFormation và quyền trên mọi dịch vụ mà template tạo ra. **AWS Service Catalog** giải quyết bài toán self-service: quản trị viên nhập template CloudFormation thành **product**, gom product vào **portfolio** và cấp quyền cho IAM user, group hoặc role. **Template constraint** thu hẹp giá trị được phép của tham số trong template (ví dụ chỉ một số loại EC2); **launch constraint** chỉ định IAM role mà Service Catalog dùng khi tạo product, nên người dùng cuối không cần quyền trực tiếp trên CloudFormation và các dịch vụ bên dưới. Mỗi lần người dùng tạo product, kết quả là một **provisioned product**, tức một stack CloudFormation.
+
+Service Catalog, CodeDeploy và Control Tower thường xuất hiện cạnh CloudFormation nhưng giải quyết bài toán khác. Chọn từng mục để xem phạm vi sử dụng và phương án phù hợp với tình huống của ShopViet.
+
+<QuickCompare client:visible items={[
+  { name: "Service Catalog: kiểm soát chi phí",
+    use: "Cho phép nhân sự tự tạo các tài nguyên đã được phê duyệt (product từ template CloudFormation), với tham số bị giới hạn bằng template constraint và quyền tạo do launch constraint cung cấp.",
+    notHere: "Mỗi lập trình viên ShopViet có account dev riêng và chi phí có thể tăng đột biến. Service Catalog chỉ quy định cái gì được tạo qua catalog; nó không theo dõi chi tiêu, không cảnh báo và không tự động phản ứng khi vượt ngân sách. Lambda tắt tài nguyên theo lịch ở từng account còn tăng thêm việc vận hành.",
+    instead: "**AWS Budgets** với ngưỡng cho từng account và **budget action** tự động áp dụng IAM policy hoặc SCP chặn tạo thêm tài nguyên khi vượt ngưỡng (xem bài IAM, Phần 4)." },
+  { name: "Service Catalog: VPC cho từng account",
+    use: "Phát hành một template VPC đã phê duyệt để mỗi account tự tạo VPC theo cùng chuẩn.",
+    notHere: "ShopViet muốn quản lý mạng tập trung, không lặp lại cấu hình ở từng account. Mỗi account vẫn có VPC, NAT gateway, internet gateway riêng; Service Catalog cũng không tạo account mới hay bật logging bắt buộc cho account mới.",
+    instead: "**AWS Control Tower** tạo và quản trị account (landing zone, controls, Account Factory); một account mạng sở hữu VPC trung tâm và chia sẻ subnet cho các account workload qua **AWS RAM** (VPC sharing)." },
+  { name: "AWS CodeDeploy",
+    use: "Tự động triển khai phiên bản ứng dụng mới lên EC2, server on-premises, Lambda hoặc ECS, theo kiểu in-place hoặc blue/green. Với EC2, blue/green cài phiên bản mới lên instance thay thế, đăng ký chúng vào load balancer của deployment group rồi chuyển traffic.",
+    notHere: "ShopViet cần thử bản blue/green của ứng dụng toàn cầu trên càng nhiều người dùng càng tốt trong 48 giờ, trong khi điện thoại cache DNS. CodeDeploy cài đặt ứng dụng; nó không phải điểm vào toàn cầu và không chia tỷ lệ traffic giữa các Region.",
+    instead: "**AWS Global Accelerator**: traffic dial chỉnh phần trăm traffic tới từng Region, endpoint weight chỉnh tỷ lệ giữa các endpoint; thay đổi áp dụng cho kết nối mới mà không phụ thuộc cache DNS (xem bài Global Infrastructure, Phần 5)." },
+  { name: "AWS Control Tower",
+    use: "Thiết lập và quản trị môi trường nhiều account theo best practice: điều phối AWS Organizations, Service Catalog, IAM Identity Center để dựng landing zone, áp dụng controls (guardrails) và tạo account mới bằng Account Factory.",
+    notHere: "Control Tower không thay thế template của từng workload: hạ tầng ứng dụng bên trong account vẫn được mô tả bằng CloudFormation, và baseline cần lặp lại ở nhiều account, nhiều Region vẫn có thể triển khai bằng StackSets.",
+    instead: "Control Tower cho account và guardrail; **CloudFormation** (Phần 1) và **StackSets** (Phần 2) cho tài nguyên bên trong account." },
+]} />
+
+Các nội dung liên quan: AWS Budgets actions và Control Tower tại [bài IAM, Phần 4](/concepts/iam/#s4); Global Accelerator tại [bài Global Infrastructure, Phần 5](/concepts/global-infra/#s5).
+
+<Takeaway>Cho nhân sự tự tạo tài nguyên đã phê duyệt mà không cần quyền trực tiếp trên dịch vụ: Service Catalog (product là template CloudFormation, template constraint giới hạn tham số, launch constraint cấp IAM role). Tự động chặn khi vượt ngân sách: AWS Budgets actions, không phải Service Catalog. Tạo account mới có guardrail và mạng dùng chung: Control Tower + VPC sharing qua RAM. CodeDeploy triển khai phiên bản ứng dụng; chia traffic blue/green giữa các Region không phụ thuộc DNS: Global Accelerator.</Takeaway>
 
 </Scene>
 
@@ -119,6 +170,10 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Lưu bộ cài đặt trên S3", "Golden AMI chứa sẵn phần tĩnh, user data tạo phần động", "User data cài đặt toàn bộ khi khởi động"],
     a: 1,
     why: "Phần tốn thời gian là cài đặt, do đó cần cài sẵn vào AMI. Phần thay đổi theo từng instance được user data xử lý khi khởi động." },
+  { q: "Đội nền tảng muốn nhân sự tự tạo môi trường thử nghiệm từ template CloudFormation đã phê duyệt, chỉ được chọn một vài loại EC2, và không cấp cho họ quyền trực tiếp trên CloudFormation hay EC2. Phương án nào phù hợp?",
+    opts: ["AWS Service Catalog với template constraint và launch constraint", "Cấp quyền AdministratorAccess và gửi template qua email", "AWS CodeDeploy"],
+    a: 0,
+    why: "Template constraint giới hạn giá trị tham số; launch constraint chỉ định IAM role mà Service Catalog dùng để tạo stack thay cho người dùng. CodeDeploy chỉ triển khai phiên bản ứng dụng." },
 ]} />
 
 </Scene>

@@ -1,11 +1,13 @@
 import { useLang } from "../../../lib/lang";
+import type { Pt } from "../../../lib/animate";
 import CaseSim, { type CaseScenario } from "../global-infra/CaseSim";
 
 type Lang = ReturnType<typeof useLang>;
 
 // Four Route 53 settings that ShopViet can easily get wrong: how an NLB splits
 // traffic when cross-zone is off, failover vs weighted, geolocation vs
-// geoproximity bias, and the two layers that can block content by country.
+// geoproximity bias, the two layers that can block content by country, and
+// why a multivalue answer record does not add capacity for a traffic spike.
 
 function scenarios(L: Lang): CaseScenario[] {
 return [
@@ -61,7 +63,7 @@ return [
     run: (v) => {
       if (v === 0) return {
         steps: [
-          { at: "r53", state: "change", tag: "10%", msg: L({ vi: "Weighted phân phối theo trọng số, không phụ thuộc trạng thái health của ALB.", en: "Weighted routing distributes by weight, regardless of the ALB's health status." }) },
+          { at: "r53", state: "change", tag: "10%", msg: L({ vi: "Weighted chọn record theo trọng số trong số các record healthy. Health check chỉ loại record unhealthy khỏi câu trả lời; ALB và S3 đều healthy nên record S3 vẫn nhận khoảng 10% truy vấn.", en: "Weighted routing selects records by weight among the healthy records. A health check only removes unhealthy records from responses; the ALB and S3 are both healthy, so the S3 record still receives about 10% of queries." }) },
           { at: "s3", via: [[480, 120], [480, 187]], state: "block", flash: L({ vi: "lỗi?", en: "error?" }), msg: L({ vi: "1 trên 10 người dùng nhận trang thông báo lỗi dù hệ thống đang hoạt động bình thường.", en: "1 in 10 users gets the error notice page even though the system is working normally." }) },
         ],
         ok: false, result: L({ vi: "Trang lỗi không được hiển thị đúng thời điểm. Sử dụng failover routing.", en: "The error page is not shown at the right time. Use failover routing." }) };
@@ -126,10 +128,43 @@ return [
           ],
           ok: true, result: L({ vi: "Giới hạn tại **tầng phân phối nội dung**: CloudFront trả về 403. Hai cơ chế này có thể áp dụng đồng thời.", en: "Restricted at the **content delivery layer**: CloudFront returns 403. The two mechanisms can be applied together." }) },
   },
+  {
+    name: L({ vi: "Flash sale: lưu lượng tăng 10 lần, nội dung động", en: "Flash sale: 10x traffic, dynamic content" }),
+    request: "GET https://shopviet.vn/flash-sale",
+    from: L({ vi: "lưu lượng gấp 10 lần ngày thường", en: "10 times the usual traffic" }),
+    nodes: [
+      { id: "user", x: 20, y: 97, w: 60, l1: L({ vi: "Người dùng", en: "Users" }), user: true },
+      { id: "r53", x: 140, y: 97, w: 150, l1: "Route 53" },
+      { id: "alb", x: 350, y: 97, w: 180, l1: "ALB", l2: "Auto Scaling group" },
+      { id: "w1", x: 620, y: 6, w: 180, l1: "EC2 web 1" },
+      { id: "w2", x: 620, y: 64, w: 180, l1: "EC2 web 2" },
+      { id: "w3", x: 620, y: 122, w: 180, l1: "EC2 web 3" },
+      { id: "w4", x: 620, y: 180, w: 180, l1: L({ vi: "EC2 web 4…n", en: "EC2 web 4…n" }), l2: L({ vi: "ASG bổ sung", en: "added by the ASG" }) },
+    ],
+    links: [
+      { a: "user", b: "r53" }, { a: "r53", b: "alb" },
+      ...[["w1", 29], ["w2", 87], ["w3", 145], ["w4", 203]].map(([w, y]) => ({ a: "alb", b: w as string, via: [[580, 120], [580, y as number]] as Pt[] })),
+      ...[["w1", 29], ["w2", 87], ["w3", 145]].map(([w, y]) => ({ id: `m-${w}`, a: "r53", b: w as string, via: [[320, 120], [320, 40], [580, 40], [580, y as number]] as Pt[] })),
+    ],
+    start: "user",
+    choices: { label: L({ vi: "Cấu hình", en: "Configuration" }), options: [L({ vi: "Multivalue answer, 3 web server", en: "Multivalue answer, 3 web servers" }), "ALB + Auto Scaling group"], initial: 0 },
+    run: (v) => v === 0
+      ? { hide: ["alb", "w4", "r53-alb", "alb-w1", "alb-w2", "alb-w3", "alb-w4"], back: false, steps: [
+            { at: "r53", state: "pass", tag: "MULTIVALUE", msg: L({ vi: "Multivalue answer trả về tối đa **8 record healthy**, mỗi DNS resolver nhận một tập trả lời khác nhau: tải được chia xấp xỉ ngẫu nhiên cho 3 server.", en: "Multivalue answer returns up to **8 healthy records**, giving different answers to different DNS resolvers: load is shared roughly at random across 3 servers." }) },
+            { at: "w1", via: [[320, 120], [320, 40], [580, 40], [580, 29]], state: "block", flash: "CPU 100%", msg: L({ vi: "Lưu lượng gấp 10 lần vẫn đổ vào đúng 3 server: DNS **không bổ sung năng lực xử lý**. AWS ghi rõ multivalue answer không thay thế được load balancer.", en: "Ten times the traffic still lands on the same 3 servers: DNS **adds no capacity**. AWS states that multivalue answer is not a substitute for a load balancer." }) },
+          ],
+          ok: false, result: L({ vi: "Hệ thống quá tải. Multivalue answer chỉ cải thiện tính sẵn sàng và chia sẻ tải ở tầng DNS; cần cơ chế tăng số instance.", en: "The system is overloaded. Multivalue answer only improves uptime and load sharing at the DNS layer; a way to add instances is needed." }) }
+      : { hide: ["m-w1", "m-w2", "m-w3"], steps: [
+            { at: "r53", state: "pass", msg: L({ vi: "Route 53 trả về ALB (Alias).", en: "Route 53 returns the ALB (Alias)." }) },
+            { at: "alb", state: "change", tag: "SCALE OUT", msg: L({ vi: "Scaling policy của Auto Scaling group tăng desired capacity trong khoảng min–max và launch thêm instance.", en: "The Auto Scaling group's scaling policy raises the desired capacity between the minimum and maximum and launches more instances." }) },
+            { at: "w4", via: [[580, 120], [580, 203]], state: "pass", msg: L({ vi: "ALB phân phối request cho cả các instance mới; nội dung động vẫn được xử lý tại web tier.", en: "The ALB distributes requests to the new instances too; dynamic content is still processed by the web tier." }) },
+          ],
+          ok: true, result: L({ vi: "Năng lực xử lý tăng theo tải. Chi tiết scaling policy: bài Auto Scaling group.", en: "Capacity grows with the load. Scaling policies in detail: the Auto Scaling group lesson." }) },
+  },
 ];
 }
 
 export default function Route53MythsSim() {
   const L = useLang();
-  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Bốn lỗi cấu hình Route 53 thường gặp", en: "Four common Route 53 configuration mistakes" })} action={L({ vi: "Chạy mô phỏng", en: "Run simulation" })} />;
+  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Năm lỗi cấu hình Route 53 thường gặp", en: "Five common Route 53 configuration mistakes" })} action={L({ vi: "Chạy mô phỏng", en: "Run simulation" })} />;
 }

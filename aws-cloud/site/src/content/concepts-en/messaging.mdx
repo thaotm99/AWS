@@ -1,8 +1,8 @@
 ---
 title: "SQS, SNS, EventBridge, Step Functions: communication between components"
 lede: "This lesson shows how to connect ShopViet's services (ordering, payment, inventory, email, analytics) through messaging: absorbing flash-sale traffic spikes without losing orders, isolating failed messages so they do not clog the system, guaranteeing ordering and uniqueness for e-wallet transactions, and routing each event to exactly the components that need it."
-minutes: 25
-scenes: 4
+minutes: 30
+scenes: 5
 prerequisites: ["lambda", "asg"]
 docs:
   - title: "What is Amazon Simple Queue Service?"
@@ -33,6 +33,32 @@ docs:
     url: "https://docs.aws.amazon.com/config/latest/developerguide/acm-certificate-expiration-check.html"
   - title: "Application Integration (Overview of Amazon Web Services)"
     url: "https://docs.aws.amazon.com/whitepapers/latest/aws-overview/application-integration.html"
+  - title: "Amazon SQS message timers"
+    url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-message-timers.html"
+  - title: "Amazon SQS delay queues"
+    url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-delay-queues.html"
+  - title: "Amazon SQS standard queues"
+    url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues.html"
+  - title: "Exactly-once processing in Amazon SQS"
+    url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues-exactly-once-processing.html"
+  - title: "How EventBridge retries delivering events"
+    url: "https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-rule-retry-policy.html"
+  - title: "Troubleshooting Amazon EventBridge"
+    url: "https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-troubleshooting.html"
+  - title: "Introducing enhanced custom event buses in Amazon EventBridge (AWS News Blog)"
+    url: "https://aws.amazon.com/blogs/aws/introducing-enhanced-custom-event-buses-in-amazon-eventbridge-for-enterprise-scale-event-driven-applications/"
+  - title: "Amazon SQS, Amazon SNS, or Amazon EventBridge? (AWS Decision Guide)"
+    url: "https://docs.aws.amazon.com/decision-guides/latest/decision-guides/sns-or-sqs-or-eventbridge.html"
+  - title: "Amazon SNS message delivery retries"
+    url: "https://docs.aws.amazon.com/sns/latest/dg/sns-message-delivery-retries.html"
+  - title: "Amazon SNS dead-letter queues"
+    url: "https://docs.aws.amazon.com/sns/latest/dg/sns-dead-letter-queues.html"
+  - title: "Amazon SNS message archiving for FIFO topic owners"
+    url: "https://docs.aws.amazon.com/sns/latest/dg/message-archiving-and-replay-topic-owner.html"
+  - title: "Change the data retention period (Kinesis Data Streams)"
+    url: "https://docs.aws.amazon.com/streams/latest/dev/kinesis-extended-retention.html"
+  - title: "Using Lambda with Kinesis Data Streams"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -45,18 +71,20 @@ import FifoBatchCalc from "../../components/scenes/messaging/FifoBatchCalc.tsx";
 import EventRouterSim from "../../components/scenes/messaging/EventRouterSim.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 
 <Story toc={[
   { href: "#en-s1", label: "1 · A queue absorbs traffic spikes" },
   { href: "#en-s2", label: "2 · The life of a message" },
   { href: "#en-s3", label: "3 · Guaranteed ordering: FIFO queues" },
   { href: "#en-s4", label: "4 · Event distribution and workflow orchestration" },
+  { href: "#en-s5", label: "5 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
 In its early days, ShopViet's web application called every component synchronously: after creating an order, the application called the payment service, the inventory service and the email service in turn and waited for each response. The system now runs a weekly flash sale and consists of dozens of services; one slow component increases the latency of the whole chain, and one failed component makes the order fail. The solution is for components to **communicate asynchronously through messages** instead of calling synchronously and waiting for a response.
 </Story>
 
-<Scene id="en-s1" label="Part 1/4" title="Placing a queue between two processing tiers" questions={["exam2_q47", "exam3_q39", "exam1_q55", "exam5_q26", "exam3_q54", "exam6_q52", "exam5_q60", "exam1_q33", "exam2_q14", "exam5_q32", "exam3_q7"]}>
+<Scene id="en-s1" label="Part 1/5" title="Placing a queue between two processing tiers" questions={["exam2_q47", "exam3_q39", "exam1_q55", "exam5_q26", "exam3_q54", "exam6_q52", "exam5_q60", "exam1_q33", "exam2_q14", "exam5_q32", "exam3_q7"]}>
 
 The flash sale starts at 20:00. The web tier takes orders at a high rate, while the processing tier (payment, stock deduction) has much lower throughput. The simulation below compares three ways to connect these two tiers:
 
@@ -96,7 +124,7 @@ Some architectures that integrate a queue into the ShopViet system:
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/4" title="The life of a message" questions={["exam4_q46", "exam5_q44", "exam3_q34", "exam6_q37", "exam6_q32", "exam6_q16"]}>
+<Scene id="en-s2" label="Part 2/5" title="The life of a message" questions={["exam4_q46", "exam5_q44", "exam3_q34", "exam6_q37", "exam6_q32", "exam6_q16"]}>
 
 When a worker receives a message, the message is **not yet deleted** from the queue; it is only hidden for a period called the **visibility timeout**. After processing, the worker must call `DeleteMessage`. If the worker fails during processing, the message becomes visible again so that another worker can process it. SQS features all revolve around this life cycle. Choose each ShopViet scenario and run the simulation:
 
@@ -104,11 +132,13 @@ When a worker receives a message, the message is **not yet deleted** from the qu
 
 Another pattern: the application sends a request to calculate shipping fees and **waits for the response** (request-response). Creating a real queue for each request costs time and money. A **temporary queue** (through the Temporary Queue Client) creates virtual queues inside the application, multiplexes them onto one real SQS queue and cleans them up automatically when done.
 
-<Takeaway>Visibility timeout: hide a message while it is being processed. Dead-letter queue: isolate messages that fail processing repeatedly. Long polling: fewer empty receives and lower cost. Delay queue: postpone the delivery of newly sent messages. Processing priority: two queues, read the high-priority queue first. Request-response: temporary queues.</Takeaway>
+A delay queue applies to every message in the queue. When only some messages need a delay (for example a payment reminder email sent after 10 minutes), the producer sets a **message timer**: the `DelaySeconds` parameter on an individual message when it is sent, from 0 seconds (the default) up to a maximum of 15 minutes; this value overrides the delay queue's `DelaySeconds`. FIFO queues don't support timers on individual messages. For scheduling further than 15 minutes ahead, AWS recommends **EventBridge Scheduler**. Message timers, delay queues and the visibility timeout only decide **when** a message is visible; none of them is a way to receive messages, and none of them reduces the number of `ReceiveMessage` calls that return empty. Only **long polling** (maximum wait time 20 seconds) reduces empty responses and therefore cost.
+
+<Takeaway>Visibility timeout: hide a message while it is being processed (default 30 seconds, maximum 12 hours). Dead-letter queue: isolate messages that fail processing repeatedly. Long polling: fewer empty receives and lower cost. Delay queue: postpone every new message sent to the queue; message timer: postpone an individual message (0 to 15 minutes, not supported on FIFO queues). Processing priority: two queues, read the high-priority queue first. Request-response: temporary queues.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/4" title="Guaranteed ordering and exactly-once processing: FIFO queues" questions={["exam1_q13", "exam1_q34", "exam3_q2", "exam2_q42"]}>
+<Scene id="en-s3" label="Part 3/5" title="Guaranteed ordering and exactly-once processing: FIFO queues" questions={["exam1_q13", "exam1_q34", "exam3_q2", "exam2_q42"]}>
 
 The default queue type is **standard**: very high throughput, but a message can be delivered **more than once** and **ordering is not guaranteed**. For orders, the worker can check for duplicates itself. For ShopViet's e-wallet this is not acceptable: a top-up must be processed before a payment, and each command must be processed exactly once. The simulation below compares three options:
 
@@ -120,11 +150,13 @@ A **FIFO queue** guarantees ordering and removes duplicate messages (by deduplic
 
 An existing standard queue cannot be converted to FIFO. You must **create a new FIFO queue** whose name ends in `.fifo`, then move the producers and consumers to the new queue.
 
-<Takeaway>Ordering and no duplicates required: FIFO queue (name ends in .fifo, must be created new, cannot be converted from standard). Parallel processing while keeping order within each group: Message Group ID. Without high throughput mode: 300 calls/s per API action; with batches of 10 messages: 3,000 messages/s.</Takeaway>
+Sending wallet commands through **EventBridge** does not meet the requirement either. On an event bus (the classic type), EventBridge delivers to targets **at least once**: the EventBridge documentation notes that in rare cases the same rule can run more than once for a single event, or the same target can be invoked more than once; events are delivered to targets in an arbitrary order. When delivery fails, EventBridge by default retries for 24 hours and up to 185 times, then drops the event unless a dead-letter queue is configured. EventBridge also does not keep events for the processing tier to pull at its own pace the way a queue does. Since September 2026, the **enhanced custom event bus** adds ordered delivery for events that share an `EventGroupId` and optional content-based deduplication that drops publisher retries within five minutes; these are features of the new bus type and do not change the at-least-once behavior of the classic event bus.
+
+<Takeaway>Ordering and no duplicates required: FIFO queue (name ends in .fifo, must be created new, cannot be converted from standard). Standard queues and EventBridge (classic event bus) both deliver at least once without guaranteed ordering. Parallel processing while keeping order within each group: Message Group ID. Without high throughput mode: 300 calls/s per API action; with batches of 10 messages: 3,000 messages/s.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/4" title="Distributing events to multiple targets and orchestrating multi-step workflows" questions={["exam4_q35", "exam3_q30", "exam2_q27", "exam6_q55", "exam1_q15", "exam4_q51", "exam6_q61", "exam2_q1", "exam2_q9", "exam1_q61", "exam1_q50", "exam5_q17"]}>
+<Scene id="en-s4" label="Part 4/5" title="Distributing events to multiple targets and orchestrating multi-step workflows" questions={["exam4_q35", "exam3_q30", "exam2_q27", "exam6_q55", "exam1_q15", "exam4_q51", "exam6_q61", "exam2_q1", "exam2_q9", "exam1_q61", "exam1_q50", "exam5_q17"]}>
 
 A queue follows a one-sender, one-receiver model. ShopViet has other needs too: one event must notify several components, events come from external software, jobs run on a schedule, workflows have several steps, or a legacy application uses its own protocol. Choose a scenario and change the setting to compare:
 
@@ -141,6 +173,39 @@ Some problems ShopViet ran into in real operation:
 
 </Scene>
 
+<Scene id="en-s5" label="Part 5/5" title="Quick comparison: delivery guarantees and look-alike settings" questions={["exam1_q13", "exam3_q34", "exam3_q46"]}>
+
+Three ShopViet situations: seller registration forms must be processed **exactly once, with no data loss** by the back-end processing tier; SQS costs are high because workers receive too many empty responses; a real-time data stream from the warehouse barcode scanners needs a scalable ingestion channel that allows reprocessing when the analytics tier fails. Choose each item to see what it is for and what fits instead.
+
+<QuickCompare client:visible items={[
+  { name: "Amazon EventBridge (classic event bus)",
+    use: "Routes events from applications, AWS services or SaaS to multiple targets through rules. On failed delivery it retries by default for 24 hours and up to 185 times with exponential backoff; once retries are exhausted the event is dropped unless a dead-letter queue is configured.",
+    notHere: "Seller registration forms must be processed exactly once. EventBridge delivers **at least once**: the same target can be invoked more than once for one event, ordering is not guaranteed, and events are not kept for the processing tier to pull at its own pace. The enhanced custom event bus (September 2026) offers ordered delivery and content-based deduplication, but it is still an event router, not a buffer queue between two tiers.",
+    instead: "An SQS FIFO queue between the web tier and the processing tier: deduplication within a 5-minute interval, ordering within each message group, and messages kept until a worker processes and deletes them (Part 3)." },
+  { name: "SQS standard queue",
+    use: "The default queue type, supporting a nearly unlimited number of API calls per second. Messages are stored redundantly across multiple AZs before the send is acknowledged. Fits when the application can handle messages that arrive more than once or out of order.",
+    notHere: "A standard queue ensures **at-least-once** delivery: more than one copy of a message might be delivered, and messages may occasionally arrive out of order (best-effort ordering only).",
+    instead: "A FIFO queue when duplicates are not acceptable; or keep the standard queue and make the worker idempotent." },
+  { name: "SQS message timer",
+    use: "Sets `DelaySeconds` on an individual message when it is sent, from 0 to 15 minutes; the message stays hidden from consumers for that period. Overrides the queue's delay. Not supported on FIFO queues.",
+    notHere: "Costs are high because of many empty receives. A message timer only postpones when a message appears; it is not a way to receive messages and does not reduce empty `ReceiveMessage` calls.",
+    instead: "Long polling (`ReceiveMessageWaitTimeSeconds` or `WaitTimeSeconds` up to 20 seconds). For scheduling more than 15 minutes ahead: EventBridge Scheduler." },
+  { name: "SQS visibility timeout",
+    use: "Hides a message **after** a consumer has received it, so that other consumers do not process it twice; default 30 seconds, maximum 12 hours from the first receive.",
+    notHere: "Has no effect on empty responses; a worker polling an empty queue still gets billed empty responses.",
+    instead: "Long polling." },
+  { name: "Amazon SNS (standard topic) for a data stream",
+    use: "Pushes each message to every subscriber. SNS **does** retry: for AWS managed endpoints (Lambda, SQS) up to 100,015 attempts over 23 days; for customer managed endpoints (SMTP, SMS, mobile push) 50 attempts over 6 hours; HTTP/S alone accepts a custom delivery policy, with a total retry time of at most 3,600 seconds. When retries are exhausted the message is discarded unless the subscription has a dead-letter queue (an SQS queue in the same account and Region).",
+    notHere: "A standard topic does not persist messages: they are delivered as soon as they are published, and subscribers cannot read at their own pace or re-read data when the analytics tier fails. Message archiving and replay exist only for A2A FIFO topics, with retention of 1 to 365 days.",
+    instead: "Kinesis Data Streams: records are retained for 24 hours by default, up to 365 days; multiple applications read the same stream; the Lambda event source mapping retries a failed batch until the records expire or exceed the maximum age." },
+]} />
+
+Ingesting a data stream with Kinesis Data Streams and letting several applications read the same stream are covered in [the Kinesis lesson, Part 1](/concepts/kinesis/#en-s1).
+
+<Takeaway>Exactly-once processing between two tiers: SQS FIFO; standard queues and the classic EventBridge event bus are both at-least-once. Lower cost from empty receives: long polling, not message timers or the visibility timeout. SNS has retries and DLQs, but a standard topic does not keep messages for re-reading; a data stream that must be retained and reprocessed: Kinesis Data Streams.</Takeaway>
+
+</Scene>
+
 <Scene id="en-challenge" label="Exercise" title="Sort the features by service" questions={["exam5_q44", "exam3_q34", "exam2_q42", "exam4_q35", "exam3_q30", "exam6_q61"]}>
 
 Sort each feature into the service that provides it. On mobile devices: choose a card, then choose the target box.
@@ -152,9 +217,9 @@ Sort each feature into the service that provides it. On mobile devices: choose a
     { id: "eb", title: "Amazon EventBridge", sub: "Event bus", hint: "Hint: features about events, event patterns or execution schedules." },
   ]}
   cards={[
-    ["Visibility timeout", "sqs"], ["Dead-letter queue", "sqs"], ["Long polling", "sqs"], ["Delay queue", "sqs"], ["Message Group ID", "sqs"],
-    ["Topic with multiple subscriptions", "sns"], ["Fan-out to multiple queues", "sns"], ["Receive notifications from a CloudWatch alarm", "sns"],
-    ["Partner event source (SaaS)", "eb"], ["Rule filtering on a JSON event pattern", "eb"], ["Scheduler running on a cron expression", "eb"],
+    ["Visibility timeout", "sqs"], ["Dead-letter queue", "sqs"], ["Long polling", "sqs"], ["Delay queue", "sqs"], ["Message timer on an individual message", "sqs"], ["Message Group ID", "sqs"],
+    ["Topic with multiple subscriptions", "sns"], ["Fan-out to multiple queues", "sns"], ["Receive notifications from a CloudWatch alarm", "sns"], ["Delivery policy per protocol", "sns"],
+    ["Partner event source (SaaS)", "eb"], ["Rule filtering on a JSON event pattern", "eb"], ["Scheduler running on a cron expression", "eb"], ["Retries to a target for 24 hours, up to 185 times", "eb"],
   ]}
 />
 
@@ -166,9 +231,13 @@ Check your understanding: as the designer of the ShopViet system, which option f
     a: 1,
     why: "A message that is received more than maxReceiveCount times without being deleted is moved to the DLQ." },
   { q: "SQS costs are high because workers poll the queue continuously and most receive calls return empty. Which setting should change?",
-    opts: ["Long polling (WaitTimeSeconds up to 20)", "Delay queue", "Switch to a FIFO queue"],
+    opts: ["Long polling (WaitTimeSeconds up to 20)", "Set a message timer on each message", "Increase the visibility timeout"],
     a: 0,
-    why: "With long polling, SQS responds only when a message is available or the wait time ends, which greatly reduces the number of billed empty requests." },
+    why: "With long polling, SQS responds only when a message is available or the wait time ends, which greatly reduces the number of billed empty requests. Message timers and the visibility timeout only decide when a message is visible; they do not change how workers receive messages." },
+  { q: "Seller registration forms are sent from the web tier to the processing tier; each form must be processed exactly once and must not be lost. Which option fits?",
+    opts: ["An EventBridge event bus (classic) with a rule to the processing tier", "An SQS standard queue", "An SQS FIFO queue"],
+    a: 2,
+    why: "A FIFO queue drops duplicate messages within the 5-minute deduplication interval and keeps messages until a worker deletes them. EventBridge (classic event bus) and standard queues both deliver at least once, so one form could be processed more than once." },
   { q: "ShopViet e-wallet: commands from the same user must be processed in order, while commands from different users should be processed in parallel. Which option fits?",
     opts: ["Standard queue, multiple consumers", "FIFO queue, Message Group ID = user ID", "FIFO queue, one consumer"],
     a: 1,

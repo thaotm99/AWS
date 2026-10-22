@@ -27,9 +27,9 @@ return [
     run: (on) => on
       ? { hops: [
           { to: "s3", state: "pass", tag: L({ vi: "NHẬN", en: "RECEIVED" }), msg: L({ vi: "Bucket tiếp nhận object và mã hoá mặc định bằng **SSE-KMS**.", en: "The bucket receives the object and encrypts it by default with **SSE-KMS**." }) },
-          { to: "kms", state: "change", tag: "DATA KEY", msg: L({ vi: "S3 gọi `GenerateDataKey`. KMS kiểm tra key policy rồi trả về data key.", en: "S3 calls `GenerateDataKey`. KMS checks the key policy, then returns a data key." }) },
+          { to: "kms", state: "change", tag: "DATA KEY", msg: L({ vi: "S3 gọi `GenerateDataKey`, kèm **encryption context** mặc định là ARN của object. KMS kiểm tra key policy rồi trả về data key.", en: "S3 calls `GenerateDataKey` with the object ARN as the default **encryption context**. KMS checks the key policy, then returns a data key." }) },
           { to: "s3", state: "change", tag: L({ vi: "MÃ HOÁ", en: "ENCRYPTED" }), msg: L({ vi: "Object được mã hoá bằng data key.", en: "The object is encrypted with the data key." }), packet: "pkt-back" },
-          { from: "kms", to: "trail", state: "pass", tag: L({ vi: "GHI LOG", en: "LOGGED" }), msg: L({ vi: "Ghi lại role, thời điểm và key được sử dụng.", en: "Records the role, the time and the key used." }) },
+          { from: "kms", to: "trail", state: "pass", tag: L({ vi: "GHI LOG", en: "LOGGED" }), msg: L({ vi: "Ghi lại role, thời điểm, key được sử dụng và encryption context (không được mã hoá, nên không chứa thông tin nhạy cảm). Khi giải mã phải gửi đúng encryption context đó.", en: "Records the role, the time, the key used and the encryption context (which is not encrypted, so it must hold no sensitive data). Decryption must supply the same encryption context." }) },
         ], ok: true, result: L({ vi: "Kiểm toán viên tra cứu được thông tin trực tiếp trong CloudTrail. Key được lưu trong KMS, ShopViet không phải tự cung cấp key, và quyền sử dụng key được quy định trong key policy.", en: "The auditors can look up the information directly in CloudTrail. The key is stored in KMS, ShopViet does not have to supply the key itself, and permission to use the key is defined in the key policy." }) }
       : { hops: [
           { to: "s3", state: "change", tag: L({ vi: "MÃ HOÁ", en: "ENCRYPTED" }), msg: L({ vi: "**SSE-S3**: S3 tự động mã hoá bằng key do S3 quản lý.", en: "**SSE-S3**: S3 automatically encrypts with a key that S3 manages." }) },
@@ -82,9 +82,9 @@ return [
   },
   {
     name: L({ vi: "Sao lưu sang Region khác", en: "Backing up to another Region" }),
-    story: L({ vi: "Hoá đơn được replicate từ us-east-1 sang us-west-1 để dự phòng. Yêu cầu: **cùng một key** mã hoá và giải mã tại cả hai Region.", en: "Invoices are replicated from us-east-1 to us-west-1 for redundancy. Requirement: **the same key** encrypts and decrypts in both Regions." }),
-    request: "Replicate hoa-don/0912.pdf → us-west-1",
-    toggle: { label: L({ vi: "Sử dụng multi-Region key", en: "Use a multi-Region key" }), initial: false },
+    story: L({ vi: "Hoá đơn tại us-east-1 đang được mã hoá bằng một **single-Region key**. ShopViet cần replicate sang us-west-1 để dự phòng, với yêu cầu **cùng một key** mã hoá và giải mã tại cả hai Region.", en: "Invoices in us-east-1 are encrypted with a **single-Region key**. ShopViet needs to replicate them to us-west-1 for redundancy, and **the same key** must encrypt and decrypt in both Regions." }),
+    request: "Replicate hoa-don/ → us-west-1",
+    toggle: { label: L({ vi: "Tạo multi-Region key mới (tắt: giữ key hiện tại)", en: "Create a new multi-Region key (off: keep the current key)" }), initial: false },
     start: "s3",
     boxes: [
       { x: 20, y: 28, w: 300, h: 210, label: "us-east-1", tone: "region" },
@@ -92,8 +92,8 @@ return [
     ],
     nodes: [
       { ...S3, x: 170, y: 90, sub: L({ vi: "bản chính", en: "primary copy" }) },
-      { id: "kmsa", x: 170, y: 190, label: "Multi-Region key", sub: "mrk-1234…", kind: "key" },
-      { id: "kmsa0", x: 170, y: 190, label: "KMS key", sub: L({ vi: "chỉ tại us-east-1", en: "only in us-east-1" }), kind: "key" },
+      { id: "kmsa", x: 170, y: 190, label: "Multi-Region key", sub: L({ vi: "mrk-1234…, key mới", en: "mrk-1234…, new key" }), kind: "key" },
+      { id: "kmsa0", x: 170, y: 190, label: "KMS key", sub: L({ vi: "single-Region, us-east-1", en: "single-Region, us-east-1" }), kind: "key" },
       { id: "s3b", x: 520, y: 90, label: "S3 bucket", sub: L({ vi: "bản sao", en: "replica" }), kind: "store" },
       { id: "kmsr", x: 520, y: 190, label: "Replica key", sub: L({ vi: "mrk-1234…, cùng key material", en: "mrk-1234…, same key material" }), kind: "key" },
       { id: "kmsb", x: 520, y: 190, label: L({ vi: "KMS key khác", en: "Another KMS key" }), sub: L({ vi: "key material khác", en: "different key material" }), kind: "key" },
@@ -102,16 +102,17 @@ return [
     hidden: (on) => (on ? ["kmsb", "kmsa0"] : ["kmsr", "kmsa"]),
     run: (on) => on
       ? { hops: [
-          { to: "kmsa", state: "change", tag: L({ vi: "MÃ HOÁ", en: "ENCRYPTED" }), msg: L({ vi: "Hoá đơn được mã hoá bằng multi-Region key.", en: "The invoice is encrypted with the multi-Region key." }) },
-          { from: "s3", to: "s3b", state: "pass", tag: "REPLICATE", msg: L({ vi: "Object được sao chép sang us-west-1.", en: "The object is copied to us-west-1." }) },
+          { to: "kmsa", state: "change", tag: L({ vi: "KEY MỚI", en: "NEW KEY" }), flash: "mrk-", msg: L({ vi: "Key hiện tại không chuyển thành multi-Region được, nên ShopViet tạo một **multi-Region key mới** và một replica key tại us-west-1.", en: "The current key cannot become multi-Region, so ShopViet creates a **new multi-Region key** and a replica key in us-west-1." }) },
+          { from: "kmsa", to: "s3", state: "change", tag: "COPY", msg: L({ vi: "Bucket đặt multi-Region key làm default encryption và bật replication. Hoá đơn hiện có được **copy** (CopyObject hoặc Batch Operations Copy) để mã hoá lại bằng key mới; mỗi bản copy là object mới nên được replicate. Object cũ không copy thì cần S3 Batch Replication.", en: "The bucket uses the multi-Region key as default encryption and has replication turned on. Existing invoices are **copied** (CopyObject or Batch Operations Copy) to re-encrypt them under the new key; each copy is a new object, so it is replicated. Objects left uncopied would need S3 Batch Replication." }) },
+          { from: "s3", to: "s3b", state: "pass", tag: "REPLICATE", msg: L({ vi: "Object được sao chép sang us-west-1; replication rule chỉ định replica key tại Region đích.", en: "The object is copied to us-west-1; the replication rule names the replica key in the destination Region." }) },
           { to: "kmsr", state: "pass", tag: L({ vi: "GIẢI MÃ", en: "DECRYPTED" }), msg: L({ vi: "Replica key có **cùng key ID và key material** với key tại us-east-1.", en: "The replica key has **the same key ID and key material** as the key in us-east-1." }) },
           { from: "s3b", to: "app2", state: "pass", tag: L({ vi: "ĐỌC ĐƯỢC", en: "READABLE" }), msg: L({ vi: "Ứng dụng tại us-west-1 đọc được hoá đơn ngay.", en: "The application in us-west-1 can read the invoice right away." }) },
-        ], ok: true, result: L({ vi: "Một key, hai Region: dữ liệu mã hoá tại Region này giải mã được tại Region kia mà không cần gọi API liên Region.", en: "One key, two Regions: data encrypted in one Region can be decrypted in the other without a cross-Region API call." }) }
+        ], ok: true, result: L({ vi: "Một key, hai Region: dữ liệu mã hoá tại Region này giải mã được tại Region kia mà không cần gọi API liên Region. Multi-Region phải được chọn **khi tạo key**; dữ liệu đang dùng single-Region key phải được mã hoá lại bằng key mới.", en: "One key, two Regions: data encrypted in one Region can be decrypted in the other without a cross-Region API call. Multi-Region must be chosen **when the key is created**; data under a single-Region key must be re-encrypted under the new key." }) }
       : { hops: [
-          { to: "kmsa0", state: "change", tag: L({ vi: "MÃ HOÁ", en: "ENCRYPTED" }), msg: L({ vi: "Hoá đơn được mã hoá bằng một single-Region key.", en: "The invoice is encrypted with a single-Region key." }) },
+          { to: "kmsa0", state: "block", tag: L({ vi: "KHÔNG ĐỔI ĐƯỢC", en: "CANNOT CONVERT" }), msg: L({ vi: "Thử chuyển key hiện tại thành multi-Region: KMS **không cho phép** chuyển single-Region key thành multi-Region key (hoặc ngược lại), để dữ liệu đã mã hoá giữ nguyên tính data residency.", en: "Trying to turn the current key into a multi-Region key: KMS **does not allow** converting a single-Region key to a multi-Region key (or the reverse), so data already encrypted keeps its data residency." }) },
           { from: "s3", to: "s3b", state: "pass", tag: "REPLICATE", msg: L({ vi: "Object được sao chép sang us-west-1.", en: "The object is copied to us-west-1." }) },
-          { to: "kmsb", state: "alert", tag: L({ vi: "KHÁC KEY", en: "OTHER KEY" }), msg: L({ vi: "KMS key thông thường chỉ tồn tại trong một Region. Tại us-west-1 phải sử dụng một key khác.", en: "A regular KMS key exists in only one Region. A different key must be used in us-west-1." }) },
-        ], ok: false, result: L({ vi: "Bản sao phải được mã hoá lại bằng key khác, không đáp ứng yêu cầu dùng cùng một key. Sử dụng **KMS multi-Region keys**.", en: "The replica must be re-encrypted with another key, which does not meet the same-key requirement. Use **KMS multi-Region keys**." }) },
+          { to: "kmsb", state: "alert", tag: L({ vi: "KHÁC KEY", en: "OTHER KEY" }), msg: L({ vi: "Single-Region key chỉ tồn tại trong một Region và không chia sẻ sang Region khác được. Tại us-west-1 phải sử dụng một key khác.", en: "A single-Region key exists in only one Region and cannot be shared with another Region. A different key must be used in us-west-1." }) },
+        ], ok: false, result: L({ vi: "Bản sao bị mã hoá bằng key khác, không đáp ứng yêu cầu dùng cùng một key. Tạo **multi-Region key mới** và mã hoá lại dữ liệu bằng key đó.", en: "The replica is encrypted with another key, which does not meet the same-key requirement. Create a **new multi-Region key** and re-encrypt the data under it." }) },
   },
   {
     name: L({ vi: "Mỗi object một key, tối thiểu vận hành", en: "A key per object, minimal operations" }),

@@ -1,8 +1,8 @@
 ---
 title: "SQS, SNS, EventBridge, Step Functions: giao tiếp giữa các thành phần"
 lede: "Bài học trình bày cách kết nối các dịch vụ của ShopViet (đặt hàng, thanh toán, kho, email, phân tích) bằng cơ chế truyền message: hấp thụ tải đột biến khi flash sale mà không mất đơn hàng, cô lập message lỗi để không gây tắc nghẽn hệ thống, đảm bảo thứ tự và tính duy nhất cho giao dịch ví điện tử, và định tuyến mỗi sự kiện tới đúng các thành phần cần nhận."
-minutes: 25
-scenes: 4
+minutes: 30
+scenes: 5
 prerequisites: ["lambda", "asg"]
 docs:
   - title: "What is Amazon Simple Queue Service?"
@@ -33,6 +33,32 @@ docs:
     url: "https://docs.aws.amazon.com/config/latest/developerguide/acm-certificate-expiration-check.html"
   - title: "Application Integration (Overview of Amazon Web Services)"
     url: "https://docs.aws.amazon.com/whitepapers/latest/aws-overview/application-integration.html"
+  - title: "Amazon SQS message timers"
+    url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-message-timers.html"
+  - title: "Amazon SQS delay queues"
+    url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-delay-queues.html"
+  - title: "Amazon SQS standard queues"
+    url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues.html"
+  - title: "Exactly-once processing in Amazon SQS"
+    url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues-exactly-once-processing.html"
+  - title: "How EventBridge retries delivering events"
+    url: "https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-rule-retry-policy.html"
+  - title: "Troubleshooting Amazon EventBridge"
+    url: "https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-troubleshooting.html"
+  - title: "Introducing enhanced custom event buses in Amazon EventBridge (AWS News Blog)"
+    url: "https://aws.amazon.com/blogs/aws/introducing-enhanced-custom-event-buses-in-amazon-eventbridge-for-enterprise-scale-event-driven-applications/"
+  - title: "Amazon SQS, Amazon SNS, or Amazon EventBridge? (AWS Decision Guide)"
+    url: "https://docs.aws.amazon.com/decision-guides/latest/decision-guides/sns-or-sqs-or-eventbridge.html"
+  - title: "Amazon SNS message delivery retries"
+    url: "https://docs.aws.amazon.com/sns/latest/dg/sns-message-delivery-retries.html"
+  - title: "Amazon SNS dead-letter queues"
+    url: "https://docs.aws.amazon.com/sns/latest/dg/sns-dead-letter-queues.html"
+  - title: "Amazon SNS message archiving for FIFO topic owners"
+    url: "https://docs.aws.amazon.com/sns/latest/dg/message-archiving-and-replay-topic-owner.html"
+  - title: "Change the data retention period (Kinesis Data Streams)"
+    url: "https://docs.aws.amazon.com/streams/latest/dev/kinesis-extended-retention.html"
+  - title: "Using Lambda with Kinesis Data Streams"
+    url: "https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -45,18 +71,20 @@ import FifoBatchCalc from "../../components/scenes/messaging/FifoBatchCalc.tsx";
 import EventRouterSim from "../../components/scenes/messaging/EventRouterSim.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 
 <Story toc={[
   { href: "#s1", label: "1 · Hàng đợi hấp thụ tải đột biến" },
   { href: "#s2", label: "2 · Vòng đời của message" },
   { href: "#s3", label: "3 · Đảm bảo thứ tự: FIFO queue" },
   { href: "#s4", label: "4 · Phân phối sự kiện và điều phối quy trình" },
+  { href: "#s5", label: "5 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
 Ở giai đoạn đầu, ứng dụng web của ShopViet gọi đồng bộ tới mọi thành phần: sau khi tạo đơn hàng, ứng dụng lần lượt gọi dịch vụ thanh toán, dịch vụ kho, dịch vụ email và chờ từng phản hồi. Hiện hệ thống tổ chức flash sale hằng tuần và gồm hàng chục dịch vụ; một thành phần chậm làm tăng độ trễ của toàn bộ chuỗi, một thành phần lỗi làm đơn hàng thất bại. Giải pháp là để các thành phần **giao tiếp bất đồng bộ qua message** thay vì gọi đồng bộ và chờ phản hồi.
 </Story>
 
-<Scene id="s1" label="Phần 1/4" title="Đặt hàng đợi giữa hai tầng xử lý" questions={["exam2_q47", "exam3_q39", "exam1_q55", "exam5_q26", "exam3_q54", "exam6_q52", "exam5_q60", "exam1_q33", "exam2_q14", "exam5_q32", "exam3_q7"]}>
+<Scene id="s1" label="Phần 1/5" title="Đặt hàng đợi giữa hai tầng xử lý" questions={["exam2_q47", "exam3_q39", "exam1_q55", "exam5_q26", "exam3_q54", "exam6_q52", "exam5_q60", "exam1_q33", "exam2_q14", "exam5_q32", "exam3_q7"]}>
 
 Flash sale bắt đầu lúc 20h. Web tier tiếp nhận đơn hàng với tốc độ cao, trong khi tầng xử lý (thanh toán, trừ tồn kho) có thông lượng thấp hơn nhiều. Mô phỏng dưới đây so sánh ba phương án kết nối hai tầng này:
 
@@ -96,7 +124,7 @@ Một số kiến trúc tích hợp queue vào hệ thống ShopViet:
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/4" title="Vòng đời của một message" questions={["exam4_q46", "exam5_q44", "exam3_q34", "exam6_q37", "exam6_q32", "exam6_q16"]}>
+<Scene id="s2" label="Phần 2/5" title="Vòng đời của một message" questions={["exam4_q46", "exam5_q44", "exam3_q34", "exam6_q37", "exam6_q32", "exam6_q16"]}>
 
 Khi worker nhận một message, message **chưa bị xoá** khỏi queue mà chỉ bị ẩn trong một khoảng thời gian gọi là **visibility timeout**. Sau khi xử lý xong, worker phải gọi `DeleteMessage`. Nếu worker gặp sự cố trong quá trình xử lý, message hiển thị trở lại để worker khác xử lý. Các tính năng của SQS đều xoay quanh vòng đời này. Chọn từng tình huống của ShopViet và chạy mô phỏng:
 
@@ -104,11 +132,13 @@ Khi worker nhận một message, message **chưa bị xoá** khỏi queue mà ch
 
 Một mô hình khác: ứng dụng gửi yêu cầu tính phí vận chuyển và **chờ phản hồi** (request-response). Việc tạo một queue thực cho mỗi yêu cầu tốn thời gian và chi phí. **Temporary queue** (thông qua Temporary Queue Client) tạo các virtual queue ngay trong ứng dụng, ghép chúng lên một queue SQS thực và tự động dọn dẹp khi hoàn tất.
 
-<Takeaway>Visibility timeout: ẩn message trong thời gian xử lý. Dead-letter queue: cô lập message xử lý lỗi nhiều lần. Long polling: giảm số lần nhận rỗng và giảm chi phí. Delay queue: trì hoãn việc phân phối message mới gửi. Ưu tiên xử lý: hai queue, đọc queue ưu tiên cao trước. Request-response: temporary queue.</Takeaway>
+Delay queue áp dụng cho mọi message của queue. Khi chỉ một số message cần trì hoãn (ví dụ email nhắc thanh toán gửi sau 10 phút), producer đặt **message timer**: tham số `DelaySeconds` trên từng message khi gửi, từ 0 giây (mặc định) tới tối đa 15 phút; giá trị này ghi đè `DelaySeconds` của delay queue. FIFO queue không hỗ trợ timer cho từng message. Cần lập lịch xa hơn 15 phút: AWS khuyến nghị **EventBridge Scheduler**. Message timer, delay queue và visibility timeout chỉ quyết định **khi nào** message được nhìn thấy; không tính năng nào trong số này là cách nhận message, và không tính năng nào giảm số lệnh `ReceiveMessage` trả về rỗng. Chỉ **long polling** (thời gian chờ tối đa 20 giây) giảm số phản hồi rỗng và do đó giảm chi phí.
+
+<Takeaway>Visibility timeout: ẩn message trong thời gian xử lý (mặc định 30 giây, tối đa 12 giờ). Dead-letter queue: cô lập message xử lý lỗi nhiều lần. Long polling: giảm số lần nhận rỗng và giảm chi phí. Delay queue: trì hoãn mọi message mới gửi vào queue; message timer: trì hoãn từng message (0 tới 15 phút, không áp dụng cho FIFO queue). Ưu tiên xử lý: hai queue, đọc queue ưu tiên cao trước. Request-response: temporary queue.</Takeaway>
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/4" title="Đảm bảo thứ tự và xử lý đúng một lần: FIFO queue" questions={["exam1_q13", "exam1_q34", "exam3_q2", "exam2_q42"]}>
+<Scene id="s3" label="Phần 3/5" title="Đảm bảo thứ tự và xử lý đúng một lần: FIFO queue" questions={["exam1_q13", "exam1_q34", "exam3_q2", "exam2_q42"]}>
 
 Loại queue mặc định là **standard**: thông lượng rất cao, nhưng một message có thể được phân phối **nhiều hơn một lần** và **không đảm bảo thứ tự**. Với đơn hàng, worker có thể tự kiểm tra trùng lặp. Với ví điện tử của ShopViet, điều này không được chấp nhận: lệnh nạp tiền phải được xử lý trước lệnh thanh toán, và mỗi lệnh chỉ được xử lý đúng một lần. Mô phỏng dưới đây so sánh ba phương án:
 
@@ -120,11 +150,13 @@ Loại queue mặc định là **standard**: thông lượng rất cao, nhưng m
 
 Một queue standard đang vận hành không thể chuyển đổi sang FIFO. Cần **tạo queue FIFO mới** với tên kết thúc bằng `.fifo`, sau đó chuyển producer và consumer sang queue mới.
 
-<Takeaway>Yêu cầu đúng thứ tự và không trùng lặp: FIFO queue (tên kết thúc bằng .fifo, phải tạo mới, không chuyển đổi từ standard). Xử lý song song nhưng vẫn giữ thứ tự trong từng nhóm: Message Group ID. Không bật high throughput mode: 300 lệnh gọi/s cho mỗi API action; với batch 10 message: 3.000 message/s.</Takeaway>
+Đưa lệnh ví qua **EventBridge** cũng không đáp ứng yêu cầu. Trên event bus (loại classic), EventBridge phân phối tới target theo mô hình **at-least-once**: tài liệu EventBridge ghi nhận rằng trong một số trường hợp hiếm, cùng một rule có thể chạy nhiều lần cho một sự kiện, hoặc cùng một target được gọi nhiều lần; sự kiện được giao tới target theo thứ tự bất kỳ. Khi giao không thành công, EventBridge mặc định retry trong 24 giờ, tối đa 185 lần, sau đó bỏ sự kiện nếu không cấu hình dead-letter queue. EventBridge cũng không lưu sự kiện để tầng xử lý tự lấy theo tốc độ của mình như một queue. Từ 9/2026, loại **enhanced custom event bus** bổ sung phân phối theo thứ tự cho các sự kiện cùng `EventGroupId` và tuỳ chọn content-based deduplication, loại bỏ sự kiện publisher gửi lại trong vòng 5 phút; đây là tính năng của loại bus mới, không thay đổi hành vi at-least-once của event bus classic.
+
+<Takeaway>Yêu cầu đúng thứ tự và không trùng lặp: FIFO queue (tên kết thúc bằng .fifo, phải tạo mới, không chuyển đổi từ standard). Standard queue và EventBridge (event bus classic) đều at-least-once, không đảm bảo thứ tự. Xử lý song song nhưng vẫn giữ thứ tự trong từng nhóm: Message Group ID. Không bật high throughput mode: 300 lệnh gọi/s cho mỗi API action; với batch 10 message: 3.000 message/s.</Takeaway>
 
 </Scene>
 
-<Scene id="s4" label="Phần 4/4" title="Phân phối sự kiện tới nhiều đích và điều phối quy trình nhiều bước" questions={["exam4_q35", "exam3_q30", "exam2_q27", "exam6_q55", "exam1_q15", "exam4_q51", "exam6_q61", "exam2_q1", "exam2_q9", "exam1_q61", "exam1_q50", "exam5_q17"]}>
+<Scene id="s4" label="Phần 4/5" title="Phân phối sự kiện tới nhiều đích và điều phối quy trình nhiều bước" questions={["exam4_q35", "exam3_q30", "exam2_q27", "exam6_q55", "exam1_q15", "exam4_q51", "exam6_q61", "exam2_q1", "exam2_q9", "exam1_q61", "exam1_q50", "exam5_q17"]}>
 
 Queue hoạt động theo mô hình một bên gửi, một bên nhận. ShopViet còn có các nhu cầu khác: một sự kiện cần thông báo tới nhiều thành phần, sự kiện phát sinh từ phần mềm bên ngoài, tác vụ chạy theo lịch, quy trình nhiều bước, hoặc ứng dụng cũ sử dụng giao thức riêng. Chọn tình huống và thay đổi cấu hình để so sánh:
 
@@ -141,6 +173,39 @@ Một số vấn đề ShopViet gặp phải khi vận hành thực tế:
 
 </Scene>
 
+<Scene id="s5" label="Phần 5/5" title="Phân biệt nhanh: mức đảm bảo phân phối và các tham số dễ nhầm" questions={["exam1_q13", "exam3_q34", "exam3_q46"]}>
+
+Ba tình huống của ShopViet: biểu mẫu đăng ký người bán phải được xử lý **đúng một lần, không mất dữ liệu** ở tầng xử lý phía sau; chi phí SQS cao do worker nhận về quá nhiều phản hồi rỗng; luồng dữ liệu theo thời gian thực từ thiết bị quét mã tại kho cần một kênh tiếp nhận có thể co giãn và cho phép xử lý lại khi tầng phân tích gặp lỗi. Chọn từng mục để xem phạm vi sử dụng và phương án phù hợp.
+
+<QuickCompare client:visible items={[
+  { name: "Amazon EventBridge (event bus classic)",
+    use: "Định tuyến sự kiện từ ứng dụng, dịch vụ AWS hoặc SaaS tới nhiều target bằng rule. Giao không thành công: mặc định retry trong 24 giờ, tối đa 185 lần, với exponential backoff; hết số lần retry thì sự kiện bị bỏ, trừ khi cấu hình dead-letter queue.",
+    notHere: "Biểu mẫu đăng ký người bán phải được xử lý đúng một lần. EventBridge phân phối **at-least-once**: cùng một target có thể được gọi nhiều lần cho một sự kiện, thứ tự không được đảm bảo, và sự kiện không được lưu lại để tầng xử lý tự lấy theo tốc độ của mình. Enhanced custom event bus (9/2026) có phân phối theo thứ tự và content-based deduplication, nhưng vẫn là bus định tuyến sự kiện, không phải hàng đợi đệm giữa hai tầng.",
+    instead: "SQS FIFO queue giữa web tier và tầng xử lý: deduplication trong khoảng 5 phút, đúng thứ tự trong từng message group, message được lưu tới khi worker xử lý xong và xoá (Phần 3)." },
+  { name: "SQS standard queue",
+    use: "Kiểu queue mặc định, hỗ trợ số lệnh gọi API mỗi giây gần như không giới hạn. Message được lưu dư thừa trên nhiều AZ trước khi xác nhận. Phù hợp khi ứng dụng xử lý được message đến nhiều lần hoặc sai thứ tự.",
+    notHere: "Standard queue đảm bảo **at-least-once**: có thể phân phối nhiều bản sao của một message và đôi khi sai thứ tự (chỉ best-effort ordering).",
+    instead: "FIFO queue khi không chấp nhận trùng lặp; hoặc giữ standard queue và để worker tự kiểm tra trùng lặp (idempotent)." },
+  { name: "SQS message timer",
+    use: "Đặt `DelaySeconds` cho từng message khi gửi, từ 0 tới 15 phút; message bị ẩn với consumer trong khoảng thời gian đó. Ghi đè delay của queue. Không hỗ trợ trên FIFO queue.",
+    notHere: "Chi phí cao do nhiều lệnh nhận rỗng. Message timer chỉ trì hoãn thời điểm message xuất hiện, không phải cách nhận message và không giảm số lệnh `ReceiveMessage` rỗng.",
+    instead: "Long polling (`ReceiveMessageWaitTimeSeconds` hoặc `WaitTimeSeconds` tối đa 20 giây). Lập lịch xa hơn 15 phút: EventBridge Scheduler." },
+  { name: "SQS visibility timeout",
+    use: "Ẩn message **sau khi** một consumer đã nhận, để consumer khác không xử lý trùng; mặc định 30 giây, tối đa 12 giờ tính từ lần nhận đầu tiên.",
+    notHere: "Không ảnh hưởng tới số phản hồi rỗng; worker poll queue trống vẫn nhận phản hồi rỗng bị tính phí.",
+    instead: "Long polling." },
+  { name: "Amazon SNS (standard topic) cho luồng dữ liệu",
+    use: "Đẩy (push) mỗi message tới mọi subscriber. SNS **có** retry: với endpoint do AWS quản lý (Lambda, SQS) tới 100.015 lần trong 23 ngày; với endpoint do khách hàng quản lý (SMTP, SMS, mobile push) 50 lần trong 6 giờ; riêng HTTP/S cho phép tự định nghĩa delivery policy, tổng thời gian retry tối đa 3.600 giây. Hết retry, message bị huỷ trừ khi subscription có dead-letter queue (SQS queue cùng account và Region).",
+    notHere: "Standard topic không lưu message: message được giao ngay khi publish, subscriber không thể đọc theo tốc độ của mình hay đọc lại dữ liệu khi tầng phân tích lỗi. Message archiving và replay chỉ có trên FIFO topic (A2A), lưu 1 tới 365 ngày.",
+    instead: "Kinesis Data Streams: record được lưu mặc định 24 giờ, tối đa 365 ngày; nhiều ứng dụng cùng đọc; Lambda event source mapping retry batch lỗi tới khi record hết hạn hoặc vượt maximum age." },
+]} />
+
+Kênh tiếp nhận luồng dữ liệu bằng Kinesis Data Streams và cách nhiều ứng dụng cùng đọc một stream được trình bày trong [bài Kinesis, Phần 1](/concepts/kinesis/#s1).
+
+<Takeaway>Xử lý đúng một lần giữa hai tầng: SQS FIFO; standard queue và EventBridge event bus classic đều at-least-once. Giảm chi phí do nhận rỗng: long polling, không phải message timer hay visibility timeout. SNS có retry và DLQ, nhưng standard topic không lưu message để đọc lại; luồng dữ liệu cần lưu giữ và xử lý lại: Kinesis Data Streams.</Takeaway>
+
+</Scene>
+
 <Scene id="challenge" label="Bài tập" title="Phân loại tính năng theo dịch vụ" questions={["exam5_q44", "exam3_q34", "exam2_q42", "exam4_q35", "exam3_q30", "exam6_q61"]}>
 
 Phân loại từng tính năng vào dịch vụ cung cấp tính năng đó. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
@@ -152,9 +217,9 @@ Phân loại từng tính năng vào dịch vụ cung cấp tính năng đó. Tr
     { id: "eb", title: "Amazon EventBridge", sub: "Event bus", hint: "Gợi ý: tính năng liên quan tới sự kiện, event pattern hoặc lịch thực thi." },
   ]}
   cards={[
-    ["Visibility timeout", "sqs"], ["Dead-letter queue", "sqs"], ["Long polling", "sqs"], ["Delay queue", "sqs"], ["Message Group ID", "sqs"],
-    ["Topic với nhiều subscription", "sns"], ["Fan-out tới nhiều queue", "sns"], ["Nhận thông báo từ CloudWatch alarm", "sns"],
-    ["Partner event source (SaaS)", "eb"], ["Rule lọc theo event pattern JSON", "eb"], ["Scheduler chạy theo biểu thức cron", "eb"],
+    ["Visibility timeout", "sqs"], ["Dead-letter queue", "sqs"], ["Long polling", "sqs"], ["Delay queue", "sqs"], ["Message timer cho từng message", "sqs"], ["Message Group ID", "sqs"],
+    ["Topic với nhiều subscription", "sns"], ["Fan-out tới nhiều queue", "sns"], ["Nhận thông báo từ CloudWatch alarm", "sns"], ["Delivery policy theo từng protocol", "sns"],
+    ["Partner event source (SaaS)", "eb"], ["Rule lọc theo event pattern JSON", "eb"], ["Scheduler chạy theo biểu thức cron", "eb"], ["Retry tới target trong 24 giờ, tối đa 185 lần", "eb"],
   ]}
 />
 
@@ -166,9 +231,13 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     a: 1,
     why: "Message được nhận vượt quá maxReceiveCount lần mà chưa bị xoá sẽ được chuyển sang DLQ." },
   { q: "Chi phí SQS cao do worker poll queue liên tục và phần lớn lệnh nhận trả về rỗng. Cần thay đổi cấu hình nào?",
-    opts: ["Long polling (WaitTimeSeconds tối đa 20)", "Delay queue", "Chuyển sang FIFO queue"],
+    opts: ["Long polling (WaitTimeSeconds tối đa 20)", "Đặt message timer cho từng message", "Tăng visibility timeout"],
     a: 0,
-    why: "Với long polling, SQS chỉ phản hồi khi có message hoặc hết thời gian chờ, do đó giảm đáng kể số request rỗng bị tính phí." },
+    why: "Với long polling, SQS chỉ phản hồi khi có message hoặc hết thời gian chờ, do đó giảm đáng kể số request rỗng bị tính phí. Message timer và visibility timeout chỉ quyết định khi nào message được nhìn thấy, không thay đổi cách worker nhận message." },
+  { q: "Biểu mẫu đăng ký người bán được gửi từ web tier tới tầng xử lý; mỗi biểu mẫu phải được xử lý đúng một lần và không được mất. Phương án nào phù hợp?",
+    opts: ["EventBridge event bus (classic) với rule tới tầng xử lý", "SQS standard queue", "SQS FIFO queue"],
+    a: 2,
+    why: "FIFO queue loại bỏ message trùng trong khoảng deduplication 5 phút và lưu message tới khi worker xoá. EventBridge (event bus classic) và standard queue đều phân phối at-least-once nên có thể xử lý một biểu mẫu nhiều lần." },
   { q: "Ví điện tử ShopViet: các lệnh của cùng một người dùng phải được xử lý đúng thứ tự, trong khi lệnh của các người dùng khác nhau cần được xử lý song song. Phương án nào phù hợp?",
     opts: ["Standard queue, nhiều consumer", "FIFO queue, Message Group ID = mã người dùng", "FIFO queue, một consumer"],
     a: 1,

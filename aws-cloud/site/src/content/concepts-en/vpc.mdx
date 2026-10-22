@@ -1,10 +1,19 @@
 ---
 title: "VPC: subnets, routing, security and connectivity"
-lede: "This lesson walks through ShopViet's private network on AWS by following a packet's path: the control layers between the internet and EC2, the differences between security groups and network ACLs, how to place NAT gateways, and the criteria for choosing between VPC endpoints, VPC peering, Transit Gateway, Site-to-Site VPN and Direct Connect."
-minutes: 30
-scenes: 6
+lede: "This lesson walks through ShopViet's private network on AWS by following a packet's path: the control layers between the internet and EC2, the differences between security groups and network ACLs, how to plan CIDR blocks and route tables, how to place NAT gateways, and the criteria for choosing between VPC endpoints, VPC peering, Transit Gateway, Site-to-Site VPN and Direct Connect."
+minutes: 42
+scenes: 9
 prerequisites: ["global-infra"]
 docs:
+  - title: "Gateway endpoints for Amazon S3 (considerations)"
+    url: "https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-s3.html"
+    service: "Amazon VPC"
+  - title: "Gateway endpoints for Amazon DynamoDB (considerations)"
+    url: "https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-ddb.html"
+    service: "Amazon VPC"
+  - title: "Multi-VPC network infrastructure whitepaper: AWS PrivateLink"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/building-scalable-secure-multi-vpc-network-infrastructure/aws-privatelink.html"
+    service: "Multi-VPC (whitepaper)"
   - title: "How Amazon VPC works"
     url: "https://docs.aws.amazon.com/vpc/latest/userguide/how-it-works.html"
     service: "Amazon VPC"
@@ -41,6 +50,78 @@ docs:
   - title: "AWS Direct Connect virtual interfaces"
     url: "https://docs.aws.amazon.com/directconnect/latest/UserGuide/WorkingWithVirtualInterfaces.html"
     service: "AWS Direct Connect"
+  - title: "VPC CIDR blocks"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-cidr-blocks.html"
+    service: "Amazon VPC"
+  - title: "Subnet CIDR blocks (reserved IP addresses)"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/subnet-sizing.html"
+    service: "Amazon VPC"
+  - title: "Subnet route tables"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/subnet-route-tables.html"
+    service: "Amazon VPC"
+  - title: "Amazon S3 condition key examples (IpAddress / NotIpAddress)"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/amazon-s3-policy-keys.html"
+    service: "Amazon S3"
+  - title: "IAM condition operators (IP address)"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_condition_operators.html"
+    service: "AWS IAM"
+  - title: "Evaluating multiple condition operators (logical AND)"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_condition-logic-multiple-context-keys-or-values.html"
+    service: "AWS IAM"
+  - title: "Security group rules for different use cases (ping/ICMP)"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/security-group-rules-reference.html"
+    service: "Amazon EC2"
+  - title: "Elastic network interfaces (source/destination checking)"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html"
+    service: "Amazon EC2"
+  - title: "NAT instances: disable source/destination checks"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/work-with-nat-instances.html"
+    service: "Amazon VPC"
+  - title: "Network ACL rules"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/nacl-rules.html"
+    service: "Amazon VPC"
+  - title: "AWS WAF geographic match rule statement"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-geo-match.html"
+    service: "AWS WAF"
+  - title: "How Transit Gateway works (route tables, propagation)"
+    url: "https://docs.aws.amazon.com/vpc/latest/tgw/how-transit-gateways-work.html"
+    service: "AWS Transit Gateway"
+  - title: "Transit gateway route tables"
+    url: "https://docs.aws.amazon.com/vpc/latest/tgw/tgw-route-tables.html"
+    service: "AWS Transit Gateway"
+  - title: "Direct Connect gateways and Transit Gateway associations"
+    url: "https://docs.aws.amazon.com/directconnect/latest/UserGuide/direct-connect-transit-gateways.html"
+    service: "AWS Direct Connect"
+  - title: "Direct Connect gateways"
+    url: "https://docs.aws.amazon.com/directconnect/latest/UserGuide/direct-connect-gateways-intro.html"
+    service: "AWS Direct Connect"
+  - title: "How AWS Site-to-Site VPN works"
+    url: "https://docs.aws.amazon.com/vpn/latest/s2svpn/how_it_works.html"
+    service: "Site-to-Site VPN"
+  - title: "Site-to-Site VPN customer gateway devices"
+    url: "https://docs.aws.amazon.com/vpn/latest/s2svpn/your-cgw.html"
+    service: "Site-to-Site VPN"
+  - title: "Transit VPC solution (multi-VPC whitepaper)"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/building-scalable-secure-multi-vpc-network-infrastructure/transit-vpc-solution.html"
+    service: "Multi-VPC (whitepaper)"
+  - title: "Centralized access to VPC private endpoints (multi-VPC whitepaper)"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/building-scalable-secure-multi-vpc-network-infrastructure/centralized-access-to-vpc-private-endpoints.html"
+    service: "Multi-VPC (whitepaper)"
+  - title: "AWS PrivateLink concepts"
+    url: "https://docs.aws.amazon.com/vpc/latest/privatelink/concepts.html"
+    service: "Amazon VPC"
+  - title: "Interface VPC endpoints in Amazon EFS"
+    url: "https://docs.aws.amazon.com/efs/latest/ug/efs-vpc-endpoints.html"
+    service: "Amazon EFS"
+  - title: "Choosing a service endpoint for your DataSync agent"
+    url: "https://docs.aws.amazon.com/datasync/latest/userguide/choose-service-endpoint.html"
+    service: "AWS DataSync"
+  - title: "What is AWS Client VPN?"
+    url: "https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/what-is.html"
+    service: "AWS Client VPN"
+  - title: "AWS Systems Manager Session Manager"
+    url: "https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html"
+    service: "AWS Systems Manager"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -52,23 +133,46 @@ import EndpointSim from "../../components/scenes/vpc/EndpointSim.tsx";
 import VpcConnectSim from "../../components/scenes/vpc/VpcConnectSim.tsx";
 import HybridLinkSim from "../../components/scenes/vpc/HybridLinkSim.tsx";
 import VpcMythsSim from "../../components/scenes/vpc/VpcMythsSim.tsx";
+import CidrSim from "../../components/scenes/vpc/CidrSim.tsx";
+import RouteAssocSim from "../../components/scenes/vpc/RouteAssocSim.tsx";
+import HubSim from "../../components/scenes/vpc/HubSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
-  { href: "#en-s1", label: "1 · Access from the internet" },
-  { href: "#en-s2", label: "2 · Security group chain" },
-  { href: "#en-s3", label: "3 · NAT gateway" },
-  { href: "#en-s4", label: "4 · VPC endpoints" },
-  { href: "#en-s5", label: "5 · Connecting many VPCs" },
-  { href: "#en-s6", label: "6 · Connecting on premises" },
+  { href: "#en-addr", label: "1 · CIDR and route tables" },
+  { href: "#en-s1", label: "2 · Access from the internet" },
+  { href: "#en-s2", label: "3 · Security group chain" },
+  { href: "#en-s3", label: "4 · NAT gateway" },
+  { href: "#en-s4", label: "5 · VPC endpoints" },
+  { href: "#en-s5", label: "6 · Connecting many VPCs" },
+  { href: "#en-s6", label: "7 · Connecting on premises" },
+  { href: "#en-hub", label: "8 · Network hub" },
+  { href: "#en-compare", label: "9 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
 ShopViet runs its system in the Singapore Region. The next step is to design the **VPC**, ShopViet's private network on AWS: dividing it into subnets, allowing only legitimate traffic from users, blocking unauthorized access, and connecting the VPC to other VPCs and to the office. Each part corresponds to a real deployment task, with a simulation to verify the configuration before applying it in the console.
 </Story>
 
-<Scene id="en-s1" label="Part 1/6" title="Access from the internet: the control layers along the packet's path" questions={["exam5_q63", "exam4_q38", "exam3_q9", "exam3_q25", "exam6_q8"]}>
+<Scene id="en-addr" label="Part 1/9" title="Addressing and routing: CIDR, subnets and route tables" questions={["exam4_q8", "exam5_q63"]}>
+
+Every address in ShopViet's VPC is written in **CIDR notation**: `10.0.0.0/16` means the first 16 bits are fixed and the last 16 bits vary, which gives 65,536 addresses. The same notation appears in security group and NACL rules and in the `aws:SourceIp` condition of a bucket policy. Pick a sample block or drag the prefix slider, then enter a source IP to check whether it falls inside the block.
+
+<CidrSim client:visible />
+
+VPC and subnet CIDR blocks range from **/16** to **/28**; AWS recommends a private range from RFC 1918 (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`). In every subnet AWS reserves **5 addresses**: the first four and the last one. In a bucket policy, `IpAddress` and `NotIpAddress` in the same `Condition` are combined with a logical AND: `192.0.2.0/24` except `192.0.2.188/32` means all 256 addresses of the range except exactly one.
+
+Once the subnets exist, each subnet needs a **route table** that decides where its traffic goes. Associate the subnets with different route tables and test internet access:
+
+<RouteAssocSim client:visible />
+
+<Takeaway>VPCs and subnets: blocks from /16 (65,536 addresses) to /28 (16 addresses); each subnet loses 5 addresses that AWS reserves. /32 is exactly one address. Every subnet is always associated with **exactly one** route table: explicitly with a custom route table, or implicitly with the main route table when no explicit association exists. One route table can serve many subnets. The main route table cannot be deleted; keeping it with only the `local` route and associating every subnet explicitly is a safe way to control routing.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s1" label="Part 2/9" title="Access from the internet: the control layers along the packet's path" questions={["exam5_q63", "exam4_q38", "exam3_q9", "exam3_q25", "exam6_q8"]}>
 
 A subnet is a **public subnet** only when its route table has a `0.0.0.0/0` route to an **internet gateway (IGW)**. A request from the internet to ShopViet's web server passes in turn through the IGW, the **network ACL** at the subnet boundary, and the **security group** attached to the instance. Turn each condition on or off and send a request to find the control layer that is blocking traffic.
 
@@ -78,7 +182,7 @@ A subnet is a **public subnet** only when its route table has a `0.0.0.0/0` rout
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/6" title="Security group chain: ALB → EC2 → RDS" questions={["exam2_q28", "exam2_q55", "exam4_q52", "exam4_q26", "exam5_q29"]}>
+<Scene id="en-s2" label="Part 3/9" title="Security group chain: ALB → EC2 → RDS" questions={["exam2_q28", "exam2_q55", "exam4_q52", "exam4_q26", "exam5_q29"]}>
 
 ShopViet's web application has three tiers: an ALB receives user requests, EC2 runs the application, and RDS stores the data. Each tier should allow traffic only from the tier in front of it. Choose the inbound rules for EC2 and RDS, run the simulation, and watch both legitimate user requests and direct access attempts from outside.
 
@@ -88,7 +192,7 @@ ShopViet's web application has three tiers: an ALB receives user requests, EC2 r
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/6" title="NAT gateway: internet access for private subnets" questions={["exam3_q44", "exam3_q62", "exam6_q13", "exam3_q12"]}>
+<Scene id="en-s3" label="Part 4/9" title="NAT gateway: internet access for private subnets" questions={["exam3_q44", "exam3_q62", "exam6_q13", "exam3_q12"]}>
 
 ShopViet's database and workers are in **private subnets** without public IPs, but they still need to download patches. A **NAT gateway** allows outbound connections but does not allow the internet to initiate inbound connections. Try three placements, then trigger a failure in AZ a.
 
@@ -98,7 +202,7 @@ ShopViet's database and workers are in **private subnets** without public IPs, b
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/6" title="VPC endpoints: reaching AWS services without the internet" questions={["exam3_q47", "exam5_q24", "exam6_q64", "exam6_q65", "exam3_q7", "exam1_q39", "exam5_q9"]}>
+<Scene id="en-s4" label="Part 5/9" title="VPC endpoints: reaching AWS services without the internet" questions={["exam3_q47", "exam5_q24", "exam6_q64", "exam6_q65", "exam3_q7", "exam1_q39", "exam5_q9", "exam2_q11"]}>
 
 EC2 instances in ShopViet's private subnet write images to S3 and send jobs to SQS. By default, this traffic goes through the NAT gateway to the service's public endpoint. Choose each option, send a request and watch the change in the route table.
 
@@ -112,16 +216,18 @@ EC2 instances in ShopViet's private subnet write images to S3 and send jobs to S
   { need: "Workers send jobs to SQS without going out to the internet", answer: "Interface endpoint (PrivateLink)",
     why: "Creates an ENI with a private IP in the subnet; services other than S3 and DynamoDB use this endpoint type." },
   { need: "A shipping partner calls ShopViet's inventory API from the partner's VPC, without opening access to the whole network", answer: "AWS PrivateLink + NLB on the provider side",
-    why: "The provider places an NLB in front of the service; the consumer creates an interface endpoint. Only one service is exposed, without opening access to the whole network." },
+    why: "The provider places an NLB in front of the service; the consumer creates an interface endpoint (which sends TCP or UDP traffic to the endpoint service). Only one service is exposed, without opening access to the whole network. Access is unidirectional: clients in the partner's VPC initiate connections to the service, and ShopViet's servers cannot initiate connections into the partner's VPC. VPC peering is the opposite: traffic is routed between the two VPCs, and instances on either side can communicate as if they are within the same network." },
+  { need: "A DataSync agent in the on-premises warehouse copies video files to EFS every day over the existing Direct Connect connection, without crossing the internet", answer: "Interface endpoint (PrivateLink) + private VIF",
+    why: "An interface endpoint is an ENI with a private IP in the VPC, so it can be reached from on premises over a Direct Connect private VIF or a Site-to-Site VPN (the DataSync agent uses a VPC service endpoint; EFS offers an interface endpoint for the EFS API). A gateway endpoint cannot be used from on premises." },
 ]} />
 
-<Takeaway>S3 and DynamoDB: gateway endpoint, no charge, routed through the route table. Other services: interface endpoint, uses an ENI, charged. Sharing a private service between VPCs: PrivateLink combined with an NLB.</Takeaway>
+<Takeaway>S3 and DynamoDB: gateway endpoint, no charge, routed through the route table. Other services: interface endpoint, uses an ENI, charged. Sharing a private service between VPCs: PrivateLink combined with an NLB. PrivateLink lets only the consumer initiate connections; the provider cannot initiate connections into the consumer VPC (VPC peering allows two-way communication). Gateway endpoint connections cannot be extended out of a VPC: resources on the other side of a VPN connection, a VPC peering connection (same Region or another Region), a transit gateway or a Direct Connect connection cannot use a gateway endpoint; use an interface endpoint instead.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s5" label="Part 5/6" title="Connecting many VPCs: VPC peering, Transit Gateway and VPC sharing" questions={["exam4_q45", "exam1_q42", "exam5_q14", "exam4_q28", "exam6_q12", "exam3_q16", "exam2_q36", "exam3_q17", "exam6_q41", "exam2_q21"]}>
+<Scene id="en-s5" label="Part 6/9" title="Connecting many VPCs: VPC peering, Transit Gateway and VPC sharing" questions={["exam4_q45", "exam1_q42", "exam5_q14", "exam4_q28", "exam6_q12", "exam3_q16", "exam2_q36", "exam3_q17", "exam6_q41", "exam2_q21"]}>
 
-ShopViet sets up more teams, each using its own VPC. Increase the number of VPCs, compare the number of connections needed with VPC peering and with Transit Gateway, and try sending traffic from A to C when only the A–B and B–C peerings exist.
+ShopViet sets up more teams, each using its own VPC. Increase the number of VPCs, compare the number of connections needed with VPC peering, a transit VPC and Transit Gateway, and try sending traffic from A to C when only the A–B and B–C peerings exist. With Transit Gateway, turn route propagation off to see the transit gateway route table without the routes.
 
 <VpcConnectSim client:visible />
 
@@ -135,30 +241,83 @@ ShopViet sets up more teams, each using its own VPC. Increase the number of VPCs
   { need: "Create a new account for each team to a common standard, using a shared network", answer: "Control Tower + shared VPC (RAM)",
     why: "Control Tower creates and governs the accounts; a network account shares subnets with the workload accounts." },
   { need: "Logging, DNS and security tools shared by every VPC", answer: "Shared services VPC",
-    why: "Centralizes the shared services in one VPC instead of deploying them again in each VPC." },
+    why: "Centralizes the shared services (directory services, centralized interface endpoints) in one VPC connected to the other VPCs through Transit Gateway, instead of deploying them again in each VPC: lower cost and administrative overhead (part 8)." },
+  { need: "A hub that connects the VPCs and the office with the least operational overhead", answer: "Transit Gateway (not a transit VPC)",
+    why: "A transit VPC is the older pattern: EC2 instances run router and VPN software in a central VPC; the organization handles HA and licenses, each VPN tunnel is limited to 1.25 Gbps, and encryption adds latency. Transit Gateway is a hub managed by AWS." },
 ]} />
 
-<Takeaway>A small number of VPCs: VPC peering (low cost, but no transitive routing). Many VPCs, or on-premises connectivity as well: Transit Gateway. Many accounts in the same organization: VPC sharing.</Takeaway>
+<Takeaway>A small number of VPCs: VPC peering (low cost, but no transitive routing). Many VPCs, or on-premises connectivity as well: Transit Gateway; enable route propagation so each VPC attachment's CIDR is installed in the transit gateway route table automatically (the subnet route tables in the VPCs still need a route to the transit gateway). A transit VPC (self-managed EC2 routers and VPN) is the older pattern that Transit Gateway replaces. Many accounts in the same organization: VPC sharing.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s6" label="Part 6/6" title="Connecting on premises: Site-to-Site VPN and Direct Connect" questions={["exam3_q18", "exam5_q10", "exam5_q41", "exam6_q25", "exam1_q37", "exam4_q48", "exam4_q7", "exam6_q45", "exam6_q34", "exam4_q18"]}>
+<Scene id="en-s6" label="Part 7/9" title="Connecting on premises: Site-to-Site VPN and Direct Connect" questions={["exam3_q18", "exam5_q10", "exam5_q41", "exam6_q25", "exam1_q37", "exam4_q48", "exam4_q7", "exam6_q45", "exam6_q34", "exam4_q18"]}>
 
 ShopViet's office needs to connect to the VPC. There are two methods: **Site-to-Site VPN** travels over the internet with encryption, and **Direct Connect** is a dedicated connection to AWS. Each scenario below corresponds to a real requirement of the office. Choose a connection method and send a request to watch the traffic's path.
 
 <HybridLinkSim client:visible />
 
-<Takeaway>Fast to deploy, low cost: Site-to-Site VPN. A stable, dedicated connection: Direct Connect (set up a VPN on top when encryption is needed, and add a VPN as a backup connection). Multiple Regions: Direct Connect gateway. Accessing S3 over Direct Connect: public VIF. Branch offices communicating with each other: VPN CloudHub. Insufficient VPN throughput: Transit Gateway with ECMP.</Takeaway>
+<Takeaway>Site-to-Site VPN: a virtual private gateway (or a transit gateway) on the AWS side, a customer gateway device on the on-premises side, and a customer gateway, the AWS resource that describes that device; each VPN connection has two tunnels. Fast to deploy, low cost: Site-to-Site VPN. A stable, dedicated connection: Direct Connect (set up a VPN on top when encryption is needed, and add a VPN as a backup connection). Multiple Regions: private VIF to a Direct Connect gateway. Accessing S3 over Direct Connect: public VIF. Branch offices communicating with each other: VPN CloudHub. Insufficient VPN throughput: Transit Gateway with ECMP.</Takeaway>
 
 </Scene>
 
-<Scene id="en-confuse" label="Common mistakes" title="Six configurations that look valid but do not work as expected" questions={["exam2_q20", "exam6_q63", "exam3_q44", "exam3_q21", "exam3_q65", "exam6_q59", "exam3_q12"]}>
+<Scene id="en-hub" label="Part 8/9" title="Network hub: Transit Gateway, Direct Connect and a shared services VPC" questions={["exam3_q16", "exam2_q21", "exam4_q7", "exam4_q28"]}>
+
+ShopViet now has 25 VPCs for its warehouses, a data center connected with Direct Connect, and has just acquired a company with its own data center and VPC in Europe. Each situation below compares a per-VPC design with a centralized one. Pick a design and send the request to follow its path.
+
+<HubSim client:visible />
+
+Direct Connect has three types of virtual interface: a **private VIF** reaches a VPC using private IP addresses (attached to a VGW or a Direct Connect gateway), a **public VIF** reaches AWS public endpoints such as S3, and a **transit VIF** reaches one or more transit gateways through a Direct Connect gateway. A Direct Connect gateway that is already associated with a VGW or attached to a private VIF cannot be attached to a transit gateway.
+
+<Takeaway>Many VPCs in one Region plus a data center over Direct Connect: one transit VIF to a Direct Connect gateway, the gateway associated with Transit Gateway, and route propagation enabled on the VPC attachments. Multiple Regions: private VIFs to a Direct Connect gateway (global, except the China Regions) associated with the VGW in each Region; a Direct Connect gateway does not pass traffic between two VGWs. Interface endpoints shared by many VPCs: a shared services VPC, private DNS turned off on the endpoints, and a private hosted zone associated with the spoke VPCs.</Takeaway>
+
+</Scene>
+
+<Scene id="en-confuse" label="Common mistakes" title="Seven configurations that look valid but do not work as expected" questions={["exam2_q20", "exam6_q63", "exam3_q44", "exam3_q21", "exam3_q65", "exam6_q59", "exam3_q12", "exam4_q38"]}>
 
 The configurations below look reasonable in the console, but they behave differently in practice. Choose a scenario, try the option that is commonly applied first, then switch to the correct option.
 
 <VpcMythsSim client:visible />
 
-<Takeaway>A private hosted zone requires both enableDnsHostnames and enableDnsSupport. Outbound IPv4 traffic: NAT gateway (an egress-only IGW is for IPv6 only). Port forwarding or a bastion is required: NAT instance. A VPC with dedicated tenancy makes every instance run as dedicated. The source of a security group rule cannot be an internet gateway. Two EC2 instances should communicate over private IPs: access over a public IP incurs data transfer charges; over private IPs, traffic between two AZs is still charged per GB.</Takeaway>
+<Takeaway>A private hosted zone requires both enableDnsHostnames and enableDnsSupport. Outbound IPv4 traffic: NAT gateway (an egress-only IGW is for IPv6 only). Port forwarding or a bastion is required: NAT instance. A VPC with dedicated tenancy makes every instance run as dedicated. The source of a security group rule cannot be an internet gateway. Two EC2 instances should communicate over private IPs: access over a public IP incurs data transfer charges; over private IPs, traffic between two AZs is still charged per GB. `ping` is ICMP: the security group needs an inbound ICMP rule. Disable source/destination check only on an instance that does NAT, routing or firewalling.</Takeaway>
+
+</Scene>
+
+<Scene id="en-compare" label="Part 9/9" title="Quick comparison: networking components that are easy to confuse" questions={["exam5_q10", "exam5_q45", "exam5_q4", "exam6_q36", "exam4_q28", "exam4_q38"]}>
+
+Some networking components have a name or function close to what ShopViet needs but solve a different problem. Pick each component to see when to use it, why it does not fit the matching situation, and what to choose instead:
+
+<QuickCompare client:visible items={[
+  { name: "AWS Client VPN",
+    use: "A VPN **for individual users**: a managed service where employees' devices use an OpenVPN-based client to open a TLS connection to a Client VPN endpoint and reach the VPC and the on-premises network; authentication with Active Directory, federated authentication or certificates.",
+    notHere: "ShopViet's whole office network needs an encrypted connection to the VPC (network to network). Client VPN serves individual devices; it does not connect two networks.",
+    instead: "**Site-to-Site VPN** (IPsec between the customer gateway device and the virtual private gateway), combined with route tables, security groups and network ACLs to restrict traffic." },
+  { name: "Bastion host",
+    use: "An EC2 instance in a public subnet that acts as an SSH/RDP jump point for administrators to reach instances in private subnets.",
+    notHere: "It only gives administrative access to individual servers, it does not connect the office network to the VPC, and it needs open inbound ports and a self-managed instance.",
+    instead: "Network connectivity: Site-to-Site VPN or Direct Connect. Server administration without open inbound ports or bastion hosts: AWS Systems Manager **Session Manager**." },
+  { name: "Transit VPC",
+    use: "The older hub-and-spoke pattern: EC2 instances run third-party router software in a central VPC, and the other VPCs connect to it over VPN (BGP over IPsec). Still useful when a third-party appliance's features are needed in the path.",
+    notHere: "ShopViet needs a hub with little operational overhead: a transit VPC means managing the EC2 instances' HA and licenses, each VPN tunnel is limited to 1.25 Gbps, and VPN encryption adds latency.",
+    instead: "**AWS Transit Gateway**: a hub managed by AWS; each VPC, VPN or Direct Connect gateway is an attachment." },
+  { name: "Network ACL",
+    use: "Filters traffic at the subnet boundary by rule number, protocol, port and **CIDR range**; has both Allow and Deny rules; stateless.",
+    notHere: "Users from certain countries must be blocked while a development team in one of those countries keeps access. NACL rules accept only CIDR ranges; there is no country condition.",
+    instead: "**AWS WAF** on the ALB: a geo match statement to block countries, combined with an IP set statement that allows the development team's IP addresses." },
+  { name: "Source/destination check",
+    use: "An ENI attribute, enabled by default: the instance must be the source or destination of any traffic it sends or receives. Disable it when the instance is a NAT instance, a router or a firewall.",
+    notHere: "A public EC2 instance does not answer ping: the instance is the destination of the ping packet, so this attribute has no effect.",
+    instead: "Check the `0.0.0.0/0 → internet gateway` route in the subnet route table and the inbound ICMP rule in the security group (see Common mistakes)." },
+  { name: "Elastic network interface (ENI)",
+    use: "A logical networking component in a VPC that represents a virtual network card: private IPs, Elastic IP, security groups, source/destination check. It attaches to instances in the same AZ; moving it to another instance moves the traffic with it.",
+    notHere: "ShopViet's HPC workflows need low-latency communication between instances. An ENI is only a virtual network card; it does not improve that performance.",
+    instead: "**Elastic Fabric Adapter (EFA)**: all the functionality of ENA plus OS-bypass for HPC and machine learning (EC2 lesson)." },
+  { name: "AWS PrivateLink",
+    use: "Private access to a service from the consumer's VPC through an interface endpoint (TCP or UDP traffic), with the service behind an NLB on the provider side.",
+    notHere: "An application serves internet customers in many countries with low latency. PrivateLink serves only consumers that have a VPC endpoint; it does not expose the application to the internet or route users to the nearest Region.",
+    instead: "**AWS Global Accelerator** in front of an NLB in each Region; the NLBs accept both TCP and UDP and use IP targets to reach on-premises servers." },
+]} />
+
+<Takeaway>Network-to-network connectivity: Site-to-Site VPN or Direct Connect; individual users: Client VPN; server administration: Session Manager or a bastion host. Blocking by country: AWS WAF geo match, not a NACL. A hub with little operational overhead: Transit Gateway, not a transit VPC.</Takeaway>
 
 </Scene>
 
@@ -202,6 +361,10 @@ Check your understanding: as the designer of the ShopViet system, which option i
     opts: ["enableDnsHostnames and enableDnsSupport", "A Route 53 Resolver inbound endpoint", "An internet gateway"],
     a: 0,
     why: "A private hosted zone requires the VPC to enable both DNS hostnames and DNS resolution (enableDnsSupport)." },
+  { q: "A new ShopViet subnet has not been explicitly associated with any route table. Which route table does it use?",
+    opts: ["None, so it cannot route traffic", "The VPC's main route table", "All route tables in the VPC at once"],
+    a: 1,
+    why: "A subnet without an explicit association implicitly uses the main route table. A subnet can be associated with only one route table at a time." },
 ]} />
 
 </Scene>

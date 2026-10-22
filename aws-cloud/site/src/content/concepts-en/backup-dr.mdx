@@ -1,10 +1,14 @@
 ---
 title: "Backup + Disaster Recovery: recovering when a Region fails"
 lede: "The ShopViet system runs stably in the Singapore Region. This lesson shows how to prepare for the most serious failure scenario: choosing one of four DR strategies based on how much data may be lost and how much downtime is allowed, keeping databases and caches running through a failure, using AWS Backup for a shared file system, and configuring a single EC2 instance to recover automatically."
-minutes: 20
-scenes: 4
+minutes: 24
+scenes: 5
 prerequisites: ["global-infra", "ec2", "rds", "storage"]
 docs:
+  - title: "What is AWS Backup? (backups taken outside AWS Backup are not governed)"
+    url: "https://docs.aws.amazon.com/aws-backup/latest/devguide/whatisbackup.html"
+  - title: "AWS Backup recovery points (saved in backup vaults)"
+    url: "https://docs.aws.amazon.com/aws-backup/latest/devguide/recovery-points.html"
   - title: "Disaster recovery options in the cloud"
     url: "https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/disaster-recovery-options-in-the-cloud.html"
   - title: "Using Amazon Aurora Global Database"
@@ -33,6 +37,18 @@ docs:
     url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/cloudwatch-recovery.html"
   - title: "AWS Trusted Advisor"
     url: "https://docs.aws.amazon.com/awssupport/latest/user/trusted-advisor.html"
+  - title: "Restore an Amazon EBS volume (AWS Backup)"
+    url: "https://docs.aws.amazon.com/aws-backup/latest/devguide/restoring-ebs.html"
+  - title: "Initialize Amazon EBS volumes"
+    url: "https://docs.aws.amazon.com/ebs/latest/userguide/initalize-volume.html"
+  - title: "Amazon EBS fast snapshot restore"
+    url: "https://docs.aws.amazon.com/ebs/latest/userguide/ebs-fast-snapshot-restore.html"
+  - title: "What is Elastic Disaster Recovery?"
+    url: "https://docs.aws.amazon.com/drs/latest/userguide/what-is-drs.html"
+  - title: "AWS Elastic Disaster Recovery FAQs"
+    url: "https://aws.amazon.com/disaster-recovery/faqs/"
+  - title: "AWS Transform MGN FAQs"
+    url: "https://aws.amazon.com/application-migration-service/faqs/"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -41,6 +57,7 @@ import DrStrategySim from "../../components/scenes/backup-dr/DrStrategySim.tsx";
 import DataFailoverSim from "../../components/scenes/backup-dr/DataFailoverSim.tsx";
 import BackupPlanSim from "../../components/scenes/backup-dr/BackupPlanSim.tsx";
 import Ec2RecoverSim from "../../components/scenes/backup-dr/Ec2RecoverSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
@@ -49,6 +66,7 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s2", label: "2 · Database and cache resilience" },
   { href: "#en-s3", label: "3 · AWS Backup" },
   { href: "#en-s4", label: "4 · Automatic recovery of a single EC2 instance" },
+  { href: "#en-s5", label: "5 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
 Multi-AZ keeps ShopViet running when one data center fails. However, there must be a plan for when **the entire Singapore Region** goes down. Management asks two questions: "What is the maximum number of orders we can afford to lose?" and "How soon must the system be back?". The two corresponding metrics are:
@@ -59,7 +77,7 @@ Multi-AZ keeps ShopViet running when one data center fails. However, there must 
 The smaller the RPO and RTO, the higher the cost. This lesson shows how to choose a level that just meets the requirement.
 </Story>
 
-<Scene id="en-s1" label="Part 1/4" title="Four strategies for preparing for a Region-level failure" questions={["exam4_q41", "exam4_q5"]}>
+<Scene id="en-s1" label="Part 1/5" title="Four strategies for preparing for a Region-level failure" questions={["exam4_q41", "exam4_q5"]}>
 
 ShopViet chooses Tokyo as its standby Region. The question is which components are kept in Tokyo under normal conditions. The more components are running, the shorter the recovery time and the higher the cost. There are four levels:
 
@@ -78,7 +96,7 @@ An AMI can be used only in the Region that contains it. To launch quickly in Tok
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/4" title="Keeping databases and caches running through a failure" questions={["exam2_q61", "exam6_q23", "exam5_q42", "exam4_q32"]}>
+<Scene id="en-s2" label="Part 2/5" title="Keeping databases and caches running through a failure" questions={["exam2_q61", "exam6_q23", "exam5_q42", "exam4_q32"]}>
 
 Web servers can be rebuilt in minutes, but data cannot: lost orders cannot be recovered. ShopViet has three data components, each needing its own protection mechanism:
 
@@ -94,7 +112,7 @@ Web servers can be rebuilt in minutes, but data cannot: lost orders cannot be re
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/4" title="AWS Backup for a shared file system" questions={["exam5_q47"]}>
+<Scene id="en-s3" label="Part 3/5" title="AWS Backup for a shared file system" questions={["exam5_q47", "exam5_q64", "exam5_q16"]}>
 
 ShopViet's services run on ECS with Fargate and all read and write seller images and invoices on a shared file system. ShopViet chooses **Amazon EFS**: a POSIX (NFS) file system that spans multiple AZs and that Fargate tasks can mount directly. Compliance requirements: automatic backups, a copy in another Region, and at most 8 hours of data loss.
 
@@ -102,13 +120,15 @@ ShopViet's services run on ECS with Fargate and all read and write seller images
 
 <BackupPlanSim client:visible />
 
-Each kind of incident needs a different setting. A Region-level failure: you need a copy in **another Region**. Leaked admin credentials: you need a copy in **another account**, or **Vault Lock** in compliance mode so that no one, not even the root user, can delete recovery points before they expire (governance mode still lets users with sufficient IAM permissions remove the lock). Audits: you need a long enough **retention period**. The RPO is determined by the **backup frequency**.
+Each kind of incident needs a different setting. A Region-level failure: you need a copy in **another Region**. Leaked admin credentials: you need a copy in **another account**, or **Vault Lock** in compliance mode so that no one, not even the root user, can delete recovery points before they expire (governance mode still lets users with sufficient IAM permissions remove the lock). Vault Lock protects only the recovery points in that backup vault, that is, backups created by AWS Backup or copied into the vault; AWS Backup does not govern backups taken outside AWS Backup. EBS snapshots created directly by a script or the EC2 API are not in the vault, so Vault Lock cannot protect them; to recover such snapshots after an accidental deletion, use a Recycle Bin retention rule ([Storage lesson, part 2](/concepts/storage/#en-s2)). Audits: you need a long enough **retention period**. The RPO is determined by the **backup frequency**.
 
-<Takeaway>A shared file system for containers, across multiple AZs, that needs backups in another Region: EFS + AWS Backup with a backup schedule and cross-Region copy. The backup frequency determines the RPO. A copy in another Region protects against a Region-level failure; a copy in another account and Vault Lock protect backups from deletion.</Takeaway>
+AWS Backup serves data protection and compliance; it is not a tool for cloning data quickly. When you restore an EBS recovery point, AWS Backup creates a **new volume** from the snapshot. Like every volume created from a snapshot, its blocks are downloaded from S3 to the volume over time (**volume initialization**); during that time I/O latency is higher and the volume does not yet deliver full performance. When the test team needs frequent copies of production data with full performance right away, the fitting option is an EBS snapshot with **fast snapshot restore** (Storage lesson, part 2).
+
+<Takeaway>A shared file system for containers, across multiple AZs, that needs backups in another Region: EFS + AWS Backup with a backup schedule and cross-Region copy. The backup frequency determines the RPO. A copy in another Region protects against a Region-level failure; a copy in another account and Vault Lock protect backups from deletion. Quick EBS copies for a test environment with full performance right away: snapshot + fast snapshot restore, not a restore from AWS Backup.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/4" title="Automatically recovering a single EC2 instance" questions={["exam3_q38"]}>
+<Scene id="en-s4" label="Part 4/5" title="Automatically recovering a single EC2 instance" questions={["exam3_q38"]}>
 
 ShopViet's internal admin page runs on a single EC2 instance. It has few users and needs neither an Auto Scaling group nor a DR strategy. Requirement: when the instance fails, the system comes back by itself within about 10 minutes, at low cost and with no manual intervention outside working hours.
 
@@ -120,7 +140,30 @@ EC2 has two kinds of status checks. The **system status check** reflects problem
 
 </Scene>
 
-<Scene id="en-challenge" label="Exercise" title="Sort the DR strategies" questions={["exam4_q41", "exam6_q23", "exam4_q32", "exam3_q38"]}>
+<Scene id="en-s5" label="Part 5/5" title="Quick comparison: DR, migration and data cloning tools" questions={["exam6_q48", "exam5_q64"]}>
+
+Some services share a mechanism (continuous replication, restoring from a copy) but serve different purposes. Choose each service to see when to use it, why it does not fit the matching ShopViet situation, and what to choose instead:
+
+<QuickCompare client:visible items={[
+  { name: "AWS Elastic Disaster Recovery (AWS DRS)",
+    use: "DR for on-premises or cloud-based servers: continuous replication into a low-cost **staging area subnet** (affordable storage, minimal compute) in your AWS account; launch recovery instances within minutes from the latest state or an earlier point in time; non-disruptive drills and **failback** to the primary site once the issue is resolved. AWS describes RPOs of seconds and RTOs of minutes. DRS replaces CloudEndure Disaster Recovery (the CloudEndure Disaster Recovery page now redirects to the AWS DRS page).",
+    notHere: "ShopViet is moving the old warehouse VMs to EC2 for good with a lift-and-shift; it does not need a standby site or failback. DRS can be used to move servers to AWS, but AWS presents MGN as the recommended service for migrations.",
+    instead: "**AWS Application Migration Service (MGN)**, now named AWS Transform MGN: install the Replication Agent, replicate, launch test instances, then cut over (Storage Gateway, Snow, DataSync, DMS lesson, part 3)." },
+  { name: "AWS Backup (restoring to clone data)",
+    use: "Centralized data protection: backup plans (frequency, retention), backup vaults, cross-Region and cross-account copies, Vault Lock for compliance.",
+    notHere: "The analytics team frequently needs EBS copies of production for a test environment, with full I/O performance as soon as they are attached. A restore from AWS Backup creates a new volume from a snapshot; that volume goes through volume initialization, so I/O latency is higher until every block has been downloaded.",
+    instead: "**EBS snapshot + fast snapshot restore** (enabled per snapshot and AZ pair): volumes are fully initialized at creation and deliver all of their provisioned performance (Storage lesson, part 2)." },
+  { name: "Application Migration Service (MGN) for DR",
+    use: "Lift-and-shift migration: continuous block-level replication, conversion of servers to run on AWS, test instances and a cutover window typically measured in minutes.",
+    notHere: "Keeping servers that still run at the warehouse recoverable over time (regular drills, recovery to a point in time, failback after an incident) is a DR problem, not a one-time migration.",
+    instead: "**AWS Elastic Disaster Recovery**: continuous replication into a low-cost staging area, recovery instances within minutes, failback to the primary site." },
+]} />
+
+<Takeaway>DR for on-premises servers with RPOs of seconds, RTOs of minutes and low standby cost: AWS Elastic Disaster Recovery (successor of CloudEndure Disaster Recovery). Moving servers to AWS for good: MGN. EBS clones for testing with full performance right away: snapshot + fast snapshot restore.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Sort the DR strategies" questions={["exam4_q41", "exam6_q23", "exam4_q32", "exam3_q38", "exam5_q64"]}>
 
 Sort each description into the matching DR strategy. On mobile devices: choose a card, then choose the target box.
 
@@ -162,6 +205,10 @@ Check your understanding: as the designer of the ShopViet system, which option f
     opts: ["Store the installer in S3", "Create an AMI with everything preinstalled and copy it to each Region", "Write user data that installs automatically"],
     a: 1,
     why: "An AMI with everything preinstalled lets an instance work right after launch. An AMI belongs to one Region, so it must be copied to each Region. User data still needs 45 minutes to install." },
+  { q: "Several times a week, the test team needs EBS copies of production for a test environment, with full I/O performance as soon as they are attached and no impact on production data. Which option fits?",
+    opts: ["Restore a recovery point from AWS Backup", "EBS snapshots with fast snapshot restore, creating new volumes from them", "Attach the production volume to the test instances with Multi-Attach"],
+    a: 1,
+    why: "Volumes created from a snapshot with fast snapshot restore enabled are fully initialized at creation. A restore from AWS Backup also creates a volume from a snapshot but has to go through volume initialization. Sharing the production volume lets the test environment write to production data." },
 ]} />
 
 </Scene>

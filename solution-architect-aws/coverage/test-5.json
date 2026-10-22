@@ -14,7 +14,7 @@
           "keyword": "Auto Scaling group health check type (EC2 vs ELB)",
           "lesson": "asg",
           "status": "covered",
-          "where": "asg.mdx#s4 / elb.mdx#s4 HealthCheckSim"
+          "where": "asg.mdx#health / HealthReplaceSim; asg.mdx#s4; elb.mdx#s4"
         },
         {
           "keyword": "ALB health check",
@@ -43,6 +43,12 @@
           "lesson": "global-infra",
           "status": "covered",
           "where": "global-infra.mdx#s6 / CostPatterns"
+        },
+        {
+          "keyword": "Direct Connect data transfer out priced lower than internet data transfer out",
+          "lesson": "global-infra",
+          "status": "covered",
+          "where": "global-infra.mdx#s6 / CostPatterns + Takeaway"
         }
       ]
     },
@@ -70,7 +76,7 @@
           "keyword": "Aurora failover (replica promotion, no standby instance)",
           "lesson": "rds",
           "status": "covered",
-          "where": "rds.mdx#s3 / AuroraSim"
+          "where": "rds.mdx#s3 / AuroraSim + Takeaway; rds.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "Lambda concurrency",
@@ -105,14 +111,14 @@
         {
           "keyword": "NLB IP target type (on-premises targets)",
           "lesson": "elb",
-          "status": "partial",
-          "where": "elb.mdx#s1, elb.mdx#s4 / HealthCheckSim"
+          "status": "covered",
+          "where": "elb.mdx#s1 / LbTypeSim"
         },
         {
           "keyword": "AWS PrivateLink (TCP only)",
           "lesson": "vpc",
-          "status": "partial",
-          "where": "vpc.mdx#s4 / EndpointSim"
+          "status": "covered",
+          "where": "vpc.mdx#compare / QuickCompare (current docs: TCP or UDP; ruled out because it serves VPC-endpoint consumers, not internet users)"
         },
         {
           "keyword": "Application Load Balancer (HTTP/HTTPS only)",
@@ -198,6 +204,12 @@
           "lesson": "analytics",
           "status": "covered",
           "where": "analytics.mdx#s3"
+        },
+        {
+          "keyword": "DynamoDB (no full-text search)",
+          "lesson": "dynamodb",
+          "status": "covered",
+          "where": "analytics.mdx#s3 / DataJobSim; kinesis.mdx#s3 / StreamPipelineSim"
         }
       ]
     },
@@ -240,8 +252,8 @@
         {
           "keyword": "Lambda@Edge",
           "lesson": "cloudfront",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "cloudfront.mdx#s6 / QuickCompare"
         }
       ]
     },
@@ -262,13 +274,13 @@
         {
           "keyword": "AWS DMS ongoing replication (CDC)",
           "lesson": "storage-migration",
-          "status": "partial",
-          "where": "storage-migration.mdx#s3"
+          "status": "covered",
+          "where": "storage-migration.mdx#s3 / StepSim (DMS Serverless full load + CDC)"
         },
         {
           "keyword": "AWS Glue ETL (not CDC)",
           "lesson": "analytics",
-          "status": "partial",
+          "status": "covered",
           "where": "analytics.mdx#s3 / DataJobSim"
         }
       ]
@@ -298,6 +310,12 @@
           "lesson": "vpc",
           "status": "covered",
           "where": "vpc.mdx#s6 / HybridLinkSim"
+        },
+        {
+          "keyword": "AWS PrivateLink unidirectional (consumer-initiated connections only)",
+          "lesson": "vpc",
+          "status": "covered",
+          "where": "vpc.mdx#s4 / RequirementPicker + Takeaway"
         }
       ]
     },
@@ -323,14 +341,14 @@
         {
           "keyword": "AWS Client VPN",
           "lesson": "vpc",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "vpc.mdx#compare / QuickCompare"
         },
         {
           "keyword": "Bastion host",
           "lesson": "vpc",
-          "status": "partial",
-          "where": "vpc.mdx#confuse / VpcMythsSim; ec2.mdx#s3 / Ec2NetSim"
+          "status": "covered",
+          "where": "vpc.mdx#compare / QuickCompare"
         },
         {
           "keyword": "Security group and network ACL",
@@ -440,8 +458,8 @@
         {
           "keyword": "AWS Security Hub",
           "lesson": "security",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "security.mdx#s3 / QuickCompare"
         }
       ]
     },
@@ -496,14 +514,14 @@
         {
           "keyword": "CloudFront origin access control (OAC) for uploads (write)",
           "lesson": "cloudfront",
-          "status": "partial",
-          "where": "cloudfront.mdx#s1"
+          "status": "covered",
+          "where": "cloudfront.mdx#s5 / TieredPathSim"
         },
         {
           "keyword": "S3 static website endpoint (GET/HEAD only)",
           "lesson": "s3",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "s3.mdx#s6 / WebsiteEndpointSim"
         },
         {
           "keyword": "CloudFront signed URL",
@@ -514,8 +532,14 @@
         {
           "keyword": "CloudFront origin request policy",
           "lesson": "cloudfront",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "cloudfront.mdx#s5 / TieredPathSim; cloudfront.mdx#s6 / QuickCompare"
+        },
+        {
+          "keyword": "S3 Object Ownership",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s3; cloudfront.mdx#s6 QuickCompare"
         }
       ]
     },
@@ -537,7 +561,7 @@
           "keyword": "AWS Backup Vault Lock",
           "lesson": "backup-dr",
           "status": "covered",
-          "where": "backup-dr.mdx#s3 / BackupPlanSim"
+          "where": "backup-dr.mdx#s3 (Vault Lock scope paragraph, link to storage.mdx#s2 Recycle Bin)"
         },
         {
           "keyword": "EBS snapshot",
@@ -566,8 +590,8 @@
         {
           "keyword": "IAM Access Advisor (last accessed information)",
           "lesson": "iam",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "iam.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "AWS Config",
@@ -691,8 +715,8 @@
         {
           "keyword": "CloudFront for uploads (PUT/POST to S3 origin)",
           "lesson": "cloudfront",
-          "status": "partial",
-          "where": "global-infra.mdx#confuse; s3.mdx#s5"
+          "status": "covered",
+          "where": "cloudfront.mdx#s5 / TieredPathSim"
         },
         {
           "keyword": "Amazon EFS (not serverless storage for remote offices)",
@@ -747,8 +771,8 @@
         {
           "keyword": "IAM Access Analyzer for S3 (not an event source)",
           "lesson": "iam",
-          "status": "partial",
-          "where": "iam.mdx#s4 / OrgGuardSim"
+          "status": "covered",
+          "where": "iam.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "AWS Glue (batch ETL)",
@@ -785,7 +809,7 @@
           "keyword": "S3 Access Points",
           "lesson": "s3",
           "status": "covered",
-          "where": "s3.mdx#s3"
+          "where": "s3.mdx#s3 / RequirementPicker (access point does not change the network path; Internet vs VPC network origin; VPC endpoint needed)"
         },
         {
           "keyword": "NAT gateway",
@@ -830,6 +854,12 @@
           "lesson": "asg",
           "status": "covered",
           "where": "asg.mdx#s1 / ScalingPolicySim"
+        },
+        {
+          "keyword": "SQS is poll-based (no notifications to drive scaling)",
+          "lesson": "messaging",
+          "status": "covered",
+          "where": "messaging.mdx#s1"
         }
       ]
     },
@@ -884,8 +914,8 @@
         {
           "keyword": "Mountpoint for Amazon S3",
           "lesson": "storage",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "storage.mdx#s5 / MountpointSim, RequirementPicker"
         },
         {
           "keyword": "Amazon FSx for Lustre",
@@ -935,8 +965,8 @@
         {
           "keyword": "CloudFront for uncacheable dynamic API responses",
           "lesson": "cloudfront",
-          "status": "partial",
-          "where": "global-infra.mdx#s5 / EdgeChoiceSim; cloudfront.mdx#s2"
+          "status": "covered",
+          "where": "cloudfront.mdx#s5 / TieredPathSim; cloudfront.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "Route 53 latency-based routing",
@@ -962,14 +992,14 @@
         {
           "keyword": "EC2 Instance Connect Endpoint",
           "lesson": "ec2",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "ec2.mdx#s3 / Ec2NetSim"
         },
         {
           "keyword": "Systems Manager Session Manager",
           "lesson": "monitoring",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "monitoring.mdx#s6 / QuickCompare"
         }
       ]
     },
@@ -1010,8 +1040,8 @@
         {
           "keyword": "Amazon Transcribe / Amazon Translate (wrong tool)",
           "lesson": "others",
-          "status": "partial",
-          "where": "others.mdx#s3 / AiPipelineSim"
+          "status": "covered",
+          "where": "others.mdx#s3, #s5 / QuickCompare, AiPipelineSim"
         }
       ]
     },
@@ -1034,8 +1064,8 @@
         {
           "keyword": "Auto Scaling instance scale-in protection",
           "lesson": "asg",
-          "status": "partial",
-          "where": "monitoring.mdx#s2 / AlarmActionSim"
+          "status": "covered",
+          "where": "asg.mdx#s3 / TerminationSim"
         }
       ]
     },
@@ -1115,8 +1145,8 @@
         {
           "keyword": "Auto Scaling group with launch template",
           "lesson": "asg",
-          "status": "partial",
-          "where": "asg.mdx#s3 / TerminationSim"
+          "status": "covered",
+          "where": "asg.mdx#setup / GroupSetupSim"
         },
         {
           "keyword": "Amazon Machine Image (AMI)",
@@ -1133,8 +1163,8 @@
         {
           "keyword": "ECS on Fargate (single task does not scale)",
           "lesson": "containers",
-          "status": "partial",
-          "where": "containers.mdx#s1"
+          "status": "covered",
+          "where": "containers.mdx#s3 / ScaleLayersSim"
         }
       ]
     },
@@ -1164,7 +1194,7 @@
           "keyword": "DynamoDB (not in-memory cache)",
           "lesson": "dynamodb",
           "status": "covered",
-          "where": "dynamodb.mdx#s1"
+          "where": "dynamodb.mdx#s2"
         }
       ]
     },
@@ -1217,8 +1247,8 @@
         {
           "keyword": "S3 access control list (ACL)",
           "lesson": "s3",
-          "status": "partial",
-          "where": "s3.mdx#s3"
+          "status": "covered",
+          "where": "s3.mdx#s2 / s3.mdx#s7 / QuickCompare"
         }
       ]
     },
@@ -1289,14 +1319,14 @@
         {
           "keyword": "Aurora database cloning (Aurora only)",
           "lesson": "rds",
-          "status": "partial",
-          "where": "rds.mdx#s3"
+          "status": "covered",
+          "where": "rds.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "RDS Provisioned IOPS storage",
           "lesson": "rds",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "rds.mdx#s6 / QuickCompare"
         }
       ]
     },
@@ -1313,7 +1343,7 @@
           "keyword": "EC2 instance store",
           "lesson": "ec2",
           "status": "covered",
-          "where": "ec2.mdx#s4 / Ec2OpsSim"
+          "where": "ec2.mdx#s6; ec2.mdx#s4 / Ec2OpsSim"
         },
         {
           "keyword": "EBS volume types (gp2, io1, st1)",
@@ -1369,13 +1399,13 @@
           "keyword": "AWS WAF IP set statement",
           "lesson": "security",
           "status": "covered",
-          "where": "security.mdx#s1 / WafSim"
+          "where": "security.mdx#s1 / WafSim (partner IP set Allow, priority 0) + prose + Takeaway"
         },
         {
           "keyword": "Network ACL (no geo blocking)",
           "lesson": "vpc",
-          "status": "partial",
-          "where": "vpc.mdx#s1 / PacketPath"
+          "status": "covered",
+          "where": "vpc.mdx#compare / QuickCompare"
         },
         {
           "keyword": "AWS WAF on ALB",
@@ -1408,8 +1438,8 @@
         {
           "keyword": "Client-side encryption",
           "lesson": "kms",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "kms.mdx#s4 / QuickCompare"
         }
       ]
     },
@@ -1438,19 +1468,19 @@
           "keyword": "Amazon FSx for Lustre",
           "lesson": "storage",
           "status": "covered",
-          "where": "storage.mdx#s4 / FsxSim"
+          "where": "storage.mdx#s4 / RequirementPicker (every Lustre deployment type takes one subnet, file server in one AZ; vs EFS Regional / FSx Windows, ONTAP, OpenZFS Multi-AZ)"
         },
         {
           "keyword": "Amazon FSx for NetApp ONTAP (SnapMirror cross-Region)",
           "lesson": "storage",
-          "status": "partial",
-          "where": "storage.mdx#s4 / FsxSim"
+          "status": "covered",
+          "where": "storage.mdx#s4 / FsxSim, RequirementPicker"
         },
         {
           "keyword": "Mountpoint for Amazon S3 (not POSIX)",
           "lesson": "storage",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "storage.mdx#s5 / MountpointSim"
         }
       ]
     },
@@ -1504,8 +1534,8 @@
         {
           "keyword": "S3 on Outposts",
           "lesson": "s3",
-          "status": "partial",
-          "where": "global-infra.mdx#deep"
+          "status": "covered",
+          "where": "s3.mdx#s7 / QuickCompare"
         }
       ]
     },
@@ -1580,8 +1610,8 @@
         {
           "keyword": "EC2 instance store (highest I/O performance)",
           "lesson": "ec2",
-          "status": "partial",
-          "where": "ec2.mdx#s4 / Ec2OpsSim"
+          "status": "covered",
+          "where": "ec2.mdx#s6; ec2.mdx#challenge / Quiz"
         },
         {
           "keyword": "S3 Standard",
@@ -1650,8 +1680,8 @@
         {
           "keyword": "Amazon FSx for NetApp ONTAP volume tiering",
           "lesson": "storage",
-          "status": "partial",
-          "where": "storage.mdx#s4 / FsxSim"
+          "status": "covered",
+          "where": "storage.mdx#s4 / RequirementPicker"
         },
         {
           "keyword": "Amazon FSx for Lustre (HPC)",
@@ -1725,8 +1755,8 @@
         {
           "keyword": "S3 static website hosting (error page)",
           "lesson": "s3",
-          "status": "partial",
-          "where": "route53.mdx#s3 / RoutingPolicySim"
+          "status": "covered",
+          "where": "s3.mdx#s6 / StepSim"
         }
       ]
     },
@@ -1776,8 +1806,8 @@
         {
           "keyword": "Amazon Managed Service for Apache Flink (Kinesis Data Analytics)",
           "lesson": "kinesis",
-          "status": "partial",
-          "where": "kinesis.mdx#s3 / StreamPipelineSim"
+          "status": "covered",
+          "where": "kinesis.mdx#s3 / StreamPipelineSim; kinesis.mdx#s4 / QuickCompare"
         }
       ]
     },
@@ -1809,8 +1839,8 @@
         {
           "keyword": "Amazon Neptune",
           "lesson": "analytics",
-          "status": "partial",
-          "where": "analytics.mdx#s3 / DataJobSim"
+          "status": "covered",
+          "where": "analytics.mdx#s3 / DataJobSim; analytics.mdx#s6 / QuickCompare"
         }
       ]
     },
@@ -1866,8 +1896,8 @@
         {
           "keyword": "Auto Scaling group cannot span Regions",
           "lesson": "asg",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "asg.mdx#setup / GroupSetupSim"
         }
       ]
     },
@@ -1897,20 +1927,20 @@
         {
           "keyword": "Transfer Family VPC endpoint with Elastic IP and security group",
           "lesson": "storage-migration",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "storage-migration.mdx#s4 / SftpExchangeSim"
         },
         {
           "keyword": "Transfer Family POSIX identity mapping",
           "lesson": "storage-migration",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "storage-migration.mdx#s4 / SftpExchangeSim"
         },
         {
           "keyword": "AWS WAF is HTTP(S) only (not SFTP)",
           "lesson": "security",
-          "status": "partial",
-          "where": "security.mdx#s1 / WafSim"
+          "status": "covered",
+          "where": "security.mdx#s1 / Takeaway; security.mdx#s3 / QuickCompare"
         }
       ]
     },
@@ -1937,8 +1967,8 @@
         {
           "keyword": "Subnet route table association (main route table, one table per subnet)",
           "lesson": "vpc",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "vpc.mdx#addr / RouteAssocSim"
         }
       ]
     },
@@ -1971,8 +2001,8 @@
         {
           "keyword": "AWS Backup (not for fast cloning)",
           "lesson": "backup-dr",
-          "status": "partial",
-          "where": "backup-dr.mdx#s3 / BackupPlanSim"
+          "status": "covered",
+          "where": "backup-dr.mdx#s3 / backup-dr.mdx#s5 QuickCompare"
         }
       ]
     },

@@ -1,8 +1,8 @@
 ---
 title: "Kinesis + MSK: xử lý luồng dữ liệu liên tục"
 lede: "Mỗi giây, hệ thống ShopViet phát sinh hàng nghìn sự kiện click, lượt xem, giao dịch và vị trí shipper. Bài học trình bày cách đưa luồng dữ liệu này vào Kinesis để nhiều ứng dụng cùng đọc theo đúng thứ tự, duy trì thông lượng của stream khi tải tăng đột biến, và kết nối stream tới các dịch vụ phân tích, tìm kiếm và lưu trữ."
-minutes: 20
-scenes: 3
+minutes: 24
+scenes: 4
 prerequisites: ["messaging", "lambda"]
 docs:
   - title: "What is Amazon Kinesis Data Streams?"
@@ -39,6 +39,18 @@ docs:
     url: "https://docs.aws.amazon.com/dms/latest/userguide/CHAP_Target.Kinesis.html"
   - title: "What is Amazon Quick?"
     url: "https://docs.aws.amazon.com/quicksight/latest/user/welcome.html"
+  - title: "Analyzing call center audio with Call Analytics (Amazon Transcribe)"
+    url: "https://docs.aws.amazon.com/transcribe/latest/dg/call-analytics.html"
+  - title: "What is Amazon Athena?"
+    url: "https://docs.aws.amazon.com/athena/latest/ug/what-is.html"
+  - title: "Configure destination settings (Amazon Data Firehose)"
+    url: "https://docs.aws.amazon.com/firehose/latest/dev/create-destination.html"
+  - title: "KCL concepts (worker, lease, record processor)"
+    url: "https://docs.aws.amazon.com/streams/latest/dev/kcl-concepts.html"
+  - title: "Using the message group ID with Amazon SQS FIFO queues"
+    url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagegroupid-property.html"
+  - title: "Interleaving multiple ordered message groups in Amazon SQS"
+    url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/interleaving-multiple-ordered-message-groups.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -48,17 +60,19 @@ import ShardThroughputSim from "../../components/scenes/kinesis/ShardThroughputS
 import StreamPipelineSim from "../../components/scenes/kinesis/StreamPipelineSim.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 
 <Story toc={[
   { href: "#s1", label: "1 · Queue và stream" },
   { href: "#s2", label: "2 · Xử lý giới hạn thông lượng" },
   { href: "#s3", label: "3 · Kết nối stream tới phân tích" },
+  { href: "#s4", label: "4 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
 Bài Messaging sử dụng SQS để phân phối **tác vụ** cho worker: mỗi đơn hàng chỉ cần một worker xử lý. Dữ liệu click và giao dịch của ShopViet có yêu cầu khác: bảng xếp hạng, gợi ý sản phẩm và phát hiện gian lận đều cần đọc **cùng một luồng sự kiện**, đúng thứ tự, với độ trễ gần như tức thời. Đây là phạm vi của **stream**.
 </Story>
 
-<Scene id="s1" label="Phần 1/3" title="So sánh queue và stream" questions={["exam3_q10", "exam3_q46", "exam1_q60"]}>
+<Scene id="s1" label="Phần 1/4" title="So sánh queue và stream" questions={["exam3_q10", "exam3_q46", "exam1_q60", "exam2_q42"]}>
 
 Ba ứng dụng của ShopViet đều cần nhận toàn bộ sự kiện mua hàng. Mô phỏng dưới đây gửi 6 sự kiện của ba người dùng (A, B, C) lần lượt vào SQS và Kinesis Data Streams để so sánh dữ liệu mà mỗi ứng dụng nhận được:
 
@@ -69,12 +83,15 @@ Các đặc điểm của **Kinesis Data Streams** thể hiện trong mô phỏn
 - Stream được chia thành các **shard**. Producer gửi mỗi record kèm một **partition key**; Kinesis băm key bằng MD5 để xác định shard. Các record cùng key được ghi vào cùng một shard, do đó các sự kiện của một người dùng luôn giữ đúng thứ tự.
 - Record **không bị xoá** sau khi được đọc. Mỗi ứng dụng (consumer) tự quản lý vị trí đọc. Record được lưu giữ mặc định 24 giờ, có thể tăng tới 365 ngày (tính phí bổ sung khi vượt 24 giờ), do đó ứng dụng gặp lỗi có thể đọc lại dữ liệu.
 - Consumer có thể là ứng dụng tự phát triển hoặc **Lambda**: event source mapping của Lambda tự động poll từng shard, đọc record theo batch và gọi function với từng batch. Bảng xếp hạng của chương trình khuyến mãi ShopViet chỉ cần kiến trúc Kinesis → Lambda → DynamoDB, không cần quản lý máy chủ.
+- **Số consumer xử lý song song bị giới hạn bởi số shard.** Với Kinesis Client Library (KCL), mỗi shard tại một thời điểm chỉ gắn với **một worker** thông qua một *lease* (một worker có thể giữ nhiều lease); thêm worker nhiều hơn số shard không làm tăng độ song song. Với Lambda, event source mapping xử lý record của mỗi shard theo thứ tự; thiết lập `ParallelizationFactor` (từ 1 mặc định tới 10) cho phép tối đa 10 batch đồng thời trên mỗi shard, và Lambda vẫn giữ thứ tự ở cấp partition key. Để xử lý nhanh hơn, cần thêm shard.
 
-<Takeaway>Phân phối tác vụ, mỗi tác vụ do một worker xử lý: SQS. Nhiều ứng dụng cùng đọc một luồng dữ liệu, đúng thứ tự theo key, có khả năng đọc lại: Kinesis Data Streams. Partition key xác định shard; thứ tự chỉ được đảm bảo trong phạm vi một shard.</Takeaway>
+ShopViet giám sát 5.000 máy POS tại các cửa hàng, mỗi máy gửi dữ liệu mỗi phút. Dữ liệu của từng máy phải được xử lý theo thứ tự, độc lập với máy khác, và số consumer cần mở rộng tới xấp xỉ số máy. Kinesis với partition key là mã máy giữ đúng thứ tự, nhưng số consumer song song chỉ bằng số shard (ít hơn nhiều so với 5.000 máy). **SQS FIFO** với **message group ID** là mã máy phù hợp hơn: các message cùng group luôn được xử lý lần lượt, đúng thứ tự, không có hai message cùng group được xử lý đồng thời; các group khác nhau được nhiều consumer đọc cùng lúc, nên độ song song tăng theo số group. Nếu mọi message dùng chung một group ID, toàn bộ queue chỉ được xử lý tuần tự; SQS standard không đảm bảo thứ tự.
+
+<Takeaway>Phân phối tác vụ, mỗi tác vụ do một worker xử lý: SQS. Nhiều ứng dụng cùng đọc một luồng dữ liệu, đúng thứ tự theo key, có khả năng đọc lại: Kinesis Data Streams. Partition key xác định shard; thứ tự chỉ được đảm bảo trong phạm vi một shard, và số consumer song song bị giới hạn bởi số shard. Thứ tự riêng cho từng thiết bị với số consumer tăng theo số thiết bị: SQS FIFO, message group ID là mã thiết bị.</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/3" title="Xử lý khi stream vượt giới hạn thông lượng" questions={["exam5_q53", "exam6_q31", "exam5_q38"]}>
+<Scene id="s2" label="Phần 2/4" title="Xử lý khi stream vượt giới hạn thông lượng" questions={["exam5_q53", "exam6_q31", "exam5_q38"]}>
 
 Mỗi shard có giới hạn thông lượng: ghi **1.000 record hoặc 1 MB mỗi giây**, đọc **2 MB mỗi giây** (tổng cho mọi consumer dùng `GetRecords`). Mô phỏng dưới đây trình bày ba sự cố ShopViet đã gặp và giải pháp tương ứng. Chạy mô phỏng trong 10 giây, sau đó bật cấu hình khắc phục:
 
@@ -86,7 +103,7 @@ Stream có hai loại **capacity mode**. **Provisioned**: người vận hành t
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/3" title="Kết nối stream tới phân tích, tìm kiếm và lưu trữ" questions={["exam4_q22", "exam1_q57", "exam5_q6", "exam4_q27", "exam5_q35", "exam6_q35", "exam6_q31"]}>
+<Scene id="s3" label="Phần 3/4" title="Kết nối stream tới phân tích, tìm kiếm và lưu trữ" questions={["exam4_q22", "exam1_q57", "exam5_q6", "exam4_q27", "exam5_q35", "exam6_q35", "exam6_q31", "exam1_q33"]}>
 
 Kinesis Data Streams đóng vai trò kênh truyền dữ liệu: phía trước là nguồn dữ liệu, phía sau là các dịch vụ phân tích, tìm kiếm và lưu trữ. Với mỗi yêu cầu của ShopViet, chọn dịch vụ cho từng bước và chạy mô phỏng:
 
@@ -94,12 +111,37 @@ Kinesis Data Streams đóng vai trò kênh truyền dữ liệu: phía trước 
 
 Hai dịch vụ thường bị nhầm lẫn với Data Streams:
 
-- **Amazon Data Firehose** (tên cũ Amazon Kinesis Data Firehose): **phân phối dữ liệu tới đích** như S3, Redshift, OpenSearch, Splunk hoặc HTTP endpoint, có thể chuyển đổi dữ liệu trước khi phân phối. Không cần phát triển consumer; API của Firehose chỉ có thao tác ghi (`PutRecord`, `PutRecordBatch`), không có thao tác để ứng dụng đọc hay đọc lại dữ liệu.
+- **Amazon Data Firehose** (tên cũ Amazon Kinesis Data Firehose): **phân phối dữ liệu tới đích**, có thể chuyển đổi dữ liệu trước khi phân phối. Các đích được tài liệu liệt kê: Amazon S3, Apache Iceberg Tables, Amazon Redshift, Amazon OpenSearch Service, Amazon OpenSearch Serverless, Snowflake, Splunk, Splunk Observability Cloud, HTTP endpoint tuỳ chỉnh và HTTP endpoint của các nhà cung cấp bên thứ ba được hỗ trợ (Datadog, Dynatrace, New Relic, MongoDB Atlas, Sumo Logic, Elastic và một số nhà cung cấp khác). **DynamoDB không phải là đích của Firehose**: để ghi dữ liệu cảm biến vào bảng DynamoDB mà không phải tự cấp phát capacity, dùng SQS với Lambda đọc theo batch và ghi vào bảng. Không cần phát triển consumer; API của Firehose chỉ có thao tác ghi (`PutRecord`, `PutRecordBatch`), không có thao tác để ứng dụng đọc hay đọc lại dữ liệu.
 - **Amazon Managed Service for Apache Flink** (tên cũ Amazon Kinesis Data Analytics for Apache Flink): xử lý stream **liên tục** bằng Java, Scala, Python hoặc SQL, ví dụ đếm số click theo từng phút; **Managed Service for Apache Flink Studio** cho phép truy vấn stream tương tác bằng SQL. Dịch vụ riêng **Kinesis Data Analytics for SQL Applications** đã ngừng: từ 15/10/2025 không tạo được ứng dụng mới, từ 27/01/2026 ứng dụng bị xoá; AWS khuyến nghị chuyển sang Managed Service for Apache Flink hoặc Flink Studio.
 
 Với các ứng dụng đã được phát triển cho **Apache Kafka**, sử dụng **Amazon MSK**: dịch vụ Kafka được quản lý hoàn toàn, ứng dụng tiếp tục dùng Kafka API. Với MSK Serverless, MSK quản lý broker và capacity của cluster.
 
-<Takeaway>Phân tích stream liên tục, kể cả bằng SQL: Amazon Managed Service for Apache Flink (Kinesis Data Analytics for SQL Applications đã ngừng). Lưu stream vào S3 không cần viết mã: Firehose. Tìm kiếm full-text: OpenSearch Service; dashboard: Amazon Quick Sight (trước đây là Amazon QuickSight). Chuyển dữ liệu từ S3 vào stream: AWS DMS (full load file hiện có; thay đổi mới phải ở dạng file CDC theo định dạng của DMS). Tác vụ dài hơn 15 phút: Fargate thay cho Lambda. Hệ thống đã sử dụng Kafka: Amazon MSK.</Takeaway>
+<Takeaway>Phân tích stream liên tục, kể cả bằng SQL: Amazon Managed Service for Apache Flink (Kinesis Data Analytics for SQL Applications đã ngừng). Lưu stream vào S3 không cần viết mã: Firehose (không có đích DynamoDB). Tìm kiếm full-text: OpenSearch Service; dashboard: Amazon Quick Sight (trước đây là Amazon QuickSight). Chuyển dữ liệu từ S3 vào stream: AWS DMS (full load file hiện có; thay đổi mới phải ở dạng file CDC theo định dạng của DMS). Tác vụ dài hơn 15 phút: Fargate thay cho Lambda. Hệ thống đã sử dụng Kafka: Amazon MSK.</Takeaway>
+
+</Scene>
+
+<Scene id="s4" label="Phần 4/4" title="Phân biệt nhanh: khi dữ liệu không phải là một luồng" questions={["exam5_q58"]}>
+
+Bộ phận chăm sóc khách hàng của ShopViet lưu tệp ghi âm cuộc gọi trên S3 và muốn tự động phân tích cảm xúc của khách hàng, sau đó để analyst chạy **truy vấn SQL tuỳ ý (ad-hoc)** trên kết quả. Dữ liệu ở đây là các **tệp âm thanh đã lưu**, không phải luồng sự kiện liên tục, nên các dịch vụ stream trong bài này không phải lựa chọn chính. Chọn từng mục để xem phạm vi sử dụng và phương án phù hợp.
+
+<QuickCompare client:visible items={[
+  { name: "Amazon Managed Service for Apache Flink",
+    use: "Xử lý và phân tích **dữ liệu streaming** bằng Java, Scala, Python hoặc SQL: phân tích chuỗi thời gian, cấp dữ liệu cho dashboard thời gian thực, tính metric. Phù hợp với ứng dụng chạy lâu dài như streaming ETL. Tên cũ: Amazon Kinesis Data Analytics for Apache Flink.",
+    notHere: "Flink không chuyển giọng nói thành văn bản. Ứng dụng Flink chạy liên tục trên luồng dữ liệu; yêu cầu ở đây là analyst chạy từng câu SQL tuỳ ý trên bản ghi văn bản đã lưu.",
+    instead: "Amazon Transcribe chuyển ghi âm thành văn bản; **Call Analytics** của Transcribe được thiết kế cho âm thanh tổng đài và cung cấp sẵn sentiment analysis. Kết quả lưu trên S3, analyst truy vấn bằng **Amazon Athena**: SQL chuẩn trực tiếp trên S3, serverless, trả phí theo truy vấn." },
+  { name: "Managed Service for Apache Flink Studio",
+    use: "Notebook truy vấn **tương tác** trên data stream theo thời gian thực bằng SQL, Python hoặc Scala; phù hợp để khám phá dữ liệu ad-hoc trên stream hoặc tạo dashboard thời gian thực riêng.",
+    notHere: "Studio truy vấn dữ liệu đang chảy trong stream. Tệp ghi âm trên S3 cần được chuyển thành văn bản trước, và truy vấn tuỳ ý trên tệp đã lưu không đòi hỏi một stream.",
+    instead: "Transcribe (Call Analytics) → bản ghi văn bản trên S3 → Athena." },
+  { name: "Kinesis Data Streams",
+    use: "Tiếp nhận luồng record liên tục, lưu giữ 24 giờ tới 365 ngày, cho phép nhiều ứng dụng cùng đọc theo thứ tự trong từng shard (Phần 1).",
+    notHere: "Data Streams chỉ vận chuyển và lưu giữ record; không chuyển giọng nói thành văn bản và không chạy truy vấn SQL. Đặt stream trước các tệp đã nằm trên S3 chỉ thêm một bước không cần thiết.",
+    instead: "Transcribe đọc tệp trực tiếp từ S3 (post-call analytics); Athena truy vấn kết quả." },
+]} />
+
+Luồng xử lý Transcribe → S3 → Athena được mô phỏng trong [bài Analytics, Phần 3](/concepts/analytics/#s3).
+
+<Takeaway>Phân tích luồng dữ liệu liên tục: Managed Service for Apache Flink (Studio cho truy vấn tương tác trên stream). Tệp ghi âm cuộc gọi cần phân tích cảm xúc và truy vấn SQL tuỳ ý: Amazon Transcribe (Call Analytics) chuyển thành văn bản trên S3, Amazon Athena chạy SQL. Kinesis không chuyển giọng nói thành văn bản.</Takeaway>
 
 </Scene>
 
@@ -139,6 +181,10 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Data Streams → Managed Service for Apache Flink → Firehose → S3", "Data Streams → Quick Sight → S3", "Firehose → S3 → Athena mỗi giờ"],
     a: 0,
     why: "Managed Service for Apache Flink (tên cũ Kinesis Data Analytics for Apache Flink) xử lý stream liên tục, hỗ trợ SQL; Firehose phân phối kết quả vào S3." },
+  { q: "Tệp ghi âm cuộc gọi chăm sóc khách hàng được lưu trên S3; cần phân tích cảm xúc khách hàng và cho analyst chạy SQL tuỳ ý trên kết quả. Kiến trúc nào phù hợp?",
+    opts: ["Kinesis Data Streams → Managed Service for Apache Flink", "Amazon Transcribe → S3 → Amazon Athena", "Kinesis Data Streams → Amazon Data Firehose → S3"],
+    a: 1,
+    why: "Transcribe (Call Analytics) chuyển ghi âm thành văn bản và cung cấp sentiment analysis; Athena chạy SQL tuỳ ý trực tiếp trên S3. Kinesis và Flink xử lý luồng dữ liệu, không chuyển giọng nói thành văn bản." },
 ]} />
 
 </Scene>

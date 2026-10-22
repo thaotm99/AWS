@@ -1,8 +1,8 @@
 ---
 title: "Containers: Amazon ECS, Amazon EKS and AWS Fargate"
-lede: "ShopViet packages its services as containers. This lesson covers how to choose a runtime environment (EC2 launch type or Fargate, ECS or EKS) and solves five practical requirements: image storage shared between tasks, scheduled jobs, jobs that exceed Lambda's time limit, separate permissions for each Pod, and Pods left pending because the cluster is out of resources."
-minutes: 15
-scenes: 2
+lede: "ShopViet packages its services as containers. This lesson covers how to choose a runtime environment (EC2 launch type or Fargate, ECS or EKS) and solves five practical requirements: image storage shared between tasks, scheduled jobs, jobs that exceed Lambda's time limit, separate permissions for each Pod, Pods left pending because the cluster is out of resources; then scaling in two layers (Pods/tasks and nodes) and where to run Kubernetes when data must stay in the data center."
+minutes: 27
+scenes: 5
 prerequisites: ["ec2", "asg"]
 docs:
   - title: "Amazon ECS launch types"
@@ -21,24 +21,60 @@ docs:
     url: "https://docs.aws.amazon.com/eks/latest/userguide/eks-outposts.html"
   - title: "Lambda quotas"
     url: "https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html"
+  - title: "Horizontal Pod Autoscaler (EKS)"
+    url: "https://docs.aws.amazon.com/eks/latest/userguide/horizontal-pod-autoscaler.html"
+  - title: "Scale cluster compute with Karpenter and Cluster Autoscaler"
+    url: "https://docs.aws.amazon.com/eks/latest/userguide/autoscaling.html"
+  - title: "Automatically scale your Amazon ECS service"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-auto-scaling.html"
+  - title: "Fargate task CPU and memory (task level)"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-tasks-services.html"
+  - title: "Updating an Amazon ECS task definition (revision)"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/update-task-definition-console-v2.html"
+  - title: "Amazon EKS deployment options (Region, Outposts, Hybrid Nodes, EKS Anywhere)"
+    url: "https://docs.aws.amazon.com/eks/latest/userguide/eks-deployment-options.html"
+  - title: "Amazon EKS Hybrid Nodes overview"
+    url: "https://docs.aws.amazon.com/eks/latest/userguide/hybrid-nodes-overview.html"
+  - title: "EKS Anywhere FAQ"
+    url: "https://anywhere.eks.amazonaws.com/docs/overview/faq/"
+  - title: "What is AWS Local Zones?"
+    url: "https://docs.aws.amazon.com/local-zones/latest/ug/what-is-aws-local-zones.html"
+  - title: "Grant Kubernetes workloads access to AWS (service accounts)"
+    url: "https://docs.aws.amazon.com/eks/latest/userguide/service-accounts.html"
+  - title: "EKS access entries (Kubernetes API permissions, RBAC)"
+    url: "https://docs.aws.amazon.com/eks/latest/userguide/access-entries.html"
+  - title: "Assign IAM roles to Kubernetes service accounts"
+    url: "https://docs.aws.amazon.com/eks/latest/userguide/associate-service-account-role.html"
+  - title: "AWS App Runner availability change"
+    url: "https://docs.aws.amazon.com/apprunner/latest/dg/apprunner-availability-change.html"
+  - title: "Amazon ECS Express Mode"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/express-service-overview.html"
+  - title: "Amazon S3 Event Notifications (destinations)"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/EventNotifications.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
 import Story from "../../components/lessons/global-infra/Story.astro";
 import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
 import ContainerJobSim from "../../components/scenes/containers/ContainerJobSim.tsx";
+import ScaleLayersSim from "../../components/scenes/containers/ScaleLayersSim.tsx";
+import EksPlacementSim from "../../components/scenes/containers/EksPlacementSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#en-s1", label: "1 · EC2 launch type and Fargate" },
   { href: "#en-s2", label: "2 · Five tasks that run in containers" },
+  { href: "#en-s3", label: "3 · Scaling in two layers" },
+  { href: "#en-s4", label: "4 · Kubernetes in the data center" },
+  { href: "#en-s5", label: "5 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
 The ShopViet team has packaged the web application, the workers and the reporting jobs as containers. The first decision: do containers run on servers the team manages itself, or does AWS manage the server layer? Next come the day-to-day operational requirements: file storage, scheduled runs, permissions, and scaling resources for the cluster.
 </Story>
 
-<Scene id="en-s1" label="Part 1/2" title="EC2 launch type and Fargate" questions={["exam1_q14", "exam4_q33", "exam3_q32", "exam2_q1"]}>
+<Scene id="en-s1" label="Part 1/5" title="EC2 launch type and Fargate" questions={["exam1_q14", "exam4_q33", "exam3_q32", "exam2_q1"]}>
 
 **Amazon ECS** and **Amazon EKS** both need compute infrastructure to run containers. There are two options: manage a group of EC2 instances yourself, or use **AWS Fargate** and declare only the vCPU and memory a task needs. Compare the scope of management responsibility and the billing basis:
 
@@ -66,7 +102,7 @@ The ShopViet team has packaged the web application, the workers and the reportin
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/2" title="Five ShopViet tasks that run in containers" questions={["exam3_q32", "exam2_q27", "exam6_q35", "exam1_q5", "exam4_q56", "exam3_q15", "exam1_q27", "exam2_q1"]}>
+<Scene id="en-s2" label="Part 2/5" title="Five ShopViet tasks that run in containers" questions={["exam3_q32", "exam2_q27", "exam6_q35", "exam1_q5", "exam4_q56", "exam3_q15", "exam1_q27", "exam2_q1"]}>
 
 Pick a task, try it with the simplest option, then turn on the option to apply the matching AWS feature:
 
@@ -75,10 +111,69 @@ Pick a task, try it with the simplest option, then turn on the option to apply t
 Some other ShopViet scenarios:
 
 - An existing worker talks to a message broker over **AMQP** and the team does not want to manage nodes: run the worker on **EKS with Fargate** and move the broker to **Amazon MQ** (a managed broker that supports AMQP).
-- A service on ECS is CPU-bound: turn on **Service Auto Scaling** (based on Application Auto Scaling) to increase the number of tasks based on the service's CPU and memory metrics.
-- A branch's data must be stored on premises, but Amazon EKS is still required: **Amazon EKS on AWS Outposts** placed in the company's data center (extended cluster: control plane in the Region, nodes on the Outpost; local cluster: both control plane and nodes on the Outpost). **EKS Anywhere** is another option that runs on infrastructure the company manages itself, intended for air-gapped environments.
+- A service on ECS is CPU-bound: turn on **Service Auto Scaling** (based on Application Auto Scaling) to increase the number of tasks based on the service's CPU and memory metrics (part 3).
 
-<Takeaway>Durable storage shared between tasks: EFS. Scheduled runs: EventBridge Scheduler starts a Fargate task. Jobs longer than Lambda's time limit (15 minutes for standard functions): containers on Fargate. Separate permissions for each Pod: IRSA. Pods pending because the cluster is out of resources: Cluster Autoscaler.</Takeaway>
+**IRSA and Kubernetes RBAC solve two different problems.** Kubernetes RBAC (granted through EKS access entries or Kubernetes groups) controls who can work with **Kubernetes objects** in the cluster, for example permission to use `kubectl` to view or change a Deployment. RBAC neither grants nor limits permission to call **AWS APIs** such as S3 or DynamoDB. If both the S3 and DynamoDB policies are attached to the node IAM role (instance profile), every Pod on the node has both permissions, whatever RBAC says. To let the UI Pods reach only DynamoDB and the data-processing Pods reach only S3, give each service **its own service account**, mapped to **its own IAM role** through IRSA (the `eks.amazonaws.com/role-arn` annotation goes on the service account; no policy is attached directly to a Pod) or through **EKS Pod Identity**. Sharing one service account across all Pods removes the permission boundary.
+
+<Takeaway>Durable storage shared between tasks: EFS. Scheduled runs: EventBridge Scheduler starts a Fargate task. Jobs longer than Lambda's time limit (15 minutes for standard functions): containers on Fargate. Separate AWS permissions for each Pod: one service account per service, mapped to its own IAM role (IRSA or EKS Pod Identity); Kubernetes RBAC controls only the Kubernetes API. Pods pending because the cluster is out of resources: Cluster Autoscaler.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 3/5" title="Scaling in two layers: Pods/tasks and nodes" questions={["exam4_q56", "exam5_q36", "exam3_q20"]}>
+
+During a sale, traffic to ShopViet's web service grows several times over. Scaling happens in two separate layers:
+
+- **The application layer** (number of Pods or tasks). On EKS, the **Horizontal Pod Autoscaler** (HPA) changes the number of Pods in a Deployment to keep CPU near a target (for example 50%). The HPA is a standard Kubernetes API resource; it only needs a metrics source such as the Kubernetes Metrics Server. On ECS, **Service Auto Scaling** changes the service's desired count (target tracking, step scaling, scheduled, predictive, or based on an SQS queue backlog).
+- **The infrastructure layer** (number of nodes). On EKS with EC2 nodes, the **Cluster Autoscaler** adjusts the Auto Scaling group's desired capacity when Pods cannot be scheduled; **Karpenter** and **EKS Auto Mode** (built on Karpenter) create new nodes when Pods do not fit on the existing ones. With Fargate this layer does not exist: each task or Pod gets its own capacity.
+
+Try each setup and watch the number of Pods, nodes and Pending Pods:
+
+<ScaleLayersSim client:visible />
+
+Two lessons from the simulation. First, the HPA only adds Pods; when nodes run out of CPU, new Pods stay Pending and the node count stays the same until a Cluster Autoscaler (or Karpenter) is in place. A CloudWatch alarm on the nodes' average CPU cannot see Pending Pods, so it does not replace the Cluster Autoscaler. Second, a Fargate task's CPU and memory are set at the task level in the task definition; changing them takes a new **task definition revision** and a service update. A single task remains a bottleneck with no redundancy; ECS scales horizontally by adding tasks behind an ALB.
+
+<Takeaway>HPA: adds Pods. Cluster Autoscaler / Karpenter: adds nodes when Pods are Pending. EKS with EC2 nodes needs both. ECS: Service Auto Scaling adds tasks; you do not scale by resizing one running task.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s4" label="Part 4/5" title="Kubernetes in the company's data center" questions={["exam1_q27", "exam1_q11"]}>
+
+Amazon EKS has several deployment options outside a Region. They differ in **where the control plane runs**, **who manages it**, and **what infrastructure runs the nodes**:
+
+- **EKS on AWS Outposts**: Outposts is AWS-managed infrastructure placed in the company's data center. *Extended cluster*: control plane in the Region, nodes on the Outpost. *Local cluster*: both control plane and nodes on the Outpost. In both cases AWS fully manages the control plane.
+- **EKS Hybrid Nodes**: the company's existing servers become nodes; the control plane is in the Region, managed by AWS; a reliable connection to the Region is required.
+- **EKS Anywhere**: customer-managed Kubernetes management software that runs the whole cluster on the company's infrastructure, including air-gapped environments.
+
+Pick a ShopViet situation and find the option that meets every requirement:
+
+<EksPlacementSim client:visible />
+
+<Takeaway>Workloads and data must stay in the data center while AWS still manages the control plane: an EKS local cluster on Outposts. An air-gapped environment on existing servers: EKS Anywhere (the company operates the cluster). Existing servers with reliable connectivity: EKS Hybrid Nodes. No on-premises requirement and no wish to manage servers: ECS or EKS on Fargate in a Region.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s5" label="Part 5/5" title="Quick comparison" questions={["exam1_q5", "exam2_q14", "exam3_q20", "exam4_q56", "exam1_q11"]}>
+
+Some services and features look like the right choice in this lesson's situations. Pick each one to see when to use it and why it does not fit:
+
+<QuickCompare client:visible items={[
+  { name: "Kubernetes RBAC",
+    use: "Grants users and workloads permissions on Kubernetes objects (Pods, Deployments, Secrets…) in the cluster. On EKS, IAM principals get Kubernetes permissions through access entries, with an access policy or a Kubernetes group combined with RBAC.",
+    notHere: "UI Pods may reach only DynamoDB and data-processing Pods only S3: these are permissions on **AWS APIs**, which RBAC does not control. When the policies are attached to the node IAM role, every Pod on the node inherits them.",
+    instead: "One service account per service, mapped to an IAM role with only the required permissions through **IRSA** or **EKS Pod Identity** (part 2)." },
+  { name: "AWS App Runner",
+    use: "Deploys a web application or API from source code or a container image and scales with request traffic. **App Runner is no longer open to new customers**; existing customers can keep using it and AWS does not plan new features. AWS recommends **Amazon ECS Express Mode** (only a container image and two IAM roles; it creates a Fargate service, an ALB and auto scaling; no additional charge).",
+    notHere: "Processing a photo as soon as a seller uploads it to S3: S3 Event Notifications go only to SNS, SQS, Lambda and EventBridge and cannot invoke App Runner directly. An always-on HTTP service is also a poor fit for short, sporadic event-driven work.",
+    instead: "S3 → SQS → **Lambda** for short image processing; an HTTP microservice with no infrastructure to manage: Lambda + API Gateway, or ECS on Fargate / ECS Express Mode when the code is already containerized." },
+  { name: "Amazon EKS Anywhere",
+    use: "Runs Kubernetes on the company's infrastructure (vSphere, bare metal, Nutanix, CloudStack, AWS Snow), including air-gapped environments.",
+    notHere: "ShopViet's payment backend has no on-premises requirement and the team wants the least operational effort; with EKS Anywhere the company manages the hardware, Kubernetes upgrades and node scaling itself.",
+    instead: "ECS (or EKS) on **Fargate** in a Region (parts 1 and 4)." },
+  { name: "CloudWatch alarm on node CPU",
+    use: "Scales an EC2 Auto Scaling group on a metric such as average CPU, which suits applications that run directly on instances.",
+    notHere: "On EKS, Pods that are Pending because their resource requests do not fit add no CPU load to the nodes; the alarm does not reflect Pod scheduling demand. A custom Lambda function that checks for Pending Pods and calls eksctl is more code to maintain.",
+    instead: "The **Cluster Autoscaler** (or Karpenter, EKS Auto Mode) reacts directly to Pods that cannot be scheduled (part 3)." },
+]} />
 
 </Scene>
 
@@ -112,6 +207,18 @@ Check your understanding: as the designer of the ShopViet system, which option f
     opts: ["AWS Lambda", "ECS on Fargate", "EC2 Spot"],
     a: 1,
     why: "A standard Lambda function runs at most 15 minutes per invocation (Lambda Managed Instances: up to 90 minutes for some invocation types), not enough for a 2-hour job. An ECS task on Fargate runs until its process ends, with no servers to manage." },
+  { q: "ShopViet's EKS cluster on EC2 nodes already has a CPU-based HPA. At peak hours many new Pods are Pending and the node count does not change even though every node is out of CPU. What should be added with the least operational effort?",
+    opts: ["Raise the HPA's CPU target", "A Cluster Autoscaler tied to the nodes' Auto Scaling group", "A scheduled Lambda function that checks for Pending Pods and calls eksctl"],
+    a: 1,
+    why: "The HPA only changes the number of Pods. The Cluster Autoscaler detects Pods that cannot be scheduled and raises the Auto Scaling group's desired capacity; the Pods are scheduled onto the new nodes." },
+  { q: "UI Pods may reach only DynamoDB and data-processing Pods only S3. The team proposes attaching both policies to the node IAM role and using Kubernetes RBAC to separate permissions. Which assessment is correct?",
+    opts: ["Correct: RBAC limits each Pod's AWS API permissions", "Incorrect: RBAC controls only the Kubernetes API; each service needs its own service account and IAM role (IRSA or EKS Pod Identity)", "Incorrect: attach the policy directly to each Pod with an annotation"],
+    a: 1,
+    why: "Every Pod on a node inherits the node IAM role's permissions. The `eks.amazonaws.com/role-arn` annotation goes on the service account to point to an IAM role; no policy is attached to a Pod." },
+  { q: "ShopViet Pay's Kubernetes workloads and data must stay in the data center; the team wants AWS to manage the control plane and Kubernetes upgrades. Which option fits?",
+    opts: ["An Amazon EKS local cluster on AWS Outposts", "Amazon EKS in a Region, connected over Direct Connect", "ECS on Fargate in a Local Zone"],
+    a: 0,
+    why: "A local cluster runs both the control plane and the nodes on the Outpost in the data center, and AWS still manages the control plane; AWS recommends local clusters when data residency mandates apply. The other two options place workloads on AWS infrastructure outside the data center." },
 ]} />
 
 </Scene>

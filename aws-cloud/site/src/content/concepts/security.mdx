@@ -1,10 +1,14 @@
 ---
 title: "WAF, Shield, GuardDuty, Macie: bảo vệ và phát hiện"
 lede: "Hệ thống ShopViet bắt đầu trở thành mục tiêu tấn công. Bài học trình bày lớp bảo vệ phía trước ứng dụng bằng AWS WAF, sau đó mô phỏng sáu sự cố thực tế (DDoS, server bị cài phần mềm đào tiền mã hoá, lỗ hổng phần mềm, tệp dữ liệu khách hàng bị lưu sai vị trí, account mới thiếu rule, log phân tán) để xác định dịch vụ ngăn chặn hoặc phát hiện từng sự cố."
-minutes: 15
-scenes: 2
+minutes: 18
+scenes: 3
 prerequisites: ["cloudfront", "vpc"]
 docs:
+  - title: "AWS WAF: setting rule priority (evaluation order)"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/web-acl-processing-order.html"
+  - title: "AWS WAF rule actions (terminating actions)"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-action.html"
   - title: "AWS WAF rules"
     url: "https://docs.aws.amazon.com/waf/latest/developerguide/waf-rules.html"
   - title: "Rate-based rule statement"
@@ -25,40 +29,83 @@ docs:
     url: "https://docs.aws.amazon.com/guardduty/latest/ug/what-is-guardduty.html"
   - title: "What is Amazon Macie?"
     url: "https://docs.aws.amazon.com/macie/latest/user/what-is-macie.html"
+  - title: "Introduction to AWS Security Hub"
+    url: "https://docs.aws.amazon.com/securityhub/latest/userguide/what-is-securityhub-v2.html"
+  - title: "Introduction to AWS Security Hub CSPM"
+    url: "https://docs.aws.amazon.com/securityhub/latest/userguide/what-is-securityhub.html"
+  - title: "Create a server in a virtual private cloud (AWS Transfer Family)"
+    url: "https://docs.aws.amazon.com/transfer/latest/userguide/create-server-in-vpc.html"
+  - title: "Security groups for your VPC"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html"
+  - title: "What is Amazon Route 53?"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/Welcome.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
 import Story from "../../components/lessons/global-infra/Story.astro";
 import WafSim from "../../components/scenes/security/WafSim.tsx";
 import IncidentSim from "../../components/scenes/security/IncidentSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#s1", label: "1 · AWS WAF" },
   { href: "#s2", label: "2 · Phát hiện sự cố bảo mật" },
+  { href: "#s3", label: "3 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
 Hệ thống ShopViet ghi nhận các hành vi tấn công: bot dò SQL injection, một IP quét liên tục và lưu lượng DDoS. Bài học trình bày lớp bảo vệ phía trước ứng dụng (**AWS WAF**, **Shield**) và các dịch vụ **phát hiện** hoạt động bất thường bên trong account.
 </Story>
 
-<Scene id="s1" label="Phần 1/2" title="AWS WAF: lọc request độc hại trước khi tới ứng dụng" questions={["exam5_q13", "exam1_q6", "exam5_q45", "exam2_q30", "exam6_q60", "exam5_q57", "exam2_q32"]}>
+<Scene id="s1" label="Phần 1/3" title="AWS WAF: lọc request độc hại trước khi tới ứng dụng" questions={["exam5_q13", "exam1_q6", "exam5_q45", "exam2_q30", "exam6_q60", "exam5_q57", "exam2_q32"]}>
 
-Năm loại request đang được gửi tới ShopViet. Kích hoạt từng rule, chọn tài nguyên liên kết với AWS WAF, sau đó gửi request.
+Sáu loại request đang được gửi tới ShopViet, trong đó có một đối tác vận chuyển hợp lệ gọi từ nước ngoài bằng IP cố định. Kích hoạt từng rule, chọn tài nguyên liên kết với AWS WAF, sau đó gửi request.
+
+AWS WAF đánh giá các rule trong web ACL theo **priority** từ số nhỏ nhất trở lên, cho tới khi gặp một rule khớp có terminating action (Allow hoặc Block) hoặc đã xét hết rule. Vì vậy, khi chặn theo quốc gia bằng geo match nhưng vẫn cần cho phép một số IP của đối tác, ShopViet đặt rule IP set chứa các IP đó với action Allow ở priority nhỏ hơn rule geo match: request của đối tác được cho phép ngay và không còn được đánh giá bởi rule geo match.
 
 <WafSim client:visible />
 
-<Takeaway>SQL injection, XSS: managed rule. Giới hạn theo quốc gia: geo match. Một IP độc hại: IP set. Request với tần suất bất thường: rate-based rule (evaluation window 1, 2, 5 hoặc 10 phút, mặc định 5 phút; ngưỡng tối thiểu 10 request). AWS WAF được liên kết với CloudFront, ALB, API Gateway REST API và một số dịch vụ khác (AppSync, Cognito, App Runner, Verified Access, Amplify), không gắn trực tiếp vào EC2.</Takeaway>
+<Takeaway>SQL injection, XSS: managed rule. Giới hạn theo quốc gia: geo match. Một IP độc hại: IP set với action Block. Ngoại lệ cho IP đối tác trong một quốc gia bị chặn: IP set với action Allow, priority nhỏ hơn rule geo match. Request với tần suất bất thường: rate-based rule (evaluation window 1, 2, 5 hoặc 10 phút, mặc định 5 phút; ngưỡng tối thiểu 10 request). AWS WAF được liên kết với CloudFront, ALB, API Gateway REST API và một số dịch vụ khác (AppSync, Cognito, App Runner, Verified Access, Amplify), không gắn trực tiếp vào EC2. AWS WAF chỉ kiểm tra request **HTTP và HTTPS**; traffic SFTP (SSH) tới endpoint AWS Transfer Family không đi qua AWS WAF, nên giới hạn IP nguồn cho SFTP được thực hiện bằng security group của endpoint VPC hosted.</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/2" title="Sáu sự cố bảo mật và dịch vụ tương ứng" questions={["exam3_q58", "exam6_q4", "exam1_q36", "exam3_q1", "exam6_q14", "exam2_q44"]}>
+<Scene id="s2" label="Phần 2/3" title="Sáu sự cố bảo mật và dịch vụ tương ứng" questions={["exam3_q58", "exam6_q4", "exam1_q36", "exam3_q1", "exam6_q14", "exam2_q44"]}>
 
 AWS WAF chỉ lọc request web. Nhiều sự cố khác xảy ra **bên trong** account: một server bị chiếm quyền, một tệp nhạy cảm bị lưu sai vị trí, một account mới thiếu cấu hình. Chọn một sự cố, bật hoặc tắt dịch vụ tương ứng, sau đó mô phỏng sự cố.
 
 <IncidentSim client:visible />
 
 <Takeaway>DDoS quy mô lớn, cần hỗ trợ từ đội ngũ AWS và báo cáo: Shield Advanced. Server bị chiếm quyền, đào tiền mã hoá: GuardDuty. Lỗ hổng phần mềm trên EC2: Inspector. Dữ liệu cá nhân trong S3: Macie. Áp dụng rule thống nhất cho nhiều account: Firewall Manager. Tập trung log bảo mật: Security Lake.</Takeaway>
+
+</Scene>
+
+<Scene id="s3" label="Phần 3/3" title="Phân biệt nhanh: các dịch vụ dễ nhầm với lớp bảo vệ" questions={["exam5_q13", "exam5_q62"]}>
+
+Một số dịch vụ thường được cân nhắc cùng AWS WAF nhưng giải quyết vấn đề khác: tổng hợp cảnh báo, quản lý rule cho nhiều account, phân giải tên miền, hoặc lọc traffic không phải HTTP. Chọn từng mục để xem phạm vi sử dụng và phương án phù hợp với tình huống của ShopViet.
+
+<QuickCompare client:visible items={[
+  { name: "AWS Security Hub",
+    use: "Tổng hợp và ưu tiên các vấn đề bảo mật trên nhiều account: nhận finding từ GuardDuty, Inspector, Macie và sản phẩm bên thứ ba, tương quan các tín hiệu, có quy trình phản hồi tự động. Thành phần **Security Hub CSPM** chạy kiểm tra cấu hình theo các tiêu chuẩn như AWS Foundational Security Best Practices, CIS, PCI DSS, NIST và sinh control finding.",
+    notHere: "Ứng dụng web của ShopViet sau CloudFront đang bị tấn công SQL injection và cross-site scripting. Security Hub chỉ cho biết tình trạng bảo mật và cảnh báo, không nằm trên đường đi của request nên không chặn được request nào.",
+    instead: "Liên kết **AWS WAF** web ACL (managed rule cho SQLi, XSS) với CloudFront distribution (Phần 1). Security Hub dùng để theo dõi tập trung các finding sau đó." },
+  { name: "AWS Firewall Manager",
+    use: "Thiết lập một lần các biện pháp bảo vệ (AWS WAF, Shield Advanced, security group, network ACL, Network Firewall, Route 53 Resolver DNS Firewall) và tự động áp dụng cho nhiều account, nhiều tài nguyên, kể cả account và tài nguyên mới thêm vào.",
+    notHere: "Firewall Manager không tự kiểm tra request; nó quản lý tập trung rule của các dịch vụ khác. Với một distribution đang bị tấn công trong một account, bản thân web ACL của AWS WAF mới là lớp chặn request.",
+    instead: "**AWS WAF** web ACL gắn vào CloudFront. Khi ShopViet có nhiều account cần cùng bộ rule, dùng Firewall Manager để triển khai web ACL đó cho cả tổ chức." },
+  { name: "Amazon Route 53",
+    use: "Dịch vụ DNS có tính sẵn sàng cao: đăng ký tên miền, định tuyến DNS và health check.",
+    notHere: "Route 53 chỉ trả lời truy vấn DNS; request HTTP chứa SQL injection đi thẳng tới CloudFront, không đi qua Route 53 để được kiểm tra nội dung.",
+    instead: "**AWS WAF** trên CloudFront. Route 53 vẫn trỏ tên miền `shopviet.vn` tới distribution như bình thường." },
+  { name: "AWS WAF cho SFTP",
+    use: "AWS WAF giám sát các request **HTTP và HTTPS** tới tài nguyên được bảo vệ: CloudFront, API Gateway REST API, ALB, AppSync, Cognito user pool, App Runner, Verified Access, Amplify.",
+    notHere: "Đối tác của ShopViet tải tệp lên qua SFTP tới AWS Transfer Family. SFTP chạy trên SSH, không phải HTTP, và endpoint Transfer Family không nằm trong danh sách tài nguyên AWS WAF bảo vệ, nên không thể dùng IP set của WAF để giới hạn IP.",
+    instead: "Endpoint **VPC hosted, Internet Facing** gắn Elastic IP cho từng subnet; **security group** của endpoint chỉ cho phép SSH (cổng 22 mặc định) từ dải IP của đối tác. Lựa chọn backend lưu trữ cho Transfer Family được trình bày trong bài Di chuyển dữ liệu, Phần 2." },
+]} />
+
+AWS Transfer Family và lựa chọn backend lưu trữ (Amazon S3 hoặc Amazon EFS) được trình bày tại [bài Di chuyển dữ liệu, Phần 2](/concepts/storage-migration/#s2).
+
+<Takeaway>Chặn request web độc hại: AWS WAF. Xem tập trung và ưu tiên finding bảo mật của nhiều account: Security Hub (không chặn traffic). Áp dụng cùng rule cho nhiều account: Firewall Manager. Giới hạn IP cho traffic không phải HTTP như SFTP: security group (hoặc network ACL) ở tầng mạng.</Takeaway>
 
 </Scene>
 
@@ -73,7 +120,7 @@ Phân loại dịch vụ ngăn chặn traffic và dịch vụ phát hiện vấn
   ]}
   cards={[
     ["AWS WAF", "protect"], ["AWS Shield Advanced", "protect"], ["AWS Firewall Manager", "protect"],
-    ["Amazon GuardDuty", "detect"], ["Amazon Inspector", "detect"], ["Amazon Macie", "detect"], ["Amazon Security Lake", "detect"],
+    ["Amazon GuardDuty", "detect"], ["Amazon Inspector", "detect"], ["Amazon Macie", "detect"], ["Amazon Security Lake", "detect"], ["AWS Security Hub", "detect"],
   ]}
 />
 
@@ -96,6 +143,14 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Amazon GuardDuty", "AWS Config", "Amazon Macie"],
     a: 0,
     why: "GuardDuty có loại finding riêng cho hoạt động đào tiền mã hoá trên EC2." },
+  { q: "Đối tác của ShopViet tải dữ liệu qua SFTP tới AWS Transfer Family; chỉ dải IP của đối tác được phép kết nối. Cơ chế nào giới hạn IP nguồn?",
+    opts: ["Endpoint VPC hosted với Elastic IP, security group chỉ cho phép dải IP của đối tác", "AWS WAF IP set gắn vào endpoint SFTP", "AWS Security Hub"],
+    a: 0,
+    why: "AWS WAF chỉ kiểm tra request HTTP và HTTPS; SFTP chạy trên SSH. Security group của endpoint VPC hosted lọc theo IP nguồn, protocol và cổng." },
+  { q: "Bộ phận an ninh muốn một nơi duy nhất xem và ưu tiên finding từ GuardDuty, Inspector, Macie của mọi account, kèm kiểm tra cấu hình theo AWS Foundational Security Best Practices. Dịch vụ nào phù hợp?",
+    opts: ["AWS Security Hub", "AWS WAF", "AWS Shield Advanced"],
+    a: 0,
+    why: "Security Hub tổng hợp finding và đánh giá tình trạng bảo mật; nó không chặn request như WAF hay giảm thiểu DDoS như Shield." },
 ]} />
 
 </Scene>

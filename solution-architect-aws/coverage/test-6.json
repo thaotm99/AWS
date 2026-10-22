@@ -53,8 +53,8 @@
         {
           "keyword": "EC2 Spot block (defined duration)",
           "lesson": "ec2",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "ec2.mdx#s1; ec2.mdx#challenge / SortGame"
         }
       ]
     },
@@ -167,6 +167,12 @@
           "lesson": "security",
           "status": "covered",
           "where": "security.mdx#s2 / IncidentSim"
+        },
+        {
+          "keyword": "AWS Direct Connect",
+          "lesson": "vpc",
+          "status": "covered",
+          "where": "vpc.mdx#s6 / HybridLinkSim"
         }
       ]
     },
@@ -289,8 +295,8 @@
         {
           "keyword": "IAM SAML 2.0 federation (IAM identity provider)",
           "lesson": "iam",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "iam.mdx#s5 / FederationSim"
         },
         {
           "keyword": "Service control policy (SCP) as guardrail, not grant",
@@ -322,8 +328,8 @@
         {
           "keyword": "EC2 instance metadata",
           "lesson": "ec2",
-          "status": "partial",
-          "where": "iam.mdx#s3 (credentials via metadata only)"
+          "status": "covered",
+          "where": "ec2.mdx#s2 / RequirementPicker"
         }
       ]
     },
@@ -594,8 +600,8 @@
         {
           "keyword": "S3 Select",
           "lesson": "s3",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "s3.mdx#s7 / QuickCompare"
         }
       ]
     },
@@ -649,8 +655,14 @@
         {
           "keyword": "AWS Service Catalog",
           "lesson": "iac",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "iac.mdx#s4 / QuickCompare; iac.mdx#challenge / Quiz"
+        },
+        {
+          "keyword": "AWS Config remediation",
+          "lesson": "monitoring",
+          "status": "covered",
+          "where": "monitoring.mdx#s4"
         }
       ]
     },
@@ -784,6 +796,12 @@
           "lesson": "asg",
           "status": "covered",
           "where": "ec2.mdx#s4 / Ec2OpsSim"
+        },
+        {
+          "keyword": "AWS Backup (restore is not HA)",
+          "lesson": "backup-dr",
+          "status": "covered",
+          "where": "backup-dr.mdx#s3"
         }
       ]
     },
@@ -843,8 +861,8 @@
         {
           "keyword": "S3 bucket policy (20 KB size limit)",
           "lesson": "s3",
-          "status": "partial",
-          "where": "s3.mdx#s3 (bucket policy explained, size limit not)"
+          "status": "covered",
+          "where": "s3.mdx#s3 / RequirementPicker"
         }
       ]
     },
@@ -876,8 +894,8 @@
         {
           "keyword": "S3 Multi-Region Access Point",
           "lesson": "s3",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "s3.mdx#s7 / QuickCompare"
         }
       ]
     },
@@ -906,6 +924,18 @@
           "lesson": "kinesis",
           "status": "covered",
           "where": "kinesis.mdx#s3 / StreamPipelineSim"
+        },
+        {
+          "keyword": "AWS Glue (batch ETL)",
+          "lesson": "analytics",
+          "status": "covered",
+          "where": "analytics.mdx#s3"
+        },
+        {
+          "keyword": "Amazon MSK (vs self-managed Kafka on EC2)",
+          "lesson": "kinesis",
+          "status": "covered",
+          "where": "kinesis.mdx#s3; kinesis.mdx#s4"
         }
       ]
     },
@@ -1042,14 +1072,14 @@
         {
           "keyword": "Elastic Network Adapter (ENA) / enhanced networking",
           "lesson": "ec2",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "ec2.mdx#s5 / RequirementPicker"
         },
         {
           "keyword": "Elastic network interface (ENI)",
           "lesson": "vpc",
-          "status": "partial",
-          "where": "vpc.mdx#s4 / EndpointSim (only as interface endpoint ENI)"
+          "status": "covered",
+          "where": "vpc.mdx#compare / QuickCompare"
         }
       ]
     },
@@ -1153,13 +1183,13 @@
         {
           "keyword": "AWS account alternate contacts",
           "lesson": "iam",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "iam.mdx#confuse / IamMythsSim"
         },
         {
           "keyword": "Root user email as alias to monitored mailbox",
           "lesson": "iam",
-          "status": "partial",
+          "status": "covered",
           "where": "iam.mdx#confuse / IamMythsSim"
         }
       ]
@@ -1187,20 +1217,20 @@
         {
           "keyword": "Gateway Load Balancer",
           "lesson": "elb",
-          "status": "partial",
-          "where": "elb.mdx#s2 / CrossZoneCalc (cross-zone default only)"
+          "status": "covered",
+          "where": "elb.mdx#s6 / GwlbSim, elb.mdx#s7 / QuickCompare"
         },
         {
           "keyword": "AWS Service Catalog",
           "lesson": "iac",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "iac.mdx#s4 / QuickCompare"
         },
         {
           "keyword": "AWS Config conformance pack",
           "lesson": "monitoring",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "monitoring.mdx#s4 / monitoring.mdx#s6 QuickCompare"
         }
       ]
     },
@@ -1227,14 +1257,14 @@
         {
           "keyword": "Instance store data not preserved in AMI",
           "lesson": "ec2",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "ec2.mdx#s6 / Ec2LifecycleSim"
         },
         {
           "keyword": "Instance store specified only at launch",
           "lesson": "ec2",
-          "status": "partial",
-          "where": "monitoring.mdx#s2 / AlarmActionSim (passing mention)"
+          "status": "covered",
+          "where": "ec2.mdx#s6 / Ec2LifecycleSim"
         }
       ]
     },
@@ -1339,8 +1369,8 @@
         {
           "keyword": "RDS read replica sized same as source",
           "lesson": "rds",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "rds.mdx#s5 / ReplicaLab"
         },
         {
           "keyword": "RDS Multi-AZ standby (not readable)",
@@ -1406,8 +1436,8 @@
         {
           "keyword": "AWS Elastic Disaster Recovery (CloudEndure DR)",
           "lesson": "backup-dr",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "backup-dr.mdx#s5 / QuickCompare"
         }
       ]
     },
@@ -1439,8 +1469,8 @@
         {
           "keyword": "RDS Multi-AZ backups taken from standby",
           "lesson": "rds",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "rds.mdx#s1 / MultiAzSim"
         }
       ]
     },
@@ -1653,6 +1683,12 @@
           "lesson": "ec2",
           "status": "covered",
           "where": "ec2.mdx#s4 / Ec2OpsSim"
+        },
+        {
+          "keyword": "Application Load Balancer (HTTP/HTTPS only)",
+          "lesson": "elb",
+          "status": "covered",
+          "where": "elb.mdx#s1 / LbTypeSim"
         }
       ]
     },
@@ -1709,6 +1745,12 @@
           "lesson": "global-infra",
           "status": "covered",
           "where": "global-infra.mdx#s5 / EdgeChoiceSim"
+        },
+        {
+          "keyword": "S3 Cross-Region Replication",
+          "lesson": "s3",
+          "status": "covered",
+          "where": "s3.mdx#s7 / QuickCompare; analytics.mdx#s4"
         }
       ]
     },
@@ -1764,8 +1806,8 @@
         {
           "keyword": "ALB sticky sessions",
           "lesson": "elb",
-          "status": "partial",
-          "where": "analytics.mdx#s1 / CacheSim (one line)"
+          "status": "covered",
+          "where": "elb.mdx#s7 / QuickCompare"
         },
         {
           "keyword": "Network ACL (subnet-level, not on ALB)",
@@ -1824,8 +1866,8 @@
         {
           "keyword": "CloudFront origin protocol policy (HTTPS to origin)",
           "lesson": "cloudfront",
-          "status": "partial",
-          "where": "cloudfront.mdx#s3 (TLS at edge only)"
+          "status": "covered",
+          "where": "cloudfront.mdx#s6 / QuickCompare"
         }
       ]
     },

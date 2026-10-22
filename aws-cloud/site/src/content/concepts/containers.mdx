@@ -1,8 +1,8 @@
 ---
 title: "Container: Amazon ECS, Amazon EKS và AWS Fargate"
-lede: "ShopViet đóng gói các service thành container. Bài học trình bày cách lựa chọn môi trường chạy (EC2 launch type hoặc Fargate, ECS hoặc EKS) và giải quyết năm yêu cầu thực tế: lưu trữ ảnh dùng chung giữa các task, job chạy theo lịch, job vượt quá giới hạn thời gian của Lambda, quyền riêng cho từng Pod, và Pod ở trạng thái chờ do cluster hết tài nguyên."
-minutes: 15
-scenes: 2
+lede: "ShopViet đóng gói các service thành container. Bài học trình bày cách lựa chọn môi trường chạy (EC2 launch type hoặc Fargate, ECS hoặc EKS) và giải quyết năm yêu cầu thực tế: lưu trữ ảnh dùng chung giữa các task, job chạy theo lịch, job vượt quá giới hạn thời gian của Lambda, quyền riêng cho từng Pod, Pod ở trạng thái chờ do cluster hết tài nguyên; sau đó là cách mở rộng theo hai tầng (Pod/task và node) và lựa chọn nơi chạy Kubernetes khi dữ liệu phải ở lại data center."
+minutes: 27
+scenes: 5
 prerequisites: ["ec2", "asg"]
 docs:
   - title: "Amazon ECS launch types"
@@ -21,24 +21,60 @@ docs:
     url: "https://docs.aws.amazon.com/eks/latest/userguide/eks-outposts.html"
   - title: "Lambda quotas"
     url: "https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html"
+  - title: "Horizontal Pod Autoscaler (EKS)"
+    url: "https://docs.aws.amazon.com/eks/latest/userguide/horizontal-pod-autoscaler.html"
+  - title: "Scale cluster compute with Karpenter and Cluster Autoscaler"
+    url: "https://docs.aws.amazon.com/eks/latest/userguide/autoscaling.html"
+  - title: "Automatically scale your Amazon ECS service"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-auto-scaling.html"
+  - title: "Fargate task CPU và memory (task level)"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-tasks-services.html"
+  - title: "Updating an Amazon ECS task definition (revision)"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/update-task-definition-console-v2.html"
+  - title: "Amazon EKS deployment options (Region, Outposts, Hybrid Nodes, EKS Anywhere)"
+    url: "https://docs.aws.amazon.com/eks/latest/userguide/eks-deployment-options.html"
+  - title: "Amazon EKS Hybrid Nodes overview"
+    url: "https://docs.aws.amazon.com/eks/latest/userguide/hybrid-nodes-overview.html"
+  - title: "EKS Anywhere FAQ"
+    url: "https://anywhere.eks.amazonaws.com/docs/overview/faq/"
+  - title: "What is AWS Local Zones?"
+    url: "https://docs.aws.amazon.com/local-zones/latest/ug/what-is-aws-local-zones.html"
+  - title: "Grant Kubernetes workloads access to AWS (service accounts)"
+    url: "https://docs.aws.amazon.com/eks/latest/userguide/service-accounts.html"
+  - title: "EKS access entries (quyền Kubernetes API, RBAC)"
+    url: "https://docs.aws.amazon.com/eks/latest/userguide/access-entries.html"
+  - title: "Assign IAM roles to Kubernetes service accounts"
+    url: "https://docs.aws.amazon.com/eks/latest/userguide/associate-service-account-role.html"
+  - title: "AWS App Runner availability change"
+    url: "https://docs.aws.amazon.com/apprunner/latest/dg/apprunner-availability-change.html"
+  - title: "Amazon ECS Express Mode"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/express-service-overview.html"
+  - title: "Amazon S3 Event Notifications (đích nhận sự kiện)"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/EventNotifications.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
 import Story from "../../components/lessons/global-infra/Story.astro";
 import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
 import ContainerJobSim from "../../components/scenes/containers/ContainerJobSim.tsx";
+import ScaleLayersSim from "../../components/scenes/containers/ScaleLayersSim.tsx";
+import EksPlacementSim from "../../components/scenes/containers/EksPlacementSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#s1", label: "1 · EC2 launch type và Fargate" },
   { href: "#s2", label: "2 · Năm tác vụ chạy bằng container" },
+  { href: "#s3", label: "3 · Mở rộng theo hai tầng" },
+  { href: "#s4", label: "4 · Kubernetes tại data center" },
+  { href: "#s5", label: "5 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
 Đội ngũ ShopViet đã đóng gói ứng dụng web, worker và các job báo cáo thành container. Quyết định đầu tiên: container chạy trên máy chủ do đội ngũ tự quản lý, hay để AWS quản lý tầng máy chủ. Tiếp theo là các yêu cầu vận hành hằng ngày: lưu trữ tệp, chạy theo lịch, phân quyền và mở rộng tài nguyên cho cluster.
 </Story>
 
-<Scene id="s1" label="Phần 1/2" title="EC2 launch type và Fargate" questions={["exam1_q14", "exam4_q33", "exam3_q32", "exam2_q1"]}>
+<Scene id="s1" label="Phần 1/5" title="EC2 launch type và Fargate" questions={["exam1_q14", "exam4_q33", "exam3_q32", "exam2_q1"]}>
 
 **Amazon ECS** và **Amazon EKS** đều cần hạ tầng tính toán để chạy container. Có hai lựa chọn: tự quản lý một nhóm EC2 instance, hoặc sử dụng **AWS Fargate** và chỉ khai báo lượng vCPU, RAM mà task yêu cầu. So sánh phạm vi trách nhiệm quản lý và cơ sở tính phí:
 
@@ -66,7 +102,7 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/2" title="Năm tác vụ của ShopViet chạy bằng container" questions={["exam3_q32", "exam2_q27", "exam6_q35", "exam1_q5", "exam4_q56", "exam3_q15", "exam1_q27", "exam2_q1"]}>
+<Scene id="s2" label="Phần 2/5" title="Năm tác vụ của ShopViet chạy bằng container" questions={["exam3_q32", "exam2_q27", "exam6_q35", "exam1_q5", "exam4_q56", "exam3_q15", "exam1_q27", "exam2_q1"]}>
 
 Chọn một tác vụ, chạy thử với phương án đơn giản nhất, sau đó bật tuỳ chọn để áp dụng tính năng AWS phù hợp:
 
@@ -75,10 +111,69 @@ Chọn một tác vụ, chạy thử với phương án đơn giản nhất, sau
 Một số tình huống khác của ShopViet:
 
 - Worker hiện tại giao tiếp với message broker qua **AMQP** và đội ngũ không muốn quản lý node: chạy worker trên **EKS với Fargate**, chuyển broker sang **Amazon MQ** (managed broker, hỗ trợ AMQP).
-- Service trên ECS quá tải CPU: kích hoạt **Service Auto Scaling** (dựa trên Application Auto Scaling) để tăng số task theo metric CPU, bộ nhớ của service.
-- Dữ liệu của một chi nhánh bắt buộc lưu trữ tại chỗ nhưng vẫn cần Amazon EKS: **Amazon EKS trên AWS Outposts** đặt trong data center của doanh nghiệp (extended cluster: control plane ở Region, node trên Outpost; local cluster: cả control plane và node trên Outpost). **EKS Anywhere** là lựa chọn khác, chạy trên hạ tầng do doanh nghiệp tự quản lý, dành cho môi trường air-gapped.
+- Service trên ECS quá tải CPU: kích hoạt **Service Auto Scaling** (dựa trên Application Auto Scaling) để tăng số task theo metric CPU, bộ nhớ của service (phần 3).
 
-<Takeaway>Lưu trữ bền vững, dùng chung giữa các task: EFS. Chạy theo lịch: EventBridge Scheduler khởi chạy task Fargate. Job dài hơn giới hạn thời gian của Lambda (15 phút với function tiêu chuẩn): container trên Fargate. Quyền riêng cho từng Pod: IRSA. Pod chờ do cluster hết tài nguyên: Cluster Autoscaler.</Takeaway>
+**IRSA và Kubernetes RBAC giải quyết hai bài toán khác nhau.** Kubernetes RBAC (gán qua EKS access entries hoặc Kubernetes group) quy định ai được thao tác **đối tượng Kubernetes** trong cluster, ví dụ quyền dùng `kubectl` để xem hoặc sửa Deployment. RBAC không cấp và không giới hạn quyền gọi **AWS API** như S3 hay DynamoDB. Nếu gắn cả policy S3 và DynamoDB vào IAM role của node (instance profile), mọi Pod trên node đều có cả hai quyền, bất kể RBAC cấu hình thế nào. Để Pod giao diện chỉ truy cập DynamoDB và Pod xử lý dữ liệu chỉ truy cập S3, mỗi service dùng **một service account riêng**, ánh xạ tới **một IAM role riêng** qua IRSA (annotation `eks.amazonaws.com/role-arn` đặt trên service account, không gắn policy trực tiếp vào Pod) hoặc qua **EKS Pod Identity**. Dùng chung một service account cho mọi Pod thì ranh giới quyền không còn.
+
+<Takeaway>Lưu trữ bền vững, dùng chung giữa các task: EFS. Chạy theo lịch: EventBridge Scheduler khởi chạy task Fargate. Job dài hơn giới hạn thời gian của Lambda (15 phút với function tiêu chuẩn): container trên Fargate. Quyền AWS riêng cho từng Pod: mỗi service một service account, ánh xạ tới IAM role riêng (IRSA hoặc EKS Pod Identity); Kubernetes RBAC chỉ kiểm soát quyền trên Kubernetes API. Pod chờ do cluster hết tài nguyên: Cluster Autoscaler.</Takeaway>
+
+</Scene>
+
+<Scene id="s3" label="Phần 3/5" title="Mở rộng theo hai tầng: Pod/task và node" questions={["exam4_q56", "exam5_q36", "exam3_q20"]}>
+
+Trong đợt khuyến mãi, lưu lượng vào service web của ShopViet tăng gấp nhiều lần. Việc mở rộng diễn ra ở hai tầng tách biệt:
+
+- **Tầng ứng dụng** (số Pod hoặc số task). Trên EKS, **Horizontal Pod Autoscaler** (HPA) thay đổi số Pod của Deployment để giữ CPU quanh target (ví dụ 50%). HPA là API resource có sẵn của Kubernetes, chỉ cần một nguồn metric như Kubernetes Metrics Server. Trên ECS, **Service Auto Scaling** thay đổi desired count của service (target tracking, step scaling, scheduled, predictive, hoặc theo backlog của hàng đợi SQS).
+- **Tầng hạ tầng** (số node). Trên EKS dùng node EC2, **Cluster Autoscaler** điều chỉnh desired capacity của Auto Scaling group khi có Pod không lập lịch được; **Karpenter** và **EKS Auto Mode** (xây dựng trên Karpenter) tạo node mới khi Pod không vừa với các node hiện có. Với Fargate, tầng này không tồn tại: mỗi task hoặc Pod được cấp tài nguyên riêng.
+
+Chạy thử từng cấu hình và quan sát số Pod, số node, Pod Pending:
+
+<ScaleLayersSim client:visible />
+
+Hai điểm rút ra từ mô phỏng. Thứ nhất, HPA chỉ tăng số Pod; khi node hết CPU, Pod mới ở trạng thái Pending và số node giữ nguyên cho tới khi có Cluster Autoscaler (hoặc Karpenter). Một CloudWatch alarm theo CPU trung bình của node không nhìn thấy Pod Pending, nên không thay thế được Cluster Autoscaler. Thứ hai, CPU và memory của task Fargate khai báo ở task level trong task definition; muốn thay đổi phải tạo **task definition revision** mới và cập nhật service. Một task đơn lẻ vẫn là điểm nghẽn và không có dự phòng; ECS mở rộng theo chiều ngang bằng cách thêm task sau ALB.
+
+<Takeaway>HPA: thêm Pod. Cluster Autoscaler / Karpenter: thêm node khi Pod Pending. Cần cả hai trên EKS dùng node EC2. ECS: Service Auto Scaling thêm task; không mở rộng bằng cách tăng kích thước một task đang chạy.</Takeaway>
+
+</Scene>
+
+<Scene id="s4" label="Phần 4/5" title="Kubernetes tại data center của doanh nghiệp" questions={["exam1_q27", "exam1_q11"]}>
+
+Amazon EKS có nhiều cách triển khai ngoài Region, khác nhau ở **vị trí của control plane**, **ai quản lý control plane** và **hạ tầng chạy node**:
+
+- **EKS on AWS Outposts**: Outposts là hạ tầng do AWS quản lý, đặt trong data center của doanh nghiệp. *Extended cluster*: control plane ở Region, node trên Outpost. *Local cluster*: cả control plane và node trên Outpost. Với cả hai, control plane do AWS quản lý hoàn toàn.
+- **EKS Hybrid Nodes**: máy chủ sẵn có của doanh nghiệp làm node; control plane ở Region do AWS quản lý; cần kết nối ổn định tới Region.
+- **EKS Anywhere**: phần mềm quản lý Kubernetes do khách hàng vận hành, chạy toàn bộ cluster trên hạ tầng của doanh nghiệp, kể cả môi trường air-gapped.
+
+Chọn một tình huống của ShopViet và tìm phương án đáp ứng mọi yêu cầu:
+
+<EksPlacementSim client:visible />
+
+<Takeaway>Dữ liệu và workload phải ở lại data center, AWS vẫn quản lý control plane: EKS local cluster trên Outposts. Môi trường air-gapped trên máy chủ sẵn có: EKS Anywhere (doanh nghiệp tự vận hành cluster). Máy chủ sẵn có, có kết nối ổn định: EKS Hybrid Nodes. Không có yêu cầu đặt tại chỗ và không muốn quản lý máy chủ: ECS hoặc EKS trên Fargate ở Region.</Takeaway>
+
+</Scene>
+
+<Scene id="s5" label="Phần 5/5" title="Phân biệt nhanh" questions={["exam1_q5", "exam2_q14", "exam3_q20", "exam4_q56", "exam1_q11"]}>
+
+Một số dịch vụ và tính năng trông giống phương án đúng trong các tình huống của bài. Chọn từng mục để xem khi nào nên dùng và vì sao không phù hợp:
+
+<QuickCompare client:visible items={[
+  { name: "Kubernetes RBAC",
+    use: "Cấp quyền thao tác đối tượng Kubernetes (Pod, Deployment, Secret…) cho người dùng và workload trong cluster. Trên EKS, IAM principal được gán quyền Kubernetes qua access entries, bằng access policy hoặc Kubernetes group kết hợp RBAC.",
+    notHere: "Pod giao diện chỉ được truy cập DynamoDB, Pod xử lý dữ liệu chỉ được truy cập S3: đây là quyền gọi **AWS API**, RBAC không kiểm soát được. Khi policy gắn vào IAM role của node, mọi Pod trên node đều kế thừa.",
+    instead: "Mỗi service một service account, ánh xạ tới IAM role chỉ có quyền cần thiết qua **IRSA** hoặc **EKS Pod Identity** (phần 2)." },
+  { name: "AWS App Runner",
+    use: "Triển khai web application hoặc API từ mã nguồn hoặc container image, tự mở rộng theo lưu lượng request. **App Runner không còn nhận khách hàng mới**; khách hàng hiện tại vẫn sử dụng bình thường và AWS không dự kiến bổ sung tính năng. AWS khuyến nghị **Amazon ECS Express Mode** (chỉ cần container image và hai IAM role; tạo service Fargate, ALB, auto scaling; không tính phí riêng).",
+    notHere: "Xử lý ảnh ngay khi người bán tải lên S3: S3 Event Notifications chỉ gửi tới SNS, SQS, Lambda và EventBridge, không gọi trực tiếp được App Runner. Service HTTP chạy liên tục cũng không phù hợp với tác vụ ngắn, rời rạc theo sự kiện.",
+    instead: "S3 → SQS → **Lambda** cho xử lý ảnh ngắn; microservice HTTP không muốn quản lý hạ tầng: Lambda + API Gateway, hoặc ECS trên Fargate / ECS Express Mode khi đã đóng gói container." },
+  { name: "Amazon EKS Anywhere",
+    use: "Chạy Kubernetes trên hạ tầng của doanh nghiệp (vSphere, bare metal, Nutanix, CloudStack, AWS Snow), kể cả môi trường air-gapped.",
+    notHere: "Backend thanh toán của ShopViet không có yêu cầu đặt tại chỗ và đội ngũ muốn giảm tối đa công sức vận hành; với EKS Anywhere, doanh nghiệp tự quản lý phần cứng, nâng cấp Kubernetes và mở rộng node.",
+    instead: "ECS (hoặc EKS) trên **Fargate** ở Region (phần 1, phần 4)." },
+  { name: "CloudWatch alarm theo CPU của node",
+    use: "Mở rộng Auto Scaling group của EC2 theo metric như CPU trung bình, phù hợp với ứng dụng chạy trực tiếp trên instance.",
+    notHere: "Trên EKS, Pod Pending vì không đủ tài nguyên được yêu cầu (request) không làm CPU node tăng thêm; alarm không phản ánh nhu cầu lập lịch của Pod. Lambda tự viết để kiểm tra Pod Pending rồi gọi eksctl cũng là thêm mã cần duy trì.",
+    instead: "**Cluster Autoscaler** (hoặc Karpenter, EKS Auto Mode) phản ứng trực tiếp với Pod không lập lịch được (phần 3)." },
+]} />
 
 </Scene>
 
@@ -112,6 +207,18 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["AWS Lambda", "ECS trên Fargate", "EC2 Spot"],
     a: 1,
     why: "Lambda function tiêu chuẩn chạy tối đa 15 phút mỗi lần thực thi (Lambda Managed Instances: tối đa 90 phút với một số kiểu gọi), không đủ cho job 2 giờ. Task ECS trên Fargate chạy cho tới khi tiến trình kết thúc, không có máy chủ cần quản lý." },
+  { q: "Cluster EKS dùng node EC2 của ShopViet đã có HPA theo CPU. Trong giờ cao điểm, nhiều Pod mới ở trạng thái Pending, số node không đổi dù mọi node đã hết CPU. Cần bổ sung gì với ít công sức vận hành nhất?",
+    opts: ["Tăng target CPU của HPA", "Cluster Autoscaler gắn với Auto Scaling group của node", "Lambda chạy định kỳ kiểm tra Pod Pending và gọi eksctl"],
+    a: 1,
+    why: "HPA chỉ thay đổi số Pod. Cluster Autoscaler phát hiện Pod không lập lịch được và tăng desired capacity của Auto Scaling group; Pod được lập lịch lên node mới." },
+  { q: "Pod giao diện chỉ được truy cập DynamoDB, Pod xử lý dữ liệu chỉ được truy cập S3. Đội ngũ đề xuất gắn cả hai policy vào IAM role của node và dùng Kubernetes RBAC để phân quyền. Đánh giá nào đúng?",
+    opts: ["Đúng, RBAC giới hạn quyền gọi AWS API của từng Pod", "Sai: RBAC chỉ kiểm soát Kubernetes API; mỗi service cần service account và IAM role riêng (IRSA hoặc EKS Pod Identity)", "Sai: cần gắn policy trực tiếp vào từng Pod bằng annotation"],
+    a: 1,
+    why: "Mọi Pod trên node kế thừa quyền của IAM role của node. Annotation `eks.amazonaws.com/role-arn` đặt trên service account để trỏ tới IAM role, không gắn policy vào Pod." },
+  { q: "Workload Kubernetes và dữ liệu của ShopViet Pay phải nằm trong data center; đội ngũ muốn AWS quản lý control plane và nâng cấp Kubernetes. Phương án nào phù hợp?",
+    opts: ["Amazon EKS local cluster trên AWS Outposts", "Amazon EKS ở Region, kết nối qua Direct Connect", "ECS trên Fargate tại một Local Zone"],
+    a: 0,
+    why: "Local cluster đặt cả control plane và node trên Outpost trong data center, control plane vẫn do AWS quản lý; AWS khuyến nghị local cluster khi có yêu cầu lưu trú dữ liệu. Hai phương án còn lại đặt workload trên hạ tầng AWS bên ngoài data center." },
 ]} />
 
 </Scene>

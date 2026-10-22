@@ -69,8 +69,8 @@
         {
           "keyword": "Elastic IP address",
           "lesson": "ec2",
-          "status": "partial",
-          "where": "ec2.mdx#s4 / Ec2OpsSim"
+          "status": "covered",
+          "where": "ec2.mdx#s6 / Ec2LifecycleSim"
         }
       ]
     },
@@ -137,8 +137,8 @@
         {
           "keyword": "Amazon Lookout for Vision",
           "lesson": "others",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "others.mdx#s5 / QuickCompare"
         }
       ]
     },
@@ -167,8 +167,8 @@
         {
           "keyword": "Kubernetes RBAC",
           "lesson": "containers",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "containers.mdx#s2 (IRSA vs RBAC); containers.mdx#s5 / QuickCompare"
         }
       ]
     },
@@ -204,7 +204,7 @@
           "keyword": "Security group (no geo filtering)",
           "lesson": "vpc",
           "status": "covered",
-          "where": "vpc.mdx#s1"
+          "where": "vpc.mdx#compare (geo blocking needs AWS WAF geo match; NACL rules take CIDR only) / vpc.mdx#s1"
         }
       ]
     },
@@ -247,7 +247,7 @@
           "keyword": "S3 Lifecycle minimum 30 days before transition to IA",
           "lesson": "s3",
           "status": "covered",
-          "where": "s3.mdx#s1 / LifecycleValidator"
+          "where": "s3.mdx#s1 / RequirementPicker, LifecycleValidator (since 2026-07-16 transitions to Standard-IA/One Zone-IA allowed from day 0; former 30-day-in-Standard rule taught as history; 30-day minimum storage charge kept)"
         },
         {
           "keyword": "S3 Lifecycle rule",
@@ -275,14 +275,14 @@
         {
           "keyword": "EFS access point",
           "lesson": "storage",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "storage.mdx#s3 / RequirementPicker, StepSim"
         },
         {
           "keyword": "Lambda mounting EFS",
           "lesson": "lambda",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "storage.mdx#s3 / StepSim (links to lambda.mdx#s2)"
         },
         {
           "keyword": "VPC peering",
@@ -293,8 +293,8 @@
         {
           "keyword": "Lambda layer",
           "lesson": "lambda",
-          "status": "partial",
-          "where": "lambda.mdx#challenge"
+          "status": "covered",
+          "where": "lambda.mdx#sizing / FunctionConfigSim"
         },
         {
           "keyword": "S3 Access Points",
@@ -339,8 +339,8 @@
         {
           "keyword": "SAML 2.0 federation",
           "lesson": "iam",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "iam.mdx#s5 / FederationSim"
         },
         {
           "keyword": "AWS Control Tower",
@@ -379,14 +379,14 @@
         {
           "keyword": "Amazon EKS Anywhere",
           "lesson": "containers",
-          "status": "partial",
-          "where": "containers.mdx#s2"
+          "status": "covered",
+          "where": "containers.mdx#s4 / EksPlacementSim; containers.mdx#s5 / QuickCompare"
         },
         {
           "keyword": "Amazon Lightsail",
           "lesson": "others",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "others.mdx#s5 / QuickCompare; containers.mdx#s1"
         },
         {
           "keyword": "EKS self-managed node group",
@@ -454,8 +454,8 @@
         {
           "keyword": "EventBridge at-least-once delivery",
           "lesson": "messaging",
-          "status": "partial",
-          "where": "messaging.mdx#s4"
+          "status": "covered",
+          "where": "messaging.mdx#s3 / messaging.mdx#s5 / QuickCompare"
         }
       ]
     },
@@ -539,8 +539,8 @@
         {
           "keyword": "IAM least privilege",
           "lesson": "iam",
-          "status": "partial",
-          "where": "iam.mdx#s3"
+          "status": "covered",
+          "where": "iam.mdx#s1 / LeastPrivilegeSim; iam.mdx#confuse / IamMythsSim"
         },
         {
           "keyword": "IAM role for EC2 instead of access keys",
@@ -725,14 +725,14 @@
         {
           "keyword": "EC2 partition placement group",
           "lesson": "ec2",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "ec2.mdx#s5 / PlacementSim"
         },
         {
           "keyword": "EC2 spread placement group",
           "lesson": "ec2",
-          "status": "partial",
-          "where": "ec2.mdx#challenge"
+          "status": "covered",
+          "where": "ec2.mdx#s5 / PlacementSim"
         }
       ]
     },
@@ -843,8 +843,14 @@
         {
           "keyword": "Amazon Aurora machine learning",
           "lesson": "rds",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "rds.mdx#s6 / QuickCompare"
+        },
+        {
+          "keyword": "Amazon Athena ML (SageMaker inference from SQL)",
+          "lesson": "analytics",
+          "status": "covered",
+          "where": "analytics.mdx#s6 / QuickCompare (Amazon Athena ML) + Takeaway"
         }
       ]
     },
@@ -868,14 +874,14 @@
         {
           "keyword": "Amazon EKS Anywhere",
           "lesson": "containers",
-          "status": "partial",
-          "where": "containers.mdx#s2"
+          "status": "covered",
+          "where": "containers.mdx#s4 / EksPlacementSim; containers.mdx#s5 / QuickCompare"
         },
         {
           "keyword": "AWS Local Zones",
           "lesson": "global-infra",
-          "status": "partial",
-          "where": "monitoring.mdx#s3"
+          "status": "covered",
+          "where": "global-infra.mdx#deep / QuickCompare"
         },
         {
           "keyword": "AWS Snowball Edge Compute Optimized",
@@ -888,6 +894,12 @@
           "lesson": "vpc",
           "status": "covered",
           "where": "vpc.mdx#s6"
+        },
+        {
+          "keyword": "Amazon EKS on Outposts local cluster",
+          "lesson": "containers",
+          "status": "covered",
+          "where": "containers.mdx#s4 / EksPlacementSim"
         }
       ]
     },
@@ -970,14 +982,14 @@
         {
           "keyword": "Auto Scaling step scaling policy",
           "lesson": "asg",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "asg.mdx#dynamic / DynamicPolicySim"
         },
         {
           "keyword": "Auto Scaling simple scaling policy",
           "lesson": "asg",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "asg.mdx#dynamic / DynamicPolicySim"
         }
       ]
     },
@@ -1049,7 +1061,7 @@
           "keyword": "Kinesis Data Firehose destinations (no DynamoDB)",
           "lesson": "kinesis",
           "status": "covered",
-          "where": "kinesis.mdx#s3"
+          "where": "kinesis.mdx#s3 / prose (documented Firehose destination list; DynamoDB not a destination)"
         },
         {
           "keyword": "Kinesis Data Streams (consumer, shard provisioning)",
@@ -1266,14 +1278,14 @@
         {
           "keyword": "S3 Transfer Acceleration pricing (pay only when accelerated)",
           "lesson": "s3",
-          "status": "partial",
+          "status": "covered",
           "where": "s3.mdx#s5 / UploadSim"
         },
         {
           "keyword": "Data transfer in from internet is free",
           "lesson": "global-infra",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "s3.mdx#s5 / UploadSim"
         }
       ]
     },
@@ -1372,8 +1384,8 @@
         {
           "keyword": "EC2 instance store (boot volume)",
           "lesson": "ec2",
-          "status": "partial",
-          "where": "ec2.mdx#s4"
+          "status": "covered",
+          "where": "ec2.mdx#s6"
         }
       ]
     },
@@ -1394,8 +1406,8 @@
         {
           "keyword": "Auto Scaling desired capacity vs min/max",
           "lesson": "asg",
-          "status": "partial",
-          "where": "asg.mdx#s1 / ScalingPolicySim"
+          "status": "covered",
+          "where": "asg.mdx#setup / CapacityRangeSim"
         },
         {
           "keyword": "Auto Scaling target tracking scaling policy",
@@ -1428,8 +1440,8 @@
         {
           "keyword": "Relative per-GB price S3 Standard vs EFS vs EBS",
           "lesson": "storage",
-          "status": "partial",
-          "where": "storage.mdx#s1"
+          "status": "covered",
+          "where": "storage.mdx#s1 / StorageBillSim"
         }
       ]
     },
@@ -1502,8 +1514,8 @@
         {
           "keyword": "ALB query string parameter-based routing",
           "lesson": "elb",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "elb.mdx#s3 / RuleMatchSim"
         }
       ]
     },
@@ -1609,14 +1621,14 @@
         {
           "keyword": "AWS Glue Studio",
           "lesson": "analytics",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "analytics.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "Amazon AppFlow",
           "lesson": "analytics",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "analytics.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "Amazon Athena",
@@ -1638,14 +1650,14 @@
         {
           "keyword": "Auto Scaling AZ rebalancing (launch before terminate)",
           "lesson": "asg",
-          "status": "partial",
-          "where": "asg.mdx#s3 / TerminationSim"
+          "status": "covered",
+          "where": "asg.mdx#health / HealthReplaceSim"
         },
         {
           "keyword": "Auto Scaling unhealthy instance replacement (terminate then launch)",
           "lesson": "asg",
-          "status": "partial",
-          "where": "asg.mdx#s4"
+          "status": "covered",
+          "where": "asg.mdx#health / HealthReplaceSim"
         },
         {
           "keyword": "ELB health check with Auto Scaling",
@@ -1686,8 +1698,8 @@
         {
           "keyword": "ElastiCache (cache-aside, not a durable write store)",
           "lesson": "analytics",
-          "status": "partial",
-          "where": "analytics.mdx#s1 / CacheSim"
+          "status": "covered",
+          "where": "analytics.mdx#s1 / CacheSim; analytics.mdx#s5"
         },
         {
           "keyword": "Aurora cross-Region read replica (read-only)",
@@ -1713,8 +1725,8 @@
         {
           "keyword": "S3 Object Lock bucket default retention (duration, overridden by explicit setting)",
           "lesson": "s3",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "s3.mdx#s2 / RetentionSim"
         },
         {
           "keyword": "S3 Object Lock retention modes (governance, compliance)",
@@ -1741,7 +1753,7 @@
         {
           "keyword": "API Gateway REST API direct integration with AWS service (Kinesis)",
           "lesson": "lambda",
-          "status": "partial",
+          "status": "covered",
           "where": "lambda.mdx#s3 / ApiGatewaySim"
         },
         {
@@ -1775,8 +1787,8 @@
         {
           "keyword": "IAM least privilege",
           "lesson": "iam",
-          "status": "partial",
-          "where": "iam.mdx#s3"
+          "status": "covered",
+          "where": "iam.mdx#s1 / LeastPrivilegeSim"
         }
       ]
     },
@@ -1865,14 +1877,14 @@
         {
           "keyword": "CloudTrail Insights",
           "lesson": "monitoring",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "monitoring.mdx#s3 / monitoring.mdx#s6 QuickCompare"
         },
         {
           "keyword": "AWS Trusted Advisor (service limits checks)",
           "lesson": "monitoring",
-          "status": "partial",
-          "where": "others.mdx#challenge / CostWatchSim"
+          "status": "covered",
+          "where": "monitoring.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "Amazon Athena on CloudTrail logs",
@@ -1900,13 +1912,13 @@
           "keyword": "S3 Cross-Region Replication",
           "lesson": "s3",
           "status": "covered",
-          "where": "analytics.mdx#s4"
+          "where": "s3.mdx#s7 / analytics.mdx#s4"
         },
         {
           "keyword": "S3 static website hosting (static content only)",
           "lesson": "s3",
-          "status": "partial",
-          "where": "cloudfront.mdx#s2"
+          "status": "covered",
+          "where": "s3.mdx#s6 / WebsiteEndpointSim"
         },
         {
           "keyword": "Route 53 geoproximity routing",

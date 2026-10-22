@@ -1,10 +1,16 @@
 ---
 title: "Global Infrastructure: Regions, Availability Zones and edge locations"
 lede: "This lesson covers the principles for placing resources on the AWS global infrastructure: the scope of each resource type within a Region, designing so that a failure in one Availability Zone does not disrupt the whole system, the criteria for choosing between CloudFront and Global Accelerator, and the data flows that incur data transfer charges."
-minutes: 20
-scenes: 6
+minutes: 26
+scenes: 7
 prerequisites: []
 docs:
+  - title: "AWS Direct Connect pricing (data transfer out)"
+    url: "https://aws.amazon.com/directconnect/pricing/"
+    service: "AWS Direct Connect"
+  - title: "Hybrid Connectivity whitepaper: Cost (reduced Direct Connect data transfer rate)"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/hybrid-connectivity/cost.html"
+    service: "AWS Direct Connect"
   - title: "Copy an AMI (Amazon EC2)"
     url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/CopyingAMIs.html"
     service: "Amazon EC2"
@@ -16,6 +22,9 @@ docs:
     service: "AWS Global Accelerator"
   - title: "Amazon S3 Transfer Acceleration"
     url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/transfer-acceleration.html"
+    service: "Amazon S3"
+  - title: "Amazon S3 FAQs (S3 Transfer Acceleration)"
+    url: "https://aws.amazon.com/s3/faqs/"
     service: "Amazon S3"
   - title: "Gateway endpoints for Amazon S3"
     url: "https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-s3.html"
@@ -35,6 +44,36 @@ docs:
   - title: "Endpoints for standard accelerators (Global Accelerator)"
     url: "https://docs.aws.amazon.com/global-accelerator/latest/dg/about-endpoints.html"
     service: "AWS Global Accelerator"
+  - title: "How endpoint weights work (Global Accelerator)"
+    url: "https://docs.aws.amazon.com/global-accelerator/latest/dg/about-endpoints-endpoint-weights.html"
+    service: "AWS Global Accelerator"
+  - title: "Use traffic dials to adjust traffic flow to Regions (Global Accelerator)"
+    url: "https://docs.aws.amazon.com/global-accelerator/latest/dg/about-endpoint-groups-traffic-dial.html"
+    service: "AWS Global Accelerator"
+  - title: "Using AWS Global Accelerator to achieve blue/green deployments (AWS blog)"
+    url: "https://aws.amazon.com/blogs/networking-and-content-delivery/using-aws-global-accelerator-to-achieve-blue-green-deployments/"
+    service: "AWS Global Accelerator"
+  - title: "What is AWS Outposts?"
+    url: "https://docs.aws.amazon.com/outposts/latest/userguide/what-is-outposts.html"
+    service: "AWS Outposts"
+  - title: "Deploy Amazon EKS on-premises with AWS Outposts"
+    url: "https://docs.aws.amazon.com/eks/latest/userguide/eks-outposts.html"
+    service: "AWS Outposts"
+  - title: "What is AWS Local Zones?"
+    url: "https://docs.aws.amazon.com/local-zones/latest/ug/what-is-aws-local-zones.html"
+    service: "AWS Local Zones"
+  - title: "AWS Local Zones FAQs"
+    url: "https://aws.amazon.com/about-aws/global-infrastructure/localzones/faqs/"
+    service: "AWS Local Zones"
+  - title: "What is AWS Wavelength?"
+    url: "https://docs.aws.amazon.com/wavelength/latest/developerguide/what-is-wavelength.html"
+    service: "AWS Wavelength"
+  - title: "Amazon EKS Anywhere FAQs"
+    url: "https://aws.amazon.com/eks/eks-anywhere/faqs/"
+    service: "Amazon EKS Anywhere"
+  - title: "What is Snowball Edge?"
+    url: "https://docs.aws.amazon.com/snowball/latest/developer-guide/whatisedge.html"
+    service: "AWS Snowball Edge"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -46,6 +85,8 @@ import EdgeCacheDemo from "../../components/scenes/EdgeCacheDemo.tsx";
 import GlobalAcceleratorSim from "../../components/scenes/GlobalAcceleratorSim.tsx";
 import EdgeChoiceSim from "../../components/scenes/global-infra/EdgeChoiceSim.tsx";
 import GlobalMythsSim from "../../components/scenes/global-infra/GlobalMythsSim.tsx";
+import BlueGreenSim from "../../components/scenes/global-infra/BlueGreenSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import CostPatterns from "../../components/scenes/CostPatterns.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
@@ -56,13 +97,14 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s3", label: "3 · Availability Zone failure" },
   { href: "#en-s4", label: "4 · CloudFront and S3 Transfer Acceleration" },
   { href: "#en-s5", label: "5 · Global Accelerator" },
-  { href: "#en-s6", label: "6 · Data transfer costs" },
+  { href: "#en-bluegreen", label: "6 · Blue/green with Global Accelerator" },
+  { href: "#en-s6", label: "7 · Data transfer costs" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
 **ShopViet** is an e-commerce system serving users in many countries. Each part below corresponds to one infrastructure design decision; the simulations let you try each option and see which one works correctly and which one leads to an incident.
 </Story>
 
-<Scene id="en-s1" label="Part 1/6" title="Region scope: resources are not automatically available in another Region" questions={["exam1_q41", "exam4_q5"]}>
+<Scene id="en-s1" label="Part 1/7" title="Region scope: resources are not automatically available in another Region" questions={["exam1_q41", "exam4_q5"]}>
 
 A **Region** is an independent geographic area, for example Singapore or Tokyo. Many resources, such as **AMIs** and **EBS snapshots**, exist only in the Region where they were created. ShopViet needs to prepare a recovery plan in Tokyo. Perform each step in turn, or try launching directly in Tokyo to see the result.
 
@@ -72,7 +114,7 @@ A **Region** is an independent geographic area, for example Singapore or Tokyo. 
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/6" title="The scope of each resource type" questions={["exam1_q42", "exam3_q62"]}>
+<Scene id="en-s2" label="Part 2/7" title="The scope of each resource type" questions={["exam1_q42", "exam3_q62"]}>
 
 A Region consists of multiple **Availability Zones (AZs)**: data centers with independent power and networking, connected to each other by a private low-latency network. The scope of a resource determines its fault tolerance. Select each ShopViet resource to see its scope.
 
@@ -82,7 +124,7 @@ A Region consists of multiple **Availability Zones (AZs)**: data centers with in
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/6" title="The impact of an Availability Zone failure" questions={["exam1_q2", "exam2_q8", "exam2_q32"]}>
+<Scene id="en-s3" label="Part 3/7" title="The impact of an Availability Zone failure" questions={["exam1_q2", "exam2_q8", "exam2_q32"]}>
 
 ShopViet runs 2 EC2 web servers behind a load balancer. Each dot represents a user request. Choose a server placement, then trigger a failure to see the impact.
 
@@ -92,19 +134,19 @@ ShopViet runs 2 EC2 web servers behind a load balancer. Each dot represents a us
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/6" title="Edge locations: CloudFront for downloads, S3 Transfer Acceleration for uploads" questions={["exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
+<Scene id="en-s4" label="Part 4/7" title="Edge locations: CloudFront caches content, S3 Transfer Acceleration speeds transfers to and from a bucket" questions={["exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
 
 **Edge locations** are AWS points of presence located close to users, far more numerous than Regions. **CloudFront** caches content at these locations; the origin can be S3, an ALB or an on-premises server. ShopViet's product images are stored in S3 in Singapore. Fetch an image twice to compare the results.
 
 <EdgeCacheDemo client:visible />
 
-In the other direction, when a distant supplier **uploads** large files to S3, the right solution is **S3 Transfer Acceleration**: data enters the edge location close to the upload source, then travels over the AWS network to the bucket; this solution is often combined with **multipart upload**.
+**S3 Transfer Acceleration** also uses edge locations, but not to cache content: data enters the edge location close to the client, then travels over an optimized AWS network path to the bucket. According to the S3 FAQs, Transfer Acceleration speeds up long-distance transfers **to and from** a single bucket, meaning both uploads (PUT) and downloads (GET), and helps most with larger objects. When suppliers on several continents both upload and download videos of up to 10 GB from the Singapore bucket, enabling Transfer Acceleration alone improves both directions; large uploads are usually combined with **multipart upload**. AWS suggests considering CloudFront's PUT/POST when objects or the data set are smaller than 1 GB; for larger files, Transfer Acceleration gives higher throughput.
 
-<Takeaway>High latency when distant users fetch content: CloudFront (even when the backend must stay where it is). Slow uploads of large files to S3: S3 Transfer Acceleration combined with multipart upload. A requirement in both directions: use both together.</Takeaway>
+<Takeaway>Many distant users repeatedly fetching the same content: CloudFront caches it at edge locations (even when the backend must stay where it is). Large files (about 1 GB and up) moved over long distances to or from an S3 bucket, uploads and downloads alike: S3 Transfer Acceleration (combine uploads with multipart upload). Files under 1 GB: consider CloudFront PUT/POST.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s5" label="Part 5/6" title="Global Accelerator: static IP addresses, TCP/UDP and failover between Regions" questions={["exam1_q59", "exam2_q7", "exam2_q22", "exam3_q8", "exam3_q45", "exam4_q58", "exam5_q4", "exam5_q30", "exam5_q55", "exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
+<Scene id="en-s5" label="Part 5/7" title="Global Accelerator: static IP addresses, TCP/UDP and failover between Regions" questions={["exam1_q59", "exam2_q7", "exam2_q22", "exam3_q8", "exam3_q45", "exam4_q58", "exam5_q4", "exam5_q30", "exam5_q55", "exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
 
 **AWS Global Accelerator** also uses edge locations but does not cache content. The service provides **2 static anycast IPv4 addresses** (dual-stack: 2 additional IPv6 addresses), receives TCP/UDP traffic at the edge location closest to the user, then carries it over the AWS private network to the nearest healthy endpoint (ALB, NLB, EC2 or Elastic IP) in one or more Regions. The simulation below compares it with a DNS-only approach when a Region fails:
 
@@ -118,13 +160,28 @@ The three services all use edge locations but solve three different problems. Ch
 
 </Scene>
 
-<Scene id="en-s6" label="Part 6/6" title="Data flows that incur data transfer charges" questions={["exam2_q62", "exam3_q47", "exam5_q2"]}>
+<Scene id="en-bluegreen" label="Part 6/7" title="Global blue/green: shift traffic with endpoint weights instead of DNS" questions={["exam2_q22"]}>
 
-When ShopViet's AWS bill grows, the cause is often not the unit price of a service but data flows that were not designed well. Below are three scenarios that commonly incur charges. Choose a scenario and compare the two options.
+Two days before a major sale, ShopViet needs to test a new version (green) of its global application on as many users as possible, while most users connect from mobile phones. The current version (blue) and green run side by side. There are two ways to send part of the traffic to green:
+
+- **Route 53 weighted routing**: Route 53 answers DNS queries according to the weights of the records. A change reaches a device only when the DNS answer cached by the device or its resolver expires; some devices and resolvers cache answers for long periods, so there is no way to know when every user gets the new address.
+- **Global Accelerator**: users always connect to 2 static anycast IP addresses. The **endpoint weight** (0–255, default 128) sets the proportion of traffic between the endpoints in an endpoint group; a weight of 0 stops traffic to that endpoint. The **traffic dial** (0–100%, default 100%) sets the percentage of traffic to a whole endpoint group (one Region) and applies only to new connections. Weight and traffic dial changes take effect within seconds, independent of DNS caching.
+
+Choose a mechanism, set the share sent to green and apply the change. The cache time of each phone in the simulation is only an illustration.
+
+<BlueGreenSim client:visible />
+
+<Takeaway>Blue/green for a global application whose mobile users are affected by DNS caching, with a fast and controlled traffic shift: Global Accelerator with endpoint weights (between endpoints) and traffic dials (between Regions). Route 53 weighted routing fits when the delay caused by DNS caching is acceptable. CodeDeploy deploys code; it does not distribute traffic between environments.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s6" label="Part 7/7" title="Data flows that incur data transfer charges" questions={["exam2_q62", "exam3_q47", "exam5_q2"]}>
+
+When ShopViet's AWS bill grows, the cause is often not the unit price of a service but data flows that were not designed well. Below are three scenarios that commonly incur charges. Choose a scenario and compare the options.
 
 <CostPatterns client:visible />
 
-<Takeaway>A Read Replica in the same Region has no replication charge; a Read Replica in another Region does. EC2 in a private subnet reading and writing S3 in the same Region: use an S3 gateway endpoint instead of a NAT gateway. Keep large traffic volumes inside AWS and send only the small amount of data out.</Takeaway>
+<Takeaway>A Read Replica in the same Region has no replication charge; a Read Replica in another Region does. EC2 in a private subnet reading and writing S3 in the same Region: use an S3 gateway endpoint instead of a NAT gateway. Keep large traffic volumes inside AWS and send only the small amount of data out. Data sent out over Direct Connect is charged at the reduced Direct Connect data transfer rate, lower than internet data transfer out rates.</Takeaway>
 
 </Scene>
 
@@ -134,7 +191,7 @@ The four requirements below look simple but are often configured wrongly as Shop
 
 <GlobalMythsSim client:visible />
 
-<Takeaway>EFS can be accessed from another Region through inter-Region VPC peering, without copying data. A public NAT gateway in zonal mode is placed in a public subnet (regional mode does not need a public subnet); an egress-only internet gateway is for IPv6 only. To identify the same AZ as another account: use the AZ ID. To accelerate both downloads and uploads: use CloudFront and S3 Transfer Acceleration together.</Takeaway>
+<Takeaway>EFS can be accessed from another Region through inter-Region VPC peering, without copying data. A public NAT gateway in zonal mode is placed in a public subnet (regional mode does not need a public subnet); an egress-only internet gateway is for IPv6 only. To identify the same AZ as another account: use the AZ ID. Content that many users view repeatedly: cache it with CloudFront; long-distance transfers to or from a bucket (uploads and downloads alike): S3 Transfer Acceleration; an application that needs both combines them.</Takeaway>
 
 </Scene>
 
@@ -182,11 +239,37 @@ Check your understanding: as the designer of the ShopViet system, which option i
 
 </Scene>
 
-<Scene id="en-deep" label="Going further" title="Requirements for data stored on premises" questions={["exam1_q27"]}>
-  <details class="deep">
-    <summary>AWS Outposts</summary>
-    <div class="deep-body">
-      <p><b>AWS Outposts</b> is AWS hardware installed in the organization's own data center, running AWS services with the same APIs and tools. Outposts fits when regulations require data and workloads to stay on premises but the organization still needs AWS managed services.</p>
-    </div>
-  </details>
+<Scene id="en-deep" label="Going further" title="Data that must stay on premises: Outposts and infrastructure close to users" questions={["exam1_q27"]}>
+
+ShopViet's payment subsidiary runs Kubernetes in its own data center. Regulations require all data and workloads to stay physically in that data center, but the infrastructure team wants an AWS-managed Kubernetes control plane, CloudWatch and IAM.
+
+**AWS Outposts** is a fully managed service that extends AWS infrastructure, services, APIs and tools to customer premises; AWS operates, monitors and manages the Outpost capacity as part of a Region. **Amazon EKS on Outposts** has two options: *extended clusters* (control plane in the Region, nodes on the Outpost) and *local clusters* (control plane and nodes on the Outpost); with both, the control plane is fully managed by AWS. AWS recommends local clusters when Kubernetes operations must continue through network disconnects from the Region or when data residency mandates require it.
+
+The services below also bring resources close to users or on premises, but they do not meet this requirement. Select each one to compare.
+
+<QuickCompare client:visible items={[
+  { name: "AWS Local Zones",
+    use: "Places compute, storage, database and other select AWS services close to large population and industry centers, giving users there low-latency access without owning and operating a data center. Resources are managed through the parent Region's console and API.",
+    notHere: "A Local Zone is AWS-operated infrastructure in a metro area, not in ShopViet's data center; data and workloads leave the premises.",
+    instead: "An Outposts rack in the data center, running an Amazon EKS local cluster." },
+  { name: "AWS Wavelength",
+    use: "Deploys AWS compute and storage at the edge of communications service providers' networks to deliver low latency to mobile devices. A Wavelength Zone is a logical extension of the Region.",
+    notHere: "The infrastructure sits in the carrier's network, not in ShopViet's data center.",
+    instead: "An Outposts rack in the data center." },
+  { name: "Amazon EKS Anywhere",
+    use: "Customer-managed Kubernetes on customer infrastructure (VMware vSphere, bare metal, Nutanix…), able to run disconnected from a Region.",
+    notHere: "The customer is responsible for cluster lifecycle operations and maintenance; there is no AWS-managed control plane. AWS also states that EKS Anywhere is not supported on Outposts.",
+    instead: "Amazon EKS on Outposts (local cluster)." },
+  { name: "AWS Snowball Edge",
+    use: "A device with on-board storage and compute for offline data transfer and edge processing.",
+    notHere: "Snowball Edge is no longer available to new customers; for edge computing, AWS points customers to Outposts.",
+    instead: "An Outposts rack in the data center." },
+  { name: "Direct Connect + Amazon EKS in a Region",
+    use: "A private network connection between the data center and a Region; workloads run on EKS in the Region.",
+    notHere: "Workloads and data live in the Region, which does not meet the requirement to keep data on premises.",
+    instead: "An Outposts rack in the data center." },
+]} />
+
+<Takeaway>Data and workloads must stay in your own data center but you need AWS managed services: AWS Outposts (for Kubernetes: an Amazon EKS local cluster on Outposts). Low latency for users in a metro area without your own data center: Local Zones. Low latency for mobile devices through a carrier network: Wavelength.</Takeaway>
+
 </Scene>

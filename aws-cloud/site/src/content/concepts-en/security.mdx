@@ -1,10 +1,14 @@
 ---
 title: "WAF, Shield, GuardDuty, Macie: protection and detection"
 lede: "The ShopViet system is starting to become a target for attacks. This lesson covers the protection layer in front of the application with AWS WAF, then simulates six real incidents (DDoS, a server infected with cryptocurrency mining software, software vulnerabilities, customer data files stored in the wrong place, a new account missing rules, scattered logs) to identify the service that prevents or detects each incident."
-minutes: 15
-scenes: 2
+minutes: 18
+scenes: 3
 prerequisites: ["cloudfront", "vpc"]
 docs:
+  - title: "AWS WAF: setting rule priority (evaluation order)"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/web-acl-processing-order.html"
+  - title: "AWS WAF rule actions (terminating actions)"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-action.html"
   - title: "AWS WAF rules"
     url: "https://docs.aws.amazon.com/waf/latest/developerguide/waf-rules.html"
   - title: "Rate-based rule statement"
@@ -25,40 +29,83 @@ docs:
     url: "https://docs.aws.amazon.com/guardduty/latest/ug/what-is-guardduty.html"
   - title: "What is Amazon Macie?"
     url: "https://docs.aws.amazon.com/macie/latest/user/what-is-macie.html"
+  - title: "Introduction to AWS Security Hub"
+    url: "https://docs.aws.amazon.com/securityhub/latest/userguide/what-is-securityhub-v2.html"
+  - title: "Introduction to AWS Security Hub CSPM"
+    url: "https://docs.aws.amazon.com/securityhub/latest/userguide/what-is-securityhub.html"
+  - title: "Create a server in a virtual private cloud (AWS Transfer Family)"
+    url: "https://docs.aws.amazon.com/transfer/latest/userguide/create-server-in-vpc.html"
+  - title: "Security groups for your VPC"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html"
+  - title: "What is Amazon Route 53?"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/Welcome.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
 import Story from "../../components/lessons/global-infra/Story.astro";
 import WafSim from "../../components/scenes/security/WafSim.tsx";
 import IncidentSim from "../../components/scenes/security/IncidentSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#en-s1", label: "1 · AWS WAF" },
   { href: "#en-s2", label: "2 · Detecting security incidents" },
+  { href: "#en-s3", label: "3 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
 The ShopViet system records attack activity: bots probing for SQL injection, one IP scanning continuously and DDoS traffic. This lesson covers the protection layer in front of the application (**AWS WAF**, **Shield**) and the services that **detect** unusual activity inside the account.
 </Story>
 
-<Scene id="en-s1" label="Part 1/2" title="AWS WAF: filtering malicious requests before they reach the application" questions={["exam5_q13", "exam1_q6", "exam5_q45", "exam2_q30", "exam6_q60", "exam5_q57", "exam2_q32"]}>
+<Scene id="en-s1" label="Part 1/3" title="AWS WAF: filtering malicious requests before they reach the application" questions={["exam5_q13", "exam1_q6", "exam5_q45", "exam2_q30", "exam6_q60", "exam5_q57", "exam2_q32"]}>
 
-Five kinds of requests are being sent to ShopViet. Turn on each rule, choose the resource associated with AWS WAF, then send the requests.
+Six kinds of requests are being sent to ShopViet, including a legitimate shipping partner calling from abroad with a fixed IP address. Turn on each rule, choose the resource associated with AWS WAF, then send the requests.
+
+AWS WAF evaluates the rules in a web ACL by **priority**, from the lowest numeric setting up, until it finds a matching rule with a terminating action (Allow or Block) or exhausts all rules. So when ShopViet blocks countries with a geo match rule but must still allow some partner IP addresses, it places an IP set rule with those addresses and the Allow action at a lower priority number than the geo match rule: the partner's request is allowed immediately and is never evaluated by the geo match rule.
 
 <WafSim client:visible />
 
-<Takeaway>SQL injection, XSS: managed rule. Restricting by country: geo match. One malicious IP: IP set. Requests at an unusual rate: rate-based rule (evaluation window of 1, 2, 5 or 10 minutes, 5 minutes by default; minimum threshold of 10 requests). AWS WAF is associated with CloudFront, ALB, API Gateway REST APIs and some other services (AppSync, Cognito, App Runner, Verified Access, Amplify); it is not attached directly to EC2.</Takeaway>
+<Takeaway>SQL injection, XSS: managed rule. Restricting by country: geo match. One malicious IP: IP set with the Block action. An exception for partner IP addresses in a blocked country: IP set with the Allow action at a lower priority number than the geo match rule. Requests at an unusual rate: rate-based rule (evaluation window of 1, 2, 5 or 10 minutes, 5 minutes by default; minimum threshold of 10 requests). AWS WAF is associated with CloudFront, ALB, API Gateway REST APIs and some other services (AppSync, Cognito, App Runner, Verified Access, Amplify); it is not attached directly to EC2. AWS WAF inspects only **HTTP and HTTPS** requests; SFTP (SSH) traffic to an AWS Transfer Family endpoint does not pass through AWS WAF, so source IPs for SFTP are restricted with the security group of a VPC hosted endpoint.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/2" title="Six security incidents and the matching services" questions={["exam3_q58", "exam6_q4", "exam1_q36", "exam3_q1", "exam6_q14", "exam2_q44"]}>
+<Scene id="en-s2" label="Part 2/3" title="Six security incidents and the matching services" questions={["exam3_q58", "exam6_q4", "exam1_q36", "exam3_q1", "exam6_q14", "exam2_q44"]}>
 
 AWS WAF filters only web requests. Many other incidents happen **inside** the account: a compromised server, a sensitive file stored in the wrong place, a new account missing its configuration. Choose an incident, turn the matching service on or off, then simulate the incident.
 
 <IncidentSim client:visible />
 
 <Takeaway>Large-scale DDoS, with support from the AWS team and reports: Shield Advanced. A compromised server mining cryptocurrency: GuardDuty. Software vulnerabilities on EC2: Inspector. Personal data in S3: Macie. Applying consistent rules across many accounts: Firewall Manager. Centralizing security logs: Security Lake.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s3" label="Part 3/3" title="Quick comparison: services easily confused with the protection layer" questions={["exam5_q13", "exam5_q62"]}>
+
+Some services are often considered alongside AWS WAF but solve a different problem: aggregating alerts, managing rules across accounts, resolving domain names, or filtering non-HTTP traffic. Select each item to see what it is for and what fits the ShopViet situation.
+
+<QuickCompare client:visible items={[
+  { name: "AWS Security Hub",
+    use: "Aggregates and prioritizes security issues across accounts: receives findings from GuardDuty, Inspector, Macie and third-party products, correlates the signals, and offers automated response workflows. Its **Security Hub CSPM** component runs configuration checks against standards such as AWS Foundational Security Best Practices, CIS, PCI DSS and NIST and generates control findings.",
+    notHere: "ShopViet's web application behind CloudFront is under SQL injection and cross-site scripting attacks. Security Hub only reports security posture and alerts; it is not in the request path, so it cannot block any request.",
+    instead: "Associate an **AWS WAF** web ACL (managed rules for SQLi and XSS) with the CloudFront distribution (Part 1). Use Security Hub afterwards to track the findings centrally." },
+  { name: "AWS Firewall Manager",
+    use: "Set up protections once (AWS WAF, Shield Advanced, security groups, network ACLs, Network Firewall, Route 53 Resolver DNS Firewall) and apply them automatically across accounts and resources, including accounts and resources added later.",
+    notHere: "Firewall Manager does not inspect requests itself; it centrally manages the rules of other services. For one distribution under attack in one account, the AWS WAF web ACL is the layer that blocks requests.",
+    instead: "An **AWS WAF** web ACL on CloudFront. When ShopViet has many accounts that need the same rule set, use Firewall Manager to deploy that web ACL across the organization." },
+  { name: "Amazon Route 53",
+    use: "A highly available DNS service: domain registration, DNS routing and health checking.",
+    notHere: "Route 53 only answers DNS queries; HTTP requests carrying SQL injection go straight to CloudFront and never pass through Route 53 for content inspection.",
+    instead: "**AWS WAF** on CloudFront. Route 53 still points `shopviet.vn` at the distribution as usual." },
+  { name: "AWS WAF for SFTP",
+    use: "AWS WAF monitors **HTTP and HTTPS** requests to protected resources: CloudFront, API Gateway REST APIs, ALB, AppSync, Cognito user pools, App Runner, Verified Access, Amplify.",
+    notHere: "ShopViet's partners upload files over SFTP to AWS Transfer Family. SFTP runs over SSH, not HTTP, and a Transfer Family endpoint is not a resource type AWS WAF protects, so a WAF IP set cannot restrict the source IPs.",
+    instead: "A **VPC hosted, Internet Facing** endpoint with an Elastic IP address per subnet; the endpoint's **security group** allows SSH (port 22 by default) only from the partners' IP ranges. Storage backend choices for Transfer Family are covered in the data migration lesson, part 2." },
+]} />
+
+AWS Transfer Family and its storage backend choices (Amazon S3 or Amazon EFS) are covered in the [data migration lesson, part 2](/concepts/storage-migration/#en-s2).
+
+<Takeaway>Blocking malicious web requests: AWS WAF. A central, prioritized view of security findings across accounts: Security Hub (it does not block traffic). The same rules across many accounts: Firewall Manager. Restricting IPs for non-HTTP traffic such as SFTP: security groups (or network ACLs) at the network layer.</Takeaway>
 
 </Scene>
 
@@ -73,7 +120,7 @@ Sort the services that stop traffic and the services that detect problems. On a 
   ]}
   cards={[
     ["AWS WAF", "protect"], ["AWS Shield Advanced", "protect"], ["AWS Firewall Manager", "protect"],
-    ["Amazon GuardDuty", "detect"], ["Amazon Inspector", "detect"], ["Amazon Macie", "detect"], ["Amazon Security Lake", "detect"],
+    ["Amazon GuardDuty", "detect"], ["Amazon Inspector", "detect"], ["Amazon Macie", "detect"], ["Amazon Security Lake", "detect"], ["AWS Security Hub", "detect"],
   ]}
 />
 
@@ -96,6 +143,14 @@ Check your understanding: as the designer of the ShopViet system, which option i
     opts: ["Amazon GuardDuty", "AWS Config", "Amazon Macie"],
     a: 0,
     why: "GuardDuty has a dedicated finding type for cryptocurrency mining activity on EC2." },
+  { q: "ShopViet's partners upload data over SFTP to AWS Transfer Family; only the partners' IP ranges may connect. Which mechanism restricts the source IPs?",
+    opts: ["A VPC hosted endpoint with Elastic IP addresses and a security group that allows only the partners' IP ranges", "An AWS WAF IP set attached to the SFTP endpoint", "AWS Security Hub"],
+    a: 0,
+    why: "AWS WAF inspects only HTTP and HTTPS requests; SFTP runs over SSH. The security group of a VPC hosted endpoint filters by source IP, protocol and port." },
+  { q: "The security team wants one place to view and prioritize findings from GuardDuty, Inspector and Macie across all accounts, plus configuration checks against AWS Foundational Security Best Practices. Which service fits?",
+    opts: ["AWS Security Hub", "AWS WAF", "AWS Shield Advanced"],
+    a: 0,
+    why: "Security Hub aggregates findings and assesses security posture; it does not block requests like WAF or mitigate DDoS like Shield." },
 ]} />
 
 </Scene>

@@ -1,10 +1,16 @@
 ---
 title: "Global Infrastructure: Region, Availability Zone và Edge location"
 lede: "Bài học trình bày các nguyên tắc bố trí tài nguyên trên hạ tầng toàn cầu của AWS: phạm vi của từng loại tài nguyên trong một Region, thiết kế để sự cố tại một Availability Zone không làm gián đoạn toàn bộ hệ thống, tiêu chí lựa chọn giữa CloudFront và Global Accelerator, và các luồng dữ liệu phát sinh chi phí data transfer."
-minutes: 20
-scenes: 6
+minutes: 26
+scenes: 7
 prerequisites: []
 docs:
+  - title: "AWS Direct Connect pricing (data transfer out)"
+    url: "https://aws.amazon.com/directconnect/pricing/"
+    service: "AWS Direct Connect"
+  - title: "Hybrid Connectivity whitepaper: Cost (reduced Direct Connect data transfer rate)"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/hybrid-connectivity/cost.html"
+    service: "AWS Direct Connect"
   - title: "Copy an AMI (Amazon EC2)"
     url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/CopyingAMIs.html"
     service: "Amazon EC2"
@@ -16,6 +22,9 @@ docs:
     service: "AWS Global Accelerator"
   - title: "Amazon S3 Transfer Acceleration"
     url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/transfer-acceleration.html"
+    service: "Amazon S3"
+  - title: "Amazon S3 FAQs (S3 Transfer Acceleration)"
+    url: "https://aws.amazon.com/s3/faqs/"
     service: "Amazon S3"
   - title: "Gateway endpoints for Amazon S3"
     url: "https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-s3.html"
@@ -35,6 +44,36 @@ docs:
   - title: "Endpoints for standard accelerators (Global Accelerator)"
     url: "https://docs.aws.amazon.com/global-accelerator/latest/dg/about-endpoints.html"
     service: "AWS Global Accelerator"
+  - title: "How endpoint weights work (Global Accelerator)"
+    url: "https://docs.aws.amazon.com/global-accelerator/latest/dg/about-endpoints-endpoint-weights.html"
+    service: "AWS Global Accelerator"
+  - title: "Use traffic dials to adjust traffic flow to Regions (Global Accelerator)"
+    url: "https://docs.aws.amazon.com/global-accelerator/latest/dg/about-endpoint-groups-traffic-dial.html"
+    service: "AWS Global Accelerator"
+  - title: "Using AWS Global Accelerator to achieve blue/green deployments (AWS blog)"
+    url: "https://aws.amazon.com/blogs/networking-and-content-delivery/using-aws-global-accelerator-to-achieve-blue-green-deployments/"
+    service: "AWS Global Accelerator"
+  - title: "What is AWS Outposts?"
+    url: "https://docs.aws.amazon.com/outposts/latest/userguide/what-is-outposts.html"
+    service: "AWS Outposts"
+  - title: "Deploy Amazon EKS on-premises with AWS Outposts"
+    url: "https://docs.aws.amazon.com/eks/latest/userguide/eks-outposts.html"
+    service: "AWS Outposts"
+  - title: "What is AWS Local Zones?"
+    url: "https://docs.aws.amazon.com/local-zones/latest/ug/what-is-aws-local-zones.html"
+    service: "AWS Local Zones"
+  - title: "AWS Local Zones FAQs"
+    url: "https://aws.amazon.com/about-aws/global-infrastructure/localzones/faqs/"
+    service: "AWS Local Zones"
+  - title: "What is AWS Wavelength?"
+    url: "https://docs.aws.amazon.com/wavelength/latest/developerguide/what-is-wavelength.html"
+    service: "AWS Wavelength"
+  - title: "Amazon EKS Anywhere FAQs"
+    url: "https://aws.amazon.com/eks/eks-anywhere/faqs/"
+    service: "Amazon EKS Anywhere"
+  - title: "What is Snowball Edge?"
+    url: "https://docs.aws.amazon.com/snowball/latest/developer-guide/whatisedge.html"
+    service: "AWS Snowball Edge"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -46,6 +85,8 @@ import EdgeCacheDemo from "../../components/scenes/EdgeCacheDemo.tsx";
 import GlobalAcceleratorSim from "../../components/scenes/GlobalAcceleratorSim.tsx";
 import EdgeChoiceSim from "../../components/scenes/global-infra/EdgeChoiceSim.tsx";
 import GlobalMythsSim from "../../components/scenes/global-infra/GlobalMythsSim.tsx";
+import BlueGreenSim from "../../components/scenes/global-infra/BlueGreenSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import CostPatterns from "../../components/scenes/CostPatterns.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
@@ -56,13 +97,14 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s3", label: "3 · Sự cố Availability Zone" },
   { href: "#s4", label: "4 · CloudFront và S3 Transfer Acceleration" },
   { href: "#s5", label: "5 · Global Accelerator" },
-  { href: "#s6", label: "6 · Chi phí data transfer" },
+  { href: "#bluegreen", label: "6 · Blue/green với Global Accelerator" },
+  { href: "#s6", label: "7 · Chi phí data transfer" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
 **ShopViet** là hệ thống thương mại điện tử phục vụ người dùng tại nhiều quốc gia. Mỗi phần dưới đây tương ứng với một quyết định thiết kế hạ tầng; các mô phỏng cho phép thử từng phương án và quan sát phương án nào hoạt động đúng, phương án nào dẫn tới sự cố.
 </Story>
 
-<Scene id="s1" label="Phần 1/6" title="Phạm vi Region: tài nguyên không tự động khả dụng tại Region khác" questions={["exam1_q41", "exam4_q5"]}>
+<Scene id="s1" label="Phần 1/7" title="Phạm vi Region: tài nguyên không tự động khả dụng tại Region khác" questions={["exam1_q41", "exam4_q5"]}>
 
 **Region** là một khu vực địa lý độc lập, ví dụ Singapore hoặc Tokyo. Nhiều tài nguyên như **AMI** và **EBS snapshot** chỉ tồn tại trong Region nơi chúng được tạo. ShopViet cần chuẩn bị phương án khôi phục tại Tokyo. Thực hiện lần lượt từng bước, hoặc thử launch trực tiếp tại Tokyo để quan sát kết quả.
 
@@ -72,7 +114,7 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/6" title="Phạm vi của từng loại tài nguyên" questions={["exam1_q42", "exam3_q62"]}>
+<Scene id="s2" label="Phần 2/7" title="Phạm vi của từng loại tài nguyên" questions={["exam1_q42", "exam3_q62"]}>
 
 Một Region gồm nhiều **Availability Zone (AZ)**: các data center độc lập về nguồn điện và mạng, kết nối với nhau bằng mạng riêng có độ trễ thấp. Phạm vi của tài nguyên quyết định mức độ chịu lỗi của tài nguyên đó. Chọn từng tài nguyên của ShopViet để xem phạm vi tương ứng.
 
@@ -82,7 +124,7 @@ Một Region gồm nhiều **Availability Zone (AZ)**: các data center độc l
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/6" title="Ảnh hưởng của sự cố Availability Zone" questions={["exam1_q2", "exam2_q8", "exam2_q32"]}>
+<Scene id="s3" label="Phần 3/7" title="Ảnh hưởng của sự cố Availability Zone" questions={["exam1_q2", "exam2_q8", "exam2_q32"]}>
 
 ShopViet vận hành 2 web server EC2 phía sau một Load Balancer. Mỗi chấm biểu diễn một request của người dùng. Chọn cách bố trí server, sau đó tạo sự cố để quan sát ảnh hưởng.
 
@@ -92,19 +134,19 @@ ShopViet vận hành 2 web server EC2 phía sau một Load Balancer. Mỗi chấ
 
 </Scene>
 
-<Scene id="s4" label="Phần 4/6" title="Edge location: CloudFront cho chiều tải xuống, S3 Transfer Acceleration cho chiều tải lên" questions={["exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
+<Scene id="s4" label="Phần 4/7" title="Edge location: CloudFront cache nội dung, S3 Transfer Acceleration tăng tốc truyền tới và từ bucket" questions={["exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
 
 **Edge location** là các điểm hiện diện của AWS đặt gần người dùng, với số lượng lớn hơn nhiều so với số Region. **CloudFront** cache nội dung tại các điểm này; origin có thể là S3, ALB hoặc máy chủ on-premises. Ảnh sản phẩm của ShopViet được lưu tại S3 Singapore. Truy xuất ảnh hai lần để so sánh kết quả.
 
 <EdgeCacheDemo client:visible />
 
-Ở chiều ngược lại, khi nhà cung cấp ở xa **tải lên** tệp dung lượng lớn vào S3, giải pháp phù hợp là **S3 Transfer Acceleration**: dữ liệu đi vào edge location gần nguồn tải lên, sau đó truyền qua mạng AWS tới bucket; giải pháp này thường được kết hợp với **multipart upload**.
+**S3 Transfer Acceleration** cũng dùng edge location nhưng không nhằm cache nội dung: dữ liệu đi vào edge location gần client, sau đó truyền qua đường mạng tối ưu của AWS tới bucket. Theo S3 FAQ, Transfer Acceleration tăng tốc truyền dữ liệu đường dài **tới và từ** một bucket, tức cả tải lên (PUT) lẫn tải xuống (GET), và phát huy rõ nhất với object lớn. Khi nhà cung cấp ở nhiều châu lục vừa tải lên vừa tải xuống video tới 10 GB từ bucket Singapore, chỉ cần bật Transfer Acceleration là cải thiện được cả hai chiều; tải lên tệp lớn thường kết hợp thêm **multipart upload**. AWS khuyến nghị cân nhắc PUT/POST qua CloudFront khi object hoặc tập dữ liệu nhỏ hơn 1 GB; với tệp lớn hơn, Transfer Acceleration cho throughput cao hơn.
 
-<Takeaway>Độ trễ cao khi người dùng ở xa truy xuất nội dung: CloudFront (kể cả khi backend phải duy trì tại vị trí hiện tại). Tải lên tệp dung lượng lớn vào S3 chậm: S3 Transfer Acceleration kết hợp multipart upload. Yêu cầu cả hai chiều: sử dụng đồng thời cả hai.</Takeaway>
+<Takeaway>Nhiều người dùng ở xa xem lặp lại cùng một nội dung: CloudFront cache tại edge location (kể cả khi backend phải duy trì tại vị trí hiện tại). Truyền tệp lớn (từ khoảng 1 GB) qua khoảng cách xa tới hoặc từ một bucket S3, cả tải lên lẫn tải xuống: S3 Transfer Acceleration (tải lên kết hợp multipart upload). Tệp nhỏ hơn 1 GB: cân nhắc PUT/POST qua CloudFront.</Takeaway>
 
 </Scene>
 
-<Scene id="s5" label="Phần 5/6" title="Global Accelerator: địa chỉ IP tĩnh, TCP/UDP và failover giữa các Region" questions={["exam1_q59", "exam2_q7", "exam2_q22", "exam3_q8", "exam3_q45", "exam4_q58", "exam5_q4", "exam5_q30", "exam5_q55", "exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
+<Scene id="s5" label="Phần 5/7" title="Global Accelerator: địa chỉ IP tĩnh, TCP/UDP và failover giữa các Region" questions={["exam1_q59", "exam2_q7", "exam2_q22", "exam3_q8", "exam3_q45", "exam4_q58", "exam5_q4", "exam5_q30", "exam5_q55", "exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
 
 **AWS Global Accelerator** cũng sử dụng edge location nhưng không cache nội dung. Dịch vụ cung cấp **2 địa chỉ IPv4 tĩnh anycast** (dual-stack: thêm 2 địa chỉ IPv6), tiếp nhận traffic TCP/UDP tại edge location gần người dùng nhất, sau đó chuyển qua mạng riêng của AWS tới endpoint healthy gần nhất (ALB, NLB, EC2 hoặc Elastic IP) tại một hoặc nhiều Region. Mô phỏng dưới đây so sánh với phương án chỉ sử dụng DNS khi một Region gặp sự cố:
 
@@ -118,13 +160,28 @@ Ba dịch vụ cùng sử dụng edge location nhưng giải quyết ba bài to�
 
 </Scene>
 
-<Scene id="s6" label="Phần 6/6" title="Các luồng dữ liệu phát sinh chi phí data transfer" questions={["exam2_q62", "exam3_q47", "exam5_q2"]}>
+<Scene id="bluegreen" label="Phần 6/7" title="Blue/green toàn cầu: chuyển traffic bằng endpoint weight thay vì DNS" questions={["exam2_q22"]}>
 
-Chi phí AWS của ShopViet tăng thường không do đơn giá dịch vụ mà do luồng dữ liệu được thiết kế chưa phù hợp. Dưới đây là ba tình huống thường phát sinh chi phí. Chọn một tình huống và so sánh hai phương án.
+Hai ngày trước đợt khuyến mãi lớn, ShopViet cần thử phiên bản mới (green) của ứng dụng toàn cầu trên càng nhiều người dùng càng tốt, trong khi phần lớn người dùng truy cập bằng điện thoại. Phiên bản hiện tại (blue) và green chạy song song. Có hai cơ chế chuyển một phần traffic sang green:
+
+- **Route 53 weighted routing**: Route 53 trả lời truy vấn DNS theo trọng số của các record. Thay đổi chỉ tới được một thiết bị khi câu trả lời DNS trong cache của thiết bị hoặc resolver hết hạn; một số thiết bị và resolver giữ cache trong thời gian dài, nên không xác định được khi nào mọi người dùng nhận địa chỉ mới.
+- **Global Accelerator**: người dùng luôn kết nối tới 2 địa chỉ IP anycast tĩnh. **Endpoint weight** (0–255, mặc định 128) quyết định tỷ lệ traffic giữa các endpoint trong một endpoint group; weight bằng 0 dừng gửi traffic tới endpoint đó. **Traffic dial** (0–100%, mặc định 100%) quyết định tỷ lệ traffic tới cả một endpoint group (một Region) và chỉ áp dụng cho kết nối mới. Thay đổi weight và traffic dial có hiệu lực trong vài giây, không phụ thuộc DNS cache.
+
+Chọn cơ chế, đặt tỷ lệ chuyển sang green và áp dụng thay đổi. Thời gian cache của từng điện thoại trong mô phỏng chỉ mang tính minh hoạ.
+
+<BlueGreenSim client:visible />
+
+<Takeaway>Blue/green cho ứng dụng toàn cầu, người dùng di động chịu ảnh hưởng của DNS cache, cần chuyển traffic nhanh và có kiểm soát: Global Accelerator với endpoint weight (giữa các endpoint) và traffic dial (giữa các Region). Route 53 weighted phù hợp khi chấp nhận được độ trễ do DNS cache. CodeDeploy triển khai mã nguồn, không phân phối traffic giữa các môi trường.</Takeaway>
+
+</Scene>
+
+<Scene id="s6" label="Phần 7/7" title="Các luồng dữ liệu phát sinh chi phí data transfer" questions={["exam2_q62", "exam3_q47", "exam5_q2"]}>
+
+Chi phí AWS của ShopViet tăng thường không do đơn giá dịch vụ mà do luồng dữ liệu được thiết kế chưa phù hợp. Dưới đây là ba tình huống thường phát sinh chi phí. Chọn một tình huống và so sánh các phương án.
 
 <CostPatterns client:visible />
 
-<Takeaway>Read Replica trong cùng Region không tính phí replication; Read Replica khác Region thì có. EC2 trong private subnet đọc ghi S3 cùng Region: sử dụng S3 gateway endpoint thay cho NAT gateway. Lưu lượng lớn nên được giữ trong AWS, chỉ phần dữ liệu nhỏ được truyền ra ngoài.</Takeaway>
+<Takeaway>Read Replica trong cùng Region không tính phí replication; Read Replica khác Region thì có. EC2 trong private subnet đọc ghi S3 cùng Region: sử dụng S3 gateway endpoint thay cho NAT gateway. Lưu lượng lớn nên được giữ trong AWS, chỉ phần dữ liệu nhỏ được truyền ra ngoài. Dữ liệu truyền ra qua Direct Connect được tính theo đơn giá Direct Connect data transfer, thấp hơn đơn giá data transfer out qua internet.</Takeaway>
 
 </Scene>
 
@@ -134,7 +191,7 @@ Bốn yêu cầu dưới đây có vẻ đơn giản nhưng thường bị cấu
 
 <GlobalMythsSim client:visible />
 
-<Takeaway>EFS truy cập được từ Region khác thông qua inter-region VPC peering, không cần copy dữ liệu. Public NAT gateway ở chế độ zonal được đặt trong public subnet (chế độ regional không cần public subnet); egress-only internet gateway chỉ dành cho IPv6. Để xác định cùng một AZ với account khác: sử dụng AZ ID. Tăng tốc cả chiều truy xuất lẫn chiều tải lên: sử dụng đồng thời CloudFront và S3 Transfer Acceleration.</Takeaway>
+<Takeaway>EFS truy cập được từ Region khác thông qua inter-region VPC peering, không cần copy dữ liệu. Public NAT gateway ở chế độ zonal được đặt trong public subnet (chế độ regional không cần public subnet); egress-only internet gateway chỉ dành cho IPv6. Để xác định cùng một AZ với account khác: sử dụng AZ ID. Nội dung được nhiều người dùng xem lặp lại: cache bằng CloudFront; truyền dữ liệu đường dài tới hoặc từ bucket (cả tải lên lẫn tải xuống): S3 Transfer Acceleration; ứng dụng cần cả hai thì kết hợp cả hai.</Takeaway>
 
 </Scene>
 
@@ -182,11 +239,37 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
 
 </Scene>
 
-<Scene id="deep" label="Mở rộng" title="Yêu cầu dữ liệu lưu trữ tại on-premises" questions={["exam1_q27"]}>
-  <details class="deep">
-    <summary>AWS Outposts</summary>
-    <div class="deep-body">
-      <p><b>AWS Outposts</b> là phần cứng AWS được lắp đặt trong data center của chính tổ chức, chạy dịch vụ AWS với cùng API và công cụ. Outposts phù hợp khi quy định bắt buộc dữ liệu và workload phải nằm on-premises nhưng tổ chức vẫn cần sử dụng dịch vụ do AWS quản lý.</p>
-    </div>
-  </details>
+<Scene id="deep" label="Mở rộng" title="Dữ liệu phải nằm tại on-premises: Outposts và các hạ tầng gần người dùng" questions={["exam1_q27"]}>
+
+Công ty con xử lý thanh toán của ShopViet vận hành Kubernetes trong data center riêng. Quy định bắt buộc toàn bộ dữ liệu và workload phải nằm vật lý trong data center này, nhưng đội hạ tầng muốn sử dụng Kubernetes control plane do AWS quản lý, CloudWatch và IAM.
+
+**AWS Outposts** là dịch vụ được quản lý toàn phần, mở rộng hạ tầng, dịch vụ, API và công cụ của AWS tới cơ sở của khách hàng; AWS vận hành, giám sát và quản lý năng lực của Outpost như một phần của Region. **Amazon EKS trên Outposts** có hai lựa chọn: *extended cluster* (control plane tại Region, node trên Outpost) và *local cluster* (cả control plane và node trên Outpost); với cả hai, control plane do AWS quản lý toàn phần. AWS khuyến nghị local cluster khi cần tiếp tục vận hành Kubernetes trong lúc mất kết nối tới Region hoặc khi quy định về lưu trú dữ liệu yêu cầu.
+
+Các dịch vụ dưới đây cũng đưa tài nguyên tới gần người dùng hoặc tới on-premises nhưng không đáp ứng yêu cầu này. Chọn từng mục để so sánh.
+
+<QuickCompare client:visible items={[
+  { name: "AWS Local Zones",
+    use: "Đặt compute, storage, database và một số dịch vụ AWS gần các trung tâm dân cư và công nghiệp lớn, cung cấp độ trễ thấp cho người dùng tại khu vực đó mà không cần tự sở hữu và vận hành data center. Tài nguyên được quản lý qua console và API của Region mẹ.",
+    notHere: "Local Zone là hạ tầng do AWS vận hành tại khu đô thị, không nằm trong data center của ShopViet; dữ liệu và workload rời khỏi on-premises.",
+    instead: "Outposts rack trong data center, chạy Amazon EKS local cluster." },
+  { name: "AWS Wavelength",
+    use: "Triển khai compute và storage của AWS tại rìa mạng của nhà mạng (communications service provider) để cung cấp độ trễ thấp cho thiết bị di động. Wavelength Zone là phần mở rộng logic của Region.",
+    notHere: "Hạ tầng nằm trong mạng của nhà mạng, không nằm trong data center của ShopViet.",
+    instead: "Outposts rack trong data center." },
+  { name: "Amazon EKS Anywhere",
+    use: "Kubernetes do khách hàng quản lý, chạy trên hạ tầng của khách hàng (VMware vSphere, bare metal, Nutanix…), có thể hoạt động khi không kết nối với Region.",
+    notHere: "Khách hàng tự chịu trách nhiệm vòng đời và bảo trì cluster, không có control plane do AWS quản lý. AWS cũng ghi rõ EKS Anywhere không được hỗ trợ trên Outposts.",
+    instead: "Amazon EKS trên Outposts (local cluster)." },
+  { name: "AWS Snowball Edge",
+    use: "Thiết bị có storage và compute tích hợp, dùng để chuyển dữ liệu offline và xử lý tại biên.",
+    notHere: "Snowball Edge không còn cung cấp cho khách hàng mới; với nhu cầu compute tại biên, AWS hướng khách hàng tới Outposts.",
+    instead: "Outposts rack trong data center." },
+  { name: "Direct Connect + Amazon EKS tại Region",
+    use: "Kết nối mạng riêng giữa data center và Region; workload chạy trên EKS tại Region.",
+    notHere: "Workload và dữ liệu nằm tại Region, không đáp ứng yêu cầu dữ liệu phải nằm tại on-premises.",
+    instead: "Outposts rack trong data center." },
+]} />
+
+<Takeaway>Dữ liệu và workload bắt buộc nằm trong data center riêng nhưng cần dịch vụ do AWS quản lý: AWS Outposts (Kubernetes: Amazon EKS local cluster trên Outposts). Độ trễ thấp cho người dùng tại một khu đô thị, không cần data center riêng: Local Zones. Độ trễ thấp cho thiết bị di động qua mạng nhà mạng: Wavelength.</Takeaway>
+
 </Scene>

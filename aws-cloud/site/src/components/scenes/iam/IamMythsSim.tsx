@@ -3,9 +3,9 @@ import CaseSim, { type CaseScenario } from "../global-infra/CaseSim";
 
 type Lang = ReturnType<typeof useLang>;
 
-// Four IAM habits that decide whether ShopViet's account stays safe: no root access
-// keys, groups instead of per-user policies, MFA + CloudTrail, and permissions
-// boundaries against privilege escalation.
+// Five habits that decide whether ShopViet's account stays safe: no root access
+// keys, groups instead of per-user policies, MFA + CloudTrail, permissions
+// boundaries against privilege escalation, and contacts that reach a team.
 
 function scenarios(L: Lang): CaseScenario[] {
 return [
@@ -106,10 +106,41 @@ return [
           ],
           ok: true, result: L({ vi: "Developer vẫn tự phục vụ được, nhưng không vượt quá giới hạn do quản trị viên thiết lập.", en: "Developers can still help themselves, but cannot exceed the limit the administrators set." }) },
   },
+  {
+    // Root email as a group address (IAM root-user-best-practices.html) and alternate contacts
+    // (accounts/latest/reference/manage-acct-update-contact-alternate.html).
+    name: L({ vi: "Thông báo quan trọng gửi tới email root", en: "Important notices sent to the root email" }),
+    request: L({ vi: "Thông báo bảo mật từ AWS", en: "Security notice from AWS" }),
+    from: L({ vi: "gửi tới account prod", en: "sent to the prod account" }),
+    nodes: [
+      { id: "aws", x: 20, y: 97, w: 120, l1: "AWS", l2: L({ vi: "gửi thông báo", en: "sends a notice" }) },
+      { id: "root", x: 190, y: 97, w: 170, l1: L({ vi: "Email root user", en: "Root user email" }), l2: L({ vi: "liên hệ chính", en: "primary contact" }) },
+      { id: "person", x: 420, y: 40, w: 170, l1: L({ vi: "Hộp thư cá nhân", en: "Personal mailbox" }), l2: L({ vi: "một nhân viên", en: "one employee" }) },
+      { id: "group", x: 420, y: 40, w: 170, l1: L({ vi: "Địa chỉ nhóm", en: "Group address" }), l2: L({ vi: "chuyển tới nhóm nền tảng", en: "forwards to platform team" }) },
+      { id: "alt", x: 420, y: 150, w: 170, l1: "Alternate contacts", l2: "billing · operations · security" },
+      { id: "sec", x: 640, y: 150, w: 160, l1: L({ vi: "Nhóm Security", en: "Security team" }), l2: "distribution list" },
+    ],
+    links: [{ a: "aws", b: "root" }, { a: "root", b: "person" }, { a: "root", b: "group" }, { a: "root", b: "alt" }, { a: "alt", b: "sec" }],
+    start: "aws",
+    choices: { label: L({ vi: "Thiết lập liên hệ", en: "Contact setup" }), options: [L({ vi: "Email root của một cá nhân", en: "Root email of one person" }), L({ vi: "Địa chỉ nhóm + alternate contacts", en: "Group address + alternate contacts" })], initial: 0 },
+    run: (v) => v === 0
+      ? { hide: ["group", "alt", "sec"], back: false, steps: [
+            { at: "root", state: "pass", msg: L({ vi: "Không có alternate contact, thông báo chỉ tới email của root user.", en: "With no alternate contacts, the notice goes only to the root user's email." }) },
+            { at: "person", state: "change", tag: L({ vi: "BỎ LỠ", en: "MISSED" }), msg: L({ vi: "Email root là hộp thư của một nhân viên đang nghỉ phép; không ai xử lý cảnh báo.", en: "The root email is the mailbox of one employee who is on leave; nobody handles the alert." }) },
+          ],
+          ok: false, result: L({ vi: "AWS khuyến nghị email của root user là địa chỉ nhóm do doanh nghiệp quản lý, chuyển tiếp tới một nhóm người và không dùng cho mục đích khác.", en: "AWS recommends that the root user's email be a group address managed by the business, forwarding to a group of people and not used for other purposes." }) }
+      : { back: false, steps: [
+            { at: "root", state: "pass", msg: L({ vi: "Email của root user vẫn nhận mọi thông báo gửi tới liên hệ chính.", en: "The root user's email still receives every message sent to the primary contact." }) },
+            { at: "group", state: "pass", msg: L({ vi: "Địa chỉ nhóm chuyển tiếp tới hộp thư nhóm nền tảng theo dõi tập trung; không phụ thuộc một cá nhân.", en: "The group address forwards to a mailbox the platform team monitors centrally; it does not depend on one person." }) },
+            { at: "alt", via: [[275, 120]], state: "pass", msg: L({ vi: "Mỗi account có tối đa ba **alternate contact**, mỗi loại một liên hệ: Billing, Operations, Security. Liên hệ có thể là distribution list.", en: "Each account has up to three **alternate contacts**, one of each type: Billing, Operations, Security. A contact can be a distribution list." }) },
+            { at: "sec", state: "pass", msg: L({ vi: "Thông báo bảo mật tới đúng nhóm Security, song song với email root.", en: "The security notice reaches the Security team, in addition to the root email." }) },
+          ],
+          ok: true, result: L({ vi: "Trong Organizations, management account hoặc delegated admin cập nhật alternate contacts tập trung cho mọi member account.", en: "In Organizations, the management account or a delegated admin updates the alternate contacts of every member account centrally." }) },
+  },
 ];
 }
 
 export default function IamMythsSim() {
   const L = useLang();
-  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Bốn nguyên tắc IAM bảo vệ account ShopViet", en: "Four IAM principles that protect ShopViet's account" })} action={L({ vi: "Chạy mô phỏng", en: "Run simulation" })} />;
+  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Năm nguyên tắc bảo vệ account ShopViet", en: "Five principles that protect ShopViet's account" })} action={L({ vi: "Chạy mô phỏng", en: "Run simulation" })} />;
 }

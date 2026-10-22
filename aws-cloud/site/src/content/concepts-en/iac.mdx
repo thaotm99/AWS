@@ -1,8 +1,8 @@
 ---
 title: "CloudFormation and Elastic Beanstalk: Infrastructure as Code"
 lede: "ShopViet's headcount and number of accounts have grown, and manual actions in the console have started to cause incidents. This lesson covers three topics: describing infrastructure with CloudFormation templates and managing creation, updates and rollback through stacks; applying one standard to every account and Region with StackSets; and cutting the startup time of new Elastic Beanstalk instances down to 2 minutes."
-minutes: 15
-scenes: 3
+minutes: 19
+scenes: 4
 prerequisites: ["ec2", "vpc", "rds"]
 docs:
   - title: "What is AWS CloudFormation?"
@@ -29,6 +29,24 @@ docs:
     url: "https://docs.aws.amazon.com/ram/latest/userguide/what-is.html"
   - title: "Using a custom Amazon machine image (AMI) in Elastic Beanstalk"
     url: "https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/using-features.customenv.html"
+  - title: "What is AWS Service Catalog?"
+    url: "https://docs.aws.amazon.com/servicecatalog/latest/adminguide/introduction.html"
+  - title: "AWS Service Catalog concepts"
+    url: "https://docs.aws.amazon.com/servicecatalog/latest/adminguide/what-is_concepts.html"
+  - title: "AWS Service Catalog template constraints"
+    url: "https://docs.aws.amazon.com/servicecatalog/latest/adminguide/catalogs_constraints_template-constraints.html"
+  - title: "AWS Service Catalog launch constraints"
+    url: "https://docs.aws.amazon.com/servicecatalog/latest/adminguide/constraints-launch.html"
+  - title: "What is CodeDeploy?"
+    url: "https://docs.aws.amazon.com/codedeploy/latest/userguide/welcome.html"
+  - title: "Global Accelerator traffic dials"
+    url: "https://docs.aws.amazon.com/global-accelerator/latest/dg/about-endpoint-groups-traffic-dial.html"
+  - title: "Configuring budget actions"
+    url: "https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-controls.html"
+  - title: "What is AWS Control Tower?"
+    url: "https://docs.aws.amazon.com/controltower/latest/userguide/what-is-control-tower.html"
+  - title: "Share your VPC subnets with other accounts"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-sharing.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -37,6 +55,7 @@ import StackSim from "../../components/scenes/iac/StackSim.tsx";
 import SgRuleSim from "../../components/scenes/iac/SgRuleSim.tsx";
 import StackSetSim from "../../components/scenes/iac/StackSetSim.tsx";
 import BootTimeSim from "../../components/scenes/iac/BootTimeSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
@@ -44,12 +63,13 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s1", label: "1 · Templates and stacks" },
   { href: "#en-s2", label: "2 · Multi-account, multi-Region deployment" },
   { href: "#en-s3", label: "3 · Startup time on Elastic Beanstalk" },
+  { href: "#en-s4", label: "4 · Service Catalog and quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
 Last week, a new ShopViet employee created a database in the console without enabling Multi-AZ or backups. When the database failed, half a day of order data was lost. After this incident, infrastructure needs to be **defined as code**, reviewed like code and reproducible exactly any number of times. **CloudFormation** meets this requirement for every type of resource; **Elastic Beanstalk** handles running web applications for teams that do not want to assemble each infrastructure component themselves.
 </Story>
 
-<Scene id="en-s1" label="Part 1/3" title="Templates replace manual actions" questions={["exam4_q47", "exam4_q15", "exam4_q17"]}>
+<Scene id="en-s1" label="Part 1/4" title="Templates replace manual actions" questions={["exam4_q47", "exam4_q15", "exam4_q17"]}>
 
 A **template** is a YAML or JSON file that describes the resources to create. CloudFormation reads the template and creates a **stack**: a group of resources that are created, updated and deleted together. To change the infrastructure, update the template and perform an **update stack**; a **change set** lets you preview the changes CloudFormation will apply. Run three ShopViet scenarios:
 
@@ -63,7 +83,7 @@ Being able to read a template matters as much as being able to write one. Below 
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/3" title="Applying one standard to every account and Region" questions={["exam3_q36"]}>
+<Scene id="en-s2" label="Part 2/4" title="Applying one standard to every account and Region" questions={["exam3_q36"]}>
 
 ShopViet now has several accounts in **AWS Organizations**: production, dev, data, and soon a branch in Japan. Each account operates in several Regions. Every environment must use the approved EC2 types and the standard IAM role for Lambda. Deploy the baseline template with three approaches, then add a new account:
 
@@ -73,13 +93,44 @@ ShopViet now has several accounts in **AWS Organizations**: production, dev, dat
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/3" title="Elastic Beanstalk: starting a new instance in 2 minutes" questions={["exam4_q1"]}>
+<Scene id="en-s3" label="Part 3/4" title="Elastic Beanstalk: starting a new instance in 2 minutes" questions={["exam4_q1"]}>
 
 ShopViet's main website runs on **Elastic Beanstalk**: the development team only uploads the code, and Beanstalk automatically creates the EC2 instances, load balancer and Auto Scaling group and monitors health. The team can still view and adjust the underlying resources. The problem is that installing the application takes 45 minutes: when traffic grows, Beanstalk adds instances, but new instances can only serve requests almost an hour later. Compare the timing of four startup approaches:
 
 <BootTimeSim client:visible />
 
 <Takeaway>A long installation slows down the startup of new instances: put the static part into a golden AMI (Beanstalk supports custom AMIs), and let user data create only the dynamic part at startup.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s4" label="Part 4/4" title="Service Catalog and services easily confused with IaC" questions={["exam6_q22", "exam6_q41", "exam2_q22"]}>
+
+Part 1 puts the standards into a template, but people who use the template still need CloudFormation permissions and permissions on every service the template creates. **AWS Service Catalog** solves self-service: administrators import a CloudFormation template as a **product**, group products into a **portfolio**, and grant access to IAM users, groups or roles. A **template constraint** narrows the allowed values of the template's parameters (for example, only some EC2 instance types); a **launch constraint** specifies the IAM role Service Catalog assumes when it launches the product, so end users need no direct permissions on CloudFormation or the underlying services. Each launch produces a **provisioned product**, which is a CloudFormation stack.
+
+Service Catalog, CodeDeploy and Control Tower often appear next to CloudFormation but solve different problems. Select each item to see what it is for and what fits the ShopViet situation.
+
+<QuickCompare client:visible items={[
+  { name: "Service Catalog: cost control",
+    use: "Lets staff launch approved resources on their own (products built from CloudFormation templates), with parameters narrowed by template constraints and launch permissions provided by a launch constraint.",
+    notHere: "Each ShopViet developer has a dedicated dev account and spending can spike. Service Catalog only governs what is launched through the catalog; it does not track spending, alert or respond automatically when a budget is exceeded. A scheduled Lambda function in every account that stops resources adds more operational work.",
+    instead: "**AWS Budgets** with a threshold per account and a **budget action** that automatically applies an IAM policy or SCP blocking new resources when the threshold is crossed (see the IAM lesson, part 4)." },
+  { name: "Service Catalog: a VPC per account",
+    use: "Publishes an approved VPC template so each account creates its own VPC to the same standard.",
+    notHere: "ShopViet wants centrally managed networking without repeating configuration in every account. Each account would still own its VPC, NAT gateways and internet gateway; Service Catalog also does not create new accounts or enforce mandatory logging for them.",
+    instead: "**AWS Control Tower** creates and governs accounts (landing zone, controls, Account Factory); a networking account owns a central VPC and shares its subnets with workload accounts through **AWS RAM** (VPC sharing)." },
+  { name: "AWS CodeDeploy",
+    use: "Automates deployments of new application versions to EC2, on-premises servers, Lambda or ECS, as in-place or blue/green deployments. On EC2, a blue/green deployment installs the new version on replacement instances, registers them with the deployment group's load balancer and reroutes traffic.",
+    notHere: "ShopViet needs to test a blue/green release of its global application on as many users as possible within 48 hours, while phones cache DNS. CodeDeploy installs the application; it is not a global entry point and does not split traffic between Regions by percentage.",
+    instead: "**AWS Global Accelerator**: a traffic dial sets the percentage of traffic to each Region and endpoint weights set the split between endpoints; changes apply to new connections without depending on DNS caching (see the global infrastructure lesson, part 5)." },
+  { name: "AWS Control Tower",
+    use: "Sets up and governs a multi-account environment following best practices: orchestrates AWS Organizations, Service Catalog and IAM Identity Center to build a landing zone, applies controls (guardrails) and provisions new accounts with Account Factory.",
+    notHere: "Control Tower does not replace each workload's templates: application infrastructure inside an account is still described with CloudFormation, and a baseline repeated across many accounts and Regions can still be deployed with StackSets.",
+    instead: "Control Tower for accounts and guardrails; **CloudFormation** (Part 1) and **StackSets** (Part 2) for resources inside the accounts." },
+]} />
+
+Related lessons: AWS Budgets actions and Control Tower in the [IAM lesson, part 4](/concepts/iam/#en-s4); Global Accelerator in the [global infrastructure lesson, part 5](/concepts/global-infra/#en-s5).
+
+<Takeaway>Letting staff launch approved resources without direct permissions on the services: Service Catalog (a product is a CloudFormation template, template constraints narrow parameters, a launch constraint supplies the IAM role). Blocking automatically when a budget is exceeded: AWS Budgets actions, not Service Catalog. New accounts with guardrails and shared networking: Control Tower + VPC sharing through RAM. CodeDeploy deploys application versions; splitting blue/green traffic between Regions without depending on DNS: Global Accelerator.</Takeaway>
 
 </Scene>
 
@@ -119,6 +170,10 @@ Check your understanding: as the designer of the ShopViet system, which option f
     opts: ["Store the installer on S3", "A golden AMI with the static part preinstalled, user data creates the dynamic part", "User data installs everything at startup"],
     a: 1,
     why: "The time-consuming part is the installation, so it must be preinstalled in the AMI. The part that varies per instance is handled by user data at startup." },
+  { q: "The platform team wants staff to launch test environments from approved CloudFormation templates on their own, choosing only a few EC2 instance types, without being granted direct permissions on CloudFormation or EC2. Which option fits?",
+    opts: ["AWS Service Catalog with a template constraint and a launch constraint", "Grant AdministratorAccess and email the template", "AWS CodeDeploy"],
+    a: 0,
+    why: "A template constraint narrows parameter values; a launch constraint specifies the IAM role Service Catalog assumes to create the stack on the user's behalf. CodeDeploy only deploys application versions." },
 ]} />
 
 </Scene>
