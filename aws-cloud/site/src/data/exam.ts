@@ -2,7 +2,7 @@
 // practice-test questions. Never import this from a client component.
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { EXTRA_TITLES, importanceOf, LAYERS, TITLES_EN, type Layer } from "./curriculum";
+import { EXTRA_TITLES, importanceOf, INTRO_LESSONS, LAYERS, TITLES_EN, type Layer } from "./curriculum";
 import { SAA_PRACTICE_TEST_FILE } from "../modules/practice/content/QuizHtmlSource";
 
 const STUDY_DIR = resolve(process.cwd(), "../../solution-architect-aws");
@@ -101,7 +101,7 @@ export function getCurriculum(): Layer[] {
       if (!title) throw new Error(`curriculum: "${id}" is neither in overview.md nor EXTRA_TITLES`);
       const listed = readListQa(id);
       const questions = listed ? listed.length : (row?.estimate ?? 0);
-      return { id, title, titleEn: TITLES_EN[id] ?? title, importance: importanceOf(questions), questions, exact: Boolean(listed) };
+      return { id, title, titleEn: TITLES_EN[id] ?? title, importance: importanceOf(questions), questions, exact: Boolean(listed), intro: INTRO_LESSONS.has(id) };
     }),
   }));
   return cached;

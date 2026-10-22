@@ -67,9 +67,11 @@ export default function Roadmap({ layers, current, currentQuiz = false, ready }:
                     <a className={cls} href={`/concepts/${c.id}/`} aria-current={here && !currentQuiz ? "page" : undefined}>
                       <span className="dot" aria-hidden="true" />
                       <span>{en ? c.titleEn : c.title}</span>
-                      <span className={`imp imp-${c.importance}`} title={t(`shell.importance.${IMPORTANCE_NAMES[c.importance]}`)}>
-                        <i /><i /><i />
-                      </span>
+                      {!c.intro && (
+                        <span className={`imp imp-${c.importance}`} title={t(`shell.importance.${IMPORTANCE_NAMES[c.importance]}`)}>
+                          <i /><i /><i />
+                        </span>
+                      )}
                     </a>
                     {ready.includes(c.id) && c.quiz > 0 && (
                       <a

@@ -59,6 +59,9 @@ export const en: Messages<typeof vi> = {
     options: "Option",
     optionGroup: "Choose an option",
   },
+  awsMap: {
+    heroLabel: "Six groups of AWS services around the ShopViet system",
+  },
   notFound: {
     title: "Page not found",
     body: "This address does not exist, or the lesson has been renamed. Go back to the home page to pick another lesson.",

@@ -50,7 +50,7 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
   n,
   name,
   nameEn,
-  concepts: concepts.map(({ id, title, titleEn, importance, questions, exact }) => ({ id, title, titleEn, importance, quiz: exact ? questions : 0 })),
+  concepts: concepts.map(({ id, title, titleEn, importance, intro, questions, exact }) => ({ id, title, titleEn, importance, intro, quiz: exact ? questions : 0 })),
 }));
 ---
 <!doctype html>
