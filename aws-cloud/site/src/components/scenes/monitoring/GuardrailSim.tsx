@@ -24,9 +24,9 @@ const SCENARIOS: PScenario[] = [
     },
     run: (scp) => scp
       ? { steps: [
-            { at: "scp", state: "block", flash: "Deny", msg: "`Deny cloudtrail:StopLogging, DeleteTrail, UpdateTrail, PutEventSelectors`. SCP áp dụng cho **mọi** user, role và cả **root user** của account thành viên." }],
+            { at: "scp", state: "block", flash: "Deny", msg: "`Deny cloudtrail:StopLogging, DeleteTrail, UpdateTrail, PutEventSelectors`. SCP ảnh hưởng tới **mọi** user và role trong account được gắn, kể cả **root user** của account thành viên (SCP không ảnh hưởng tới management account)." }],
           ok: true,
-          result: "Trail vẫn tiếp tục ghi. Developer vẫn có toàn quyền với các thao tác khác trong account của mình. IAM policy không thể gắn vào root user, do đó chỉ SCP mới giới hạn được root." }
+          result: "Trail vẫn tiếp tục ghi. Developer vẫn có toàn quyền với các thao tác khác trong account của mình. Identity-based policy không thể gắn vào root user; SCP giới hạn được root user của account thành viên." }
       : { steps: [
             { at: "scp", state: "skip", msg: "Chưa có SCP nào giới hạn thao tác trên CloudTrail." },
             { at: "iam", state: "pass", msg: "Root có toàn quyền trong account." },
@@ -54,12 +54,12 @@ const SCENARIOS: PScenario[] = [
     run: (rule) => rule
       ? { steps: [
             { at: "acm", jump: true, state: "wait", tag: "25 NGÀY", msg: "Chứng chỉ **import** từ bên ngoài: ACM **không tự động gia hạn**. Chứng chỉ do ACM cấp được ACM tự động gia hạn." },
-            { at: "config", state: "change", tag: "NON_COMPLIANT", flash: "< 30 ngày", msg: "Rule `acm-certificate-expiration-check` với `daysToExpiration = 30` đánh dấu chứng chỉ NON_COMPLIANT." },
+            { at: "config", state: "change", tag: "NON_COMPLIANT", flash: "< 30 ngày", msg: "Rule `acm-certificate-expiration-check` với `daysToExpiration = 30` (giá trị mặc định là 14, ShopViet đã cấu hình thành 30) đánh dấu chứng chỉ NON_COMPLIANT." },
             { at: "eb", state: "pass", msg: "Event \"Config Rules Compliance Change\" khớp rule của EventBridge." },
             { at: "sns", state: "pass", msg: "Email được gửi qua topic của đội bảo mật." },
             { at: "team", state: "pass", msg: "Còn gần một tháng để mua và import chứng chỉ mới." }],
           ok: true, back: false,
-          result: "Không cần viết script hay bảo trì máy chủ. Managed rule đã có sẵn, chỉ cần cấu hình số ngày." }
+          result: "Không cần viết script hay bảo trì máy chủ. Managed rule đã có sẵn; tham số `daysToExpiration` mặc định 14 ngày và có thể cấu hình lại." }
       : { steps: [
             { at: "acm", jump: true, state: "wait", tag: "25 NGÀY", msg: "Chứng chỉ import không được tự động gia hạn và ngày hết hạn không được giám sát." },
             { at: "config", state: "skip", msg: "Chưa có rule nào đánh giá." }],
@@ -84,7 +84,7 @@ const SCENARIOS: PScenario[] = [
     run: (fix) => fix
       ? { steps: [
             { at: "sg", jump: true, state: "change", tag: "THAY ĐỔI", msg: "Cấu hình mới được ghi lại thành một configuration item." },
-            { at: "config", state: "change", tag: "NON_COMPLIANT", flash: "22 mở", msg: "Rule `restricted-ssh` phát hiện cổng 22 được mở cho 0.0.0.0/0." },
+            { at: "config", state: "change", tag: "NON_COMPLIANT", flash: "22 mở", msg: "Rule `restricted-ssh` (identifier `INCOMING_SSH_DISABLED`) đánh giá NON_COMPLIANT vì SSH được mở cho 0.0.0.0/0." },
             { at: "ssm", state: "pass", msg: "**Remediation action** thực thi runbook, gỡ rule SSH mở ra Internet." },
             { at: "sg", from: "ssm", state: "pass", tag: "COMPLIANT", relabel: { l2: "đã đóng cổng 22" }, msg: "Security group trở lại trạng thái tuân thủ." }],
           ok: true, back: false,

@@ -34,15 +34,15 @@ const SCENARIOS: CaseScenario[] = [
     choices: { label: "Phương thức kết nối", options: ["Direct Connect", "Site-to-Site VPN"], initial: 0 },
     run: (v) => v === 0
       ? { back: false, steps: [
-            { at: "dx", via: DOWN, state: "change", tag: "CHỜ", msg: "Kết nối chuyên dụng phải được đăng ký với nhà cung cấp mạng, thường mất từ vài tuần tới vài tháng." },
+            { at: "dx", via: DOWN, state: "change", tag: "CHỜ", msg: "Kết nối chuyên dụng cần được cấp port tại Direct Connect location hoặc qua đối tác Direct Connect, kèm cross-connect vật lý; thời gian triển khai dài hơn nhiều so với VPN." },
           ],
           ok: false, result: "Không sẵn sàng trong tuần này. Yêu cầu triển khai nhanh, chi phí thấp: Site-to-Site VPN." }
       : { steps: [
-            { at: "vpn", via: UP, state: "pass", msg: "Thiết lập trong vài giờ trên kết nối internet sẵn có, mã hóa bằng **IPsec**." },
+            { at: "vpn", via: UP, state: "pass", msg: "Thiết lập trên kết nối internet sẵn có, mã hóa bằng **IPsec**." },
             { at: "gw", via: VPN_GW, state: "pass", msg: "Phía AWS là **virtual private gateway** (hoặc Transit Gateway)." },
             { at: "vpc", state: "pass", msg: "Traffic tới server trong VPC." },
           ],
-          ok: true, result: "Kết nối hoàn tất trong ngày, có mã hóa, chi phí thấp." },
+          ok: true, result: "Kết nối sẵn sàng nhanh, có mã hóa, chi phí thấp." },
   },
   {
     ...base,
@@ -52,7 +52,7 @@ const SCENARIOS: CaseScenario[] = [
     choices: { label: "Phương thức kết nối", options: ["Chỉ Direct Connect", "Direct Connect + VPN"], initial: 0 },
     run: (v) => v === 0
       ? { steps: [
-            { at: "dx", via: DOWN, state: "change", tag: "CHƯA MÃ HÓA", msg: "Băng thông chuyên dụng, ổn định. Tuy nhiên Direct Connect **không tự động mã hóa** dữ liệu." },
+            { at: "dx", via: DOWN, state: "change", tag: "CHƯA MÃ HÓA", msg: "Băng thông chuyên dụng, ổn định. Tuy nhiên Direct Connect **mặc định không mã hóa** dữ liệu đang truyền." },
             { at: "gw", via: DX_GW, state: "pass", msg: "Traffic vào VPC qua private VIF." },
             { at: "vpc", state: "pass", msg: "Dữ liệu tới đích ở dạng không mã hóa." },
           ],
@@ -62,7 +62,7 @@ const SCENARIOS: CaseScenario[] = [
             { at: "gw", via: DX_GW, state: "pass", msg: "Tunnel VPN kết thúc tại VGW." },
             { at: "vpc", state: "pass", msg: "Dữ liệu được mã hóa trên toàn bộ đường truyền." },
           ],
-          ok: true, result: "Kết nối ổn định và có mã hóa." },
+          ok: true, result: "Kết nối ổn định và có mã hóa. Với một số kết nối dedicated, MACsec là lựa chọn mã hóa khác." },
   },
   {
     ...base,
@@ -170,14 +170,14 @@ const SCENARIOS: CaseScenario[] = [
     choices: { label: "Thành phần phía AWS", options: ["VGW, một tunnel", "Transit Gateway + nhiều tunnel"], initial: 0 },
     run: (v) => v === 0
       ? { hide: ["tgw"], steps: [
-            { at: "vpn", via: UP, state: "change", tag: "~1,25 Gbps", msg: "Mỗi tunnel VPN có giới hạn thông lượng." },
-            { at: "gw", via: VPN_GW, state: "pass", msg: "VGW chỉ sử dụng một tunnel tại một thời điểm." },
+            { at: "vpn", via: UP, state: "change", tag: "≤1,25 Gbps", msg: "Mỗi tunnel VPN tiêu chuẩn đạt tối đa 1,25 Gbps." },
+            { at: "gw", via: VPN_GW, state: "pass", msg: "Với VGW, traffic từ AWS về on-premises ưu tiên một tunnel. ECMP để cộng dồn thông lượng được hỗ trợ cho VPN gắn với Transit Gateway; Large Bandwidth Tunnel không hỗ trợ VGW." },
             { at: "vpc", state: "pass", msg: "Tác vụ backup không hoàn tất trong đêm." },
           ],
-          ok: false, result: "Bổ sung tunnel vào VGW không làm tăng tổng thông lượng." }
+          ok: false, result: "Bổ sung VPN connection vào VGW không cộng dồn được thông lượng như ECMP trên Transit Gateway." }
       : { hide: ["gw"], steps: [
             { at: "vpn", via: UP, state: "change", tag: "ECMP", msg: "Nhiều tunnel VPN hoạt động song song." },
-            { at: "tgw", via: VPN_GW, state: "pass", msg: "**Transit Gateway** cộng dồn thông lượng của các tunnel bằng equal-cost multipath." },
+            { at: "tgw", via: VPN_GW, state: "pass", msg: "**Transit Gateway** cộng dồn thông lượng của các tunnel bằng ECMP (yêu cầu dynamic routing/BGP). Transit Gateway cũng hỗ trợ Large Bandwidth Tunnel tới 5 Gbps mỗi tunnel." },
             { at: "vpc", state: "pass", msg: "Tác vụ backup hoàn tất trong đêm." },
           ],
           ok: true, result: "Thông lượng tăng theo số lượng tunnel." },

@@ -35,7 +35,7 @@ const SCENARIOS: PScenario[] = [
           ok: true, result: "i-2 ở trạng thái healthy; ALB định tuyến request của người dùng tới i-2 bình thường." }
       : { steps: [
             { at: "sg", state: "block", flash: "timeout", msg: "Inbound rule chỉ mở cổng 80 cho IP văn phòng, không bao gồm ALB. Health check không tới được ứng dụng." },
-            { at: "i2", jump: true, state: "block", tag: "UNHEALTHY", msg: "Timeout liên tiếp nhiều lần nên ALB đánh dấu i-2 là unhealthy, dù ứng dụng vẫn hoạt động." }],
+            { at: "i2", jump: true, state: "block", tag: "UNHEALTHY", msg: "Health check thất bại liên tiếp (mặc định 2 lần) nên ALB đánh dấu i-2 là unhealthy, dù ứng dụng vẫn hoạt động." }],
           ok: false, result: "Request của người dùng không được định tuyến tới i-2. Cần thêm inbound rule với nguồn là security group của ALB." },
   },
   {
@@ -46,7 +46,7 @@ const SCENARIOS: PScenario[] = [
     run: (fixed) => fixed
       ? { steps: [SG_OK, { at: "i2", state: "pass", flash: "200", roundTrip: true, msg: "Ứng dụng có path `/health`, trả về 200 OK." }],
           ok: true, result: "i-2 trở lại trạng thái healthy." }
-      : { steps: [SG_OK, { at: "i2", state: "block", flash: "404", msg: "Ứng dụng không có path `/healthz`, trả về 404. ALB xem 404 là health check thất bại." }],
+      : { steps: [SG_OK, { at: "i2", state: "block", flash: "404", msg: "Ứng dụng không có path `/healthz`, trả về 404. Success code mặc định là 200 nên ALB xem 404 là health check thất bại." }],
           ok: false, result: "Target unhealthy dù máy chủ không có lỗi. Cần kiểm tra path và mã phản hồi kỳ vọng (success codes) của health check." },
   },
   {
@@ -60,7 +60,7 @@ const SCENARIOS: PScenario[] = [
         { at: "i2", state: "block", flash: "timeout", msg: "Ứng dụng không phản hồi health check. ALB đánh dấu unhealthy và ngừng định tuyến request tới instance." },
         elb
           ? { from: "asg", at: "i2", state: "change", tag: "THAY THẾ", label: "Auto Scaling", relabel: { l1: "i-4", l2: "mới" }, msg: "ASG sử dụng **ELB health check** nên dựa theo kết quả của ALB: terminate i-2 và launch i-4." }
-          : { from: "asg", at: "i2", state: "wait", tag: "VẪN CHẠY", label: "Auto Scaling", msg: "ASG sử dụng **EC2 health check**: chỉ kiểm tra trạng thái chạy của instance. Instance vẫn chạy nên ASG không thực hiện thay thế." },
+          : { from: "asg", at: "i2", state: "wait", tag: "VẪN CHẠY", label: "Auto Scaling", msg: "ASG chỉ dùng **EC2 health check** (mặc định): kiểm tra instance đang chạy và sự cố phần cứng, phần mềm bên dưới, không dùng kết quả của ALB. Instance vẫn chạy nên ASG không thực hiện thay thế." },
       ],
       ok: elb,
       back: false,

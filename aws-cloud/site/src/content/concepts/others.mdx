@@ -21,6 +21,30 @@ docs:
     url: "https://docs.aws.amazon.com/batch/latest/userguide/what-is-batch.html"
   - title: "What is AWS Outposts?"
     url: "https://docs.aws.amazon.com/outposts/latest/userguide/what-is-outposts.html"
+  - title: "Configuring budget actions"
+    url: "https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-controls.html"
+  - title: "Configuring a budget action"
+    url: "https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-action-configure.html"
+  - title: "Identifying opportunities with Cost Optimization Hub"
+    url: "https://docs.aws.amazon.com/cost-management/latest/userguide/cost-optimization-hub.html"
+  - title: "Savings Plans types"
+    url: "https://docs.aws.amazon.com/savingsplans/latest/userguide/plan-types.html"
+  - title: "Compute Savings Plans and Reserved Instances"
+    url: "https://docs.aws.amazon.com/savingsplans/latest/userguide/sp-ris.html"
+  - title: "Languages supported in Amazon Comprehend"
+    url: "https://docs.aws.amazon.com/comprehend/latest/dg/supported-languages.html"
+  - title: "Custom entity recognition (Amazon Comprehend)"
+    url: "https://docs.aws.amazon.com/comprehend/latest/dg/custom-entity-recognition.html"
+  - title: "Amazon Textract quotas (languages)"
+    url: "https://docs.aws.amazon.com/textract/latest/dg/limits-document.html"
+  - title: "Supported languages (Amazon Transcribe)"
+    url: "https://docs.aws.amazon.com/transcribe/latest/dg/supported-languages.html"
+  - title: "What is Snowball Edge?"
+    url: "https://docs.aws.amazon.com/snowball/latest/developer-guide/whatisedge.html"
+  - title: "What is Amazon Quick?"
+    url: "https://docs.aws.amazon.com/quicksight/latest/user/welcome.html"
+  - title: "Using time to live (TTL) in DynamoDB"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/TTL.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -47,31 +71,32 @@ ShopViet hiện có nhiều AWS account, nhiều đội kỹ thuật, và chi ph
 Mỗi công cụ quản lý chi phí trả lời một câu hỏi khác nhau:
 
 - **Cost Explorer**: chi phí phát sinh ở đâu? Hiển thị biểu đồ, lọc theo service và theo account.
-- **AWS Budgets**: cảnh báo khi chi phí sắp vượt ngân sách. Đặt ngưỡng cho chi phí thực tế, chi phí dự báo, hoặc cho **coverage** và **utilization** của Savings Plans. Có thể kèm **budget action** để tự động thực hiện một thao tác khi chạm ngưỡng.
-- **Cost Optimization Hub**: cần cắt giảm ở đâu? Tổng hợp khuyến nghị tiết kiệm của mọi account và Region tại một nơi.
-- **Compute Optimizer**: kích thước tài nguyên nào là phù hợp? Đề xuất loại và kích thước phù hợp cho EC2 và các tài nguyên compute khác.
+- **AWS Budgets**: cảnh báo khi chi phí sắp vượt ngân sách. Đặt ngưỡng cho chi phí thực tế, chi phí dự báo, mức sử dụng, hoặc cho **coverage** và **utilization** của Reserved Instances và Savings Plans; thông báo gửi qua email hoặc SNS. Có thể kèm **budget action** (gắn IAM policy, gắn SCP, hoặc nhắm vào EC2/RDS instance cụ thể), chạy tự động hoặc sau khi được phê duyệt; nhiều action có thể cùng gắn với một ngưỡng. Dữ liệu của Budgets được cập nhật tối đa ba lần mỗi ngày.
+- **Cost Optimization Hub**: cần cắt giảm ở đâu? Tổng hợp khuyến nghị tiết kiệm (rightsizing, xoá tài nguyên idle, Savings Plans, Reserved Instances) của các account và Region tại một nơi.
+- **Compute Optimizer**: kích thước tài nguyên nào là phù hợp? Đề xuất cấu hình phù hợp cho EC2 instance, Auto Scaling group, EBS volume, Lambda function, ECS service trên Fargate và các tài nguyên khác.
 
 Chọn một vấn đề của ShopViet, chọn công cụ, sau đó chạy mô phỏng trong một tháng:
 
 <CostWatchSim client:visible />
 
-<Takeaway>Cảnh báo và tự động xử lý khi vượt ngân sách: AWS Budgets với alert và budget action (gắn IAM policy, SCP, hoặc stop EC2/RDS). Theo dõi độ phủ của Savings Plans: coverage budget trong AWS Budgets. Xác định tài nguyên không sử dụng và tài nguyên quá khổ: Cost Optimization Hub kết hợp Compute Optimizer. Cost Explorer chỉ dùng để phân tích, không tự gửi cảnh báo.</Takeaway>
+<Takeaway>Cảnh báo và tự động xử lý khi vượt ngân sách: AWS Budgets với alert và budget action (gắn IAM policy, gắn SCP, hoặc nhắm vào EC2/RDS instance cụ thể; mỗi action là một loại, có thể đặt nhiều action cho cùng một ngưỡng). Theo dõi độ phủ của Savings Plans: Savings Plans coverage budget trong AWS Budgets. Xác định tài nguyên không sử dụng và tài nguyên quá khổ: Cost Optimization Hub kết hợp Compute Optimizer. Cost Explorer dùng để xem và phân tích chi phí; cảnh báo theo ngưỡng ngân sách do AWS Budgets đảm nhiệm.</Takeaway>
 
 </Scene>
 
 <Scene id="s2" label="Phần 2/4" title="Lựa chọn loại cam kết sử dụng dài hạn" questions={["exam6_q38"]}>
 
-Sau đợt ra mắt, tải của ShopViet đã ổn định. Cam kết sử dụng một mức chi phí mỗi giờ trong 1 hoặc 3 năm để nhận mức giá thấp hơn on-demand: đó là **Savings Plans**. Có ba loại:
+Sau đợt ra mắt, tải của ShopViet đã ổn định. Cam kết sử dụng một mức chi phí mỗi giờ trong 1 hoặc 3 năm để nhận mức giá thấp hơn on-demand: đó là **Savings Plans**. AWS hiện có bốn loại:
 
-- **Compute Savings Plans**: linh hoạt nhất. Áp dụng cho EC2 (mọi instance family, mọi Region), Fargate và Lambda.
-- **EC2 Instance Savings Plans**: mức giảm lớn hơn nhưng chỉ áp dụng cho một instance family trong một Region.
-- **SageMaker Savings Plans**: dành riêng cho SageMaker.
+- **Compute Savings Plans**: linh hoạt nhất, giảm tới 66% so với on-demand. Áp dụng cho EC2 (mọi instance family, kích thước, OS, tenancy, Region), Fargate và Lambda.
+- **EC2 Instance Savings Plans**: giảm tới 72% nhưng chỉ áp dụng cho một instance family trong một Region.
+- **Database Savings Plans**: giảm tới 35% cho các dịch vụ database như Aurora, RDS, DynamoDB, ElastiCache, DocumentDB, Neptune, Keyspaces, Timestream, DMS và OpenSearch Service.
+- **SageMaker AI Savings Plans**: giảm tới 64%, dành riêng cho instance của SageMaker AI.
 
 Yêu cầu của ShopViet: mọi workload đều được giảm giá, với số lượng plan tối thiểu để thuận tiện quản lý:
 
 <SavingsPlanSim client:visible />
 
-<Takeaway>EC2 + Fargate + Lambda: một Compute Savings Plans. SageMaker không thuộc phạm vi Compute Savings Plans, cần SageMaker Savings Plans. EC2 Instance Savings Plans chỉ phù hợp khi chắc chắn sử dụng một instance family trong một Region.</Takeaway>
+<Takeaway>EC2 + Fargate + Lambda: một Compute Savings Plans. SageMaker không thuộc phạm vi Compute Savings Plans, cần SageMaker AI Savings Plans; database có Database Savings Plans riêng. EC2 Instance Savings Plans chỉ phù hợp khi chắc chắn sử dụng một instance family trong một Region.</Takeaway>
 
 </Scene>
 
@@ -79,17 +104,17 @@ Yêu cầu của ShopViet: mọi workload đều được giảm giá, với s�
 
 AWS cung cấp các AI service đã được huấn luyện sẵn, sử dụng thông qua lệnh gọi API mà không cần kiến thức machine learning:
 
-- **Amazon Comprehend**: phân tích **văn bản**: cảm xúc (sentiment), thực thể (entity), cụm từ khoá. Hỗ trợ **custom entity recognition** để nhận diện loại thực thể riêng của doanh nghiệp.
+- **Amazon Comprehend**: phân tích **văn bản**: cảm xúc (sentiment), thực thể (entity), cụm từ khoá. Hỗ trợ **custom entity recognition** để nhận diện loại thực thể riêng của doanh nghiệp. Comprehend chỉ hỗ trợ một số ngôn ngữ (tiếng Anh, Tây Ban Nha, Pháp, Đức, Ý, Bồ Đào Nha, Nhật, Hàn, Hindi, Ả Rập, Trung); tiếng Việt chưa nằm trong danh sách.
 - **Amazon Transcribe**: chuyển **giọng nói** thành văn bản, có khả năng phân tách từng người nói.
-- **Amazon Textract**: trích xuất văn bản, bảng, form từ **ảnh scan và PDF**.
+- **Amazon Textract**: trích xuất văn bản, bảng, form từ **ảnh scan và PDF**; nhận dạng văn bản tiếng Anh, Pháp, Đức, Ý, Bồ Đào Nha và Tây Ban Nha.
 
-Mỗi tình huống dưới đây là một luồng xử lý của ShopViet. Gửi một tài liệu và quan sát kết quả đầu ra tại từng bước xử lý:
+Mỗi tình huống dưới đây là một luồng xử lý của ShopViet; văn bản đưa vào Comprehend và Textract là tiếng Anh (gian hàng quốc tế của ShopViet), do giới hạn ngôn ngữ nêu trên. Gửi một tài liệu và quan sát kết quả đầu ra tại từng bước xử lý:
 
 <AiPipelineSim client:visible />
 
 Tự huấn luyện model trên SageMaker cũng đáp ứng được các yêu cầu trên, nhưng cần nhân sự có chuyên môn ML và chi phí vận hành cao hơn. Khi đã có service dựng sẵn phù hợp, nên ưu tiên sử dụng service đó.
 
-<Takeaway>Văn bản → cảm xúc, thực thể: Comprehend (loại thực thể riêng: custom entity recognition). Giọng nói → văn bản: Transcribe, sau đó truy vấn SQL bằng Athena. Ảnh scan, PDF → văn bản: Textract, sau đó chuyển sang Comprehend. Lưu lượng dữ liệu tăng đột biến: đặt SQS giữa API Gateway và Lambda; lưu giữ đúng một năm: TTL của DynamoDB.</Takeaway>
+<Takeaway>Văn bản → cảm xúc, thực thể: Comprehend (loại thực thể riêng: custom entity recognition). Giọng nói → văn bản: Transcribe, sau đó truy vấn SQL bằng Athena. Ảnh scan, PDF → văn bản: Textract, sau đó chuyển sang Comprehend. Lưu lượng dữ liệu tăng đột biến: đặt SQS giữa API Gateway và Lambda; tự động xoá dữ liệu sau một năm: TTL của DynamoDB (item hết hạn thường bị xoá trong vòng vài ngày).</Takeaway>
 
 </Scene>
 
@@ -133,10 +158,10 @@ Hai yêu cầu cuối của ShopViet không phù hợp với các dịch vụ đ
         text: "Kết nối riêng có độ trễ thấp và an toàn, nhưng workload và dữ liệu vẫn nằm trong Region, vi phạm quy định." },
       { name: "Snowball Edge", verdict: "bad", hide: ["op", "eksr"],
         flows: [{ path: ["data", "snow"], tone: "neutral" }, { path: ["snow", "aws"], tone: "bad", dashed: true, label: "chuyển dữ liệu đi" }],
-        text: "Snowball Edge dùng để chuyển dữ liệu offline hoặc xử lý tại nơi có kết nối mạng hạn chế, không phải nền tảng vận hành Kubernetes lâu dài do AWS quản lý." },
+        text: "Snowball Edge là thiết bị có bộ nhớ và năng lực tính toán để chuyển dữ liệu hoặc xử lý tại biên, không phải nền tảng vận hành Kubernetes lâu dài do AWS quản lý. Snowball Edge hiện không còn cung cấp cho khách hàng mới; với edge computing, AWS hướng tới AWS Outposts." },
       { name: "AWS Outposts", verdict: "good", hide: ["snow", "eksr"],
         flows: [{ path: ["data", "op"], tone: "good", label: "lưu tại chỗ" }, { path: ["op", "aws"], tone: "good", dashed: true, label: "quản lý" }],
-        text: "**AWS Outposts** là rack phần cứng do AWS lắp đặt và quản lý, đặt trong data center của doanh nghiệp. EKS, EC2, EBS chạy ngay tại chỗ, sử dụng cùng API, CloudWatch, IAM như trong Region. Dữ liệu không rời khỏi data center." },
+        text: "**AWS Outposts** mở rộng hạ tầng, dịch vụ, API và công cụ của AWS tới site của doanh nghiệp: AWS lắp đặt Outpost tại data center, vận hành và giám sát capacity này như một phần của Region. EKS, EC2, EBS chạy ngay tại chỗ, sử dụng cùng API như trong Region. Dữ liệu được lưu và xử lý tại chỗ." },
     ] },
 ]} />
 
@@ -171,23 +196,23 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
   { q: "Mỗi lập trình viên có một AWS account riêng. Yêu cầu: khi một account vượt ngân sách, việc tạo thêm tài nguyên bị chặn tự động, không cần viết mã hay giám sát thủ công. Phương án nào đáp ứng yêu cầu?",
     opts: ["Lambda chạy hằng ngày đọc Cost Explorer API và tự xử lý", "AWS Budgets với alert và budget action gắn IAM policy DenyAll", "Gửi báo cáo Cost Explorer cho từng người hằng ngày"],
     a: 1,
-    why: "Budget action được thực thi ngay khi chạm ngưỡng và có sẵn trong Budgets. Lambda tự phát triển phải tự bảo trì; báo cáo phụ thuộc vào việc người nhận có đọc hay không." },
+    why: "Budget action có sẵn trong Budgets: khi vượt ngưỡng, action gắn IAM policy được chạy tự động (hoặc sau khi phê duyệt, tuỳ cấu hình). Lambda tự phát triển phải tự bảo trì; báo cáo phụ thuộc vào việc người nhận có đọc hay không." },
   { q: "ShopViet chạy EC2, Fargate, Lambda và một endpoint SageMaker với tải ổn định. Yêu cầu: giảm giá dài hạn cho toàn bộ với số plan tối thiểu. Phương án nào phù hợp?",
-    opts: ["Compute Savings Plans + SageMaker Savings Plans", "EC2 Instance Savings Plans + Compute Savings Plans", "Reserved Instance cho từng EC2"],
+    opts: ["Compute Savings Plans + SageMaker AI Savings Plans", "EC2 Instance Savings Plans + Compute Savings Plans", "Reserved Instance cho từng EC2"],
     a: 0,
-    why: "Compute Savings Plans áp dụng cho EC2, Fargate, Lambda. SageMaker cần plan riêng. Reserved Instance chỉ áp dụng cho EC2 và phải được quản lý riêng lẻ." },
+    why: "Compute Savings Plans áp dụng cho EC2, Fargate, Lambda. SageMaker cần SageMaker AI Savings Plans. EC2 Reserved Instance không áp dụng cho Fargate hay Lambda, và Convertible RI muốn đổi instance family phải thực hiện exchange thủ công." },
   { q: "Chi phí EC2 và RDS cao hơn nhu cầu thực tế. Yêu cầu: xác định tài nguyên không được sử dụng và tài nguyên có kích thước quá lớn. Công cụ nào phù hợp?",
     opts: ["Trusted Advisor tự động gia hạn Reserved Instance", "Cost Optimization Hub và Compute Optimizer", "Compute Optimizer tự động mua Reserved Instance"],
     a: 1,
     why: "Cost Optimization Hub tổng hợp các khuyến nghị (tài nguyên không sử dụng, thay đổi kích thước…); Compute Optimizer đề xuất kích thước phù hợp. Không công cụ nào tự động mua hay gia hạn RI." },
   { q: "Tổng đài lưu ghi âm mọi cuộc gọi vào S3. Đội chăm sóc khách hàng cần tự viết SQL để xác định nội dung phàn nàn của khách hàng. Phương án nào phù hợp?",
-    opts: ["Transcribe chuyển thành văn bản, Athena truy vấn SQL", "Kinesis Data Streams đọc file âm thanh", "QuickSight đọc trực tiếp file âm thanh"],
+    opts: ["Transcribe chuyển thành văn bản, Athena truy vấn SQL", "Kinesis Data Streams đọc file âm thanh", "Amazon Quick Sight đọc trực tiếp file âm thanh"],
     a: 0,
     why: "Trước tiên cần chuyển âm thanh thành văn bản: Transcribe. Athena thực thi SQL trực tiếp trên dữ liệu trong S3, không cần quản lý máy chủ." },
   { q: "Quy định bắt buộc dữ liệu ví điện tử lưu tại data center, nhưng đội kỹ thuật cần sử dụng EKS và CloudWatch như trên AWS. Phương án nào phù hợp?",
     opts: ["Snowball Edge", "EKS trong Region qua Direct Connect", "AWS Outposts"],
     a: 2,
-    why: "Outposts đưa phần cứng và dịch vụ AWS vào data center của doanh nghiệp; dữ liệu không rời khỏi data center. Với Direct Connect, workload vẫn chạy trong Region." },
+    why: "Outposts mở rộng hạ tầng và dịch vụ AWS tới data center của doanh nghiệp; dữ liệu được lưu và xử lý tại chỗ. Với Direct Connect, workload vẫn chạy trong Region." },
 ]} />
 
 </Scene>

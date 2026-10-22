@@ -17,6 +17,22 @@ docs:
     url: "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html"
   - title: "Encrypting Amazon RDS resources"
     url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.Encryption.html"
+  - title: "Failing over a Multi-AZ DB instance"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.MultiAZ.Failover.html"
+  - title: "Maintaining a DB instance"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_UpgradeDBInstance.Maintenance.html"
+  - title: "High availability for Amazon Aurora"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Concepts.AuroraHighAvailability.html"
+  - title: "Replication with Amazon Aurora"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Replication.html"
+  - title: "Disaster recovery for Aurora Global Database"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database-disaster-recovery.html"
+  - title: "Aurora storage configurations (I/O-Optimized)"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Overview.StorageReliability.html"
+  - title: "Sharing an encrypted snapshot"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/share-encrypted-snapshot.html"
+  - title: "Multi-AZ deployment for RDS Custom for Oracle"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/custom-oracle-multiaz.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -45,7 +61,7 @@ Ghi một đơn hàng, chạy báo cáo, sau đó mô phỏng sự cố primary 
 
 <MultiAzSim client:visible />
 
-<Takeaway>Multi-AZ: sao chép đồng bộ, một standby không phục vụ đọc, nhằm đảm bảo khả năng chịu lỗi; failover bằng cách cập nhật CNAME. Read Replica: sao chép bất đồng bộ, phục vụ đọc, nhằm giảm tải đọc. Bảo trì OS được áp dụng cho standby trước; nâng cấp engine được áp dụng cho cả hai cùng lúc.</Takeaway>
+<Takeaway>Multi-AZ: sao chép đồng bộ, một standby không phục vụ đọc, nhằm đảm bảo khả năng chịu lỗi; failover bằng cách cập nhật CNAME. Read Replica: sao chép bất đồng bộ, phục vụ đọc, nhằm giảm tải đọc. Bảo trì OS được áp dụng cho standby trước; nâng cấp engine được áp dụng cho cả hai cùng lúc (riêng RDS for SQL Server dùng rolling upgrade). Failover Multi-AZ thường mất 60–120 giây.</Takeaway>
 
 </Scene>
 
@@ -57,7 +73,7 @@ Khi quy mô ShopViet tăng, database phát sinh nhiều vấn đề hơn: báo c
 
 Hai biện pháp bổ sung giúp giảm tải cho đội vận hành. Hệ thống kế toán chạy SQL Server sử dụng **RDS for SQL Server Multi-AZ**: AWS quản lý standby và failover. Để mọi database mới tuân thủ cùng tiêu chuẩn (Multi-AZ, backup, mã hoá), các database được tạo từ cùng một **CloudFormation template** đã được kiểm định.
 
-<Takeaway>Báo cáo làm chậm website: Read Replica cùng Region (không tính phí replication). Quá nhiều kết nối: RDS Proxy. Nguy cơ đầy ổ đĩa: storage auto scaling. Sự cố cấp Region: cross-Region Read Replica + copy backup sang Region khác. Cần truy cập OS: RDS Custom.</Takeaway>
+<Takeaway>Báo cáo làm chậm website: Read Replica cùng Region (không tính phí replication). Quá nhiều kết nối: RDS Proxy. Nguy cơ đầy ổ đĩa: storage auto scaling. Sự cố cấp Region: cross-Region Read Replica + copy backup sang Region khác. Cần truy cập OS: RDS Custom (lưu ý: AWS ngừng hỗ trợ RDS Custom for Oracle từ 31/03/2027).</Takeaway>
 
 </Scene>
 
@@ -75,18 +91,18 @@ Một số quyết định khác của ShopViet liên quan tới Aurora:
   { need: "Bảng tỷ giá dùng chung cho mọi quốc gia, trong khi bảng đơn hàng chỉ dùng trong từng Region", answer: "Aurora Global Database cho bảng dùng chung, Aurora tiêu chuẩn cho phần còn lại",
     why: "Chỉ dữ liệu cần đọc trên phạm vi toàn cầu mới phát sinh chi phí sao chép giữa các Region." },
   { need: "Ứng dụng nội bộ mới, tải biến động không dự đoán trước được", answer: "Aurora Serverless v2",
-    why: "Tự động co giãn năng lực (ACU) theo tải từng giây, tính phí theo mức sử dụng." },
+    why: "Tự động điều chỉnh năng lực (ACU) theo tải của ứng dụng; chỉ tính phí theo tài nguyên thực tế sử dụng." },
   { need: "Database có khối lượng đọc ghi rất lớn, phí I/O chiếm phần lớn chi phí, yêu cầu chi phí dự đoán được", answer: "Aurora I/O-Optimized",
-    why: "Không tính phí theo từng I/O; đổi lại, giá instance và storage cao hơn một chút." },
+    why: "Không tính phí bổ sung cho I/O đọc ghi; chỉ trả phí theo mức sử dụng instance và storage. AWS khuyến nghị cấu hình này khi chi phí I/O chiếm từ 25% tổng chi phí Aurora trở lên." },
 ]} />
 
-<Takeaway>Aurora Replica + reader endpoint phục vụ tải đọc lớn, đồng thời là đích failover. Tải đọc biến động: Aurora Auto Scaling. Nhiều Region, RPO vài giây, RTO khoảng một phút: Global Database. Tải không dự đoán được: Serverless v2.</Takeaway>
+<Takeaway>Aurora Replica + reader endpoint phục vụ tải đọc lớn, đồng thời là đích failover. Tải đọc biến động: Aurora Auto Scaling. Nhiều Region (tối đa 10 secondary Region), RPO thường tính bằng giây, RTO tính bằng phút: Global Database. Tải không dự đoán được: Serverless v2.</Takeaway>
 
 </Scene>
 
 <Scene id="s4" label="Phần 4/4" title="Mã hoá database đang vận hành" questions={["exam2_q45", "exam4_q31", "exam4_q39", "exam2_q57"]}>
 
-Đợt kiểm tra bảo mật phát hiện database đơn hàng chưa được mã hoá. Không thể bật encryption trực tiếp trên một RDS instance đang chạy, do đó cần thực hiện thông qua snapshot:
+Đợt kiểm tra bảo mật phát hiện database đơn hàng chưa được mã hoá. RDS chỉ cho phép bật encryption khi tạo DB instance, không bật được sau khi instance đã tạo. Cách thông dụng là thực hiện thông qua snapshot (ngoài ra có thể dùng blue/green deployment với green environment được mã hoá):
 
 <StepSim client:visible height={210}
   intro="Kiểm tra bảo mật phát hiện database đơn hàng chưa được mã hoá."
@@ -109,7 +125,7 @@ Mã hoá ổ đĩa chỉ là một phần. Các yêu cầu bảo mật khác c�
 <RequirementPicker client:visible items={[
   { need: "Database đã được mã hoá khi lưu trữ; cần bảo vệ dữ liệu khi truyền từ ứng dụng tới database", answer: "Kết nối bằng SSL/TLS", why: "KMS chỉ bảo vệ dữ liệu khi lưu trữ (at rest)." },
   { need: "Lambda kết nối PostgreSQL mà không lưu trữ mật khẩu", answer: "IAM database authentication + IAM role", why: "Lambda lấy token ngắn hạn thông qua IAM role thay cho mật khẩu." },
-  { need: "Chia sẻ bản sao database đã mã hoá cho account của team phân tích", answer: "Share snapshot + cấp quyền sử dụng KMS key", why: "Account nhận phải có quyền sử dụng KMS key thì mới restore được. Xem bài KMS." },
+  { need: "Chia sẻ bản sao database đã mã hoá cho account của team phân tích", answer: "Share snapshot + cấp quyền sử dụng KMS key", why: "Snapshot phải được mã hoá bằng customer managed key (không share được snapshot mã hoá bằng KMS key mặc định của account), và account nhận phải có quyền sử dụng key đó. Xem bài KMS." },
 ]} />
 
 <Takeaway>Mã hoá database đang vận hành: snapshot → copy có mã hoá → restore. Mã hoá khi truyền: SSL/TLS. Xác thực không dùng mật khẩu: IAM DB authentication.</Takeaway>
@@ -146,14 +162,14 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Read Replica cùng Region, chạy báo cáo trên đó", "Bật Multi-AZ", "Tăng instance lên gấp đôi"],
     a: 0,
     why: "Replica cùng Region tách tải đọc và không tính phí truyền dữ liệu replication." },
-  { q: "ShopViet sử dụng Aurora và yêu cầu RPO vài giây, RTO khoảng một phút khi toàn bộ Region Singapore gặp sự cố. Phương án nào phù hợp?",
+  { q: "ShopViet sử dụng Aurora và yêu cầu RPO tính bằng giây, RTO tính bằng phút khi toàn bộ Region Singapore gặp sự cố. Phương án nào phù hợp?",
     opts: ["Aurora Replica trong cùng Region", "Aurora Global Database", "Snapshot hằng ngày copy sang Region khác"],
     a: 1,
-    why: "Global Database sao chép sang Region khác với độ trễ rất thấp và failover nhanh." },
+    why: "Global Database sao chép sang Region khác với độ trễ thường dưới một giây; khi failover, RPO thường tính bằng giây và RTO có thể tính bằng phút." },
   { q: "Database RDS đang vận hành chưa được mã hoá. Cách mã hoá nào đúng?",
     opts: ["Bật encryption trong cấu hình instance", "Snapshot, copy có mã hoá, restore instance mới", "Bật SSL"],
     a: 1,
-    why: "Không thể bật encryption trực tiếp trên instance hiện có; phải thực hiện thông qua snapshot đã mã hoá." },
+    why: "RDS chỉ bật encryption khi tạo instance. Copy snapshot với encryption rồi restore là cách thực hiện; blue/green deployment là một phương án khác được AWS hỗ trợ." },
 ]} />
 
 </Scene>

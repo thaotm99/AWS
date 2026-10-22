@@ -43,7 +43,7 @@ export default function CrossZoneCalc() {
         {cross
           ? <>Cross-zone bật: mỗi node phân phối traffic cho <b>mọi target trên mọi AZ</b>, do đó mỗi target nhận 100% ÷ {total} = {pct(100 / total)}.</>
           : <>Cross-zone tắt: mỗi node chỉ phân phối cho các target <b>cùng AZ</b>. Mỗi target tại AZ A nhận 50% ÷ {a} = {pct(50 / a)}, tại AZ B nhận 50% ÷ {b} = {pct(50 / b)}. Tại AZ có ít target, mỗi target phải tiếp nhận tải lớn hơn.</>}
-        <p className="note-small">Cấu hình mặc định: ALB bật cross-zone; NLB và GWLB tắt cross-zone.</p>
+        <p className="note-small">Cấu hình mặc định: ALB luôn bật cross-zone ở cấp load balancer (có thể tắt ở cấp target group); NLB và GWLB tắt cross-zone.</p>
       </div>
     </div>
   );

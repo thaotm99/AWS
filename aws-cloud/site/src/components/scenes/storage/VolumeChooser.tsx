@@ -2,6 +2,7 @@ import { useState } from "react";
 
 // EBS volume type from the requirements the tests give: IOPS (exam3_q27, exam5_q22),
 // boot volume (exam1_q44), Multi-Attach (exam6_q24), cost (exam4_q15).
+// Limits from ebs-volume-types.html: gp2 16,000, gp3 80,000, io1 64,000, io2 Block Express 256,000 IOPS.
 type Pattern = "random" | "sequential";
 
 export default function VolumeChooser() {
@@ -20,12 +21,15 @@ export default function VolumeChooser() {
     why = cold
       ? "Dữ liệu đọc tuần tự, ít truy cập: sc1 có chi phí thấp nhất trong các loại EBS."
       : "Đọc ghi tuần tự khối dữ liệu lớn (big data, log): st1 cung cấp throughput cao với chi phí của HDD.";
+  } else if (iops > 80000) {
+    pick = "Provisioned IOPS SSD (io2 Block Express)";
+    why = `Yêu cầu ${iops.toLocaleString("vi-VN")} IOPS, vượt mức tối đa 80.000 IOPS của gp3 và 64.000 IOPS của io1. io2 Block Express cấp phát được tới 256.000 IOPS (trên instance Nitro).`;
   } else if (iops > 16000) {
-    pick = "Provisioned IOPS SSD (io1/io2)";
-    why = `Yêu cầu ${iops.toLocaleString("vi-VN")} IOPS, vượt mức tối đa 16.000 IOPS của gp2/gp3. Database cần IOPS cao và ổn định: io1/io2.`;
+    pick = "gp3, hoặc io1/io2 nếu cần IOPS ổn định";
+    why = `Yêu cầu ${iops.toLocaleString("vi-VN")} IOPS, vượt mức tối đa 16.000 IOPS của gp2 nhưng vẫn trong giới hạn 80.000 IOPS của gp3. Với database I/O lớn cần IOPS ổn định: Provisioned IOPS SSD (io1 tối đa 64.000 IOPS; io2 Block Express tối đa 256.000 IOPS, độ trễ dưới mili giây).`;
   } else {
     pick = "General Purpose SSD (gp3, hoặc gp2)";
-    why = "Phần lớn workload và boot volume: gp3 cân bằng giữa chi phí và hiệu năng (tối đa 16.000 IOPS). Chuyển sang loại có chi phí thấp hơn khi volume đang dùng Provisioned IOPS nhưng không có nhu cầu tương ứng.";
+    why = "Phần lớn workload và boot volume: gp3 cân bằng giữa chi phí và hiệu năng (tối đa 80.000 IOPS; gp2 tối đa 16.000 IOPS). Chuyển sang loại có chi phí thấp hơn khi volume đang dùng Provisioned IOPS nhưng không có nhu cầu tương ứng.";
   }
   const hddForBoot = boot && pattern === "sequential";
 
@@ -33,7 +37,7 @@ export default function VolumeChooser() {
     <div className="stage">
       <div className="stage-bar">
         <label className="label" htmlFor="volIops">IOPS yêu cầu: {iops.toLocaleString("vi-VN")}</label>
-        <input id="volIops" type="range" min={1000} max={64000} step={1000} value={iops} onChange={(e) => setIops(Number(e.target.value))} />
+        <input id="volIops" type="range" min={1000} max={256000} step={1000} value={iops} onChange={(e) => setIops(Number(e.target.value))} />
       </div>
       <div className="stage-bar">
         <span className="label">Mẫu truy cập</span>

@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 // Default termination policy, step by step (exam4_q16, exam2_q65):
-// 1. AZ with the most instances; 2. instances using a launch configuration go before those
-// using a launch template, oldest first; 3. closest to the next billing hour.
+// 1. AZ with the most instances; 2. outdated configurations: launch configuration first,
+// then the oldest launch template version; 3. if several remain, closest to the next billing hour.
 interface Inst { id: string; az: string; kind: "LT" | "LC"; age: number; label: string; billing: number }
 
 const SCENARIOS: { name: string; instances: Inst[] }[] = [
@@ -21,9 +21,9 @@ const SCENARIOS: { name: string; instances: Inst[] }[] = [
   {
     name: "4 instance trong một AZ",
     instances: [
-      { id: "A", az: "us-east-1a", kind: "LT", age: 3, label: "launch template cũ nhất", billing: 30 },
-      { id: "B", az: "us-east-1a", kind: "LC", age: 3, label: "launch configuration cũ nhất", billing: 45 },
-      { id: "C", az: "us-east-1a", kind: "LC", age: 1, label: "launch configuration mới nhất", billing: 20 },
+      { id: "A", az: "us-east-1a", kind: "LT", age: 3, label: "launch template, phiên bản cũ nhất", billing: 30 },
+      { id: "B", az: "us-east-1a", kind: "LC", age: 3, label: "launch configuration cũ", billing: 45 },
+      { id: "C", az: "us-east-1a", kind: "LC", age: 1, label: "launch configuration mới hơn", billing: 20 },
       { id: "D", az: "us-east-1a", kind: "LT", age: 1, label: "gần giờ tính phí nhất", billing: 2 },
       { id: "E", az: "us-east-1b", kind: "LT", age: 2, label: "launch template", billing: 35 },
       { id: "F", az: "us-east-1b", kind: "LT", age: 2, label: "launch template", billing: 12 },
@@ -41,18 +41,17 @@ function decide(list: Inst[]) {
   steps.push({ text: `Chọn AZ có nhiều instance nhất: ${azs.join(", ")} (${max} instance), nhằm duy trì cân bằng giữa các AZ.`, keep: pool.map((i) => i.id) });
   const lc = pool.filter((i) => i.kind === "LC");
   if (lc.length) {
-    const oldest = Math.max(...lc.map((i) => i.age));
-    pool = lc.filter((i) => i.age === oldest);
-    steps.push({ text: "Có instance dùng launch configuration: các instance này bị terminate trước instance dùng launch template. Trong nhóm đó, chọn instance có cấu hình cũ nhất.", keep: pool.map((i) => i.id) });
+    pool = lc;
+    steps.push({ text: "Cấu hình lỗi thời: instance dùng launch configuration được xét trước instance dùng launch template.", keep: pool.map((i) => i.id) });
   } else {
     const oldest = Math.max(...pool.map((i) => i.age));
     pool = pool.filter((i) => i.age === oldest);
-    steps.push({ text: "Chọn instance dùng launch template cũ nhất.", keep: pool.map((i) => i.id) });
+    steps.push({ text: "Cấu hình lỗi thời: chọn instance dùng phiên bản cũ nhất của launch template hiện tại.", keep: pool.map((i) => i.id) });
   }
   if (pool.length > 1) {
     const min = Math.min(...pool.map((i) => i.billing));
     pool = pool.filter((i) => i.billing === min);
-    steps.push({ text: "Vẫn còn nhiều instance: chọn instance gần giờ tính phí tiếp theo nhất.", keep: pool.map((i) => i.id) });
+    steps.push({ text: "Vẫn còn nhiều instance: chọn instance gần giờ tính phí tiếp theo nhất (AWS lưu ý tiêu chí này ít tác dụng vì phần lớn EC2 tính phí theo giây).", keep: pool.map((i) => i.id) });
   }
   return { steps, victim: pool[0].id };
 }

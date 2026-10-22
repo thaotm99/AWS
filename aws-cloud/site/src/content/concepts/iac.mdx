@@ -13,6 +13,22 @@ docs:
     url: "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/what-is-cfnstacksets.html"
   - title: "What is AWS Elastic Beanstalk?"
     url: "https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/Welcome.html"
+  - title: "Choosing an IaC tool: CloudFormation (AWS Prescriptive Guidance)"
+    url: "https://docs.aws.amazon.com/prescriptive-guidance/latest/choose-iac-tool/cloudformation.html"
+  - title: "Choose how to handle failures when provisioning resources"
+    url: "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stack-failure-options.html"
+  - title: "Enable or disable automatic deployments for StackSets in AWS Organizations"
+    url: "https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-orgs-manage-auto-deployment.html"
+  - title: "AWS::EC2::Volume"
+    url: "https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-ec2-volume.html"
+  - title: "Amazon EBS General Purpose SSD volumes"
+    url: "https://docs.aws.amazon.com/ebs/latest/userguide/general-purpose.html"
+  - title: "Security group rules"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/security-group-rules.html"
+  - title: "What is AWS RAM?"
+    url: "https://docs.aws.amazon.com/ram/latest/userguide/what-is.html"
+  - title: "Using a custom Amazon machine image (AMI) in Elastic Beanstalk"
+    url: "https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/using-features.customenv.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -43,7 +59,7 @@ Khả năng đọc hiểu template quan trọng tương đương khả năng vi�
 
 <SgRuleSim client:visible />
 
-<Takeaway>Đảm bảo mọi tài nguyên được tạo theo cùng tiêu chuẩn: đưa tiêu chuẩn vào template CloudFormation, chỉ cho phép người dùng chọn tham số trong danh sách được phép. Thay đổi hạ tầng bằng cách cập nhật template và update stack. Khi quá trình tạo gặp lỗi giữa chừng, stack tự động rollback. CloudFormation không tính phí riêng. SecurityGroupIngress là inbound rule của security group và chỉ hỗ trợ rule cho phép.</Takeaway>
+<Takeaway>Đảm bảo mọi tài nguyên được tạo theo cùng tiêu chuẩn: đưa tiêu chuẩn vào template CloudFormation, chỉ cho phép người dùng chọn tham số trong danh sách được phép. Thay đổi hạ tầng bằng cách cập nhật template và update stack. Khi quá trình tạo gặp lỗi giữa chừng, theo mặc định stack tự động rollback (có thể chọn giữ lại tài nguyên đã tạo thành công). Dùng CloudFormation với tài nguyên thuộc namespace AWS::*, Alexa::* và Custom::* không phát sinh phí bổ sung; chỉ tính phí tài nguyên AWS được tạo. SecurityGroupIngress là inbound rule của security group và chỉ hỗ trợ rule cho phép.</Takeaway>
 
 </Scene>
 
@@ -78,7 +94,7 @@ Phân loại từng tác vụ vào công cụ phù hợp. Trên thiết bị di 
     { id: "boot", title: "Golden AMI + user data", sub: "khi khởi động", hint: "Gợi ý: tác vụ liên quan tới quá trình khởi động của instance." },
   ]}
   cards={[
-    ["Database luôn bật Multi-AZ và mã hoá", "template"], ["Đổi io1 sang gp2 qua update stack", "template"], ["Xem trước thay đổi bằng change set", "template"],
+    ["Database luôn bật Multi-AZ và mã hoá", "template"], ["Đổi io1 sang gp3 qua update stack", "template"], ["Xem trước thay đổi bằng change set", "template"],
     ["Baseline IAM cho mọi account", "stackset"], ["Account mới gia nhập OU tự động nhận baseline", "stackset"], ["Cùng cấu hình ở 3 Region", "stackset"],
     ["Cài đặt sẵn phần mềm dung lượng lớn", "boot"], ["Tạo file cấu hình riêng cho từng instance", "boot"],
   ]}
@@ -96,9 +112,9 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     a: 1,
     why: "StackSets tạo stack từ một template trong nhiều account và Region bằng một thao tác. Một stack thông thường chỉ thuộc một account và một Region; RAM chỉ chia sẻ tài nguyên." },
   { q: "EBS volume io1 chiếm phần lớn chi phí, trong khi CloudWatch cho thấy I/O chỉ tăng cao không thường xuyên. Hạ tầng được quản lý bằng CloudFormation. Phương án nào giảm chi phí?",
-    opts: ["Ngừng sử dụng CloudFormation do chi phí cao", "Đổi volume sang gp2 trong template rồi update stack", "Giữ io1 và đổi EC2 sang kích thước nhỏ hơn"],
+    opts: ["Ngừng sử dụng CloudFormation do chi phí cao", "Đổi volume sang gp3 trong template rồi update stack", "Giữ io1 và đổi EC2 sang kích thước nhỏ hơn"],
     a: 1,
-    why: "gp2 hỗ trợ burst cho các thời điểm I/O cao và có chi phí thấp hơn io1 đáng kể. CloudFormation không tính phí riêng; EC2 chỉ chiếm phần nhỏ chi phí." },
+    why: "gp3 là loại SSD volume có chi phí thấp nhất của EBS (giá mỗi GiB thấp hơn gp2 20%), cung cấp baseline 3.000 IOPS ổn định và có thể provision thêm IOPS độc lập với dung lượng. Đổi VolumeType trên AWS::EC2::Volume là cập nhật không gián đoạn. CloudFormation không tính phí bổ sung với tài nguyên AWS::*; EC2 chỉ chiếm phần nhỏ chi phí." },
   { q: "Ứng dụng trên Elastic Beanstalk mất 45 phút để cài đặt, gồm phần tĩnh và phần phải tạo khi khởi động. Yêu cầu: instance mới sẵn sàng trong vòng dưới 2 phút. Phương án nào phù hợp?",
     opts: ["Lưu bộ cài đặt trên S3", "Golden AMI chứa sẵn phần tĩnh, user data tạo phần động", "User data cài đặt toàn bộ khi khởi động"],
     a: 1,

@@ -51,7 +51,7 @@ const SCENARIOS: PScenario[] = [
           result: "Website hoạt động trở lại mà không cần thao tác thủ công trên console. Không cần Lambda hay script: alarm gọi trực tiếp action của EC2." }
       : { steps: [
             { at: "cw", jump: true, state: "pass", flash: "ALARM", tag: "ALARM", msg: "Instance status check thất bại." },
-            { at: "ec2", state: "block", tag: "CHƯA KHẮC PHỤC", msg: "Action đang chọn là **recover**. Recover chỉ áp dụng cho **system status check** (lỗi của host AWS). Với lỗi trong hệ điều hành, chuyển sang host khác không khắc phục được tình trạng treo." }],
+            { at: "ec2", state: "block", tag: "CHƯA KHẮC PHỤC", msg: "Action đang chọn là **recover**. Action recover chỉ dùng được với metric `StatusCheckFailed_System` (lỗi của host AWS), không dùng với `StatusCheckFailed_Instance`. Với lỗi bên trong instance, AWS khuyến nghị action **reboot**." }],
           ok: false,
           result: "Instance vẫn bị treo. Với lỗi bên trong instance, cần chọn action **reboot**." },
   },
@@ -65,8 +65,8 @@ const SCENARIOS: PScenario[] = [
             { at: "cw", jump: true, state: "pass", flash: "ALARM", tag: "ALARM", msg: "System status check thất bại: sự cố nằm ở host, thuộc phạm vi xử lý của AWS." },
             { at: "old", from: "ec2", state: "block", flash: "sự cố", msg: "Host hiện tại không còn sử dụng được." },
             { at: "new", from: "ec2", state: "change", tag: "RECOVER", relabel: { l1: "i-shop01 (đã chuyển)" }, msg: "Action **recover** chuyển instance sang host khác." },
-            { at: "ec2", jump: true, state: "pass", tag: "GIỮ NGUYÊN", msg: "Giữ nguyên **instance ID**, private IP, Elastic IP, public IPv4 và metadata. EBS volume được gắn lại nguyên vẹn." },
-            { at: "ec2", jump: true, state: "change", tag: "MẤT", msg: "Instance được khởi động lại nên **dữ liệu trong RAM bị mất**." }],
+            { at: "ec2", jump: true, state: "pass", tag: "GIỮ NGUYÊN", msg: "Giữ nguyên **instance ID**, địa chỉ public IPv4, private IP, Elastic IP, instance metadata, placement group, Availability Zone và các EBS volume đã gắn." },
+            { at: "ec2", jump: true, state: "change", tag: "MẤT", msg: "Đối với instance, quá trình recover diễn ra như một lần reboot ngoài kế hoạch: **dữ liệu trong RAM bị mất**, uptime của hệ điều hành bắt đầu lại từ 0." }],
           ok: true, back: false,
           result: "Website hoạt động trở lại với cùng địa chỉ. Một instance duy nhất, không dùng ASG, vẫn tự động khôi phục được trong vài phút." }
       : { steps: [
@@ -74,22 +74,22 @@ const SCENARIOS: PScenario[] = [
             { at: "sns", state: "pass", msg: "Alarm chỉ gửi thông báo; kỹ sư trực không phản hồi ngoài giờ làm việc." },
             { at: "ec2", from: "cw", state: "wait", tag: "CHỜ", msg: "Instance nằm trên host gặp sự cố cho tới khi có người thực hiện stop/start thủ công." }],
           ok: false, back: false,
-          result: "Website ngừng hoạt động suốt đêm. Cần thêm action **recover** vào alarm để EC2 tự động chuyển sang host khác." },
+          result: "Website ngừng hoạt động suốt đêm. Cần thêm action **recover** vào alarm để EC2 tự động chuyển sang host khác. (Với instance type được hỗ trợ, **simplified automatic recovery** được bật mặc định khi launch; mô phỏng này giả định cơ chế đó không áp dụng cho instance.)" },
   },
   {
     name: "Instance sử dụng instance store",
-    request: "StatusCheckFailed_System = 1, i-cache01 có instance store volume",
+    request: "StatusCheckFailed_System = 1, i-cache01 (m5d.large) có instance store volume",
     layout: {
       ...EC2,
-      nodes: EC2.nodes.map((n) => n.id === "ec2" ? { ...n, l1: "i-cache01", l2: "có instance store" } : n),
+      nodes: EC2.nodes.map((n) => n.id === "ec2" ? { ...n, l1: "i-cache01", l2: "m5d, có instance store" } : n),
     },
     run: () => ({
       steps: [
         { at: "cw", jump: true, state: "pass", flash: "ALARM", tag: "ALARM", msg: "System status check thất bại." },
-        { at: "ec2", state: "block", tag: "KHÔNG HỖ TRỢ", msg: "Recover gắn lại EBS volume trên host mới. **Instance store** nằm trên host cũ nên không thể chuyển theo; loại instance này không hỗ trợ action recover." },
+        { at: "ec2", state: "block", tag: "KHÔNG HỖ TRỢ", msg: "Khi instance có instance store volume được thêm lúc launch, CloudWatch action based recovery chỉ hỗ trợ các instance type M3, C3, R3, X1, X1e, X2idn, X2iedn. **m5d.large** không thuộc danh sách này nên action recover không thực hiện được." },
         { at: "new", from: "ec2", state: "skip", msg: "Không có host mới nào được sử dụng." }],
       ok: false, back: false,
-      result: "Để tự động recover, instance chỉ được sử dụng **EBS volume**. Dữ liệu cần bảo toàn không nên lưu trên instance store.",
+      result: "Kể cả với instance type được hỗ trợ, CloudWatch action based recovery làm **mất dữ liệu trên instance store**. Dữ liệu cần bảo toàn nên lưu trên **EBS volume** và được backup định kỳ.",
     }),
   },
   {
@@ -100,12 +100,12 @@ const SCENARIOS: PScenario[] = [
     run: () => ({
       steps: [
         { at: "cw", jump: true, state: "pass", flash: "ALARM", tag: "ALARM", msg: "CPU ở dưới ngưỡng trong khoảng thời gian đủ dài, alarm gọi scaling policy." },
-        { at: "asg", state: "pass", msg: "Giảm 1 instance theo **default termination policy**." },
+        { at: "asg", state: "pass", msg: "Giảm 1 instance theo **default termination policy** (group dùng launch template, không phải mixed instances group)." },
         { at: "a", state: "skip", msg: "AZ A có 3 instance, ít hơn AZ B." },
-        { at: "b", from: "asg", state: "pass", tag: "CHỌN AZ", label: "AZ B", msg: "Bước 1: chọn AZ có nhiều instance nhất là **AZ B**, nhằm cân bằng số instance giữa hai AZ." },
-        { at: "bold", from: "asg", state: "change", tag: "TERMINATE", relabel: { l1: "b0 (đã terminate)" }, msg: "Bước 2: trong AZ B, chọn instance có **launch template cũ nhất**." }],
+        { at: "b", from: "asg", state: "pass", tag: "CHỌN AZ", label: "AZ B", msg: "Bước 1: chọn AZ có nhiều instance nhất (và có ít nhất một instance không được bảo vệ khỏi scale in) là **AZ B**; cân bằng giữa các AZ được ưu tiên hơn termination policy." },
+        { at: "bold", from: "asg", state: "change", tag: "TERMINATE", relabel: { l1: "b0 (đã terminate)" }, msg: "Bước 2: trong AZ B, ưu tiên instance dùng cấu hình cũ: launch configuration, rồi launch template khác template hiện tại, rồi **version cũ nhất của launch template hiện tại**. b0 dùng version 2 nên bị terminate. Nếu vẫn còn nhiều lựa chọn, chọn instance gần giờ tính phí tiếp theo nhất." }],
       ok: true, back: false,
-      result: "Còn lại 3 + 3 instance, tất cả đều dùng launch template mới. Sticky session trên ALB không ảnh hưởng tới thứ tự lựa chọn này.",
+      result: "Còn lại 3 + 3 instance, tất cả đều dùng launch template version mới. Với mixed instances group, Auto Scaling còn xác định purchase option (Spot hoặc On-Demand) cần giảm và xét allocation strategy trước bước cấu hình cũ.",
     }),
   },
 ];

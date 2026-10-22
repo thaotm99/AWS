@@ -14,7 +14,7 @@ type WorkId = "web" | "batch" | "fargate" | "lambda" | "sm";
 const PLANS: { id: PlanId; l1: string; l2: string; y: number }[] = [
   { id: "ec2i", l1: "EC2 Instance Savings Plans", l2: "family m5 · Singapore", y: 70 },
   { id: "compute", l1: "Compute Savings Plans", l2: "mọi family, mọi Region", y: 150 },
-  { id: "sm", l1: "SageMaker Savings Plans", l2: "mọi loại instance SageMaker", y: 230 },
+  { id: "sm", l1: "SageMaker AI Savings Plans", l2: "mọi loại instance SageMaker AI", y: 230 },
 ];
 const WORKS: { id: WorkId; l1: string; l2: string; y: number }[] = [
   { id: "web", l1: "EC2 web", l2: "m5 · Singapore", y: 50 },
@@ -45,11 +45,11 @@ function verdict(sel: PlanId[]): { ok: boolean; text: string } {
         ? " EC2 Instance Savings Plans chỉ giảm giá cho **một instance family trong một Region**, không áp dụng cho Fargate hay Lambda."
         : " Loại plan áp dụng đồng thời cho EC2, Fargate và Lambda là **Compute Savings Plans**.";
     }
-    if (missing.includes("SageMaker")) why += " **SageMaker không thuộc phạm vi Compute Savings Plans** mà có Savings Plans riêng.";
+    if (missing.includes("SageMaker")) why += " **SageMaker không thuộc phạm vi Compute Savings Plans** mà có SageMaker AI Savings Plans riêng.";
     return { ok: false, text: `Vẫn chạy theo giá on-demand: ${missing.join(", ")}.${why}` };
   }
   if (sel.includes("ec2i")) return { ok: false, text: "Đã áp dụng cho mọi workload nhưng **dư một plan**: Compute Savings Plans đã giảm giá cho EC2 web. Bỏ EC2 Instance Savings Plans để giảm số plan cần quản lý." };
-  return { ok: true, text: "Hai plan áp dụng cho cả năm workload: **Compute Savings Plans** cho EC2 (mọi instance family, mọi Region), Fargate và Lambda; **SageMaker Savings Plans** cho SageMaker. Không cần thay đổi kiến trúc." };
+  return { ok: true, text: "Hai plan áp dụng cho cả năm workload: **Compute Savings Plans** cho EC2 (mọi instance family, mọi Region), Fargate và Lambda; **SageMaker AI Savings Plans** cho SageMaker. Không cần thay đổi kiến trúc." };
 }
 
 export default function SavingsPlanSim() {

@@ -16,9 +16,9 @@ const STRATEGIES: Record<Strategy, { label: string; verdict: "good" | "bad"; tex
   riOd: { label: "RI cho nền + On-Demand", verdict: "good",
     text: "Tải nền chạy liên tục nên sử dụng Reserved Instances. Tải đỉnh sử dụng On-Demand: chi phí thấp hơn đáng kể và không bị gián đoạn. Phù hợp khi tải đỉnh không chịu được gián đoạn." },
   riSpot: { label: "RI cho nền + Spot", verdict: "good",
-    text: "Chi phí thấp nhất mà vẫn đảm bảo tính sẵn sàng: tải nền sử dụng RI; tải đỉnh là tác vụ chịu được gián đoạn (batch, worker đọc queue) nên sử dụng Spot. Đây là cách phối hợp phổ biến nhất trong thực tế." },
+    text: "Chi phí thấp nhất mà vẫn đảm bảo tính sẵn sàng: tải nền sử dụng RI; tải đỉnh là tác vụ chịu được gián đoạn (batch, worker đọc queue) nên sử dụng Spot. Trong mô phỏng này, đây là phương án có chi phí thấp nhất trong các phương án đáp ứng yêu cầu." },
   spot: { label: "Toàn bộ Spot", verdict: "bad",
-    text: "Chi phí thấp nhất trên lý thuyết, nhưng Spot Instance có thể bị thu hồi với thông báo trước 2 phút. Khi tải nền bắt buộc chạy liên tục được đặt trên Spot, toàn bộ hệ thống có thể ngừng hoạt động." },
+    text: "Chi phí thấp nhất trên lý thuyết, nhưng Spot Instance có thể bị gián đoạn với thông báo trước 2 phút. Khi tải nền bắt buộc chạy liên tục được đặt trên Spot, toàn bộ hệ thống có thể ngừng hoạt động." },
 };
 
 function split(s: Strategy, need: number) {
@@ -87,7 +87,7 @@ export default function PurchaseMixSim() {
           <span className="count">Chi phí tương đối: {Math.round((c / baseline) * 100)}% so với toàn bộ On-Demand</span>
         </div>
         <p style={{ margin: "8px 0 0" }}>{STRATEGIES[s].text}</p>
-        <p className="note-small">Mức giá dùng để so sánh là giả định (RI thấp hơn 40%, Spot thấp hơn 70% so với On-Demand). AWS công bố mức chiết khấu tối đa khoảng 72% cho RI và 90% cho Spot.</p>
+        <p className="note-small">Mức giá dùng để so sánh là giả định (RI thấp hơn 40%, Spot thấp hơn 70% so với On-Demand). Theo tài liệu AWS, Reserved Instances và Savings Plans giảm tới 72%, Spot giảm tới 90% so với giá On-Demand.</p>
       </div>
     </div>
   );

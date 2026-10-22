@@ -27,11 +27,11 @@ const SCENARIOS: PScenario[] = [
     run: (nat) => nat
       ? { steps: [
             { at: "rt", state: "pass", msg: "Route table có route ra Internet qua NAT gateway." },
-            { at: "nat", state: "change", tag: "NAT", msg: "NAT gateway thay private IP của Lambda bằng public IP của NAT gateway." },
+            { at: "nat", state: "change", tag: "NAT", msg: "NAT gateway thay địa chỉ nguồn private bằng địa chỉ public của NAT gateway." },
             { at: "api", state: "pass", msg: "Đơn giao hàng được tạo thành công." },
           ], ok: true, result: "200 OK: Lambda vừa truy cập được database trong VPC, vừa gọi được API bên ngoài." }
       : { steps: [
-            { at: "rt", state: "block", flash: "timeout", msg: "Lambda gắn vào VPC chỉ có private IP. Subnet không có route ra Internet nên request bị treo cho tới khi timeout." },
+            { at: "rt", state: "block", flash: "timeout", msg: "Lambda gắn vào VPC không có public IP (kể cả khi đặt trong public subnet). Subnet không có route ra Internet nên request bị treo cho tới khi timeout." },
           ], ok: false, result: "Trước khi gắn VPC, lời gọi thành công; sau khi gắn VPC thì thất bại. Lambda trong VPC cần NAT gateway để truy cập Internet." },
   },
   {
@@ -75,13 +75,13 @@ const SCENARIOS: PScenario[] = [
     }),
     run: (raised) => raised
       ? { steps: [
-            { at: "fn", state: "pass", msg: "Quota đáp ứng được đợt gửi lớn nhất." },
+            { at: "fn", state: "pass", msg: "Quota sau khi tăng đáp ứng được đợt gửi lớn nhất." },
             { at: "cw", state: "pass", msg: "Alarm theo dõi **ConcurrentExecutions** cảnh báo sớm khi sắp chạm quota." },
           ], ok: true, result: "Mọi thông báo đều được chuyển tới Lambda." }
       : { steps: [
-            { at: "fn", state: "block", flash: "429", tag: "THROTTLE", msg: "Vượt **concurrency quota** của account trong Region (mặc định 1.000). Các lời gọi vượt quota bị throttle." },
+            { at: "fn", state: "block", flash: "429", tag: "THROTTLE", msg: "Vượt **concurrency quota** của account trong Region (mặc định 1.000; account mới có thể thấp hơn). Các lời gọi vượt quota bị throttle; với lời gọi bất đồng bộ từ SNS, Lambda đưa sự kiện trở lại hàng đợi và thử lại tối đa 6 giờ (mặc định)." },
             { at: "cw", from: "fn", state: "change", tag: "CẢNH BÁO", msg: "Alarm trên ConcurrentExecutions chuyển sang trạng thái ALARM." },
-          ], ok: false, back: false, result: "Một phần người dùng không nhận được thông báo. Cần yêu cầu tăng quota và cấu hình alarm để cảnh báo sớm." },
+          ], ok: false, back: false, result: "Thông báo bị gửi chậm; sự kiện hết hạn hoặc thất bại sau mọi lần thử lại sẽ bị Lambda loại bỏ (cấu hình destination hoặc DLQ để giữ lại). Cần yêu cầu tăng quota và cấu hình alarm để cảnh báo sớm." },
   },
   {
     name: "Kết nối RDS không lưu mật khẩu",
@@ -101,7 +101,7 @@ const SCENARIOS: PScenario[] = [
     run: (iam) => iam
       ? { steps: [
             { at: "cred", state: "change", tag: "TOKEN", msg: "Execution role có quyền `rds-db:connect`. Lambda yêu cầu một **auth token** ngắn hạn." },
-            { at: "rds", state: "pass", msg: "RDS chấp nhận token thay cho mật khẩu." },
+            { at: "rds", state: "pass", msg: "RDS chấp nhận token (hiệu lực 15 phút) thay cho mật khẩu." },
           ], ok: true, result: "Không còn mật khẩu lưu trong mã nguồn hay cấu hình." }
       : { steps: [
             { at: "cred", state: "change", tag: "LỘ THÔNG TIN", msg: "Mật khẩu lưu trong biến môi trường; bất kỳ ai có quyền xem cấu hình function đều đọc được." },
@@ -130,7 +130,7 @@ const SCENARIOS: PScenario[] = [
             { at: "role", state: "pass", msg: "Phía A: role cho phép đọc bucket của B." },
             { at: "pol", state: "pass", msg: "Phía B: bucket policy cho phép đúng ARN của role đó." },
             { at: "s3", state: "pass", msg: "Đọc thành công tệp tồn kho." },
-          ], ok: true, result: "Truy cập cross-account yêu cầu **cả hai phía** cho phép." }
+          ], ok: true, result: "Với request cross-account, AWS chỉ cho phép khi đánh giá policy ở **cả hai account** đều cho phép." }
       : { steps: [
             { at: "role", state: "pass", msg: "Phía A: role cho phép đọc bucket của B." },
             { at: "pol", state: "block", flash: "403", msg: "Phía B chưa cho phép. Chỉ riêng quyền của role tại A là chưa đủ." },

@@ -29,7 +29,7 @@ const SCENARIOS: Scenario[] = [
       ? `Chỉ ${n} lần gọi KMS: S3 tạo một **bucket key** ngắn hạn, sau đó tự sinh data key cho các object tiếp theo. Phương thức vẫn là SSE-KMS, nhưng số request tới KMS và chi phí giảm đáng kể.`
       : `${n} lần gọi KMS cho ${n} object. Với hàng triệu object mỗi ngày, chi phí KMS rất lớn. Bật **S3 Bucket Key** và tải lên lại để so sánh.` },
   { id: "sse-c", name: "Key lưu giữ tại máy chủ công ty", method: "SSE-C",
-    result: () => "Key được gửi kèm từng request (bắt buộc HTTPS). Sau khi mã hoá, S3 **loại bỏ key**, không lưu lại. Khi đọc, request phải kèm đúng key đó; mất key đồng nghĩa với mất dữ liệu." },
+    result: () => "Key được gửi kèm từng request (bắt buộc HTTPS). S3 **không lưu key**. Khi đọc, request phải kèm đúng key đó; mất key đồng nghĩa với mất object. Từ tháng 4/2026, SSE-C bị **chặn mặc định** trên bucket general purpose mới; phải đặt `BlockedEncryptionTypes` = `NONE` bằng PutBucketEncryption trước khi tải lên, nếu không request trả về 403 AccessDenied." },
   { id: "client", name: "Thuật toán mã hoá riêng", method: "Client-side encryption",
     result: () => "Ứng dụng tự mã hoá bằng thuật toán và key riêng trước khi gửi. S3 chỉ tiếp nhận và lưu dữ liệu đã mã hoá, không bao giờ tiếp cận dữ liệu gốc." },
 ];
@@ -103,7 +103,7 @@ export default function EncryptionSim() {
         await Promise.all([travel(L, lane(-7), 550 * fast, "pkt"), travel(L, lane(8), 550 * fast, "pkt-edge", 4)]);
         light("s3", "change");
         flashText(L, POS.s3[0], POS.s3[1] - 34, "mã hoá, loại bỏ key", "s3x-flash-edge", 800);
-        if (i === 0) add("S3", "miss", "Request gửi kèm key qua HTTPS. S3 sử dụng key đó để mã hoá, sau đó xoá key khỏi bộ nhớ.");
+        if (i === 0) add("S3", "miss", "Request gửi kèm key qua HTTPS. S3 sử dụng key đó để mã hoá và không lưu key lại.");
         await wait(300 * fast);
       } else {
         await travel(L, lane(0), 550 * fast, "pkt");

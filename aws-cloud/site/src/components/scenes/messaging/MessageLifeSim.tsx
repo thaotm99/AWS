@@ -205,7 +205,7 @@ const SCENARIOS: MScenario[] = [
         ok: two,
         result: two
           ? "Hai **queue standard** riêng biệt, worker ưu tiên đọc queue Pro. Ảnh Pro không còn phải chờ sau ảnh Lite."
-          : "Người dùng Pro phải chờ 3 lượt xử lý. Một queue không hỗ trợ độ ưu tiên; thay đổi visibility timeout hoặc chế độ polling cũng không thay đổi được thứ tự này.",
+          : "Người dùng Pro phải chờ 3 lượt xử lý vì mọi ảnh dùng chung một queue. Thay đổi visibility timeout hoặc chế độ polling không tách được hai loại ảnh; tách thành hai queue để worker đọc queue Pro trước.",
       };
     },
   },

@@ -17,6 +17,18 @@ docs:
     url: "https://docs.aws.amazon.com/databrew/latest/dg/what-is.html"
   - title: "What is Amazon EMR?"
     url: "https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-what-is-emr.html"
+  - title: "Comparing node-based Valkey, Memcached, and Redis OSS clusters"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/SelectEngine.html"
+  - title: "Common ElastiCache use cases"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/elasticache-use-cases.html"
+  - title: "Query restored Amazon Glacier objects (Athena)"
+    url: "https://docs.aws.amazon.com/athena/latest/ug/querying-glacier.html"
+  - title: "Athena data optimization techniques"
+    url: "https://docs.aws.amazon.com/athena/latest/ug/performance-tuning-data-optimization-techniques.html"
+  - title: "Amazon Redshift system overview"
+    url: "https://docs.aws.amazon.com/redshift/latest/dg/c_redshift_system_overview.html"
+  - title: "Multi-Region keys in AWS KMS"
+    url: "https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -54,13 +66,13 @@ Với dữ liệu trên DynamoDB, có thêm lựa chọn **DAX** (bài DynamoDB)
 
 <Scene id="s2" label="Phần 2/4" title="Lựa chọn engine: Redis và Memcached" questions={["exam6_q47", "exam5_q65", "exam1_q29", "exam4_q32"]}>
 
-ElastiCache có hai nhóm engine. **Redis OSS** (và **Valkey**, bản fork tương thích) hỗ trợ nhiều cấu trúc dữ liệu và các tính năng high availability. **Memcached** đơn giản hơn nhưng xử lý đa luồng. Gửi cùng một chuỗi lệnh tới hai node có cấu hình giống nhau, sau đó chọn yêu cầu của ShopViet:
+ElastiCache hỗ trợ ba engine: **Valkey**, **Redis OSS** và **Memcached**. Valkey và Redis OSS hỗ trợ nhiều cấu trúc dữ liệu và các tính năng high availability. **Memcached** đơn giản hơn nhưng xử lý đa luồng. Gửi cùng một chuỗi lệnh tới hai node có cấu hình giống nhau, sau đó chọn yêu cầu của ShopViet:
 
 <CacheEngineSim client:visible />
 
 Ví dụ: cache kết quả các truy vấn JOIN chậm trên RDS và cần tận dụng nhiều core: Memcached. Bảng xếp hạng thời gian thực, tìm cửa hàng gần nhất, yêu cầu failover: Redis OSS. Với bảng xếp hạng trên dữ liệu DynamoDB, DynamoDB + DAX cũng là một lựa chọn in-memory.
 
-<Takeaway>Đa luồng, key-value đơn giản: Memcached. Sorted set, geospatial, pub/sub, replica, Multi-AZ failover, backup: Redis OSS hoặc Valkey.</Takeaway>
+<Takeaway>Đa luồng, key-value đơn giản: Memcached. Sorted set, geospatial, pub/sub, replica, Multi-AZ failover, backup: Valkey hoặc Redis OSS (so sánh cho node-based cluster; với ElastiCache Serverless, Memcached cũng hỗ trợ backup và restore).</Takeaway>
 
 </Scene>
 
@@ -68,7 +80,7 @@ Ví dụ: cache kết quả các truy vấn JOIN chậm trên RDS và cần tậ
 
 Dữ liệu của ShopViet được lưu trong data lake trên S3. Mỗi tác vụ có một dịch vụ phù hợp nhất:
 
-- **Athena**: truy vấn SQL trực tiếp trên tệp trong S3, serverless, tính phí theo lượng dữ liệu được quét. Phù hợp với truy vấn ad-hoc.
+- **Athena**: truy vấn SQL trực tiếp trên tệp trong S3, serverless, tính phí theo số byte dữ liệu được quét. Phù hợp với truy vấn ad-hoc.
 - **Redshift**: kho dữ liệu (data warehouse) MPP cho báo cáo và dashboard chạy định kỳ. Có phiên bản **Serverless**. **Redshift Spectrum** cho phép cluster Redshift truy vấn thêm dữ liệu trên S3.
 - **Glue**: ETL serverless và Data Catalog. **Glue DataBrew**: làm sạch dữ liệu qua giao diện trực quan, không cần viết code.
 - **EMR**: cluster Spark/Hadoop với kích thước tự lựa chọn, dùng khi cần kiểm soát framework và cấu hình.

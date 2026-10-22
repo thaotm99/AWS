@@ -70,8 +70,8 @@ const SCENARIOS: Scenario[] = [
       light("primary", "ok");
       meter("cpu", 35, "35%");
       log("ĐỌC", "hit", "Báo cáo kết nối tới **endpoint của Read Replica**; primary chỉ xử lý đơn hàng.");
-      log("PHÍ", "info", "Replica cùng Region không tính phí truyền dữ liệu replication. Replica nên có cùng cấu hình compute và storage với primary để tránh replication lag.");
-      return { tone: "ok", msg: "Hiệu năng website được khôi phục, báo cáo vẫn hoạt động. Read Replica là phương án chi phí thấp nhất để tách tải đọc." };
+      log("PHÍ", "info", "Replica cùng Region không tính phí truyền dữ liệu replication. Read Replica được tính phí như một DB instance thông thường theo instance class của replica.");
+      return { tone: "ok", msg: "Hiệu năng website được khôi phục, báo cáo vẫn hoạt động. Read Replica tách tải đọc của báo cáo khỏi primary." };
     },
   },
   {
@@ -102,7 +102,7 @@ const SCENARIOS: Scenario[] = [
       meter("conn", 12, "120 / 1.000");
       light("primary", "ok");
       log("PROXY", "hit", "**RDS Proxy** tiếp nhận 2.000 kết nối từ Lambda và dùng chung một nhóm nhỏ kết nối tới database (connection pooling).");
-      return { tone: "ok", msg: "Database chỉ tiếp nhận khoảng 120 kết nối. Proxy còn duy trì kết nối khi failover, giúp giảm gián đoạn cho ứng dụng." };
+      return { tone: "ok", msg: "Database chỉ tiếp nhận khoảng 120 kết nối. Khi failover, proxy tự động kết nối tới standby và giữ nguyên kết nối của ứng dụng." };
     },
   },
   {
@@ -128,7 +128,7 @@ const SCENARIOS: Scenario[] = [
       meter("disk", 65, "65% / 750 GB");
       light("primary", "ok");
       await travel(L, toPrimary, 400, "pkt");
-      log("Ổ ĐĨA", "hit", "Khi dung lượng gần đầy, RDS **tự động tăng dung lượng** tới mức tối đa đã cấu hình, không phát sinh downtime và không cần giám sát thủ công.");
+      log("Ổ ĐĨA", "hit", "Khi dung lượng trống còn ≤ 10% trong ít nhất 5 phút, RDS **tự động tăng dung lượng** (mỗi lần thêm 10 GiB hoặc 10%, lấy giá trị lớn hơn), tới mức maximum storage threshold đã cấu hình.");
       return { tone: "ok", msg: "Đơn hàng vẫn được ghi bình thường. Cấu hình maximum storage threshold để giới hạn chi phí." };
     },
   },
@@ -177,7 +177,7 @@ const SCENARIOS: Scenario[] = [
       await travel(L, toPrimary, 600, "pkt");
       light("primary", "ok");
       log("OS", "hit", "**RDS Custom** cho phép truy cập hệ điều hành và môi trường database, đồng thời vẫn hỗ trợ automated backup và Multi-AZ.");
-      return { tone: "ok", msg: "Đội DBA cài đặt được agent. Khi không cần tuỳ chỉnh OS, sử dụng RDS tiêu chuẩn để giảm khối lượng vận hành." };
+      return { tone: "ok", msg: "Đội DBA cài đặt được agent. Lưu ý: AWS sẽ ngừng hỗ trợ **RDS Custom for Oracle** từ 31/03/2027. Khi không cần tuỳ chỉnh OS, sử dụng RDS tiêu chuẩn để giảm khối lượng vận hành." };
     },
   },
 ];

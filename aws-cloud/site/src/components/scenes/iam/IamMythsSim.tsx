@@ -61,18 +61,18 @@ const SCENARIOS: CaseScenario[] = [
     ],
     links: [{ a: "who", b: "mfa" }, { a: "mfa", b: "iam" }, { a: "iam", b: "trail" }],
     start: "who",
-    choices: { label: "Thiết lập", options: ["Không MFA, không CloudTrail", "MFA + CloudTrail"], initial: 0 },
+    choices: { label: "Thiết lập", options: ["Không MFA, chưa tạo trail", "MFA + trail CloudTrail"], initial: 0 },
     run: (v) => v === 0
       ? { back: false, marks: { trail: "skip" }, steps: [
             { at: "mfa", state: "pass", msg: "Chỉ yêu cầu mật khẩu, trong khi mật khẩu có thể đã bị lộ." },
             { at: "iam", state: "change", tag: "ĐÃ XÓA", msg: "User bị xóa." },
-            { at: "trail", state: "block", flash: "?", msg: "CloudTrail chưa được bật: không có log." },
+            { at: "trail", state: "change", tag: "90 NGÀY", msg: "Chưa tạo trail. **Event history** của CloudTrail (bật mặc định) chỉ lưu management event của 90 ngày gần nhất." },
           ],
-          ok: false, result: "Không xác định được người thực hiện, thời điểm và nguồn truy cập." }
+          ok: false, result: "Mật khẩu bị lộ là đủ để thực hiện thao tác đặc quyền. Sau 90 ngày, sự kiện không còn trong Event history nên không truy vết được." }
       : { back: false, steps: [
             { at: "mfa", state: "pass", msg: "Người dùng đặc quyền phải xác thực **MFA**." },
             { at: "iam", state: "change", tag: "ĐÃ XÓA", msg: "User bị xóa." },
-            { at: "trail", state: "pass", msg: "CloudTrail ghi lại bên gọi, thời điểm và địa chỉ IP nguồn." },
+            { at: "trail", state: "pass", msg: "Trail ghi lại bên gọi, thời điểm và địa chỉ IP nguồn, đồng thời lưu log vào S3 để lưu trữ lâu dài." },
           ],
           ok: true, result: "Giảm nguy cơ mạo danh, và mọi thao tác IAM đều truy vết được." },
   },

@@ -18,7 +18,7 @@ const LAYOUT: PLayout = {
 
 type Svc = "cw" | "trail" | "config";
 const NOT: Record<Svc, string> = {
-  cw: "Chỉ lưu metric và log ứng dụng, không ghi nhận ai thay đổi cấu hình.",
+  cw: "Lưu metric, log và alarm; thông tin ai đã gọi API nào do CloudTrail ghi nhận.",
   trail: "Ghi nhận lệnh gọi API, nhưng không lưu snapshot cấu hình theo thời gian và không đánh giá tuân thủ.",
   config: "Lưu cấu hình và mức tuân thủ, không có metric hiệu năng.",
 };
@@ -35,10 +35,10 @@ function ask(name: string, request: string, svc: Svc, flash: string, msg: string
 const SCENARIOS: PScenario[] = [
   ask("Ai đã xoá security group?", "sg-payment bị xoá lúc 02:13. Ai thực hiện?", "trail", "event",
     "Event `DeleteSecurityGroup`: user `dev-tam`, IP 113.161.x.x, lúc 02:13:07.",
-    "**CloudTrail** ghi lại mọi API call trong account: danh tính, API được gọi, nguồn, thời điểm. Đây là nhật ký phục vụ audit."),
+    "**CloudTrail** ghi API call trong account thành event: danh tính, API được gọi, nguồn, thời điểm. Trail ghi management event (như `DeleteSecurityGroup`) theo mặc định. Đây là nhật ký phục vụ audit."),
   ask("Admin mới thao tác gì trên IAM?", "Ghi lại mọi thao tác IAM của tài khoản admin mới", "trail", "IAM",
     "Trail ghi `CreateUser`, `AttachUserPolicy`, `CreateAccessKey`… của từng người dùng.",
-    "Bật **CloudTrail** ghi lại mọi IAM action là cấu hình nên áp dụng ngay từ đầu, cùng với **MFA** cho người dùng có đặc quyền cao."),
+    "Thao tác IAM là **management event**, được **CloudTrail** trail ghi theo mặc định. Nên tạo trail ngay từ đầu, cùng với **MFA** cho người dùng có đặc quyền cao."),
   ask("Tuần trước sg-web mở cổng nào?", "Vào thứ Hai tuần trước, sg-web có những inbound rule nào?", "config", "lịch sử",
     "**Configuration history** của sg-web: bản ghi cấu hình tại mỗi lần thay đổi, có thể xem lại tại từng thời điểm.",
     "**AWS Config** ghi lại cấu hình mỗi khi tài nguyên thay đổi, kèm quan hệ với tài nguyên khác (instance nào đang sử dụng sg-web)."),

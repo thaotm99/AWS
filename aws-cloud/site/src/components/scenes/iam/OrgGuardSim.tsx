@@ -169,7 +169,7 @@ const SCENARIOS: CaseScenario[] = [
           ok: false, result: "Cấu hình không đồng nhất giữa các account, khó quản trị khi số lượng account tăng." }
       : { hide: ["manual"], back: false, steps: [
             { at: "ct", state: "pass", msg: "Account Factory tạo account theo landing zone." },
-            { at: "acc", state: "pass", msg: "Có sẵn guardrail, CloudTrail và đăng nhập tập trung. Mạng dùng chung qua AWS RAM." },
+            { at: "acc", state: "pass", msg: "Có sẵn control (trước đây gọi là guardrail), CloudTrail và đăng nhập tập trung. Mạng dùng chung qua AWS RAM." },
           ],
           ok: true, result: "Account mới tuân thủ tiêu chuẩn ngay từ đầu, giảm khối lượng vận hành." },
   },

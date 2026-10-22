@@ -47,7 +47,7 @@ const SCENARIOS: HopScenario[] = [
           { to: "copy", state: "change", tag: "2", msg: "Copy snapshot và **bật encryption** với KMS key." },
           { to: "new", state: "pass", tag: "3", msg: "Restore bản copy thành một RDS mới, đã mã hoá." },
           { from: "app", to: "new", state: "pass", tag: "4", msg: "Chuyển endpoint của ứng dụng sang RDS mới." },
-        ], ok: true, result: "Đây là phương án duy nhất: snapshot → copy có encryption → restore. Không thể bật encryption trực tiếp trên instance." }
+        ], ok: true, result: "Quy trình được tài liệu RDS mô tả: snapshot → copy có encryption → restore. Không thể bật encryption trực tiếp trên instance đã tạo." }
       : { hops: [
           { to: "rds", state: "block", tag: "KHÔNG ĐƯỢC", flash: "✕", msg: "RDS không cho bật encryption trên instance đang chạy." },
         ], ok: false, result: "Encryption chỉ được chọn khi tạo instance. Bật tuỳ chọn để sử dụng quy trình snapshot." },
@@ -132,13 +132,13 @@ const SCENARIOS: HopScenario[] = [
     ],
     run: (on) => on
       ? { hops: [
-          { to: "cfg", state: "change", tag: "KIỂM TRA", msg: "Rule `acm-certificate-expiration-check` phát hiện chứng chỉ còn 30 ngày." },
+          { to: "cfg", state: "change", tag: "KIỂM TRA", msg: "Rule `acm-certificate-expiration-check` với tham số `daysToExpiration` = 30 (mặc định 14) phát hiện chứng chỉ còn 30 ngày." },
           { to: "sns", state: "pass", tag: "GỬI", msg: "Thông báo được gửi tới SNS topic." },
           { to: "team", state: "pass", tag: "NHẬN", msg: "Đội vận hành nhận email và gia hạn kịp thời." },
-        ], ok: true, result: "Không cần viết script: managed rule của AWS Config theo dõi thời hạn, SNS gửi cảnh báo." }
+        ], ok: true, result: "Không cần viết script: managed rule của AWS Config theo dõi thời hạn, SNS gửi cảnh báo. Phương án khác: ACM tự phát sự kiện EventBridge **ACM Certificate Approaching Expiration** hằng ngày, mặc định bắt đầu từ 45 ngày trước khi chứng chỉ import hết hạn." }
       : { hops: [
           { to: "user", state: "block", tag: "HẾT HẠN", flash: "!", msg: "Không có cảnh báo. Sau 30 ngày, trình duyệt báo lỗi chứng chỉ." },
-        ], ok: false, result: "Chứng chỉ import phải được tự theo dõi thời hạn. Sử dụng AWS Config managed rule + SNS để nhận cảnh báo trước." },
+        ], ok: false, result: "ACM không tự động gia hạn chứng chỉ import. Sử dụng AWS Config managed rule + SNS, hoặc rule EventBridge cho sự kiện hết hạn của ACM, để nhận cảnh báo trước." },
   },
 ];
 

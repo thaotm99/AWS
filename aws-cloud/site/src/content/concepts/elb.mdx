@@ -15,6 +15,14 @@ docs:
     url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/https-listener-certificates.html"
   - title: "Health checks for your target groups"
     url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/target-group-health-checks.html"
+  - title: "Condition types for listener rules (host header)"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/rule-condition-types.html"
+  - title: "Target groups for your Application Load Balancers"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html"
+  - title: "Listeners for your Network Load Balancers"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-listeners.html"
+  - title: "Create an endpoint service (PrivateLink)"
+    url: "https://docs.aws.amazon.com/vpc/latest/privatelink/create-endpoint-service.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -39,7 +47,7 @@ ShopViet đã vận hành nhiều EC2 instance trên hai AZ. Người dùng khô
 
 <Scene id="s1" label="Phần 1/4" title="Lựa chọn ALB hoặc NLB theo yêu cầu" questions={["exam1_q2", "exam1_q48", "exam4_q9", "exam6_q43", "exam1_q39", "exam6_q56", "exam6_q7"]}>
 
-**Application Load Balancer** (ALB) phân tích nội dung request HTTP: path, tên miền, header. **Network Load Balancer** (NLB) chỉ chuyển tiếp kết nối TCP/UDP, nhưng có IP tĩnh và độ trễ rất thấp. Thử từng yêu cầu của ShopViet, lần lượt với ALB và NLB:
+**Application Load Balancer** (ALB) phân tích nội dung request HTTP: path, tên miền, header. **Network Load Balancer** (NLB) hoạt động ở tầng 4 (listener TCP, UDP, TLS, QUIC), không phân tích nội dung HTTP; NLB có một IP cho mỗi AZ (gắn được Elastic IP) và xử lý được hàng triệu request mỗi giây. Thử từng yêu cầu của ShopViet, lần lượt với ALB và NLB:
 
 <LbTypeSim client:visible />
 
@@ -58,13 +66,13 @@ ShopViet dự kiến mở rộng sang một Region tại Hoa Kỳ. Câu hỏi đ
       { name: "Nhiều AZ trong cùng Region", verdict: "good", hide: ["c"],
         flows: [{ path: ["elb", "a"], tone: "good" }, { path: ["elb", "b"], tone: "good" }],
         text: "Load balancer phân bổ trên nhiều AZ **trong cùng một Region** là cấu hình tiêu chuẩn." },
-      { name: "Target ở Region khác", verdict: "bad", verdictLabel: "Không được phép",
-        flows: [{ path: ["elb", "a"], tone: "good" }, { path: ["elb", "c"], blocked: true, label: "không vượt Region" }],
-        text: "Elastic Load Balancing là dịch vụ **cấp Region**, không định tuyến traffic tới instance ở Region khác. Với kiến trúc nhiều Region, cần đặt Route 53 hoặc Global Accelerator phía trước." },
+      { name: "Target ở Region khác", verdict: "bad", verdictLabel: "Không phù hợp",
+        flows: [{ path: ["elb", "a"], tone: "good" }, { path: ["elb", "c"], blocked: true, label: "không dùng instance ID" }],
+        text: "Load balancer được tạo trong một Region, với node tại các AZ đã bật của Region đó. Instance ở VPC khác (kể cả VPC peering khác Region) **không đăng ký được bằng instance ID**; ALB chỉ nhận chúng làm target theo địa chỉ IP qua VPC peering. Với kiến trúc nhiều Region, đặt một load balancer tại mỗi Region và dùng Route 53 hoặc Global Accelerator phía trước." },
     ] },
 ]} />
 
-<Takeaway>Ứng dụng web cần định tuyến theo URL, tên miền: ALB. TCP/UDP thuần, IP cố định cho đối tác, PrivateLink: NLB. Máy chủ đặt trong private subnet; chỉ load balancer nằm trong public subnet. Mỗi load balancer chỉ phục vụ trong phạm vi một Region.</Takeaway>
+<Takeaway>Ứng dụng web cần định tuyến theo URL, tên miền: ALB. TCP/UDP thuần, IP cố định cho đối tác, PrivateLink: NLB. Máy chủ đặt trong private subnet; chỉ load balancer nằm trong public subnet. Nhiều Region: mỗi Region một load balancer, Route 53 hoặc Global Accelerator phía trước.</Takeaway>
 
 </Scene>
 
@@ -74,23 +82,23 @@ Trong đợt khuyến mãi, ShopViet bổ sung gấp máy chủ tại AZ B, tron
 
 <CrossZoneCalc client:visible />
 
-<Takeaway>DNS phân phối đều cho các node của load balancer tại từng AZ. Khi bật cross-zone: tải được phân phối đều cho mọi target. Khi tắt cross-zone: mỗi AZ nhận một phần bằng nhau, sau đó phân phối cho các target trong AZ đó, do vậy AZ có ít máy chủ sẽ bị dồn tải.</Takeaway>
+<Takeaway>DNS phân phối đều cho các node của load balancer tại từng AZ. Khi bật cross-zone: tải được phân phối đều cho mọi target. Khi tắt cross-zone: mỗi AZ nhận một phần bằng nhau, sau đó phân phối cho các target trong AZ đó, do vậy AZ có ít máy chủ sẽ bị dồn tải. Mặc định: ALB luôn bật cross-zone ở cấp load balancer (tắt được ở cấp target group); NLB và GWLB tắt.</Takeaway>
 
 </Scene>
 
 <Scene id="s3" label="Phần 3/4" title="Một ALB cho nhiều service và nhiều tên miền" questions={["exam1_q48", "exam4_q40", "exam4_q57", "exam2_q17", "exam1_q6"]}>
 
-ShopViet tách hệ thống thành service đơn hàng, service sản phẩm và các microsite khuyến mãi, mỗi thành phần có một target group riêng. Tất cả vẫn nằm sau **một** ALB. Mỗi request đi qua listener HTTPS theo thứ tự: lựa chọn chứng chỉ, AWS WAF, xác thực, sau đó listener rule chọn target group. Chọn tình huống và gửi request:
+ShopViet tách hệ thống thành service đơn hàng, service sản phẩm và các microsite khuyến mãi, mỗi thành phần có một target group riêng. Tất cả vẫn nằm sau **một** ALB. Mỗi request đi qua listener HTTPS: lựa chọn chứng chỉ (SNI), AWS WAF, sau đó listener rule khớp điều kiện (path, host) thực hiện các action của rule: xác thực (nếu có action authenticate) rồi forward tới target group. Chọn tình huống và gửi request:
 
 <AlbRuleSim client:visible />
 
-<Takeaway>Listener rule định tuyến theo path (`/orders/*`) và host (`*.shopviet.vn`; ký tự `*` không khớp tên miền gốc). Nhiều tên miền HTTPS trên một listener: thêm nhiều chứng chỉ, ALB lựa chọn chứng chỉ bằng SNI. ALB tích hợp xác thực với Cognito và hỗ trợ liên kết AWS WAF.</Takeaway>
+<Takeaway>Listener rule định tuyến theo path (`/orders/*`) và host (`*.shopviet.vn` khớp `khuyenmai.shopviet.vn` nhưng không khớp tên miền gốc `shopviet.vn`). Nhiều tên miền HTTPS trên một listener: thêm nhiều chứng chỉ, ALB lựa chọn chứng chỉ bằng SNI. ALB tích hợp xác thực với Cognito và hỗ trợ liên kết AWS WAF.</Takeaway>
 
 </Scene>
 
 <Scene id="s4" label="Phần 4/4" title="Target hoạt động bình thường nhưng bị đánh dấu unhealthy" questions={["exam4_q26", "exam5_q1", "exam2_q18", "exam3_q13"]}>
 
-ALB đánh dấu i-2 là unhealthy, trong khi kỹ sư SSH vào instance và xác nhận ứng dụng vẫn hoạt động. Load balancer chỉ dựa vào kết quả **health check**: gọi một path trên từng target theo chu kỳ. Quan sát đường đi của health check và vị trí bị chặn:
+ALB đánh dấu i-2 là unhealthy, trong khi kỹ sư SSH vào instance và xác nhận ứng dụng vẫn hoạt động. Load balancer chỉ dựa vào kết quả **health check**: gọi một path trên từng target theo chu kỳ (mặc định 30 giây với target type instance hoặc ip). Quan sát đường đi của health check và vị trí bị chặn:
 
 <HealthCheckSim client:visible />
 
@@ -123,11 +131,11 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
   { q: "Ngân hàng đối tác chỉ mở firewall cho một IP cố định của ShopViet. Dịch vụ vẫn phải có khả năng chịu lỗi và scale tới 10 instance. Kiến trúc nào phù hợp?",
     opts: ["ALB + Auto Scaling group", "NLB + Auto Scaling group", "Auto Scaling group gắn Elastic IP động"],
     a: 1,
-    why: "NLB có IP tĩnh tại mỗi AZ và hỗ trợ gắn Elastic IP. IP của ALB thay đổi theo thời gian." },
+    why: "NLB internet-facing cho phép chọn một Elastic IP cho mỗi AZ, tạo IP tĩnh. IP của ALB do dịch vụ ALB quản lý, không gán Elastic IP tự chọn được." },
   { q: "ALB đã loại một instance không phản hồi khỏi định tuyến, nhưng Auto Scaling group không tạo instance thay thế. Nguyên nhân là gì?",
     opts: ["ASG đang dùng EC2 health check", "ALB chưa bật cross-zone", "Instance thiếu IAM role"],
     a: 0,
-    why: "EC2 health check chỉ kiểm tra trạng thái chạy của instance. Cần chuyển sang ELB health check để ASG sử dụng kết quả health check của ALB." },
+    why: "EC2 health check (mặc định) kiểm tra instance đang chạy và các sự cố phần cứng, phần mềm bên dưới, không dùng kết quả của load balancer. Cần bật ELB health check để ASG sử dụng kết quả health check của ALB." },
   { q: "ShopViet có shopviet.vn, blog.shopviet.vn và shopviet.com.vn, đều sử dụng HTTPS. Yêu cầu cấu hình tối thiểu. Phương án nào phù hợp?",
     opts: ["Mỗi tên miền một ALB", "Nhiều chứng chỉ trên một listener HTTPS, ALB chọn bằng SNI", "Chuyển sang NLB"],
     a: 1,

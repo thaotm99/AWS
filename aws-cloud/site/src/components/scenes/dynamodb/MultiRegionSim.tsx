@@ -42,7 +42,7 @@ const SCENARIOS: PScenario[] = [
             { at: "fra", state: "pass", flash: "~5 ms", roundTrip: true, msg: "Ghi ngay vào replica tại Frankfurt và phản hồi người dùng." },
             { at: "sg", from: "fra", state: "change", tag: "SAO CHÉP", msg: "DynamoDB tự động sao chép sang Singapore, thường dưới một giây." },
             { at: "us", from: "fra", state: "change", tag: "SAO CHÉP", msg: "Đồng thời sao chép sang Virginia." },
-          ], ok: true, back: false, result: "Mọi Region đều hỗ trợ đọc và ghi (**multi-active**). Khi hai Region cập nhật cùng một item gần như đồng thời, lần ghi sau cùng được giữ lại (last writer wins)." }
+          ], ok: true, back: false, result: "Mọi Region đều hỗ trợ đọc và ghi (**multi-active**). Ở chế độ MREC mặc định, khi hai Region cập nhật cùng một item gần như đồng thời, DynamoDB giữ lần ghi có timestamp nội bộ mới nhất (last writer wins)." }
       : { steps: [
             { at: "fra", state: "change", tag: "CHUYỂN", msg: "Secondary chỉ phục vụ đọc. Request ghi phải được chuyển về primary (write forwarding cũng chỉ chuyển tiếp request)." },
             { at: "sg", state: "wait", flash: "~200 ms", msg: "Ghi tại Singapore, sau đó mới phản hồi về Đức." },

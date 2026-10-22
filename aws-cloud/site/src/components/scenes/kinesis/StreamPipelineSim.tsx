@@ -6,7 +6,7 @@ import "./kinesis-sims.css";
 // Build a streaming pipeline for one ShopViet need: pick a service for every stage,
 // press run and a record walks through. The first stage that does not fit stops it
 // and says why. Covers Kinesis Data Streams, Data Firehose, Managed Service for Apache
-// Flink (Kinesis Data Analytics), OpenSearch + QuickSight, DMS from S3, Lambda vs
+// Flink, OpenSearch + Amazon Quick Sight, DMS from S3, Lambda vs
 // Fargate for long jobs, and Amazon MSK for teams already on Kafka.
 
 interface Opt { l1: string; l2?: string; ok: boolean; why: string }
@@ -27,8 +27,8 @@ const NEEDS: Need[] = [
         { l1: "SQS + EC2", l2: "thư viện tự phát triển", ok: false, why: "Phần phân tích trên EC2 phải tự phát triển; SQS không cung cấp công cụ phân tích stream." },
       ] },
       { name: "Phân tích", opts: [
-        { l1: "Managed Service for", l2: "Apache Flink (SQL)", ok: true, why: "Tên cũ là Kinesis Data Analytics: thực thi truy vấn liên tục trên luồng dữ liệu." },
-        { l1: "Amazon QuickSight", ok: false, why: "QuickSight dùng để xây dựng dashboard, không thực thi truy vấn liên tục trên stream." },
+        { l1: "Managed Service for", l2: "Apache Flink (SQL)", ok: true, why: "Tên cũ là Kinesis Data Analytics for Apache Flink: xử lý liên tục trên luồng dữ liệu, hỗ trợ SQL qua Flink Studio hoặc Table API." },
+        { l1: "Amazon Quick Sight", ok: false, why: "Quick Sight (trước đây là QuickSight) dùng để trực quan hoá dữ liệu và xây dựng dashboard, không phải bộ máy xử lý liên tục trên stream." },
         { l1: "Amazon Athena", ok: false, why: "Athena truy vấn file đã lưu trong S3, không áp dụng cho luồng dữ liệu đang truyền." },
       ] },
       { name: "Lưu trữ", opts: [
@@ -36,7 +36,7 @@ const NEEDS: Need[] = [
         { l1: "Lambda tự ghi file", ok: false, why: "Phương án hoạt động được nhưng phải tự xử lý gộp dữ liệu, retry và đặt tên file." },
       ] },
     ],
-    result: "Kinesis Data Streams tiếp nhận, Flink (Kinesis Data Analytics) phân tích bằng SQL, Firehose lưu vào S3. Không có máy chủ cần quản lý.",
+    result: "Kinesis Data Streams tiếp nhận, Managed Service for Apache Flink phân tích (có thể bằng SQL), Firehose lưu vào S3. Không có máy chủ cần quản lý.",
   },
   {
     name: "Thu thập vị trí shipper qua REST API",
@@ -44,15 +44,15 @@ const NEEDS: Need[] = [
     source: ["Ứng dụng shipper", "gửi vị trí"],
     slots: [
       { name: "Điểm tiếp nhận", opts: [
-        { l1: "Amazon API Gateway", l2: "→ Kinesis", ok: true, why: "REST API tiếp nhận vị trí và ghi trực tiếp vào stream." },
+        { l1: "Amazon API Gateway", l2: "→ Kinesis", ok: true, why: "API Gateway tích hợp trực tiếp với dịch vụ AWS, tiếp nhận vị trí và ghi vào stream (ví dụ HTTP API với integration Kinesis-PutRecord)." },
         { l1: "Amazon Athena", l2: "+ S3", ok: false, why: "Athena không tiếp nhận dữ liệu qua REST và không xử lý theo thời gian thực." },
       ] },
       { name: "Phân tích", opts: [
-        { l1: "Kinesis Data Analytics", l2: "(Apache Flink)", ok: true, why: "Tính quãng đường, tốc độ, phương tiện đứng yên… ngay khi dữ liệu được tiếp nhận." },
-        { l1: "Redshift", l2: "+ QuickSight", ok: false, why: "Phù hợp cho báo cáo, nhưng dữ liệu phải được nạp vào kho trước, không đáp ứng thời gian thực." },
+        { l1: "Managed Service", l2: "for Apache Flink", ok: true, why: "Tính quãng đường, tốc độ, phương tiện đứng yên… ngay khi dữ liệu được tiếp nhận." },
+        { l1: "Redshift", l2: "+ Quick Sight", ok: false, why: "Data warehouse và dashboard phục vụ truy vấn phân tích, báo cáo; tính toán liên tục trên từng sự kiện vị trí là chức năng của Managed Service for Apache Flink." },
       ] },
     ],
-    result: "API Gateway đóng vai trò điểm tiếp nhận REST, Kinesis Data Analytics phân tích vị trí ngay khi dữ liệu được tiếp nhận.",
+    result: "API Gateway đóng vai trò điểm tiếp nhận REST, Managed Service for Apache Flink phân tích vị trí ngay khi dữ liệu được tiếp nhận.",
   },
   {
     name: "Tìm kiếm giao dịch tức thời",
@@ -65,29 +65,29 @@ const NEEDS: Need[] = [
       ] },
       { name: "Tìm kiếm", opts: [
         { l1: "Amazon OpenSearch", l2: "Service", ok: true, why: "Đánh chỉ mục và tìm kiếm full-text gần như ngay khi dữ liệu được tiếp nhận." },
-        { l1: "Amazon DynamoDB", ok: false, why: "Không hỗ trợ tìm kiếm full-text." },
-        { l1: "Amazon Redshift", ok: false, why: "Data warehouse phục vụ phân tích, không đáp ứng tìm kiếm full-text tức thời." },
+        { l1: "Amazon DynamoDB", ok: false, why: "Để tìm kiếm full-text trên dữ liệu DynamoDB, AWS cung cấp zero-ETL integration đưa dữ liệu sang OpenSearch Service; tìm kiếm là chức năng của OpenSearch." },
+        { l1: "Amazon Redshift", ok: false, why: "Data warehouse phục vụ truy vấn phân tích; tìm kiếm full-text là chức năng của OpenSearch Service." },
       ] },
       { name: "Dashboard", opts: [
-        { l1: "Amazon QuickSight", ok: true, why: "Dashboard tương tác cho người dùng nghiệp vụ." },
+        { l1: "Amazon Quick Sight", ok: true, why: "Trực quan hoá dữ liệu, dashboard tương tác cho người dùng nghiệp vụ (trước đây là Amazon QuickSight)." },
         { l1: "CloudWatch dashboard", ok: false, why: "Dành cho metric vận hành, không phải dashboard nghiệp vụ." },
       ] },
     ],
-    result: "Kinesis Data Streams → OpenSearch Service cho tìm kiếm → QuickSight cho dashboard.",
+    result: "Kinesis Data Streams → OpenSearch Service cho tìm kiếm → Amazon Quick Sight cho dashboard.",
   },
   {
     name: "Chuyển log lịch sử trong S3 vào stream",
-    about: "Log nhiều năm được lưu trong S3 và file mới vẫn tiếp tục được ghi thêm. Cần chuyển cả dữ liệu lịch sử lẫn dữ liệu mới vào Kinesis trong thời gian ngắn nhất.",
-    source: ["S3", "log cũ + file mới"],
+    about: "Log nhiều năm được lưu trong S3; thay đổi mới được ghi thành file CDC trong thư mục riêng. Cần chuyển cả dữ liệu lịch sử lẫn dữ liệu mới vào Kinesis trong thời gian ngắn nhất.",
+    source: ["S3", "log cũ + file CDC"],
     slots: [
       { name: "Chuyển dữ liệu", opts: [
-        { l1: "AWS DMS", l2: "nguồn S3, đích Kinesis", ok: true, why: "DMS sử dụng S3 làm nguồn và Kinesis Data Streams làm đích, chuyển cả dữ liệu hiện có lẫn thay đổi mới. Không cần viết mã." },
+        { l1: "AWS DMS", l2: "nguồn S3, đích Kinesis", ok: true, why: "DMS hỗ trợ S3 làm nguồn và Kinesis Data Streams làm đích. Full load chuyển các file đã có trong bucket; thay đổi mới được chuyển khi được tải lên dưới dạng file CDC theo định dạng của DMS (CDC00001.csv, CDC00002.csv… theo thứ tự). Không cần viết mã." },
         { l1: "S3 event → Lambda", ok: false, why: "Chỉ xử lý file mới được tạo; dữ liệu lịch sử không được chuyển, đồng thời phải viết mã." },
         { l1: "S3 → SNS", ok: false, why: "SNS không phân phối trực tiếp vào Kinesis Data Streams." },
       ] },
       { name: "Đích", opts: [KDS("Các ứng dụng phân tích đọc dữ liệu từ stream này như mọi stream khác.")] },
     ],
-    result: "AWS DMS chuyển dữ liệu S3 → Kinesis Data Streams, không cần phát triển và duy trì mã nguồn mới.",
+    result: "AWS DMS chuyển dữ liệu S3 → Kinesis Data Streams (full load + file CDC), không cần phát triển và duy trì mã nguồn mới.",
   },
   {
     name: "Ẩn thông tin thẻ trước khi lưu trữ",
@@ -96,12 +96,12 @@ const NEEDS: Need[] = [
     slots: [
       { name: "Thu thập", opts: [
         KDS("Nhiều ứng dụng nội bộ cùng đọc luồng giao dịch gốc."),
-        { l1: "Amazon Data Firehose", ok: false, why: "Ứng dụng không thể đọc dữ liệu từ Firehose; Firehose chỉ phân phối tới đích như S3, Redshift, OpenSearch." },
+        { l1: "Amazon Data Firehose", ok: false, why: "Firehose phân phối dữ liệu tới các đích đã cấu hình (S3, Redshift, OpenSearch, HTTP endpoint…); API của Firehose không có thao tác để ứng dụng đọc dữ liệu." },
         { l1: "File S3 theo batch", ok: false, why: "Xử lý theo batch, không đáp ứng yêu cầu gần thời gian thực." },
       ] },
       { name: "Xử lý", opts: [
         { l1: "AWS Lambda", ok: true, why: "Lambda đọc stream theo batch, loại bỏ số thẻ và số điện thoại trong từng giao dịch." },
-        { l1: "Rule trong DynamoDB", ok: false, why: "DynamoDB không có cơ chế rule tự động chỉnh sửa dữ liệu khi ghi." },
+        { l1: "Rule trong DynamoDB", ok: false, why: "Dữ liệu nhạy cảm phải được loại bỏ trước khi ghi; cần một bước xử lý đọc stream, ví dụ Lambda." },
       ] },
       { name: "Lưu trữ", opts: [
         { l1: "Amazon DynamoDB", ok: true, why: "Hỗ trợ mô hình document, đọc với độ trễ thấp." },
@@ -120,8 +120,8 @@ const NEEDS: Need[] = [
         { l1: "AWS DMS", ok: false, why: "DMS chuyển dữ liệu giữa các kho dữ liệu, không phải điểm tiếp nhận stream từ thiết bị." },
       ] },
       { name: "Xử lý", opts: [
-        { l1: "ECS trên Fargate", ok: true, why: "Container serverless, không giới hạn thời gian thực thi, scale theo số task." },
-        { l1: "Lambda + Step Functions", ok: false, why: "Thời gian thực thi tối đa của Lambda là 15 phút; tác vụ 30 phút vượt quá giới hạn." },
+        { l1: "ECS trên Fargate", ok: true, why: "Container serverless, không bị giới hạn 15 phút như Lambda, scale theo số task." },
+        { l1: "Lambda + Step Functions", ok: false, why: "Timeout tối đa của một Lambda function tiêu chuẩn là 900 giây (15 phút); tác vụ 30 phút vượt quá giới hạn." },
         { l1: "EC2 Auto Scaling", ok: false, why: "Phương án hoạt động được nhưng phải quản lý máy chủ, không đáp ứng yêu cầu serverless." },
       ] },
     ],
@@ -133,12 +133,12 @@ const NEEDS: Need[] = [
     source: ["Ứng dụng", "Kafka producer"],
     slots: [
       { name: "Nền tảng streaming", opts: [
-        { l1: "Amazon MSK", l2: "Kafka do AWS quản lý", ok: true, why: "Ứng dụng giữ nguyên Kafka API; AWS quản lý broker, vá lỗi và thay thế node gặp sự cố." },
+        { l1: "Amazon MSK", l2: "Kafka do AWS quản lý", ok: true, why: "Amazon MSK là dịch vụ Kafka được quản lý hoàn toàn; ứng dụng tiếp tục dùng Kafka API." },
         { l1: "Kafka tự triển khai", l2: "trên EC2", ok: false, why: "Phải tự vá lỗi, tự giám sát và tự scale cluster bằng script." },
         { l1: "Kinesis Data Streams", ok: false, why: "Đáp ứng được về chức năng, nhưng phải viết lại producer và consumer theo API của Kinesis." },
       ] },
     ],
-    result: "Hệ thống đã sử dụng Kafka: Amazon MSK. Phát triển mới và yêu cầu chi phí vận hành thấp nhất: Kinesis Data Streams.",
+    result: "Hệ thống đã sử dụng Kafka: Amazon MSK, giữ nguyên producer và consumer.",
   },
 ];
 

@@ -48,7 +48,7 @@ export default function WafSim() {
       }
     }));
     setResult(where === "ec2"
-      ? "AWS WAF không gắn trực tiếp vào EC2. AWS WAF được liên kết với CloudFront, ALB, API Gateway (và một số dịch vụ khác). Để bảo vệ ứng dụng chạy trên EC2, đặt CloudFront hoặc ALB phía trước và liên kết AWS WAF với tài nguyên đó."
+      ? "AWS WAF không gắn trực tiếp vào EC2. AWS WAF được liên kết với CloudFront, ALB, API Gateway REST API, AppSync, Cognito user pool, App Runner, Verified Access và Amplify. Để bảo vệ ứng dụng chạy trên EC2, đặt CloudFront hoặc ALB phía trước và liên kết AWS WAF với tài nguyên đó."
       : passed ? `Còn ${passed} loại request độc hại tới được ứng dụng. Cần kích hoạt thêm rule phù hợp.` : "Mọi request độc hại đều bị chặn tại AWS WAF; request hợp lệ của người dùng vẫn được chuyển tới ứng dụng.");
     setBusy(false);
   }

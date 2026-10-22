@@ -17,6 +17,18 @@ docs:
     url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html"
   - title: "Instance recovery"
     url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-recover.html"
+  - title: "Amazon EC2 Dedicated Hosts"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/dedicated-hosts-overview.html"
+  - title: "Spot Instance requests"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-requests.html"
+  - title: "Savings Plans types"
+    url: "https://docs.aws.amazon.com/savingsplans/latest/userguide/plan-types.html"
+  - title: "Use encryption with EBS-backed AMIs"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIEncryption.html"
+  - title: "Hibernate your Amazon EC2 instance"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html"
+  - title: "Amazon EC2 instance IP addressing"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-instance-addressing.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -49,7 +61,7 @@ Biểu đồ trên thể hiện bức tranh tổng thể. Thực tế còn nhi�
 
 <Ec2CostSim client:visible />
 
-<Takeaway>Tải nền chạy 24/7: Reserved Instances hoặc Savings Plans. Tác vụ chịu được gián đoạn: Spot (persistent request hoặc Spot Fleet để tiếp tục xử lý). Tải biến động không chịu được gián đoạn: On-Demand. Single-tenant với chi phí thấp nhất: Dedicated Instances; license theo socket: Dedicated Hosts. Chiết khấu áp dụng cho cả EC2, Fargate và Lambda: Compute Savings Plan.</Takeaway>
+<Takeaway>Tải nền chạy 24/7: Reserved Instances hoặc Savings Plans. Tác vụ chịu được gián đoạn: Spot (persistent request hoặc Spot Fleet để tiếp tục xử lý). Tải biến động không chịu được gián đoạn: On-Demand. Phần cứng single-tenant, không cần kiểm soát host và không có license theo socket, core: Dedicated Instances (tính phí theo instance); license theo socket, core: Dedicated Hosts (tính phí theo host). Chiết khấu áp dụng cho cả EC2, Fargate và Lambda: Compute Savings Plan.</Takeaway>
 
 </Scene>
 
@@ -97,7 +109,7 @@ Các sự cố thường gặp: lỗi phần cứng lúc 3 giờ sáng, ứng d�
 
 <Ec2OpsSim client:visible />
 
-<Takeaway>Lỗi phần cứng: alarm action recover (giữ nguyên instance ID, IP). Ứng dụng không phản hồi: alarm action reboot. Instance store có hiệu năng cao nhất nhưng mất dữ liệu khi stop, chỉ phù hợp cho tệp tạm. Dừng instance và giữ trạng thái RAM: Hibernate. Tự động thay thế một instance và giữ nguyên IP: ASG min = max = 1 + Elastic IP gắn bằng user data. Metric chu kỳ 1 phút: detailed monitoring.</Takeaway>
+<Takeaway>Lỗi phần cứng: automatic instance recovery (simplified automatic recovery bật mặc định trên instance được hỗ trợ, hoặc alarm action recover), giữ nguyên instance ID và địa chỉ IP. Ứng dụng không phản hồi: alarm action reboot. Instance store là lưu trữ tạm, mất dữ liệu khi stop, hibernate hoặc terminate; chỉ phù hợp cho buffer, cache, tệp tạm. Dừng instance và giữ trạng thái RAM: Hibernate. Tự động thay thế một instance và giữ nguyên IP: ASG min = max = 1 + Elastic IP gắn bằng user data. Metric chu kỳ 1 phút: detailed monitoring.</Takeaway>
 
 </Scene>
 
@@ -136,11 +148,11 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
   { q: "Máy chủ shop-api chấp nhận tối đa 10 phút downtime. Cơ chế tự phục hồi nào có chi phí thấp nhất khi xảy ra lỗi phần cứng?",
     opts: ["CloudWatch alarm recover instance (instance dùng EBS)", "Chạy thêm một instance dự phòng 24/7", "Sử dụng instance store"],
     a: 0,
-    why: "Recover chuyển instance sang phần cứng khác, giữ nguyên instance ID và IP; yêu cầu instance sử dụng EBS." },
+    why: "Recover chuyển instance sang phần cứng khác, giữ nguyên instance ID, địa chỉ IP và EBS volume đã gắn; dữ liệu trong RAM (và trên instance store, nếu có) bị mất." },
   { q: "Đối tác ngân hàng yêu cầu máy chủ thanh toán chạy trên phần cứng single-tenant, không có yêu cầu license đặc biệt. Phương án nào có chi phí thấp nhất?",
     opts: ["Dedicated Hosts", "Dedicated Instances", "Cluster placement group"],
     a: 1,
-    why: "Dedicated Instances đáp ứng yêu cầu single-tenant với chi phí thấp hơn thuê toàn bộ host." },
+    why: "Dedicated Instances chạy trên phần cứng dành riêng cho một account và tính phí theo instance; Dedicated Hosts tính phí theo toàn bộ host và chỉ cần khi phải kiểm soát socket, core cho license." },
 ]} />
 
 </Scene>

@@ -22,7 +22,7 @@ const PHASE_TEXT: Record<Phase, string> = {
   drain: "rời target group, chờ request",
   patch: "đang cài đặt bản vá",
   reboot: "đang khởi động lại",
-  rejoin: "đăng ký lại, chờ healthy",
+  rejoin: "gắn lại vào target group",
 };
 
 const MODES: { id: Mode; name: string; doc: string }[] = [
@@ -167,7 +167,7 @@ export default function PatchWindowSim() {
               <p className={`pws-result ${fail ? "bad" : "ok"}`}>
                 {rich(mode === "direct"
                   ? "Bản vá được cài đặt thành công trên cả ba instance, nhưng mỗi instance reboot trong khi ALB **vẫn định tuyến request tới**. Người dùng gặp lỗi 502 và timeout. Vá thành công không đồng nghĩa với vá an toàn."
-                  : "Không có request nào lỗi. Runbook `AWSEC2-PatchLoadBalancerInstance` gỡ instance khỏi target group, chờ các request đang xử lý hoàn tất, vá, reboot, đăng ký lại và chờ trạng thái healthy trước khi chuyển sang instance tiếp theo. **Maintenance Window** thực thi runbook vào khung giờ ít người dùng, lần lượt từng instance.")}
+                  : "Không có request nào lỗi. Runbook `AWSEC2-PatchLoadBalancerInstance` kiểm tra instance healthy, gỡ instance khỏi target group, chờ hết thời gian connection draining, gọi `AWS-RunPatchBaseline` để vá, rồi gắn instance trở lại target group. **Maintenance Window** thực thi runbook vào khung giờ ít người dùng; concurrency 1 để vá lần lượt từng instance.")}
               </p>
             )}
           </>

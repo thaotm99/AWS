@@ -69,7 +69,7 @@ const SCENARIOS: Record<ScenarioId, Scenario> = {
   },
   lambda: {
     name: "Lambda bị gọi với tần suất bất thường",
-    about: "Một lỗi khiến function xử lý ảnh tự gọi lại chính nó. Số lần thực thi đồng thời tăng dần tới giới hạn của account.",
+    about: "Một lỗi khiến function xử lý ảnh ghi vào bảng DynamoDB có stream kích hoạt lại chính function đó. Lambda recursive loop detection không phát hiện vòng lặp có DynamoDB; số lần thực thi đồng thời tăng dần tới giới hạn của account.",
     metric: "ConcurrentExecutions (Lambda)",
     unit: "",
     max: 1000,
@@ -81,7 +81,7 @@ const SCENARIOS: Record<ScenarioId, Scenario> = {
     flash: "ALARM → SNS",
     canBasic: false,
     note: (fired) =>
-      `Lambda scale rất nhanh nên lỗi loại này làm tăng chi phí và chiếm toàn bộ concurrency của các function khác. Alarm trên **ConcurrentExecutions** (hoặc **Invocations**) chuyển sang ALARM tại phút ${fired ?? "?"} và gửi thông báo qua **SNS**. Alarm chỉ thông báo, không tự khắc phục: đội trực cần vô hiệu hoá trigger hoặc đặt reserved concurrency.`,
+      `Vòng lặp ngoài ý muốn có thể làm Lambda scale và dùng hết concurrency của account, đồng thời phát sinh chi phí. Tài liệu Lambda khuyến nghị alarm báo khi concurrency hoặc số lần gọi tăng đột biến. Alarm trên **ConcurrentExecutions** (hoặc **Invocations**) chuyển sang ALARM tại phút ${fired ?? "?"} và gửi thông báo qua **SNS**. Alarm chỉ thông báo, không tự khắc phục: đội trực cần vô hiệu hoá trigger hoặc đặt reserved concurrency.`,
   },
   ecs: {
     name: "ECS service quá tải",
@@ -97,7 +97,7 @@ const SCENARIOS: Record<ScenarioId, Scenario> = {
     flash: "ALARM → +2 task",
     canBasic: false,
     note: (fired) =>
-      `Metric phù hợp là **CPU của chính ECS service** (namespace AWS/ECS, theo ClusterName và ServiceName). Alarm chuyển sang ALARM tại phút ${fired ?? "?"}, **Service Auto Scaling** bổ sung task, CPU trung bình giảm. ALB không có metric CPU để làm cơ sở scale.`,
+      `Metric phù hợp là **CPU của chính ECS service** (namespace AWS/ECS, theo ClusterName và ServiceName). Alarm chuyển sang ALARM tại phút ${fired ?? "?"}, **Service Auto Scaling** bổ sung task, CPU trung bình giảm. Metric của ALB phản ánh request và thời gian phản hồi, không phản ánh CPU của task.`,
   },
 };
 

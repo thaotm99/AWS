@@ -27,7 +27,7 @@ const PATTERNS: Pattern[] = [
     options: [
       { name: "Replica cùng Region", verdict: "cheap",
         flows: [{ d: "M180 132 H300", paid: false, label: "replication", lx: 240, ly: 122 }],
-        text: <>Replication giữa primary và Read Replica <b>trong cùng Region không tính phí data transfer</b>. Chi phí phát sinh chỉ gồm instance của replica.</> },
+        text: <>Replication giữa primary và Read Replica <b>trong cùng Region không tính phí data transfer</b>. Replica được tính phí như một DB instance tiêu chuẩn.</> },
       { name: "Replica khác Region", verdict: "costly",
         flows: [{ d: "M180 140 C 300 200, 450 200, 560 140", paid: true, label: "replication qua Region", lx: 370, ly: 205 }],
         text: <>Cross-Region Read Replica <b>có tính phí data transfer</b> cho dữ liệu replicate giữa hai Region.</> },

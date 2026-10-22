@@ -5,7 +5,9 @@ import "./migration-sims.css";
 
 // ShopViet moves the old warehouse NAS to AWS. Pick how much data, which link and which
 // destination, then race the two ways in: online with AWS DataSync, or shipping Snowball
-// Edge devices. Days are rough estimates (80% link utilisation, ~10 days per Snowball round).
+// Edge devices. Days are illustrative assumptions (80% link utilisation, ~10 days per Snowball
+// round), not AWS figures. Capacity: Storage Optimized 210 TB (snowball/device-differences.html).
+// Snowball Edge is no longer available to new customers (snowball/whatisedge.html).
 // Source questions: exam3_q3, exam2_q11, exam5_q48, exam5_q5, exam2_q41, exam3_q61, exam2_q4, exam5_q62, exam4_q29.
 
 const SIZES = [10, 50, 100, 200, 500, 1000, 2000, 5000]; // TB
@@ -21,7 +23,7 @@ const TARGETS: { id: Target; name: string; label: string }[] = [
   { id: "lustre", name: "FSx for Lustre", label: "FSx for Lustre" },
   { id: "gda", name: "Glacier Deep Archive", label: "S3 Glacier Deep Archive" },
 ];
-const DEVICE_TB = 80;
+const DEVICE_TB = 210;
 
 const fmtSize = (tb: number) => (tb >= 1000 ? `${tb / 1000} PB` : `${tb} TB`);
 const fmtDays = (d: number) => (d < 1 ? `${Math.max(1, Math.round(d * 24))} giờ` : d < 730 ? `${Math.round(d)} ngày` : `${(d / 365).toFixed(1)} năm`);
@@ -93,7 +95,7 @@ export default function TransferPlannerSim() {
     flashText(L, 720, 42, "đã tới AWS", "mgx-flash-ok", 1000);
 
     add("MẠNG", onlineWins ? "hit" : "info", `**DataSync** qua ${link.name}: khoảng **${fmtDays(onlineDays)}** cho ${fmtSize(tb)}.${link.dx ? " Agent truyền dữ liệu qua Direct Connect tới **interface VPC endpoint** (PrivateLink), không đi qua Internet." : ""}`);
-    add("SNOW", onlineWins ? "info" : "hit", `**Snowball Edge**: ${devices} thiết bị (khoảng ${DEVICE_TB} TB mỗi thiết bị), khoảng **${snowDays} ngày** bao gồm nạp dữ liệu và vận chuyển.`);
+    add("SNOW", onlineWins ? "info" : "hit", `**Snowball Edge** Storage Optimized: ${devices} thiết bị (${DEVICE_TB} TB dung lượng khả dụng mỗi thiết bị), khoảng **${snowDays} ngày** bao gồm nạp dữ liệu và vận chuyển (giả định minh hoạ, không phải cam kết của AWS).`);
     const notes: Record<Target, string> = {
       s3: onlineWins ? "DataSync ghi trực tiếp vào bucket S3, có kiểm tra tính toàn vẹn dữ liệu và hỗ trợ lập lịch." : "Snowball nhập dữ liệu vào bucket S3 khi thiết bị được chuyển tới AWS.",
       efs: onlineWins ? "DataSync ghi trực tiếp vào **EFS**." : "Snowball chỉ nhập dữ liệu vào **S3**. Để đưa dữ liệu vào EFS, cần sao chép tiếp từ S3 bằng DataSync.",
@@ -103,7 +105,7 @@ export default function TransferPlannerSim() {
     add("ĐÍCH", "miss", notes[target]);
     setResult(rich(onlineWins
       ? `Băng thông đáp ứng được yêu cầu: sử dụng **AWS DataSync**. Nếu sau khi di chuyển, ứng dụng tại kho vẫn cần đọc ghi dữ liệu, triển khai thêm **S3 File Gateway**.`
-      : `Băng thông không đáp ứng được ${fmtSize(tb)}: vận chuyển bằng **Snowball Edge** nhanh hơn và chi phí thấp hơn. Dữ liệu thay đổi phát sinh sau đó có thể được đồng bộ bằng DataSync.`));
+      : `Băng thông không đáp ứng được ${fmtSize(tb)}: vận chuyển thiết bị **Snowball Edge** nhanh hơn truyền qua mạng. Dữ liệu thay đổi phát sinh sau đó có thể được đồng bộ bằng DataSync. Lưu ý: Snowball Edge **không còn nhận khách hàng mới**; AWS hướng khách hàng mới tới DataSync, **AWS Data Transfer Terminal** (mang thiết bị lưu trữ của mình tới cơ sở của AWS) hoặc giải pháp của AWS Partner.`));
     setDone(true);
     setBusy(false);
   }

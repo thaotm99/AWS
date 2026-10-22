@@ -15,6 +15,14 @@ docs:
     url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-termination-policies.html"
   - title: "Temporarily remove instances (Standby)"
     url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-enter-exit-standby.html"
+  - title: "Suspend and resume Amazon EC2 Auto Scaling processes"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-suspend-resume-processes.html"
+  - title: "Health check grace period"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/health-check-grace-period.html"
+  - title: "Health checks overview"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/health-checks-overview.html"
+  - title: "Cluster Autoscaler (EKS best practices)"
+    url: "https://docs.aws.amazon.com/eks/latest/best-practices/cas.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -42,7 +50,7 @@ Website ShopViet có nội dung động thay đổi liên tục, cache không th
 
 <ScalingPolicySim client:visible />
 
-Container được scale theo cơ chế tương tự. Khi ECS service quá tải CPU, kích hoạt **Service Auto Scaling** để tăng số task. Khi pod trên EKS ở trạng thái chờ do cluster hết tài nguyên, **Cluster Autoscaler** tăng số node trong EC2 Auto Scaling group.
+Container được scale theo cơ chế tương tự. Khi ECS service quá tải CPU, kích hoạt **Service Auto Scaling** để tăng số task. Khi pod trên EKS ở trạng thái chờ do cluster hết tài nguyên, **Cluster Autoscaler** điều chỉnh desired capacity của EC2 Auto Scaling group để tăng số node (Karpenter là lựa chọn khác được tài liệu EKS mô tả).
 
 <Takeaway>Duy trì một metric ở mức ổn định: target tracking. Worker xử lý hàng đợi: target tracking theo backlog SQS trên mỗi instance. Giờ cao điểm xác định trước: scheduled action. Tải có tính chu kỳ: predictive scaling kết hợp target tracking để xử lý biến động bất thường.</Takeaway>
 
@@ -66,7 +74,7 @@ Sau đợt khuyến mãi, ASG thực hiện scale in. Với default termination 
 
 <TerminationSim client:visible />
 
-<Takeaway>Thứ tự mặc định: AZ có nhiều instance nhất → instance dùng launch configuration trước launch template, phiên bản cũ nhất trước → gần giờ tính phí tiếp theo nhất. ASG cũng tự động cân bằng lại giữa các AZ và thay thế instance unhealthy.</Takeaway>
+<Takeaway>Thứ tự mặc định: AZ có nhiều instance nhất → instance dùng cấu hình lỗi thời (launch configuration trước, sau đó launch template khác template hiện tại, rồi phiên bản cũ nhất của template hiện tại) → nếu còn nhiều instance: gần giờ tính phí tiếp theo nhất (AWS lưu ý tiêu chí này ít tác dụng vì phần lớn EC2 tính phí theo giây). ASG cũng tự động cân bằng lại giữa các AZ và thay thế instance unhealthy.</Takeaway>
 
 </Scene>
 
@@ -109,15 +117,15 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
   { q: "Sau đợt khuyến mãi, ASG của ShopViet có 3 instance tại AZ-A và 4 instance tại AZ-B, sử dụng default termination policy. Instance nào bị terminate trước?",
     opts: ["Một instance ngẫu nhiên tại AZ-A", "Instance dùng launch template/configuration cũ nhất tại AZ-B", "Instance mới nhất tại AZ-B"],
     a: 1,
-    why: "ASG chọn AZ có nhiều instance nhất (AZ-B), sau đó chọn instance cũ nhất." },
+    why: "ASG chọn AZ có nhiều instance nhất (AZ-B), sau đó ưu tiên instance có cấu hình lỗi thời: launch configuration, launch template khác template hiện tại, hoặc phiên bản cũ nhất của template hiện tại." },
   { q: "Đối tác đẩy hàng nghìn đơn hàng vào SQS cùng lúc, worker EC2 không xử lý kịp. Cần scale theo metric nào?",
     opts: ["Target tracking theo backlog SQS trên mỗi instance", "Scheduled action mỗi giờ", "Chuyển sang instance type lớn hơn"],
     a: 0,
-    why: "Số message chờ trên mỗi instance phản ánh chính xác khối lượng công việc. CPU của worker hầu như không thay đổi." },
+    why: "AWS khuyến nghị dùng metric backlog per instance (số message chờ chia cho số instance) để scale tương ứng với khối lượng công việc đang chờ trong hàng đợi." },
   { q: "Kỹ sư cần vá hệ điều hành cho một instance trong ASG mà ASG không thay thế instance đó trong quá trình vá. Thao tác nào phù hợp?",
     opts: ["Chuyển instance sang Standby", "Tắt health check của ALB", "Đặt desired capacity = 0"],
     a: 0,
-    why: "Standby tạm rút instance khỏi việc phục vụ và ASG không thay thế instance đó. Phương án khác: suspend ReplaceUnhealthy, sau khi vá xong thì resume." },
+    why: "Instance ở Standby được gỡ khỏi target group và ASG không thực hiện health check trên instance đó. Phương án khác: suspend ReplaceUnhealthy, sau khi vá xong thì resume." },
 ]} />
 
 </Scene>

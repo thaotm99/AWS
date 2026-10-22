@@ -15,7 +15,7 @@ const SCENARIOS: PScenario[] = [
   {
     name: "Lượng đánh giá của người dùng tăng đột biến",
     action: "Gửi 3.000 đánh giá",
-    request: "Sau đợt khuyến mãi: hàng nghìn đánh giá mỗi giờ",
+    request: "Sau đợt khuyến mãi: hàng nghìn đánh giá tiếng Anh mỗi giờ",
     toggle: { label: "Đặt SQS giữa API Gateway và Lambda", initial: false },
     layout: (sqs) => chain("Ứng dụng gửi đánh giá qua API Gateway, SQS, Lambda, Comprehend rồi lưu vào DynamoDB", [
       { id: "app", x: 60, y: 135, w: 96, l1: "Ứng dụng", l2: "form đánh giá" },
@@ -31,18 +31,18 @@ const SCENARIOS: PScenario[] = [
             { at: "api", state: "pass", msg: "Tiếp nhận đánh giá và phản hồi ứng dụng ngay lập tức." },
             { at: "sqs", state: "wait", tag: "ĐỆM", flash: "3.000", msg: "Đánh giá được lưu trong hàng đợi SQS; không có đánh giá nào bị mất dù lưu lượng tăng đột biến." },
             { at: "fn", state: "pass", msg: "Lambda đọc hàng đợi theo batch và tự động tăng số lần thực thi song song." },
-            { at: "cmp", state: "change", tag: "PHÂN TÍCH", flash: "NEGATIVE", msg: "\"Giao chậm 5 ngày, hộp móp\" → **NEGATIVE**. Không cần huấn luyện model." },
-            { at: "ddb", state: "pass", msg: "Lưu kết quả. **TTL** 365 ngày tự động xoá bản ghi sau một năm." },
+            { at: "cmp", state: "change", tag: "PHÂN TÍCH", flash: "NEGATIVE", msg: "\"Delivered 5 days late, box was dented\" → **NEGATIVE**. Không cần huấn luyện model." },
+            { at: "ddb", state: "pass", msg: "Lưu kết quả kèm thuộc tính **TTL** bằng thời điểm ghi cộng 365 ngày. Sau thời điểm đó, DynamoDB tự động xoá item hết hạn, thường trong vòng vài ngày, không tiêu tốn write throughput." },
           ],
           ok: true,
           back: false,
-          result: "Toàn bộ 3.000 đánh giá được phân tích. Đội chăm sóc khách hàng theo dõi xu hướng theo ngày; dữ liệu được lưu giữ đúng một năm.",
+          result: "Toàn bộ 3.000 đánh giá được phân tích. Đội chăm sóc khách hàng theo dõi xu hướng theo ngày; dữ liệu được tự động xoá sau khi hết hạn một năm.",
         }
       : {
           steps: [
             { at: "api", state: "pass", msg: "Tiếp nhận đánh giá." },
             { at: "sqs", state: "skip", msg: "API Gateway gọi trực tiếp Lambda, không có lớp đệm." },
-            { at: "fn", state: "block", tag: "429", flash: "throttle", msg: "Số lệnh gọi đồng thời quá lớn; Lambda và Comprehend bị giới hạn tốc độ (throttling). Một phần đánh giá bị từ chối." },
+            { at: "fn", state: "block", tag: "429", flash: "throttle", msg: "Số lệnh gọi đồng thời vượt quota; Lambda và Comprehend trả về lỗi throttling. Một phần đánh giá bị từ chối." },
           ],
           ok: false,
           result: "Đánh giá gửi tới vào thời điểm cao điểm bị mất. Cần đặt SQS ở giữa để hấp thụ lưu lượng tăng đột biến.",
@@ -51,33 +51,33 @@ const SCENARIOS: PScenario[] = [
   {
     name: "Trích xuất thành phần từ mô tả",
     action: "Tải lên mô tả",
-    request: "banh-quy.txt: \"Bột mì, đường, dầu cọ, bơ…\"",
+    request: "cookies.txt: \"Wheat flour, sugar, palm oil, butter…\"",
     toggle: { label: "Sử dụng custom entity recognition", initial: false },
     layout: (custom) => chain("Mô tả sản phẩm được lưu vào S3, Lambda gọi Comprehend rồi truy vấn DynamoDB", [
       { id: "s3", x: 70, y: 135, w: 120, l1: "S3", l2: "mô tả của người bán" },
       { id: "fn", x: 250, y: 135, w: 120, l1: "Lambda", l2: "S3 event" },
-      { id: "cmp", x: 470, y: 135, w: 200, l1: "Amazon Comprehend", l2: custom ? "custom entity: THÀNH_PHẦN" : "entity có sẵn" },
+      { id: "cmp", x: 470, y: 135, w: 200, l1: "Amazon Comprehend", l2: custom ? "custom entity: INGREDIENT" : "entity có sẵn" },
       { id: "ddb", x: 700, y: 135, w: 170, l1: "DynamoDB", l2: "điểm an toàn từng thành phần" },
     ]),
     run: (custom) => ({
       steps: [
         { at: "fn", state: "pass", msg: "**S3 Event Notification** kích hoạt Lambda ngay khi người bán tải lên." },
         custom
-          ? { at: "cmp", state: "change", tag: "TRÍCH", flash: "4 thành phần", msg: "Custom entity recognizer được huấn luyện từ **danh sách tên thành phần** sẵn có của ShopViet. Kết quả trả về: bột mì, đường, dầu cọ, bơ." }
-          : { at: "cmp", state: "block", tag: "KHÔNG NHẬN DIỆN", msg: "Entity có sẵn chỉ nhận diện các loại chung như tổ chức, số lượng, ngày tháng; không có loại \"thành phần\"." },
+          ? { at: "cmp", state: "change", tag: "TRÍCH", flash: "4 thành phần", msg: "Custom entity recognizer được huấn luyện từ **entity list** (danh sách tên thành phần sẵn có của ShopViet, nhãn INGREDIENT) kèm một tập tài liệu chưa gán nhãn. Kết quả trả về: wheat flour, sugar, palm oil, butter." }
+          : { at: "cmp", state: "block", tag: "KHÔNG NHẬN DIỆN", msg: "Entity có sẵn gồm các loại chung như COMMERCIAL_ITEM, DATE, LOCATION, ORGANIZATION, PERSON, QUANTITY; không có loại \"thành phần\"." },
         ...(custom ? [{ at: "ddb", state: "pass" as const, msg: "Truy vấn điểm an toàn của từng thành phần và hiển thị trên trang sản phẩm." }] : []),
       ],
       ok: custom,
       back: false,
       result: custom
-        ? "Quy trình tự động hoàn toàn, không cần chuyên gia ML, chi phí tính theo lượng văn bản. Sản phẩm không phải thực phẩm không trích xuất được thành phần nào và được bỏ qua."
+        ? "Quy trình tự động hoàn toàn, không cần chuyên gia ML. Sản phẩm không phải thực phẩm không trích xuất được thành phần nào và được bỏ qua."
         : "Cần một loại entity riêng. Custom entity recognition của Comprehend đáp ứng được yêu cầu mà không cần tự xây dựng model trên SageMaker.",
     }),
   },
   {
     name: "Ghi âm tổng đài",
     action: "Phân tích cuộc gọi",
-    request: "goi-2024-05-12.mp3 · 2 người nói",
+    request: "goi-2024-05-12.mp3 · tiếng Việt (vi-VN) · 2 người nói",
     toggle: { label: "Chuyển giọng nói thành văn bản trước khi truy vấn", initial: false },
     layout: (tr) => chain("Ghi âm lưu trong S3, Transcribe chuyển thành văn bản, Athena truy vấn bằng SQL", [
       { id: "rec", x: 70, y: 135, w: 120, l1: "S3", l2: "file ghi âm" },
@@ -108,7 +108,7 @@ const SCENARIOS: PScenario[] = [
   {
     name: "Bài báo dạng scan",
     action: "Phân tích bài báo",
-    request: "500 bài báo PDF scan đề cập tới ShopViet",
+    request: "500 bài báo tiếng Anh dạng PDF scan đề cập tới ShopViet",
     toggle: { label: "Xử lý qua Textract trước", initial: false },
     layout: (tx) => chain("PDF scan được xử lý qua Textract, Comprehend phân tích cảm xúc và thực thể, kết quả lưu vào S3", [
       { id: "pdf", x: 70, y: 135, w: 120, l1: "S3", l2: "PDF scan" },
@@ -119,8 +119,8 @@ const SCENARIOS: PScenario[] = [
     run: (tx) => tx
       ? {
           steps: [
-            { at: "tx", state: "change", tag: "ĐỌC", flash: "text", msg: "Nhận dạng chữ in và chữ scan, kể cả trang nhiều cột, nhiều kiểu chữ." },
-            { at: "cmp", state: "change", tag: "PHÂN TÍCH", flash: "POSITIVE", msg: "Bài 2023: **POSITIVE**; entity: ShopViet, Hà Nội, \"giao hàng nhanh\"." },
+            { at: "tx", state: "change", tag: "ĐỌC", flash: "text", msg: "Trích xuất văn bản từ trang scan (Textract nhận dạng tiếng Anh, Pháp, Đức, Ý, Bồ Đào Nha, Tây Ban Nha)." },
+            { at: "cmp", state: "change", tag: "PHÂN TÍCH", flash: "POSITIVE", msg: "Bài 2023: **POSITIVE**; entity: ShopViet (ORGANIZATION), Hanoi (LOCATION)." },
             { at: "out", state: "pass", msg: "Lưu kết quả vào S3 để xây dựng biểu đồ xu hướng sắc thái báo chí theo năm." },
           ],
           ok: true,

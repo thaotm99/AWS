@@ -25,10 +25,10 @@ const SCENARIOS: HopScenario[] = [
     run: (on) => on
       ? { hops: [
           { to: "adv", state: "change", times: 4, tag: "PHÁT HIỆN", msg: "Phát hiện tấn công quy mô lớn ở cả tầng mạng lẫn tầng ứng dụng." },
-          { from: "srt", to: "adv", state: "pass", tag: "HỖ TRỢ", msg: "Shield Response Team (trước đây là DRT) bổ sung rule WAF chặn nguồn tấn công." },
+          { from: "srt", to: "adv", state: "pass", tag: "HỖ TRỢ", msg: "Shield Response Team (SRT) hỗ trợ bổ sung rule WAF chặn nguồn tấn công; sử dụng SRT yêu cầu gói Business Support hoặc Enterprise Support." },
           { from: "adv", to: "cf", state: "pass", msg: "Chỉ traffic hợp lệ được chuyển tiếp." },
           { to: "app", state: "pass", msg: "Hệ thống vẫn tiếp nhận đơn hàng." },
-        ], ok: true, result: "Shield Advanced: có đội ngũ AWS hỗ trợ, báo cáo và log chi tiết về cuộc tấn công, và được bảo vệ chi phí khi hệ thống phải scale do DDoS." }
+        ], ok: true, result: "Shield Advanced: có đội ngũ AWS hỗ trợ, báo cáo và log chi tiết về cuộc tấn công, và cost protection dưới dạng service credit khi chi phí tăng đột biến do DDoS." }
       : { hops: [
           { to: "std", state: "change", times: 4, tag: "LỌC MỘT PHẦN", msg: "Chặn các kiểu tấn công tầng mạng phổ biến." },
           { to: "cf", state: "alert", times: 2, tag: "LỌT QUA", msg: "Đợt tấn công quy mô lớn ở tầng ứng dụng vẫn đi qua." },
@@ -57,7 +57,7 @@ const SCENARIOS: HopScenario[] = [
         { to: "team", state: "pass" as const, tag: "CẢNH BÁO", msg: "Cảnh báo được gửi tới đội vận hành qua EventBridge." },
       ] : []),
     ], ok: on, result: on
-      ? "GuardDuty tự động phân tích log, không cần cài agent hay viết rule. Dịch vụ phát hiện các hành vi độc hại như đào tiền mã hoá, kết nối tới IP độc hại, đăng nhập bất thường."
+      ? "Với các foundational data source (CloudTrail management events, VPC Flow Logs, DNS logs), GuardDuty tự động phân tích ngay khi được kích hoạt, không cần cài agent hay viết rule. Tính năng Runtime Monitoring (EKS, ECS, EC2) mới sử dụng GuardDuty security agent. Dịch vụ phát hiện các hành vi độc hại như đào tiền mã hoá, kết nối tới IP độc hại, đăng nhập bất thường."
       : "Log đầy đủ nhưng không được phân tích. Kích hoạt **Amazon GuardDuty** để phát hiện mối đe doạ từ log." }),
   },
   {
@@ -128,7 +128,7 @@ const SCENARIOS: HopScenario[] = [
           { to: "a1", state: "pass", tag: "ÁP DỤNG", msg: "Áp dụng tự động." },
           { from: "fm", to: "a2", state: "pass", tag: "ÁP DỤNG", msg: "Áp dụng tự động." },
           { from: "fm", to: "a3", state: "pass", tag: "ÁP DỤNG", msg: "Account vừa tạo cũng được áp dụng ngay." },
-        ], ok: true, result: "Firewall Manager quản lý tập trung rule AWS WAF, Shield Advanced và Security Group cho toàn bộ Organizations." }
+        ], ok: true, result: "Firewall Manager quản lý tập trung AWS WAF, Shield Advanced, Security Group và network ACL, AWS Network Firewall, Route 53 Resolver DNS Firewall cho các account trong AWS Organizations." }
       : { hops: [
           { to: "a1", state: "change", tag: "THỦ CÔNG", msg: "Cấu hình WAF tại từng account." },
           { from: "sec", to: "a2", state: "change", tag: "THỦ CÔNG", msg: "Lặp lại tại account thứ hai." },

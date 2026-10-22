@@ -13,6 +13,18 @@ docs:
     url: "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html"
   - title: "Gateway endpoints"
     url: "https://docs.aws.amazon.com/vpc/latest/privatelink/gateway-endpoints.html"
+  - title: "Regional NAT gateways for automatic multi-AZ expansion"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/nat-gateways-regional.html"
+  - title: "Compare NAT gateways and NAT instances"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-comparison.html"
+  - title: "What is VPC peering? (pricing)"
+    url: "https://docs.aws.amazon.com/vpc/latest/peering/what-is-vpc-peering.html"
+  - title: "Understanding data transfer charges (AWS CUR)"
+    url: "https://docs.aws.amazon.com/cur/latest/userguide/cur-data-transfers-charges.html"
+  - title: "Site-to-Site VPN quotas"
+    url: "https://docs.aws.amazon.com/vpn/latest/s2svpn/vpn-limits.html"
+  - title: "Encryption in AWS Direct Connect"
+    url: "https://docs.aws.amazon.com/directconnect/latest/UserGuide/encryption-in-transit.html"
   - title: "What is a transit gateway?"
     url: "https://docs.aws.amazon.com/vpc/latest/tgw/what-is-transit-gateway.html"
   - title: "AWS Direct Connect virtual interfaces"
@@ -70,7 +82,7 @@ Database và worker của ShopViet nằm trong **private subnet**, không có pu
 
 <NatHaSim client:visible />
 
-<Takeaway>NAT gateway là dịch vụ managed, chỉ hỗ trợ IPv4, được đặt trong public subnet và thuộc một AZ. Để chịu được sự cố AZ: mỗi AZ một NAT gateway và một route table trỏ tới NAT gateway trong cùng AZ.</Takeaway>
+<Takeaway>NAT gateway là dịch vụ managed, dùng cho traffic IPv4 (và IPv6 thông qua DNS64 và NAT64). Public NAT gateway ở chế độ zonal được đặt trong public subnet và thuộc một AZ; để chịu được sự cố AZ: mỗi AZ một NAT gateway và một route table trỏ tới NAT gateway trong cùng AZ. Chế độ regional NAT gateway tự động mở rộng sang các AZ có workload và không cần public subnet.</Takeaway>
 
 </Scene>
 
@@ -103,7 +115,7 @@ ShopViet thành lập thêm các team, mỗi team sử dụng một VPC. Tăng s
 
 <RequirementPicker client:visible items={[
   { need: "VPC web và VPC báo cáo cần giao tiếp với nhau, chi phí thấp nhất", answer: "VPC peering",
-    why: "Không tính phí theo giờ, cấu hình đơn giản cho số lượng VPC nhỏ. Hỗ trợ cả kết nối giữa hai Region." },
+    why: "Không tính phí tạo kết nối; data transfer trong cùng AZ miễn phí, chỉ tính phí khi đi qua AZ hoặc Region khác. Cấu hình đơn giản cho số lượng VPC nhỏ, hỗ trợ cả kết nối giữa hai Region." },
   { need: "Hàng chục VPC của các team và văn phòng cần kết nối qua một điểm trung tâm", answer: "AWS Transit Gateway",
     why: "Mô hình hub-and-spoke, hỗ trợ transitive routing, mỗi VPC một attachment, kết nối được cả VPN và Direct Connect." },
   { need: "Các account của ShopViet trong cùng Organization sử dụng chung một mạng, chi phí thấp nhất", answer: "VPC sharing qua AWS RAM",
@@ -134,7 +146,7 @@ Các cấu hình dưới đây có vẻ hợp lý khi thao tác trên console, n
 
 <VpcMythsSim client:visible />
 
-<Takeaway>Private hosted zone yêu cầu bật cả enableDnsHostnames và enableDnsSupport. Traffic IPv4 đi ra: NAT gateway (egress-only IGW chỉ dành cho IPv6). Yêu cầu port forwarding hoặc bastion: NAT instance. VPC có tenancy dedicated khiến mọi instance chạy ở chế độ dedicated. Source của Security Group không thể là Internet Gateway. Hai EC2 nên giao tiếp qua private IP để tránh phát sinh chi phí.</Takeaway>
+<Takeaway>Private hosted zone yêu cầu bật cả enableDnsHostnames và enableDnsSupport. Traffic IPv4 đi ra: NAT gateway (egress-only IGW chỉ dành cho IPv6). Yêu cầu port forwarding hoặc bastion: NAT instance. VPC có tenancy dedicated khiến mọi instance chạy ở chế độ dedicated. Source của Security Group không thể là Internet Gateway. Hai EC2 nên giao tiếp qua private IP: truy cập qua public IP bị tính phí data transfer; qua private IP, traffic giữa hai AZ vẫn tính phí theo GB.</Takeaway>
 
 </Scene>
 

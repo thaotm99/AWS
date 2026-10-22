@@ -17,6 +17,20 @@ docs:
     url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/PointInTimeRecovery.html"
   - title: "Global tables: multi-Region replication for DynamoDB"
     url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GlobalTables.html"
+  - title: "How DynamoDB global tables work"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/V2globaltables_HowItWorks.html"
+  - title: "Understanding Amazon DynamoDB billing for global tables"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/global-tables-billing.html"
+  - title: "Partitions and data distribution"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.Partitions.html"
+  - title: "Designing partition keys to distribute your workload"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-design.html"
+  - title: "DAX and DynamoDB consistency models"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DAX.consistency.html"
+  - title: "Using deletion protection"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithTables.Basics.html"
+  - title: "Using Aurora Global Database"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -47,7 +61,7 @@ Một **table** chứa các **item**; mỗi item là một tập hợp **attribu
 - **Partition key**: DynamoDB băm giá trị này để xác định partition chứa item.
 - **Sort key** (không bắt buộc): sắp xếp các item có cùng partition key theo thứ tự, ví dụ theo ngày đặt hàng.
 
-Dữ liệu được tự động sao chép trên 3 AZ trong Region. Truy vấn theo key có độ trễ như nhau dù bảng chứa một nghìn hay một tỷ item. Thử năm tác vụ của ShopViet:
+Dữ liệu được lưu trên SSD và tự động sao chép trên nhiều AZ trong Region. AWS mô tả DynamoDB có hiệu năng mili giây một chữ số ở mọi quy mô, nên truy vấn theo key không chậm đi khi bảng lớn lên. Thử năm tác vụ của ShopViet:
 
 <KeyAccessSim client:visible />
 
@@ -77,7 +91,7 @@ Mỗi partition có giới hạn riêng: **3.000 RCU** và **1.000 WCU**. Chọn
 Bản thân DynamoDB lưu dữ liệu trên SSD, **không phải** cơ sở dữ liệu in-memory. Khi cần lưu trữ in-memory:
 
 - Dữ liệu trên DynamoDB: DAX.
-- Dữ liệu trên RDS, Aurora, hoặc dùng làm session store, bảng xếp hạng, truy vấn theo vị trí: **ElastiCache** (bài Analytics). Cần cache đa luồng: Memcached. Cần sorted set hoặc geospatial: Redis.
+- Dữ liệu trên RDS, Aurora, hoặc dùng làm session store, bảng xếp hạng, truy vấn theo vị trí: **ElastiCache** (bài Analytics). Cần cache đa luồng: Memcached. Cần sorted set hoặc geospatial: Valkey hoặc Redis OSS.
 
 <Takeaway>Tải biến động, có thời điểm gần bằng 0: On-Demand. Tải ổn định, dự đoán được: Provisioned + Auto Scaling. Hot partition do đọc lặp lại: DAX, không phải tăng RCU. DAX dành cho DynamoDB; ElastiCache dành cho các nguồn dữ liệu khác.</Takeaway>
 
@@ -90,7 +104,7 @@ Khi tích hợp DynamoDB với các thành phần khác, ShopViet cần trả l�
 <DataFlowSim client:visible />
 
 - **TTL**: chọn một attribute kiểu Number chứa thời điểm hết hạn (Unix epoch, đơn vị giây). DynamoDB tự động xoá item hết hạn, không tiêu tốn WCU. Phù hợp với session, OTP, giỏ hàng bị bỏ dở, log lưu giữ N ngày.
-- **DynamoDB Streams**: ghi lại mọi thay đổi ở cấp item, đúng thứ tự, lưu giữ 24 giờ. Gắn Lambda để xử lý mỗi khi có thay đổi. Item bị TTL xoá cũng xuất hiện trong stream, do đó có thể lưu trữ sang S3 trước khi item bị xoá vĩnh viễn.
+- **DynamoDB Streams**: ghi lại mọi thay đổi ở cấp item, đúng thứ tự, lưu giữ 24 giờ. Gắn Lambda để xử lý mỗi khi có thay đổi. Item bị TTL xoá cũng xuất hiện trong stream dưới dạng service deletion; Lambda đọc bản ghi đó (kèm OLD_IMAGE) để lưu trữ nội dung item sang S3 sau khi item đã bị xoá khỏi bảng. TTL thường xoá item trong vòng vài ngày sau thời điểm hết hạn.
 
 <Takeaway>Xoá dữ liệu cũ không phát sinh chi phí: TTL. Xử lý theo sự kiện thay đổi dữ liệu: Streams + Lambda. Dữ liệu nhạy cảm: làm sạch trước khi ghi. Đưa dữ liệu vào DynamoDB theo kiến trúc serverless: SQS → Lambda → DynamoDB; Firehose không ghi vào DynamoDB.</Takeaway>
 
@@ -118,7 +132,7 @@ ShopViet mở rộng sang thị trường châu Âu và Hoa Kỳ. Ứng dụng �
 
 <MultiRegionSim client:visible />
 
-- **Global tables**: mỗi Region có một replica, mọi replica đều hỗ trợ đọc và ghi. DynamoDB tự động sao chép, thường dưới một giây. Ứng dụng sử dụng DynamoDB API như trước. Với tải ổn định, sử dụng Provisioned + Auto Scaling để tối ưu chi phí; lưu ý mỗi replica cũng tiêu tốn WCU cho phần dữ liệu ghi được sao chép tới.
+- **Global tables**: mỗi Region có một replica, mọi replica đều hỗ trợ đọc và ghi. Ở chế độ mặc định (multi-Region eventual consistency, MREC), DynamoDB tự động sao chép bất đồng bộ, thường trong vòng một giây; chế độ multi-Region strong consistency (MRSC) cũng có sẵn khi cần đọc nhất quán mạnh giữa các Region. Ứng dụng sử dụng DynamoDB API như trước. Với tải ổn định, sử dụng Provisioned + Auto Scaling để tối ưu chi phí; lưu ý thao tác ghi trên global table được tính theo replicated write unit (rWCU/rWRU) tại mọi Region có replica.
 - **Aurora Global Database**: một Region tiếp nhận ghi, tối đa 10 Region phụ chỉ đọc. Phù hợp khi ứng dụng đã sử dụng SQL và JOIN, chỉ cần đọc với độ trễ thấp tại Region khác. Khi chỉ một bảng cần phạm vi toàn cầu và các bảng khác chỉ cần trong Region: tách riêng bảng đó, không cần chuyển toàn bộ database.
 
 <Takeaway>Ghi với độ trễ thấp tại nhiều Region: DynamoDB global tables. Giữ schema quan hệ, chỉ cần đọc tại Region gần người dùng: Aurora Global Database.</Takeaway>
@@ -160,7 +174,7 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
   { q: "Một kỹ sư suýt xoá bảng production. ShopViet cần ngăn chặn hoàn toàn tình huống này với chi phí vận hành thấp nhất. Cần bật tính năng nào?",
     opts: ["Deletion protection", "PITR", "EventBridge bắt DeleteTable rồi tạo lại bảng"],
     a: 0,
-    why: "Deletion protection chặn request xoá ngay từ đầu và không tính phí. PITR chỉ khôi phục được sau khi bảng đã bị xoá và ứng dụng đã ngừng hoạt động." },
+    why: "Deletion protection chặn request xoá ngay từ đầu: khi bật, không ai xoá được bảng. PITR chỉ khôi phục được sau khi bảng đã bị xoá và ứng dụng đã ngừng hoạt động." },
   { q: "Người dùng tại châu Âu, Hoa Kỳ và châu Á đều cần ghi đơn hàng với độ trễ thấp tại Region gần nhất. Phương án nào phù hợp?",
     opts: ["Aurora Global Database", "DynamoDB global tables", "RDS cross-Region read replica"],
     a: 1,

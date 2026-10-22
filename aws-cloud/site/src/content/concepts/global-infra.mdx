@@ -15,8 +15,16 @@ docs:
     url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/transfer-acceleration.html"
   - title: "Gateway endpoints for Amazon S3"
     url: "https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-s3.html"
-  - title: "Amazon RDS FAQs (Read Replica data transfer)"
-    url: "https://aws.amazon.com/rds/faqs/"
+  - title: "Working with DB instance read replicas (Amazon RDS)"
+    url: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html"
+  - title: "Regional NAT gateways for automatic multi-AZ expansion"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/nat-gateways-regional.html"
+  - title: "AZ IDs (AWS Regions and Availability Zones)"
+    url: "https://docs.aws.amazon.com/global-infrastructure/latest/regions/az-ids.html"
+  - title: "Mounting EFS file systems from a different VPC"
+    url: "https://docs.aws.amazon.com/efs/latest/ug/efs-different-vpc.html"
+  - title: "Endpoints for standard accelerators (Global Accelerator)"
+    url: "https://docs.aws.amazon.com/global-accelerator/latest/dg/about-endpoints.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -60,7 +68,7 @@ Một Region gồm nhiều **Availability Zone (AZ)**: các data center độc l
 
 <ScopeExplorer client:visible />
 
-<Takeaway>Tài nguyên cấp Region (S3, EFS, AMI, VPC) sử dụng được tại mọi AZ. Tài nguyên cấp AZ (subnet, EC2, EBS, NAT gateway) gắn với một AZ; để chịu được sự cố AZ, các tài nguyên này phải được tạo tại nhiều AZ.</Takeaway>
+<Takeaway>Tài nguyên cấp Region (S3, EFS, AMI, VPC) sử dụng được tại mọi AZ. Tài nguyên cấp AZ (subnet, EC2, EBS, NAT gateway ở chế độ zonal) gắn với một AZ; để chịu được sự cố AZ, các tài nguyên này phải được tạo tại nhiều AZ. NAT gateway ở chế độ regional tự động mở rộng sang các AZ có workload.</Takeaway>
 
 </Scene>
 
@@ -88,7 +96,7 @@ ShopViet vận hành 2 web server EC2 phía sau một Load Balancer. Mỗi chấ
 
 <Scene id="s5" label="Phần 5/6" title="Global Accelerator: địa chỉ IP tĩnh, TCP/UDP và failover giữa các Region" questions={["exam1_q59", "exam2_q7", "exam2_q22", "exam3_q8", "exam3_q45", "exam4_q58", "exam5_q4", "exam5_q30", "exam5_q55", "exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
 
-**AWS Global Accelerator** cũng sử dụng edge location nhưng không cache nội dung. Dịch vụ cung cấp **2 địa chỉ IP tĩnh anycast**, tiếp nhận traffic TCP/UDP tại edge location gần người dùng nhất, sau đó chuyển qua mạng riêng của AWS tới endpoint healthy gần nhất (ALB, NLB, EC2) tại một hoặc nhiều Region. Mô phỏng dưới đây so sánh với phương án chỉ sử dụng DNS khi một Region gặp sự cố:
+**AWS Global Accelerator** cũng sử dụng edge location nhưng không cache nội dung. Dịch vụ cung cấp **2 địa chỉ IPv4 tĩnh anycast** (dual-stack: thêm 2 địa chỉ IPv6), tiếp nhận traffic TCP/UDP tại edge location gần người dùng nhất, sau đó chuyển qua mạng riêng của AWS tới endpoint healthy gần nhất (ALB, NLB, EC2 hoặc Elastic IP) tại một hoặc nhiều Region. Mô phỏng dưới đây so sánh với phương án chỉ sử dụng DNS khi một Region gặp sự cố:
 
 <GlobalAcceleratorSim client:visible />
 
@@ -116,7 +124,7 @@ Bốn yêu cầu dưới đây có vẻ đơn giản nhưng thường bị cấu
 
 <GlobalMythsSim client:visible />
 
-<Takeaway>EFS truy cập được từ Region khác thông qua inter-region VPC peering, không cần copy dữ liệu. NAT gateway được đặt trong public subnet; egress-only internet gateway chỉ dành cho IPv6. Để xác định cùng một AZ với account khác: sử dụng AZ ID. Tăng tốc cả chiều truy xuất lẫn chiều tải lên: sử dụng đồng thời CloudFront và S3 Transfer Acceleration.</Takeaway>
+<Takeaway>EFS truy cập được từ Region khác thông qua inter-region VPC peering, không cần copy dữ liệu. Public NAT gateway ở chế độ zonal được đặt trong public subnet (chế độ regional không cần public subnet); egress-only internet gateway chỉ dành cho IPv6. Để xác định cùng một AZ với account khác: sử dụng AZ ID. Tăng tốc cả chiều truy xuất lẫn chiều tải lên: sử dụng đồng thời CloudFront và S3 Transfer Acceleration.</Takeaway>
 
 </Scene>
 
@@ -133,7 +141,7 @@ Kéo từng thẻ vào nhóm tương ứng. Trên thiết bị di động: chọ
   cards={[
     ["IAM", "global"], ["Route 53", "global"],
     ["S3 bucket", "region"], ["EFS file system", "region"], ["AMI", "region"], ["VPC", "region"],
-    ["Subnet", "az"], ["NAT gateway", "az"], ["EC2 instance", "az"], ["EBS volume", "az"],
+    ["Subnet", "az"], ["NAT gateway (zonal)", "az"], ["EC2 instance", "az"], ["EBS volume", "az"],
   ]}
 />
 
@@ -147,7 +155,7 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
   { q: "ShopViet triển khai minigame khuyến mãi sử dụng UDP, người chơi ở nhiều châu lục, và ứng dụng phải chuyển Region nhanh chóng khi một Region gặp sự cố. Dịch vụ nào phù hợp?",
     opts: ["Amazon CloudFront", "AWS Global Accelerator", "S3 Transfer Acceleration"],
     a: 1,
-    why: "CloudFront chỉ phục vụ HTTP/HTTPS. Global Accelerator hỗ trợ UDP và tự động chuyển traffic sang endpoint healthy tại Region khác." },
+    why: "CloudFront chỉ tiếp nhận request HTTP/HTTPS (bao gồm WebSocket và gRPC). Global Accelerator hỗ trợ UDP và tự động chuyển traffic sang endpoint healthy tại Region khác." },
   { q: "ShopViet bổ sung RDS Read Replica cho tác vụ báo cáo. Nhận định nào đúng về chi phí data transfer?",
     opts: ["Replicate trong cùng Region bị tính phí", "Replicate giữa hai Region bị tính phí", "Replicate giữa hai Region miễn phí"],
     a: 1,
@@ -159,7 +167,7 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
   { q: "VPC của ShopViet có public subnet và private subnet tại 3 AZ. Server trong private subnet cần truy cập internet để tải bản cập nhật, kể cả khi một AZ gặp sự cố. Kiến trúc nào phù hợp?",
     opts: ["Một NAT gateway dùng chung cho cả 3 AZ", "Mỗi AZ một NAT gateway trong public subnet, mỗi AZ một route table riêng", "Mỗi AZ một NAT gateway trong private subnet"],
     a: 1,
-    why: "NAT gateway phải được đặt trong public subnet và là tài nguyên cấp AZ; do đó mỗi AZ cần một NAT gateway, với route table riêng trỏ tới NAT gateway trong cùng AZ." },
+    why: "Public NAT gateway ở chế độ zonal phải được đặt trong public subnet và gắn với một AZ; do đó mỗi AZ cần một NAT gateway, với route table riêng trỏ tới NAT gateway trong cùng AZ. Chế độ regional NAT gateway là phương án thay thế: một NAT gateway tự động mở rộng sang các AZ có workload, không cần public subnet." },
 ]} />
 
 </Scene>

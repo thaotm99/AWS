@@ -57,7 +57,7 @@ const SCENARIOS: HopScenario[] = [
           { to: "conn", state: "pass", tag: "NGUỒN", msg: "IAM Identity Center sử dụng AD Connector làm identity source." },
           { to: "ad", state: "change", tag: "XÁC THỰC", msg: "AD Connector chuyển tiếp yêu cầu xác thực tới AD on-premises." },
           { from: "ic", to: "acc", state: "pass", tag: "TRUY CẬP", msg: "Quyền truy cập account được xác định theo nhóm AD của Lan." },
-        ], ok: true, result: "**AD Connector** chỉ là proxy: không sao chép user lên AWS, chi phí vận hành thấp nhất." }
+        ], ok: true, result: "**AD Connector** là directory gateway: chuyển tiếp yêu cầu tới AD on-premises mà không lưu cache thông tin trên AWS và không cần đồng bộ thư mục." }
       : { hops: [
           { to: "ic", state: "pass", tag: "ĐĂNG NHẬP", msg: "Lan sử dụng một mật khẩu mới." },
           { to: "copy", state: "alert", tag: "TRÙNG LẶP", msg: "User được sao chép lên AWS; thay đổi mật khẩu tại AD không được đồng bộ sang AWS." },
@@ -86,8 +86,8 @@ const SCENARIOS: HopScenario[] = [
           { from: "users", to: "app", state: "pass", tag: "TRUY CẬP", msg: "Kế toán viên sử dụng tài khoản on-premises để truy cập ứng dụng." },
         ], ok: true, result: "**AWS Managed Microsoft AD** là Active Directory đầy đủ do AWS vận hành: hỗ trợ workload phụ thuộc AD và thiết lập trust." }
       : { hops: [
-          { to: "conn", state: "block", tag: "KHÔNG HỖ TRỢ", msg: "AD Connector không phải domain controller và không thiết lập được trust." },
-        ], ok: false, result: "AD Connector chỉ chuyển tiếp yêu cầu xác thực. Workload phụ thuộc AD trên AWS cần sử dụng **AWS Managed Microsoft AD**." },
+          { to: "conn", state: "block", tag: "KHÔNG HỖ TRỢ", msg: "AD Connector chỉ chuyển tiếp yêu cầu tới domain on-premises; không tạo domain mới trên AWS và không hỗ trợ transitive trust." },
+        ], ok: false, result: "AD Connector chỉ chuyển tiếp yêu cầu xác thực. Domain chạy trên AWS và có trust với AD on-premises cần sử dụng **AWS Managed Microsoft AD**." },
   },
   {
     name: "File share cho Windows và Linux",
@@ -124,16 +124,16 @@ const SCENARIOS: HopScenario[] = [
       { id: "ptn", x: 90, y: 130, label: "Nhà cung cấp", kind: "user" },
       { id: "tf", x: 330, y: 130, label: "AWS Transfer Family", sub: "endpoint SFTP", kind: "svc" },
       { id: "ec2", x: 330, y: 130, label: "Máy chủ SFTP tự triển khai", sub: "EC2, tự vá lỗi, tự scale", kind: "bad" },
-      { id: "idp", x: 330, y: 220, label: "Cognito / IdP riêng", sub: "xác thực đăng nhập", kind: "key" },
+      { id: "idp", x: 330, y: 220, label: "IdP riêng (qua Lambda)", sub: "ví dụ Cognito, Okta", kind: "key" },
       { id: "s3", x: 650, y: 130, w: 120, label: "S3 bucket", sub: "bang-gia/", kind: "store" },
     ],
     hidden: (on) => (on ? ["ec2"] : ["tf", "idp"]),
     run: (on) => on
       ? { hops: [
           { to: "tf", state: "pass", tag: "SFTP", msg: "Đối tác tiếp tục sử dụng SFTP client hiện có." },
-          { to: "idp", state: "change", tag: "XÁC THỰC", msg: "Tên đăng nhập và mật khẩu được xác thực tại identity provider của ShopViet." },
+          { to: "idp", state: "change", tag: "XÁC THỰC", msg: "Transfer Family gọi Lambda function (có thể qua API Gateway); Lambda xác thực tên đăng nhập và mật khẩu tại identity provider của ShopViet." },
           { from: "tf", to: "s3", state: "pass", tag: "GHI", msg: "Tệp được ghi vào S3 bằng quyền của một IAM role." },
-        ], ok: true, result: "Transfer Family đảm nhận giao thức SFTP; danh tính được quản lý tại Cognito hoặc IdP riêng; quyền ghi S3 được định nghĩa trong IAM role." }
+        ], ok: true, result: "Transfer Family đảm nhận giao thức SFTP; danh tính được quản lý tại IdP riêng (ví dụ Amazon Cognito), tích hợp qua Lambda function; quyền ghi S3 được định nghĩa trong IAM role." }
       : { hops: [
           { to: "ec2", state: "alert", tag: "TỰ VẬN HÀNH", msg: "Phải tự cài đặt SFTP, tự quản lý user và tự vá lỗi." },
           { to: "s3", state: "pass", tag: "GHI", msg: "Script tự phát triển tải tệp lên S3." },

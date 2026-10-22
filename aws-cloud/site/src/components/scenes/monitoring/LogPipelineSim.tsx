@@ -25,7 +25,7 @@ const SCENARIOS: PScenario[] = [
     },
     run: (agent) => agent
       ? { steps: [
-            { at: "logs", from: "i3", state: "pass", tag: "GỬI LOG", label: "CloudWatch agent", msg: "Hai ngày trước, agent trên i-web3 đã gửi từng dòng log lên log group gần như ngay lập tức." },
+            { at: "logs", from: "i3", state: "pass", tag: "GỬI LOG", label: "CloudWatch agent", msg: "Hai ngày trước, CloudWatch agent trên i-web3 đã thu thập log và gửi liên tục lên log group." },
             { at: "i3", jump: true, state: "skip", msg: "Instance đã bị terminate, nhưng log đã được lưu bên ngoài instance." },
             { at: "logs", from: "dev", state: "pass", flash: "tìm thấy", msg: "**Logs Insights** lọc `ERROR` quanh thời điểm 14:02 trong log stream của i-web3." }],
           ok: true,
@@ -34,7 +34,7 @@ const SCENARIOS: PScenario[] = [
             { at: "i3", state: "block", flash: "mất", msg: "ASG đã terminate i-web3. Log được lưu trên ổ đĩa của instance nên bị mất theo." },
             { at: "i9", from: "dev", state: "skip", msg: "Instance mới không có log của hai ngày trước." }],
           ok: false,
-          result: "Không còn dữ liệu để truy vết. Tắt scale in hoặc tạo snapshot trước khi terminate chỉ là biện pháp tạm thời. Cần cài đặt **CloudWatch agent** để log được chuyển ra khỏi instance ngay khi được ghi." },
+          result: "Không còn dữ liệu để truy vết. Tắt scale in hoặc tạo snapshot trước khi terminate chỉ là biện pháp tạm thời. Cần cài đặt **CloudWatch agent** để log được gửi lên CloudWatch Logs, bên ngoài instance." },
   },
   {
     name: "Lệnh gọi API trái phép",

@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-// S3 Lifecycle transitions follow a one-way "waterfall", and objects must stay 30 days
-// before moving to Standard-IA or One Zone-IA (exam1_q19, exam4_q43, exam5_q51, exam6_q28).
+// S3 Lifecycle transitions follow a one-way "waterfall". Standard-IA and One Zone-IA have a
+// 30-day minimum storage duration charge (storage-class-intro.html).
 type C = "std" | "ia" | "it" | "oz" | "gir" | "gfr" | "gda";
 
 const CLASSES: { id: C; label: string; note: string }[] = [
@@ -33,14 +33,13 @@ export default function LifecycleValidator() {
   const [days, setDays] = useState(30);
 
   const allowed = ALLOWED[from].includes(to);
-  const needs30 = from === "std" && (to === "ia" || to === "oz");
-  const ok = allowed && !(needs30 && days < 30);
+  const ia = to === "ia" || to === "oz";
+  const ok = allowed;
   let why: string;
   if (from === to) why = "Object đã thuộc storage class này.";
   else if (!allowed && to === "std") why = "Lifecycle không chuyển ngược về S3 Standard. Để đưa object trở lại Standard, cần copy object.";
   else if (!allowed) why = `Lifecycle chỉ chuyển theo một chiều xuống. Không hỗ trợ transition từ ${name(from)} sang ${name(to)}. Các đích hợp lệ: ${ALLOWED[from].map(name).join(", ") || "không có"}.`;
-  else if (needs30 && days < 30) why = `Object phải được lưu tại S3 Standard tối thiểu 30 ngày trước khi chuyển sang ${name(to)}.`;
-  else why = `Hợp lệ: ${name(from)} → ${name(to)} sau ${days} ngày.`;
+  else why = `Hợp lệ: ${name(from)} → ${name(to)} sau ${days} ngày.` + (ia ? ` Lưu ý: ${name(to)} có thời gian lưu trữ tối thiểu 30 ngày và kích thước tính phí tối thiểu 128 KB; object bị xoá, ghi đè hoặc chuyển đi trước 30 ngày vẫn bị tính phí đủ 30 ngày.` : "");
 
   return (
     <div className="stage">

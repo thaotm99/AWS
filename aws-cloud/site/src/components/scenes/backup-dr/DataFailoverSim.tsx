@@ -68,21 +68,21 @@ const SCENARIOS: PScenario[] = [
       ? {
           steps: [
             { at: "pri", state: "block", flash: "sự cố", msg: "Region Singapore ngừng hoạt động. Cluster chính không phản hồi." },
-            { from: "pri", at: "sec", jump: true, state: "pass", tag: "ĐÃ CÓ", msg: "Dữ liệu đã được sao chép ở tầng storage, với độ trễ thường **dưới 1 giây**. Lượng đơn hàng bị mất gần như bằng 0." },
-            { at: "sec", jump: true, state: "change", tag: "FAILOVER", relabel: { l1: "Aurora Tokyo", l2: "cluster chính mới" }, msg: "**Failover** của global database promote Tokyo thành cluster chính, thường trong khoảng 1 phút." },
+            { from: "pri", at: "sec", jump: true, state: "pass", tag: "ĐÃ CÓ", msg: "Dữ liệu đã được sao chép ở tầng storage, với độ trễ thường **dưới 1 giây**. Lượng đơn hàng bị mất phụ thuộc replication lag tại thời điểm sự cố, thường tính bằng giây." },
+            { at: "sec", jump: true, state: "change", tag: "FAILOVER", relabel: { l1: "Aurora Tokyo", l2: "cluster chính mới" }, msg: "**Failover** của global database promote secondary cluster tại Tokyo thành cluster chính, thường trong vài phút." },
             { from: "app", at: "sec", state: "pass", flash: "OK", msg: "Ứng dụng ghi đơn hàng mới vào Tokyo." },
           ],
           ok: true,
-          result: "Đạt RPO tính bằng giây, RTO khoảng một phút. AWS quản lý việc sao chép và failover; đội ShopViet không cần phát triển script.",
+          result: "Đạt RPO tính bằng giây, RTO tính bằng phút, trong mục tiêu RPO ≤ 5 phút, RTO ≤ 15 phút. Aurora thực hiện việc sao chép và failover; đội ShopViet không cần phát triển script.",
         }
       : {
           steps: [
             { at: "pri", state: "block", flash: "sự cố", msg: "Region Singapore ngừng hoạt động. Cluster chính không phản hồi." },
-            { from: "pri", at: "sec", jump: true, state: "wait", tag: "RESTORE", msg: "Chỉ có snapshot. Phải **restore** thành cluster mới; với database lớn, quá trình này mất hàng giờ. Đơn hàng phát sinh sau snapshot gần nhất bị mất." },
+            { from: "pri", at: "sec", jump: true, state: "wait", tag: "RESTORE", msg: "Chỉ có snapshot. Phải **restore** thành cluster mới trước khi ứng dụng có thể ghi; thời gian restore phụ thuộc kích thước database. Đơn hàng phát sinh sau snapshot gần nhất bị mất." },
             { from: "app", at: "sec", state: "block", flash: "chưa sẵn sàng", msg: "Ứng dụng không có đích ghi dữ liệu trong quá trình restore." },
           ],
           ok: false,
-          result: "Vượt RTO 15 phút, và script copy snapshot phải do đội ShopViet tự phát triển và bảo trì. Bật tuỳ chọn để so sánh.",
+          result: "Không đảm bảo được RTO 15 phút, và script copy snapshot phải do đội ShopViet tự phát triển và bảo trì. Bật tuỳ chọn để so sánh.",
         },
   },
   {

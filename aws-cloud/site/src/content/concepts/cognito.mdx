@@ -15,6 +15,12 @@ docs:
     url: "https://docs.aws.amazon.com/singlesignon/latest/userguide/what-is.html"
   - title: "AWS Directory Service options"
     url: "https://docs.aws.amazon.com/directoryservice/latest/admin-guide/what_is.html"
+  - title: "Common Amazon Cognito scenarios"
+    url: "https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-scenarios.html"
+  - title: "AD Connector"
+    url: "https://docs.aws.amazon.com/directoryservice/latest/admin-guide/directory_ad_connector.html"
+  - title: "Working with custom identity providers (AWS Transfer Family)"
+    url: "https://docs.aws.amazon.com/transfer/latest/userguide/custom-idp-intro.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -51,27 +57,26 @@ Hệ thống ShopViet có hai nhóm danh tính cần xác thực: **khách hàng
         text: "Mỗi máy chủ phải tự xử lý đăng nhập, quản lý phiên và mật khẩu, làm tăng chi phí phát triển và nguy cơ sai sót." },
       { name: "ALB + Cognito user pool", verdict: "good", hide: ["code"],
         flows: [{ path: ["user", "alb"], tone: "good" }, { path: ["alb", "pool"], tone: "good", label: "authenticate" }, { path: ["alb", "app"], tone: "good", label: "đã xác thực" }],
-        text: "Cấu hình action **authenticate-cognito** trên listener của ALB. ALB đảm nhận việc xác thực; ứng dụng chỉ tiếp nhận request đã được xác thực. Đội phát triển của ShopViet **không cần viết mã xác thực**." },
+        text: "Cấu hình action **authenticate-cognito** trong listener rule của listener HTTPS trên ALB. ALB đảm nhận việc xác thực; ứng dụng chỉ tiếp nhận request đã được xác thực. Đội phát triển của ShopViet **không cần viết mã xác thực**." },
     ] },
   { name: "Ứng dụng mobile tải ảnh đánh giá lên S3",
     nodes: [
       { id: "user", x: 30, y: 90, label: "Người dùng mobile", kind: "user" },
       { id: "idp", x: 250, y: 20, label: "Cognito identity pool", kind: "edge" },
       { id: "key", x: 250, y: 170, label: "Access key nhúng trong ứng dụng", kind: "warn" },
-      { id: "vpce", x: 470, y: 90, label: "S3 VPC endpoint", kind: "net" },
       { id: "s3", x: 640, y: 90, w: 100, label: "S3", kind: "store" },
     ],
     options: [
-      { name: "Nhúng access key", verdict: "bad", hide: ["idp", "vpce"],
+      { name: "Nhúng access key", verdict: "bad", hide: ["idp"],
         flows: [{ path: ["user", "key", "s3"], tone: "bad", label: "nguy cơ lộ key" }],
         text: "Bất kỳ ai dịch ngược gói ứng dụng đều có thể trích xuất access key dài hạn." },
-      { name: "Identity pool + VPC endpoint", verdict: "good", hide: ["key"],
-        flows: [{ path: ["user", "idp"], tone: "good", label: "đổi token lấy credentials tạm thời" }, { path: ["idp", "vpce", "s3"], tone: "good" }],
-        text: "**Identity pool** cấp temporary AWS credentials cho người dùng đã xác thực (federated). Thành phần ứng dụng trong VPC sử dụng **S3 VPC endpoint** để truy cập S3 qua kết nối riêng, không đi qua Internet. Hai cơ chế này được sử dụng kết hợp." },
+      { name: "Identity pool cấp credentials tạm thời", verdict: "good", hide: ["key"],
+        flows: [{ path: ["user", "idp"], tone: "good", label: "đổi token lấy credentials tạm thời" }, { path: ["user", "s3"], tone: "good", label: "ghi bằng credentials tạm thời" }],
+        text: "**Identity pool** đổi token của người dùng đã đăng nhập thành **temporary AWS credentials**; quyền của credentials do IAM role gắn với identity pool quy định. Ứng dụng dùng credentials này để ghi trực tiếp lên S3, không cần nhúng access key dài hạn." },
     ] },
 ]} />
 
-<Takeaway>User pool: xác thực người dùng, trả về token, tích hợp được với ALB. Identity pool: đổi token lấy temporary AWS credentials để gọi S3, DynamoDB…</Takeaway>
+<Takeaway>User pool: xác thực người dùng, trả về token, tích hợp được với ALB. Identity pool: đổi token lấy temporary AWS credentials (quyền theo IAM role) để gọi S3, DynamoDB…</Takeaway>
 
 </Scene>
 
@@ -81,7 +86,7 @@ Cognito phục vụ khách hàng của ứng dụng. Nhân viên và đối tác
 
 <StaffSignInSim client:visible />
 
-<Takeaway>Nhân viên truy cập nhiều account: IAM Identity Center + permission sets. Chỉ sử dụng AD on-premises để xác thực: AD Connector. AD chạy trên AWS và có trust với AD on-premises: AWS Managed Microsoft AD. File share với quyền NTFS: FSx for Windows File Server. Đối tác truyền tệp qua SFTP: AWS Transfer Family.</Takeaway>
+<Takeaway>Nhân viên truy cập nhiều account: IAM Identity Center + permission sets. Dùng AD on-premises để xác thực, không đồng bộ thư mục lên AWS: AD Connector. AD chạy trên AWS và có trust với AD on-premises: AWS Managed Microsoft AD. File share với quyền NTFS: FSx for Windows File Server. Đối tác truyền tệp qua SFTP: AWS Transfer Family.</Takeaway>
 
 </Scene>
 
@@ -108,11 +113,11 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
   { q: "Đội phát triển ShopViet muốn ALB đảm nhận xác thực để máy chủ chỉ xử lý nghiệp vụ, với lượng mã cần viết ít nhất. Phương án nào phù hợp?",
     opts: ["Cognito user pool tích hợp với ALB", "Viết module đăng nhập trên từng EC2", "IAM user cho từng khách hàng"],
     a: 0,
-    why: "ALB hỗ trợ xác thực bằng Cognito user pool trực tiếp trên listener." },
+    why: "Listener rule của ALB (listener HTTPS) hỗ trợ action authenticate-cognito để xác thực bằng Cognito user pool." },
   { q: "Ứng dụng kế toán của ShopViet cần join domain trên AWS, và domain đó phải thiết lập trust với AD on-premises. Dịch vụ nào đáp ứng yêu cầu?",
     opts: ["AD Connector", "AWS Managed Microsoft AD", "Simple AD"],
     a: 1,
-    why: "AWS Managed Microsoft AD là Active Directory đầy đủ, hỗ trợ thiết lập trust. AD Connector chỉ là proxy, không hỗ trợ workload phụ thuộc AD." },
+    why: "AWS Managed Microsoft AD là Active Directory do AWS vận hành, hỗ trợ thiết lập trust với AD on-premises. AD Connector chỉ là directory gateway chuyển tiếp yêu cầu tới AD on-premises, không tạo domain trên AWS và không hỗ trợ transitive trust." },
   { q: "40 nhân viên ShopViet cần single sign-on vào nhiều AWS account, mỗi nhóm chỉ được cấp các quyền cần thiết. Phương án nào có chi phí quản trị thấp nhất?",
     opts: ["IAM user riêng ở từng account", "IAM Identity Center với permission sets", "Cognito identity pool"],
     a: 1,
@@ -120,7 +125,7 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
   { q: "Ứng dụng mobile của ShopViet cần cho phép người dùng đã đăng nhập tải ảnh đánh giá trực tiếp lên S3, không được nhúng access key trong ứng dụng. Giải pháp nào phù hợp?",
     opts: ["Cognito identity pool cấp credentials tạm thời", "IAM user dùng chung cho mọi người dùng", "Cognito user pool trả JWT rồi gọi S3 bằng JWT"],
     a: 0,
-    why: "Identity pool đổi danh tính đã xác thực thành temporary AWS credentials. S3 không chấp nhận trực tiếp JWT do user pool phát hành." },
+    why: "Identity pool đổi danh tính đã xác thực thành temporary AWS credentials để gọi S3. Token (JWT) của user pool dùng để chứng minh đăng nhập; muốn truy cập dịch vụ AWS, ứng dụng đổi token đó lấy credentials qua identity pool." },
 ]} />
 
 </Scene>

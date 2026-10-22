@@ -20,16 +20,16 @@ const SCENARIOS: HopScenario[] = [
       { id: "w2", x: 360, y: 200, label: "Spot worker mới", kind: "app" },
     ],
     run: (on) => ({ hops: [
-      { to: "w1", state: "alert", tag: "2 PHÚT", flash: "2:00", msg: "Thông báo thu hồi được gửi trước **2 phút**." },
+      { to: "w1", state: "alert", tag: "2 PHÚT", flash: "2:00", msg: "Thông báo gián đoạn được gửi trước **2 phút** khi EC2 stop hoặc terminate Spot Instance." },
       { to: "q", state: "change", tag: "TRẢ TÁC VỤ", msg: "Worker trả tác vụ đang xử lý dở về hàng đợi; không tác vụ nào bị mất." },
       ...(on ? [
-        { from: "req", to: "w2", state: "pass" as const, tag: "MỞ LẠI", msg: "Request **persistent** được mở lại; khi có capacity, instance mới được khởi chạy." },
+        { from: "req", to: "w2", state: "pass" as const, tag: "MỞ LẠI", msg: "Request **persistent** được gửi lại để bù instance bị gián đoạn; khi có capacity, instance mới được khởi chạy." },
         { to: "q", state: "pass" as const, tag: "TIẾP TỤC", msg: "Worker mới tiếp tục nhận tác vụ." },
       ] : [
-        { from: "req", to: "w2", state: "skip" as const, tag: "ĐÃ ĐÓNG", msg: "Request **one-time** đóng sau lần thực hiện đầu tiên; không có worker thay thế." },
+        { from: "req", to: "w2", state: "skip" as const, tag: "ĐÃ ĐÓNG", msg: "Request **one-time** không được gửi lại khi instance bị gián đoạn; không có worker thay thế." },
       ]),
     ], ok: on, result: on
-      ? "Spot có chi phí thấp hơn tới 90% so với On-Demand. Tác vụ chịu được gián đoạn + hàng đợi + persistent request là trường hợp phù hợp nhất cho Spot."
+      ? "Spot có chi phí thấp hơn tới 90% so với On-Demand. Tác vụ chịu được gián đoạn, nhận việc từ hàng đợi và dùng persistent request là trường hợp phù hợp cho Spot."
       : "Dữ liệu ảnh không bị mất, nhưng không còn worker nào xử lý. Job dài hạn cần tiếp tục xử lý nên sử dụng request **persistent** (hoặc Auto Scaling group)." }),
   },
   {
@@ -54,7 +54,7 @@ const SCENARIOS: HopScenario[] = [
           { to: "p2", state: "pass", tag: "+2", msg: "Bổ sung bằng m5.large." },
           { from: "fleet", to: "p3", state: "pass", tag: "+2", msg: "Bổ sung thêm c6g.large." },
           { from: "fleet", to: "job", state: "pass", tag: "ĐỦ 10", msg: "Batch tiếp tục chạy với đủ 10 instance." },
-        ], ok: true, result: "**Spot Fleet** duy trì target capacity bằng cách thay thế instance bị thu hồi, kết hợp nhiều instance type (có thể kết hợp cả On-Demand)." }
+        ], ok: true, result: "**Spot Fleet** tự động yêu cầu capacity Spot thay thế khi instance bị gián đoạn, phân bổ trên nhiều instance type (có thể kết hợp cả On-Demand)." }
       : { hops: [
           { to: "p1", state: "alert", tag: "THU HỒI", flash: "−4", msg: "Pool c5.large bị thu hồi 4 instance." },
           { to: "fleet", state: "alert", tag: "CÒN 6", msg: "Request chỉ chỉ định một instance type và pool đó đã hết capacity." },
@@ -77,11 +77,11 @@ const SCENARIOS: HopScenario[] = [
     run: (on) => on
       ? { hops: [
           { to: "di", state: "pass", tag: "SINGLE-TENANT", msg: "Không dùng chung phần cứng với account khác." },
-          { to: "bill", state: "pass", tag: "THEO INSTANCE", msg: "Thanh toán theo instance đang chạy." },
-        ], ok: true, result: "Đáp ứng yêu cầu single-tenant với chi phí thấp hơn Dedicated Hosts. Dedicated Host chỉ cần thiết khi phải kiểm soát socket, core của máy chủ vật lý (license BYOL)." }
+          { to: "bill", state: "pass", tag: "THEO INSTANCE", msg: "Tính phí theo từng instance; đơn giá Dedicated Instance khác với On-Demand thông thường." },
+        ], ok: true, result: "Đáp ứng yêu cầu single-tenant mà không phải trả tiền cho toàn bộ host. Theo AWS, khi không cần kiểm soát vị trí instance và không dùng license theo socket, core, có thể chọn Dedicated Instances thay cho Dedicated Hosts." }
       : { hops: [
           { to: "dh", state: "pass", tag: "SINGLE-TENANT", msg: "Đáp ứng yêu cầu." },
-          { to: "bill", state: "alert", tag: "TOÀN BỘ HOST", msg: "Thanh toán cho toàn bộ máy chủ vật lý, kể cả phần tài nguyên không sử dụng." },
+          { to: "bill", state: "alert", tag: "TOÀN BỘ HOST", msg: "Tính phí theo host: trả cho toàn bộ máy chủ vật lý, kể cả phần capacity không sử dụng." },
         ], ok: false, result: "Đáp ứng yêu cầu nhưng chi phí cao hơn mức cần thiết. Khi không có license theo máy chủ, lựa chọn phù hợp là **Dedicated Instances**." },
   },
   {
@@ -123,8 +123,8 @@ const SCENARIOS: HopScenario[] = [
       { from: "plan", to: "far", state: on ? "pass" : "skip", tag: on ? "CHIẾT KHẤU" : "KHÔNG ÁP DỤNG", msg: on ? "Áp dụng chiết khấu cho Fargate." : "Không áp dụng cho Fargate." },
       { from: "plan", to: "lam", state: on ? "pass" : "skip", tag: on ? "CHIẾT KHẤU" : "KHÔNG ÁP DỤNG", msg: on ? "Áp dụng chiết khấu cho Lambda." : "Không áp dụng cho Lambda." },
     ], ok: on, result: on
-      ? "**Compute Savings Plan** áp dụng linh hoạt cho EC2 (mọi loại, mọi Region), Fargate và Lambda."
-      : "EC2 Instance Savings Plan chỉ áp dụng cho một instance family EC2 trong một Region. Để áp dụng chiết khấu cho cả Fargate và Lambda, sử dụng Compute Savings Plan." }),
+      ? "**Compute Savings Plan** áp dụng cho EC2 bất kể instance family, size, OS, tenancy hay Region, đồng thời áp dụng cho Fargate và Lambda."
+      : "EC2 Instance Savings Plan cam kết cho một instance family trong một Region (ví dụ m5 tại Virginia). Để áp dụng chiết khấu cho cả Fargate và Lambda, sử dụng Compute Savings Plan." }),
   },
   {
     name: "Instance vượt quá nhu cầu tải",
@@ -141,7 +141,7 @@ const SCENARIOS: HopScenario[] = [
       ? { hops: [
           { to: "big", state: "change", tag: "PHÂN TÍCH", msg: "Phát hiện instance nhàn rỗi, sử dụng rất ít tài nguyên." },
           { to: "small", state: "pass", tag: "ĐỀ XUẤT", msg: "Đề xuất instance type nhỏ hơn, kèm mức tiết kiệm ước tính." },
-        ], ok: true, result: "Compute Optimizer đề xuất instance type phù hợp; Cost Optimization Hub tập trung mọi cơ hội tiết kiệm chi phí tại một nơi." }
+        ], ok: true, result: "Compute Optimizer phân tích cấu hình và metric sử dụng để đề xuất rightsizing; Cost Optimization Hub tổng hợp các đề xuất tối ưu chi phí trên nhiều account và Region vào một dashboard." }
       : { hops: [
           { to: "big", state: "skip", tag: "KHÔNG GIÁM SÁT", msg: "Instance tiếp tục chạy với 95% tài nguyên bị lãng phí." },
         ], ok: false, result: "Không có số liệu đo lường thì không xác định được tài nguyên dư thừa. Giải pháp: kích hoạt Compute Optimizer và Cost Optimization Hub." },
