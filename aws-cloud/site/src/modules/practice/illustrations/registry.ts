@@ -2,8 +2,14 @@
 // bundle, so it stays tiny: each spec is its own chunk, fetched only after the question is answered.
 import type { QuestionId } from "../domain/types";
 import type { IllustrationSpec } from "./types";
+import { test1 } from "./tests/test1";
+import { test2 } from "./tests/test2";
+import { test3 } from "./tests/test3";
+import { test4 } from "./tests/test4";
+import { test5 } from "./tests/test5";
+import { test6 } from "./tests/test6";
 
-type Loader = () => Promise<{ default: IllustrationSpec }>;
+export type Loader = () => Promise<{ default: IllustrationSpec }>;
 
 export class IllustrationRegistry {
   private readonly cache = new Map<QuestionId, Promise<IllustrationSpec>>();
@@ -27,16 +33,6 @@ export class IllustrationRegistry {
   }
 }
 
-// Practice test 1 of SAA-C03 (pilot). Comments name the question number in that test.
-export const illustrations = new IllustrationRegistry({
-  "125222689": () => import("./specs/125222689"), // Q1: DAX + CloudFront
-  "125222657": () => import("./specs/125222657"), // Q2: ALB across AZs
-  "125222729": () => import("./specs/125222729"), // Q6: AWS WAF geo match
-  "125222761": () => import("./specs/125222761"), // Q13: SQS FIFO
-  "125222723": () => import("./specs/125222723"), // Q33: serverless sensor ingest
-  "125222687": () => import("./specs/125222687"), // Q39: PrivateLink to a partner's RDS
-  "125222757": () => import("./specs/125222757"), // Q48: ALB path-based routing
-  "125222715": () => import("./specs/125222715"), // Q59: Global Accelerator failover
-  "125222741": () => import("./specs/125222741"), // Q60: Kinesis Data Streams + Lambda
-  "125222673": () => import("./specs/125222673"), // Q63: Route 53 Resolver outbound endpoint
-});
+// One loader list per practice test of SAA-C03, so each test's illustrations live in their own file.
+// Comments in those files name the question number in that test.
+export const illustrations = new IllustrationRegistry({ ...test1, ...test2, ...test3, ...test4, ...test5, ...test6 });
