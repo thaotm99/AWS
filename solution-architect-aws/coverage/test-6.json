@@ -1824,8 +1824,8 @@
         {
           "keyword": "CloudFront origin protocol policy (HTTPS to origin)",
           "lesson": "cloudfront",
-          "status": "partial",
-          "where": "cloudfront.mdx#s3 (TLS at edge only)"
+          "status": "covered",
+          "where": "cloudfront.mdx#s6 / QuickCompare"
         }
       ]
     },

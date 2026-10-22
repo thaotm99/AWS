@@ -1,8 +1,8 @@
 ---
 title: "CloudFront + Global Accelerator"
-lede: "Bài học trình bày bốn nội dung: giới hạn truy cập origin S3 chỉ thông qua CloudFront, lựa chọn loại origin phù hợp, các cơ chế bảo vệ và đảm bảo tính sẵn sàng tại edge (WAF, geo restriction, signed URL/cookie, field-level encryption, origin failover), và tiêu chí lựa chọn giữa CloudFront, S3 Transfer Acceleration và AWS Global Accelerator."
-minutes: 20
-scenes: 4
+lede: "Bài học trình bày sáu nội dung: giới hạn truy cập origin S3 chỉ thông qua CloudFront, lựa chọn loại origin phù hợp, các cơ chế bảo vệ và đảm bảo tính sẵn sàng tại edge (WAF, geo restriction, signed URL/cookie, field-level encryption, origin failover), và tiêu chí lựa chọn giữa CloudFront, S3 Transfer Acceleration và AWS Global Accelerator, đường đi của request qua regional edge cache (bao gồm tải lên và API động), cùng phần phân biệt nhanh các thiết lập dễ nhầm."
+minutes: 30
+scenes: 6
 prerequisites: ["global-infra", "route53"]
 docs:
   - title: "Restricting access to an Amazon S3 origin (OAC)"
@@ -23,6 +23,36 @@ docs:
     url: "https://docs.aws.amazon.com/global-accelerator/latest/dg/about-listeners.html"
   - title: "What is AWS Global Accelerator?"
     url: "https://docs.aws.amazon.com/global-accelerator/latest/dg/what-is-global-accelerator.html"
+  - title: "How CloudFront works with regional edge caches"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/HowCloudFrontWorks.html"
+  - title: "Cache behavior settings (allowed HTTP methods)"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/DownloadDistValuesCacheBehavior.html"
+  - title: "Request and response behavior for Amazon S3 origins"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/RequestAndResponseBehaviorS3Origin.html"
+  - title: "Control origin requests with a policy"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/controlling-origin-requests.html"
+  - title: "Use managed cache policies"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html"
+  - title: "Use managed origin request policies"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-origin-request-policies.html"
+  - title: "Origin settings (origin protocol policy)"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/DownloadDistValuesOrigin.html"
+  - title: "Require HTTPS for communication between CloudFront and your Amazon S3 origin"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-https-cloudfront-to-s3-origin.html"
+  - title: "Website endpoints (Amazon S3)"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteEndpoints.html"
+  - title: "Customize at the edge with Lambda@Edge"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-at-the-edge.html"
+  - title: "Differences between CloudFront Functions and Lambda@Edge"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/edge-functions-choosing.html"
+  - title: "Distribution settings (price class)"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/DownloadDistValuesGeneral.html"
+  - title: "DistributionConfig: PriceClass (API Reference)"
+    url: "https://docs.aws.amazon.com/cloudfront/latest/APIReference/API_DistributionConfig.html"
+  - title: "AWS Global Accelerator FAQs (Global Accelerator and CloudFront)"
+    url: "https://aws.amazon.com/global-accelerator/faqs/"
+  - title: "Amazon CloudFront: content uploads via POST, PUT and other HTTP methods (AWS News Blog)"
+    url: "https://aws.amazon.com/blogs/aws/amazon-cloudfront-content-uploads-post-put-other-methods/"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -31,6 +61,8 @@ import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
 import EdgeCacheDemo from "../../components/scenes/EdgeCacheDemo.tsx";
 import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
 import EdgePipelineSim from "../../components/scenes/cloudfront/EdgePipelineSim.tsx";
+import TieredPathSim from "../../components/scenes/cloudfront/TieredPathSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
@@ -39,12 +71,14 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s2", label: "2 · Các loại origin" },
   { href: "#s3", label: "3 · Xử lý request tại edge" },
   { href: "#s4", label: "4 · CloudFront và Global Accelerator" },
+  { href: "#s5", label: "5 · Regional edge cache, tải lên và nội dung động" },
+  { href: "#s6", label: "6 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
 Nội dung tĩnh của ShopViet đã được phân phối qua **Amazon CloudFront** (xem bài Global Infrastructure). Hệ thống hiện mở rộng sang khoá học video trả phí, thanh toán bằng thẻ và người dùng tại nhiều quốc gia, dẫn tới ba yêu cầu: bucket S3 không được truy cập trực tiếp, nội dung trả phí chỉ được phục vụ cho người dùng có quyền, và dịch vụ phải duy trì khi origin chính gặp sự cố.
 </Story>
 
-<Scene id="s1" label="Phần 1/4" title="Giới hạn truy cập origin S3 thông qua CloudFront" questions={["exam6_q54", "exam3_q60", "exam5_q15"]}>
+<Scene id="s1" label="Phần 1/6" title="Giới hạn truy cập origin S3 thông qua CloudFront" questions={["exam6_q54", "exam3_q60", "exam5_q15"]}>
 
 Khi bucket được cấu hình public, client có thể truy cập trực tiếp S3 endpoint và bỏ qua toàn bộ lớp kiểm soát tại CloudFront (cache, AWS WAF, geo restriction). Các phương án cấu hình được so sánh dưới đây:
 
@@ -86,7 +120,7 @@ Khi bucket được cấu hình public, client có thể truy cập trực tiế
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/4" title="Các loại origin của CloudFront" questions={["exam1_q62", "exam6_q5", "exam3_q40", "exam2_q2", "exam3_q42", "exam3_q48", "exam1_q1"]}>
+<Scene id="s2" label="Phần 2/6" title="Các loại origin của CloudFront" questions={["exam1_q62", "exam6_q5", "exam3_q40", "exam2_q2", "exam3_q42", "exam3_q48", "exam1_q1"]}>
 
 Cơ chế cache tại edge: request đầu tiên (cache miss) được chuyển tới origin; các request tiếp theo trong thời gian TTL (cache hit) được phục vụ trực tiếp tại edge location.
 
@@ -113,7 +147,7 @@ Ngoài S3, CloudFront hỗ trợ custom origin bao gồm Application Load Balanc
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/4" title="Quy trình xử lý request tại edge location" questions={["exam6_q62", "exam1_q38", "exam4_q63", "exam5_q15", "exam5_q13", "exam5_q57"]}>
+<Scene id="s3" label="Phần 3/6" title="Quy trình xử lý request tại edge location" questions={["exam6_q62", "exam1_q38", "exam4_q63", "exam5_q15", "exam5_q13", "exam5_q57"]}>
 
 Trước khi chuyển request tới origin, CloudFront có thể áp dụng tại edge location các cơ chế sau: TLS termination với chứng chỉ ACM, đánh giá bởi AWS WAF, geo restriction, xác thực signed URL/cookie, field-level encryption và lựa chọn origin theo cache behavior. Mô phỏng sắp xếp các cơ chế này thành một chuỗi để minh hoạ. Chọn một tình huống, thay đổi cấu hình và gửi request để quan sát bước xử lý tương ứng.
 
@@ -123,7 +157,7 @@ Trước khi chuyển request tới origin, CloudFront có thể áp dụng tạ
 
 </Scene>
 
-<Scene id="s4" label="Phần 4/4" title="CloudFront, S3 Transfer Acceleration và AWS Global Accelerator" questions={["exam5_q21", "exam6_q58", "exam1_q59", "exam3_q8", "exam4_q58", "exam5_q55", "exam2_q22"]}>
+<Scene id="s4" label="Phần 4/6" title="CloudFront, S3 Transfer Acceleration và AWS Global Accelerator" questions={["exam5_q21", "exam6_q58", "exam1_q59", "exam3_q8", "exam4_q58", "exam5_q55", "exam2_q22"]}>
 
 Ba dịch vụ cùng sử dụng mạng edge của AWS nhưng phục vụ các mục đích khác nhau. Cơ chế failover của Global Accelerator đã được trình bày trong bài Global Infrastructure; phần này tổng hợp tiêu chí lựa chọn theo yêu cầu.
 
@@ -139,7 +173,58 @@ Ba dịch vụ cùng sử dụng mạng edge của AWS nhưng phục vụ các m
 
 </Scene>
 
-<Scene id="challenge" label="Bài tập" title="Phân loại đặc tính: CloudFront và Global Accelerator" questions={["exam6_q54", "exam5_q15", "exam6_q62", "exam3_q48"]}>
+<Scene id="s5" label="Phần 5/6" title="Regional edge cache, tải lên qua CloudFront và nội dung động" questions={["exam3_q8", "exam5_q15", "exam5_q21", "exam5_q30", "exam4_q53"]}>
+
+CloudFront lưu cache ở hai tầng. **POP** (edge location) phục vụ trực tiếp người dùng và giữ nội dung phổ biến. **Regional edge cache** nằm giữa các POP và origin, có dung lượng cache lớn hơn một POP, nên các object kém phổ biến dần (ảnh sản phẩm cũ, nội dung do người dùng tải lên, tin tức đột nhiên được quan tâm trở lại) vẫn được giữ gần người dùng sau khi POP đã loại chúng. Khi cả hai tầng đều không có object, phản hồi của origin được lưu tại cả regional edge cache và POP; các POP trong cùng khu vực dùng chung regional edge cache, nhờ đó giảm request lặp lại tới origin. Cả hai tầng đều thuộc CloudFront và chỉ phục vụ HTTP/HTTPS; ứng dụng dùng giao thức UDP sử dụng AWS Global Accelerator (phần 4).
+
+Không phải request nào cũng đi qua regional edge cache: request dùng PUT, POST, PATCH, OPTIONS, DELETE và request động (xác định tại thời điểm request) được POP chuyển thẳng tới origin; khi origin là S3 và regional edge cache tối ưu nằm cùng Region với bucket, POP cũng truy cập bucket trực tiếp. Ngoài ảnh sản phẩm, ShopViet có thêm hai luồng đi qua cùng distribution: khách hàng tải ảnh đánh giá lên bucket S3, và đối tác vận chuyển tra cứu trạng thái đơn hàng qua API. Chọn tình huống và cấu hình để quan sát đường đi của request:
+
+<TieredPathSim client:visible />
+
+**Tải lên qua CloudFront.** Khi cache behavior cho phép PUT và POST, dữ liệu đi vào edge location gần người dùng rồi được chuyển tới origin qua các kết nối persistent mà CloudFront duy trì với origin; CloudFront không cache phản hồi của các method này. Với các văn phòng ở xa cần tải lên và tải xuống tệp video dung lượng lớn từ một bucket tập trung, cả CloudFront (origin là REST endpoint của bucket, OAC được cấp `s3:PutObject`) và S3 Transfer Acceleration đều cải thiện tốc độ truyền mà không phải tách dữ liệu ra nhiều bucket. Origin là S3 website endpoint không dùng được cho luồng này vì website endpoint chỉ nhận GET và HEAD và không hỗ trợ OAC.
+
+**Nội dung động.** CloudFront tăng tốc cả nội dung cache được và nội dung động, nhưng với phản hồi không cache được thì mọi request đều tới origin. Trong đợt flash sale với lưu lượng dự kiến gấp 10 lần và nội dung thay đổi liên tục, năng lực xử lý phải đến từ **Auto Scaling group** phía sau ALB; CloudFront không bổ sung năng lực cho origin. Với API phục vụ đối tác toàn cầu, áp managed cache policy dành cho nội dung tĩnh (CachingOptimized) dẫn tới sai dữ liệu như mô phỏng cho thấy; khi cần IP tĩnh, giao thức TCP/UDP hoặc failover nhanh giữa các Region mà không thay đổi ứng dụng, AWS Global Accelerator là phương án phù hợp.
+
+<Takeaway>POP giữ nội dung phổ biến; regional edge cache giữ lâu hơn nội dung kém phổ biến. PUT, POST, PATCH, OPTIONS, DELETE và request động đi thẳng từ POP tới origin. Tải lên S3 qua CloudFront cần cache behavior cho phép PUT/POST và OAC được cấp `s3:PutObject` trong bucket policy; origin request policy chỉ quyết định thông tin gửi kèm, không cấp quyền. API trả dữ liệu theo từng request dùng CachingDisabled (hoặc cache policy có đủ thành phần cache key), và origin vẫn phải tự co giãn bằng Auto Scaling group.</Takeaway>
+
+</Scene>
+
+<Scene id="s6" label="Phần 6/6" title="Phân biệt nhanh các thiết lập dễ nhầm" questions={["exam4_q63", "exam5_q7", "exam5_q15", "exam6_q62", "exam4_q53", "exam5_q30"]}>
+
+Một số thiết lập của CloudFront có tên gần với yêu cầu thực tế nhưng giải quyết một vấn đề khác. Chọn từng mục để xem trường hợp sử dụng, lý do không phù hợp trong tình huống ShopViet tương ứng, và phương án nên chọn:
+
+<QuickCompare client:visible items={[
+  { name: "Price class",
+    use: "Giới hạn tập edge location phục vụ distribution theo mức giá tối đa chấp nhận được: `PriceClass_100`, `PriceClass_200` hoặc `PriceClass_All`. Mặc định CloudFront phục vụ từ edge location ở mọi khu vực. Với price class khác `PriceClass_All`, CloudFront phục vụ từ edge location có độ trễ thấp nhất trong price class; người dùng ở khu vực bị loại có thể gặp độ trễ cao hơn.",
+    notHere: "ShopViet cần phục vụ ảnh từ S3 và API từ ALB trên cùng một distribution, đồng thời có origin dự phòng. Price class chỉ liên quan tới chi phí và tập edge location, không định tuyến request tới origin.",
+    instead: "**Cache behavior** theo path pattern (`/images/*` tới S3, `/api/*` tới ALB) và **origin group** cho failover (phần 3)." },
+  { name: "Origin request policy",
+    use: "Chọn query string, header và cookie của viewer được đưa vào origin request mà không đưa vào cache key, ví dụ khi origin cần thông tin phục vụ phân tích. Giá trị nằm trong cache key được tự động gửi tới origin. AWS cung cấp các managed policy như `AllViewer`, `AllViewerExceptHostHeader`.",
+    notHere: "Khách hàng tải ảnh lên bucket qua CloudFront nhận lỗi Access Denied. Origin request policy không cấp quyền ghi vào bucket; S3 Object Ownership cũng không.",
+    instead: "Cache behavior cho phép PUT/POST, kết hợp **OAC** và bucket policy cấp `s3:PutObject` cho `cloudfront.amazonaws.com` (phần 5)." },
+  { name: "Origin protocol policy: HTTPS only",
+    use: "Mã hoá khi truyền giữa CloudFront và custom origin; các giá trị: HTTP only, HTTPS only, Match viewer. Với origin là REST endpoint của S3, giao thức theo viewer protocol policy; khi OAC luôn ký request, CloudFront luôn dùng HTTPS tới S3. S3 website endpoint chỉ hỗ trợ HTTP.",
+    notHere: "Khoá học video chỉ dành cho học viên đã mua. HTTPS tới origin bảo vệ dữ liệu trên đường truyền nhưng không xác định ai được xem nội dung.",
+    instead: "**Signed URL** cho từng tệp hoặc **signed cookie** cho nhiều tệp (phần 3)." },
+  { name: "Lambda@Edge",
+    use: "Chạy hàm Node.js hoặc Python (tạo tại us-east-1) tại AWS location gần người dùng để tuỳ biến request và response mà CloudFront phân phối; kích hoạt ở viewer request, viewer response, origin request, origin response; có truy cập mạng và request body. Logic nhẹ (chuẩn hoá cache key, sửa header, redirect, kiểm tra JWT) phù hợp với CloudFront Functions.",
+    notHere: "Ứng dụng web và MySQL cùng chạy trên một EC2 cần tính sẵn sàng cao và hiệu năng đọc tốt hơn. Lambda@Edge không nhân bản tầng ứng dụng hay database.",
+    instead: "ALB + Auto Scaling group trải trên nhiều AZ; Aurora MySQL với Aurora Replica ở AZ khác." },
+  { name: "CloudFront trước website động trong flash sale",
+    use: "Cache phần nội dung cache được tại edge và tăng tốc phân phối nội dung động.",
+    notHere: "Lưu lượng dự kiến gấp 10 lần, nội dung thay đổi liên tục: phần lớn request không cache được và vẫn tới origin, nên CloudFront không giải quyết năng lực xử lý.",
+    instead: "**Auto Scaling group** cho tầng EC2 phía sau ALB." },
+  { name: "CachingOptimized cho API thời gian thực",
+    use: "Managed cache policy cho nội dung tĩnh: không đưa query string, cookie vào cache key; default TTL 24 giờ, minimum TTL 1 giây.",
+    notHere: "API theo dõi đơn hàng tại us-west-2 trả dữ liệu riêng cho từng request; cache theo key không có query string trả nhầm dữ liệu giữa các khách hàng.",
+    instead: "Cải thiện hiệu năng cho người dùng ở xa mà không di chuyển ứng dụng: **AWS Global Accelerator** với listener TCP 443, endpoint là EC2/ALB hiện có. Nếu dùng CloudFront: CachingDisabled kèm origin request policy phù hợp." },
+]} />
+
+<Takeaway>Price class quyết định chi phí và tập edge location, không định tuyến origin. Origin request policy quyết định thông tin gửi tới origin, không cấp quyền. HTTPS tới origin bảo vệ đường truyền, không giới hạn người xem. Lambda@Edge tuỳ biến request/response tại edge, không tạo tính sẵn sàng cao cho ứng dụng và database.</Takeaway>
+
+</Scene>
+
+<Scene id="challenge" label="Bài tập" title="Phân loại đặc tính: CloudFront và Global Accelerator" questions={["exam6_q54", "exam5_q15", "exam6_q62", "exam3_q48", "exam4_q63"]}>
 
 Phân loại từng đặc tính vào dịch vụ tương ứng. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
@@ -173,6 +258,18 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Phân phối qua CloudFront", "Chuyển sang S3 Glacier", "Bật S3 Transfer Acceleration"],
     a: 0,
     why: "Data transfer từ origin AWS như S3 tới CloudFront không tính phí và CloudFront phục vụ từ cache gần người dùng. S3 Transfer Acceleration tăng tốc truyền dữ liệu nhưng không cache và có thể phát sinh phí data transfer bổ sung." },
+  { q: "ShopViet muốn giảm chi phí phân phối của CloudFront và chấp nhận độ trễ cao hơn cho người dùng ở một số khu vực. Thiết lập nào đáp ứng yêu cầu?",
+    opts: ["Chọn price class khác PriceClass_All", "Tạo origin group", "Bật geo restriction"],
+    a: 0,
+    why: "Price class giới hạn tập edge location theo mức giá; người dùng ở khu vực bị loại vẫn được phục vụ nhưng từ edge location xa hơn. Geo restriction chặn người dùng theo quốc gia; origin group dùng cho failover." },
+  { q: "Cache behavior của đường dẫn tải lên đã cho phép PUT, OAC đã gắn với origin S3, nhưng khách hàng vẫn nhận Access Denied. Cần thay đổi gì?",
+    opts: ["Gắn origin request policy AllViewer", "Cấp s3:PutObject cho cloudfront.amazonaws.com trong bucket policy, giới hạn theo ARN của distribution", "Đổi origin sang S3 website endpoint"],
+    a: 1,
+    why: "Quyền ghi đến từ bucket policy cấp cho service principal của CloudFront mà OAC sử dụng. Origin request policy chỉ quyết định thông tin gửi kèm; website endpoint chỉ nhận GET và HEAD." },
+  { q: "Video khoá học chỉ dành cho học viên đã mua. Đề xuất nào giới hạn được người xem?",
+    opts: ["Origin protocol policy HTTPS only", "Signed URL hoặc signed cookie", "Viewer protocol policy Redirect HTTP to HTTPS"],
+    a: 1,
+    why: "HTTPS (giữa viewer và CloudFront hoặc giữa CloudFront và origin) chỉ mã hoá khi truyền; signed URL/cookie mới xác định người dùng có quyền truy cập." },
 ]} />
 
 </Scene>

@@ -1684,8 +1684,8 @@
         {
           "keyword": "CloudFront (dynamic content)",
           "lesson": "cloudfront",
-          "status": "partial",
-          "where": "cloudfront.mdx#s2"
+          "status": "covered",
+          "where": "cloudfront.mdx#s5 / TieredPathSim; cloudfront.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "Route 53 multivalue answer routing",
@@ -1997,8 +1997,8 @@
         {
           "keyword": "CloudFront price class",
           "lesson": "cloudfront",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "cloudfront.mdx#s6 / QuickCompare"
         }
       ]
     },

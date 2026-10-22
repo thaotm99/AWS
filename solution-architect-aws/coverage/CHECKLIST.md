@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 902 (94%) · 🟡 27 (3%) · ❌ 31 (3%).
+Có **960 keyword** khác nhau: ✅ 911 (95%) · 🟡 22 (2%) · ❌ 27 (3%).
 
 ### Theo bài học
 
@@ -23,7 +23,7 @@ Có **960 keyword** khác nhau: ✅ 902 (94%) · 🟡 27 (3%) · ❌ 31 (3%).
 | [global-infra](#global-infra) | 22 | 20 | 2 | 0 | 91% |
 | [vpc](#vpc) | 107 | 107 | 0 | 0 | 100% |
 | [route53](#route53) | 28 | 24 | 2 | 2 | 86% |
-| [cloudfront](#cloudfront) | 31 | 22 | 5 | 4 | 71% |
+| [cloudfront](#cloudfront) | 31 | 31 | 0 | 0 | 100% |
 | [iam](#iam) | 49 | 49 | 0 | 0 | 100% |
 | [kms](#kms) | 21 | 21 | 0 | 0 | 100% |
 | [security](#security) | 27 | 25 | 1 | 1 | 93% |
@@ -52,10 +52,10 @@ Có **960 keyword** khác nhau: ✅ 902 (94%) · 🟡 27 (3%) · ❌ 31 (3%).
 |---|---:|---:|---:|
 | Đề 1 | 215 | 4 | 5 |
 | Đề 2 | 189 | 2 | 7 |
-| Đề 3 | 212 | 5 | 5 |
-| Đề 4 | 226 | 5 | 5 |
-| Đề 5 | 205 | 10 | 6 |
-| Đề 6 | 205 | 1 | 4 |
+| Đề 3 | 213 | 5 | 4 |
+| Đề 4 | 228 | 4 | 4 |
+| Đề 5 | 210 | 7 | 4 |
+| Đề 6 | 206 | 0 | 4 |
 
 ## global-infra
 
@@ -233,19 +233,11 @@ Có **960 keyword** khác nhau: ✅ 902 (94%) · 🟡 27 (3%) · ❌ 31 (3%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | CloudFront origin request policy | ❌ Thiếu | 1 | exam5_q15 |  |
-| [ ] | CloudFront price class | ❌ Thiếu | 1 | exam4_q63 |  |
-| [ ] | CloudFront regional edge cache | ❌ Thiếu | 1 | exam3_q8 |  |
-| [ ] | Lambda@Edge | ❌ Thiếu | 1 | exam5_q7 |  |
-| [ ] | CloudFront (dynamic content) | 🟡 Một phần | 1 | exam4_q53 | cloudfront.mdx#s2 |
-| [ ] | CloudFront for uncacheable dynamic API responses | 🟡 Một phần | 1 | exam5_q30 | global-infra.mdx#s5 / EdgeChoiceSim; cloudfront.mdx#s2 |
-| [ ] | CloudFront for uploads (PUT/POST to S3 origin) | 🟡 Một phần | 1 | exam5_q21 | global-infra.mdx#confuse; s3.mdx#s5 |
-| [ ] | CloudFront origin access control (OAC) for uploads (write) | 🟡 Một phần | 1 | exam5_q15 | cloudfront.mdx#s1 |
-| [ ] | CloudFront origin protocol policy (HTTPS to origin) | 🟡 Một phần | 1 | exam6_q62 | cloudfront.mdx#s3 (TLS at edge only) |
 | [ ] | CloudFront geo restriction | ✅ Đã có | 3 | exam1_q6, exam1_q38, exam4_q63 | cloudfront.mdx#s3 |
 | [ ] | CloudFront origin access identity (OAI) / OAC | ✅ Đã có | 2 | exam6_q54, exam6_q65 | cloudfront.mdx#s1 |
 | [ ] | CloudFront signed URL | ✅ Đã có | 2 | exam5_q15, exam6_q62 | cloudfront.mdx#s3 / EdgePipelineSim |
 | [ ] | ACM certificate in us-east-1 for CloudFront | ✅ Đã có | 1 | exam5_q15 | cloudfront.mdx#s3 / EdgePipelineSim |
+| [ ] | CloudFront (dynamic content) | ✅ Đã có | 1 | exam4_q53 | cloudfront.mdx#s5 / TieredPathSim; cloudfront.mdx#s6 / QuickCompare |
 | [ ] | CloudFront (HTTP only, no TCP/UDP) | ✅ Đã có | 1 | exam2_q7 | cloudfront.mdx#s4 / RequirementPicker |
 | [ ] | CloudFront (HTTP/HTTPS only) | ✅ Đã có | 1 | exam3_q8 | global-infra.mdx#s5 / EdgeChoiceSim |
 | [ ] | CloudFront cache behavior (multiple origins) | ✅ Đã có | 1 | exam4_q63 | cloudfront.mdx#s3; cloudfront.mdx#s2 |
@@ -253,14 +245,22 @@ Có **960 keyword** khác nhau: ✅ 902 (94%) · 🟡 27 (3%) · ❌ 31 (3%).
 | [ ] | CloudFront custom origin (EC2, on-premises) | ✅ Đã có | 1 | exam2_q2 | cloudfront.mdx#s2 / RequirementPicker |
 | [ ] | CloudFront custom origin (on-premises server) | ✅ Đã có | 1 | exam1_q62 | cloudfront.mdx#s2 / global-infra.mdx#s4 |
 | [ ] | CloudFront field-level encryption | ✅ Đã có | 1 | exam4_q63 | cloudfront.mdx#s3 / EdgePipelineSim |
+| [ ] | CloudFront for uncacheable dynamic API responses | ✅ Đã có | 1 | exam5_q30 | cloudfront.mdx#s5 / TieredPathSim; cloudfront.mdx#s6 / QuickCompare |
+| [ ] | CloudFront for uploads (PUT/POST to S3 origin) | ✅ Đã có | 1 | exam5_q21 | cloudfront.mdx#s5 / TieredPathSim |
 | [ ] | CloudFront in front of ALB (dynamic origin) | ✅ Đã có | 1 | exam6_q5 | cloudfront.mdx#s2 |
+| [ ] | CloudFront origin access control (OAC) for uploads (write) | ✅ Đã có | 1 | exam5_q15 | cloudfront.mdx#s5 / TieredPathSim |
 | [ ] | CloudFront origin access identity / origin access control (OAI/OAC) | ✅ Đã có | 1 | exam3_q60 | cloudfront.mdx#s1 / ScenarioFlow |
 | [ ] | CloudFront origin group (origin failover) | ✅ Đã có | 1 | exam4_q63 | cloudfront.mdx#s3 / EdgePipelineSim |
+| [ ] | CloudFront origin protocol policy (HTTPS to origin) | ✅ Đã có | 1 | exam6_q62 | cloudfront.mdx#s6 / QuickCompare |
+| [ ] | CloudFront origin request policy | ✅ Đã có | 1 | exam5_q15 | cloudfront.mdx#s5 / TieredPathSim; cloudfront.mdx#s6 / QuickCompare |
+| [ ] | CloudFront price class | ✅ Đã có | 1 | exam4_q63 | cloudfront.mdx#s6 / QuickCompare |
 | [ ] | CloudFront reduces S3 data transfer out cost | ✅ Đã có | 1 | exam3_q48 | cloudfront.mdx#s2 / RequirementPicker |
+| [ ] | CloudFront regional edge cache | ✅ Đã có | 1 | exam3_q8 | cloudfront.mdx#s5 / TieredPathSim |
 | [ ] | CloudFront S3 origin | ✅ Đã có | 1 | exam2_q2 | cloudfront.mdx#s2 / RequirementPicker |
 | [ ] | CloudFront signed cookie | ✅ Đã có | 1 | exam6_q62 | cloudfront.mdx#s3 / EdgePipelineSim; cloudfront.mdx#challenge |
 | [ ] | CloudFront with S3 origin | ✅ Đã có | 1 | exam6_q58 | cloudfront.mdx#s1; global-infra.mdx#s4 |
 | [ ] | CloudFront with S3 origin for static assets | ✅ Đã có | 1 | exam3_q42 | cloudfront.mdx#s2 / EdgeCacheDemo |
+| [ ] | Lambda@Edge | ✅ Đã có | 1 | exam5_q7 | cloudfront.mdx#s6 / QuickCompare |
 | [ ] | S3 not for dynamic content | ✅ Đã có | 1 | exam3_q40 | cloudfront.mdx#s2 |
 | [ ] | Security groups and NACLs cannot attach to CloudFront | ✅ Đã có | 1 | exam3_q60 | cloudfront.mdx#s1 / ScenarioFlow |
 | [ ] | Serverless web app (S3 static + Lambda + DynamoDB + CloudFront) | ✅ Đã có | 1 | exam3_q40 | cloudfront.mdx#s2 / RequirementPicker |

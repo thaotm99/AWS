@@ -259,8 +259,8 @@
         {
           "keyword": "CloudFront regional edge cache",
           "lesson": "cloudfront",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "cloudfront.mdx#s5 / TieredPathSim"
         }
       ]
     },

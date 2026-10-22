@@ -240,8 +240,8 @@
         {
           "keyword": "Lambda@Edge",
           "lesson": "cloudfront",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "cloudfront.mdx#s6 / QuickCompare"
         }
       ]
     },
@@ -496,8 +496,8 @@
         {
           "keyword": "CloudFront origin access control (OAC) for uploads (write)",
           "lesson": "cloudfront",
-          "status": "partial",
-          "where": "cloudfront.mdx#s1"
+          "status": "covered",
+          "where": "cloudfront.mdx#s5 / TieredPathSim"
         },
         {
           "keyword": "S3 static website endpoint (GET/HEAD only)",
@@ -514,8 +514,8 @@
         {
           "keyword": "CloudFront origin request policy",
           "lesson": "cloudfront",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "cloudfront.mdx#s5 / TieredPathSim; cloudfront.mdx#s6 / QuickCompare"
         }
       ]
     },
@@ -691,8 +691,8 @@
         {
           "keyword": "CloudFront for uploads (PUT/POST to S3 origin)",
           "lesson": "cloudfront",
-          "status": "partial",
-          "where": "global-infra.mdx#confuse; s3.mdx#s5"
+          "status": "covered",
+          "where": "cloudfront.mdx#s5 / TieredPathSim"
         },
         {
           "keyword": "Amazon EFS (not serverless storage for remote offices)",
@@ -935,8 +935,8 @@
         {
           "keyword": "CloudFront for uncacheable dynamic API responses",
           "lesson": "cloudfront",
-          "status": "partial",
-          "where": "global-infra.mdx#s5 / EdgeChoiceSim; cloudfront.mdx#s2"
+          "status": "covered",
+          "where": "cloudfront.mdx#s5 / TieredPathSim; cloudfront.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "Route 53 latency-based routing",
