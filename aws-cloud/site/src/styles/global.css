@@ -422,6 +422,12 @@ a.concept[aria-current="page"] { color: var(--accent); }
 [data-lang="en"] { display: none; }
 :root[lang="en"] [data-lang="vi"] { display: none; }
 :root[lang="en"] [data-lang="en"] { display: revert; }
+/* Simulations are client:visible islands whose server HTML is the default language (Vietnamese).
+   In English, keep each one invisible until it hydrates: Astro removes [ssr] once the component
+   has rendered on the client. visibility keeps the layout box, so nothing moves when it appears.
+   Only client:visible islands in the content; client:load islands hydrate at once, and a component
+   without a client directive is plain HTML (no island). The VI page is never affected. */
+:root[lang="en"] main astro-island[ssr][client="visible"] { visibility: hidden; }
 .untranslated { font-size: var(--step--1); color: var(--muted); border-left: 3px solid var(--edge); padding: 6px 12px; background: var(--edge-soft); border-radius: 0 8px 8px 0; }
 
 /* Full-screen diagrams (modules/shell/ui/DiagramZoom.ts) */
@@ -449,12 +455,22 @@ html.zoom-open { overflow: hidden; }
 .zoom-close { position: fixed; z-index: 61; top: 12px; right: 12px; width: 34px; height: 34px; display: grid; place-items: center; padding: 0;
   border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 50%; cursor: pointer; box-shadow: var(--shadow); }
 .zoom-close:hover { border-color: var(--accent); color: var(--accent); }
-/* Phone held upright and no orientation lock: turn the view a quarter turn so it reads landscape. */
-html.zoom-rotate .zoomed { inset: auto; top: 0; left: 100vw; width: 100vh; height: 100vw; transform: rotate(90deg); transform-origin: top left;
-  padding: 16px 64px 16px 16px; }
+/* Clear the notch and status bar (phone in landscape, or a full-screen view under the status bar). */
+.zoom-close { top: calc(12px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px)); }
+.zoomed { padding-top: calc(56px + env(safe-area-inset-top, 0px)); padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
+/* Phone held upright and no orientation lock: turn the view a quarter turn so it reads landscape.
+   Sized by the dynamic viewport (iOS Safari's 100vh includes the area under its toolbars), with a
+   100vh fallback. After the turn the box's left edge (its leading edge) lies under the status bar
+   and its right edge over the home indicator, so the safe areas pad the rotated sides:
+   box left = screen top, box top = screen right, box right = screen bottom, box bottom = screen left. */
+html.zoom-rotate .zoomed { inset: auto; top: 0; left: 100vw; left: 100dvw; width: 100vh; width: 100dvh; height: 100vw; height: 100dvw;
+  transform: rotate(90deg); transform-origin: top left;
+  padding: calc(16px + env(safe-area-inset-right, 0px)) calc(64px + env(safe-area-inset-bottom, 0px))
+    calc(16px + env(safe-area-inset-left, 0px)) calc(16px + env(safe-area-inset-top, 0px)); }
 html.zoom-rotate .zoomed .stage-bar, html.zoom-rotate .zoomed .pr-illus-head { padding-block: 4px; gap: 4px 6px; }
 html.zoom-rotate .zoomed .btn, html.zoom-rotate .zoomed .chip, html.zoom-rotate .zoomed .pr-illus-tab { padding: 3px 9px; font-size: 0.75rem; }
-html.zoom-rotate .zoom-close { top: auto; right: 8px; bottom: 12px; transform: rotate(90deg); transform-origin: center; }
+html.zoom-rotate .zoom-close { top: auto; right: calc(8px + env(safe-area-inset-right, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  transform: rotate(90deg); transform-origin: center; }
 
 /* Home */
 .hero { padding: 18px 0 8px; }

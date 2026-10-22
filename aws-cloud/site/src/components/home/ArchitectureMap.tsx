@@ -115,6 +115,7 @@ export default function ArchitectureMap({ titles, titlesEn }: { titles: Record<s
   const [auto, setAuto] = useState(true);
   const autoRef = useRef(auto);
   autoRef.current = auto;
+  const started = useRef(false);
   /** Bumped to replay the same flow when it is picked again. */
   const [replay, setReplay] = useState(0);
   const [lit, setLit] = useState<string[]>([]);
@@ -128,6 +129,18 @@ export default function ArchitectureMap({ titles, titlesEn }: { titles: Record<s
     const pause = (ms: number) => new Promise<boolean>((r) => setTimeout(() => r(alive()), prefersReducedMotion() ? Math.min(ms, 1600) : ms));
     const f = FLOWS[flow];
     layer.current?.replaceChildren();
+    // Reduced motion: start paused on the first step of the first flow; nothing moves until a flow is picked or Play is pressed.
+    if (!started.current) {
+      started.current = true;
+      if (prefersReducedMotion()) {
+        autoRef.current = false;
+        setAuto(false);
+        setDr(Boolean(f.dr));
+        setCaption({ step: `1/${f.steps.length}`, text: f.steps[0].text, node: f.steps[0].on[0] });
+        setLit(f.steps[0].on);
+        return () => { token.current++; };
+      }
+    }
     (async () => {
       setDr(Boolean(f.dr));
       setLit([]);
@@ -213,7 +226,8 @@ export default function ArchitectureMap({ titles, titlesEn }: { titles: Record<s
         <span className="cat-int"><i />{t("shell.home.map.int")}</span>
         <span className="cat-sec"><i />{t("shell.home.map.sec")}</span>
       </div>
-      <div className="amap-caption" aria-live="polite">
+      {/* Announce only a flow the reader picked; the auto tour changes the caption every second or two. */}
+      <div className="amap-caption" aria-live={auto ? "off" : "polite"}>
         <span className="amap-step">{caption.step}</span>
         <span>{caption.text ? L(caption.text) : ""}</span>
         <a href={lessonUrl(caption.node)}>{t("shell.home.map.lesson", { title: titleOf(N[caption.node].lesson) })}</a>

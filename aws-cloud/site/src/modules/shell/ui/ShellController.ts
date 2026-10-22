@@ -49,18 +49,28 @@ export class ShellController<M> {
     const drawer = document.getElementById("drawer");
     if (!btn || !drawer) return;
     const html = document.documentElement;
+    // While the drawer is open the page behind it is inert, so Tab stays in the drawer and on ☰.
+    let inerted: HTMLElement[] = [];
+    const behind = () =>
+      [...document.querySelectorAll<HTMLElement>("main, .toc-col, footer, .topbar-inner > *, .topbar > .read-bar")].filter(
+        (el) => el !== btn && !el.inert,
+      );
     const set = (open: boolean) => {
       html.classList.toggle("drawer-open", open);
       btn.setAttribute("aria-expanded", String(open));
       const key = open ? "shell.nav.closeMenu" : "shell.nav.openMenu";
       btn.setAttribute("data-i18n-attr", `aria-label:${key}`);
       btn.setAttribute("aria-label", this.i18n.translator().lookup(key));
+      for (const el of inerted) el.inert = false;
+      inerted = open ? behind() : [];
+      for (const el of inerted) el.inert = true;
       if (open) drawer.querySelector<HTMLElement>("a[href]")?.focus();
     };
     btn.addEventListener("click", () => set(!html.classList.contains("drawer-open")));
     document.getElementById("scrim")?.addEventListener("click", () => set(false));
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && html.classList.contains("drawer-open")) {
+      // An open zoom view sits above the drawer and closes first (DiagramZoom takes that Esc).
+      if (e.key === "Escape" && !e.defaultPrevented && !html.classList.contains("zoom-open") && html.classList.contains("drawer-open")) {
         set(false);
         btn.focus();
       }

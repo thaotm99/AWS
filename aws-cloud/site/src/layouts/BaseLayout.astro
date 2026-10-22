@@ -105,7 +105,7 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
       </main>
       {toc && <aside class="toc-col"><slot name="toc" /></aside>}
     </div>
-    <div class="toast" id="toast" hidden></div>
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
     <script>
       import { i18n } from "../app/i18n";
