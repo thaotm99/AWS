@@ -46,6 +46,8 @@ Hệ thống ShopViet có hai nhóm danh tính cần xác thực: **khách hàng
 
 <Scene id="s1" label="Phần 1/3" title="Xác thực khách hàng: Cognito user pool và identity pool" questions={["exam2_q17", "exam6_q50"]}>
 
+<p class="scene-intro">Ứng dụng cần biết khách hàng là ai trước khi cho họ xem đơn hàng hay tải ảnh lên; việc đăng ký, đăng nhập và cấp quyền tạm thời có thể giao cho một dịch vụ managed thay vì tự xây dựng.</p>
+
 **User pool** là thư mục người dùng: cung cấp chức năng đăng ký, đăng nhập và trả về token (JWT). **Identity pool** đổi danh tính đã xác thực thành **temporary AWS credentials** để gọi trực tiếp các dịch vụ AWS như S3. ShopViet có cả hai yêu cầu này. Chọn tình huống và so sánh hai phương án:
 
 <ScenarioFlow client:visible height={230} scenarios={[
@@ -88,6 +90,8 @@ Hệ thống ShopViet có hai nhóm danh tính cần xác thực: **khách hàng
 
 <Scene id="s2" label="Phần 2/3" title="Xác thực nhân viên, Active Directory và đối tác" questions={["exam6_q10", "exam4_q4", "exam1_q10", "exam3_q28", "exam6_q44", "exam3_q5", "exam2_q4"]}>
 
+<p class="scene-intro">Nhân viên và đối tác đã có tài khoản trong hệ thống của công ty; mục tiêu là dùng lại các tài khoản đó thay vì tạo thêm một bộ tài khoản mới trên AWS.</p>
+
 Cognito phục vụ khách hàng của ứng dụng. Nhân viên và đối tác có các yêu cầu khác: single sign-on vào nhiều AWS account, tái sử dụng tài khoản Active Directory on-premises, truy cập file share và truyền tệp qua SFTP. Chọn từng tình huống, thay đổi cấu hình, sau đó nhấn Đăng nhập.
 
 <StaffSignInSim client:visible />
@@ -97,6 +101,8 @@ Cognito phục vụ khách hàng của ứng dụng. Nhân viên và đối tác
 </Scene>
 
 <Scene id="s3" label="Phần 3/3" title="Phân biệt nhanh: các lựa chọn thư mục dễ nhầm" questions={["exam3_q28"]}>
+
+<p class="scene-intro">Nhiều dịch vụ thư mục người dùng có tên gần giống nhau; mỗi dịch vụ phục vụ một nhóm người dùng và một kiểu tích hợp khác nhau.</p>
 
 Ứng dụng kế toán ShopViet chạy SQL Server trên AWS, cần một domain Active Directory trên AWS và **trust** với AD on-premises để nhân viên single sign-on vào tài nguyên ở cả hai domain. Phương án phù hợp là AWS Managed Microsoft AD (Phần 2). Các lựa chọn dưới đây cũng có chữ "directory" hoặc "AD" nhưng không đáp ứng yêu cầu này. Chọn từng mục để xem phạm vi sử dụng.
 

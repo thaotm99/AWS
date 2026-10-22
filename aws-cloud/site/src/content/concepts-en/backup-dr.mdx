@@ -79,6 +79,8 @@ The smaller the RPO and RTO, the higher the cost. This lesson shows how to choos
 
 <Scene id="en-s1" label="Part 1/5" title="Four strategies for preparing for a Region-level failure" questions={["exam4_q41", "exam4_q5"]}>
 
+<p class="scene-intro">Losing a whole Region is rare but costly; how much is prepared in advance decides both the recovery time and the running cost.</p>
+
 ShopViet chooses Tokyo as its standby Region. The question is which components are kept in Tokyo under normal conditions. The more components are running, the shorter the recovery time and the higher the cost. There are four levels:
 
 1. **Backup & restore**: only backups are kept. When a failure happens, the system is rebuilt from scratch.
@@ -98,6 +100,8 @@ An AMI can be used only in the Region that contains it. To launch quickly in Tok
 
 <Scene id="en-s2" label="Part 2/5" title="Keeping databases and caches running through a failure" questions={["exam2_q61", "exam6_q23", "exam5_q42", "exam4_q32"]}>
 
+<p class="scene-intro">Servers can be rebuilt in minutes, but lost data cannot be recovered; each kind of data needs its own protection.</p>
+
 Web servers can be rebuilt in minutes, but data cannot: lost orders cannot be recovered. ShopViet has three data components, each needing its own protection mechanism:
 
 - **Aurora** stores orders: target RPO ≤ 5 minutes, RTO ≤ 15 minutes when the entire Region fails, and the operations team does not want to develop its own scripts.
@@ -113,6 +117,8 @@ Web servers can be rebuilt in minutes, but data cannot: lost orders cannot be re
 </Scene>
 
 <Scene id="en-s3" label="Part 3/5" title="AWS Backup for a shared file system" questions={["exam5_q47", "exam5_q64", "exam5_q16"]}>
+
+<p class="scene-intro">Backups must run automatically, on a schedule, and be kept as long as required; managing them centrally ensures no resource is missed.</p>
 
 ShopViet's services run on ECS with Fargate and all read and write seller images and invoices on a shared file system. ShopViet chooses **Amazon EFS**: a POSIX (NFS) file system that spans multiple AZs and that Fargate tasks can mount directly. Compliance requirements: automatic backups, a copy in another Region, and at most 8 hours of data loss.
 
@@ -130,6 +136,8 @@ AWS Backup serves data protection and compliance; it is not a tool for cloning d
 
 <Scene id="en-s4" label="Part 4/5" title="Automatically recovering a single EC2 instance" questions={["exam3_q38"]}>
 
+<p class="scene-intro">Not every system needs a complex recovery strategy; for a single server, simple automatic recovery is usually enough.</p>
+
 ShopViet's internal admin page runs on a single EC2 instance. It has few users and needs neither an Auto Scaling group nor a DR strategy. Requirement: when the instance fails, the system comes back by itself within about 10 minutes, at low cost and with no manual intervention outside working hours.
 
 EC2 has two kinds of status checks. The **system status check** reflects problems with the AWS infrastructure the instance runs on (loss of network connectivity, loss of power, hardware or software failure on the host). The **instance status check** reflects problems inside the instance (the operating system hangs, memory is exhausted). A **CloudWatch alarm** that watches a status check can perform an action: recover, reboot, stop or terminate.
@@ -141,6 +149,8 @@ EC2 has two kinds of status checks. The **system status check** reflects problem
 </Scene>
 
 <Scene id="en-s5" label="Part 5/5" title="Quick comparison: DR, migration and data cloning tools" questions={["exam6_q48", "exam5_q64"]}>
+
+<p class="scene-intro">Several services copy data in similar ways but for different purposes: disaster recovery, migration or data replication.</p>
 
 Some services share a mechanism (continuous replication, restoring from a copy) but serve different purposes. Choose each service to see when to use it, why it does not fit the matching ShopViet situation, and what to choose instead:
 

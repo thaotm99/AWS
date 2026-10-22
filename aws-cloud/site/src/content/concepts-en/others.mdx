@@ -100,6 +100,8 @@ ShopViet now has many AWS accounts and many engineering teams, and its monthly c
 
 <Scene id="en-s1" label="Part 1/5" title="Controlling AWS costs" questions={["exam6_q22", "exam6_q1", "exam4_q30"]}>
 
+<p class="scene-intro">AWS costs grow with usage, so they need regular tracking; each cost tool answers a different question.</p>
+
 Each cost management tool answers a different question:
 
 - **Cost Explorer**: where are the costs coming from? Shows charts and filters by service and by account.
@@ -117,6 +119,8 @@ Choose a ShopViet problem, choose a tool, then run the simulation for one month:
 
 <Scene id="en-s2" label="Part 2/5" title="Choosing the type of long-term usage commitment" questions={["exam6_q38"]}>
 
+<p class="scene-intro">Once usage is stable, committing to one or three years cuts costs substantially compared with paying by the hour.</p>
+
 After the launch, ShopViet's load has stabilized. Committing to a fixed amount of spend per hour for 1 or 3 years in exchange for prices lower than on-demand: that is **Savings Plans**. AWS currently offers four types:
 
 - **Compute Savings Plans**: the most flexible, up to 66% off on-demand. Apply to EC2 (any instance family, size, OS, tenancy, Region), Fargate and Lambda.
@@ -133,6 +137,8 @@ ShopViet's requirement: every workload gets a discount, with the fewest plans po
 </Scene>
 
 <Scene id="en-s3" label="Part 3/5" title="Processing text and speech without an ML team" questions={["exam1_q4", "exam2_q26", "exam5_q32", "exam5_q58"]}>
+
+<p class="scene-intro">Many tasks such as speech recognition, translation or text analysis need no home-built machine learning model; AWS offers ready services called through an API.</p>
 
 AWS provides pre-trained AI services that you use through API calls, with no machine learning knowledge required:
 
@@ -154,6 +160,8 @@ Each scenario below is a ShopViet processing pipeline; the text sent to Comprehe
 </Scene>
 
 <Scene id="en-s4" label="Part 4/5" title="Batch processing and AWS services in the company's data center" questions={["exam6_q55", "exam1_q27"]}>
+
+<p class="scene-intro">Some needs do not fit the services covered so far, such as very long processing jobs or systems that must stay in the company's data center; AWS has a service for each case.</p>
 
 ShopViet's last two requirements do not fit the services covered so far. The content team needs to process tens of thousands of images every night (resizing, watermarking), and each job runs longer than the Lambda limit. At the same time, ShopViet has just acquired an e-wallet company: regulations require its data and applications to stay in that company's data center, but the engineering team needs to use EKS, CloudWatch and IAM consistently with the rest of ShopViet.
 
@@ -205,6 +213,8 @@ ShopViet's last two requirements do not fit the services covered so far. The con
 </Scene>
 
 <Scene id="en-s5" label="Part 5/5" title="Quick comparison: services that are easy to pick by mistake" questions={["exam1_q4", "exam2_q26", "exam5_q32", "exam4_q33", "exam1_q11", "exam2_q4", "exam2_q40", "exam2_q47"]}>
+
+<p class="scene-intro">Many services have names or scopes close to a requirement yet solve a different problem; telling them apart avoids picking the wrong one.</p>
 
 When designing ShopViet's processing pipelines, some services have a name or scope close to the requirement but solve a different problem. Pick each service to see what it is for, why it does not fit ShopViet's situation, and what fits instead.
 

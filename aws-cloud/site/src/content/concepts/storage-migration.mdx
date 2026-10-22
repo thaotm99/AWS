@@ -75,6 +75,8 @@ Kho hàng của ShopViet vẫn vận hành hệ thống cũ tại văn phòng, b
 
 <Scene id="s1" label="Phần 1/4" title="Storage Gateway: ứng dụng on-premises sử dụng lưu trữ AWS" questions={["exam1_q35", "exam5_q28", "exam3_q31", "exam4_q37", "exam2_q59", "exam4_q36", "exam3_q56"]}>
 
+<p class="scene-intro">Không phải hệ thống nào cũng chuyển ngay lên cloud được; một thiết bị trung gian có thể cho ứng dụng tại văn phòng dùng lưu trữ trên AWS mà không phải thay đổi cách hoạt động.</p>
+
 Storage Gateway là một máy ảo triển khai tại kho. Đối với ứng dụng hiện có, gateway được trình bày dưới dạng ổ đĩa, file share hoặc thư viện băng từ, trong khi dữ liệu thực tế được lưu trên AWS. Chọn từng loại gateway để xem luồng dữ liệu:
 
 <ScenarioFlow client:visible height={230} legend={["Phù hợp", "Không phù hợp"]} scenarios={[
@@ -109,6 +111,8 @@ Storage Gateway là một máy ảo triển khai tại kho. Đối với ứng d
 
 <Scene id="s2" label="Phần 2/4" title="Truyền dữ liệu qua mạng hay vận chuyển thiết bị" questions={["exam3_q3", "exam2_q11", "exam5_q48", "exam5_q5", "exam2_q41", "exam3_q61", "exam2_q4", "exam5_q62", "exam4_q29"]}>
 
+<p class="scene-intro">Chuyển dữ liệu lên AWS có thể qua đường mạng hoặc bằng thiết bị vật lý gửi đi; lựa chọn phụ thuộc vào khối lượng dữ liệu, băng thông và thời hạn.</p>
+
 NAS hiện có tại kho chứa ảnh sản phẩm và dữ liệu backup tích luỹ nhiều năm. Câu hỏi đầu tiên cần trả lời: băng thông đường truyền có đáp ứng được thời hạn hay không. Thay đổi dung lượng, băng thông và đích nhận, sau đó so sánh thời gian của hai phương án:
 
 <TransferPlannerSim client:visible />
@@ -131,6 +135,8 @@ Snowball Edge hiện **không còn nhận khách hàng mới**. Thiết bị Sto
 </Scene>
 
 <Scene id="s3" label="Phần 3/4" title="Di chuyển server và database lên AWS" questions={["exam6_q48", "exam3_q4", "exam1_q47", "exam5_q8", "exam4_q27"]}>
+
+<p class="scene-intro">Máy chủ và database đang vận hành có thể được chuyển lên AWS mà không cần cài đặt lại từ đầu, với thời gian gián đoạn ngắn.</p>
 
 Server quản lý kho là máy ảo đã vận hành nhiều năm và không thể cài đặt lại. Quy trình di chuyển server này lên EC2 bằng **Application Migration Service (MGN)** gồm các bước sau:
 
@@ -194,6 +200,8 @@ Các phương án khác đều thiếu một phần của yêu cầu. **DMS Stan
 </Scene>
 
 <Scene id="s4" label="Phần 4/4" title="SFTP được quản lý với AWS Transfer Family" questions={["exam5_q62"]}>
+
+<p class="scene-intro">Đối tác quen gửi file qua SFTP; thay vì tự vận hành máy chủ SFTP, có thể dùng dịch vụ managed giữ nguyên cách làm việc của đối tác nhưng lưu file thẳng vào AWS.</p>
 
 Các nhà cung cấp gửi bảng giá và chứng từ cho ShopViet qua SFTP. Hệ thống hiện tại gồm hai EC2 Linux, mỗi máy có một Elastic IP để nhà cung cấp cho phép trên firewall của họ; tài khoản Linux được tạo thủ công và phân quyền theo tệp; dữ liệu nằm trên một file system dùng chung được mount vào cả hai máy. ShopViet muốn chuyển sang dịch vụ được quản lý nhưng giữ nguyên ba đặc điểm: địa chỉ IP cố định, chỉ IP của nhà cung cấp được kết nối, và phân quyền theo tệp.
 

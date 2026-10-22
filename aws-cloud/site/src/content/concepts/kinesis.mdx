@@ -74,6 +74,8 @@ Bài Messaging sử dụng SQS để phân phối **tác vụ** cho worker: mỗ
 
 <Scene id="s1" label="Phần 1/4" title="So sánh queue và stream" questions={["exam3_q10", "exam3_q46", "exam1_q60", "exam2_q42"]}>
 
+<p class="scene-intro">Hàng đợi giao mỗi message cho một bên xử lý rồi xoá đi; khi nhiều ứng dụng cùng cần đọc toàn bộ luồng sự kiện, cần một kênh giữ dữ liệu lại cho tất cả cùng đọc.</p>
+
 Ba ứng dụng của ShopViet đều cần nhận toàn bộ sự kiện mua hàng. Mô phỏng dưới đây gửi 6 sự kiện của ba người dùng (A, B, C) lần lượt vào SQS và Kinesis Data Streams để so sánh dữ liệu mà mỗi ứng dụng nhận được:
 
 <ShardStreamSim client:visible />
@@ -93,6 +95,8 @@ ShopViet giám sát 5.000 máy POS tại các cửa hàng, mỗi máy gửi dữ
 
 <Scene id="s2" label="Phần 2/4" title="Xử lý khi stream vượt giới hạn thông lượng" questions={["exam5_q53", "exam6_q31", "exam5_q38"]}>
 
+<p class="scene-intro">Mỗi luồng dữ liệu có giới hạn thông lượng; khi lượng sự kiện vượt giới hạn, dữ liệu bị chậm hoặc bị từ chối nếu không điều chỉnh công suất.</p>
+
 Mỗi shard có giới hạn thông lượng: ghi **1.000 record hoặc 1 MB mỗi giây**, đọc **2 MB mỗi giây** (tổng cho mọi consumer dùng `GetRecords`). Mô phỏng dưới đây trình bày ba sự cố ShopViet đã gặp và giải pháp tương ứng. Chạy mô phỏng trong 10 giây, sau đó bật cấu hình khắc phục:
 
 <ShardThroughputSim client:visible />
@@ -104,6 +108,8 @@ Stream có hai loại **capacity mode**. **Provisioned**: người vận hành t
 </Scene>
 
 <Scene id="s3" label="Phần 3/4" title="Kết nối stream tới phân tích, tìm kiếm và lưu trữ" questions={["exam4_q22", "exam1_q57", "exam5_q6", "exam4_q27", "exam5_q35", "exam6_q35", "exam6_q31", "exam1_q33"]}>
+
+<p class="scene-intro">Dữ liệu streaming chỉ có giá trị khi được đưa tới nơi sử dụng: hệ thống phân tích, công cụ tìm kiếm hoặc kho lưu trữ lâu dài.</p>
 
 Kinesis Data Streams đóng vai trò kênh truyền dữ liệu: phía trước là nguồn dữ liệu, phía sau là các dịch vụ phân tích, tìm kiếm và lưu trữ. Với mỗi yêu cầu của ShopViet, chọn dịch vụ cho từng bước và chạy mô phỏng:
 
@@ -121,6 +127,8 @@ Với các ứng dụng đã được phát triển cho **Apache Kafka**, sử d
 </Scene>
 
 <Scene id="s4" label="Phần 4/4" title="Phân biệt nhanh: khi dữ liệu không phải là một luồng" questions={["exam5_q58"]}>
+
+<p class="scene-intro">Không phải dữ liệu nào cũng là luồng sự kiện liên tục; với file đã lưu sẵn, các dịch vụ xử lý theo lô hoặc dịch vụ AI có sẵn thường phù hợp hơn.</p>
 
 Bộ phận chăm sóc khách hàng của ShopViet lưu tệp ghi âm cuộc gọi trên S3 và muốn tự động phân tích cảm xúc của khách hàng, sau đó để analyst chạy **truy vấn SQL tuỳ ý (ad-hoc)** trên kết quả. Dữ liệu ở đây là các **tệp âm thanh đã lưu**, không phải luồng sự kiện liên tục, nên các dịch vụ stream trong bài này không phải lựa chọn chính. Chọn từng mục để xem phạm vi sử dụng và phương án phù hợp.
 

@@ -84,6 +84,8 @@ ShopViet's static content is already distributed through **Amazon CloudFront** (
 
 <Scene id="en-s1" label="Part 1/6" title="Restricting access to the S3 origin through CloudFront" questions={["exam6_q54", "exam3_q60", "exam5_q15"]}>
 
+<p class="scene-intro">When content is delivered through CloudFront, every access should go through it; if users can read the S3 bucket directly, the controls placed at CloudFront are bypassed.</p>
+
 When the bucket is configured as public, clients can access the S3 endpoint directly and bypass every control layer at CloudFront (cache, AWS WAF, geo restriction). The configuration options are compared below:
 
 <ScenarioFlow client:visible height={240} scenarios={[
@@ -126,6 +128,8 @@ When the bucket is configured as public, clients can access the S3 endpoint dire
 
 <Scene id="en-s2" label="Part 2/6" title="CloudFront origin types" questions={["exam1_q62", "exam6_q5", "exam3_q40", "exam2_q2", "exam3_q42", "exam3_q48", "exam1_q1"]}>
 
+<p class="scene-intro">CloudFront does not keep the original content itself; it fetches it from a source called the origin and keeps a copy at edge locations near users.</p>
+
 How the edge cache works: the first request (cache miss) is forwarded to the origin; later requests within the TTL (cache hit) are served directly at the edge location.
 
 <EdgeCacheDemo client:visible />
@@ -153,6 +157,8 @@ Besides S3, CloudFront supports custom origins, including an Application Load Ba
 
 <Scene id="en-s3" label="Part 3/6" title="How a request is processed at the edge location" questions={["exam6_q62", "exam1_q38", "exam4_q63", "exam5_q15", "exam5_q13", "exam5_q57"]}>
 
+<p class="scene-intro">An edge location does not only serve cached content; it is also the first place a request is checked, before it reaches ShopViet's system.</p>
+
 Before forwarding a request to the origin, CloudFront can apply the following mechanisms at the edge location: TLS termination with an ACM certificate, evaluation by AWS WAF, geo restriction, signed URL/cookie validation, field-level encryption and origin selection by cache behavior. The simulation arranges these mechanisms into a chain for illustration. Choose a scenario, change the configuration and send a request to see the corresponding processing step.
 
 <EdgePipelineSim client:visible />
@@ -162,6 +168,8 @@ Before forwarding a request to the origin, CloudFront can apply the following me
 </Scene>
 
 <Scene id="en-s4" label="Part 4/6" title="CloudFront, S3 Transfer Acceleration and AWS Global Accelerator" questions={["exam5_q21", "exam6_q58", "exam1_q59", "exam3_q8", "exam4_q58", "exam5_q55", "exam2_q22"]}>
+
+<p class="scene-intro">Several AWS services use the global edge network to speed things up; each suits a different kind of traffic.</p>
 
 The three services all use the AWS edge network but serve different purposes. Global Accelerator failover was covered in the Global Infrastructure lesson; this part summarizes the selection criteria by requirement.
 
@@ -179,6 +187,8 @@ The three services all use the AWS edge network but serve different purposes. Gl
 
 <Scene id="en-s5" label="Part 5/6" title="Regional edge caches, uploads through CloudFront and dynamic content" questions={["exam3_q8", "exam5_q15", "exam5_q21", "exam5_q30", "exam4_q53"]}>
 
+<p class="scene-intro">Not all content is popular and not every request only reads; CloudFront still helps with less popular content, dynamic content and even uploads.</p>
+
 CloudFront caches at two tiers. **POPs** (edge locations) serve users directly and keep popular content. **Regional edge caches** sit between the POPs and the origin and have a larger cache than an individual POP, so objects that become less popular (older product photos, user-generated content, news that suddenly regains interest) stay close to users after a POP has removed them. When neither tier has the object, the origin response is cached at both the regional edge cache and the POP; the POPs of an area share the regional edge cache, which removes repeated requests to the origin. Both tiers belong to CloudFront and serve HTTP/HTTPS only; an application that uses UDP uses AWS Global Accelerator (part 4).
 
 Not every request goes through a regional edge cache: requests that use PUT, POST, PATCH, OPTIONS or DELETE, and dynamic requests (as determined at request time), go from the POP directly to the origin; when the origin is S3 and the optimal regional edge cache is in the same Region as the bucket, the POP also goes to the bucket directly. Besides product images, two more ShopViet flows use the same distribution: customers upload review photos to an S3 bucket, and shipping partners look up order status through an API. Choose a scenario and a configuration to watch the request path:
@@ -194,6 +204,8 @@ Not every request goes through a regional edge cache: requests that use PUT, POS
 </Scene>
 
 <Scene id="en-s6" label="Part 6/6" title="Quick comparison of settings that are easy to confuse" questions={["exam4_q63", "exam5_q7", "exam5_q15", "exam6_q62", "exam4_q53", "exam5_q30", "exam2_q17"]}>
+
+<p class="scene-intro">Many CloudFront settings have similar names; telling them apart helps you pick the right one for each requirement.</p>
 
 Some CloudFront settings have names close to a real requirement but solve a different problem. Select each item to see when to use it, why it does not fit the matching ShopViet situation, and what fits instead:
 

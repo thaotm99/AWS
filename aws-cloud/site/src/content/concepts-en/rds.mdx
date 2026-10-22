@@ -87,6 +87,8 @@ ShopViet's order database must meet three requirements: no data loss, no service
 
 <Scene id="en-s1" label="Part 1/6" title="How Multi-AZ and Read Replicas differ" questions={["exam1_q52", "exam5_q25", "exam6_q49", "exam2_q25", "exam3_q63", "exam3_q41"]}>
 
+<p class="scene-intro">A database can be copied for two different purposes: standing by in case the primary fails, and taking over part of the read load; each purpose uses a different mechanism.</p>
+
 Write an order, run a report, run an automated backup, then simulate a primary failure and try the two kinds of maintenance:
 
 <MultiAzSim client:visible />
@@ -99,6 +101,8 @@ The simulation above is a **Multi-AZ DB instance deployment** (one standby). RDS
 
 <Scene id="en-s2" label="Part 2/6" title="Five operational incidents of the order database" questions={["exam2_q13", "exam6_q19", "exam6_q46", "exam4_q19", "exam1_q3", "exam1_q55", "exam2_q63", "exam4_q47", "exam5_q42", "exam2_q62"]}>
 
+<p class="scene-intro">As a system grows, the database runs into new problems, such as reports slowing the website or too many connections at once; RDS has a specific feature for each.</p>
+
 As ShopViet grows, the database runs into more problems: reports slow the website, Lambda opens too many connections, the disk fills up, a Region-level outage. Choose each incident, run it to see the impact, then turn on the matching RDS feature and run again:
 
 <RdsOpsSim client:visible />
@@ -110,6 +114,8 @@ Two further measures reduce the load on the operations team. The accounting syst
 </Scene>
 
 <Scene id="en-s3" label="Part 3/6" title="Aurora: replicas, Global Database and Serverless" questions={["exam5_q3", "exam2_q52", "exam3_q50", "exam2_q5", "exam1_q7", "exam2_q61", "exam6_q23", "exam6_q17", "exam2_q53", "exam4_q2", "exam6_q5", "exam5_q7", "exam2_q6", "exam5_q42"]}>
+
+<p class="scene-intro">Aurora is a MySQL- and PostgreSQL-compatible database whose storage AWS redesigned, so replicas stay current faster and spreading across Regions is easier.</p>
 
 The RDS MySQL Read Replica starts to show several minutes of replication lag at peak hours, so ShopViet moves to **Aurora MySQL**. The biggest difference: all instances share one **cluster volume**, so replicas do not have to copy the data again. Try each action in turn:
 
@@ -137,6 +143,8 @@ Some other ShopViet decisions involving Aurora:
 </Scene>
 
 <Scene id="en-s4" label="Part 4/6" title="Encrypting a running database" questions={["exam2_q45", "exam4_q31", "exam4_q39", "exam2_q57"]}>
+
+<p class="scene-intro">A database created without encryption cannot simply have it switched on; the data must be moved to a new, encrypted copy with a short interruption.</p>
 
 A security audit finds that the order database is not encrypted. RDS lets you enable encryption only when you create a DB instance, not after the instance exists. The common approach goes through a snapshot (alternatively, you can use a blue/green deployment with an encrypted green environment):
 
@@ -174,6 +182,8 @@ Two approaches sound plausible but cannot encrypt the database: creating an encr
 
 <Scene id="en-s5" label="Part 5/6" title="Configuring copies for reporting and DR" questions={["exam6_q46", "exam2_q45", "exam5_q42", "exam6_q49"]}>
 
+<p class="scene-intro">A copy used for reports and a copy used for disaster recovery have different requirements for configuration, location and encryption.</p>
+
 The accounting team needs a copy of the order database (RDS for MySQL, unencrypted) to run reports on. To save money, someone proposes a replica half the size, or reusing the Multi-AZ standby; the security team wants to encrypt the copy while at it. Try each configuration and observe the result:
 
 <ReplicaLab client:visible />
@@ -185,6 +195,8 @@ For DR, ShopViet combines two mechanisms in another Region: a **cross-Region rea
 </Scene>
 
 <Scene id="en-s6" label="Part 6/6" title="Quick comparison: RDS and Aurora features that are easy to confuse" questions={["exam1_q26", "exam5_q42", "exam4_q2", "exam2_q61", "exam3_q41", "exam5_q3"]}>
+
+<p class="scene-intro">Many RDS and Aurora features have names close to real needs; telling them apart helps you pick the right one for each case.</p>
 
 Some features have names close to a real need but solve a different problem. Choose each feature to see when to use it, why it does not fit the matching ShopViet situation, and what to choose instead:
 

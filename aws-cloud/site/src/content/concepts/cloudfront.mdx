@@ -84,6 +84,8 @@ Nội dung tĩnh của ShopViet đã được phân phối qua **Amazon CloudFro
 
 <Scene id="s1" label="Phần 1/6" title="Giới hạn truy cập origin S3 thông qua CloudFront" questions={["exam6_q54", "exam3_q60", "exam5_q15"]}>
 
+<p class="scene-intro">Khi nội dung được phân phối qua CloudFront, mọi truy cập nên đi qua CloudFront; nếu người dùng đọc thẳng được bucket S3 thì các lớp kiểm soát đặt tại CloudFront bị bỏ qua.</p>
+
 Khi bucket được cấu hình public, client có thể truy cập trực tiếp S3 endpoint và bỏ qua toàn bộ lớp kiểm soát tại CloudFront (cache, AWS WAF, geo restriction). Các phương án cấu hình được so sánh dưới đây:
 
 <ScenarioFlow client:visible height={240} scenarios={[
@@ -126,6 +128,8 @@ Khi bucket được cấu hình public, client có thể truy cập trực tiế
 
 <Scene id="s2" label="Phần 2/6" title="Các loại origin của CloudFront" questions={["exam1_q62", "exam6_q5", "exam3_q40", "exam2_q2", "exam3_q42", "exam3_q48", "exam1_q1"]}>
 
+<p class="scene-intro">CloudFront không tự lưu bản gốc của nội dung; nó lấy nội dung từ một nguồn gọi là origin rồi giữ bản sao tại edge location gần người dùng.</p>
+
 Cơ chế cache tại edge: request đầu tiên (cache miss) được chuyển tới origin; các request tiếp theo trong thời gian TTL (cache hit) được phục vụ trực tiếp tại edge location.
 
 <EdgeCacheDemo client:visible />
@@ -153,6 +157,8 @@ Ngoài S3, CloudFront hỗ trợ custom origin bao gồm Application Load Balanc
 
 <Scene id="s3" label="Phần 3/6" title="Quy trình xử lý request tại edge location" questions={["exam6_q62", "exam1_q38", "exam4_q63", "exam5_q15", "exam5_q13", "exam5_q57"]}>
 
+<p class="scene-intro">Edge location không chỉ trả nội dung từ cache mà còn là nơi kiểm tra request đầu tiên, trước khi request đi tới hệ thống của ShopViet.</p>
+
 Trước khi chuyển request tới origin, CloudFront có thể áp dụng tại edge location các cơ chế sau: TLS termination với chứng chỉ ACM, đánh giá bởi AWS WAF, geo restriction, xác thực signed URL/cookie, field-level encryption và lựa chọn origin theo cache behavior. Mô phỏng sắp xếp các cơ chế này thành một chuỗi để minh hoạ. Chọn một tình huống, thay đổi cấu hình và gửi request để quan sát bước xử lý tương ứng.
 
 <EdgePipelineSim client:visible />
@@ -162,6 +168,8 @@ Trước khi chuyển request tới origin, CloudFront có thể áp dụng tạ
 </Scene>
 
 <Scene id="s4" label="Phần 4/6" title="CloudFront, S3 Transfer Acceleration và AWS Global Accelerator" questions={["exam5_q21", "exam6_q58", "exam1_q59", "exam3_q8", "exam4_q58", "exam5_q55", "exam2_q22"]}>
+
+<p class="scene-intro">AWS có nhiều dịch vụ cùng dùng mạng edge toàn cầu để tăng tốc độ; mỗi dịch vụ phù hợp với một loại traffic khác nhau.</p>
 
 Ba dịch vụ cùng sử dụng mạng edge của AWS nhưng phục vụ các mục đích khác nhau. Cơ chế failover của Global Accelerator đã được trình bày trong bài Global Infrastructure; phần này tổng hợp tiêu chí lựa chọn theo yêu cầu.
 
@@ -179,6 +187,8 @@ Ba dịch vụ cùng sử dụng mạng edge của AWS nhưng phục vụ các m
 
 <Scene id="s5" label="Phần 5/6" title="Regional edge cache, tải lên qua CloudFront và nội dung động" questions={["exam3_q8", "exam5_q15", "exam5_q21", "exam5_q30", "exam4_q53"]}>
 
+<p class="scene-intro">Không phải nội dung nào cũng được truy cập thường xuyên, và không phải request nào cũng chỉ đọc; CloudFront vẫn giúp ích cho nội dung ít phổ biến, nội dung động và cả việc tải lên.</p>
+
 CloudFront lưu cache ở hai tầng. **POP** (edge location) phục vụ trực tiếp người dùng và giữ nội dung phổ biến. **Regional edge cache** nằm giữa các POP và origin, có dung lượng cache lớn hơn một POP, nên các object kém phổ biến dần (ảnh sản phẩm cũ, nội dung do người dùng tải lên, tin tức đột nhiên được quan tâm trở lại) vẫn được giữ gần người dùng sau khi POP đã loại chúng. Khi cả hai tầng đều không có object, phản hồi của origin được lưu tại cả regional edge cache và POP; các POP trong cùng khu vực dùng chung regional edge cache, nhờ đó giảm request lặp lại tới origin. Cả hai tầng đều thuộc CloudFront và chỉ phục vụ HTTP/HTTPS; ứng dụng dùng giao thức UDP sử dụng AWS Global Accelerator (phần 4).
 
 Không phải request nào cũng đi qua regional edge cache: request dùng PUT, POST, PATCH, OPTIONS, DELETE và request động (xác định tại thời điểm request) được POP chuyển thẳng tới origin; khi origin là S3 và regional edge cache tối ưu nằm cùng Region với bucket, POP cũng truy cập bucket trực tiếp. Ngoài ảnh sản phẩm, ShopViet có thêm hai luồng đi qua cùng distribution: khách hàng tải ảnh đánh giá lên bucket S3, và đối tác vận chuyển tra cứu trạng thái đơn hàng qua API. Chọn tình huống và cấu hình để quan sát đường đi của request:
@@ -194,6 +204,8 @@ Không phải request nào cũng đi qua regional edge cache: request dùng PUT,
 </Scene>
 
 <Scene id="s6" label="Phần 6/6" title="Phân biệt nhanh các thiết lập dễ nhầm" questions={["exam4_q63", "exam5_q7", "exam5_q15", "exam6_q62", "exam4_q53", "exam5_q30", "exam2_q17"]}>
+
+<p class="scene-intro">Nhiều thiết lập của CloudFront có tên gần giống nhau; phân biệt được chúng giúp chọn đúng thiết lập cho từng yêu cầu.</p>
 
 Một số thiết lập của CloudFront có tên gần với yêu cầu thực tế nhưng giải quyết một vấn đề khác. Chọn từng mục để xem trường hợp sử dụng, lý do không phù hợp trong tình huống ShopViet tương ứng, và phương án nên chọn:
 

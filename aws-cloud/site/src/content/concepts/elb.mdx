@@ -96,6 +96,8 @@ ShopViet đã vận hành nhiều EC2 instance trên hai AZ. Người dùng khô
 
 <Scene id="s1" label="Phần 1/7" title="Lựa chọn ALB hoặc NLB theo yêu cầu" questions={["exam1_q2", "exam1_q48", "exam4_q9", "exam6_q43", "exam1_q39", "exam6_q56", "exam6_q7", "exam5_q4"]}>
 
+<p class="scene-intro">Load balancer là điểm vào chung, nhận request rồi chia cho nhiều máy chủ; có hai loại chính, khác nhau ở việc có đọc nội dung request hay chỉ chuyển tiếp kết nối.</p>
+
 **Application Load Balancer** (ALB) phân tích nội dung request HTTP: path, tên miền, header. **Network Load Balancer** (NLB) hoạt động ở tầng 4 (listener TCP, UDP, TLS, QUIC), không phân tích nội dung HTTP; NLB có một IP cho mỗi AZ (gắn được Elastic IP) và xử lý được hàng triệu request mỗi giây. Ngoài EC2, target group có target type **ip** nhận cả máy chủ on-premises kết nối qua Direct Connect hoặc Site-to-Site VPN (chỉ IP private). Thử từng yêu cầu của ShopViet, lần lượt với ALB và NLB:
 
 <LbTypeSim client:visible />
@@ -127,6 +129,8 @@ ShopViet dự kiến mở rộng sang một Region tại Hoa Kỳ. Câu hỏi đ
 
 <Scene id="s2" label="Phần 2/7" title="Tỷ lệ traffic trên từng target" questions={["exam3_q14", "exam4_q59"]}>
 
+<p class="scene-intro">Load balancer có mặt ở nhiều AZ; cách nó chia traffic giữa các AZ quyết định một máy chủ nhận nhiều hay ít request.</p>
+
 Trong đợt khuyến mãi, ShopViet bổ sung gấp máy chủ tại AZ B, trong khi AZ A vẫn chỉ có 1 máy chủ. Câu hỏi: máy chủ duy nhất tại AZ A có bị quá tải hay không? Điều chỉnh thanh trượt và bật/tắt cross-zone. Thử với 1 máy chủ tại AZ A và 4 máy chủ tại AZ B; sau đó với 4 và 6.
 
 <CrossZoneCalc client:visible />
@@ -136,6 +140,8 @@ Trong đợt khuyến mãi, ShopViet bổ sung gấp máy chủ tại AZ B, tron
 </Scene>
 
 <Scene id="s3" label="Phần 3/7" title="Một ALB cho nhiều service và nhiều tên miền" questions={["exam1_q48", "exam4_q40", "exam4_q57", "exam2_q17", "exam1_q6", "exam3_q53", "exam6_q60"]}>
+
+<p class="scene-intro">Khi hệ thống tách thành nhiều service, một load balancer vẫn có thể đứng trước tất cả và chuyển từng request tới đúng service dựa trên đường dẫn hoặc tên miền.</p>
 
 ShopViet tách hệ thống thành service đơn hàng, service sản phẩm và các microsite khuyến mãi, mỗi thành phần có một target group riêng. Tất cả vẫn nằm sau **một** ALB. Mỗi request đi qua listener HTTPS: lựa chọn chứng chỉ (SNI), AWS WAF, sau đó listener rule khớp điều kiện (path, host) thực hiện các action của rule: xác thực (nếu có action authenticate) rồi forward tới target group. Chọn tình huống và gửi request:
 
@@ -151,6 +157,8 @@ Ngoài path và host, listener rule có thêm bốn loại điều kiện: **htt
 
 <Scene id="s4" label="Phần 4/7" title="Target hoạt động bình thường nhưng bị đánh dấu unhealthy" questions={["exam4_q26", "exam5_q1", "exam2_q18", "exam3_q13"]}>
 
+<p class="scene-intro">Load balancer chỉ gửi request tới máy chủ mà nó cho là còn khỏe; nó đánh giá điều đó bằng cách định kỳ gọi thử từng máy chủ.</p>
+
 ALB đánh dấu i-2 là unhealthy, trong khi kỹ sư SSH vào instance và xác nhận ứng dụng vẫn hoạt động. Load balancer chỉ dựa vào kết quả **health check**: gọi một path trên từng target theo chu kỳ (mặc định 30 giây với target type instance hoặc ip). Quan sát đường đi của health check và vị trí bị chặn:
 
 <HealthCheckSim client:visible />
@@ -160,6 +168,8 @@ ALB đánh dấu i-2 là unhealthy, trong khi kỹ sư SSH vào instance và xá
 </Scene>
 
 <Scene id="s5" label="Phần 5/7" title="HTTPS cho nhiều tên miền trên một ALB" questions={["exam4_q40", "exam4_q57"]}>
+
+<p class="scene-intro">Mỗi tên miền dùng HTTPS cần một chứng chỉ; khi nhiều tên miền dùng chung một load balancer, cần cách để trả đúng chứng chỉ cho từng tên miền.</p>
 
 ShopViet tách hệ thống thành các microservice sau một ALB: `checkout.shopviet.vn`, `www.shopviet.vn`, cùng `shopviet.com.vn/profile` và `shopviet.com.vn/search` của thương hiệu thứ hai. Mọi URL phải dùng HTTPS. Đội vận hành cân nhắc bốn thiết lập: một chứng chỉ wildcard, danh sách nhiều chứng chỉ chọn bằng SNI, chuyển hướng HTTP sang HTTPS, và đổi security policy. Mỗi thiết lập giải quyết một vấn đề khác nhau; thay đổi từng thiết lập và quan sát kết quả của mọi client:
 
@@ -173,6 +183,8 @@ Listener HTTPS luôn có một **default certificate**. Khi bổ sung certificat
 
 <Scene id="s6" label="Phần 6/7" title="Đưa mọi traffic qua firewall bằng Gateway Load Balancer" questions={["exam3_q53", "exam3_q47", "exam6_q41"]}>
 
+<p class="scene-intro">Một số doanh nghiệp bắt buộc mọi traffic phải đi qua thiết bị bảo mật như firewall; số thiết bị này cũng cần mở rộng theo tải và chịu được sự cố như máy chủ ứng dụng.</p>
+
 Bộ phận an ninh của ShopViet yêu cầu mọi traffic từ Internet vào ứng dụng phải đi qua firewall và hệ thống IPS của một nhà cung cấp bên thứ ba, chạy trên EC2. Số lượng appliance phải tăng theo tải và chịu được sự cố của một appliance. **Gateway Load Balancer** (GWLB) đáp ứng yêu cầu này: GWLB hoạt động ở tầng 3, nhận mọi gói IP trên mọi cổng, trao đổi với appliance bằng giao thức **GENEVE cổng 6081**, giữ mọi gói của một flow trên cùng appliance (mặc định theo 5-tuple), và chỉ gửi traffic tới appliance healthy. Ứng dụng nằm ở VPC khác kết nối tới GWLB qua **Gateway Load Balancer endpoint** (một VPC endpoint dùng AWS PrivateLink), và route table quyết định traffic nào đi qua endpoint đó.
 
 <GwlbSim client:visible />
@@ -182,6 +194,8 @@ Bộ phận an ninh của ShopViet yêu cầu mọi traffic từ Internet vào �
 </Scene>
 
 <Scene id="s7" label="Phần 7/7" title="Phân biệt nhanh: các phương án dễ nhầm với load balancer" questions={["exam3_q47", "exam3_q53", "exam6_q60", "exam6_q41", "exam4_q9"]}>
+
+<p class="scene-intro">Nhiều dịch vụ và tính năng có vẻ cũng làm nhiệm vụ chia tải; phân biệt được chúng giúp chọn đúng thành phần cho từng yêu cầu.</p>
 
 Một số dịch vụ và tính năng thường được cân nhắc cùng load balancer nhưng giải quyết vấn đề khác. Chọn từng mục để xem phạm vi sử dụng và phương án phù hợp với tình huống của ShopViet.
 

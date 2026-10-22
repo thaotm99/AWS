@@ -46,6 +46,8 @@ The ShopViet system has two groups of identities to authenticate: **customers** 
 
 <Scene id="en-s1" label="Part 1/3" title="Authenticating customers: Cognito user pools and identity pools" questions={["exam2_q17", "exam6_q50"]}>
 
+<p class="scene-intro">An application must know who the customer is before showing orders or accepting uploads; sign-up, sign-in and temporary access can be handed to a managed service instead of being built from scratch.</p>
+
 A **user pool** is a user directory: it provides sign-up and sign-in and returns tokens (JWTs). An **identity pool** exchanges an authenticated identity for **temporary AWS credentials** to call AWS services such as S3 directly. ShopViet has both requirements. Pick a scenario and compare the two options:
 
 <ScenarioFlow client:visible height={230} scenarios={[
@@ -88,6 +90,8 @@ A **user pool** is a user directory: it provides sign-up and sign-in and returns
 
 <Scene id="en-s2" label="Part 2/3" title="Authenticating employees, Active Directory and partners" questions={["exam6_q10", "exam4_q4", "exam1_q10", "exam3_q28", "exam6_q44", "exam3_q5", "exam2_q4"]}>
 
+<p class="scene-intro">Employees and partners already have accounts in the company's systems; the goal is to reuse those accounts instead of creating a new set on AWS.</p>
+
 Cognito serves the application's customers. Employees and partners have different requirements: single sign-on into multiple AWS accounts, reusing on-premises Active Directory accounts, accessing file shares, and transferring files over SFTP. Pick each scenario, change the configuration, then press Sign in.
 
 <StaffSignInSim client:visible />
@@ -97,6 +101,8 @@ Cognito serves the application's customers. Employees and partners have differen
 </Scene>
 
 <Scene id="en-s3" label="Part 3/3" title="Quick comparison: directory options that are easy to confuse" questions={["exam3_q28"]}>
+
+<p class="scene-intro">Several user-directory services have similar names; each serves a different group of users and a different kind of integration.</p>
 
 ShopViet's accounting application runs SQL Server on AWS and needs an Active Directory domain on AWS with a **trust** to the on-premises AD, so employees get single sign-on to resources in either domain. The right option is AWS Managed Microsoft AD (Part 2). The options below also carry the word "directory" or "AD" but do not meet this requirement. Select each item to see what it is for.
 

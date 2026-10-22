@@ -91,6 +91,8 @@ The ShopViet system has four different storage needs: the database needs a high-
 
 <Scene id="en-s1" label="Part 1/5" title="Shared storage for multiple web servers" questions={["exam2_q29", "exam6_q15", "exam1_q46", "exam1_q9"]}>
 
+<p class="scene-intro">When several servers serve one website, files users upload must be stored where every server can read them.</p>
+
 ShopViet runs three web servers in two AZs behind a load balancer. A user uploads a product video to any one server, and other users must be able to watch that video whichever server they are routed to. Try storing the video in three places:
 
 <SharedStorageSim client:visible />
@@ -106,6 +108,8 @@ The three kinds of service are also billed differently. The ShopViet operations 
 </Scene>
 
 <Scene id="en-s2" label="Part 2/5" title="Choosing an EBS volume for the database" questions={["exam3_q27", "exam5_q22", "exam1_q44", "exam6_q24", "exam4_q15", "exam5_q64", "exam5_q16", "exam5_q40"]}>
+
+<p class="scene-intro">The database's disk sets the read and write speed of the whole system; AWS offers several disk types that differ in performance and price.</p>
 
 ShopViet's order database runs on EC2, and its IOPS needs keep growing. Adjust the IOPS slider and turn on requirements to see the suitable volume type:
 
@@ -133,6 +137,8 @@ Besides choosing a volume type, operating EBS also involves these tasks:
 </Scene>
 
 <Scene id="en-s3" label="Part 3/5" title="Configuring EFS for the workload" questions={["exam2_q64", "exam4_q55", "exam3_q11", "exam2_q60", "exam6_q39", "exam4_q24", "exam1_q12", "exam5_q47", "exam1_q9"]}>
+
+<p class="scene-intro">A shared file system also needs tuning as load changes, as data ages and when access must be restricted.</p>
 
 After deploying EFS, ShopViet has operational issues to solve: adjusting the configuration under heavy load, optimizing the cost of storing old files, and controlling who can mount. Choose each scenario:
 
@@ -187,6 +193,8 @@ For other considerations when Lambda runs in a VPC (internet access, NAT gateway
 
 <Scene id="en-s4" label="Part 4/5" title="Choosing a file system for four groups of users" questions={["exam2_q12", "exam2_q56", "exam1_q65", "exam3_q5", "exam3_q43", "exam3_q56", "exam1_q24", "exam3_q61", "exam3_q26", "exam5_q47", "exam5_q54"]}>
 
+<p class="scene-intro">Besides a shared Linux file system, many user groups have specific needs, such as Windows file sharing or high-performance computing; each need has a matching file system.</p>
+
 Besides EFS, AWS offers four **FSx** types for specialized needs. Each of ShopViet's four user groups has three must-have requirements. Try mounting each file system for each group to find the file system that meets all the requirements:
 
 <FsxSim client:visible />
@@ -209,6 +217,8 @@ Data management features of FSx for NetApp ONTAP and FSx for OpenZFS in ShopViet
 </Scene>
 
 <Scene id="en-s5" label="Part 5/5" title="Accessing S3 data through a file interface" questions={["exam3_q5", "exam4_q24", "exam5_q28", "exam5_q47", "exam3_q32"]}>
+
+<p class="scene-intro">Some older applications can only read and write files in folders while the data lives in S3; they need a translation layer to use it without being rewritten.</p>
 
 The ShopViet data team keeps all product images and the recommendation model's training data in S3. Some older applications only read and write files and cannot call the S3 API. **Mountpoint for Amazon S3** is an open source file client that mounts a bucket as a local directory on Linux and translates file operations (`open`, `read`) into S3 API calls. Mountpoint is not a fully POSIX file system: try common operations on Mountpoint and on EFS:
 

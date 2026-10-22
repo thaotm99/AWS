@@ -91,6 +91,8 @@ Ban đêm ShopViet chỉ cần 2 instance; tối thứ Sáu có chương trình 
 
 <Scene id="setup" label="Phần 1/7" title="Cấu hình Auto Scaling group cho website ShopViet" questions={["exam5_q36", "exam2_q33", "exam5_q61", "exam1_q45", "exam3_q45"]}>
 
+<p class="scene-intro">Thay vì chạy cố định một số máy chủ, hệ thống có thể tự thêm máy khi tải tăng và bớt máy khi tải giảm; muốn vậy, cần mô tả sẵn cách tạo một máy chủ mới.</p>
+
 Trước đây ứng dụng báo cáo của ShopViet chạy trên một EC2 On-Demand duy nhất, và mỗi đợt tăng tải đều gây lỗi 5xx. Để chuyển sang Auto Scaling group, nhóm vận hành tạo AMI từ instance hiện tại, khai báo AMI đó trong một **launch template**, sau đó chọn subnet và purchase options cho nhóm. Thử từng lựa chọn dưới đây:
 
 <GroupSetupSim client:visible />
@@ -109,6 +111,8 @@ Kích thước nhóm do ba giá trị quyết định. **Desired capacity** là 
 
 <Scene id="s1" label="Phần 2/7" title="Scaling policy theo từng dạng tải" questions={["exam1_q30", "exam3_q54", "exam6_q52", "exam1_q45", "exam4_q21", "exam3_q15", "exam4_q56", "exam4_q53"]}>
 
+<p class="scene-intro">Tải của website thay đổi theo giờ, theo ngày và theo sự kiện; quy tắc thêm bớt máy chủ cần khớp với hình dạng của tải để không thiếu cũng không thừa.</p>
+
 Website ShopViet có nội dung động thay đổi liên tục, cache không thể tiếp nhận toàn bộ tải, do đó cần bổ sung instance khi lượng truy cập tăng. Tuy nhiên, thời điểm scale out phụ thuộc vào dạng tải. Chọn một ngày vận hành của ShopViet, chọn scaling policy, sau đó chạy mô phỏng cả ngày để xác định các khung giờ người dùng phải chờ:
 
 <ScalingPolicySim client:visible />
@@ -120,6 +124,8 @@ Container được scale theo cơ chế tương tự. Khi ECS service quá tải
 </Scene>
 
 <Scene id="dynamic" label="Phần 3/7" title="Simple, step và target tracking khi tải tăng đột ngột" questions={["exam1_q30", "exam3_q54", "exam4_q21"]}>
+
+<p class="scene-intro">Khi tải tăng đột ngột, điều quan trọng là thêm bao nhiêu máy chủ và thêm nhanh tới mức nào; các loại quy tắc mở rộng trả lời câu hỏi đó theo cách khác nhau.</p>
 
 Ba loại dynamic scaling policy đều phản ứng theo CloudWatch metric, nhưng khác nhau ở cách tính số instance cần thêm và thời điểm được phản ứng tiếp. Với simple scaling và step scaling, người thiết kế tự tạo CloudWatch alarm với ngưỡng cố định; với target tracking, chỉ cần chọn metric và giá trị mục tiêu, Auto Scaling tự tạo và quản lý alarm. Chạy cùng một đợt tăng tải với từng policy:
 
@@ -133,6 +139,8 @@ Hai khái niệm thời gian dễ nhầm lẫn. **Cooldown** (mặc định 300 
 
 <Scene id="s2" label="Phần 4/7" title="Số instance cần thiết để chịu được sự cố một AZ" questions={["exam2_q31", "exam5_q61"]}>
 
+<p class="scene-intro">Để vẫn đủ công suất khi một AZ gặp sự cố, số máy chủ phải được tính sao cho các AZ còn lại tự gánh được toàn bộ tải.</p>
+
 ShopViet cần duy trì tối thiểu N instance, kể cả khi một AZ gặp sự cố. Điều chỉnh N, chọn số AZ, sau đó nhấn "Mô phỏng sự cố AZ 1" để kiểm tra.
 
 <AzCapacityCalc client:visible />
@@ -144,6 +152,8 @@ Hai trường hợp thường gặp. Yêu cầu tối thiểu 4 instance: 3 AZ �
 </Scene>
 
 <Scene id="s3" label="Phần 5/7" title="Scale in: thứ tự lựa chọn instance bị terminate" questions={["exam4_q16", "exam2_q65", "exam1_q54", "exam5_q33"]}>
+
+<p class="scene-intro">Khi tải giảm, hệ thống bớt máy chủ; việc chọn máy chủ nào bị xoá trước tuân theo một thứ tự cố định có thể dự đoán được.</p>
 
 Sau đợt khuyến mãi, ASG thực hiện scale in. Với default termination policy, ASG đánh giá theo một thứ tự cố định. Chọn kịch bản, dự đoán instance bị terminate, sau đó quan sát từng bước.
 
@@ -159,6 +169,8 @@ Kịch bản thứ ba dùng **instance scale-in protection**: instance được 
 
 <Scene id="s4" label="Phần 6/7" title="Bảo trì instance mà không bị ASG thay thế" questions={["exam1_q32", "exam5_q1", "exam2_q18", "exam4_q49"]}>
 
+<p class="scene-intro">Hệ thống tự thay máy chủ lỗi là điều tốt, nhưng cũng có thể thay nhầm máy chủ đang được bảo trì hoặc đang khởi động; cần cách tạm dừng cơ chế này đúng lúc.</p>
+
 ASG thay thế mọi instance được xác định là unhealthy. Cơ chế này phù hợp khi instance thực sự lỗi, nhưng gây vấn đề khi instance đang được vá lỗi hoặc instance mới chưa hoàn tất khởi động. Bài ELB đã trình bày việc ASG cần sử dụng **ELB health check** để dựa theo kết quả của load balancer; trong phần này ASG đang sử dụng ELB health check. Thử ba tác vụ bảo trì:
 
 <MaintenanceSim client:visible />
@@ -170,6 +182,8 @@ Về chi phí: ShopViet luôn cần tối thiểu 2 instance, nhiều hơn vào 
 </Scene>
 
 <Scene id="health" label="Phần 7/7" title="Khi nào ASG thay thế một instance lỗi" questions={["exam2_q18", "exam1_q54"]}>
+
+<p class="scene-intro">Việc một máy chủ lỗi có được thay hay không, và được thay khi nào, phụ thuộc vào cách hệ thống phát hiện lỗi và hoạt động nó đang thực hiện lúc đó.</p>
 
 Một instance của ShopViet có dấu hiệu lỗi nhưng ASG chưa thay thế, hoặc thay thế theo thứ tự khác với dự kiến. Kết quả phụ thuộc vào loại health check phát hiện lỗi và loại hoạt động mà ASG thực hiện. Chạy từng tình huống, sau đó đổi tuỳ chọn để so sánh:
 

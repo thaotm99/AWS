@@ -87,6 +87,8 @@ Database đơn hàng của ShopViet phải đáp ứng ba yêu cầu: không m�
 
 <Scene id="s1" label="Phần 1/6" title="Khác biệt giữa Multi-AZ và Read Replica" questions={["exam1_q52", "exam5_q25", "exam6_q49", "exam2_q25", "exam3_q63", "exam3_q41"]}>
 
+<p class="scene-intro">Database có thể được sao chép để phục vụ hai mục đích khác nhau: dự phòng khi bản chính gặp sự cố, và chia bớt tải đọc; hai mục đích này dùng hai cơ chế khác nhau.</p>
+
 Ghi một đơn hàng, chạy báo cáo, chạy automated backup, sau đó mô phỏng sự cố primary và thử hai loại bảo trì:
 
 <MultiAzSim client:visible />
@@ -99,6 +101,8 @@ Mô phỏng trên là **Multi-AZ DB instance deployment** (một standby). RDS c
 
 <Scene id="s2" label="Phần 2/6" title="Năm sự cố vận hành của database đơn hàng" questions={["exam2_q13", "exam6_q19", "exam6_q46", "exam4_q19", "exam1_q3", "exam1_q55", "exam2_q63", "exam4_q47", "exam5_q42", "exam2_q62"]}>
 
+<p class="scene-intro">Khi hệ thống lớn lên, database gặp những vấn đề mới như truy vấn báo cáo làm chậm website hay quá nhiều kết nối cùng lúc; RDS có tính năng riêng cho từng vấn đề.</p>
+
 Khi quy mô ShopViet tăng, database phát sinh nhiều vấn đề hơn: báo cáo làm chậm website, Lambda mở quá nhiều kết nối, ổ đĩa đầy, sự cố cấp Region. Chọn từng sự cố, chạy để quan sát hậu quả, sau đó bật tính năng RDS tương ứng và chạy lại:
 
 <RdsOpsSim client:visible />
@@ -110,6 +114,8 @@ Hai biện pháp bổ sung giúp giảm tải cho đội vận hành. Hệ thố
 </Scene>
 
 <Scene id="s3" label="Phần 3/6" title="Aurora: replica, Global Database và Serverless" questions={["exam5_q3", "exam2_q52", "exam3_q50", "exam2_q5", "exam1_q7", "exam2_q61", "exam6_q23", "exam6_q17", "exam2_q53", "exam4_q2", "exam6_q5", "exam5_q7", "exam2_q6", "exam5_q42"]}>
+
+<p class="scene-intro">Aurora là database tương thích MySQL và PostgreSQL do AWS thiết kế lại phần lưu trữ, giúp bản sao cập nhật nhanh hơn và mở rộng sang nhiều Region dễ hơn.</p>
 
 Read Replica của RDS MySQL bắt đầu có replication lag vài phút vào giờ cao điểm, do đó ShopViet chuyển sang **Aurora MySQL**. Khác biệt lớn nhất: mọi instance dùng chung một **cluster volume**, nên replica không phải sao chép lại dữ liệu. Thử lần lượt các thao tác:
 
@@ -137,6 +143,8 @@ Một số quyết định khác của ShopViet liên quan tới Aurora:
 </Scene>
 
 <Scene id="s4" label="Phần 4/6" title="Mã hoá database đang vận hành" questions={["exam2_q45", "exam4_q31", "exam4_q39", "exam2_q57"]}>
+
+<p class="scene-intro">Một database đã tạo mà chưa mã hoá không thể bật mã hoá trực tiếp; cần một quy trình chuyển dữ liệu sang bản mới có mã hoá với thời gian gián đoạn ngắn.</p>
 
 Đợt kiểm tra bảo mật phát hiện database đơn hàng chưa được mã hoá. RDS chỉ cho phép bật encryption khi tạo DB instance, không bật được sau khi instance đã tạo. Cách thông dụng là thực hiện thông qua snapshot (ngoài ra có thể dùng blue/green deployment với green environment được mã hoá):
 
@@ -174,6 +182,8 @@ Hai cách nghe hợp lý nhưng không mã hoá được database: tạo Read Re
 
 <Scene id="s5" label="Phần 5/6" title="Cấu hình bản sao cho báo cáo và DR" questions={["exam6_q46", "exam2_q45", "exam5_q42", "exam6_q49"]}>
 
+<p class="scene-intro">Bản sao dùng cho báo cáo và bản sao dùng cho khôi phục sau sự cố có yêu cầu khác nhau về cấu hình, vị trí và mã hoá.</p>
+
 Phòng kế toán cần một bản sao của database đơn hàng (RDS for MySQL, chưa mã hoá) để chạy báo cáo. Để tiết kiệm chi phí, có đề xuất tạo replica nhỏ bằng một nửa, hoặc tận dụng standby của Multi-AZ; đội bảo mật muốn nhân dịp này mã hoá bản sao. Thử từng cấu hình và quan sát kết quả:
 
 <ReplicaLab client:visible />
@@ -185,6 +195,8 @@ Với DR, ShopViet kết hợp hai cơ chế ở Region khác: **cross-Region re
 </Scene>
 
 <Scene id="s6" label="Phần 6/6" title="Phân biệt nhanh: các tính năng RDS và Aurora dễ nhầm lẫn" questions={["exam1_q26", "exam5_q42", "exam4_q2", "exam2_q61", "exam3_q41", "exam5_q3"]}>
+
+<p class="scene-intro">Nhiều tính năng của RDS và Aurora có tên gần với nhu cầu thực tế; phân biệt được chúng giúp chọn đúng tính năng cho từng tình huống.</p>
 
 Một số tính năng có tên gần với nhu cầu thực tế nhưng giải quyết vấn đề khác. Chọn từng tính năng để xem trường hợp sử dụng, lý do không phù hợp trong tình huống ShopViet tương ứng, và phương án nên chọn:
 

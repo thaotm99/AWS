@@ -85,6 +85,8 @@ Many ShopViet tasks run only when an event occurs: a new image, a new order, a s
 
 <Scene id="en-s1" label="Part 1/4" title="Running code when an event occurs" questions={["exam5_q23", "exam2_q14", "exam1_q60", "exam5_q35", "exam6_q31", "exam3_q30", "exam1_q33"]}>
 
+<p class="scene-intro">Many tasks only need to run when something happens, such as a new image or a new order; keeping a server waiting all day for them is wasteful.</p>
+
 Three ShopViet tasks: create a thumbnail when a seller uploads an image, update a leaderboard from page views, and clean up old data every week. Compare the "keep a server waiting" option with letting events trigger Lambda:
 
 <ScenarioFlow client:visible height={220} legend={["Recommended", "High cost or operational effort"]} scenarios={[
@@ -142,6 +144,8 @@ Three ShopViet tasks: create a thumbnail when a seller uploads an image, update 
 
 <Scene id="en-s2" label="Part 2/4" title="Running Lambda in production" questions={["exam4_q25", "exam1_q50", "exam3_q20", "exam6_q35", "exam4_q39", "exam2_q16"]}>
 
+<p class="scene-intro">A function that works in testing can still run into problems in production: networking, start-up time, limits on concurrent runs and how secrets are stored.</p>
+
 Some problems appear only after deploying to production: a function attached to a VPC cannot reach the internet, users wait a long time at peak hours, notifications are throttled when the concurrency quota is exceeded, the database password is stored in configuration. Pick each scenario, try it, then turn on the option to fix it:
 
 <LambdaRunSim client:visible />
@@ -153,6 +157,8 @@ Two more notes. Each invocation of a standard Lambda function runs at most **15 
 </Scene>
 
 <Scene id="en-sizing" label="Part 3/4" title="Function resources and packaging" questions={["exam4_q25", "exam3_q32", "exam1_q9"]}>
+
+<p class="scene-intro">Each function gets a fixed amount of resources for every run; choosing that amount well directly affects speed and cost.</p>
 
 A few settings of each Lambda function decide the resources of its execution environment:
 
@@ -174,6 +180,8 @@ A layer is not a place to keep data. When the recommendations team needs to read
 </Scene>
 
 <Scene id="en-s3" label="Part 4/4" title="Providing APIs to applications and partners" questions={["exam1_q49", "exam3_q52", "exam3_q53", "exam2_q58", "exam4_q44", "exam5_q32", "exam1_q57", "exam1_q11"]}>
+
+<p class="scene-intro">Mobile apps and partners need one address to call the system; that entry point is also where permissions are checked and request volume is limited before any code runs.</p>
 
 The mobile app, sales partners and the admin site all call `api.shopviet.vn`. **API Gateway** runs a series of checks before a request reaches the application code. Pick a scenario and send a request:
 

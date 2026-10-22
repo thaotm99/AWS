@@ -96,6 +96,8 @@ ShopViet already runs many EC2 instances across two AZs. Users do not need to kn
 
 <Scene id="en-s1" label="Part 1/7" title="Choosing an ALB or an NLB for each requirement" questions={["exam1_q2", "exam1_q48", "exam4_q9", "exam6_q43", "exam1_q39", "exam6_q56", "exam6_q7", "exam5_q4"]}>
 
+<p class="scene-intro">A load balancer is the shared entry point that receives requests and spreads them over many servers; the two main types differ in whether they read the request content or only forward connections.</p>
+
 An **Application Load Balancer** (ALB) inspects the content of HTTP requests: path, domain name, headers. A **Network Load Balancer** (NLB) works at layer 4 (TCP, UDP, TLS and QUIC listeners) and does not inspect HTTP content; an NLB has one IP per AZ (which can be an Elastic IP) and can handle millions of requests per second. Besides EC2, a target group with the **ip** target type also accepts on-premises servers connected through Direct Connect or Site-to-Site VPN (private IPs only). Try each ShopViet requirement, first with an ALB and then with an NLB:
 
 <LbTypeSim client:visible />
@@ -127,6 +129,8 @@ ShopViet plans to expand to a Region in the United States. The question: can one
 
 <Scene id="en-s2" label="Part 2/7" title="Share of traffic per target" questions={["exam3_q14", "exam4_q59"]}>
 
+<p class="scene-intro">A load balancer sits in several AZs; how it splits traffic between those AZs decides whether a given server gets many requests or few.</p>
+
 During a sale, ShopViet urgently adds servers in AZ B, while AZ A still has only 1 server. The question: is the single server in AZ A overloaded? Adjust the sliders and turn cross-zone on or off. Try 1 server in AZ A and 4 in AZ B; then 4 and 6.
 
 <CrossZoneCalc client:visible />
@@ -136,6 +140,8 @@ During a sale, ShopViet urgently adds servers in AZ B, while AZ A still has only
 </Scene>
 
 <Scene id="en-s3" label="Part 3/7" title="One ALB for many services and many domain names" questions={["exam1_q48", "exam4_q40", "exam4_q57", "exam2_q17", "exam1_q6", "exam3_q53", "exam6_q60"]}>
+
+<p class="scene-intro">When a system splits into several services, one load balancer can still front them all and send each request to the right service by path or domain name.</p>
 
 ShopViet splits its system into an orders service, a products service and promotional microsites, each with its own target group. They all still sit behind **one** ALB. Each request goes through the HTTPS listener: certificate selection (SNI), AWS WAF, then the listener rule whose conditions (path, host) match performs the rule's actions: authentication (if there is an authenticate action), then forward to a target group. Pick a scenario and send a request:
 
@@ -151,6 +157,8 @@ Besides path and host, listener rules have four more condition types: **http-hea
 
 <Scene id="en-s4" label="Part 4/7" title="Targets that work normally but are marked unhealthy" questions={["exam4_q26", "exam5_q1", "exam2_q18", "exam3_q13"]}>
 
+<p class="scene-intro">A load balancer only sends requests to servers it considers healthy, and it judges that by calling each server periodically.</p>
+
 The ALB marks i-2 as unhealthy, while an engineer who connects to the instance over SSH confirms the application still works. The load balancer relies only on **health check** results: it calls a path on each target periodically (every 30 seconds by default for the instance or ip target type). Follow the health check's path and see where it is blocked:
 
 <HealthCheckSim client:visible />
@@ -160,6 +168,8 @@ The ALB marks i-2 as unhealthy, while an engineer who connects to the instance o
 </Scene>
 
 <Scene id="en-s5" label="Part 5/7" title="HTTPS for multiple domain names on one ALB" questions={["exam4_q40", "exam4_q57"]}>
+
+<p class="scene-intro">Every HTTPS domain needs a certificate; when many domains share one load balancer, it needs a way to present the right certificate for each.</p>
 
 ShopViet splits its system into microservices behind one ALB: `checkout.shopviet.vn`, `www.shopviet.vn`, plus `shopviet.com.vn/profile` and `shopviet.com.vn/search` for its second brand. Every URL must use HTTPS. The operations team considers four settings: one wildcard certificate, a list of certificates chosen by SNI, an HTTP to HTTPS redirect, and a different security policy. Each setting solves a different problem; change them one at a time and watch the result for every client:
 
@@ -173,6 +183,8 @@ An HTTPS listener always has one **default certificate**. When you add a certifi
 
 <Scene id="en-s6" label="Part 6/7" title="Sending all traffic through firewalls with a Gateway Load Balancer" questions={["exam3_q53", "exam3_q47", "exam6_q41"]}>
 
+<p class="scene-intro">Some companies require all traffic to pass through security appliances such as firewalls; those appliances must also scale with load and survive failures, just like application servers.</p>
+
 ShopViet's security team requires all internet traffic to the application to pass the firewall and IPS of a third-party vendor, running on EC2. The number of appliances must grow with the load and survive the failure of one appliance. A **Gateway Load Balancer** (GWLB) meets this requirement: it works at layer 3, accepts every IP packet on every port, exchanges traffic with the appliances using the **GENEVE protocol on port 6081**, keeps every packet of a flow on the same appliance (5-tuple by default), and sends traffic only to healthy appliances. The application in another VPC connects to the GWLB through a **Gateway Load Balancer endpoint** (a VPC endpoint powered by AWS PrivateLink), and route tables decide which traffic goes through that endpoint.
 
 <GwlbSim client:visible />
@@ -182,6 +194,8 @@ ShopViet's security team requires all internet traffic to the application to pas
 </Scene>
 
 <Scene id="en-s7" label="Part 7/7" title="Quick comparison: options that are easy to confuse with a load balancer" questions={["exam3_q47", "exam3_q53", "exam6_q60", "exam6_q41", "exam4_q9"]}>
+
+<p class="scene-intro">Several services and features seem to share the job of spreading load; telling them apart helps you choose the right one for each requirement.</p>
 
 Some services and features are often considered together with a load balancer but solve a different problem. Pick each item to see what it is for and what fits ShopViet's situation.
 

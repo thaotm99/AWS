@@ -112,6 +112,8 @@ ShopViet's server tier runs on EC2 instances. The challenge is not launching an 
 
 <Scene id="en-s1" label="Part 1/6" title="Optimizing cost while keeping availability" questions={["exam2_q33", "exam2_q35", "exam4_q49", "exam5_q60", "exam1_q21", "exam4_q46", "exam2_q49", "exam6_q18", "exam2_q23", "exam6_q21", "exam6_q33", "exam6_q38", "exam4_q30", "exam3_q30", "exam4_q60", "exam6_q2", "exam3_q51"]}>
 
+<p class="scene-intro">The same virtual server can be bought several ways at different prices; the right choice depends on whether it runs all the time or only when needed, and whether it can tolerate interruptions.</p>
+
 ShopViet needs 80 instances running continuously 24/7; during the day it also needs extra workers that process images from a queue (interruption-tolerant). Choose a purchasing strategy:
 
 <PurchaseMixSim client:visible />
@@ -129,6 +131,8 @@ Two older purchasing options are retired: **Scheduled Reserved Instances** (capa
 </Scene>
 
 <Scene id="en-s2" label="Part 2/6" title="Shortening launch time: golden AMI and user data" questions={["exam4_q1", "exam2_q19", "exam6_q11", "exam2_q51", "exam3_q55"]}>
+
+<p class="scene-intro">When load rises, a new server must be ready within minutes; if every server has to be installed from scratch, the system reacts far too slowly.</p>
 
 A full installation of a ShopViet server takes 45 minutes, while Auto Scaling needs a new instance ready within a few minutes.
 
@@ -173,6 +177,8 @@ Pick each need of the operations team to see which mechanism fits:
 
 <Scene id="en-s3" label="Part 3/6" title="Networking between instances" questions={["exam1_q23", "exam4_q20", "exam4_q60", "exam6_q36", "exam6_q57", "exam6_q59", "exam5_q31"]}>
 
+<p class="scene-intro">Servers exchange data over the network; where they are placed and which path the data takes decide the speed, the cost and how secure it is.</p>
+
 Where instances are placed and the path between them determine latency, cost and security. Pick a scenario, change the configuration, then send traffic:
 
 <Ec2NetSim client:visible />
@@ -183,6 +189,8 @@ Where instances are placed and the path between them determine latency, cost and
 
 <Scene id="en-s4" label="Part 4/6" title="Handling instance failures" questions={["exam1_q43", "exam5_q43", "exam5_q52", "exam6_q42", "exam3_q38", "exam3_q57", "exam5_q19", "exam5_q20", "exam5_q31", "exam6_q56"]}>
 
+<p class="scene-intro">Servers can hit hardware or software failures at any time; EC2 has built-in features to detect and recover from them without someone on call.</p>
+
 Common failures: a hardware fault at 3 a.m., an unresponsive application, temporary data lost after a stop. Simulate each failure, then turn on the matching EC2 feature and run it again:
 
 <Ec2OpsSim client:visible />
@@ -192,6 +200,8 @@ Common failures: a hardware fault at 3 a.m., an unresponsive application, tempor
 </Scene>
 
 <Scene id="en-s5" label="Part 5/6" title="Placement groups and network devices for high-performance workloads" questions={["exam1_q23", "exam4_q20", "exam4_q60", "exam6_q36"]}>
+
+<p class="scene-intro">Some workloads need servers placed very close together for the fastest data exchange; others need them far apart so one failure does not hit many servers.</p>
 
 Without a placement group, EC2 spreads instances across the underlying hardware to minimize correlated failures. A placement group lets you choose: place instances **close together** for the lowest latency, or **apart** so one hardware failure does not affect many instances. Pick a workload and a placement strategy, then press a rack to simulate a failure of that rack:
 
@@ -221,6 +231,8 @@ A placement group only decides where instances go. Network performance also depe
 </Scene>
 
 <Scene id="en-s6" label="Part 6/6" title="Instance lifecycle: instance store, IP addresses and what remains" questions={["exam1_q2", "exam1_q44", "exam2_q37", "exam3_q57", "exam4_q26", "exam4_q38", "exam5_q52", "exam6_q42"]}>
+
+<p class="scene-intro">When a server is stopped, restarted or deleted, not everything attached to it is kept; you need to know which data and settings survive and which are lost.</p>
 
 ShopViet's video transcoding server reads and writes about 10 TB of temporary files and needs the highest possible I/O performance. **Instance store** is disk physically attached to the instance's host computer; storage optimized instances are optimized to deliver tens of thousands of low-latency, random IOPS. Instance store has no separate charge (it is included in the instance price). In exchange, the data exists only for the lifetime of the instance, so the final output must be pushed to S3 for durable storage and to S3 Glacier for archival.
 

@@ -108,6 +108,8 @@ ShopViet's user base grows every month. Aurora starts to get overloaded by repea
 
 <Scene id="en-s1" label="Part 1/6" title="A cache in front of the database" questions={["exam4_q12", "exam3_q33", "exam5_q37", "exam4_q50", "exam4_q32", "exam6_q6", "exam1_q29", "exam1_q55"]}>
 
+<p class="scene-intro">Many queries return the same result again and again; keeping that result in memory answers faster and takes load off the database.</p>
+
 **ElastiCache** is a managed in-memory data store with sub-millisecond response times. The most common usage pattern is **cache-aside** (AWS calls it lazy loading): the application queries the cache first; if the data is not there (a cache miss), the application reads from the database and writes the result to the cache with a TTL. The **write-through** pattern adds this: whenever the application writes to the database, it also updates the cache. In both patterns the database remains the system of record. Try six ShopViet scenarios:
 
 <CacheSim client:visible />
@@ -122,6 +124,8 @@ For data on DynamoDB, there is also **DAX** (DynamoDB lesson). ElastiCache works
 
 <Scene id="en-s2" label="Part 2/6" title="Choosing an engine: Redis and Memcached" questions={["exam6_q47", "exam5_q65", "exam1_q29", "exam4_q32"]}>
 
+<p class="scene-intro">In-memory caching comes with several engines; they differ in the data types they support, in backups and in fault tolerance.</p>
+
 ElastiCache supports three engines: **Valkey**, **Redis OSS** and **Memcached**. Valkey and Redis OSS support many data structures and high availability features. **Memcached** is simpler but multithreaded. Send the same sequence of commands to two identically configured nodes, then choose ShopViet's requirements:
 
 <CacheEngineSim client:visible />
@@ -133,6 +137,8 @@ Examples: caching the results of slow JOIN queries on RDS while making use of ma
 </Scene>
 
 <Scene id="en-s5" label="Part 3/6" title="When a cache node fails: backups, replicas or Multi-AZ" questions={["exam4_q32", "exam1_q55"]}>
+
+<p class="scene-intro">A cache often holds important data such as shopping carts; when a cache node fails, both the downtime and the data lost must be kept small.</p>
 
 ShopViet's ElastiCache cluster (Redis OSS, node-based) holds carts and query results for RDS. When the primary node has a hardware failure, the two goals are **the shortest possible downtime** and **the least possible data loss**. Choose each protection option, then simulate the failure:
 
@@ -151,6 +157,8 @@ Each mechanism solves a different problem:
 
 <Scene id="en-s3" label="Part 4/6" title="Choosing a tool for each data task" questions={["exam5_q12", "exam1_q26", "exam1_q53", "exam5_q58", "exam5_q6", "exam4_q11", "exam2_q15", "exam6_q26", "exam5_q8"]}>
 
+<p class="scene-intro">Analytics data is usually gathered into one shared store on S3; each task, such as quick queries, data transformation or reporting, has a best-fit service.</p>
+
 ShopViet's data is stored in a data lake on S3. Each task has a best-fit service:
 
 - **Athena**: SQL queries directly on files in S3, serverless, billed by the bytes of data scanned. Suits ad-hoc queries.
@@ -168,6 +176,8 @@ Choose a task, run the simulation, then switch to the better-suited tool. Contin
 
 <Scene id="en-s4" label="Part 5/6" title="Controlling data lake cost over time" questions={["exam2_q34", "exam6_q26", "exam5_q11"]}>
 
+<p class="scene-intro">An analytics store grows every day; without a storage policy over time, costs keep rising even though most old data is rarely used.</p>
+
 ShopViet's data lake is split into two zones. The **raw zone** stores the original data as it was received. The **refined zone** stores data that Glue has cleaned for analysts to query. Each zone grows by 1 TB a day. Choose a storage option, then simulate one year:
 
 <LakeCostSim client:visible />
@@ -183,6 +193,8 @@ When the data lake needs another copy in a different Region for disaster recover
 </Scene>
 
 <Scene id="en-s6" label="Part 6/6" title="Quick comparison: data services that are easy to confuse" questions={["exam1_q53", "exam2_q44", "exam4_q50", "exam5_q59", "exam1_q26"]}>
+
+<p class="scene-intro">Many data services have similar names or features; telling them apart helps you pick the right one for each need.</p>
 
 Some services have names or features close to a ShopViet need but solve a different problem. Choose each service to see when to use it, why it does not fit the matching situation, and what to choose instead:
 
