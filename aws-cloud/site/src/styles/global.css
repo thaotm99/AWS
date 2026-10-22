@@ -477,3 +477,14 @@ input[type="range"] { accent-color: var(--accent); }
 .flow-t { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
 .waf-gate { fill: var(--edge-soft); stroke: var(--edge); stroke-width: 2; }
 .waf-gate.off { fill: var(--bg); stroke: var(--muted); stroke-dasharray: 5 4; }
+
+/* EC2 lesson */
+.mix-ri { fill: var(--accent); background: var(--accent); }
+.mix-od { fill: var(--muted); background: var(--muted); }
+.mix-spot { fill: var(--edge); background: var(--edge); }
+.mix-spot.risky { fill: var(--bad); }
+.base-line { stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.mix-legend { padding: 4px 16px 10px; }
+.mix-legend i { width: 12px !important; height: 12px !important; border-radius: 3px; }
+.note-small { font-size: 0.78rem; color: var(--muted); margin: 8px 0 0; }
+.base-t { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; }
