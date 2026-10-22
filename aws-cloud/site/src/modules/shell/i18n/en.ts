@@ -65,6 +65,11 @@ export const en: Messages<typeof vi> = {
       sec: "Security and operations",
     },
   },
+  zoom: {
+    open: "Enlarge",
+    rotate: "View landscape",
+    close: "Close",
+  },
   toc: {
     label: "Lesson contents",
     title: "In this lesson",

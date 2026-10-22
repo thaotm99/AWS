@@ -111,8 +111,10 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
       import { i18n } from "../app/i18n";
       import { theme } from "../app/theme";
       import { ShellController } from "../modules/shell/ui/ShellController";
+      import { diagramZoom } from "../app/zoom";
 
       new ShellController(i18n, theme).start();
+      diagramZoom.start();
     </script>
   </body>
 </html>

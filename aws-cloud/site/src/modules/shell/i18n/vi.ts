@@ -63,6 +63,11 @@ export const vi = {
       sec: "Bảo mật và vận hành",
     },
   },
+  zoom: {
+    open: "Phóng to",
+    rotate: "Xoay ngang",
+    close: "Đóng",
+  },
   toc: {
     label: "Mục lục bài học",
     title: "Trong bài này",

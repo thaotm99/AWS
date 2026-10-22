@@ -64,6 +64,8 @@ export const vi = {
   },
   illus: {
     title: "Minh hoạ luồng xử lý",
+    enlarge: "Phóng to",
+    rotate: "Xoay ngang",
     options: "Các phương án",
     option: "Phương án {key}",
     tagCorrect: "đúng",

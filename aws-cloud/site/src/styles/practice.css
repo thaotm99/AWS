@@ -188,3 +188,4 @@
 .pr-illus-verdict.ok b { color: var(--ok); }
 .pr-illus-verdict.bad { background: var(--bad-soft); }
 .pr-illus-verdict.bad b { color: var(--bad); }
+.pr-illus-head .zoom-btn { margin-left: auto; }

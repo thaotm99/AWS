@@ -66,6 +66,8 @@ export const en: Messages<typeof vi> = {
   },
   illus: {
     title: "How it works",
+    enlarge: "Enlarge",
+    rotate: "View landscape",
     options: "Options",
     option: "Option {key}",
     tagCorrect: "correct",

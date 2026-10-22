@@ -5,6 +5,8 @@ import { useT } from "../ui/useT";
 import { Illustration, text } from "./Illustration";
 import { illustrations } from "./registry";
 import { ScenarioPlayer } from "./ScenarioPlayer";
+import { diagramZoom } from "../../../app/zoom";
+import { DiagramZoom } from "../../shell/ui/DiagramZoom";
 
 interface Props {
   questionId: QuestionId;
@@ -23,6 +25,7 @@ export default function IllustrationPanel({ questionId, correct, chosen }: Props
   const [playing, setPlaying] = useState(false);
   const layer = useRef<SVGGElement>(null);
   const player = useRef<ScenarioPlayer | null>(null);
+  const root = useRef<HTMLElement>(null);
 
   useEffect(() => {
     let live = true;
@@ -90,7 +93,7 @@ export default function IllustrationPanel({ questionId, correct, chosen }: Props
   }
 
   return (
-    <section className="pr-illus" aria-label={t("illus.title")} data-illus={questionId} data-option={tab} data-done={done || undefined}>
+    <section ref={root} className="pr-illus" aria-label={t("illus.title")} data-illus={questionId} data-option={tab} data-done={done || undefined}>
       <div className="pr-illus-head">
         <b className="pr-illus-title">{t("illus.title")}</b>
         <div className="pr-illus-tabs" role="tablist" aria-label={t("illus.options")}>
@@ -115,6 +118,9 @@ export default function IllustrationPanel({ questionId, correct, chosen }: Props
             );
           })}
         </div>
+        <button type="button" className="zoom-btn" data-icon={DiagramZoom.phone ? "rotate" : "expand"} onClick={() => root.current && diagramZoom.open(root.current)}>
+          {t(DiagramZoom.phone ? "illus.rotate" : "illus.enlarge")}
+        </button>
       </div>
 
       <div id="pr-illus-panel" role="tabpanel" aria-labelledby={`pr-illus-tab-${tab}`}>
