@@ -5,9 +5,9 @@ type Az = "a" | "b" | "c";
 const AZ_X: Record<Az, number> = { a: 40, b: 280, c: 520 };
 
 const MODES = {
-  one: { label: "Cả 2 server ở 1 AZ", servers: [["a", "web-1", 0], ["a", "web-2", 1]] },
-  two: { label: "Trải 2 AZ", servers: [["a", "web-1", 0], ["b", "web-2", 0]] },
-  three: { label: "Trải 3 AZ", servers: [["a", "web-1", 0], ["b", "web-2", 0], ["c", "web-3", 0]] },
+  one: { label: "2 server trong 1 AZ", servers: [["a", "web-1", 0], ["a", "web-2", 1]] },
+  two: { label: "Phân bố 2 AZ", servers: [["a", "web-1", 0], ["b", "web-2", 0]] },
+  three: { label: "Phân bố 3 AZ", servers: [["a", "web-1", 0], ["b", "web-2", 0], ["c", "web-3", 0]] },
 } as const;
 type Mode = keyof typeof MODES;
 
@@ -27,13 +27,13 @@ function serversFor(mode: Mode) {
 function explain(mode: Mode, down: Set<Az>, alive: number, total: number) {
   if (!down.size)
     return mode === "one"
-      ? "Mọi thứ chạy tốt. Nhưng cả hai server cùng nằm trong AZ a. Thử bấm \"Sập AZ a\"."
-      : "Request được chia đều cho các server ở nhiều AZ. Thử gây sự cố một AZ.";
+      ? "Hệ thống hoạt động bình thường, nhưng cả hai server cùng nằm trong AZ a. Nhấn \"Sự cố AZ a\" để quan sát ảnh hưởng."
+      : "Request được phân phối đều cho các server tại nhiều AZ. Tạo sự cố tại một AZ để quan sát ảnh hưởng.";
   if (!alive)
-    return "Mọi server đều nằm trong AZ bị sự cố. Load Balancer không còn chỗ gửi request, khách nhận lỗi 503. Có 2 server cũng vô ích nếu chúng ở cùng một AZ.";
+    return "Toàn bộ server nằm trong AZ gặp sự cố. Load Balancer không còn target để chuyển request, người dùng nhận lỗi 503. Hai server không mang lại khả năng chịu lỗi nếu cùng nằm trong một AZ.";
   if (alive < total)
-    return "Load Balancer phát hiện server ở AZ sự cố không khỏe và chuyển toàn bộ request sang server còn lại. Khách vẫn mua hàng bình thường, chỉ là tổng sức chịu tải giảm.";
-  return "AZ bị sự cố không chứa server nào của ShopViet nên không ảnh hưởng.";
+    return "Load Balancer xác định server tại AZ gặp sự cố là unhealthy và chuyển toàn bộ request sang server còn lại. Người dùng vẫn đặt hàng bình thường; chỉ tổng năng lực xử lý giảm.";
+  return "AZ gặp sự cố không chứa server nào của ShopViet nên hệ thống không bị ảnh hưởng.";
 }
 
 export default function AzFailureSim() {
@@ -105,8 +105,8 @@ export default function AzFailureSim() {
         ))}
         <span className="sep" />
         <span className="label">Sự cố</span>
-        <button className="btn danger" onClick={() => fail("a")}>Sập AZ a</button>
-        <button className="btn danger" onClick={() => fail("b")}>Sập AZ b</button>
+        <button className="btn danger" onClick={() => fail("a")}>Sự cố AZ a</button>
+        <button className="btn danger" onClick={() => fail("b")}>Sự cố AZ b</button>
         <button className="btn" onClick={() => setDown(new Set())}>Khôi phục</button>
         <span className="sep" />
         <button className="btn" aria-pressed={paused} onClick={() => setPaused(!paused)}>
@@ -114,7 +114,7 @@ export default function AzFailureSim() {
         </button>
       </div>
       <div className="svg-wrap">
-        <svg ref={svgRef} viewBox="0 0 760 400" role="img" aria-label="Request từ khách đi qua Load Balancer tới các server trong 3 AZ">
+        <svg ref={svgRef} viewBox="0 0 760 400" role="img" aria-label="Request từ người dùng đi qua Load Balancer tới các server trong 3 AZ">
           <g aria-hidden="true">
             {USERS_X.map((x) => (
               <g key={x} transform={`translate(${x} 30)`}>
@@ -122,7 +122,7 @@ export default function AzFailureSim() {
                 <path className="user" d="M-9 9 a9 9 0 0 1 18 0 z" />
               </g>
             ))}
-            <text className="ts" x={470} y={36}>Khách</text>
+            <text className="ts" x={470} y={36}>Người dùng</text>
           </g>
           <rect className="region" x={20} y={130} width={720} height={258} rx={12} />
           <text className="t" x={36} y={154}>Region · ap-southeast-1</text>
@@ -158,10 +158,10 @@ export default function AzFailureSim() {
       <div className="readout">
         <div className="status">
           <span className={"pill " + (alive.length ? "ok" : "bad")}>
-            <i />{alive.length ? "ShopViet đang chạy" : "ShopViet sập"}
+            <i />{alive.length ? "ShopViet hoạt động" : "ShopViet gián đoạn"}
           </span>
           <span className="count">
-            Server khỏe: {alive.length}/{servers.length} · request thành công {ok} · lỗi {err}
+            Server healthy: {alive.length}/{servers.length} · request thành công {ok} · lỗi {err}
           </span>
         </div>
         <p style={{ margin: "8px 0 0" }}>{explain(mode, down, alive.length, servers.length)}</p>

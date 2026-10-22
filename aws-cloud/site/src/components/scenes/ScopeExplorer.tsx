@@ -19,44 +19,44 @@ function Token({ x, y, w, label, ghost }: { x: number; y: number; w: number; lab
   );
 }
 
-const replicas = AZS.map((az) => <Token key={az.n} x={az.x + 20} y={200} w={100} label="bản sao" ghost />);
+const replicas = AZS.map((az) => <Token key={az.n} x={az.x + 20} y={200} w={100} label="bản sao dữ liệu" ghost />);
 
 const SERVICES: { name: string; scope: Scope; label: string; text: ReactNode; draw: ReactNode }[] = [
   { name: "IAM", scope: "global", label: "Global",
-    text: <>Role <code>shopviet-app</code> tạo một lần, dùng được ở mọi Region. Không có IAM riêng của Singapore hay của Tokyo.</>,
+    text: <>Role <code>shopviet-app</code> được tạo một lần và sử dụng được tại mọi Region. IAM không có phiên bản riêng cho từng Region như Singapore hay Tokyo.</>,
     draw: <Token x={250} y={18} w={190} label="IAM role: shopviet-app" /> },
   { name: "Route 53", scope: "global", label: "Global",
-    text: <>Tên miền <code>shopviet.vn</code> được phân giải bởi DNS server đặt ở các Edge location trên toàn cầu, gần khách nhất.</>,
+    text: <>Tên miền <code>shopviet.vn</code> được phân giải bởi DNS server đặt tại các Edge location trên toàn cầu, gần người dùng nhất.</>,
     draw: <Token x={560} y={46} w={180} label="Route 53: shopviet.vn" /> },
   { name: "S3", scope: "region", label: "Region",
-    text: <>Bucket <code>shopviet-images</code> thuộc Region Singapore. AWS tự lưu dữ liệu trên nhiều AZ (với các storage class thông thường), bạn không phải làm gì thêm.</>,
+    text: <>Bucket <code>shopviet-images</code> thuộc Region Singapore. AWS tự động lưu dữ liệu trên nhiều AZ (với các storage class thông thường), không yêu cầu cấu hình bổ sung.</>,
     draw: <><Token x={296} y={70} w={220} label="S3: shopviet-images" />{replicas}</> },
   { name: "VPC", scope: "region", label: "Region",
-    text: <>VPC <code>10.0.0.0/16</code> trải trên mọi AZ của Region. Nhưng bên trong, bạn chia subnet, và mỗi subnet chỉ nằm ở một AZ.</>,
+    text: <>VPC <code>10.0.0.0/16</code> trải trên mọi AZ của Region. Bên trong VPC, dải địa chỉ được chia thành các subnet, và mỗi subnet chỉ nằm trong một AZ.</>,
     draw: <>
       <rect className="zone pop" x={40} y={112} width={490} height={236} rx={12} />
       <text className="zone-t" x={516} y={128} textAnchor="end">VPC 10.0.0.0/16</text>
     </> },
   { name: "EFS", scope: "region", label: "Region",
-    text: <>File system EFS là tài nguyên cấp Region, có mount target ở từng AZ nên server ở AZ nào cũng mount được. Server ở Region khác vẫn truy cập được qua inter-region VPC peering, không cần copy dữ liệu.</>,
+    text: <>EFS file system là tài nguyên cấp Region, có mount target tại từng AZ nên server ở bất kỳ AZ nào cũng mount được. Server tại Region khác vẫn truy cập được thông qua inter-region VPC peering, không cần copy dữ liệu.</>,
     draw: <><Token x={296} y={70} w={220} label="EFS: shopviet-shared" />{AZS.map((az) => <Token key={az.n} x={az.x + 20} y={200} w={100} label="mount target" ghost />)}</> },
   { name: "AMI", scope: "region", label: "Region",
-    text: <>AMI <code>shopviet-web</code> chỉ dùng được trong Region đã tạo ra nó, nhưng dùng được ở mọi AZ của Region đó. Muốn launch ở Region khác phải copy AMI sang (Cảnh 1).</>,
+    text: <>AMI <code>shopviet-web</code> chỉ sử dụng được trong Region nơi AMI được tạo, nhưng sử dụng được tại mọi AZ của Region đó. Để launch tại Region khác, AMI phải được copy sang Region đích (Phần 1).</>,
     draw: <Token x={296} y={70} w={220} label="AMI: shopviet-web" /> },
   { name: "Subnet", scope: "az", label: "AZ",
-    text: <>Subnet <code>10.0.1.0/24</code> chỉ nằm trong AZ a. Muốn chịu được sự cố một AZ, bạn phải tạo subnet ở ít nhất hai AZ.</>,
+    text: <>Subnet <code>10.0.1.0/24</code> chỉ nằm trong AZ a. Để chịu được sự cố của một AZ, subnet phải được tạo tại ít nhất hai AZ.</>,
     draw: <>
       <rect className="zone pop" x={58} y={170} width={124} height={108} rx={8} />
       <text className="zone-t" x={120} y={188} textAnchor="middle">subnet 10.0.1.0/24</text>
     </> },
   { name: "NAT Gateway", scope: "az", label: "AZ",
-    text: <>NAT gateway được tạo trong public subnet của một AZ cụ thể. Nếu cả 3 AZ dùng chung một NAT gateway thì AZ đó sập kéo theo các AZ kia mất internet. Cách đúng: mỗi AZ một NAT gateway, mỗi AZ một route table riêng.</>,
+    text: <>NAT gateway được tạo trong public subnet của một AZ cụ thể. Nếu cả 3 AZ dùng chung một NAT gateway, sự cố tại AZ chứa NAT gateway sẽ làm các AZ còn lại mất kết nối internet. Cấu hình đúng: mỗi AZ một NAT gateway và một route table riêng.</>,
     draw: <>{AZS.map((az) => <Token key={az.n} x={az.x + 20} y={200} w={100} label="NAT gateway" ghost={az.n !== "a"} />)}</> },
   { name: "EC2", scope: "az", label: "AZ",
-    text: <>Server <code>web-1</code> chạy trong một subnet, nên nằm trong đúng một AZ. AZ đó sập thì server sập theo. Cảnh 3 sẽ cho bạn thấy điều này.</>,
+    text: <>Server <code>web-1</code> chạy trong một subnet nên nằm trong đúng một AZ. Khi AZ đó gặp sự cố, server cũng ngừng hoạt động. Phần 3 minh hoạ trường hợp này.</>,
     draw: <Token x={70} y={200} w={100} label="EC2: web-1" /> },
   { name: "EBS", scope: "az", label: "AZ",
-    text: <>Ổ đĩa EBS chỉ gắn được vào server trong cùng AZ. Muốn mang sang AZ khác: tạo snapshot rồi tạo volume mới từ snapshot.</>,
+    text: <>EBS volume chỉ attach được vào server trong cùng AZ. Để chuyển sang AZ khác: tạo snapshot, sau đó tạo volume mới từ snapshot.</>,
     draw: <>
       <Token x={70} y={196} w={100} label="EC2: web-1" />
       <line x1={120} y1={220} x2={120} y2={238} stroke="var(--accent)" strokeWidth={2} />
@@ -96,7 +96,7 @@ export default function ScopeExplorer() {
             <rect className="region" x={30} y={62} width={510} height={312} rx={12} />
             <text className="t" x={48} y={88}>Region · Singapore</text>
             <text className="ts" x={48} y={104}>ap-southeast-1</text>
-            <text className="ts" x={285} y={360} textAnchor="middle">Các AZ nối với nhau bằng mạng riêng, độ trễ thấp</text>
+            <text className="ts" x={285} y={360} textAnchor="middle">Các AZ kết nối với nhau bằng mạng riêng có độ trễ thấp</text>
           </g>
           <g className={hl("az")}>
             {AZS.map(({ n, x }) => (
@@ -121,7 +121,7 @@ export default function ScopeExplorer() {
           </g>
           <g aria-hidden="true">
             {EDGE_Y.map(userIcon)}
-            <text className="ts" x={704} y={344} textAnchor="middle">Khách</text>
+            <text className="ts" x={704} y={344} textAnchor="middle">Người dùng</text>
           </g>
           {/* key re-mounts the overlay so the pop animation replays */}
           <g key={active}>{svc.draw}</g>

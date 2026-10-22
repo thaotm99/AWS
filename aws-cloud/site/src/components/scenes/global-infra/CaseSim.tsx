@@ -51,7 +51,7 @@ export interface CaseStep {
   via?: Pt[];
   state: CaseState;
   msg: string;
-  /** Overrides the default tag text (QUA, CHẶN...). */
+  /** Overrides the default tag text (THÔNG QUA, CHẶN...). */
   tag?: string;
   /** Short text flashed over the node when it blocks. */
   flash?: string;
@@ -84,11 +84,11 @@ export interface CaseScenario {
 }
 
 const TAG: Record<CaseState, { text: string; cls: string }> = {
-  pass: { text: "QUA", cls: "hit" },
+  pass: { text: "THÔNG QUA", cls: "hit" },
   block: { text: "CHẶN", cls: "bad" },
   skip: { text: "BỎ QUA", cls: "info" },
-  change: { text: "ĐỔI", cls: "miss" },
-  down: { text: "HỎNG", cls: "bad" },
+  change: { text: "THAY ĐỔI", cls: "miss" },
+  down: { text: "SỰ CỐ", cls: "bad" },
 };
 
 const NODE_CLS: Record<CaseState, string> = { pass: "ok", block: "bad", change: "chg", skip: "dim", down: "down" };
@@ -284,7 +284,7 @@ export default function CaseSim({ scenarios, action = "Gửi request", label }: 
       <div className="readout">
         {log.length === 0 ? (
           <p className="cs-hint">
-            Bấm <b>{action}</b> để xem từng bước.{sc.toggle || sc.choices ? " Đổi lựa chọn rồi chạy lại để so sánh." : ""}
+            Nhấn <b>{action}</b> để quan sát từng bước xử lý.{sc.toggle || sc.choices ? " Thay đổi lựa chọn và chạy lại để so sánh kết quả." : ""}
           </p>
         ) : (
           <ul className="log" aria-live="polite">

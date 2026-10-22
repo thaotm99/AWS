@@ -7,15 +7,15 @@ type Check = "route" | "publicIp" | "naclIn" | "sgIn" | "naclOut";
 
 const CHECKS: { id: Check; label: string; fail: string }[] = [
   { id: "route", label: "Route table có 0.0.0.0/0 → Internet Gateway",
-    fail: "Subnet không có route tới Internet Gateway nên không phải public subnet. Request không vào được." },
+    fail: "Subnet không có route tới Internet Gateway nên không phải public subnet. Request không tới được instance." },
   { id: "publicIp", label: "EC2 có public IP / Elastic IP",
-    fail: "EC2 chỉ có private IP. Internet Gateway thực hiện NAT giữa public IP và private IP, không có public IP thì không ai gọi tới được." },
+    fail: "EC2 chỉ có private IP. Internet Gateway thực hiện NAT giữa public IP và private IP; khi không có public IP, instance không thể nhận kết nối từ internet." },
   { id: "naclIn", label: "NACL inbound cho phép cổng 443",
-    fail: "Network ACL của subnet chặn chiều vào. NACL kiểm tra ở ranh giới subnet, trước cả Security Group." },
+    fail: "Network ACL của subnet chặn chiều inbound. NACL đánh giá traffic tại ranh giới subnet, trước Security Group." },
   { id: "sgIn", label: "Security Group inbound cho phép cổng 443",
-    fail: "Security Group của EC2 không có rule cho cổng 443. Security Group mặc định chặn mọi chiều vào." },
+    fail: "Security Group của EC2 không có rule cho cổng 443. Theo mặc định, Security Group chặn mọi traffic inbound." },
   { id: "naclOut", label: "NACL outbound cho phép cổng 1024-65535",
-    fail: "Request đã tới EC2, nhưng response bị NACL chặn ở chiều ra. NACL là stateless: phải mở cả chiều về (cổng ephemeral 1024-65535)." },
+    fail: "Request đã tới EC2, nhưng response bị NACL chặn ở chiều outbound. NACL là stateless: chiều trả về (cổng ephemeral 1024-65535) phải được cho phép tường minh." },
 ];
 
 const P = {
@@ -63,7 +63,7 @@ export default function PacketPath() {
     await travel(layer, [P.sg, P.nacl, P.igw, P.net], 1100, "pkt-back", 6);
     setResult({
       ok: true,
-      text: "Thành công. Chiều về đi qua Security Group mà không cần rule outbound, vì Security Group là stateful. NACL là stateless nên phải mở cả chiều về.",
+      text: "Kết nối thành công. Chiều trả về đi qua Security Group mà không cần rule outbound vì Security Group là stateful. NACL là stateless nên chiều trả về phải được cho phép tường minh.",
     });
     setBusy(false);
   }
@@ -78,7 +78,7 @@ export default function PacketPath() {
         ))}
       </div>
       <div className="stage-bar">
-        <button className="btn primary" onClick={send} disabled={busy}>Khách gửi request HTTPS</button>
+        <button className="btn primary" onClick={send} disabled={busy}>Gửi request HTTPS</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 0 760 250" role="img" aria-label="Request đi từ internet qua Internet Gateway, Network ACL, Security Group tới EC2">
@@ -102,7 +102,7 @@ export default function PacketPath() {
           <g className="res res-ec2">
             <rect x={600} y={110} width={80} height={40} rx={7} />
             <text className="res-t" x={640} y={128} textAnchor="middle">EC2</text>
-            <text className="res-s" x={640} y={142} textAnchor="middle">{on.publicIp ? "54.x.x.x" : "chỉ 10.0.1.25"}</text>
+            <text className="res-s" x={640} y={142} textAnchor="middle">{on.publicIp ? "54.x.x.x" : "chỉ có 10.0.1.25"}</text>
           </g>
           <g ref={pk} />
         </svg>
@@ -114,7 +114,7 @@ export default function PacketPath() {
             <p style={{ margin: "8px 0 0" }}>{result.text}</p>
           </>
         ) : (
-          <p style={{ margin: 0 }}>Bật/tắt các điều kiện ở trên rồi gửi request. Cấu hình mặc định đang thiếu một điều kiện hay bị quên, thử gửi để tìm ra.</p>
+          <p style={{ margin: 0 }}>Bật hoặc tắt các điều kiện phía trên, sau đó gửi request. Cấu hình mặc định đang thiếu một điều kiện thường bị bỏ sót; gửi request để xác định điều kiện đó.</p>
         )}
       </div>
     </div>

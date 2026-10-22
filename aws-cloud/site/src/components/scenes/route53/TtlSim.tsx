@@ -4,10 +4,10 @@ import { useEffect, useRef, useState } from "react";
 const TTLS = [60, 300, 3600];
 // Seconds left in each client's cache at the moment the record changes, as a share of the TTL.
 const CLIENTS = [
-  { name: "Laptop ở Hà Nội", left: 0.15 },
-  { name: "Điện thoại ở Đà Nẵng", left: 0.55 },
-  { name: "Máy tính ở TP.HCM", left: 0.8 },
-  { name: "Resolver của nhà mạng", left: 0.97 },
+  { name: "Laptop tại Hà Nội", left: 0.15 },
+  { name: "Điện thoại tại Đà Nẵng", left: 0.55 },
+  { name: "Máy tính tại TP.HCM", left: 0.8 },
+  { name: "Resolver của ISP", left: 0.97 },
 ];
 const RUN_MS = 6000;
 
@@ -45,7 +45,7 @@ export default function TtlSim() {
           <button key={t} className="btn" aria-pressed={t === ttl} onClick={() => { setTtl(t); setElapsed(null); }}>{t} giây</button>
         ))}
         <span className="sep" />
-        <button className="btn primary" onClick={change}>Đổi record sang ALB mới</button>
+        <button className="btn primary" onClick={change}>Cập nhật record sang ALB mới</button>
       </div>
       <div className="ttl-list">
         {CLIENTS.map((c) => {
@@ -62,13 +62,13 @@ export default function TtlSim() {
       <div className="readout" aria-live="polite">
         <div className="status">
           <span className="count">
-            {elapsed === null ? "Chưa đổi record" : `Đã đổi được ${fmt(elapsed)} · ${moved}/${CLIENTS.length} client đã sang ALB mới`}
+            {elapsed === null ? "Record chưa được cập nhật" : `Thời gian từ khi cập nhật: ${fmt(elapsed)} · ${moved}/${CLIENTS.length} client đã chuyển sang ALB mới`}
           </span>
         </div>
         <p style={{ margin: "8px 0 0" }}>
-          Record đã đổi ngay trên Route 53, nhưng mỗi client vẫn dùng câu trả lời cũ đang nằm trong cache cho tới khi hết TTL.
-          Vì vậy khi đã cập nhật DNS mà khách vẫn vào load balancer cũ, nguyên nhân là TTL của câu trả lời cũ vẫn còn hiệu lực.
-          TTL càng dài, thời gian chuyển càng lâu.
+          Record được cập nhật ngay trên Route 53, nhưng mỗi client vẫn sử dụng phản hồi cũ trong cache cho tới khi hết TTL.
+          Do đó, khi DNS đã được cập nhật mà người dùng vẫn truy cập load balancer cũ, nguyên nhân là TTL của phản hồi cũ vẫn còn hiệu lực.
+          TTL càng dài, thời gian chuyển đổi càng lâu.
         </p>
       </div>
     </div>
