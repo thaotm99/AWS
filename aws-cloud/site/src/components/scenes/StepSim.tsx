@@ -7,7 +7,7 @@ export interface SimStep {
   button: string;
   /** Nodes that become visible after this step. */
   show?: string[];
-  /** Flows drawn after this step (replaces the previous step's flows). */
+  /** Flows added by this step; flows of earlier steps stay on the diagram. */
   flows?: DFlow[];
   /** Optional animated packet along one flow path when the step runs. */
   move?: string[];
@@ -35,7 +35,7 @@ export default function StepSim({ nodes, boxes = [], initial, intro, steps, heig
 
   const visible = new Set(initial);
   steps.slice(0, done).forEach((s) => s.show?.forEach((id) => visible.add(id)));
-  const flows = done ? steps[done - 1].flows ?? [] : [];
+  const flows = steps.slice(0, done).flatMap((s) => s.flows ?? []);
   const justShown = done ? steps[done - 1].show ?? [] : [];
 
   async function next() {
