@@ -30,7 +30,8 @@ export default function ScenarioFlow({ scenarios, height = 260, legend = ["Giả
   const [oi, setOi] = useState(0);
   const uid = useId().replace(/:/g, "");
   const s = scenarios[si];
-  const o = s.options[oi];
+  // Clamp: an option index from the previous scenario can outlive a switch to one with fewer options.
+  const o = s.options[Math.min(oi, s.options.length - 1)];
   const byId = Object.fromEntries(s.nodes.map((n) => [n.id, n]));
 
   return (
