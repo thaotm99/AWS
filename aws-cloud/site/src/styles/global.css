@@ -498,3 +498,22 @@ input[type="range"] { accent-color: var(--accent); }
 .cz-bar { width: 26px; height: 90px; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; display: flex; align-items: flex-end; overflow: hidden; }
 .cz-bar i { display: block; width: 100%; background: var(--accent); transition: height .3s; }
 @media (max-width: 560px) { .cz-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* ASG lesson */
+.term-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; padding: 14px; }
+.term-az { border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: var(--bg); display: grid; gap: 8px; align-content: start; }
+.term-list { display: grid; gap: 6px; }
+.term-inst { display: grid; gap: 2px; text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 8px 10px; cursor: pointer; font-size: 0.85rem; transition: opacity .25s; }
+.term-inst:disabled { cursor: default; }
+.term-inst.guess { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.term-inst.out { opacity: 0.35; }
+.term-inst.victim { background: var(--bad-soft); border-color: var(--bad); opacity: 1; }
+.term-id { font-family: var(--font-mono); font-weight: 500; color: var(--accent); }
+.term-meta { font-size: 0.72rem; color: var(--muted); }
+.term-steps { margin: 0 0 8px; padding-left: 20px; display: grid; gap: 4px; }
+.cap-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; padding: 14px; }
+.cap-az { border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: var(--bg); display: grid; gap: 8px; }
+.cap-az.down { background: var(--bad-soft); border-color: var(--bad); }
+.cap-az.down .cap-inst { background: var(--bad); opacity: 0.35; }
+.cap-insts { display: flex; flex-wrap: wrap; gap: 6px; min-height: 24px; }
+.cap-inst { width: 20px; height: 20px; border-radius: 4px; background: var(--ok); display: inline-block; }
