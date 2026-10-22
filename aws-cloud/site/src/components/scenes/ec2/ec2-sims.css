@@ -1,0 +1,48 @@
+/* EC2 lesson simulations: PlacementSim and Ec2LifecycleSim (lesson-local styles) */
+.ec2-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
+.ec2-story { margin: 0; padding: 10px 14px 0; font-size: var(--step--1); }
+
+/* PlacementSim: one Availability Zone drawn as a row of racks */
+.pg-az { margin: 12px 14px 0; border: 1.5px dashed var(--accent); border-radius: 10px; padding: 22px 8px 8px; position: relative; }
+.pg-az-t { position: absolute; top: 4px; left: 10px; font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent); }
+.pg-racks { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; }
+.pg-rack { border: 1px solid var(--line); border-radius: 7px; background: var(--bg); padding: 4px 3px 6px; display: grid; gap: 4px; justify-items: center; align-content: start; min-height: 132px; cursor: pointer; font: inherit; color: inherit; }
+.pg-rack:hover:not(:disabled) { border-color: var(--bad); }
+.pg-rack:disabled { cursor: default; }
+.pg-rack.down { background: var(--bad-soft); border-color: var(--bad); }
+.pg-rack-t { font-family: var(--font-mono); font-size: 0.62rem; color: var(--muted); }
+.pg-part { font-family: var(--font-mono); font-size: 0.58rem; line-height: 1.1; padding: 1px 4px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); }
+.pg-inst { width: 20px; height: 14px; border-radius: 3px; background: var(--ok); }
+.pg-inst.lost { background: var(--bad); }
+.pg-fail-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 4px 14px 0; }
+.pg-over { margin: 8px 14px 0; font-size: var(--step--1); color: var(--bad); }
+.pg-hint { margin: 8px 14px 0; font-size: 0.78rem; color: var(--muted); }
+.pg-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+.pg-metric { border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 0.8rem; }
+.pg-metric span { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
+.pg-metric b.good { color: var(--ok); }
+.pg-metric b.bad { color: var(--bad); }
+@media (max-width: 560px) {
+  .pg-racks { gap: 3px; }
+  .pg-rack { min-height: 118px; padding: 3px 1px 5px; }
+  .pg-inst { width: 16px; height: 12px; }
+  .pg-metrics { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Ec2LifecycleSim: attribute table of one instance */
+.lc-actions { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.lc-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
+.lc-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.lc-table th, .lc-table td { text-align: left; padding: 7px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.lc-table th { font-weight: 600; width: 38%; }
+.lc-table td code { font-size: 0.8rem; overflow-wrap: anywhere; }
+.lc-badge { display: inline-block; font-family: var(--font-mono); font-size: 0.66rem; font-weight: 600; padding: 1px 6px; border-radius: 999px; margin-right: 6px; white-space: nowrap; }
+.lc-badge.kept { background: var(--ok-soft); color: var(--ok); }
+.lc-badge.lost { background: var(--bad-soft); color: var(--bad); }
+.lc-badge.changed { background: var(--edge-soft); color: var(--edge); }
+.lc-badge.none { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+.lc-state { font-family: var(--font-mono); font-size: 0.78rem; }
+@media (max-width: 560px) {
+  .lc-table th, .lc-table td { padding: 6px 10px; display: block; width: auto; border-bottom: 0; }
+  .lc-table tr { display: block; border-bottom: 1px solid var(--line); padding: 4px 0; }
+}

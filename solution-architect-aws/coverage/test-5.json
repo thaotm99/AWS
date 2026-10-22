@@ -962,8 +962,8 @@
         {
           "keyword": "EC2 Instance Connect Endpoint",
           "lesson": "ec2",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "ec2.mdx#s3 / Ec2NetSim"
         },
         {
           "keyword": "Systems Manager Session Manager",
@@ -1580,8 +1580,8 @@
         {
           "keyword": "EC2 instance store (highest I/O performance)",
           "lesson": "ec2",
-          "status": "partial",
-          "where": "ec2.mdx#s4 / Ec2OpsSim"
+          "status": "covered",
+          "where": "ec2.mdx#s6; ec2.mdx#challenge / Quiz"
         },
         {
           "keyword": "S3 Standard",

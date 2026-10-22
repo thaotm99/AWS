@@ -69,8 +69,8 @@
         {
           "keyword": "Elastic IP address",
           "lesson": "ec2",
-          "status": "partial",
-          "where": "ec2.mdx#s4 / Ec2OpsSim"
+          "status": "covered",
+          "where": "ec2.mdx#s6 / Ec2LifecycleSim"
         }
       ]
     },
@@ -725,14 +725,14 @@
         {
           "keyword": "EC2 partition placement group",
           "lesson": "ec2",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "ec2.mdx#s5 / PlacementSim"
         },
         {
           "keyword": "EC2 spread placement group",
           "lesson": "ec2",
-          "status": "partial",
-          "where": "ec2.mdx#challenge"
+          "status": "covered",
+          "where": "ec2.mdx#s5 / PlacementSim"
         }
       ]
     },
@@ -1372,8 +1372,8 @@
         {
           "keyword": "EC2 instance store (boot volume)",
           "lesson": "ec2",
-          "status": "partial",
-          "where": "ec2.mdx#s4"
+          "status": "covered",
+          "where": "ec2.mdx#s6"
         }
       ]
     },

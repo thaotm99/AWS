@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 795 (83%) · 🟡 79 (8%) · ❌ 86 (9%).
+Có **960 keyword** khác nhau: ✅ 811 (84%) · 🟡 72 (8%) · ❌ 77 (8%).
 
 ### Theo bài học
 
@@ -28,7 +28,7 @@ Có **960 keyword** khác nhau: ✅ 795 (83%) · 🟡 79 (8%) · ❌ 86 (9%).
 | [kms](#kms) | 21 | 16 | 0 | 5 | 76% |
 | [security](#security) | 27 | 25 | 1 | 1 | 93% |
 | [cognito](#cognito) | 15 | 13 | 1 | 1 | 87% |
-| [ec2](#ec2) | 57 | 41 | 7 | 9 | 72% |
+| [ec2](#ec2) | 57 | 57 | 0 | 0 | 100% |
 | [elb](#elb) | 42 | 32 | 6 | 4 | 76% |
 | [asg](#asg) | 44 | 44 | 0 | 0 | 100% |
 | [containers](#containers) | 22 | 17 | 2 | 3 | 77% |
@@ -50,12 +50,12 @@ Có **960 keyword** khác nhau: ✅ 795 (83%) · 🟡 79 (8%) · ❌ 86 (9%).
 
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
-| Đề 1 | 194 | 16 | 14 |
-| Đề 2 | 177 | 11 | 10 |
-| Đề 3 | 195 | 10 | 17 |
-| Đề 4 | 196 | 18 | 22 |
-| Đề 5 | 183 | 23 | 15 |
-| Đề 6 | 189 | 8 | 13 |
+| Đề 1 | 198 | 13 | 13 |
+| Đề 2 | 179 | 9 | 10 |
+| Đề 3 | 197 | 10 | 15 |
+| Đề 4 | 202 | 15 | 19 |
+| Đề 5 | 185 | 22 | 14 |
+| Đề 6 | 194 | 6 | 10 |
 
 ## global-infra
 
@@ -401,22 +401,6 @@ Có **960 keyword** khác nhau: ✅ 795 (83%) · 🟡 79 (8%) · ❌ 86 (9%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | EC2 partition placement group | ❌ Thiếu | 2 | exam1_q23, exam4_q20 |  |
-| [ ] | EC2 Instance Connect Endpoint | ❌ Thiếu | 1 | exam5_q31 |  |
-| [ ] | EC2 On-Demand Capacity Reservation | ❌ Thiếu | 1 | exam4_q60 |  |
-| [ ] | EC2 Scheduled Reserved Instance | ❌ Thiếu | 1 | exam3_q30 |  |
-| [ ] | EC2 Spot block (defined duration) | ❌ Thiếu | 1 | exam6_q2 |  |
-| [ ] | Elastic Inference accelerator | ❌ Thiếu | 1 | exam4_q60 |  |
-| [ ] | Elastic Network Adapter (ENA) / enhanced networking | ❌ Thiếu | 1 | exam6_q36 |  |
-| [ ] | Instance store data not preserved in AMI | ❌ Thiếu | 1 | exam6_q42 |  |
-| [ ] | Terminated instances cannot be recovered | ❌ Thiếu | 1 | exam3_q57 |  |
-| [ ] | Elastic IP address | 🟡 Một phần | 3 | exam1_q2, exam4_q26, exam4_q38 | ec2.mdx#s4 / Ec2OpsSim<br>elb.mdx#s1 |
-| [ ] | EC2 instance metadata | 🟡 Một phần | 2 | exam2_q51, exam6_q11 | iam.mdx#s3 / StepSim (mention)<br>iam.mdx#s3 (credentials via metadata only) |
-| [ ] | EC2 spread placement group | 🟡 Một phần | 2 | exam1_q23, exam4_q20 | ec2.mdx#challenge |
-| [ ] | EC2 instance store (boot volume) | 🟡 Một phần | 1 | exam1_q44 | ec2.mdx#s4 |
-| [ ] | EC2 instance store (highest I/O performance) | 🟡 Một phần | 1 | exam5_q52 | ec2.mdx#s4 / Ec2OpsSim |
-| [ ] | Elastic IP vs public IP vs private IP | 🟡 Một phần | 1 | exam2_q37 | vpc.mdx#s1 / PacketPath; ec2.mdx#s3 |
-| [ ] | Instance store specified only at launch | 🟡 Một phần | 1 | exam6_q42 | monitoring.mdx#s2 / AlarmActionSim (passing mention) |
 | [ ] | EC2 Spot Instance | ✅ Đã có | 8 | exam1_q21, exam2_q23, exam2_q33, exam2_q49, exam3_q51, exam4_q20, exam4_q46, exam5_q36 | ec2.mdx#s1 / Ec2CostSim<br>ec2.mdx#s1 / PurchaseMixSim |
 | [ ] | EC2 Reserved Instance | ✅ Đã có | 6 | exam1_q21, exam2_q14, exam2_q35, exam4_q46, exam6_q33, exam6_q38 | ec2.mdx#s1 / PurchaseMixSim<br>ec2.mdx#s1 / PurchaseMixSim; ec2.mdx#challenge / Quiz |
 | [ ] | EC2 Dedicated Instance | ✅ Đã có | 5 | exam2_q23, exam3_q21, exam4_q60, exam6_q21, exam6_q33 | ec2.mdx#s1 / Ec2CostSim<br>ec2.mdx#s1; ec2.mdx#challenge |
@@ -424,8 +408,12 @@ Có **960 keyword** khác nhau: ✅ 795 (83%) · 🟡 79 (8%) · ❌ 86 (9%).
 | [ ] | EC2 cluster placement group | ✅ Đã có | 3 | exam1_q23, exam4_q20, exam4_q60 | ec2.mdx#s3 / Ec2NetSim |
 | [ ] | EC2 instance store | ✅ Đã có | 3 | exam1_q43, exam5_q43, exam6_q15 | ec2.mdx#s4 / Ec2OpsSim / challenge<br>ec2.mdx#s4 / Ec2OpsSim |
 | [ ] | EC2 user data | ✅ Đã có | 3 | exam2_q51, exam4_q1, exam4_q5 | ec2.mdx#s2 |
+| [ ] | Elastic IP address | ✅ Đã có | 3 | exam1_q2, exam4_q26, exam4_q38 | ec2.mdx#s6 / Ec2LifecycleSim<br>ec2.mdx#s6 |
 | [ ] | Amazon Machine Image (AMI) | ✅ Đã có | 2 | exam5_q36, exam6_q27 | ec2.mdx#s2<br>ec2.mdx#s2 / StepSim |
 | [ ] | Bastion host | ✅ Đã có | 2 | exam6_q25, exam6_q56 | ec2.mdx#s3 / Ec2NetSim |
+| [ ] | EC2 instance metadata | ✅ Đã có | 2 | exam2_q51, exam6_q11 | ec2.mdx#s2 / RequirementPicker |
+| [ ] | EC2 partition placement group | ✅ Đã có | 2 | exam1_q23, exam4_q20 | ec2.mdx#s5 / PlacementSim |
+| [ ] | EC2 spread placement group | ✅ Đã có | 2 | exam1_q23, exam4_q20 | ec2.mdx#s5 / PlacementSim |
 | [ ] | Elastic Fabric Adapter (EFA) | ✅ Đã có | 2 | exam6_q36, exam6_q59 | ec2.mdx#s3 / Ec2NetSim |
 | [ ] | Golden AMI | ✅ Đã có | 2 | exam2_q51, exam4_q1 | ec2.mdx#s2 / StepSim<br>ec2.mdx#s2 |
 | [ ] | AMI copy across Regions | ✅ Đã có | 1 | exam3_q55 | ec2.mdx#s2; global-infra.mdx#s1 / AmiCopySim |
@@ -434,12 +422,18 @@ Có **960 keyword** khác nhau: ✅ 795 (83%) · 🟡 79 (8%) · ❌ 86 (9%).
 | [ ] | EC2 Dedicated Host (BYOL server-bound licenses) | ✅ Đã có | 1 | exam6_q33 | ec2.mdx#s1 / Ec2CostSim |
 | [ ] | EC2 Hibernate | ✅ Đã có | 1 | exam2_q51 | ec2.mdx#s4 / Ec2OpsSim |
 | [ ] | EC2 Instance Connect | ✅ Đã có | 1 | exam5_q31 | ec2.mdx#s3 / Ec2NetSim |
+| [ ] | EC2 Instance Connect Endpoint | ✅ Đã có | 1 | exam5_q31 | ec2.mdx#s3 / Ec2NetSim |
 | [ ] | EC2 instance recovery keeps instance ID, private/Elastic/public IP and metadata | ✅ Đã có | 1 | exam3_q57 | ec2.mdx#s4 / Ec2OpsSim |
 | [ ] | EC2 instance recovery loses in-memory data | ✅ Đã có | 1 | exam3_q57 | ec2.mdx#challenge / Quiz |
+| [ ] | EC2 instance store (boot volume) | ✅ Đã có | 1 | exam1_q44 | ec2.mdx#s6 |
 | [ ] | EC2 instance store (ephemeral, lost on stop/hibernate/terminate) | ✅ Đã có | 1 | exam6_q42 | ec2.mdx#s4 / Ec2OpsSim |
+| [ ] | EC2 instance store (highest I/O performance) | ✅ Đã có | 1 | exam5_q52 | ec2.mdx#s6; ec2.mdx#challenge / Quiz |
+| [ ] | EC2 On-Demand Capacity Reservation | ✅ Đã có | 1 | exam4_q60 | ec2.mdx#s1; ec2.mdx#s5 / RequirementPicker |
 | [ ] | EC2 recovery requires EBS-backed instance (no instance store) | ✅ Đã có | 1 | exam3_q38 | ec2.mdx#challenge / Quiz |
 | [ ] | EC2 Reserved Instance (steady baseline) | ✅ Đã có | 1 | exam2_q33 | ec2.mdx#s1 / PurchaseMixSim |
 | [ ] | EC2 Reserved Instance for baseline | ✅ Đã có | 1 | exam5_q60 | ec2.mdx#s1 / PurchaseMixSim |
+| [ ] | EC2 Scheduled Reserved Instance | ✅ Đã có | 1 | exam3_q30 | ec2.mdx#s1 |
+| [ ] | EC2 Spot block (defined duration) | ✅ Đã có | 1 | exam6_q2 | ec2.mdx#s1; ec2.mdx#challenge / SortGame |
 | [ ] | EC2 Spot Fleet | ✅ Đã có | 1 | exam2_q49 | ec2.mdx#s1 / Ec2CostSim |
 | [ ] | EC2 Spot Fleet (Spot + optional On-Demand) | ✅ Đã có | 1 | exam6_q2 | ec2.mdx#s1 / Ec2CostSim; ec2.mdx#challenge |
 | [ ] | EC2 Spot Instance (2-minute interruption notice) | ✅ Đã có | 1 | exam6_q2 | ec2.mdx#s1 / Ec2CostSim; ec2.mdx#challenge |
@@ -451,13 +445,19 @@ Có **960 keyword** khác nhau: ✅ 795 (83%) · 🟡 79 (8%) · ❌ 86 (9%).
 | [ ] | EC2 system status check vs instance status check | ✅ Đã có | 1 | exam3_q38 | ec2.mdx#s4 / Ec2OpsSim |
 | [ ] | EC2 user data (root privileges, first boot only) | ✅ Đã có | 1 | exam2_q19 | ec2.mdx#s2 / StepSim |
 | [ ] | EC2 user data (runs once at first boot) | ✅ Đã có | 1 | exam6_q11 | ec2.mdx#s2 / StepSim |
+| [ ] | Elastic Inference accelerator | ✅ Đã có | 1 | exam4_q60 | ec2.mdx#s5 / RequirementPicker |
 | [ ] | Elastic IP (one instance at a time) | ✅ Đã có | 1 | exam6_q56 | ec2.mdx#s4 / Ec2OpsSim |
 | [ ] | Elastic IP attached via user data | ✅ Đã có | 1 | exam6_q57 | ec2.mdx#s4 / Ec2OpsSim |
+| [ ] | Elastic IP vs public IP vs private IP | ✅ Đã có | 1 | exam2_q37 | ec2.mdx#s6 / Ec2LifecycleSim |
+| [ ] | Elastic Network Adapter (ENA) / enhanced networking | ✅ Đã có | 1 | exam6_q36 | ec2.mdx#s5 / RequirementPicker |
 | [ ] | Encrypted AMI snapshot cannot be copied as unencrypted | ✅ Đã có | 1 | exam3_q55 | ec2.mdx#s2 |
 | [ ] | Instance store cannot be detached/reattached | ✅ Đã có | 1 | exam6_q42 | ec2.mdx#s4 / Ec2OpsSim; ec2.mdx#challenge |
+| [ ] | Instance store data not preserved in AMI | ✅ Đã có | 1 | exam6_q42 | ec2.mdx#s6 / Ec2LifecycleSim |
+| [ ] | Instance store specified only at launch | ✅ Đã có | 1 | exam6_q42 | ec2.mdx#s6 / Ec2LifecycleSim |
 | [ ] | Private IP for intra-VPC traffic (data transfer cost) | ✅ Đã có | 1 | exam6_q59 | ec2.mdx#s3 / Ec2NetSim |
 | [ ] | Spot Fleet (maintains target capacity) | ✅ Đã có | 1 | exam3_q51 | ec2.mdx#s1 / Ec2CostSim |
 | [ ] | Spot request persistent vs one-time | ✅ Đã có | 1 | exam3_q51 | ec2.mdx#s1 / Ec2CostSim |
+| [ ] | Terminated instances cannot be recovered | ✅ Đã có | 1 | exam3_q57 | ec2.mdx#s6 / Ec2LifecycleSim; ec2.mdx#challenge / SortGame |
 
 ## elb
 

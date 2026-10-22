@@ -631,14 +631,14 @@
         {
           "keyword": "EC2 spread placement group",
           "lesson": "ec2",
-          "status": "partial",
-          "where": "ec2.mdx#challenge"
+          "status": "covered",
+          "where": "ec2.mdx#s5 / PlacementSim"
         },
         {
           "keyword": "EC2 partition placement group",
           "lesson": "ec2",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "ec2.mdx#s5 / PlacementSim"
         },
         {
           "keyword": "EC2 Spot Instance",
@@ -846,8 +846,8 @@
         {
           "keyword": "Elastic IP address",
           "lesson": "ec2",
-          "status": "partial",
-          "where": "elb.mdx#s1"
+          "status": "covered",
+          "where": "ec2.mdx#s6"
         }
       ]
     },
@@ -1243,8 +1243,8 @@
         {
           "keyword": "Elastic IP address",
           "lesson": "ec2",
-          "status": "partial",
-          "where": "elb.mdx#s1"
+          "status": "covered",
+          "where": "ec2.mdx#s6"
         }
       ]
     },
@@ -1880,8 +1880,8 @@
         {
           "keyword": "EC2 On-Demand Capacity Reservation",
           "lesson": "ec2",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "ec2.mdx#s1; ec2.mdx#s5 / RequirementPicker"
         },
         {
           "keyword": "EC2 Dedicated Instance",
@@ -1892,8 +1892,8 @@
         {
           "keyword": "Elastic Inference accelerator",
           "lesson": "ec2",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "ec2.mdx#s5 / RequirementPicker"
         }
       ]
     },

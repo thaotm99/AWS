@@ -952,8 +952,8 @@
         {
           "keyword": "EC2 Scheduled Reserved Instance",
           "lesson": "ec2",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "ec2.mdx#s1"
         }
       ]
     },
@@ -1755,8 +1755,8 @@
         {
           "keyword": "Terminated instances cannot be recovered",
           "lesson": "ec2",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "ec2.mdx#s6 / Ec2LifecycleSim; ec2.mdx#challenge / SortGame"
         }
       ]
     },

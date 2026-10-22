@@ -1,8 +1,8 @@
 ---
 title: "Amazon EC2: purchasing options, launching, networking and operating instances"
 lede: "ShopViet's server tier runs on EC2 instances. This lesson covers common operational tasks: choosing purchasing options to optimize cost, cutting instance launch time down to a few minutes, configuring networking between instances, and handling hardware failures, unresponsive applications and loss of temporary data."
-minutes: 30
-scenes: 4
+minutes: 42
+scenes: 6
 prerequisites: ["vpc", "iam"]
 docs:
   - title: "Amazon EC2 billing and purchasing options"
@@ -29,6 +29,56 @@ docs:
     url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html"
   - title: "Amazon EC2 instance IP addressing"
     url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-instance-addressing.html"
+  - title: "Placement strategies for your placement groups"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/placement-strategies.html"
+  - title: "Data persistence for Amazon EC2 instance store volumes"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-store-lifetime.html"
+  - title: "Add instance store volumes to an EC2 instance"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/add-instance-store-volumes.html"
+  - title: "Root volumes for your Amazon EC2 instances"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/RootDeviceStorage.html"
+  - title: "AMI types and characteristics"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ComponentsAMIs.html"
+  - title: "Specifications for Amazon EC2 storage optimized instances"
+    url: "https://docs.aws.amazon.com/ec2/latest/instancetypes/so.html"
+  - title: "Enhanced networking on Amazon EC2 instances"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/enhanced-networking.html"
+  - title: "Elastic network interfaces"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html"
+  - title: "Elastic Fabric Adapter for AI/ML and HPC workloads"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html"
+  - title: "Reserve compute capacity with EC2 On-Demand Capacity Reservations"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-capacity-reservations.html"
+  - title: "Capacity Reservation pricing and billing"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/capacity-reservations-pricing-billing.html"
+  - title: "New – Scheduled Reserved Instances (update 9/3/2024)"
+    url: "https://aws.amazon.com/blogs/aws/new-scheduled-reserved-instances/"
+  - title: "New – EC2 Spot Blocks for Defined-Duration Workloads (update July 2021)"
+    url: "https://aws.amazon.com/blogs/aws/new-ec2-spot-blocks-for-defined-duration-workloads/"
+  - title: "Amazon ECS task definition parameters (Elastic Inference no longer available)"
+    url: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters_ec2.html"
+  - title: "Connect to your instances using a private IP address and EC2 Instance Connect Endpoint"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/connect-with-ec2-instance-connect-endpoint.html"
+  - title: "Connect to a Linux instance using EC2 Instance Connect"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-connect-methods.html"
+  - title: "Use instance metadata to manage your EC2 instance"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html"
+  - title: "Access instance metadata for an EC2 instance"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html"
+  - title: "Elastic IP addresses"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html"
+  - title: "Terminate Amazon EC2 instances"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/terminating-instances.html"
+  - title: "How instance termination works"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/how-ec2-instance-termination-works.html"
+  - title: "Enable VPC internet access using internet gateways"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Internet_Gateway.html"
+  - title: "VPC CIDR blocks"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-cidr-blocks.html"
+  - title: "Target groups for your Application Load Balancers"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html"
+  - title: "AWS global condition context keys"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_condition-keys.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -40,18 +90,23 @@ import Ec2OpsSim from "../../components/scenes/ec2/Ec2OpsSim.tsx";
 import StepSim from "../../components/scenes/StepSim.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
+import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
+import PlacementSim from "../../components/scenes/ec2/PlacementSim.tsx";
+import Ec2LifecycleSim from "../../components/scenes/ec2/Ec2LifecycleSim.tsx";
 
 <Story toc={[
   { href: "#en-s1", label: "1 · Optimizing purchase cost" },
   { href: "#en-s2", label: "2 · Shortening launch time" },
   { href: "#en-s3", label: "3 · Networking between instances" },
   { href: "#en-s4", label: "4 · Handling instance failures" },
+  { href: "#en-s5", label: "5 · Placement groups and network devices" },
+  { href: "#en-s6", label: "6 · Instance lifecycle and IP addresses" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
 ShopViet's server tier runs on EC2 instances. The challenge is not launching an instance but the design decisions: which purchasing option optimizes cost, how long a launch takes, whether to place instances close together or spread them out, where to keep temporary data, and how instances recover on their own when something fails.
 </Story>
 
-<Scene id="en-s1" label="Part 1/4" title="Optimizing cost while keeping availability" questions={["exam2_q33", "exam2_q35", "exam4_q49", "exam5_q60", "exam1_q21", "exam4_q46", "exam2_q49", "exam6_q18", "exam2_q23", "exam6_q21", "exam6_q33", "exam6_q38", "exam4_q30"]}>
+<Scene id="en-s1" label="Part 1/6" title="Optimizing cost while keeping availability" questions={["exam2_q33", "exam2_q35", "exam4_q49", "exam5_q60", "exam1_q21", "exam4_q46", "exam2_q49", "exam6_q18", "exam2_q23", "exam6_q21", "exam6_q33", "exam6_q38", "exam4_q30", "exam3_q30", "exam4_q60", "exam6_q2"]}>
 
 ShopViet needs 80 instances running continuously 24/7; during the day it also needs extra workers that process images from a queue (interruption-tolerant). Choose a purchasing strategy:
 
@@ -61,11 +116,15 @@ The chart above shows the big picture. In practice there are more specific situa
 
 <Ec2CostSim client:visible />
 
-<Takeaway>Baseline load running 24/7: Reserved Instances or Savings Plans. Interruption-tolerant tasks: Spot (a persistent request or Spot Fleet to keep processing). Variable load that cannot tolerate interruption: On-Demand. Single-tenant hardware, with no need to control the host and no per-socket or per-core licenses: Dedicated Instances (billed per instance); per-socket or per-core licenses: Dedicated Hosts (billed per host). A discount that covers EC2, Fargate and Lambda: Compute Savings Plan.</Takeaway>
+Before the 11.11 sale, ShopViet must be **certain to have capacity** for 40 C-family instances in the ap-southeast-1a AZ. Savings Plans and regional Reserved Instances only lower the price; they do not reserve capacity. An **On-Demand Capacity Reservation** reserves capacity in a specific AZ; an immediate-use reservation can be created, modified and canceled at any time with no term commitment. A Capacity Reservation has no discount of its own: it is charged at the On-Demand rate whether or not instances run in the reserved capacity. To reserve capacity and also get a discount, combine the Capacity Reservation with Savings Plans or regional Reserved Instances. A Capacity Reservation does not change instance performance.
+
+Two older purchasing options are retired: **Scheduled Reserved Instances** (capacity reserved on a daily, weekly or monthly schedule) can no longer be purchased, and AWS has no capacity or plans to offer them again; **Spot blocks** (Spot Instances with a defined duration of 1 to 6 hours) have not been available to new customers since July 1, 2021. Instead: to reserve capacity, use On-Demand Capacity Reservations; for lower prices, use Savings Plans; interruption-tolerant work uses Spot Instances without a defined duration.
+
+<Takeaway>Baseline load running 24/7: Reserved Instances or Savings Plans. Interruption-tolerant tasks: Spot (a persistent request or Spot Fleet to keep processing). Variable load that cannot tolerate interruption: On-Demand. Single-tenant hardware, with no need to control the host and no per-socket or per-core licenses: Dedicated Instances (billed per instance); per-socket or per-core licenses: Dedicated Hosts (billed per host). A discount that covers EC2, Fargate and Lambda: Compute Savings Plan. Guaranteed capacity in one AZ: On-Demand Capacity Reservation (On-Demand rate, no performance gain). Scheduled Reserved Instances and Spot blocks are retired.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/4" title="Shortening launch time: golden AMI and user data" questions={["exam4_q1", "exam2_q19", "exam6_q11", "exam2_q51", "exam3_q55"]}>
+<Scene id="en-s2" label="Part 2/6" title="Shortening launch time: golden AMI and user data" questions={["exam4_q1", "exam2_q19", "exam6_q11", "exam2_q51", "exam3_q55"]}>
 
 A full installation of a ShopViet server takes 45 minutes, while Auto Scaling needs a new instance ready within a few minutes.
 
@@ -89,37 +148,100 @@ A full installation of a ShopViet server takes 45 minutes, while Auto Scaling ne
 
 A golden AMI can be reused more widely. When ShopViet expands to a new Region, **copy the AMI** to that Region. When another team needs it, **share the AMI** with that team's account. An AMI created from encrypted snapshots must also be encrypted when copied; it cannot be copied into an unencrypted copy.
 
-<Takeaway>Shorter launch time: a golden AMI for the fixed part + user data for the changing part. An AMI can be copied to another Region and shared with another account. Keep the RAM state when stopping an instance: Hibernate (part 4).</Takeaway>
+Inside the instance, a startup script often needs to know its own instance ID, AZ or IP address. It reads them from **instance metadata**: data about the instance, divided into categories (host name, security groups, events…), retrieved at `169.254.169.254` (IMDSv2 requires a session token first). Instance metadata also returns the user data passed at launch. Metadata is data to read, not a way to run scripts. Metadata and user data can only be accessed from within the instance, but they are not protected by authentication or encryption, so do not store passwords in them.
+
+Pick each need of the operations team to see which mechanism fits:
+
+<RequirementPicker client:visible label="Mechanism that fits" items={[
+  { need: "Run a configuration script only once, when the instance first launches", answer: "User data",
+    why: "By default, user data scripts and cloud-init directives run only during the boot cycle of the first launch, as root. No extra configuration is needed; you only change the configuration if you want them to run on every boot." },
+  { need: "A script on the instance needs its own instance ID, AZ and private IP", answer: "Instance metadata (169.254.169.254)",
+    why: "Instance metadata is data about your instance that you use to configure or manage the running instance. It is accessible only from within the instance." },
+  { need: "The application takes minutes to start after every stop/start; it must resume its previous state immediately", answer: "EC2 Hibernate",
+    why: "Hibernate saves the RAM contents to the EBS root volume and reloads them on start. User data, metadata or an AMI cannot shorten the application's own startup time." },
+  { need: "Software shared by every instance must be present as soon as it launches", answer: "Golden AMI",
+    why: "The software is installed once into the AMI; every instance launched from that AMI already has it." },
+]} />
+
+<Takeaway>Shorter launch time: a golden AMI for the fixed part + user data for the changing part. An AMI can be copied to another Region and shared with another account. Information about the instance itself (ID, IP, AZ): instance metadata, which does not run scripts. Keep the RAM state when stopping an instance: Hibernate (part 4).</Takeaway>
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/4" title="Networking between instances" questions={["exam1_q23", "exam4_q20", "exam4_q60", "exam6_q36", "exam6_q57", "exam6_q59"]}>
+<Scene id="en-s3" label="Part 3/6" title="Networking between instances" questions={["exam1_q23", "exam4_q20", "exam4_q60", "exam6_q36", "exam6_q57", "exam6_q59", "exam5_q31"]}>
 
 Where instances are placed and the path between them determine latency, cost and security. Pick a scenario, change the configuration, then send traffic:
 
 <Ec2NetSim client:visible />
 
-<Takeaway>Lowest network latency between nodes: cluster placement group (+ EFA for HPC). Traffic between instances in a VPC: use private IPs. SSH with temporary keys: EC2 Instance Connect. Highly available bastion host: NLB + Auto Scaling group.</Takeaway>
+<Takeaway>Lowest network latency between nodes: cluster placement group (+ EFA for HPC). Traffic between instances in a VPC: use private IPs. SSH with temporary keys: EC2 Instance Connect (an instance with a public IP connects directly). SSH to an instance with only a private IP, with no bastion and no internet gateway: EC2 Instance Connect Endpoint. Placement groups in detail: part 5. Highly available bastion host: NLB + Auto Scaling group.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/4" title="Handling instance failures" questions={["exam1_q43", "exam5_q43", "exam5_q52", "exam6_q42", "exam3_q38", "exam3_q57", "exam5_q19", "exam5_q20", "exam5_q31", "exam6_q56"]}>
+<Scene id="en-s4" label="Part 4/6" title="Handling instance failures" questions={["exam1_q43", "exam5_q43", "exam5_q52", "exam6_q42", "exam3_q38", "exam3_q57", "exam5_q19", "exam5_q20", "exam5_q31", "exam6_q56"]}>
 
 Common failures: a hardware fault at 3 a.m., an unresponsive application, temporary data lost after a stop. Simulate each failure, then turn on the matching EC2 feature and run it again:
 
 <Ec2OpsSim client:visible />
 
-<Takeaway>Hardware failure: automatic instance recovery (simplified automatic recovery, on by default for supported instances, or a recover alarm action), which keeps the instance ID and IP addresses. Unresponsive application: reboot alarm action. Instance store is temporary storage and loses data on stop, hibernate or terminate; it suits only buffers, caches and temporary files. Stop an instance and keep the RAM state: Hibernate. Automatically replace a single instance and keep its IP: ASG min = max = 1 + an Elastic IP attached by user data. 1-minute metrics: detailed monitoring.</Takeaway>
+<Takeaway>Hardware failure: automatic instance recovery (simplified automatic recovery, on by default for supported instances, or a recover alarm action), which keeps the instance ID and IP addresses. Unresponsive application: reboot alarm action. Instance store is temporary storage and loses data on stop, hibernate or terminate; it suits only buffers, caches and temporary files. Stop an instance and keep the RAM state: Hibernate. Automatically replace a single instance and keep its IP: ASG min = max = 1 + an Elastic IP attached by user data. 1-minute metrics: detailed monitoring. A terminated instance cannot be recovered or started again.</Takeaway>
 
 </Scene>
 
-<Scene id="en-challenge" label="Exercise" title="Spot Instances and instance store: true or false?" questions={["exam3_q51", "exam6_q2", "exam6_q42", "exam2_q35", "exam1_q23", "exam4_q1", "exam3_q38", "exam6_q21"]}>
+<Scene id="en-s5" label="Part 5/6" title="Placement groups and network devices for high-performance workloads" questions={["exam1_q23", "exam4_q20", "exam4_q60", "exam6_q36"]}>
+
+Without a placement group, EC2 spreads instances across the underlying hardware to minimize correlated failures. A placement group lets you choose: place instances **close together** for the lowest latency, or **apart** so one hardware failure does not affect many instances. Pick a workload and a placement strategy, then press a rack to simulate a failure of that rack:
+
+<PlacementSim client:visible />
+
+A placement group only decides where instances go. Network performance also depends on the instance's network devices and launch options. ShopViet's HPC team weighs each of these options:
+
+<RequirementPicker client:visible label="Option that fits" items={[
+  { need: "Node-to-node communication of an MPI-based HPC application that needs the lowest, most consistent latency", answer: "Elastic Fabric Adapter (EFA)",
+    why: "EFA provides OS-bypass and the Scalable Reliable Datagram (SRD) reliable transport, improving inter-instance communication for HPC and ML. An EFA with ENA interface creates both an EFA device and an ENA device for regular IP networking. Use it together with a cluster placement group." },
+  { need: "High bandwidth, high packets per second and consistent latency for regular networked applications", answer: "Elastic Network Adapter (ENA): enhanced networking",
+    why: "Enhanced networking uses SR-IOV for higher bandwidth, higher PPS and consistently lower inter-instance latency, at no additional charge. ENA supports up to 100 Gbps on supported instance types; all Nitro-based instances use ENA. ENA does not have EFA's OS-bypass." },
+  { need: "A virtual network card that can be detached from one instance and attached to another in the same AZ", answer: "Elastic network interface (ENI)",
+    why: "An ENI is a logical networking component in a VPC that represents a virtual network card; its attributes follow it to the new instance and traffic is redirected. An ENI is not an HPC performance option." },
+  { need: "Guarantee enough capacity in one AZ for the sale", answer: "On-Demand Capacity Reservation",
+    why: "Reserves capacity without changing performance. It can be created in a cluster placement group; spread and partition placement groups are not supported." },
+  { need: "Single-tenant hardware for compliance", answer: "Dedicated Instances",
+    why: "Meets host-level hardware isolation requirements; it is not a network performance option." },
+  { need: "Attach a deep learning inference accelerator to the instance", answer: "Elastic Inference: retired",
+    why: "Amazon Elastic Inference is no longer available; AWS points to Amazon SageMaker for similar capabilities. It is not a networking option either." },
+  { need: "A static public address for the instance", answer: "Elastic IP address",
+    why: "An Elastic IP address is a static public IPv4 address, not a network device, and it does not affect performance (part 6)." },
+]} />
+
+<Takeaway>Lowest latency for tightly coupled HPC: cluster placement group (single AZ) + EFA. Large distributed and replicated workloads (HDFS, HBase, Cassandra, Kafka): partition placement group (up to 7 partitions per AZ; partitions do not share racks). A small number of critical instances that must be kept apart: spread placement group (up to 7 running instances per AZ per group). Enhanced networking: ENA; HPC/ML with OS-bypass: EFA; a virtual network card that moves between instances: ENI. Capacity Reservations and Dedicated Instances do not improve performance; Elastic Inference is retired.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s6" label="Part 6/6" title="Instance lifecycle: instance store, IP addresses and what remains" questions={["exam1_q2", "exam1_q44", "exam2_q37", "exam3_q57", "exam4_q26", "exam4_q38", "exam5_q52", "exam6_q42"]}>
+
+ShopViet's video transcoding server reads and writes about 10 TB of temporary files and needs the highest possible I/O performance. **Instance store** is disk physically attached to the instance's host computer; storage optimized instances are optimized to deliver tens of thousands of low-latency, random IOPS. Instance store has no separate charge (it is included in the instance price). In exchange, the data exists only for the lifetime of the instance, so the final output must be pushed to S3 for durable storage and to S3 Glacier for archival.
+
+An instance also has three kinds of IPv4 address. A **private IP** is used inside the VPC, typically from the RFC 1918 ranges (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16), and is kept across stop/start. An auto-assigned **public IP** comes from Amazon's pool, is not associated with your account, and is released on stop, hibernate or terminate. An **Elastic IP address** is a static public address that belongs to your account until you release it and can be remapped to another instance to mask a failure. Pick an action to see what remains:
+
+<Ec2LifecycleSim client:visible />
+
+Common design mix-ups:
+
+- **An Elastic IP address does not replace a highly available architecture.** Remapping an Elastic IP masks the failure of one instance, but distributing traffic and replacing failed instances is the job of a load balancer and an Auto Scaling group. Instances behind an Application Load Balancer **do not need** a public or Elastic IP: targets registered by instance ID receive traffic on their primary private IP.
+- **An Elastic IP is only an address.** To reach the instance from the internet (ping included), the subnet's route table still needs a route to an internet gateway, and the security group must allow the traffic (ping uses ICMP).
+- **The `aws:SourceIp` condition in an IAM policy** compares the IP of the API caller, not the address of the instance.
+- **Instance store as a root volume** exists only with Amazon S3-backed AMIs on some older instance types (C1, C3, D2, I2, M1, M2, M3, R3, X1); AWS considers this AMI type end of life. Such instances cannot be stopped and cannot be restored after they fail or terminate. EBS st1 and sc1 volumes cannot be root volumes.
+
+<Takeaway>Instance store: the highest I/O for temporary data; data survives a reboot; lost on stop, hibernate or terminate; specified only at launch; cannot be moved to another instance; not preserved in an AMI created from the instance. An auto-assigned public IP changes after stop/start; an Elastic IP address stays and is charged even when unassociated. Recovery keeps the instance ID and every IP address; termination is permanent and cannot be recovered.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="EC2: true or false?" questions={["exam3_q51", "exam6_q2", "exam6_q42", "exam2_q35", "exam1_q23", "exam4_q1", "exam3_q38", "exam6_q21", "exam4_q20", "exam3_q57", "exam6_q11", "exam5_q31", "exam6_q36", "exam5_q52"]}>
 
 Sort each statement into True or False. On a mobile device: tap a card, then tap the target box.
 
 <SortGame client:visible
   bins={[
-    { id: "true", title: "True", sub: "Per the AWS documentation", hint: "Hint: this statement is correct for Spot Instances or instance store." },
+    { id: "true", title: "True", sub: "Per the AWS documentation", hint: "Hint: this statement is correct according to the EC2 documentation." },
     { id: "false", title: "False", sub: "Common misconception", hint: "Hint: this statement sounds plausible but is not accurate." },
   ]}
   cards={[
@@ -127,6 +249,11 @@ Sort each statement into True or False. On a mobile device: tap a card, then tap
     ["Canceling a Spot request does not terminate running instances", "true"], ["A Spot Fleet can include On-Demand", "true"],
     ["Instance store keeps data when the instance stops", "false"], ["Instance store can be detached and attached to another instance", "false"],
     ["Canceling a Spot request automatically terminates the instances", "false"],
+    ["Instance store data is included in an AMI created from the instance", "false"], ["Instance store volumes can be added after launch", "false"],
+    ["Instance store data survives a reboot", "true"], ["A terminated instance can be recovered if configured at launch", "false"],
+    ["New customers can still buy 1 to 6-hour Spot blocks", "false"], ["A partition placement group suits a Kafka or Cassandra cluster", "true"],
+    ["A spread placement group runs at most 7 instances per AZ", "true"], ["Instance metadata is used to run scripts at boot", "false"],
+    ["An instance with a public IP still requires an EC2 Instance Connect Endpoint", "false"], ["An auto-assigned public IP changes after stop and start", "true"],
   ]}
 />
 
@@ -153,6 +280,18 @@ Check your understanding: as the designer of the ShopViet system, which option f
     opts: ["Dedicated Hosts", "Dedicated Instances", "Cluster placement group"],
     a: 1,
     why: "Dedicated Instances run on hardware dedicated to a single account and are billed per instance; Dedicated Hosts are billed for the whole host and are needed only when you must control sockets and cores for licensing." },
+  { q: "ShopViet's 12-node Cassandra cluster needs groups of replicas on separate hardware so that one failed rack does not lose data. Which placement strategy fits?",
+    opts: ["Cluster placement group", "Partition placement group", "Spread placement group"],
+    a: 1,
+    why: "A partition placement group gives each partition its own set of racks and tells the application which partition each instance is in. Spread runs at most 7 instances per AZ; cluster packs the nodes onto nearby hardware." },
+  { q: "A genome analysis application runs MPI across many instances and needs the highest inter-node communication performance. Which network device should the instances use?",
+    opts: ["Elastic network interface (ENI)", "Elastic Network Adapter (ENA)", "Elastic Fabric Adapter (EFA)", "Elastic IP address"],
+    a: 2,
+    why: "EFA adds OS-bypass for HPC and ML. ENA is standard enhanced networking; an ENI is a virtual network card; an Elastic IP is only an address." },
+  { q: "A transcoding server needs about 10 TB of scratch space with the highest I/O; results are stored in S3. Which temporary storage fits?",
+    opts: ["Instance store", "EBS gp3", "Amazon EFS"],
+    a: 0,
+    why: "Instance store is disk physically attached to the host, gives the highest I/O and is included in the instance price. Data is lost on stop or terminate, so use it only for temporary data." },
 ]} />
 
 </Scene>

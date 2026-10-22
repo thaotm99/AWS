@@ -53,8 +53,8 @@
         {
           "keyword": "EC2 Spot block (defined duration)",
           "lesson": "ec2",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "ec2.mdx#s1; ec2.mdx#challenge / SortGame"
         }
       ]
     },
@@ -322,8 +322,8 @@
         {
           "keyword": "EC2 instance metadata",
           "lesson": "ec2",
-          "status": "partial",
-          "where": "iam.mdx#s3 (credentials via metadata only)"
+          "status": "covered",
+          "where": "ec2.mdx#s2 / RequirementPicker"
         }
       ]
     },
@@ -1042,8 +1042,8 @@
         {
           "keyword": "Elastic Network Adapter (ENA) / enhanced networking",
           "lesson": "ec2",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "ec2.mdx#s5 / RequirementPicker"
         },
         {
           "keyword": "Elastic network interface (ENI)",
@@ -1227,14 +1227,14 @@
         {
           "keyword": "Instance store data not preserved in AMI",
           "lesson": "ec2",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "ec2.mdx#s6 / Ec2LifecycleSim"
         },
         {
           "keyword": "Instance store specified only at launch",
           "lesson": "ec2",
-          "status": "partial",
-          "where": "monitoring.mdx#s2 / AlarmActionSim (passing mention)"
+          "status": "covered",
+          "where": "ec2.mdx#s6 / Ec2LifecycleSim"
         }
       ]
     },

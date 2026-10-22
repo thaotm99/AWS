@@ -1141,8 +1141,8 @@
         {
           "keyword": "Elastic IP vs public IP vs private IP",
           "lesson": "ec2",
-          "status": "partial",
-          "where": "vpc.mdx#s1 / PacketPath; ec2.mdx#s3"
+          "status": "covered",
+          "where": "ec2.mdx#s6 / Ec2LifecycleSim"
         }
       ]
     },
@@ -1496,8 +1496,8 @@
         {
           "keyword": "EC2 instance metadata",
           "lesson": "ec2",
-          "status": "partial",
-          "where": "iam.mdx#s3 / StepSim (mention)"
+          "status": "covered",
+          "where": "ec2.mdx#s2 / RequirementPicker"
         }
       ]
     },
