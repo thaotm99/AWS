@@ -15,7 +15,7 @@ export const vi = {
     pageTitle: "Luyện đề · AWS Thực Chiến",
     certPageTitle: "Luyện đề {code} · AWS Thực Chiến",
     examPageTitle: "{code} · Đề {n} · Luyện đề",
-    title: "Luyện đề chứng chỉ AWS",
+    title: "Luyện đề",
     lede: "Thực hành theo từng câu hỏi: chọn phương án, kiểm tra đáp án và đối chiếu lời giải trước khi chuyển sang câu tiếp theo. Tiến độ được lưu cục bộ trên trình duyệt.",
     certifications: "Chứng chỉ",
     examCount: "{n} đề",
