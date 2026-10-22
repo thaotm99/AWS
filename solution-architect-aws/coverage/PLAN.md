@@ -19,8 +19,8 @@ Làm tuần tự từng đợt; hết đợt 4 thì rà lại toàn bộ 6 đề
 ## Các đợt
 | Đợt | Bài | Trạng thái |
 |---|---|---|
-| 1 | asg, ec2, s3, storage | đang làm |
-| 2 | vpc, iam, kms, elb | |
+| 1 | asg, ec2, s3, storage | ✅ xong |
+| 2 | vpc, iam, kms, elb | đang làm |
 | 3 | lambda, containers, rds, monitoring, cloudfront | |
 | 4 | route53, analytics, dynamodb, iac, backup-dr, storage-migration, security, cognito, global-infra, others | |
 | 5 | Rà lại 6 đề, bổ sung phần còn sót; lặp tới khi đủ | |
