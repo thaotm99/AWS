@@ -5,8 +5,8 @@ export const vi = {
   count: { "1": "1", "2": "2", "3": "3", "4": "4", "5": "5" },
   catalog: {
     crumb: "Ôn tập",
-    pageTitle: "Ôn tập · AWS Từ Nền",
-    certPageTitle: "Ôn tập {code} · AWS Từ Nền",
+    pageTitle: "Ôn tập · AWS Thực Chiến",
+    certPageTitle: "Ôn tập {code} · AWS Thực Chiến",
     examPageTitle: "{code} · Đề {n} · Ôn tập",
     title: "Luyện đề chứng chỉ AWS",
     lede: "Chọn chứng chỉ và đề, rồi làm từng câu. Bấm Kiểm tra để xem đúng sai và lời giải, rồi sang câu tiếp theo. Tiến độ được lưu trên trình duyệt này.",

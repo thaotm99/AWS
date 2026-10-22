@@ -43,12 +43,32 @@ export class ShellController<M> {
     }
   }
 
+  /** ☰ on phones: the sidebar becomes a drawer with a scrim; closes on scrim, Esc, a link, or widening the window. */
   private bindMenu(): void {
     const btn = document.getElementById("menuBtn");
-    btn?.addEventListener("click", () => {
-      const open = document.getElementById("sidebar")!.classList.toggle("open");
+    const drawer = document.getElementById("drawer");
+    if (!btn || !drawer) return;
+    const html = document.documentElement;
+    const set = (open: boolean) => {
+      html.classList.toggle("drawer-open", open);
       btn.setAttribute("aria-expanded", String(open));
+      const key = open ? "shell.nav.closeMenu" : "shell.nav.openMenu";
+      btn.setAttribute("data-i18n-attr", `aria-label:${key}`);
+      btn.setAttribute("aria-label", this.i18n.translator().lookup(key));
+      if (open) drawer.querySelector<HTMLElement>("a[href]")?.focus();
+    };
+    btn.addEventListener("click", () => set(!html.classList.contains("drawer-open")));
+    document.getElementById("scrim")?.addEventListener("click", () => set(false));
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && html.classList.contains("drawer-open")) {
+        set(false);
+        btn.focus();
+      }
     });
+    drawer.addEventListener("click", (e) => {
+      if ((e.target as HTMLElement).closest("a[href]:not([data-soon])")) set(false);
+    });
+    matchMedia("(min-width: 901px)").addEventListener("change", (e) => e.matches && set(false));
   }
 
   private bindSoonLinks(): void {

@@ -28,7 +28,7 @@ const next = all.slice(index + 1, index + 4);
 const ready = new Set((await getCollection("concepts")).map((e) => e.id));
 const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(layers, p)).filter(Boolean);
 ---
-<BaseLayout title={`${concept.title} · AWS Từ Nền`} description={entry?.data.lede} current={id}>
+<BaseLayout title={`${concept.title} · AWS Thực Chiến`} description={entry?.data.lede} current={id}>
   <div class="crumbs">
     <span>Lớp {concept.layer.n} · {concept.layer.name}</span><span aria-hidden="true">/</span><b>{concept.title}</b>
   </div>

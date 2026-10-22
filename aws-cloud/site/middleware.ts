@@ -6,7 +6,7 @@ import { next } from "@vercel/functions";
 // whole site, including /api/*.json, behind a password. Set SITE_USER and
 // SITE_PASSWORD in the Vercel project; leave them unset to keep the site public.
 
-const REALM = 'Basic realm="AWS Tu Nen", charset="UTF-8"';
+const REALM = 'Basic realm="AWS Thuc Chien", charset="UTF-8"';
 
 /** Compares without stopping at the first different character. */
 function same(a: string, b: string): boolean {
@@ -35,7 +35,7 @@ export default function middleware(request: Request): Response {
   const given = credentials(request);
   if (given && same(given.user, user) && same(given.password, password)) return next();
 
-  return new Response("Cần đăng nhập để xem AWS Từ Nền.", {
+  return new Response("Cần đăng nhập để xem AWS Thực Chiến.", {
     status: 401,
     headers: { "WWW-Authenticate": REALM, "Content-Type": "text/plain; charset=utf-8" },
   });

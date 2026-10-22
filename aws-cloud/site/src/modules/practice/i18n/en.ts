@@ -8,8 +8,8 @@ export const en: Messages<typeof vi> = {
   count: { "1": "ONE", "2": "TWO", "3": "THREE", "4": "FOUR", "5": "FIVE" },
   catalog: {
     crumb: "Practice",
-    pageTitle: "Practice · AWS Từ Nền",
-    certPageTitle: "{code} practice · AWS Từ Nền",
+    pageTitle: "Practice · AWS Thực Chiến",
+    certPageTitle: "{code} practice · AWS Thực Chiến",
     examPageTitle: "{code} · Practice Test {n} · Practice",
     title: "AWS Certification practice tests",
     lede: "Pick a certification and a practice test, then answer one question at a time. Choose Check answer to see if you are right and read the explanation, then go to the next question. Your progress is saved in this browser.",
