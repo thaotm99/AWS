@@ -29,6 +29,19 @@ const ready = new Set((await getCollection("concepts")).map((e) => e.id));
 const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(layers, p)).filter(Boolean);
 ---
 <BaseLayout title={`${concept.title} · AWS Thực Chiến`} description={entry?.data.lede} current={id}>
+  {entry && (
+    <nav slot="toc" class="ltoc" id="toc" aria-label="Mục lục bài học" data-i18n-attr="aria-label:shell.toc.label">
+      <div class="toc-head">
+        <span class="side-label"><T k="shell.toc.progress" /></span>
+        <span class="toc-percent" data-read-percent>0%</span>
+      </div>
+      <p class="toc-lesson">{entry.data.title}</p>
+      <div class="side-label toc-title"><T k="shell.toc.title" /></div>
+      <ol></ol>
+      <div class="toc-bar" aria-hidden="true"><i /></div>
+      <p class="toc-keys"><kbd>J</kbd> / <kbd>K</kbd> <T k="shell.toc.jump" /></p>
+    </nav>
+  )}
   <div class="crumbs">
     <span>Lớp {concept.layer.n} · {concept.layer.name}</span><span aria-hidden="true">/</span><b>{concept.title}</b>
   </div>
@@ -89,3 +102,11 @@ const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(layers,
     </div>
   )}
 </BaseLayout>
+
+<script>
+  import { LessonToc } from "../../modules/shell/ui/LessonToc";
+
+  const root = document.getElementById("toc");
+  const content = document.querySelector<HTMLElement>("main.article");
+  if (root && content) new LessonToc(root, content).start();
+</script>

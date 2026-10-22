@@ -25,6 +25,12 @@ export const vi = {
     importantHint: "Được sử dụng phổ biến trong nhiều mẫu kiến trúc",
     supportingHint: "Áp dụng cho các yêu cầu chuyên biệt",
   },
+  toc: {
+    label: "Mục lục bài học",
+    title: "Trong bài này",
+    progress: "Tiến độ đọc",
+    jump: "chuyển phần",
+  },
   roadmap: {
     title: "Lộ trình SAA-C03",
     note: "Biểu tượng bên phải thể hiện mức độ quan trọng của chủ đề trong thiết kế hệ thống trên AWS.",

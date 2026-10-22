@@ -27,6 +27,12 @@ export const en: Messages<typeof vi> = {
     importantHint: "Used often in many architectures",
     supportingHint: "Used for specific needs",
   },
+  toc: {
+    label: "Lesson contents",
+    title: "In this lesson",
+    progress: "Reading progress",
+    jump: "to jump",
+  },
   roadmap: {
     title: "SAA-C03 study path",
     note: "Bars on the right: how important this is when you build on AWS.",
