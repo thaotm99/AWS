@@ -1048,8 +1048,8 @@
         {
           "keyword": "Elastic network interface (ENI)",
           "lesson": "vpc",
-          "status": "partial",
-          "where": "vpc.mdx#s4 / EndpointSim (only as interface endpoint ENI)"
+          "status": "covered",
+          "where": "vpc.mdx#compare / QuickCompare"
         }
       ]
     },

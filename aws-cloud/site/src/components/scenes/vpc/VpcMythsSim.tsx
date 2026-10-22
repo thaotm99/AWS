@@ -3,7 +3,7 @@ import CaseSim, { type CaseScenario } from "../global-infra/CaseSim";
 
 type Lang = ReturnType<typeof useLang>;
 
-// Six VPC settings that look fine but behave differently from what people expect,
+// Seven VPC settings that look fine but behave differently from what people expect,
 // each tried on ShopViet's network.
 
 function scenarios(L: Lang): CaseScenario[] {
@@ -149,10 +149,38 @@ return [
       : { hide: ["pub"], back: false, steps: [{ at: "b", state: "pass", msg: L({ vi: "Traffic đi trực tiếp trong VPC qua private IP.", en: "Traffic goes directly within the VPC over the private IP." }) }],
           ok: true, result: L({ vi: "Chi phí thấp hơn và traffic không rời khỏi mạng riêng. Lưu ý: nếu EC2 A và EC2 B ở hai AZ khác nhau, data transfer giữa các AZ vẫn bị tính phí theo GB.", en: "Lower cost, and traffic does not leave the private network. Note: if EC2 A and EC2 B are in two different AZs, data transfer between the AZs is still charged per GB." }) },
   },
+  {
+    name: L({ vi: "Không ping được EC2 có Elastic IP", en: "Cannot ping an EC2 instance with an Elastic IP" }),
+    request: "ping 54.x.x.x",
+    from: L({ vi: "từ máy quản trị", en: "from the admin machine" }),
+    nodes: [
+      { id: "admin", x: 30, y: 97, w: 60, l1: L({ vi: "Quản trị viên", en: "Administrator" }), user: true },
+      { id: "igw", x: 170, y: 97, w: 170, l1: "Internet Gateway", l2: L({ vi: "route 0.0.0.0/0 có sẵn", en: "route 0.0.0.0/0 in place" }) },
+      { id: "srcdst", x: 400, y: 97, w: 190, l1: "Source/dest. check", l2: L({ vi: "thuộc tính của ENI", en: "an ENI attribute" }) },
+      { id: "sg", x: 400, y: 97, w: 190, l1: "Security Group", l2: L({ vi: "chỉ có rule 443", en: "only a 443 rule" }) },
+      { id: "ec2", x: 650, y: 97, w: 140, l1: "EC2", l2: "Elastic IP" },
+    ],
+    links: [{ a: "admin", b: "igw" }, { a: "igw", b: "srcdst" }, { a: "igw", b: "sg" }, { a: "srcdst", b: "ec2" }, { a: "sg", b: "ec2" }],
+    start: "admin",
+    choices: { label: L({ vi: "Thay đổi", en: "Change" }), options: [L({ vi: "Tắt source/destination check", en: "Disable source/destination check" }), L({ vi: "Thêm rule ICMP Echo Request vào Security Group", en: "Add an ICMP Echo Request rule to the security group" })], initial: 0 },
+    run: (v) => v === 0
+      ? { hide: ["sg"], steps: [
+            { at: "igw", state: "pass", msg: L({ vi: "Route tới Internet Gateway và Elastic IP đều đã có.", en: "The route to the internet gateway and the Elastic IP are both in place." }) },
+            { at: "srcdst", state: "skip", msg: L({ vi: "Source/destination check (bật mặc định) yêu cầu instance là nguồn hoặc đích của traffic. Chỉ tắt khi instance làm NAT, router hoặc firewall; ở đây instance chính là đích của gói ping nên thuộc tính này không liên quan.", en: "Source/destination check (enabled by default) requires the instance to be the source or destination of its traffic. Disable it only when the instance does NAT, routing or firewalling; here the instance is the destination of the ping, so this attribute is irrelevant." }) },
+            { at: "ec2", state: "block", flash: "ICMP?", msg: L({ vi: "Security Group không có rule inbound cho ICMP nên gói ping bị loại bỏ.", en: "The security group has no inbound ICMP rule, so the ping packet is dropped." }) },
+          ],
+          ok: false, result: L({ vi: "Vẫn không ping được. `ping` là traffic **ICMP**, không phải TCP 443.", en: "Ping still fails. `ping` is **ICMP** traffic, not TCP 443." }) }
+      : { hide: ["srcdst"], steps: [
+            { at: "igw", state: "pass", msg: L({ vi: "Route tới Internet Gateway và Elastic IP đều đã có.", en: "The route to the internet gateway and the Elastic IP are both in place." }) },
+            { at: "sg", state: "change", tag: "ICMP", msg: L({ vi: "Thêm rule inbound **Custom ICMP - IPv4: Echo Request** (hoặc All ICMP - IPv4) từ IP của máy quản trị. Security Group là stateful nên Echo Reply tự động được cho phép.", en: "Add an inbound rule **Custom ICMP - IPv4: Echo Request** (or All ICMP - IPv4) from the admin machine's IP. Security groups are stateful, so the Echo Reply is allowed automatically." }) },
+            { at: "ec2", state: "pass", msg: L({ vi: "Instance trả lời ping.", en: "The instance answers the ping." }) },
+          ],
+          ok: true, result: L({ vi: "Khi không ping được instance public: kiểm tra route tới Internet Gateway trong route table của subnet, rule ICMP trong Security Group, và NACL (stateless) cho cả hai chiều.", en: "When a public instance does not answer ping: check the route to the internet gateway in the subnet route table, the ICMP rule in the security group, and the NACL (stateless) in both directions." }) },
+  },
 ];
 }
 
 export default function VpcMythsSim() {
   const L = useLang();
-  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Sáu lỗi cấu hình VPC thường gặp", en: "Six common VPC configuration mistakes" })} action={L({ vi: "Chạy mô phỏng", en: "Run simulation" })} />;
+  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Bảy lỗi cấu hình VPC thường gặp", en: "Seven common VPC configuration mistakes" })} action={L({ vi: "Chạy mô phỏng", en: "Run simulation" })} />;
 }

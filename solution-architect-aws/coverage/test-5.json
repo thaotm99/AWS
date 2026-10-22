@@ -111,8 +111,8 @@
         {
           "keyword": "AWS PrivateLink (TCP only)",
           "lesson": "vpc",
-          "status": "partial",
-          "where": "vpc.mdx#s4 / EndpointSim"
+          "status": "covered",
+          "where": "vpc.mdx#compare / QuickCompare (current docs: TCP or UDP; ruled out because it serves VPC-endpoint consumers, not internet users)"
         },
         {
           "keyword": "Application Load Balancer (HTTP/HTTPS only)",
@@ -323,14 +323,14 @@
         {
           "keyword": "AWS Client VPN",
           "lesson": "vpc",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "vpc.mdx#compare / QuickCompare"
         },
         {
           "keyword": "Bastion host",
           "lesson": "vpc",
-          "status": "partial",
-          "where": "vpc.mdx#confuse / VpcMythsSim; ec2.mdx#s3 / Ec2NetSim"
+          "status": "covered",
+          "where": "vpc.mdx#compare / QuickCompare"
         },
         {
           "keyword": "Security group and network ACL",
@@ -1374,8 +1374,8 @@
         {
           "keyword": "Network ACL (no geo blocking)",
           "lesson": "vpc",
-          "status": "partial",
-          "where": "vpc.mdx#s1 / PacketPath"
+          "status": "covered",
+          "where": "vpc.mdx#compare / QuickCompare"
         },
         {
           "keyword": "AWS WAF on ALB",
@@ -1937,8 +1937,8 @@
         {
           "keyword": "Subnet route table association (main route table, one table per subnet)",
           "lesson": "vpc",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "vpc.mdx#addr / RouteAssocSim"
         }
       ]
     },

@@ -390,8 +390,8 @@
         {
           "keyword": "Interface VPC endpoint for Amazon EFS over Direct Connect",
           "lesson": "vpc",
-          "status": "partial",
-          "where": "storage-migration.mdx#s2 Takeaway (one line)"
+          "status": "covered",
+          "where": "vpc.mdx#s4 / RequirementPicker"
         },
         {
           "keyword": "S3 Event Notification to Lambda",
@@ -672,8 +672,8 @@
         {
           "keyword": "Transit VPC",
           "lesson": "vpc",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "vpc.mdx#s5 / VpcConnectSim; vpc.mdx#compare / QuickCompare"
         },
         {
           "keyword": "VPC peering (full mesh, non-transitive)",
@@ -684,8 +684,8 @@
         {
           "keyword": "Centralized VPC endpoints",
           "lesson": "vpc",
-          "status": "partial",
-          "where": "vpc.mdx#s5 / RequirementPicker"
+          "status": "covered",
+          "where": "vpc.mdx#hub / HubSim; vpc.mdx#s5 / RequirementPicker"
         }
       ]
     },

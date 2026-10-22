@@ -484,14 +484,14 @@
         {
           "keyword": "Transit Gateway route propagation",
           "lesson": "vpc",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "vpc.mdx#hub / HubSim; vpc.mdx#s5 / VpcConnectSim"
         },
         {
           "keyword": "Direct Connect transit VIF",
           "lesson": "vpc",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "vpc.mdx#hub / HubSim"
         },
         {
           "keyword": "Direct Connect private VIF",
@@ -565,7 +565,7 @@
         {
           "keyword": "Site-to-Site VPN customer gateway",
           "lesson": "vpc",
-          "status": "partial",
+          "status": "covered",
           "where": "vpc.mdx#s6 / HybridLinkSim"
         }
       ]

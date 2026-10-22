@@ -14,14 +14,14 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 854 (89%) · 🟡 52 (5%) · ❌ 54 (6%).
+Có **960 keyword** khác nhau: ✅ 870 (91%) · 🟡 42 (4%) · ❌ 48 (5%).
 
 ### Theo bài học
 
 | Bài học | Keyword | ✅ Đã có | 🟡 Một phần | ❌ Thiếu | Tỷ lệ đã có |
 |---|---:|---:|---:|---:|---:|
 | [global-infra](#global-infra) | 22 | 20 | 2 | 0 | 91% |
-| [vpc](#vpc) | 107 | 91 | 10 | 6 | 85% |
+| [vpc](#vpc) | 107 | 107 | 0 | 0 | 100% |
 | [route53](#route53) | 28 | 24 | 2 | 2 | 86% |
 | [cloudfront](#cloudfront) | 31 | 22 | 5 | 4 | 71% |
 | [iam](#iam) | 49 | 38 | 6 | 5 | 78% |
@@ -51,11 +51,11 @@ Có **960 keyword** khác nhau: ✅ 854 (89%) · 🟡 52 (5%) · ❌ 54 (6%).
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
 | Đề 1 | 206 | 10 | 8 |
-| Đề 2 | 180 | 9 | 9 |
-| Đề 3 | 205 | 7 | 10 |
-| Đề 4 | 215 | 10 | 11 |
-| Đề 5 | 195 | 16 | 10 |
-| Đề 6 | 199 | 3 | 8 |
+| Đề 2 | 183 | 7 | 8 |
+| Đề 3 | 208 | 6 | 8 |
+| Đề 4 | 220 | 7 | 9 |
+| Đề 5 | 200 | 13 | 8 |
+| Đề 6 | 200 | 2 | 8 |
 
 ## global-infra
 
@@ -88,22 +88,6 @@ Có **960 keyword** khác nhau: ✅ 854 (89%) · 🟡 52 (5%) · ❌ 54 (6%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | Transit VPC | ❌ Thiếu | 2 | exam2_q21, exam4_q28 |  |
-| [ ] | AWS Client VPN | ❌ Thiếu | 1 | exam5_q10 |  |
-| [ ] | Direct Connect transit VIF | ❌ Thiếu | 1 | exam3_q16 |  |
-| [ ] | EC2 source/destination check | ❌ Thiếu | 1 | exam4_q38 |  |
-| [ ] | Subnet route table association (main route table, one table per subnet) | ❌ Thiếu | 1 | exam5_q63 |  |
-| [ ] | Transit Gateway route propagation | ❌ Thiếu | 1 | exam3_q16 |  |
-| [ ] | Direct Connect private VIF | 🟡 Một phần ⚠ | 3 | exam2_q11, exam3_q16, exam4_q7 | vpc.mdx#s6 / HybridLinkSim |
-| [ ] | AWS PrivateLink (TCP only) | 🟡 Một phần | 1 | exam5_q4 | vpc.mdx#s4 / EndpointSim |
-| [ ] | Bastion host | 🟡 Một phần | 1 | exam5_q10 | vpc.mdx#confuse / VpcMythsSim; ec2.mdx#s3 / Ec2NetSim |
-| [ ] | Centralized VPC endpoints | 🟡 Một phần | 1 | exam2_q21 | vpc.mdx#s5 / RequirementPicker |
-| [ ] | CIDR notation | 🟡 Một phần | 1 | exam4_q8 | iam.mdx#s1 / PolicyReader |
-| [ ] | Elastic network interface (ENI) | 🟡 Một phần | 1 | exam6_q36 | vpc.mdx#s4 / EndpointSim (only as interface endpoint ENI) |
-| [ ] | Interface VPC endpoint for Amazon EFS over Direct Connect | 🟡 Một phần | 1 | exam2_q11 | storage-migration.mdx#s2 Takeaway (one line) |
-| [ ] | Network ACL (no geo blocking) | 🟡 Một phần | 1 | exam5_q45 | vpc.mdx#s1 / PacketPath |
-| [ ] | Security group ICMP rule (ping) | 🟡 Một phần | 1 | exam4_q38 | vpc.mdx#s1 |
-| [ ] | Site-to-Site VPN customer gateway | 🟡 Một phần | 1 | exam3_q18 | vpc.mdx#s6 / HybridLinkSim |
 | [ ] | AWS Direct Connect | ✅ Đã có | 9 | exam1_q18, exam1_q27, exam2_q59, exam3_q31, exam4_q14, exam4_q45, exam4_q48, exam5_q2, exam5_q4 | vpc.mdx#s6<br>vpc.mdx#s6 / HybridLinkSim |
 | [ ] | AWS Site-to-Site VPN | ✅ Đã có | 8 | exam1_q18, exam1_q37, exam3_q7, exam3_q16, exam4_q36, exam5_q9, exam5_q41, exam6_q25 | vpc.mdx#s6<br>vpc.mdx#s6 / HybridLinkSim |
 | [ ] | AWS Transit Gateway | ✅ Đã có | 8 | exam1_q37, exam1_q39, exam2_q21, exam2_q36, exam3_q16, exam4_q28, exam5_q14, exam6_q12 | vpc.mdx#s5<br>vpc.mdx#s5 / VpcConnectSim |
@@ -111,6 +95,7 @@ Có **960 keyword** khác nhau: ✅ 854 (89%) · 🟡 52 (5%) · ❌ 54 (6%).
 | [ ] | NAT gateway | ✅ Đã có | 5 | exam1_q39, exam3_q44, exam4_q45, exam5_q24, exam6_q64 | vpc.mdx#s3<br>vpc.mdx#s3 / NatHaSim |
 | [ ] | AWS PrivateLink | ✅ Đã có | 3 | exam2_q36, exam6_q12, exam6_q59 | vpc.mdx#s4 / RequirementPicker<br>vpc.mdx#s4 / EndpointSim |
 | [ ] | Direct Connect gateway | ✅ Đã có | 3 | exam3_q16, exam4_q7, exam6_q12 | vpc.mdx#s6 / HybridLinkSim |
+| [ ] | Direct Connect private VIF | ✅ Đã có | 3 | exam2_q11, exam3_q16, exam4_q7 | vpc.mdx#s6 / HybridLinkSim<br>vpc.mdx#hub / HubSim; vpc.mdx#s6 / HybridLinkSim |
 | [ ] | Egress-only internet gateway (IPv6 only) | ✅ Đã có | 3 | exam3_q44, exam3_q47, exam3_q62 | vpc.mdx#confuse / VpcMythsSim<br>vpc.mdx#confuse / VpcMythsSim; global-infra.mdx#confuse |
 | [ ] | Internet gateway | ✅ Đã có | 3 | exam3_q7, exam4_q45, exam5_q14 | vpc.mdx#s1 / PacketPath<br>vpc.mdx#s1 |
 | [ ] | VPC gateway endpoint for S3 | ✅ Đã có | 3 | exam3_q47, exam5_q24, exam6_q50 | vpc.mdx#s4 / EndpointSim |
@@ -121,28 +106,38 @@ Có **960 keyword** khác nhau: ✅ 854 (89%) · 🟡 52 (5%) · ❌ 54 (6%).
 | [ ] | Route table route to internet gateway | ✅ Đã có | 2 | exam4_q38, exam5_q63 | vpc.mdx#s1 / PacketPath |
 | [ ] | Security group | ✅ Đã có | 2 | exam4_q31, exam6_q4 | vpc.mdx#s2 / SgChain<br>vpc.mdx#s1 / PacketPath; vpc.mdx#s2 / SgChain |
 | [ ] | Security group (stateful) | ✅ Đã có | 2 | exam3_q25, exam6_q8 | vpc.mdx#s1 / PacketPath<br>vpc.mdx#s1 / PacketPath; vpc.mdx#challenge |
+| [ ] | Transit VPC | ✅ Đã có | 2 | exam2_q21, exam4_q28 | vpc.mdx#s5 / VpcConnectSim; vpc.mdx#compare / QuickCompare |
 | [ ] | Virtual private gateway (VGW) | ✅ Đã có | 2 | exam4_q7, exam6_q12 | vpc.mdx#s6 / HybridLinkSim |
 | [ ] | VPC endpoint | ✅ Đã có | 2 | exam5_q14, exam6_q34 | vpc.mdx#s4 / EndpointSim |
 | [ ] | VPC peering (non-transitive) | ✅ Đã có | 2 | exam5_q14, exam6_q12 | vpc.mdx#s5 / VpcConnectSim |
+| [ ] | AWS Client VPN | ✅ Đã có | 1 | exam5_q10 | vpc.mdx#compare / QuickCompare |
 | [ ] | AWS Direct Connect (lead time) | ✅ Đã có | 1 | exam5_q5 | vpc.mdx#s6 / HybridLinkSim |
 | [ ] | AWS Direct Connect (not for end users) | ✅ Đã có | 1 | exam5_q55 | vpc.mdx#s6 / HybridLinkSim |
 | [ ] | AWS Direct Connect (setup lead time) | ✅ Đã có | 1 | exam6_q25 | vpc.mdx#s6 / HybridLinkSim |
 | [ ] | AWS Direct Connect plus VPN (IPsec over DX) | ✅ Đã có | 1 | exam1_q37 | vpc.mdx#s6 |
 | [ ] | AWS PrivateLink (endpoint service behind NLB) | ✅ Đã có | 1 | exam1_q39 | vpc.mdx#s4 |
 | [ ] | AWS PrivateLink (interface endpoint to a provider service) | ✅ Đã có | 1 | exam5_q9 | vpc.mdx#s4 / EndpointSim |
+| [ ] | AWS PrivateLink (TCP only) | ✅ Đã có | 1 | exam5_q4 | vpc.mdx#compare / QuickCompare (current docs: TCP or UDP; ruled out because it serves VPC-endpoint consumers, not internet users) |
 | [ ] | AWS PrivateLink (VPC endpoint service) | ✅ Đã có | 1 | exam3_q16 | vpc.mdx#s4 / RequirementPicker |
 | [ ] | AWS Site-to-Site VPN (bandwidth) | ✅ Đã có | 1 | exam5_q5 | vpc.mdx#s6 / HybridLinkSim |
 | [ ] | AWS Site-to-Site VPN (IPsec) | ✅ Đã có | 1 | exam5_q10 | vpc.mdx#s6 / HybridLinkSim |
+| [ ] | Bastion host | ✅ Đã có | 1 | exam5_q10 | vpc.mdx#compare / QuickCompare |
+| [ ] | Centralized VPC endpoints | ✅ Đã có | 1 | exam2_q21 | vpc.mdx#hub / HubSim; vpc.mdx#s5 / RequirementPicker |
+| [ ] | CIDR notation | ✅ Đã có | 1 | exam4_q8 | vpc.mdx#addr / CidrSim |
 | [ ] | Connection timeout vs authentication error | ✅ Đã có | 1 | exam5_q29 | vpc.mdx#s2 / SgChain |
 | [ ] | Direct Connect gateway with Transit Gateway | ✅ Đã có | 1 | exam6_q45 | vpc.mdx#s6 / HybridLinkSim |
 | [ ] | Direct Connect private virtual interface (private VIF) | ✅ Đã có | 1 | exam6_q45 | vpc.mdx#s6 / HybridLinkSim |
 | [ ] | Direct Connect public VIF | ✅ Đã có | 1 | exam2_q11 | vpc.mdx#s6 / HybridLinkSim |
 | [ ] | Direct Connect public virtual interface (public VIF) | ✅ Đã có | 1 | exam6_q45 | vpc.mdx#s6 / HybridLinkSim |
+| [ ] | Direct Connect transit VIF | ✅ Đã có | 1 | exam3_q16 | vpc.mdx#hub / HubSim |
 | [ ] | EC2 instance tenancy (VPC tenancy vs launch template) | ✅ Đã có | 1 | exam3_q21 | vpc.mdx#confuse / VpcMythsSim |
+| [ ] | EC2 source/destination check | ✅ Đã có | 1 | exam4_q38 | vpc.mdx#confuse / VpcMythsSim; vpc.mdx#compare / QuickCompare |
 | [ ] | Egress-only internet gateway | ✅ Đã có | 1 | exam4_q48 | vpc.mdx#confuse / VpcMythsSim |
 | [ ] | Elastic IP for NAT gateway | ✅ Đã có | 1 | exam6_q13 | vpc.mdx#confuse / VpcMythsSim |
+| [ ] | Elastic network interface (ENI) | ✅ Đã có | 1 | exam6_q36 | vpc.mdx#compare / QuickCompare |
 | [ ] | Ephemeral ports (1024-65535) in NACL outbound | ✅ Đã có | 1 | exam6_q8 | vpc.mdx#s1 / PacketPath; vpc.mdx#challenge |
 | [ ] | Inter-Region VPC peering (non-transitive) | ✅ Đã có | 1 | exam4_q7 | vpc.mdx#s5 / VpcConnectSim |
+| [ ] | Interface VPC endpoint for Amazon EFS over Direct Connect | ✅ Đã có | 1 | exam2_q11 | vpc.mdx#s4 / RequirementPicker |
 | [ ] | Internet gateway NAT for public IPv4 address | ✅ Đã có | 1 | exam3_q9 | vpc.mdx#s1 |
 | [ ] | NAT gateway (one per AZ, in public subnet) | ✅ Đã có | 1 | exam6_q13 | vpc.mdx#s3 / NatHaSim |
 | [ ] | NAT gateway data processing charge | ✅ Đã có | 1 | exam3_q47 | vpc.mdx#s4 / EndpointSim |
@@ -152,6 +147,7 @@ Có **960 keyword** khác nhau: ✅ 854 (89%) · 🟡 52 (5%) · ❌ 54 (6%).
 | [ ] | NAT instance (self-managed) | ✅ Đã có | 1 | exam3_q44 | vpc.mdx#confuse / VpcMythsSim |
 | [ ] | NAT instance as bastion host | ✅ Đã có | 1 | exam3_q12 | vpc.mdx#confuse / VpcMythsSim |
 | [ ] | NAT instance port forwarding | ✅ Đã có | 1 | exam3_q12 | vpc.mdx#confuse / VpcMythsSim |
+| [ ] | Network ACL (no geo blocking) | ✅ Đã có | 1 | exam5_q45 | vpc.mdx#compare / QuickCompare |
 | [ ] | Network ACL (subnet level) | ✅ Đã có | 1 | exam1_q12 | vpc.mdx#s1 / challenge |
 | [ ] | Network ACL (subnet-level, deny rules) | ✅ Đã có | 1 | exam2_q30 | vpc.mdx#s1 / PacketPath; vpc.mdx#challenge |
 | [ ] | Network ACL (subnet-level, not on ALB) | ✅ Đã có | 1 | exam6_q60 | vpc.mdx#s1; vpc.mdx#challenge |
@@ -166,6 +162,7 @@ Có **960 keyword** khác nhau: ✅ 854 (89%) · 🟡 52 (5%) · ❌ 54 (6%).
 | [ ] | Security group (stateful, allow-only) | ✅ Đã có | 1 | exam2_q28 | vpc.mdx#s1 / PacketPath; vpc.mdx#challenge |
 | [ ] | Security group and network ACL | ✅ Đã có | 1 | exam5_q10 | vpc.mdx#s1 / PacketPath |
 | [ ] | Security group chain ALB to EC2 to RDS (ports 443/80/5432) | ✅ Đã có | 1 | exam2_q55 | vpc.mdx#s2 / SgChain |
+| [ ] | Security group ICMP rule (ping) | ✅ Đã có | 1 | exam4_q38 | vpc.mdx#confuse / VpcMythsSim |
 | [ ] | Security group inbound rule | ✅ Đã có | 1 | exam4_q17 | vpc.mdx#s2 / SgChain |
 | [ ] | Security group on NAT instance (not NAT gateway) | ✅ Đã có | 1 | exam3_q12 | vpc.mdx#confuse / VpcMythsSim |
 | [ ] | Security group referencing | ✅ Đã có | 1 | exam4_q39 | vpc.mdx#s2 / SgChain |
@@ -175,9 +172,12 @@ Có **960 keyword** khác nhau: ✅ 854 (89%) · 🟡 52 (5%) · ❌ 54 (6%).
 | [ ] | Security group rule source (CIDR, IP, security group; not internet gateway) | ✅ Đã có | 1 | exam3_q65 | vpc.mdx#confuse / VpcMythsSim |
 | [ ] | Shared services VPC | ✅ Đã có | 1 | exam2_q21 | vpc.mdx#s5 / RequirementPicker |
 | [ ] | Site-to-Site VPN as Direct Connect backup | ✅ Đã có | 1 | exam4_q48 | vpc.mdx#s6 / HybridLinkSim |
+| [ ] | Site-to-Site VPN customer gateway | ✅ Đã có | 1 | exam3_q18 | vpc.mdx#s6 / HybridLinkSim |
 | [ ] | Site-to-Site VPN tunnel throughput (1.25 Gbps) | ✅ Đã có | 1 | exam4_q18 | vpc.mdx#s6 / HybridLinkSim |
 | [ ] | Site-to-Site VPN virtual private gateway (VGW) | ✅ Đã có | 1 | exam3_q18 | vpc.mdx#s6 / HybridLinkSim |
+| [ ] | Subnet route table association (main route table, one table per subnet) | ✅ Đã có | 1 | exam5_q63 | vpc.mdx#addr / RouteAssocSim |
 | [ ] | Transit Gateway ECMP (VPN) | ✅ Đã có | 1 | exam4_q18 | vpc.mdx#s6 / HybridLinkSim |
+| [ ] | Transit Gateway route propagation | ✅ Đã có | 1 | exam3_q16 | vpc.mdx#hub / HubSim; vpc.mdx#s5 / VpcConnectSim |
 | [ ] | VPC enableDnsHostnames and enableDnsSupport | ✅ Đã có | 1 | exam6_q63 | vpc.mdx#confuse; route53.mdx#s4 |
 | [ ] | VPC endpoint policy | ✅ Đã có | 1 | exam3_q47 | vpc.mdx#s4 / EndpointSim |
 | [ ] | VPC gateway endpoint | ✅ Đã có | 1 | exam4_q23 | vpc.mdx#s4 / EndpointSim |

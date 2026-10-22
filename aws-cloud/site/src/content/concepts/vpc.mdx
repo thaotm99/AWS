@@ -1,8 +1,8 @@
 ---
 title: "VPC: subnet, routing, bảo mật và kết nối"
-lede: "Bài học trình bày mạng riêng của ShopViet trên AWS theo đường đi của gói tin: các lớp kiểm soát giữa internet và EC2, khác biệt giữa Security Group và Network ACL, cách bố trí NAT gateway, và tiêu chí lựa chọn giữa VPC endpoint, VPC peering, Transit Gateway, Site-to-Site VPN và Direct Connect."
-minutes: 30
-scenes: 6
+lede: "Bài học trình bày mạng riêng của ShopViet trên AWS theo đường đi của gói tin: các lớp kiểm soát giữa internet và EC2, khác biệt giữa Security Group và Network ACL, cách quy hoạch khối CIDR và route table, cách bố trí NAT gateway, và tiêu chí lựa chọn giữa VPC endpoint, VPC peering, Transit Gateway, Site-to-Site VPN và Direct Connect."
+minutes: 42
+scenes: 9
 prerequisites: ["global-infra"]
 docs:
   - title: "How Amazon VPC works"
@@ -29,6 +29,56 @@ docs:
     url: "https://docs.aws.amazon.com/vpc/latest/tgw/what-is-transit-gateway.html"
   - title: "AWS Direct Connect virtual interfaces"
     url: "https://docs.aws.amazon.com/directconnect/latest/UserGuide/WorkingWithVirtualInterfaces.html"
+  - title: "VPC CIDR blocks"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-cidr-blocks.html"
+  - title: "Subnet CIDR blocks (reserved IP addresses)"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/subnet-sizing.html"
+  - title: "Subnet route tables"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/subnet-route-tables.html"
+  - title: "Amazon S3 condition key examples (IpAddress / NotIpAddress)"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/amazon-s3-policy-keys.html"
+  - title: "IAM condition operators (IP address)"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_condition_operators.html"
+  - title: "Evaluating multiple condition operators (logical AND)"
+    url: "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_condition-logic-multiple-context-keys-or-values.html"
+  - title: "Security group rules for different use cases (ping/ICMP)"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/security-group-rules-reference.html"
+  - title: "Elastic network interfaces (source/destination checking)"
+    url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html"
+  - title: "NAT instances: disable source/destination checks"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/work-with-nat-instances.html"
+  - title: "Network ACL rules"
+    url: "https://docs.aws.amazon.com/vpc/latest/userguide/nacl-rules.html"
+  - title: "AWS WAF geographic match rule statement"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-geo-match.html"
+  - title: "How Transit Gateway works (route tables, propagation)"
+    url: "https://docs.aws.amazon.com/vpc/latest/tgw/how-transit-gateways-work.html"
+  - title: "Transit gateway route tables"
+    url: "https://docs.aws.amazon.com/vpc/latest/tgw/tgw-route-tables.html"
+  - title: "Direct Connect gateways and Transit Gateway associations"
+    url: "https://docs.aws.amazon.com/directconnect/latest/UserGuide/direct-connect-transit-gateways.html"
+  - title: "Direct Connect gateways"
+    url: "https://docs.aws.amazon.com/directconnect/latest/UserGuide/direct-connect-gateways-intro.html"
+  - title: "How AWS Site-to-Site VPN works"
+    url: "https://docs.aws.amazon.com/vpn/latest/s2svpn/how_it_works.html"
+  - title: "Site-to-Site VPN customer gateway devices"
+    url: "https://docs.aws.amazon.com/vpn/latest/s2svpn/your-cgw.html"
+  - title: "Transit VPC solution (multi-VPC whitepaper)"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/building-scalable-secure-multi-vpc-network-infrastructure/transit-vpc-solution.html"
+  - title: "Centralized access to VPC private endpoints (multi-VPC whitepaper)"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/building-scalable-secure-multi-vpc-network-infrastructure/centralized-access-to-vpc-private-endpoints.html"
+  - title: "AWS PrivateLink concepts"
+    url: "https://docs.aws.amazon.com/vpc/latest/privatelink/concepts.html"
+  - title: "Gateway endpoints for Amazon S3"
+    url: "https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-s3.html"
+  - title: "Interface VPC endpoints in Amazon EFS"
+    url: "https://docs.aws.amazon.com/efs/latest/ug/efs-vpc-endpoints.html"
+  - title: "Choosing a service endpoint for your DataSync agent"
+    url: "https://docs.aws.amazon.com/datasync/latest/userguide/choose-service-endpoint.html"
+  - title: "What is AWS Client VPN?"
+    url: "https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/what-is.html"
+  - title: "AWS Systems Manager Session Manager"
+    url: "https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -40,23 +90,46 @@ import EndpointSim from "../../components/scenes/vpc/EndpointSim.tsx";
 import VpcConnectSim from "../../components/scenes/vpc/VpcConnectSim.tsx";
 import HybridLinkSim from "../../components/scenes/vpc/HybridLinkSim.tsx";
 import VpcMythsSim from "../../components/scenes/vpc/VpcMythsSim.tsx";
+import CidrSim from "../../components/scenes/vpc/CidrSim.tsx";
+import RouteAssocSim from "../../components/scenes/vpc/RouteAssocSim.tsx";
+import HubSim from "../../components/scenes/vpc/HubSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
-  { href: "#s1", label: "1 · Truy cập từ internet" },
-  { href: "#s2", label: "2 · Chuỗi Security Group" },
-  { href: "#s3", label: "3 · NAT gateway" },
-  { href: "#s4", label: "4 · VPC endpoint" },
-  { href: "#s5", label: "5 · Kết nối nhiều VPC" },
-  { href: "#s6", label: "6 · Kết nối on-premises" },
+  { href: "#addr", label: "1 · CIDR và route table" },
+  { href: "#s1", label: "2 · Truy cập từ internet" },
+  { href: "#s2", label: "3 · Chuỗi Security Group" },
+  { href: "#s3", label: "4 · NAT gateway" },
+  { href: "#s4", label: "5 · VPC endpoint" },
+  { href: "#s5", label: "6 · Kết nối nhiều VPC" },
+  { href: "#s6", label: "7 · Kết nối on-premises" },
+  { href: "#hub", label: "8 · Mạng trung tâm" },
+  { href: "#compare", label: "9 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
 ShopViet triển khai hệ thống tại Region Singapore. Bước tiếp theo là thiết kế **VPC**, mạng riêng của ShopViet trên AWS: phân chia subnet, chỉ cho phép traffic hợp lệ từ người dùng, chặn truy cập trái phép, và kết nối VPC với các VPC khác cũng như với văn phòng. Mỗi phần tương ứng với một tác vụ triển khai thực tế, kèm mô phỏng để kiểm chứng cấu hình trước khi áp dụng trên console.
 </Story>
 
-<Scene id="s1" label="Phần 1/6" title="Truy cập từ internet: các lớp kiểm soát trên đường đi của gói tin" questions={["exam5_q63", "exam4_q38", "exam3_q9", "exam3_q25", "exam6_q8"]}>
+<Scene id="addr" label="Phần 1/9" title="Địa chỉ và định tuyến: CIDR, subnet và route table" questions={["exam4_q8", "exam5_q63"]}>
+
+Mọi địa chỉ trong VPC của ShopViet được khai báo bằng **CIDR notation**: `10.0.0.0/16` nghĩa là 16 bit đầu cố định, 16 bit sau thay đổi, tức 65.536 địa chỉ. Cùng cách viết này xuất hiện trong rule của Security Group, NACL và trong điều kiện `aws:SourceIp` của bucket policy. Chọn một khối mẫu hoặc kéo thanh prefix, sau đó nhập IP nguồn để kiểm tra IP đó có thuộc khối hay không.
+
+<CidrSim client:visible />
+
+Khối CIDR của VPC và subnet nằm trong khoảng từ **/16** tới **/28**; AWS khuyến nghị dùng dải private theo RFC 1918 (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`). Trong mỗi subnet, AWS giữ lại **5 địa chỉ**: 4 địa chỉ đầu và địa chỉ cuối. Trong bucket policy, `IpAddress` và `NotIpAddress` trong cùng một `Condition` được kết hợp bằng AND: `192.0.2.0/24` trừ `192.0.2.188/32` nghĩa là toàn bộ 256 địa chỉ của dải, trừ đúng một địa chỉ.
+
+Sau khi chia subnet, mỗi subnet cần một **route table** quyết định traffic đi đâu. Gắn subnet với các route table khác nhau và thử kết nối internet:
+
+<RouteAssocSim client:visible />
+
+<Takeaway>VPC và subnet: khối /16 (65.536 địa chỉ) tới /28 (16 địa chỉ); mỗi subnet mất 5 địa chỉ do AWS giữ lại. /32 là đúng một địa chỉ. Mỗi subnet luôn gắn với **đúng một** route table: tường minh với một custom route table, hoặc ngầm định với main route table khi chưa gắn. Một route table có thể dùng cho nhiều subnet. Main route table không xoá được; giữ main route table chỉ có route `local` và gắn tường minh từng subnet là cách kiểm soát định tuyến an toàn.</Takeaway>
+
+</Scene>
+
+<Scene id="s1" label="Phần 2/9" title="Truy cập từ internet: các lớp kiểm soát trên đường đi của gói tin" questions={["exam5_q63", "exam4_q38", "exam3_q9", "exam3_q25", "exam6_q8"]}>
 
 Một subnet chỉ là **public subnet** khi route table của subnet đó có route `0.0.0.0/0` tới **Internet Gateway (IGW)**. Request từ internet tới web server của ShopViet lần lượt đi qua IGW, **Network ACL** tại ranh giới subnet, và **Security Group** gắn với instance. Bật hoặc tắt từng điều kiện và gửi request để xác định lớp kiểm soát đang chặn traffic.
 
@@ -66,7 +139,7 @@ Một subnet chỉ là **public subnet** khi route table của subnet đó có r
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/6" title="Chuỗi Security Group: ALB → EC2 → RDS" questions={["exam2_q28", "exam2_q55", "exam4_q52", "exam4_q26", "exam5_q29"]}>
+<Scene id="s2" label="Phần 3/9" title="Chuỗi Security Group: ALB → EC2 → RDS" questions={["exam2_q28", "exam2_q55", "exam4_q52", "exam4_q26", "exam5_q29"]}>
 
 Ứng dụng web của ShopViet gồm ba tầng: ALB tiếp nhận request của người dùng, EC2 chạy ứng dụng, RDS lưu trữ dữ liệu. Mỗi tầng chỉ nên cho phép traffic từ tầng liền trước. Chọn rule inbound cho EC2 và RDS, chạy mô phỏng, và quan sát cả request hợp lệ của người dùng lẫn request truy cập trực tiếp từ bên ngoài.
 
@@ -76,7 +149,7 @@ Một subnet chỉ là **public subnet** khi route table của subnet đó có r
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/6" title="NAT gateway: kết nối internet cho private subnet" questions={["exam3_q44", "exam3_q62", "exam6_q13", "exam3_q12"]}>
+<Scene id="s3" label="Phần 4/9" title="NAT gateway: kết nối internet cho private subnet" questions={["exam3_q44", "exam3_q62", "exam6_q13", "exam3_q12"]}>
 
 Database và worker của ShopViet nằm trong **private subnet**, không có public IP, nhưng vẫn cần tải bản vá. **NAT gateway** cho phép kết nối đi ra nhưng không cho phép internet khởi tạo kết nối vào. Thử ba cách bố trí, sau đó tạo sự cố tại AZ a.
 
@@ -86,7 +159,7 @@ Database và worker của ShopViet nằm trong **private subnet**, không có pu
 
 </Scene>
 
-<Scene id="s4" label="Phần 4/6" title="VPC endpoint: truy cập dịch vụ AWS không qua internet" questions={["exam3_q47", "exam5_q24", "exam6_q64", "exam6_q65", "exam3_q7", "exam1_q39", "exam5_q9"]}>
+<Scene id="s4" label="Phần 5/9" title="VPC endpoint: truy cập dịch vụ AWS không qua internet" questions={["exam3_q47", "exam5_q24", "exam6_q64", "exam6_q65", "exam3_q7", "exam1_q39", "exam5_q9", "exam2_q11"]}>
 
 EC2 trong private subnet của ShopViet ghi ảnh vào S3 và gửi job vào SQS. Theo mặc định, traffic này đi qua NAT gateway tới public endpoint của dịch vụ. Chọn từng phương án, gửi request và quan sát thay đổi trong route table.
 
@@ -100,16 +173,18 @@ EC2 trong private subnet của ShopViet ghi ảnh vào S3 và gửi job vào SQS
   { need: "Worker gửi job vào SQS mà không đi ra internet", answer: "Interface endpoint (PrivateLink)",
     why: "Tạo ENI có private IP trong subnet; các dịch vụ ngoài S3 và DynamoDB sử dụng loại endpoint này." },
   { need: "Đối tác vận chuyển gọi API tồn kho của ShopViet từ VPC của đối tác, không mở quyền truy cập toàn bộ mạng", answer: "AWS PrivateLink + NLB phía cung cấp",
-    why: "Phía cung cấp đặt NLB trước dịch vụ; phía sử dụng tạo interface endpoint. Chỉ một dịch vụ được công bố, không mở quyền truy cập toàn bộ mạng." },
+    why: "Phía cung cấp đặt NLB trước dịch vụ; phía sử dụng tạo interface endpoint (gửi traffic TCP hoặc UDP tới endpoint service). Chỉ một dịch vụ được công bố, không mở quyền truy cập toàn bộ mạng." },
+  { need: "DataSync agent tại kho on-premises chép video hằng ngày vào EFS qua Direct Connect sẵn có, không đi qua internet", answer: "Interface endpoint (PrivateLink) + private VIF",
+    why: "Interface endpoint là ENI có private IP trong VPC nên truy cập được từ on-premises qua private VIF của Direct Connect hoặc qua Site-to-Site VPN (DataSync agent dùng VPC service endpoint; EFS có interface endpoint cho EFS API). Gateway endpoint không dùng được từ on-premises." },
 ]} />
 
-<Takeaway>S3 và DynamoDB: gateway endpoint, không tính phí, định tuyến qua route table. Dịch vụ khác: interface endpoint, sử dụng ENI, có tính phí. Chia sẻ dịch vụ riêng giữa các VPC: PrivateLink kết hợp NLB.</Takeaway>
+<Takeaway>S3 và DynamoDB: gateway endpoint, không tính phí, định tuyến qua route table. Dịch vụ khác: interface endpoint, sử dụng ENI, có tính phí. Chia sẻ dịch vụ riêng giữa các VPC: PrivateLink kết hợp NLB. Gateway endpoint không truy cập được từ on-premises, từ VPC peering khác Region hay qua Transit Gateway; truy cập từ on-premises qua Direct Connect hoặc VPN: interface endpoint.</Takeaway>
 
 </Scene>
 
-<Scene id="s5" label="Phần 5/6" title="Kết nối nhiều VPC: VPC peering, Transit Gateway và VPC sharing" questions={["exam4_q45", "exam1_q42", "exam5_q14", "exam4_q28", "exam6_q12", "exam3_q16", "exam2_q36", "exam3_q17", "exam6_q41", "exam2_q21"]}>
+<Scene id="s5" label="Phần 6/9" title="Kết nối nhiều VPC: VPC peering, Transit Gateway và VPC sharing" questions={["exam4_q45", "exam1_q42", "exam5_q14", "exam4_q28", "exam6_q12", "exam3_q16", "exam2_q36", "exam3_q17", "exam6_q41", "exam2_q21"]}>
 
-ShopViet thành lập thêm các team, mỗi team sử dụng một VPC. Tăng số lượng VPC, so sánh số kết nối cần thiết giữa VPC peering và Transit Gateway, và thử gửi traffic từ A tới C khi chỉ có peering A–B và B–C.
+ShopViet thành lập thêm các team, mỗi team sử dụng một VPC. Tăng số lượng VPC, so sánh số kết nối cần thiết giữa VPC peering, Transit VPC và Transit Gateway, và thử gửi traffic từ A tới C khi chỉ có peering A–B và B–C. Với Transit Gateway, tắt route propagation để quan sát route table của Transit Gateway khi thiếu route.
 
 <VpcConnectSim client:visible />
 
@@ -123,30 +198,83 @@ ShopViet thành lập thêm các team, mỗi team sử dụng một VPC. Tăng s
   { need: "Tạo account mới cho từng team theo tiêu chuẩn chung, sử dụng mạng dùng chung", answer: "Control Tower + VPC dùng chung (RAM)",
     why: "Control Tower tạo và quản lý account; một account mạng chia sẻ subnet cho các account workload." },
   { need: "Log, DNS và công cụ bảo mật dùng chung cho mọi VPC", answer: "Shared services VPC",
-    why: "Tập trung các dịch vụ dùng chung vào một VPC thay vì triển khai lặp lại tại từng VPC." },
+    why: "Tập trung các dịch vụ dùng chung (directory service, interface endpoint tập trung) vào một VPC nối với các VPC khác qua Transit Gateway, thay vì triển khai lặp lại tại từng VPC: giảm chi phí và khối lượng quản trị (phần 8)." },
+  { need: "Hub kết nối các VPC và văn phòng, ít công vận hành nhất", answer: "Transit Gateway (không dùng Transit VPC)",
+    why: "Transit VPC là mô hình cũ: EC2 chạy phần mềm router và VPN trong một VPC trung tâm; tổ chức tự đảm bảo HA và license, mỗi tunnel VPN tối đa 1,25 Gbps, độ trễ tăng do mã hoá. Transit Gateway là hub do AWS quản lý." },
 ]} />
 
-<Takeaway>Số lượng VPC nhỏ: VPC peering (chi phí thấp, nhưng không hỗ trợ transitive routing). Nhiều VPC hoặc cần kết nối cả on-premises: Transit Gateway. Nhiều account trong cùng Organization: VPC sharing.</Takeaway>
+<Takeaway>Số lượng VPC nhỏ: VPC peering (chi phí thấp, nhưng không hỗ trợ transitive routing). Nhiều VPC hoặc cần kết nối cả on-premises: Transit Gateway; bật route propagation để CIDR của mỗi VPC attachment tự động có trong route table của Transit Gateway (route table của subnet trong VPC vẫn cần route trỏ tới Transit Gateway). Transit VPC (EC2 router và VPN tự vận hành) là mô hình cũ mà Transit Gateway thay thế. Nhiều account trong cùng Organization: VPC sharing.</Takeaway>
 
 </Scene>
 
-<Scene id="s6" label="Phần 6/6" title="Kết nối on-premises: Site-to-Site VPN và Direct Connect" questions={["exam3_q18", "exam5_q10", "exam5_q41", "exam6_q25", "exam1_q37", "exam4_q48", "exam4_q7", "exam6_q45", "exam6_q34", "exam4_q18"]}>
+<Scene id="s6" label="Phần 7/9" title="Kết nối on-premises: Site-to-Site VPN và Direct Connect" questions={["exam3_q18", "exam5_q10", "exam5_q41", "exam6_q25", "exam1_q37", "exam4_q48", "exam4_q7", "exam6_q45", "exam6_q34", "exam4_q18"]}>
 
 Văn phòng ShopViet cần kết nối vào VPC. Có hai phương thức: **Site-to-Site VPN** truyền qua internet với mã hóa, và **Direct Connect** là kết nối chuyên dụng tới AWS. Mỗi tình huống dưới đây tương ứng với một yêu cầu thực tế của văn phòng. Chọn phương thức kết nối và gửi request để quan sát đường đi của traffic.
 
 <HybridLinkSim client:visible />
 
-<Takeaway>Triển khai nhanh, chi phí thấp: Site-to-Site VPN. Kết nối ổn định, chuyên dụng: Direct Connect (thiết lập VPN bên trên khi cần mã hóa, bổ sung VPN làm kết nối dự phòng). Nhiều Region: Direct Connect gateway. Truy cập S3 qua Direct Connect: public VIF. Các chi nhánh giao tiếp với nhau: VPN CloudHub. Thông lượng VPN không đủ: Transit Gateway với ECMP.</Takeaway>
+<Takeaway>Site-to-Site VPN: virtual private gateway (hoặc transit gateway) ở phía AWS, customer gateway device ở phía on-premises, customer gateway là tài nguyên trong AWS mô tả thiết bị đó; mỗi VPN connection có hai tunnel. Triển khai nhanh, chi phí thấp: Site-to-Site VPN. Kết nối ổn định, chuyên dụng: Direct Connect (thiết lập VPN bên trên khi cần mã hóa, bổ sung VPN làm kết nối dự phòng). Nhiều Region: private VIF tới Direct Connect gateway. Truy cập S3 qua Direct Connect: public VIF. Các chi nhánh giao tiếp với nhau: VPN CloudHub. Thông lượng VPN không đủ: Transit Gateway với ECMP.</Takeaway>
 
 </Scene>
 
-<Scene id="confuse" label="Lỗi thường gặp" title="Sáu cấu hình có vẻ hợp lệ nhưng không hoạt động như mong đợi" questions={["exam2_q20", "exam6_q63", "exam3_q44", "exam3_q21", "exam3_q65", "exam6_q59", "exam3_q12"]}>
+<Scene id="hub" label="Phần 8/9" title="Mạng trung tâm: Transit Gateway, Direct Connect và shared services VPC" questions={["exam3_q16", "exam2_q21", "exam4_q7", "exam4_q28"]}>
+
+ShopViet đã có 25 VPC cho các kho, một data center nối bằng Direct Connect, và vừa sáp nhập một công ty có data center và VPC tại châu Âu. Mỗi tình huống dưới đây so sánh thiết kế theo từng VPC với thiết kế tập trung. Chọn thiết kế và gửi request để quan sát đường đi.
+
+<HubSim client:visible />
+
+Direct Connect có ba loại virtual interface: **private VIF** truy cập VPC bằng private IP (gắn với VGW hoặc Direct Connect gateway), **public VIF** truy cập public endpoint của AWS như S3, và **transit VIF** truy cập một hoặc nhiều Transit Gateway thông qua Direct Connect gateway. Một Direct Connect gateway đã gắn với VGW hoặc private VIF thì không gắn được với Transit Gateway.
+
+<Takeaway>Nhiều VPC cùng Region và data center qua Direct Connect: một transit VIF tới Direct Connect gateway, gateway associate với Transit Gateway, các VPC attachment bật route propagation. Nhiều Region: private VIF tới Direct Connect gateway (toàn cầu, trừ các Region Trung Quốc) và associate VGW của từng Region; Direct Connect gateway không chuyển traffic giữa hai VGW. Interface endpoint dùng chung cho nhiều VPC: shared services VPC, tắt private DNS của endpoint, private hosted zone associate với các spoke VPC.</Takeaway>
+
+</Scene>
+
+<Scene id="confuse" label="Lỗi thường gặp" title="Bảy cấu hình có vẻ hợp lệ nhưng không hoạt động như mong đợi" questions={["exam2_q20", "exam6_q63", "exam3_q44", "exam3_q21", "exam3_q65", "exam6_q59", "exam3_q12", "exam4_q38"]}>
 
 Các cấu hình dưới đây có vẻ hợp lý khi thao tác trên console, nhưng hoạt động thực tế lại khác. Chọn tình huống, thử phương án thường được áp dụng trước, sau đó chuyển sang phương án đúng.
 
 <VpcMythsSim client:visible />
 
-<Takeaway>Private hosted zone yêu cầu bật cả enableDnsHostnames và enableDnsSupport. Traffic IPv4 đi ra: NAT gateway (egress-only IGW chỉ dành cho IPv6). Yêu cầu port forwarding hoặc bastion: NAT instance. VPC có tenancy dedicated khiến mọi instance chạy ở chế độ dedicated. Source của Security Group không thể là Internet Gateway. Hai EC2 nên giao tiếp qua private IP: truy cập qua public IP bị tính phí data transfer; qua private IP, traffic giữa hai AZ vẫn tính phí theo GB.</Takeaway>
+<Takeaway>Private hosted zone yêu cầu bật cả enableDnsHostnames và enableDnsSupport. Traffic IPv4 đi ra: NAT gateway (egress-only IGW chỉ dành cho IPv6). Yêu cầu port forwarding hoặc bastion: NAT instance. VPC có tenancy dedicated khiến mọi instance chạy ở chế độ dedicated. Source của Security Group không thể là Internet Gateway. Hai EC2 nên giao tiếp qua private IP: truy cập qua public IP bị tính phí data transfer; qua private IP, traffic giữa hai AZ vẫn tính phí theo GB. `ping` là ICMP: Security Group cần rule ICMP inbound. Source/destination check chỉ tắt cho instance làm NAT, router hoặc firewall.</Takeaway>
+
+</Scene>
+
+<Scene id="compare" label="Phần 9/9" title="Phân biệt nhanh: các thành phần mạng dễ nhầm lẫn" questions={["exam5_q10", "exam5_q45", "exam5_q4", "exam6_q36", "exam4_q28", "exam4_q38"]}>
+
+Một số thành phần mạng có tên hoặc chức năng gần với nhu cầu của ShopViet nhưng giải quyết một vấn đề khác. Chọn từng thành phần để xem trường hợp sử dụng, lý do không phù hợp trong tình huống tương ứng, và phương án nên chọn:
+
+<QuickCompare client:visible items={[
+  { name: "AWS Client VPN",
+    use: "VPN **cho từng người dùng**: dịch vụ managed, máy của nhân viên dùng OpenVPN client kết nối TLS tới Client VPN endpoint để truy cập VPC và mạng on-premises; xác thực bằng Active Directory, federated authentication hoặc certificate.",
+    notHere: "Toàn bộ mạng văn phòng ShopViet cần kết nối mã hoá với VPC (mạng với mạng). Client VPN phục vụ từng thiết bị, không nối hai mạng với nhau.",
+    instead: "**Site-to-Site VPN** (IPsec giữa customer gateway device và virtual private gateway), kết hợp route table, Security Group và NACL để giới hạn traffic." },
+  { name: "Bastion host",
+    use: "EC2 trong public subnet làm điểm trung gian SSH/RDP để quản trị viên truy cập instance trong private subnet.",
+    notHere: "Chỉ cung cấp truy cập quản trị từng server, không tạo kết nối mạng giữa văn phòng và VPC; còn phải mở cổng inbound và tự vận hành instance.",
+    instead: "Nối mạng: Site-to-Site VPN hoặc Direct Connect. Quản trị server mà không mở cổng inbound và không duy trì bastion: **Session Manager** của AWS Systems Manager." },
+  { name: "Transit VPC",
+    use: "Mô hình hub-and-spoke cũ: EC2 chạy phần mềm router của bên thứ ba trong một VPC trung tâm, các VPC khác nối tới bằng VPN (BGP over IPsec). Vẫn có chỗ dùng khi cần tính năng của thiết bị bên thứ ba trên đường đi.",
+    notHere: "ShopViet cần hub ít công vận hành: Transit VPC buộc tự quản lý HA của EC2 và license, mỗi tunnel VPN tối đa 1,25 Gbps, độ trễ tăng do mã hoá VPN.",
+    instead: "**AWS Transit Gateway**: hub do AWS quản lý; mỗi VPC, VPN hoặc Direct Connect gateway là một attachment." },
+  { name: "Network ACL",
+    use: "Lọc traffic tại ranh giới subnet theo số thứ tự rule, protocol, port và **dải CIDR**; có cả Allow và Deny, stateless.",
+    notHere: "Cần chặn người dùng từ một số quốc gia nhưng vẫn cho đội phát triển tại một trong các quốc gia đó truy cập. Rule NACL chỉ nhận dải CIDR, không có điều kiện theo quốc gia.",
+    instead: "**AWS WAF** gắn với ALB: geo match statement để chặn theo quốc gia, kết hợp IP set statement để cho phép IP của đội phát triển." },
+  { name: "Source/destination check",
+    use: "Thuộc tính của ENI, bật mặc định: instance phải là nguồn hoặc đích của traffic nó gửi hoặc nhận. Tắt khi instance làm NAT instance, router hoặc firewall.",
+    notHere: "Không ping được EC2 public: instance là đích của gói ping, thuộc tính này không ảnh hưởng.",
+    instead: "Kiểm tra route `0.0.0.0/0 → Internet Gateway` trong route table của subnet và rule ICMP inbound trong Security Group (mục Lỗi thường gặp)." },
+  { name: "Elastic network interface (ENI)",
+    use: "Thành phần mạng logic trong VPC, đại diện cho một card mạng ảo: private IP, Elastic IP, Security Group, source/destination check. Gắn vào instance cùng AZ; chuyển ENI sang instance khác thì traffic chuyển theo.",
+    notHere: "Workflow HPC của ShopViet cần giao tiếp giữa các instance với độ trễ thấp. ENI chỉ là card mạng ảo, không tăng hiệu năng giao tiếp.",
+    instead: "**Elastic Fabric Adapter (EFA)**: toàn bộ chức năng của ENA cộng với OS-bypass cho HPC và machine learning (bài EC2)." },
+  { name: "AWS PrivateLink",
+    use: "Truy cập riêng tư một dịch vụ từ VPC của bên sử dụng qua interface endpoint (traffic TCP hoặc UDP); dịch vụ đặt sau NLB ở phía cung cấp.",
+    notHere: "Ứng dụng phục vụ khách hàng trên internet ở nhiều quốc gia với độ trễ thấp. PrivateLink chỉ phục vụ bên sử dụng có VPC endpoint, không đưa ứng dụng ra internet và không định tuyến người dùng tới Region gần nhất.",
+    instead: "**AWS Global Accelerator** trước các NLB ở từng Region; NLB nhận cả TCP và UDP, và dùng IP target để chuyển traffic tới máy chủ on-premises." },
+]} />
+
+<Takeaway>Kết nối mạng với mạng: Site-to-Site VPN hoặc Direct Connect; từng người dùng: Client VPN; quản trị server: Session Manager hoặc bastion host. Chặn theo quốc gia: AWS WAF geo match, không dùng NACL. Hub ít công vận hành: Transit Gateway, không dùng Transit VPC.</Takeaway>
 
 </Scene>
 
@@ -190,6 +318,10 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["enableDnsHostnames và enableDnsSupport", "Một Route 53 Resolver inbound endpoint", "Một Internet Gateway"],
     a: 0,
     why: "Private hosted zone yêu cầu VPC bật cả DNS hostnames và DNS resolution (enableDnsSupport)." },
+  { q: "Subnet mới của ShopViet chưa được gắn tường minh với route table nào. Subnet đó dùng route table nào?",
+    opts: ["Không có route table nên không định tuyến được", "Main route table của VPC", "Đồng thời mọi route table trong VPC"],
+    a: 1,
+    why: "Subnet chưa gắn tường minh thì ngầm định dùng main route table. Mỗi subnet chỉ gắn với một route table tại một thời điểm." },
 ]} />
 
 </Scene>

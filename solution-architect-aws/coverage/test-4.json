@@ -245,8 +245,8 @@
         {
           "keyword": "Direct Connect private VIF",
           "lesson": "vpc",
-          "status": "partial",
-          "where": "vpc.mdx#s6 / HybridLinkSim"
+          "status": "covered",
+          "where": "vpc.mdx#hub / HubSim; vpc.mdx#s6 / HybridLinkSim"
         }
       ]
     },
@@ -272,8 +272,8 @@
         {
           "keyword": "CIDR notation",
           "lesson": "vpc",
-          "status": "partial",
-          "where": "iam.mdx#s1 / PolicyReader"
+          "status": "covered",
+          "where": "vpc.mdx#addr / CidrSim"
         }
       ]
     },
@@ -896,8 +896,8 @@
         {
           "keyword": "Transit VPC",
           "lesson": "vpc",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "vpc.mdx#s5 / VpcConnectSim; vpc.mdx#compare / QuickCompare"
         },
         {
           "keyword": "VPC peering (full mesh)",
@@ -1231,14 +1231,14 @@
         {
           "keyword": "Security group ICMP rule (ping)",
           "lesson": "vpc",
-          "status": "partial",
-          "where": "vpc.mdx#s1"
+          "status": "covered",
+          "where": "vpc.mdx#confuse / VpcMythsSim"
         },
         {
           "keyword": "EC2 source/destination check",
           "lesson": "vpc",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "vpc.mdx#confuse / VpcMythsSim; vpc.mdx#compare / QuickCompare"
         },
         {
           "keyword": "Elastic IP address",
