@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **983 keyword** khác nhau: ✅ 982 (100%) · 🟡 0 (0%) · ❌ 1 (0%).
+Có **983 keyword** khác nhau: ✅ 983 (100%) · 🟡 0 (0%) · ❌ 0 (0%).
 
 ### Theo bài học
 
@@ -23,7 +23,7 @@ Có **983 keyword** khác nhau: ✅ 982 (100%) · 🟡 0 (0%) · ❌ 1 (0%).
 | [global-infra](#global-infra) | 23 | 23 | 0 | 0 | 100% |
 | [vpc](#vpc) | 108 | 108 | 0 | 0 | 100% |
 | [route53](#route53) | 28 | 28 | 0 | 0 | 100% |
-| [cloudfront](#cloudfront) | 32 | 31 | 0 | 1 | 97% |
+| [cloudfront](#cloudfront) | 32 | 32 | 0 | 0 | 100% |
 | [iam](#iam) | 49 | 49 | 0 | 0 | 100% |
 | [kms](#kms) | 21 | 21 | 0 | 0 | 100% |
 | [security](#security) | 27 | 27 | 0 | 0 | 100% |
@@ -51,7 +51,7 @@ Có **983 keyword** khác nhau: ✅ 982 (100%) · 🟡 0 (0%) · ❌ 1 (0%).
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
 | Đề 1 | 226 | 0 | 0 |
-| Đề 2 | 203 | 0 | 1 |
+| Đề 2 | 204 | 0 | 0 |
 | Đề 3 | 227 | 0 | 0 |
 | Đề 4 | 237 | 0 | 0 |
 | Đề 5 | 226 | 0 | 0 |
@@ -235,7 +235,6 @@ Có **983 keyword** khác nhau: ✅ 982 (100%) · 🟡 0 (0%) · ❌ 1 (0%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | CloudFront (no built-in Cognito authentication) | ❌ Thiếu | 1 | exam2_q17 |  |
 | [ ] | CloudFront geo restriction | ✅ Đã có | 3 | exam1_q6, exam1_q38, exam4_q63 | cloudfront.mdx#s3 |
 | [ ] | CloudFront origin access identity (OAI) / OAC | ✅ Đã có | 2 | exam6_q54, exam6_q65 | cloudfront.mdx#s1 |
 | [ ] | CloudFront signed URL | ✅ Đã có | 2 | exam5_q15, exam6_q62 | cloudfront.mdx#s3 / EdgePipelineSim |
@@ -243,6 +242,7 @@ Có **983 keyword** khác nhau: ✅ 982 (100%) · 🟡 0 (0%) · ❌ 1 (0%).
 | [ ] | CloudFront (dynamic content) | ✅ Đã có | 1 | exam4_q53 | cloudfront.mdx#s5 / TieredPathSim; cloudfront.mdx#s6 / QuickCompare |
 | [ ] | CloudFront (HTTP only, no TCP/UDP) | ✅ Đã có | 1 | exam2_q7 | cloudfront.mdx#s4 / RequirementPicker |
 | [ ] | CloudFront (HTTP/HTTPS only) | ✅ Đã có | 1 | exam3_q8 | global-infra.mdx#s5 / EdgeChoiceSim |
+| [ ] | CloudFront (no built-in Cognito authentication) | ✅ Đã có | 1 | exam2_q17 | cloudfront.mdx#s6 / QuickCompare (no Cognito setting on a distribution; Lambda@Edge needed; ALB authenticate-cognito is the minimal-effort option) |
 | [ ] | CloudFront cache behavior (multiple origins) | ✅ Đã có | 1 | exam4_q63 | cloudfront.mdx#s3; cloudfront.mdx#s2 |
 | [ ] | CloudFront caching for S3 origin | ✅ Đã có | 1 | exam1_q1 | cloudfront.mdx#s1 / global-infra.mdx#s4 |
 | [ ] | CloudFront custom origin (EC2, on-premises) | ✅ Đã có | 1 | exam2_q2 | cloudfront.mdx#s2 / RequirementPicker |

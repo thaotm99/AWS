@@ -579,8 +579,8 @@
         {
           "keyword": "CloudFront (no built-in Cognito authentication)",
           "lesson": "cloudfront",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "cloudfront.mdx#s6 / QuickCompare (no Cognito setting on a distribution; Lambda@Edge needed; ALB authenticate-cognito is the minimal-effort option)"
         }
       ]
     },

@@ -53,6 +53,10 @@ docs:
     url: "https://aws.amazon.com/global-accelerator/faqs/"
   - title: "Amazon CloudFront: content uploads via POST, PUT and other HTTP methods (AWS News Blog)"
     url: "https://aws.amazon.com/blogs/aws/amazon-cloudfront-content-uploads-post-put-other-methods/"
+  - title: "Ways to use Lambda@Edge"
+    url: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-edge-ways-to-use.html"
+  - title: "Authenticate users using an Application Load Balancer"
+    url: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/listener-authenticate-users.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -189,7 +193,7 @@ Not every request goes through a regional edge cache: requests that use PUT, POS
 
 </Scene>
 
-<Scene id="en-s6" label="Part 6/6" title="Quick comparison of settings that are easy to confuse" questions={["exam4_q63", "exam5_q7", "exam5_q15", "exam6_q62", "exam4_q53", "exam5_q30"]}>
+<Scene id="en-s6" label="Part 6/6" title="Quick comparison of settings that are easy to confuse" questions={["exam4_q63", "exam5_q7", "exam5_q15", "exam6_q62", "exam4_q53", "exam5_q30", "exam2_q17"]}>
 
 Some CloudFront settings have names close to a real requirement but solve a different problem. Select each item to see when to use it, why it does not fit the matching ShopViet situation, and what fits instead:
 
@@ -210,6 +214,10 @@ Some CloudFront settings have names close to a real requirement but solve a diff
     use: "Runs Node.js or Python functions (created in us-east-1) at AWS locations close to viewers to customize the requests and responses that CloudFront delivers; triggered on viewer request, viewer response, origin request and origin response; has network access and access to the request body. Lightweight logic (cache key normalization, header changes, redirects, JWT validation) fits CloudFront Functions.",
     notHere: "A web application and MySQL on a single EC2 instance need high availability and better read performance. Lambda@Edge does not replicate the application tier or the database.",
     instead: "ALB + an Auto Scaling group across multiple AZs; Aurora MySQL with an Aurora Replica in another AZ." },
+  { name: "Cognito user authentication on CloudFront",
+    use: "A CloudFront distribution has no setting that authenticates users with an Amazon Cognito user pool. To check sign-in at the edge you write the function yourself: **Lambda@Edge** on the viewer request event inspects tokens and can make network calls to confirm user credentials; **CloudFront Functions** can only validate signed tokens such as JWTs. The whole sign-in, redirect and token check flow is code the team writes and runs.",
+    notHere: "A social media application runs on EC2 behind an ALB, fronted by CloudFront; the team wants to offload user authentication from the application servers with minimal development effort. Authenticating at CloudFront means writing and maintaining a Lambda@Edge function.",
+    instead: "An **ALB** HTTPS listener rule with the `authenticate-cognito` action using a **Cognito user pool** (an identity pool only issues temporary AWS credentials; it does not authenticate users for the application). With CloudFront in front of the ALB: forward all headers, cookies and query strings, and use HTTPS port 443 along the whole path." },
   { name: "CloudFront in front of a dynamic site during a flash sale",
     use: "Caches the cacheable part of the content at the edge and accelerates the delivery of dynamic content.",
     notHere: "Traffic is expected at 10x and the content changes constantly: most requests cannot be cached and still reach the origin, so CloudFront does not solve the capacity problem.",
@@ -220,7 +228,7 @@ Some CloudFront settings have names close to a real requirement but solve a diff
     instead: "To improve performance for distant users without moving the application: **AWS Global Accelerator** with a TCP 443 listener and the existing EC2/ALB as the endpoint. With CloudFront: CachingDisabled with a suitable origin request policy." },
 ]} />
 
-<Takeaway>A price class sets cost and the set of edge locations; it does not route to origins. An origin request policy decides what is sent to the origin; it grants no permission. HTTPS to the origin protects data in transit; it does not restrict viewers. Lambda@Edge customizes requests and responses at the edge; it does not make the application and database highly available.</Takeaway>
+<Takeaway>A price class sets cost and the set of edge locations; it does not route to origins. An origin request policy decides what is sent to the origin; it grants no permission. HTTPS to the origin protects data in transit; it does not restrict viewers. Lambda@Edge customizes requests and responses at the edge; it does not make the application and database highly available. CloudFront has no built-in Cognito authentication: authenticating at the edge needs Lambda@Edge; the least-code option is letting the ALB behind it authenticate with a Cognito user pool ([ELB lesson](/concepts/elb/#en-s3)).</Takeaway>
 
 </Scene>
 
