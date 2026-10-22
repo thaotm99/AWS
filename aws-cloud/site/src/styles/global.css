@@ -379,7 +379,10 @@ details.deep .deep-body p:last-child { margin-bottom: 0; }
   html.drawer-open .menu-btn .icon-close { display: inline; }
   .sidebar, .sidebar.nav-only {
     display: block; position: fixed; z-index: 8; top: calc(env(safe-area-inset-top, 0px) + 57px); bottom: 0; left: 0;
-    width: min(86vw, 340px); max-height: none; overflow-y: auto; background: var(--surface); border-right: 1px solid var(--line);
+    /* The desktop rule's align-self: start also applies to a fixed box: without stretch the drawer
+       grows to its content, runs past the bottom of the screen and never scrolls. */
+    align-self: stretch;
+    width: min(86vw, 340px); max-height: none; overflow-y: auto; overscroll-behavior: contain; background: var(--surface); border-right: 1px solid var(--line);
     padding: 14px 14px calc(14px + env(safe-area-inset-bottom, 0px)) max(14px, env(safe-area-inset-left, 0px));
     transform: translateX(-102%); visibility: hidden; transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s linear 0.28s;
   }
