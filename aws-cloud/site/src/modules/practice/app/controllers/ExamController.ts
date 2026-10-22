@@ -1,5 +1,5 @@
 import { Scoring } from "../../domain/Scoring";
-import type { CertificationId, ExamId, OptionKey } from "../../domain/types";
+import type { CertificationId, ContentLocale, Exam, ExamId, OptionKey } from "../../domain/types";
 import type { AttemptService } from "../../services/AttemptService";
 import type { CatalogService } from "../../services/CatalogService";
 import { Controller } from "../../../../core/state/Controller";
@@ -18,7 +18,8 @@ export class ExamController extends Controller<PracticeEvent, ExamState, ExamSto
   }
 
   protected bind(): void {
-    this.on("exam/open", (e) => this.open(e.certId, e.examId));
+    this.on("exam/open", (e) => this.open(e.certId, e.examId, e.locale));
+    this.on("exam/language", (e) => this.language(e.locale));
     this.on("exam/toggleOption", (e) => this.toggle(e.key));
     this.on("exam/submit", () => this.submit());
     this.on("exam/next", () => this.next());
@@ -27,19 +28,40 @@ export class ExamController extends Controller<PracticeEvent, ExamState, ExamSto
     this.on("exam/restart", () => this.restart());
   }
 
+  /** Question text in `locale`, plus the English original when that is a translation. */
+  private content(certId: CertificationId, examId: ExamId, locale: ContentLocale): Promise<[Exam, Exam | null]> {
+    return Promise.all([
+      this.catalog.getExam(certId, examId, locale),
+      locale === "en" ? Promise.resolve(null) : this.catalog.getExam(certId, examId, "en"),
+    ]);
+  }
+
   /** Resumes the newest attempt; a finished one opens on its result. */
-  private async open(certId: CertificationId, examId: ExamId): Promise<void> {
+  private async open(certId: CertificationId, examId: ExamId, locale: ContentLocale): Promise<void> {
     this.store.loading();
     try {
-      const [cert, exam, latest] = await Promise.all([
+      const [cert, [exam, original], latest] = await Promise.all([
         this.catalog.getCertification(certId),
-        this.catalog.getExam(certId, examId),
+        this.content(certId, examId, locale),
         this.attempts.latest(certId, examId),
       ]);
       const attempt = latest ?? (await this.attempts.start({ certId, examId, questionCount: exam.questions.length }));
       this.store.loaded(cert, exam, attempt, Scoring.isFinished(attempt) ? "result" : "question");
+      this.store.content(exam, original);
     } catch (e) {
       this.store.failed({ code: "loadExam", detail: Controller.message(e) });
+    }
+  }
+
+  /** Answers are stored by question id and option key, so switching language never touches the attempt. */
+  private async language(locale: ContentLocale): Promise<void> {
+    const { exam, cert, locale: current } = this.store.getState();
+    if (!exam || !cert || locale === current) return;
+    try {
+      const [next, original] = await this.content(cert.id, exam.id, locale);
+      this.store.content(next, original);
+    } catch (e) {
+      this.store.saveFailed({ code: "loadExam", detail: Controller.message(e) });
     }
   }
 

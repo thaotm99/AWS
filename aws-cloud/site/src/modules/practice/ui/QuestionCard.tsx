@@ -1,11 +1,15 @@
+import { useState } from "react";
 import type { PracticeError } from "../app/errors";
 import type { Dispatch } from "../app/events";
 import type { AnswerRecord, Question } from "../domain/types";
+import { domainLabel } from "./domainLabel";
 import { errorText } from "./errorText";
 import { useT } from "./useT";
 
 interface Props {
   question: Question;
+  /** English original of the same question, when `question` is a translation. */
+  original?: Question;
   total: number;
   answer: AnswerRecord | undefined;
   selection: string[];
@@ -17,8 +21,12 @@ interface Props {
 
 const label = (key: string) => key.toUpperCase();
 
-export default function QuestionCard({ question: q, total, answer, selection, saving, error, isLast, dispatch }: Props) {
-  const { t, lookup } = useT();
+export default function QuestionCard({ question: translated, original, total, answer, selection, saving, error, isLast, dispatch }: Props) {
+  const tr = useT();
+  const { t, lookup } = tr;
+  const [showOriginal, setShowOriginal] = useState(false);
+  // Same id, option keys and answers in both languages; only the text differs.
+  const q = showOriginal && original ? original : translated;
   const multi = q.selectCount > 1;
   const count = lookup(`count.${q.selectCount}`);
 
@@ -26,9 +34,19 @@ export default function QuestionCard({ question: q, total, answer, selection, sa
     <section className="pr-card" aria-labelledby="pr-q">
       <div className="pr-q-meta">
         <span>{t("exam.questionOf", { n: q.number, total })}</span>
-        {q.domain && <span>{q.domain}</span>}
+        {q.domain && <span>{domainLabel(tr, q.domain)}</span>}
         {multi && <span className="pr-multi">{t("exam.selectN", { n: count })}</span>}
       </div>
+      {(original || !translated.translated) && (
+        <div className="pr-lang">
+          {!translated.translated && <span className="pr-muted">{t("exam.notTranslated")}</span>}
+          {original && translated.translated && (
+            <button type="button" className="pr-lang-btn" aria-pressed={showOriginal} onClick={() => setShowOriginal((v) => !v)}>
+              {showOriginal ? t("exam.showTranslation") : t("exam.showOriginal")}
+            </button>
+          )}
+        </div>
+      )}
       <div id="pr-q" className="pr-html pr-prompt" dangerouslySetInnerHTML={{ __html: q.promptHtml }} />
 
       <div className="pr-options" role={multi ? "group" : "radiogroup"} aria-labelledby="pr-q">

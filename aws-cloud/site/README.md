@@ -27,7 +27,7 @@ Các hình bên dưới là SVG có chuyển động. Chúng tự chạy trên G
 | Thư mục | Vai trò | Được import từ đâu |
 |---|---|---|
 | `src/core/` | Hạ tầng dùng chung: API client, lưu trữ, event/store/controller, i18n, lựa chọn của người xem (`preferences/`), giao diện sáng/tối (`theme/`). Không biết có tính năng nào. | mọi nơi |
-| `src/modules/<tên>/` | Một tính năng, tự chứa đủ các tầng. Hiện có `shell` (khung trang, cài đặt) và `practice` (Ôn tập). | `app/`, `pages/` |
+| `src/modules/<tên>/` | Một tính năng, tự chứa đủ các tầng. Hiện có `shell` (khung trang, cài đặt) và `practice` (Luyện đề). | `app/`, `pages/` |
 | `src/app/` | Tầng ghép nối: tạo **một** `ApiClient` cho cả site (`api.ts`), gom từ điển của các module (`i18n.ts`), tạo `theme` (`theme.ts`). | module (lấy i18n, ApiClient), `pages/` |
 | `src/pages/`, `src/layouts/` | Trang Astro tĩnh. Gắn component React của module, sinh `/api/*.json` lúc build. | không ai |
 
@@ -188,7 +188,7 @@ Cấu hình build nằm trong repo:
 
 - `vercel.json`: framework Astro, `npm ci`, `npm run build` (kiểm tra kiểu rồi build), xuất ra `dist`, URL có dấu `/` ở cuối.
 - `package.json` → `engines.node: 22.x`.
-- `middleware.ts`: khoá cả site bằng mật khẩu (Vercel Routing Middleware). Gói Hobby của Vercel không khoá được trang production, nên phần này cần thiết vì trang Ôn tập chứa nội dung đề có bản quyền.
+- `middleware.ts`: khoá cả site bằng mật khẩu (Vercel Routing Middleware). Gói Hobby của Vercel không khoá được trang production, nên phần này cần thiết vì trang Luyện đề chứa nội dung đề có bản quyền.
 
 **Lần đầu:**
 

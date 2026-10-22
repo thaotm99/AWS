@@ -12,11 +12,11 @@ type OriginId = "s3a" | "s3b" | "alb";
 type State = "pass" | "block" | "skip" | "change";
 
 const GATES: { id: GateId; l1: string; l2: string }[] = [
-  { id: "tls", l1: "HTTPS", l2: "chứng chỉ" },
-  { id: "waf", l1: "AWS WAF", l2: "lọc tấn công" },
+  { id: "tls", l1: "TLS", l2: "chứng chỉ ACM" },
+  { id: "waf", l1: "AWS WAF", l2: "web ACL" },
   { id: "geo", l1: "Geo", l2: "restriction" },
   { id: "sign", l1: "Signed", l2: "URL/cookie" },
-  { id: "fle", l1: "Mã hoá", l2: "từng trường" },
+  { id: "fle", l1: "Field-level", l2: "encryption" },
   { id: "route", l1: "Cache", l2: "behavior" },
 ];
 const GX = (i: number) => 180 + i * 75;
@@ -25,7 +25,7 @@ const USER: Pt = [60, LANE];
 const ORIGINS: Record<OriginId, { y: number; l1: string; l2: string }> = {
   s3a: { y: 69, l1: "S3 Singapore", l2: "origin chính" },
   s3b: { y: 127, l1: "S3 Tokyo", l2: "origin dự phòng" },
-  alb: { y: 219, l1: "ALB → API", l2: "server ứng dụng" },
+  alb: { y: 219, l1: "ALB → API", l2: "tầng ứng dụng" },
 };
 
 interface Outcome {
@@ -45,98 +45,98 @@ interface Scenario {
   run(on: boolean): Outcome;
 }
 
-const PASS_TLS = { state: "pass" as const, msg: "HTTPS với chứng chỉ của **shopviet.vn** (ACM, us-east-1)." };
-const PASS_WAF = { state: "pass" as const, msg: "Không khớp rule chặn nào." };
-const PASS_GEO = { state: "pass" as const, msg: "Việt Nam nằm trong danh sách được phép." };
-const OPEN = { state: "skip" as const, msg: "Nội dung công khai, không cần chữ ký." };
-const NO_FIELD = { state: "skip" as const, msg: "Không có trường dữ liệu nhạy cảm." };
+const PASS_TLS = { state: "pass" as const, msg: "TLS termination bằng chứng chỉ ACM của **shopviet.vn** (us-east-1)." };
+const PASS_WAF = { state: "pass" as const, msg: "Request không khớp rule chặn nào trong web ACL." };
+const PASS_GEO = { state: "pass" as const, msg: "Quốc gia nguồn (VN) thuộc allow list." };
+const OPEN = { state: "skip" as const, msg: "Nội dung công khai, không yêu cầu chữ ký." };
+const NO_FIELD = { state: "skip" as const, msg: "Request không chứa trường dữ liệu cần mã hoá." };
 
 const SCENARIOS: Scenario[] = [
   {
-    name: "Xem ảnh sản phẩm",
+    name: "Truy xuất ảnh sản phẩm",
     request: "GET /images/ao-thun.jpg",
     from: "Việt Nam",
     run: () => ({
       gates: { tls: PASS_TLS, waf: PASS_WAF, geo: PASS_GEO, sign: OPEN, fle: NO_FIELD,
-        route: { state: "pass", msg: "Path `/images/*` khớp cache behavior trỏ về **S3**." } },
+        route: { state: "pass", msg: "Path `/images/*` khớp cache behavior trỏ tới origin **S3**." } },
       origin: "s3a", ok: true,
-      result: "200: ảnh trả về và được lưu ở edge. Lần sau khách gần đó mở ảnh sẽ nhận ngay từ cache.",
+      result: "200 OK: object được trả về và lưu tại edge cache; các request tiếp theo trong thời gian TTL được phục vụ từ cache.",
     }),
   },
   {
-    name: "Bot dò lỗi SQL",
+    name: "Tấn công SQL injection",
     request: "GET /api/search?q=' OR 1=1 --",
-    from: "không rõ",
-    toggle: { label: "Bật rule chống SQL injection", initial: true },
+    from: "không xác định",
+    toggle: { label: "Kích hoạt managed rule SQL injection", initial: true },
     run: (on) => on
-      ? { gates: { tls: PASS_TLS, waf: { state: "block", msg: "Managed rule **SQL injection** khớp chuỗi `' OR 1=1`. Chặn ngay tại edge." } },
-          ok: true, result: "403: request độc hại dừng ở edge, server API không phải xử lý gì." }
-      : { gates: { tls: PASS_TLS, waf: { state: "pass", msg: "Chưa có rule nào bắt được chuỗi này." }, geo: PASS_GEO, sign: OPEN, fle: NO_FIELD,
-            route: { state: "pass", msg: "Path `/api/*` trỏ về **ALB**." } },
-          origin: "alb", ok: false, result: "Request độc hại tới thẳng server API. Gắn AWS WAF vào CloudFront để chặn từ edge." },
+      ? { gates: { tls: PASS_TLS, waf: { state: "block", msg: "Managed rule **SQL injection** khớp payload `' OR 1=1`; request bị chặn tại edge." } },
+          ok: true, result: "403 Forbidden: request độc hại bị loại bỏ tại edge, không phát sinh tải cho tầng ứng dụng." }
+      : { gates: { tls: PASS_TLS, waf: { state: "pass", msg: "Không có rule nào phát hiện payload." }, geo: PASS_GEO, sign: OPEN, fle: NO_FIELD,
+            route: { state: "pass", msg: "Path `/api/*` khớp cache behavior trỏ tới **ALB**." } },
+          origin: "alb", ok: false, result: "Request độc hại được chuyển tới tầng ứng dụng. Cần liên kết AWS WAF web ACL với distribution để lọc tại edge." },
   },
   {
-    name: "Xem video ở nước chưa có bản quyền",
+    name: "Truy cập từ quốc gia bị giới hạn",
     request: "GET /videos/khoa-hoc-1.mp4",
-    from: "nước chưa mua bản quyền",
-    toggle: { label: "Khách đang ở Việt Nam", initial: false },
+    from: "quốc gia ngoài phạm vi bản quyền",
+    toggle: { label: "Request xuất phát từ Việt Nam", initial: false },
     run: (on) => on
-      ? { gates: { tls: PASS_TLS, waf: PASS_WAF, geo: PASS_GEO, sign: { state: "pass", msg: "Signed cookie hợp lệ: khách đã mua khoá học." }, fle: NO_FIELD,
-            route: { state: "pass", msg: "Path `/videos/*` trỏ về **S3**." } },
-          origin: "s3a", ok: true, result: "200: video phát bình thường." }
-      : { gates: { tls: PASS_TLS, waf: PASS_WAF, geo: { state: "block", msg: "Quốc gia nằm trong danh sách chặn của **geo restriction**." } },
-          ok: true, result: "403: CloudFront từ chối ngay tại edge, đúng điều khoản bản quyền." },
+      ? { gates: { tls: PASS_TLS, waf: PASS_WAF, geo: PASS_GEO, sign: { state: "pass", msg: "Signed cookie hợp lệ: người dùng có quyền truy cập khoá học." }, fle: NO_FIELD,
+            route: { state: "pass", msg: "Path `/videos/*` khớp cache behavior trỏ tới **S3**." } },
+          origin: "s3a", ok: true, result: "200 OK: nội dung video được phân phối." }
+      : { gates: { tls: PASS_TLS, waf: PASS_WAF, geo: { state: "block", msg: "Quốc gia nguồn thuộc block list của **geo restriction**." } },
+          ok: true, result: "403 Forbidden: CloudFront từ chối tại edge theo điều khoản bản quyền." },
   },
   {
-    name: "Mở video của khoá học trả phí",
+    name: "Nội dung trả phí",
     request: "GET /videos/khoa-hoc-1.mp4",
     from: "Việt Nam",
-    toggle: { label: "Khách đã mua khoá học", initial: false },
+    toggle: { label: "Người dùng đã mua khoá học", initial: false },
     run: (on) => on
       ? { gates: { tls: PASS_TLS, waf: PASS_WAF, geo: PASS_GEO,
-            sign: { state: "pass", msg: "Có **signed cookie** hợp lệ. Một cookie mở được cả loạt video mà không đổi URL." }, fle: NO_FIELD,
-            route: { state: "pass", msg: "Path `/videos/*` trỏ về **S3**." } },
-          origin: "s3a", ok: true, result: "200: video phát. Chỉ cần cấp một file thì dùng **signed URL** cho file đó." }
-      : { gates: { tls: PASS_TLS, waf: PASS_WAF, geo: PASS_GEO, sign: { state: "block", msg: "Không có signed URL hay signed cookie hợp lệ." } },
-          ok: true, result: "403: người chưa mua không xem được, dù biết đường dẫn video." },
+            sign: { state: "pass", msg: "**Signed cookie** hợp lệ; một cookie cấp quyền cho nhiều object mà không thay đổi URL." }, fle: NO_FIELD,
+            route: { state: "pass", msg: "Path `/videos/*` khớp cache behavior trỏ tới **S3**." } },
+          origin: "s3a", ok: true, result: "200 OK: nội dung được phân phối. Trường hợp cấp quyền cho một object riêng lẻ, sử dụng **signed URL**." }
+      : { gates: { tls: PASS_TLS, waf: PASS_WAF, geo: PASS_GEO, sign: { state: "block", msg: "Request không kèm signed URL hoặc signed cookie hợp lệ." } },
+          ok: true, result: "403 Forbidden: người dùng không có quyền không truy cập được nội dung, kể cả khi biết URL." },
   },
   {
-    name: "Thanh toán bằng thẻ",
+    name: "Dữ liệu thanh toán",
     request: "POST /api/checkout  { card: 4111… }",
     from: "Việt Nam",
     run: () => ({
       gates: { tls: PASS_TLS, waf: PASS_WAF, geo: PASS_GEO, sign: OPEN,
-        fle: { state: "change", msg: "**Field-level encryption** mã hoá riêng trường `card` bằng public key ngay tại edge." },
-        route: { state: "pass", msg: "Path `/api/*` trỏ về **ALB**." } },
+        fle: { state: "change", msg: "**Field-level encryption** mã hoá trường `card` bằng public key tại edge." },
+        route: { state: "pass", msg: "Path `/api/*` khớp cache behavior trỏ tới **ALB**." } },
       origin: "alb", ok: true,
-      result: "200: load balancer, log và các service trung gian chỉ thấy chuỗi đã mã hoá. Chỉ dịch vụ thanh toán giữ private key mới đọc được số thẻ.",
+      result: "200 OK: load balancer, log và các thành phần trung gian chỉ tiếp nhận giá trị đã mã hoá; chỉ dịch vụ thanh toán nắm private key mới giải mã được.",
     }),
   },
   {
-    name: "Origin chính bị lỗi",
+    name: "Sự cố origin chính",
     request: "GET /images/banner.jpg",
     from: "Việt Nam",
-    toggle: { label: "S3 Singapore đang lỗi", initial: true },
+    toggle: { label: "Origin S3 Singapore lỗi", initial: true },
     run: (on) => ({
       gates: { tls: PASS_TLS, waf: PASS_WAF, geo: PASS_GEO, sign: OPEN, fle: NO_FIELD,
-        route: { state: "pass", msg: "Cache behavior trỏ về **origin group** gồm S3 Singapore (chính) và S3 Tokyo (dự phòng)." } },
+        route: { state: "pass", msg: "Cache behavior trỏ tới **origin group**: S3 Singapore (primary) và S3 Tokyo (secondary)." } },
       origin: on ? "s3b" : "s3a", failover: on, ok: true,
       result: on
-        ? "200: origin chính trả lỗi 5xx, CloudFront tự gửi lại sang origin dự phòng. Khách không thấy lỗi."
-        : "200: origin chính trả lời bình thường, origin dự phòng không cần dùng.",
+        ? "200 OK: origin primary trả về 5xx, CloudFront tự động gửi lại request tới origin secondary; người dùng không nhận lỗi."
+        : "200 OK: origin primary phản hồi bình thường; origin secondary không được sử dụng.",
     }),
   },
   {
-    name: "Gắn tên miền shopviet.vn",
+    name: "Tên miền tuỳ chỉnh",
     request: "GET https://shopviet.vn/",
     from: "Việt Nam",
-    toggle: { label: "Chứng chỉ ACM tạo ở us-east-1", initial: false },
+    toggle: { label: "Chứng chỉ ACM tạo tại us-east-1", initial: false },
     run: (on) => on
-      ? { gates: { tls: { state: "pass", msg: "Chứng chỉ ACM ở **us-east-1** (N. Virginia) gắn được vào distribution." }, waf: PASS_WAF, geo: PASS_GEO, sign: OPEN, fle: NO_FIELD,
-            route: { state: "pass", msg: "Behavior mặc định `*` trỏ về **S3**." } },
-          origin: "s3a", ok: true, result: "200: trang chủ chạy HTTPS với tên miền riêng." }
+      ? { gates: { tls: { state: "pass", msg: "Chứng chỉ ACM tại **us-east-1** (N. Virginia) được liên kết với distribution." }, waf: PASS_WAF, geo: PASS_GEO, sign: OPEN, fle: NO_FIELD,
+            route: { state: "pass", msg: "Default behavior `*` trỏ tới **S3**." } },
+          origin: "s3a", ok: true, result: "200 OK: trang chủ được phục vụ qua HTTPS với tên miền tuỳ chỉnh." }
       : { gates: { tls: { state: "block", msg: "Chứng chỉ tạo ở ap-southeast-1. CloudFront chỉ nhận chứng chỉ ACM ở **us-east-1**, dù origin ở Region nào." } },
-          ok: false, result: "Trình duyệt báo lỗi chứng chỉ. Tạo lại chứng chỉ ACM ở us-east-1 rồi gắn vào distribution." },
+          ok: false, result: "Trình duyệt báo lỗi chứng chỉ. Cần tạo chứng chỉ ACM tại us-east-1 và liên kết với distribution." },
   },
 ];
 
@@ -218,7 +218,7 @@ export default function EdgePipelineSim() {
       </div>
       <div className="stage-bar">
         <code className="cfp-req">{sc.request}</code>
-        <span className="cfp-from">từ {sc.from}</span>
+        <span className="cfp-from">nguồn: {sc.from}</span>
         {sc.toggle && (
           <label className="cfp-toggle">
             <input type="checkbox" checked={on} disabled={busy} onChange={(e) => { setOn(e.target.checked); reset(); }} />
@@ -234,12 +234,12 @@ export default function EdgePipelineSim() {
             <path key={id} d={`M610 ${LANE} V${ORIGINS[id].y} H640`} stroke="var(--line)" strokeWidth={2} fill="none" />
           ))}
           <rect className="cfp-edge" x={138} y={52} width={460} height={190} rx={12} />
-          <text className="edge-t" x={150} y={72}>CloudFront · edge location gần khách</text>
+          <text className="edge-t" x={150} y={72}>CloudFront · edge location gần người dùng</text>
           <g transform={`translate(60 ${LANE})`} aria-hidden="true">
             <circle className="user" cy={-9} r={7} />
             <path className="user" d="M-13 13 a13 13 0 0 1 26 0 z" />
           </g>
-          <text className="t" x={60} y={LANE + 40} textAnchor="middle">Khách</text>
+          <text className="t" x={60} y={LANE + 40} textAnchor="middle">Người dùng</text>
           {GATES.map((g, i) => (
             <g key={g.id} className={`cfp-gate ${lit[g.id] ?? ""}`}>
               <rect x={GX(i) - 34} y={LANE - 37} width={68} height={74} rx={8} />
@@ -261,7 +261,7 @@ export default function EdgePipelineSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="cfp-hint">Bấm <b>Gửi request</b> để xem request đi qua từng trạm.{sc.toggle ? " Đổi công tắc rồi gửi lại để so sánh." : ""}</p>
+          <p className="cfp-hint">Nhấn <b>Gửi request</b> để quan sát từng bước xử lý tại edge.{sc.toggle ? " Thay đổi cấu hình và gửi lại để so sánh kết quả." : ""}</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) =>

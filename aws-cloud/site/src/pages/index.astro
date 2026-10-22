@@ -13,13 +13,13 @@ const titles = Object.fromEntries(layers.flatMap((l) => l.concepts).map((c) => [
 ---
 <BaseLayout title="AWS Thực Chiến" sidebar={false} wide>
   <div class="crumbs"><b>Lộ trình SAA-C03</b></div>
-  <h1>Một cửa hàng online chạy trên AWS như thế nào?</h1>
-  <p class="lede">Theo dõi từng request của ShopViet đi qua các dịch vụ AWS. Bấm vào dịch vụ bất kỳ để mở bài học về nó.</p>
+  <h1>Kiến trúc tham chiếu của một hệ thống thương mại điện tử trên AWS</h1>
+  <p class="lede">Sơ đồ mô tả luồng xử lý request qua các dịch vụ AWS trong hệ thống của ShopViet. Chọn một dịch vụ để mở bài học tương ứng.</p>
 
   <ArchitectureMap client:visible titles={titles} />
 
   <div class="home-start">
-    <p>{lessons} bài theo thứ tự từ nền lên. Mỗi bài gặp một vấn đề thật của ShopViet, chọn dịch vụ AWS phù hợp, rồi thử ngay trong mô phỏng. Lý thuyết đối chiếu với AWS docs.</p>
+    <p>{lessons} bài học được sắp xếp theo lộ trình từ nền tảng đến nâng cao. Mỗi bài phân tích một yêu cầu thực tế của hệ thống ShopViet, đánh giá các dịch vụ AWS phù hợp và minh hoạ cơ chế hoạt động bằng mô phỏng tương tác. Nội dung được đối chiếu với tài liệu chính thức của AWS.</p>
     <a class="btn primary cta" href="/concepts/global-infra/">Bắt đầu: Global Infrastructure</a>
   </div>
 
@@ -32,7 +32,7 @@ const titles = Object.fromEntries(layers.flatMap((l) => l.concepts).map((c) => [
             <a class={"concept-card " + (ready.has(c.id) ? "ready" : "soon")} href={`/concepts/${c.id}/`}>
               <span class="title">{c.title}</span>
               <Importance level={c.importance} />
-              <span class="state">{ready.has(c.id) ? "Có bài · học ngay" : "Sắp có"}</span>
+              <span class="state">{ready.has(c.id) ? "Đã có bài học" : "Đang biên soạn"}</span>
             </a>
           ))}
         </div>

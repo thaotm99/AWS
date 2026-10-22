@@ -5,6 +5,8 @@ export type ExamId = string;
 export type QuestionId = string;
 export type OptionKey = string;
 export type AttemptId = string;
+/** Language of an exam's text. "en" is the original; others are translations. */
+export type ContentLocale = "vi" | "en";
 
 export interface Certification {
   id: CertificationId;
@@ -40,6 +42,8 @@ export interface QuestionOption {
 
 export interface Question {
   id: QuestionId;
+  /** False when this question has no translation yet and shows the English original. */
+  translated: boolean;
   /** 1-based position in the exam. */
   number: number;
   domain: string;
@@ -52,6 +56,9 @@ export interface Question {
 }
 
 export interface Exam extends ExamSummary {
+  locale: ContentLocale;
+  /** Questions whose text is in `locale`; the rest fall back to the English original. */
+  translatedCount: number;
   questions: Question[];
 }
 
