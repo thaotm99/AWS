@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 947 (99%) · 🟡 6 (1%) · ❌ 7 (1%).
+Có **960 keyword** khác nhau: ✅ 949 (99%) · 🟡 5 (1%) · ❌ 6 (1%).
 
 ### Theo bài học
 
@@ -43,7 +43,7 @@ Có **960 keyword** khác nhau: ✅ 947 (99%) · 🟡 6 (1%) · ❌ 7 (1%).
 | [kinesis](#kinesis) | 26 | 26 | 0 | 0 | 100% |
 | [monitoring](#monitoring) | 33 | 33 | 0 | 0 | 100% |
 | [iac](#iac) | 9 | 9 | 0 | 0 | 100% |
-| [backup-dr](#backup-dr) | 12 | 10 | 1 | 1 | 83% |
+| [backup-dr](#backup-dr) | 12 | 12 | 0 | 0 | 100% |
 | [others](#others) | 26 | 26 | 0 | 0 | 100% |
 
 ### Theo đề (số lượt keyword, chưa gộp)
@@ -54,8 +54,8 @@ Có **960 keyword** khác nhau: ✅ 947 (99%) · 🟡 6 (1%) · ❌ 7 (1%).
 | Đề 2 | 197 | 0 | 1 |
 | Đề 3 | 222 | 0 | 0 |
 | Đề 4 | 231 | 2 | 3 |
-| Đề 5 | 218 | 3 | 0 |
-| Đề 6 | 209 | 0 | 1 |
+| Đề 5 | 219 | 2 | 0 |
+| Đề 6 | 210 | 0 | 0 |
 
 ## global-infra
 
@@ -1098,13 +1098,13 @@ Có **960 keyword** khác nhau: ✅ 947 (99%) · 🟡 6 (1%) · ❌ 7 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | AWS Elastic Disaster Recovery (CloudEndure DR) | ❌ Thiếu | 1 | exam6_q48 |  |
-| [ ] | AWS Backup (not for fast cloning) | 🟡 Một phần | 1 | exam5_q64 | backup-dr.mdx#s3 / BackupPlanSim |
 | [ ] | ALB with Auto Scaling group (pre-provisioned standby) | ✅ Đã có | 1 | exam2_q59 | backup-dr.mdx / DrStrategySim |
 | [ ] | AMI copy across Regions | ✅ Đã có | 1 | exam4_q5 | backup-dr.mdx#s1; ec2.mdx#s2 |
+| [ ] | AWS Backup (not for fast cloning) | ✅ Đã có | 1 | exam5_q64 | backup-dr.mdx#s3 / backup-dr.mdx#s5 QuickCompare |
 | [ ] | AWS Backup cross-Region copy (RPO) | ✅ Đã có | 1 | exam5_q47 | backup-dr.mdx#s3 / BackupPlanSim |
 | [ ] | AWS Backup Vault Lock | ✅ Đã có | 1 | exam5_q16 | backup-dr.mdx#s3 / BackupPlanSim |
 | [ ] | AWS DMS continuous replication (not for DR) | ✅ Đã có | 1 | exam6_q23 | backup-dr.mdx#s2 / DataFailoverSim |
+| [ ] | AWS Elastic Disaster Recovery (CloudEndure DR) | ✅ Đã có | 1 | exam6_q48 | backup-dr.mdx#s5 / QuickCompare |
 | [ ] | DR backup and restore | ✅ Đã có | 1 | exam4_q41 | backup-dr.mdx#s1 |
 | [ ] | DR multi-site active/active | ✅ Đã có | 1 | exam4_q41 | backup-dr.mdx#s1 |
 | [ ] | DR pilot light | ✅ Đã có | 1 | exam4_q41 | backup-dr.mdx#s1 |

@@ -1,8 +1,8 @@
 ---
 title: "Backup + Disaster Recovery: khôi phục khi Region gặp sự cố"
 lede: "Hệ thống ShopViet đang vận hành ổn định tại Region Singapore. Bài học trình bày phương án chuẩn bị cho kịch bản sự cố nghiêm trọng nhất: lựa chọn một trong bốn chiến lược DR theo lượng dữ liệu được phép mất và thời gian gián đoạn được phép, đảm bảo database và cache duy trì qua sự cố, sử dụng AWS Backup cho file system dùng chung, và cấu hình một EC2 instance đơn lẻ tự động khôi phục."
-minutes: 20
-scenes: 4
+minutes: 24
+scenes: 5
 prerequisites: ["global-infra", "ec2", "rds", "storage"]
 docs:
   - title: "Disaster recovery options in the cloud"
@@ -33,6 +33,18 @@ docs:
     url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/cloudwatch-recovery.html"
   - title: "AWS Trusted Advisor"
     url: "https://docs.aws.amazon.com/awssupport/latest/user/trusted-advisor.html"
+  - title: "Restore an Amazon EBS volume (AWS Backup)"
+    url: "https://docs.aws.amazon.com/aws-backup/latest/devguide/restoring-ebs.html"
+  - title: "Initialize Amazon EBS volumes"
+    url: "https://docs.aws.amazon.com/ebs/latest/userguide/initalize-volume.html"
+  - title: "Amazon EBS fast snapshot restore"
+    url: "https://docs.aws.amazon.com/ebs/latest/userguide/ebs-fast-snapshot-restore.html"
+  - title: "What is Elastic Disaster Recovery?"
+    url: "https://docs.aws.amazon.com/drs/latest/userguide/what-is-drs.html"
+  - title: "AWS Elastic Disaster Recovery FAQs"
+    url: "https://aws.amazon.com/disaster-recovery/faqs/"
+  - title: "AWS Transform MGN FAQs"
+    url: "https://aws.amazon.com/application-migration-service/faqs/"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -41,6 +53,7 @@ import DrStrategySim from "../../components/scenes/backup-dr/DrStrategySim.tsx";
 import DataFailoverSim from "../../components/scenes/backup-dr/DataFailoverSim.tsx";
 import BackupPlanSim from "../../components/scenes/backup-dr/BackupPlanSim.tsx";
 import Ec2RecoverSim from "../../components/scenes/backup-dr/Ec2RecoverSim.tsx";
+import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
@@ -49,6 +62,7 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s2", label: "2 · Khả năng phục hồi của database và cache" },
   { href: "#s3", label: "3 · AWS Backup" },
   { href: "#s4", label: "4 · Tự động khôi phục EC2 đơn lẻ" },
+  { href: "#s5", label: "5 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
 Multi-AZ giúp ShopViet duy trì hoạt động khi một data center gặp sự cố. Tuy nhiên, cần có phương án khi **toàn bộ Region Singapore** ngừng hoạt động. Ban lãnh đạo đặt ra hai câu hỏi: "Lượng đơn hàng tối đa được phép mất là bao nhiêu?" và "Sau bao lâu hệ thống phải hoạt động trở lại?". Hai chỉ số tương ứng là:
@@ -59,7 +73,7 @@ Multi-AZ giúp ShopViet duy trì hoạt động khi một data center gặp sự
 RPO và RTO càng nhỏ thì chi phí càng cao. Bài học hướng dẫn lựa chọn mức đáp ứng vừa đủ yêu cầu.
 </Story>
 
-<Scene id="s1" label="Phần 1/4" title="Bốn chiến lược chuẩn bị cho sự cố cấp Region" questions={["exam4_q41", "exam4_q5"]}>
+<Scene id="s1" label="Phần 1/5" title="Bốn chiến lược chuẩn bị cho sự cố cấp Region" questions={["exam4_q41", "exam4_q5"]}>
 
 ShopViet chọn Tokyo làm Region dự phòng. Vấn đề cần xác định là những thành phần nào được duy trì tại Tokyo trong điều kiện bình thường. Càng nhiều thành phần đang chạy thì thời gian khôi phục càng ngắn và chi phí càng cao. Có bốn mức:
 
@@ -78,7 +92,7 @@ AMI chỉ sử dụng được trong Region chứa AMI đó. Để launch nhanh 
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/4" title="Đảm bảo database và cache duy trì qua sự cố" questions={["exam2_q61", "exam6_q23", "exam5_q42", "exam4_q32"]}>
+<Scene id="s2" label="Phần 2/5" title="Đảm bảo database và cache duy trì qua sự cố" questions={["exam2_q61", "exam6_q23", "exam5_q42", "exam4_q32"]}>
 
 Web server có thể được dựng lại trong vài phút, nhưng dữ liệu thì không: đơn hàng đã mất không thể khôi phục. ShopViet có ba thành phần dữ liệu, mỗi thành phần cần một cơ chế bảo vệ riêng:
 
@@ -94,7 +108,7 @@ Web server có thể được dựng lại trong vài phút, nhưng dữ liệu 
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/4" title="AWS Backup cho file system dùng chung" questions={["exam5_q47"]}>
+<Scene id="s3" label="Phần 3/5" title="AWS Backup cho file system dùng chung" questions={["exam5_q47", "exam5_q64"]}>
 
 Các service của ShopViet chạy trên ECS với Fargate, cùng đọc và ghi ảnh của người bán và hoá đơn trên một file system dùng chung. ShopViet lựa chọn **Amazon EFS**: file system POSIX (NFS), hoạt động trên nhiều AZ, task Fargate có thể mount trực tiếp. Yêu cầu tuân thủ: backup tự động, có bản sao tại Region khác, mất tối đa 8 giờ dữ liệu.
 
@@ -104,11 +118,13 @@ Các service của ShopViet chạy trên ECS với Fargate, cùng đọc và ghi
 
 Mỗi loại sự cố đòi hỏi một cấu hình khác nhau. Sự cố cấp Region: cần bản copy tại **Region khác**. Thông tin xác thực admin bị lộ: cần bản copy tại **account khác**, hoặc **Vault Lock** ở compliance mode để không ai, kể cả root user, xoá được recovery point trước thời hạn (governance mode vẫn cho phép người có đủ quyền IAM gỡ lock). Kiểm toán: cần **thời gian lưu giữ** đủ dài. RPO do **tần suất backup** quyết định.
 
-<Takeaway>File system dùng chung cho container, trên nhiều AZ, cần backup sang Region khác: EFS + AWS Backup với lịch backup và cross-Region copy. Tần suất backup quyết định RPO. Bản sao tại Region khác bảo vệ trước sự cố cấp Region; bản sao tại account khác và Vault Lock bảo vệ backup khỏi bị xoá.</Takeaway>
+AWS Backup phục vụ bảo vệ dữ liệu và tuân thủ, không phải công cụ nhân bản dữ liệu nhanh. Khi restore một recovery point của EBS, AWS Backup tạo **volume mới** từ snapshot. Giống mọi volume tạo từ snapshot, các block được tải dần từ S3 về volume (**volume initialization**); trong thời gian này độ trễ I/O tăng và volume chưa đạt hiệu năng đầy đủ. Khi đội kiểm thử cần thường xuyên tạo bản sao dữ liệu production với hiệu năng đầy đủ ngay lập tức, phương án phù hợp là EBS snapshot kết hợp **fast snapshot restore** (bài Storage, phần 2).
+
+<Takeaway>File system dùng chung cho container, trên nhiều AZ, cần backup sang Region khác: EFS + AWS Backup với lịch backup và cross-Region copy. Tần suất backup quyết định RPO. Bản sao tại Region khác bảo vệ trước sự cố cấp Region; bản sao tại account khác và Vault Lock bảo vệ backup khỏi bị xoá. Cần tạo nhanh bản sao EBS đạt hiệu năng đầy đủ ngay cho môi trường test: snapshot + fast snapshot restore, không phải restore từ AWS Backup.</Takeaway>
 
 </Scene>
 
-<Scene id="s4" label="Phần 4/4" title="Tự động khôi phục EC2 instance đơn lẻ" questions={["exam3_q38"]}>
+<Scene id="s4" label="Phần 4/5" title="Tự động khôi phục EC2 instance đơn lẻ" questions={["exam3_q38"]}>
 
 Trang admin nội bộ của ShopViet chạy trên duy nhất một EC2 instance. Số lượng người dùng ít, không cần tới Auto Scaling group hay chiến lược DR. Yêu cầu: khi instance gặp sự cố, hệ thống tự hoạt động trở lại trong khoảng 10 phút, với chi phí thấp và không cần can thiệp thủ công ngoài giờ làm việc.
 
@@ -120,7 +136,30 @@ EC2 có hai loại status check. **System status check** phản ánh lỗi của
 
 </Scene>
 
-<Scene id="challenge" label="Bài tập" title="Phân loại chiến lược DR" questions={["exam4_q41", "exam6_q23", "exam4_q32", "exam3_q38"]}>
+<Scene id="s5" label="Phần 5/5" title="Phân biệt nhanh: công cụ DR, migration và nhân bản dữ liệu" questions={["exam6_q48", "exam5_q64"]}>
+
+Một số dịch vụ có cơ chế gần giống nhau (sao chép liên tục, restore từ bản sao) nhưng phục vụ mục đích khác. Chọn từng dịch vụ để xem trường hợp sử dụng, lý do không phù hợp trong tình huống ShopViet tương ứng, và phương án nên chọn:
+
+<QuickCompare client:visible items={[
+  { name: "AWS Elastic Disaster Recovery (AWS DRS)",
+    use: "DR cho server on-premises hoặc trên cloud: sao chép liên tục vào một **staging area subnet** chi phí thấp (storage giá rẻ, compute tối thiểu) trong account AWS; launch recovery instance trong vài phút với trạng thái mới nhất hoặc một point in time trước đó; drill không gián đoạn và **failback** về site chính khi sự cố được khắc phục. AWS mô tả RPO tính bằng giây và RTO tính bằng phút. DRS thay thế CloudEndure Disaster Recovery (trang CloudEndure Disaster Recovery hiện chuyển hướng về trang AWS DRS).",
+    notHere: "ShopViet chuyển hẳn các máy ảo cũ tại kho lên EC2 theo hướng lift-and-shift, không cần duy trì site dự phòng hay failback. DRS có thể dùng để chuyển server lên AWS, nhưng AWS giới thiệu MGN là dịch vụ được khuyến nghị cho migration.",
+    instead: "**Application Migration Service (MGN)**, hiện mang tên AWS Transform MGN: cài Replication Agent, replicate, launch test instance, sau đó cutover (bài Storage Gateway, Snow, DataSync, DMS, phần 3)." },
+  { name: "AWS Backup (restore để nhân bản dữ liệu)",
+    use: "Quản lý tập trung việc bảo vệ dữ liệu: backup plan (tần suất, thời gian lưu giữ), backup vault, cross-Region và cross-account copy, Vault Lock cho yêu cầu tuân thủ.",
+    notHere: "Đội phân tích cần thường xuyên tạo bản sao EBS từ production cho môi trường test, đạt hiệu năng I/O đầy đủ ngay khi gắn. Restore từ AWS Backup tạo volume mới từ snapshot; volume này phải trải qua volume initialization nên độ trễ I/O tăng cho tới khi mọi block được tải về.",
+    instead: "**EBS snapshot + fast snapshot restore** (bật cho từng cặp snapshot và AZ): volume tạo ra được khởi tạo đầy đủ ngay và cung cấp toàn bộ hiệu năng đã cấp phát (bài Storage, phần 2)." },
+  { name: "Application Migration Service (MGN) cho DR",
+    use: "Migration lift-and-shift: sao chép liên tục ở cấp block, chuyển đổi server để chạy trên AWS, test instance và cutover trong cửa sổ thường tính bằng phút.",
+    notHere: "Khi cần duy trì khả năng khôi phục lâu dài cho server đang chạy tại kho (drill định kỳ, recovery về một point in time, failback sau sự cố), đó là bài toán DR chứ không phải migration một lần.",
+    instead: "**AWS Elastic Disaster Recovery**: replication liên tục vào staging area chi phí thấp, recovery instance trong vài phút, failback về site chính." },
+]} />
+
+<Takeaway>DR cho server on-premises với RPO tính bằng giây, RTO tính bằng phút, chi phí duy trì thấp: AWS Elastic Disaster Recovery (kế thừa CloudEndure Disaster Recovery). Chuyển hẳn server lên AWS: MGN. Nhân bản EBS cho test với hiệu năng đầy đủ ngay: snapshot + fast snapshot restore.</Takeaway>
+
+</Scene>
+
+<Scene id="challenge" label="Bài tập" title="Phân loại chiến lược DR" questions={["exam4_q41", "exam6_q23", "exam4_q32", "exam3_q38", "exam5_q64"]}>
 
 Phân loại từng mô tả vào chiến lược DR tương ứng. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
@@ -162,6 +201,10 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Lưu bộ cài đặt trong S3", "Tạo AMI đã cài sẵn và copy sang từng Region", "Viết user data cài đặt tự động"],
     a: 1,
     why: "AMI đã cài sẵn cho phép instance hoạt động ngay sau khi launch. AMI thuộc về một Region nên phải được copy sang từng Region. User data vẫn cần 45 phút để cài đặt." },
+  { q: "Đội kiểm thử cần nhiều lần mỗi tuần tạo bản sao EBS từ production cho môi trường test, đạt hiệu năng I/O đầy đủ ngay khi gắn, không ảnh hưởng dữ liệu production. Phương án nào phù hợp?",
+    opts: ["Restore recovery point từ AWS Backup", "EBS snapshot với fast snapshot restore, tạo volume mới từ snapshot", "Gắn chung volume production cho instance test bằng Multi-Attach"],
+    a: 1,
+    why: "Volume tạo từ snapshot đã bật fast snapshot restore được khởi tạo đầy đủ ngay. Restore từ AWS Backup cũng tạo volume từ snapshot nhưng phải chờ volume initialization. Gắn chung volume production cho phép môi trường test ghi vào dữ liệu production." },
 ]} />
 
 </Scene>

@@ -444,3 +444,19 @@ Checked 2026-10-22 against the pages below (keyword → claim → URL).
 | Transfer Family POSIX identity mapping | EFS users must be assigned a POSIX profile; EFS uses the numeric user/group IDs to check permissions on file system objects; user ID, group ID, secondary group IDs; IAM role per user; S3 users use an IAM role and session policy (s4, SftpExchangeSim) | https://docs.aws.amazon.com/transfer/latest/userguide/configure-storage.html ; https://docs.aws.amazon.com/transfer/latest/userguide/service-managed-users.html |
 
 Note: the explanation of the source question says S3 "does not offer the high IOPS" needed for SFTP. The Transfer Family docs give no such limit; the lesson instead justifies EFS by the requirement to keep Linux file-level (UID/GID) permissions on a shared file system. Also observed: the MGN user guide page is now titled "AWS Transform MGN" (lesson keeps the name Application Migration Service (MGN); not changed in this pass).
+
+## backup-dr
+
+Checked 2026-10-22 against the pages below (keyword → claim → URL).
+
+| Keyword | Claim written | Source |
+|---|---|---|
+| AWS Backup (not for fast cloning) | Restoring an EBS recovery point creates a new volume (volume type, size, AZ, optional KMS key), or restores to a gateway volume or items to S3 (s3, s5, quiz) | https://docs.aws.amazon.com/aws-backup/latest/devguide/restoring-ebs.html |
+| AWS Backup (not for fast cloning) | Volumes created from snapshots download blocks from S3 (volume initialization); increased I/O latency and lower performance until all blocks are written (s3, s5) | https://docs.aws.amazon.com/ebs/latest/userguide/initalize-volume.html |
+| AWS Backup (not for fast cloning) | Fast snapshot restore: volume fully initialized at creation, delivers all provisioned performance; enabled per snapshot and AZ pair (s3, s5, quiz) | https://docs.aws.amazon.com/ebs/latest/userguide/ebs-fast-snapshot-restore.html |
+| AWS Elastic Disaster Recovery (CloudEndure DR) | Continuous replication of on-premises or cloud servers into a staging area subnet with affordable storage and minimal compute; non-disruptive drills; recovery instances within minutes from latest state or earlier point in time; failback to primary site (s5) | https://docs.aws.amazon.com/drs/latest/userguide/what-is-drs.html |
+| AWS Elastic Disaster Recovery (CloudEndure DR) | AWS DRS facilitates RPOs of seconds and RTOs of minutes; DRS can also be used to migrate servers (s5) | https://aws.amazon.com/disaster-recovery/faqs/ |
+| AWS Elastic Disaster Recovery (CloudEndure DR) | https://aws.amazon.com/cloudendure-disaster-recovery/ returns HTTP 301 to /disaster-recovery/ (the AWS DRS page); DRS FAQ page links "Compare with CloudEndure Disaster Recovery" (s5: DRS replaces CloudEndure DR) | https://aws.amazon.com/disaster-recovery/faqs/ |
+| AWS Elastic Disaster Recovery (CloudEndure DR) | MGN (now "AWS Transform MGN") is "the recommended service for migrations to AWS"; non-disruptive tests, cutover window typically measured in minutes; continuous block-level replication (s5) | https://aws.amazon.com/application-migration-service/faqs/ ; https://docs.aws.amazon.com/mgn/latest/ug/what-is-application-migration-service.html |
+
+Note: the source question's explanation says CloudEndure DR "is intended primarily for disaster recovery scenarios, not one-time lift-and-shift migrations". Current AWS DRS FAQ states DRS can also be used to migrate; the lesson teaches that DRS can migrate but MGN is the service AWS recommends for migrations.

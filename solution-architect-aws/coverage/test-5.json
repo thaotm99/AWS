@@ -1971,8 +1971,8 @@
         {
           "keyword": "AWS Backup (not for fast cloning)",
           "lesson": "backup-dr",
-          "status": "partial",
-          "where": "backup-dr.mdx#s3 / BackupPlanSim"
+          "status": "covered",
+          "where": "backup-dr.mdx#s3 / backup-dr.mdx#s5 QuickCompare"
         }
       ]
     },

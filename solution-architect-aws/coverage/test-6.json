@@ -1406,8 +1406,8 @@
         {
           "keyword": "AWS Elastic Disaster Recovery (CloudEndure DR)",
           "lesson": "backup-dr",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "backup-dr.mdx#s5 / QuickCompare"
         }
       ]
     },
