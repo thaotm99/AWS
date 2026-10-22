@@ -10,6 +10,17 @@ export interface AnswerNote {
 }
 
 export const ANSWER_NOTES: Record<QuestionId, AnswerNote> = {
+  // Practice test 1, Q27: the key is "Amazon EKS Anywhere on Outposts".
+  "125222751": {
+    text: {
+      vi: "Phương án đúng vẫn là Outposts, nhưng tên giải pháp trong đáp án đã cũ. Theo FAQ của AWS, Amazon EKS Anywhere không được hỗ trợ trên AWS Outposts; để chạy Kubernetes trên Outposts, AWS khuyến nghị Amazon EKS on AWS Outposts (ví dụ local cluster, giữ cả control plane tại chỗ).",
+      en: "Outposts is still the right option, but the solution named in the key is outdated. According to the AWS FAQ, Amazon EKS Anywhere is not supported on AWS Outposts; to run Kubernetes on Outposts, AWS recommends Amazon EKS on AWS Outposts (for example a local cluster, which keeps the control plane on premises too).",
+    },
+    sources: [
+      { title: "Amazon EKS Anywhere FAQs", url: "https://aws.amazon.com/eks/eks-anywhere/faqs/" },
+      { title: "Amazon EKS on AWS Outposts", url: "https://docs.aws.amazon.com/eks/latest/userguide/eks-outposts.html" },
+    ],
+  },
   // Practice test 2, Q64: the key is EFS Max I/O performance mode.
   "119516085": {
     text: {
