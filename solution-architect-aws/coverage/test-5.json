@@ -1398,8 +1398,8 @@
         {
           "keyword": "AWS WAF IP set statement",
           "lesson": "security",
-          "status": "partial",
-          "where": "security.mdx#s1 / WafSim (IP set only as a block list; allow-list exception ahead of a geo-match block rule / rule priority not taught)"
+          "status": "covered",
+          "where": "security.mdx#s1 / WafSim (partner IP set Allow, priority 0) + prose + Takeaway"
         },
         {
           "keyword": "Network ACL (no geo blocking)",

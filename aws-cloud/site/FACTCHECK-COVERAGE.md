@@ -525,3 +525,9 @@ Checked 2026-10-22.
 
 - Direct Connect DTO cheaper than internet DTO → "all data transferred over your dedicated connection is charged at the reduced AWS Direct Connect data transfer rate, rather than internet data transfer rates" → https://docs.aws.amazon.com/whitepapers/latest/hybrid-connectivity/cost.html ; DX pricing: DTO charged per GB, rate depends on the source Region/Local Zone and the Direct Connect location; DX only sends data to the DX location, internet DTO is on the EC2 pricing page; data transfer in $0.00/GB → https://aws.amazon.com/directconnect/pricing/ (global-infra.mdx#s6 / CostPatterns third option "over the internet" + Takeaway). No per-GB prices quoted in the lesson.
 - Shared-file note: `src/components/scenes/CostPatterns.tsx` sits in the scenes root but is imported only by global-infra (both languages); edited there.
+
+## security (wave 6)
+
+Checked 2026-10-22.
+
+- AWS WAF IP set statement as an allow exception ahead of geo match → AWS WAF evaluates rules "from the lowest numeric priority setting on up until it either finds a match that terminates the evaluation or exhausts all of the rules"; each rule in a web ACL has a unique priority → https://docs.aws.amazon.com/waf/latest/developerguide/web-acl-processing-order.html ; Allow and Block are terminating actions that stop web ACL evaluation of the request → https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-action.html (security.mdx#s1 / WafSim: new "Partner IP set: Allow, priority 0" toggle and overseas-partner request; prose paragraph + Takeaway). Partner IP 198.51.100.7 is a documentation (TEST-NET-2) address.

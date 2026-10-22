@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **983 keyword** khác nhau: ✅ 970 (99%) · 🟡 9 (1%) · ❌ 4 (0%).
+Có **983 keyword** khác nhau: ✅ 971 (99%) · 🟡 8 (1%) · ❌ 4 (0%).
 
 ### Theo bài học
 
@@ -26,7 +26,7 @@ Có **983 keyword** khác nhau: ✅ 970 (99%) · 🟡 9 (1%) · ❌ 4 (0%).
 | [cloudfront](#cloudfront) | 32 | 31 | 0 | 1 | 97% |
 | [iam](#iam) | 49 | 49 | 0 | 0 | 100% |
 | [kms](#kms) | 21 | 21 | 0 | 0 | 100% |
-| [security](#security) | 27 | 26 | 1 | 0 | 96% |
+| [security](#security) | 27 | 27 | 0 | 0 | 100% |
 | [cognito](#cognito) | 15 | 15 | 0 | 0 | 100% |
 | [ec2](#ec2) | 58 | 58 | 0 | 0 | 100% |
 | [elb](#elb) | 43 | 43 | 0 | 0 | 100% |
@@ -54,7 +54,7 @@ Có **983 keyword** khác nhau: ✅ 970 (99%) · 🟡 9 (1%) · ❌ 4 (0%).
 | Đề 2 | 202 | 0 | 2 |
 | Đề 3 | 224 | 2 | 1 |
 | Đề 4 | 236 | 1 | 0 |
-| Đề 5 | 222 | 4 | 0 |
+| Đề 5 | 223 | 3 | 0 |
 | Đề 6 | 217 | 0 | 0 |
 
 ## global-infra
@@ -352,7 +352,6 @@ Có **983 keyword** khác nhau: ✅ 970 (99%) · 🟡 9 (1%) · ❌ 4 (0%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | AWS WAF IP set statement | 🟡 Một phần | 1 | exam5_q45 | security.mdx#s1 / WafSim (IP set only as a block list; allow-list exception ahead of a geo-match block rule / rule priority not taught) |
 | [ ] | AWS Shield Advanced | ✅ Đã có | 4 | exam3_q58, exam6_q4, exam6_q14, exam6_q60 | security.mdx#s2 / IncidentSim |
 | [ ] | Amazon GuardDuty | ✅ Đã có | 3 | exam1_q12, exam3_q1, exam6_q4 | security.mdx#s2<br>security.mdx#s2 / IncidentSim |
 | [ ] | Amazon Inspector | ✅ Đã có | 3 | exam3_q58, exam5_q17, exam6_q4 | security.mdx#s2 / IncidentSim |
@@ -374,6 +373,7 @@ Có **983 keyword** khác nhau: ✅ 970 (99%) · 🟡 9 (1%) · ❌ 4 (0%).
 | [ ] | AWS WAF geo match statement | ✅ Đã có | 1 | exam5_q45 | security.mdx#s1 / WafSim |
 | [ ] | AWS WAF IP set (IP match) | ✅ Đã có | 1 | exam2_q30 | security.mdx#s1 / WafSim; cloudfront.mdx#s1 |
 | [ ] | AWS WAF IP set on CloudFront | ✅ Đã có | 1 | exam3_q60 | cloudfront.mdx#s1 / ScenarioFlow; security.mdx#s1 / WafSim |
+| [ ] | AWS WAF IP set statement | ✅ Đã có | 1 | exam5_q45 | security.mdx#s1 / WafSim (partner IP set Allow, priority 0) + prose + Takeaway |
 | [ ] | AWS WAF is HTTP(S) only (not SFTP) | ✅ Đã có | 1 | exam5_q62 | security.mdx#s1 / Takeaway; security.mdx#s3 / QuickCompare |
 | [ ] | AWS WAF on Application Load Balancer | ✅ Đã có | 1 | exam1_q6 | security.mdx#s1 / WafSim |
 | [ ] | AWS WAF rate-based rule | ✅ Đã có | 1 | exam6_q60 | security.mdx#s1 / WafSim |

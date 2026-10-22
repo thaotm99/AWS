@@ -5,6 +5,10 @@ minutes: 18
 scenes: 3
 prerequisites: ["cloudfront", "vpc"]
 docs:
+  - title: "AWS WAF: setting rule priority (evaluation order)"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/web-acl-processing-order.html"
+  - title: "AWS WAF rule actions (terminating actions)"
+    url: "https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-action.html"
   - title: "AWS WAF rules"
     url: "https://docs.aws.amazon.com/waf/latest/developerguide/waf-rules.html"
   - title: "Rate-based rule statement"
@@ -56,11 +60,13 @@ The ShopViet system records attack activity: bots probing for SQL injection, one
 
 <Scene id="en-s1" label="Part 1/3" title="AWS WAF: filtering malicious requests before they reach the application" questions={["exam5_q13", "exam1_q6", "exam5_q45", "exam2_q30", "exam6_q60", "exam5_q57", "exam2_q32"]}>
 
-Five kinds of requests are being sent to ShopViet. Turn on each rule, choose the resource associated with AWS WAF, then send the requests.
+Six kinds of requests are being sent to ShopViet, including a legitimate shipping partner calling from abroad with a fixed IP address. Turn on each rule, choose the resource associated with AWS WAF, then send the requests.
+
+AWS WAF evaluates the rules in a web ACL by **priority**, from the lowest numeric setting up, until it finds a matching rule with a terminating action (Allow or Block) or exhausts all rules. So when ShopViet blocks countries with a geo match rule but must still allow some partner IP addresses, it places an IP set rule with those addresses and the Allow action at a lower priority number than the geo match rule: the partner's request is allowed immediately and is never evaluated by the geo match rule.
 
 <WafSim client:visible />
 
-<Takeaway>SQL injection, XSS: managed rule. Restricting by country: geo match. One malicious IP: IP set. Requests at an unusual rate: rate-based rule (evaluation window of 1, 2, 5 or 10 minutes, 5 minutes by default; minimum threshold of 10 requests). AWS WAF is associated with CloudFront, ALB, API Gateway REST APIs and some other services (AppSync, Cognito, App Runner, Verified Access, Amplify); it is not attached directly to EC2. AWS WAF inspects only **HTTP and HTTPS** requests; SFTP (SSH) traffic to an AWS Transfer Family endpoint does not pass through AWS WAF, so source IPs for SFTP are restricted with the security group of a VPC hosted endpoint.</Takeaway>
+<Takeaway>SQL injection, XSS: managed rule. Restricting by country: geo match. One malicious IP: IP set with the Block action. An exception for partner IP addresses in a blocked country: IP set with the Allow action at a lower priority number than the geo match rule. Requests at an unusual rate: rate-based rule (evaluation window of 1, 2, 5 or 10 minutes, 5 minutes by default; minimum threshold of 10 requests). AWS WAF is associated with CloudFront, ALB, API Gateway REST APIs and some other services (AppSync, Cognito, App Runner, Verified Access, Amplify); it is not attached directly to EC2. AWS WAF inspects only **HTTP and HTTPS** requests; SFTP (SSH) traffic to an AWS Transfer Family endpoint does not pass through AWS WAF, so source IPs for SFTP are restricted with the security group of a VPC hosted endpoint.</Takeaway>
 
 </Scene>
 
