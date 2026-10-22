@@ -537,3 +537,9 @@ Checked 2026-10-22.
 Checked 2026-10-22.
 
 - AWS Backup Vault Lock scope → Vault Lock gives WORM for "all the backups you store and create in a backup vault" and protects "backups (recovery points) in your backup vaults" → https://docs.aws.amazon.com/aws-backup/latest/devguide/vault-lock.html ; "AWS Backup saves recovery points in backup vaults" → https://docs.aws.amazon.com/aws-backup/latest/devguide/recovery-points.html ; "AWS Backup does not govern backups you take in your AWS environment outside of AWS Backup" → https://docs.aws.amazon.com/aws-backup/latest/devguide/whatisbackup.html . Lesson conclusion: script/EC2-API EBS snapshots are not in a vault, so Vault Lock does not protect them; Recycle Bin is taught in storage.mdx#s2 (linked). (backup-dr.mdx#s3 paragraph after BackupPlanSim)
+
+## route53 (wave 6)
+
+Checked 2026-10-22.
+
+- Factual fix, Route53MythsSim (error-page scenario, "Weighted 90/10, ALB healthy"): old step text said weighted routing ignores the ALB's health. Docs: with health checks associated, Route 53 chooses a weighted record by weight, checks its health, and chooses another weighted record if it is unhealthy; zero-weight records are considered only when all nonzero records are unhealthy → https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-complex-configs.html and https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-weighted.html . New text: weighted selects by weight among healthy records; since ALB and S3 are both healthy, the S3 error page still receives about 10% of queries. Scenario conclusion (use failover routing) unchanged. Both pages added to route53 `docs` (both languages).

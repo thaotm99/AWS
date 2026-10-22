@@ -63,7 +63,7 @@ return [
     run: (v) => {
       if (v === 0) return {
         steps: [
-          { at: "r53", state: "change", tag: "10%", msg: L({ vi: "Weighted phân phối theo trọng số, không phụ thuộc trạng thái health của ALB.", en: "Weighted routing distributes by weight, regardless of the ALB's health status." }) },
+          { at: "r53", state: "change", tag: "10%", msg: L({ vi: "Weighted chọn record theo trọng số trong số các record healthy. Health check chỉ loại record unhealthy khỏi câu trả lời; ALB và S3 đều healthy nên record S3 vẫn nhận khoảng 10% truy vấn.", en: "Weighted routing selects records by weight among the healthy records. A health check only removes unhealthy records from responses; the ALB and S3 are both healthy, so the S3 record still receives about 10% of queries." }) },
           { at: "s3", via: [[480, 120], [480, 187]], state: "block", flash: L({ vi: "lỗi?", en: "error?" }), msg: L({ vi: "1 trên 10 người dùng nhận trang thông báo lỗi dù hệ thống đang hoạt động bình thường.", en: "1 in 10 users gets the error notice page even though the system is working normally." }) },
         ],
         ok: false, result: L({ vi: "Trang lỗi không được hiển thị đúng thời điểm. Sử dụng failover routing.", en: "The error page is not shown at the right time. Use failover routing." }) };
