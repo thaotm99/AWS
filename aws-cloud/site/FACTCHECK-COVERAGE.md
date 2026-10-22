@@ -460,3 +460,12 @@ Checked 2026-10-22 against the pages below (keyword → claim → URL).
 | AWS Elastic Disaster Recovery (CloudEndure DR) | MGN (now "AWS Transform MGN") is "the recommended service for migrations to AWS"; non-disruptive tests, cutover window typically measured in minutes; continuous block-level replication (s5) | https://aws.amazon.com/application-migration-service/faqs/ ; https://docs.aws.amazon.com/mgn/latest/ug/what-is-application-migration-service.html |
 
 Note: the source question's explanation says CloudEndure DR "is intended primarily for disaster recovery scenarios, not one-time lift-and-shift migrations". Current AWS DRS FAQ states DRS can also be used to migrate; the lesson teaches that DRS can migrate but MGN is the service AWS recommends for migrations.
+
+## dynamodb
+
+Checked 2026-10-22 against the pages below (keyword → claim → URL).
+
+| Keyword | Claim written | Source |
+|---|---|---|
+| DynamoDB export to S3 | Fully managed export from any time within the PITR window; PITR must be enabled; full and incremental exports; asynchronous, no RCU consumption, no impact on table performance or availability; DynamoDB JSON or Amazon Ion; export to another account or Region; no SLA for completion time; use with Athena, Glue, EMR (s4 table, prose, quiz, SortGame card) | https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/S3DataExport.HowItWorks.html |
+| DynamoDB export to S3 | Import from S3 always creates a new table; import into existing tables not supported (s4 prose) | https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/S3DataImport.HowItWorks.html |

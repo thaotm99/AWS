@@ -1371,8 +1371,8 @@
         {
           "keyword": "DynamoDB export to S3",
           "lesson": "dynamodb",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "dynamodb.mdx#s4 / table + Quiz"
         }
       ]
     },

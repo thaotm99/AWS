@@ -29,6 +29,10 @@ docs:
     url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DAX.consistency.html"
   - title: "Using deletion protection"
     url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithTables.Basics.html"
+  - title: "DynamoDB data export to Amazon S3: how it works"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/S3DataExport.HowItWorks.html"
+  - title: "DynamoDB data import from Amazon S3: how it works"
+    url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/S3DataImport.HowItWorks.html"
   - title: "Using Aurora Global Database"
     url: "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html"
 ---
@@ -121,8 +125,11 @@ The two most common data incidents come not from hardware but from human actions
 | **PITR** | Restore to the exact moment before an incident | Any second within 1–35 days, to a new table |
 | **On-demand backup** | Long-term retention, compliance requirements | The exact moment the backup was created |
 | **Deletion protection** | Prevent accidental deletes | Nothing to restore: the delete request is denied |
+| **Export to S3** | Analytics with Athena, Glue, EMR; moving data to a bucket in another account or Region | Any point in time within the PITR window, written as DynamoDB JSON or Amazon Ion files in S3 |
 
-<Takeaway>Restore to an exact point in time, down to the second: PITR. Prevent accidental deletes with the least operational overhead: deletion protection. Streams and global tables are not backup mechanisms.</Takeaway>
+**Export to S3** is a fully managed feature: it exports the whole table (full export) or the data changed during a time period (incremental export) from any point in time within the PITR window, so **the table must have PITR enabled**. Exports are asynchronous, **do not consume RCUs** and have no impact on table performance or availability; AWS does not guarantee completion times. It is a copy of the data for analytics, not a protection mechanism for the table: an export does not stop a table from being deleted, and reusing the data requires **import from S3**, which always creates a **new table**. If ShopViet only exported manually every week, a deleted table could lose up to a week of data, plus the time to import and switch the application to the new table.
+
+<Takeaway>Restore to an exact point in time, down to the second: PITR. Prevent accidental deletes with the least operational overhead: deletion protection. Analyze table data with Athena without consuming RCUs: export to S3 (requires PITR). Streams, global tables and export to S3 do not replace deletion protection and PITR.</Takeaway>
 
 </Scene>
 
@@ -152,7 +159,7 @@ Sort each ShopViet requirement into the feature that meets it. On a mobile devic
   cards={[
     ["Fluctuating load, almost no users at night", "speed"], ["One high-traffic shop overloads a partition", "speed"], ["Reads with microsecond latency", "speed"],
     ["Automatically delete login sessions after 24 hours", "life"], ["Send an email when a new user signs up", "life"], ["Archive items about to expire to S3", "life"],
-    ["Restore to exactly 14:31:59 yesterday", "safe"], ["No one can delete the Orders table", "safe"], ["Users in Germany write orders right in Frankfurt", "safe"],
+    ["Restore to exactly 14:31:59 yesterday", "safe"], ["No one can delete the Orders table", "safe"], ["Send table data to S3 for Athena without consuming RCUs", "safe"], ["Users in Germany write orders right in Frankfurt", "safe"],
   ]}
 />
 
@@ -179,6 +186,10 @@ Check question: as the designer of the ShopViet system, which option fits?
     opts: ["Aurora Global Database", "DynamoDB global tables", "RDS cross-Region read replica"],
     a: 1,
     why: "Global tables have replicas that support reads and writes in every Region. Aurora Global Database and read replicas have only one Region that accepts writes." },
+  { q: "The analytics team needs to run Athena queries on the Orders table data as of 00:00 every day, without degrading the performance of the table that serves shoppers. Which option fits?",
+    opts: ["A Lambda function scans the whole table every night and writes to S3", "Enable PITR and use DynamoDB export to S3", "Create an on-demand backup and query the backup directly"],
+    a: 1,
+    why: "Export to S3 exports data as of a point in time within the PITR window, consumes no RCUs and has no impact on table performance; Athena queries the files in S3 directly. A Scan consumes the table's RCUs; an on-demand backup is only used to restore to a new table." },
 ]} />
 
 </Scene>

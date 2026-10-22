@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 949 (99%) · 🟡 5 (1%) · ❌ 6 (1%).
+Có **960 keyword** khác nhau: ✅ 950 (99%) · 🟡 5 (1%) · ❌ 5 (1%).
 
 ### Theo bài học
 
@@ -37,7 +37,7 @@ Có **960 keyword** khác nhau: ✅ 949 (99%) · 🟡 5 (1%) · ❌ 6 (1%).
 | [storage](#storage) | 70 | 70 | 0 | 0 | 100% |
 | [storage-migration](#storage-migration) | 34 | 34 | 0 | 0 | 100% |
 | [rds](#rds) | 58 | 58 | 0 | 0 | 100% |
-| [dynamodb](#dynamodb) | 23 | 22 | 0 | 1 | 96% |
+| [dynamodb](#dynamodb) | 23 | 23 | 0 | 0 | 100% |
 | [analytics](#analytics) | 47 | 37 | 5 | 5 | 79% |
 | [messaging](#messaging) | 50 | 50 | 0 | 0 | 100% |
 | [kinesis](#kinesis) | 26 | 26 | 0 | 0 | 100% |
@@ -53,7 +53,7 @@ Có **960 keyword** khác nhau: ✅ 949 (99%) · 🟡 5 (1%) · ❌ 6 (1%).
 | Đề 1 | 221 | 1 | 2 |
 | Đề 2 | 197 | 0 | 1 |
 | Đề 3 | 222 | 0 | 0 |
-| Đề 4 | 231 | 2 | 3 |
+| Đề 4 | 232 | 2 | 2 |
 | Đề 5 | 219 | 2 | 0 |
 | Đề 6 | 210 | 0 | 0 |
 
@@ -880,7 +880,6 @@ Có **960 keyword** khác nhau: ✅ 949 (99%) · 🟡 5 (1%) · ❌ 6 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | DynamoDB export to S3 | ❌ Thiếu | 1 | exam4_q42 |  |
 | [ ] | DynamoDB Accelerator (DAX) | ✅ Đã có | 5 | exam1_q1, exam1_q29, exam4_q54, exam5_q27, exam6_q6 | dynamodb.mdx#s2<br>dynamodb.mdx#s2 / CapacitySim |
 | [ ] | DynamoDB global table | ✅ Đã có | 3 | exam1_q7, exam4_q54, exam4_q62 | dynamodb.mdx#s5 |
 | [ ] | DynamoDB Accelerator (DAX) (DynamoDB only) | ✅ Đã có | 2 | exam5_q65, exam6_q47 | dynamodb.mdx#s2 / CapacitySim<br>dynamodb.mdx#s2 |
@@ -894,6 +893,7 @@ Có **960 keyword** khác nhau: ✅ 949 (99%) · 🟡 5 (1%) · ❌ 6 (1%).
 | [ ] | DynamoDB (serverless key-value, single-digit ms) | ✅ Đã có | 1 | exam4_q10 | dynamodb.mdx#s1 |
 | [ ] | DynamoDB auto scaling / on-demand capacity | ✅ Đã có | 1 | exam1_q33 | dynamodb.mdx#s2 |
 | [ ] | DynamoDB deletion protection | ✅ Đã có | 1 | exam4_q42 | dynamodb.mdx#s4 |
+| [ ] | DynamoDB export to S3 | ✅ Đã có | 1 | exam4_q42 | dynamodb.mdx#s4 / table + Quiz |
 | [ ] | DynamoDB global secondary index (GSI) | ✅ Đã có | 1 | exam4_q62 | dynamodb.mdx#s1 |
 | [ ] | DynamoDB global table (not a backup) | ✅ Đã có | 1 | exam3_q49 | dynamodb.mdx#s4 |
 | [ ] | DynamoDB global tables (multi-active, sub-second replication) | ✅ Đã có | 1 | exam5_q59 | dynamodb.mdx#s5 / MultiRegionSim |
