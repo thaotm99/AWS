@@ -1160,8 +1160,8 @@
         {
           "keyword": "CloudFront vs S3 Transfer Acceleration for large uploads",
           "lesson": "s3",
-          "status": "partial",
-          "where": "global-infra.mdx#s4; global-infra.mdx#s5 / EdgeChoiceSim; s3.mdx#s5 / UploadSim"
+          "status": "covered",
+          "where": "s3.mdx#s5 (S3TA accelerates uploads and downloads to/from one bucket; CloudFront PUT/POST for < 1 GB per S3 FAQ); global-infra.mdx#s4 (framing fixed)"
         },
         {
           "keyword": "Global Accelerator (no caching, not for S3 uploads)",

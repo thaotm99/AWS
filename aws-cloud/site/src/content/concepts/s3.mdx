@@ -67,6 +67,16 @@ docs:
     url: "https://aws.amazon.com/s3/pricing/"
   - title: "Amazon S3 Transfer Acceleration"
     url: "https://aws.amazon.com/s3/transfer-acceleration/"
+  - title: "Amazon S3 removes 30-day minimum for transitions to S3 Standard-IA and S3 One Zone-IA (07/2026)"
+    url: "https://aws.amazon.com/about-aws/whats-new/2026/07/s3-removes-30-day-transitions-standard-ia-one-zone-ia/"
+  - title: "Amazon S3 FAQs"
+    url: "https://aws.amazon.com/s3/faqs/"
+  - title: "Vault Lock Policies (Amazon Glacier)"
+    url: "https://docs.aws.amazon.com/amazonglacier/latest/dev/vault-lock-policy.html"
+  - title: "Creating access points restricted to a virtual private cloud"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-points-vpc.html"
+  - title: "Gateway endpoints for Amazon S3"
+    url: "https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-s3.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -102,8 +112,8 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 Chi phí S3 gồm hai thành phần chính: phí lưu trữ tính theo GB và phí truy xuất dữ liệu. Storage class có phí lưu trữ càng thấp thì phí truy xuất càng cao hoặc thời gian truy xuất càng dài. Chọn từng loại dữ liệu của ShopViet để xem storage class phù hợp:
 
 <RequirementPicker client:visible items={[
-  { need: "Thumbnail có thể tạo lại từ ảnh gốc; truy cập nhiều trong tuần đầu, sau đó giảm nhưng vẫn phải truy xuất được ngay", answer: "Lifecycle sang One Zone-IA sau 30 ngày",
-    why: "Do dữ liệu có thể tạo lại, việc lưu tại một AZ để có chi phí thấp hơn Standard-IA là chấp nhận được. Dữ liệu vẫn được truy xuất ngay." },
+  { need: "Thumbnail có thể tạo lại từ ảnh gốc; truy cập nhiều trong tuần đầu, sau đó giảm nhưng vẫn phải truy xuất được ngay", answer: "Lifecycle sang One Zone-IA sau 7 ngày",
+    why: "Do dữ liệu có thể tạo lại, việc lưu tại một AZ để có chi phí thấp hơn Standard-IA là chấp nhận được. Dữ liệu vẫn được truy xuất ngay. Từ 16/7/2026, lifecycle rule chuyển được object sang One Zone-IA ngay từ ngày tạo, nên chuyển ngay khi lượt truy cập giảm (sau tuần đầu) có chi phí thấp nhất. Trước thời điểm đó, object phải nằm ít nhất 30 ngày trong Standard mới được chuyển sang Standard-IA hoặc One Zone-IA, nên tài liệu ôn tập cũ chọn mốc 30 ngày." },
   { need: "Kho video sản phẩm hàng trăm TB, lưu nhiều năm, chỉ được truy cập khoảng một lần mỗi quý nhưng khi truy cập phải có dữ liệu trong mili giây", answer: "S3 Glacier Instant Retrieval",
     why: "AWS mô tả lớp này dành cho dữ liệu lưu trữ dài hạn, truy cập khoảng một lần mỗi quý và cần truy xuất trong mili giây. Đổi lại: phí truy xuất theo GB và thời gian lưu trữ tối thiểu 90 ngày. Glacier Flexible Retrieval và Deep Archive yêu cầu restore trước khi đọc, mất từ vài phút tới nhiều giờ." },
   { need: "Tệp trung gian của pipeline xử lý đơn hàng, được đọc lại liên tục", answer: "S3 Standard",
@@ -120,11 +130,13 @@ Lifecycle chuyển object theo mô hình thác nước (waterfall): chỉ theo m
 
 <LifecycleValidator client:visible />
 
+**Thời điểm transition sang lớp IA.** Từ ngày 16/7/2026, lifecycle rule chuyển được object sang Standard-IA hoặc One Zone-IA ngay từ 0 ngày sau khi tạo. Trước thời điểm đó, S3 yêu cầu object nằm ít nhất 30 ngày trong Standard rồi mới được chuyển sang hai lớp này; tài liệu ôn tập soạn trước tháng 7/2026 dựa trên quy định cũ nên loại các phương án "chuyển sau 7 ngày". Thời gian lưu trữ tối thiểu 30 ngày của Standard-IA và One Zone-IA vẫn giữ nguyên: đây là quy tắc tính phí khi object rời lớp IA sớm, không phải điều kiện để được transition. Ngoài ra, mặc định lifecycle không chuyển object nhỏ hơn 128 KB sang bất kỳ storage class nào.
+
 Một lifecycle rule không nhất thiết áp dụng cho toàn bucket. Phần tử **filter** của rule xác định nhóm object chịu tác động: theo **prefix** của key, theo một hoặc nhiều **object tag** (khớp chính xác cả key và value), hoặc theo kích thước object; khi kết hợp nhiều điều kiện, S3 áp dụng logic AND. Mỗi filter chỉ có một prefix, nên muốn áp dụng hành động cho nhiều prefix khác nhau thì tạo nhiều rule. Filter rỗng áp dụng cho mọi object trong bucket. Bucket ảnh sản phẩm của ShopViet lưu ảnh gốc trong `images/` và thumbnail trong `thumbnails/`; hai nhóm này có mẫu truy cập khác nhau:
 
 <LifecycleFilterSim client:visible />
 
-<Takeaway>Truy cập thường xuyên: Standard. Mẫu truy cập không dự đoán được: Intelligent-Tiering. Truy cập ít nhưng cần truy xuất ngay: Standard-IA (One Zone-IA nếu dữ liệu tạo lại được và chấp nhận mất dữ liệu khi một AZ gặp sự cố). Lưu trữ dài hạn: các lớp Glacier. Lifecycle không chuyển ngược lên. Chỉ một phần dữ liệu đổi mẫu truy cập: lifecycle rule có filter theo prefix hoặc tag. Standard-IA và One Zone-IA có thời gian lưu trữ tối thiểu 30 ngày: object bị xoá, ghi đè hoặc chuyển đi sớm hơn vẫn bị tính phí đủ 30 ngày.</Takeaway>
+<Takeaway>Truy cập thường xuyên: Standard. Mẫu truy cập không dự đoán được: Intelligent-Tiering. Truy cập ít nhưng cần truy xuất ngay: Standard-IA (One Zone-IA nếu dữ liệu tạo lại được và chấp nhận mất dữ liệu khi một AZ gặp sự cố). Lưu trữ dài hạn: các lớp Glacier. Lifecycle không chuyển ngược lên. Chỉ một phần dữ liệu đổi mẫu truy cập: lifecycle rule có filter theo prefix hoặc tag. Standard-IA và One Zone-IA có thời gian lưu trữ tối thiểu 30 ngày: object bị xoá, ghi đè hoặc chuyển đi sớm hơn vẫn bị tính phí đủ 30 ngày. Từ 16/7/2026, rule chuyển sang Standard-IA hoặc One Zone-IA được ngay từ ngày 0 (trước đó object phải ở Standard tối thiểu 30 ngày).</Takeaway>
 
 </Scene>
 
@@ -138,13 +150,13 @@ Retention period được đặt theo hai cách. Khi **chỉ định trực ti�
 
 <RetentionSim client:visible />
 
-Retention period gắn với từng phiên bản object, do đó các phiên bản của cùng một key có thể có mode và thời hạn lưu giữ khác nhau. **ACL** không thay thế được cơ chế này: ACL chỉ xác định account hoặc group nào được cấp quyền truy cập và loại quyền, không có khái niệm thời hạn lưu giữ, nên không dùng để thực thi kiểm soát tuân thủ dạng WORM. Với dữ liệu lưu trong vault của **Amazon Glacier** (dịch vụ vault độc lập, khác với các storage class S3 Glacier, và không còn nhận khách hàng mới), **Vault Lock** hoạt động theo cơ chế tương tự: sau khi Vault Lock policy được khoá, policy đó không thể thay đổi hoặc xoá.
+Retention period gắn với từng phiên bản object, do đó các phiên bản của cùng một key có thể có mode và thời hạn lưu giữ khác nhau. **ACL** không thay thế được cơ chế này: ACL chỉ xác định account hoặc group nào được cấp quyền truy cập và loại quyền, không có khái niệm thời hạn lưu giữ, nên không dùng để thực thi kiểm soát tuân thủ dạng WORM. Với dữ liệu lưu trong vault của **Amazon Glacier** (dịch vụ vault độc lập với API riêng từ năm 2012, khác với các storage class S3 Glacier), mỗi vault gắn được một **vault access policy** và một **Vault Lock policy**, cả hai viết bằng ngôn ngữ IAM policy. Vault access policy dành cho quyền truy cập thông thường, không liên quan tuân thủ, có thể sửa bất cứ lúc nào. Vault Lock policy dành cho kiểm soát tuân thủ, ví dụ từ chối `glacier:DeleteArchive` với archive chưa đủ 365 ngày (condition key `ArchiveAgeInDays`). Khoá vault gồm hai bước: gắn Vault Lock policy để chuyển lock sang trạng thái **in-progress** và nhận lock ID; trong **24 giờ** cần kiểm tra policy rồi dùng lock ID để hoàn tất, nếu quá hạn thì policy bị xoá (khi policy chưa đúng có thể huỷ và làm lại từ đầu). Sau khi hoàn tất, Vault Lock policy **không thể thay đổi hoặc xoá**. Amazon Glacier không còn nhận khách hàng mới; dữ liệu hiện có vẫn được lưu giữ, và AWS khuyến nghị các storage class S3 Glacier cho lưu trữ dài hạn, nơi yêu cầu WORM do S3 Object Lock đảm nhận.
 
-<Takeaway>Chống xoá nhầm: versioning (thao tác xoá thông thường chỉ thêm delete marker). Yêu cầu xác thực bổ sung khi xoá vĩnh viễn: MFA Delete. Không ai xoá được, kể cả root: Object Lock Compliance mode. Governance mode vẫn cho phép người có quyền bypass thực hiện xoá. Lưu giữ không thời hạn, ví dụ khi có tranh chấp: legal hold. Default retention của bucket là một khoảng thời gian; retention chỉ định cho phiên bản là một Retain Until Date và ghi đè default.</Takeaway>
+<Takeaway>Chống xoá nhầm: versioning (thao tác xoá thông thường chỉ thêm delete marker). Yêu cầu xác thực bổ sung khi xoá vĩnh viễn: MFA Delete. Không ai xoá được, kể cả root: Object Lock Compliance mode. Governance mode vẫn cho phép người có quyền bypass thực hiện xoá. Lưu giữ không thời hạn, ví dụ khi có tranh chấp: legal hold. Default retention của bucket là một khoảng thời gian; retention chỉ định cho phiên bản là một Retain Until Date và ghi đè default. Vault của Amazon Glacier: Vault Lock policy (hoàn tất trong 24 giờ, sau đó bất biến), khác vault access policy (sửa được).</Takeaway>
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/7" title="Kiểm soát truy cập bucket" questions={["exam4_q65", "exam2_q24", "exam4_q8", "exam2_q15", "exam6_q30", "exam6_q3", "exam6_q54", "exam6_q29", "exam4_q34", "exam5_q39"]}>
+<Scene id="s3" label="Phần 3/7" title="Kiểm soát truy cập bucket" questions={["exam4_q65", "exam2_q24", "exam4_q8", "exam2_q15", "exam6_q30", "exam6_q3", "exam6_q54", "exam6_q29", "exam4_q34", "exam5_q39", "exam5_q24"]}>
 
 Khi số lượng team và đối tác sử dụng dữ liệu tăng lên, việc cấp quyền cần được tổ chức gọn và rõ ràng. Chọn từng tình huống:
 
@@ -155,6 +167,8 @@ Khi số lượng team và đối tác sử dụng dữ liệu tăng lên, việ
     why: "Gắn policy đọc/ghi cho một IAM group rồi thêm 50 user vào group; nhân viên mới chỉ cần được thêm vào group. Liệt kê từng user trong bucket policy khó bảo trì, và bucket policy bị giới hạn kích thước 20 KB." },
   { need: "Ba team phân tích (marketing, kho, tài chính); mỗi team chỉ được đọc một prefix", answer: "S3 Access Points, mỗi team một access point",
     why: "Mỗi access point có policy riêng giới hạn theo prefix, thay cho một bucket policy dài và khó bảo trì." },
+  { need: "Công cụ báo cáo trên EC2 trong public subnet tải tệp lên S3 qua public endpoint; yêu cầu traffic không đi qua Internet. Tạo một access point và đổi ứng dụng sang alias của access point có đáp ứng không?", answer: "Không: cần gateway VPC endpoint cho S3",
+    why: "Access point chỉ là điểm truy cập có policy riêng, không thay đổi đường đi của traffic. Access point có network origin Internet dùng được từ bất kỳ đâu, request vẫn tới endpoint công khai của S3. Access point có network origin VPC (chỉ chọn được khi tạo) từ chối mọi request không xuất phát từ VPC chỉ định, và request từ VPC vẫn phải đi qua VPC endpoint có endpoint policy cho phép cả access point lẫn bucket. Gateway endpoint cho S3 cho phép VPC truy cập S3 không cần internet gateway hay NAT, không tính thêm phí." },
   { need: "Bucket policy có IpAddress 54.240.143.0/24 và NotIpAddress 54.240.143.188/32. Địa chỉ nào được phép truy cập?", answer: "Toàn bộ dải /24, trừ địa chỉ .188",
     why: "Hai điều kiện phải được thoả mãn đồng thời: thuộc dải /24 và không phải địa chỉ .188." },
   { need: "Redshift của team dữ liệu (account khác) UNLOAD tệp vào bucket, nhưng ShopViet không đọc được các tệp đó", answer: "Object thuộc account đã tải lên, không mặc nhiên thuộc chủ sở hữu bucket",
@@ -168,7 +182,7 @@ Khi số lượng team và đối tác sử dụng dữ liệu tăng lên, việ
 
 **ACL** là cơ chế kiểm soát truy cập kiểu cũ của S3: mỗi bucket và object có một ACL gắn kèm dưới dạng subresource, xác định account hoặc group nào được cấp quyền và loại quyền. ACL không phải JSON policy như bucket policy hay trust policy của IAM role. Với Object Ownership = bucket owner enforced (mặc định), mọi ACL bị vô hiệu hoá, request đặt ACL thất bại với lỗi `AccessControlListNotSupported`, và quyền truy cập chỉ được quản lý bằng policy. AWS khuyến nghị giữ ACL ở trạng thái tắt, trừ khi cần kiểm soát quyền cho từng object riêng lẻ.
 
-<Takeaway>Cấp quyền cho account khác: bucket policy (tối đa 20 KB). Cấp thêm quyền cho một nhóm IAM user trong cùng account: IAM group. Nhiều team, mỗi team một prefix: access point. Giám sát toàn tổ chức: Storage Lens. Bucket mới sử dụng Object Ownership = bucket owner enforced, ACL bị tắt.</Takeaway>
+<Takeaway>Cấp quyền cho account khác: bucket policy (tối đa 20 KB). Cấp thêm quyền cho một nhóm IAM user trong cùng account: IAM group. Nhiều team, mỗi team một prefix: access point; access point không đổi đường mạng, truy cập S3 riêng tư từ VPC cần VPC endpoint ([bài VPC, phần VPC endpoint](/concepts/vpc/#s4)). Giám sát toàn tổ chức: Storage Lens. Bucket mới sử dụng Object Ownership = bucket owner enforced, ACL bị tắt.</Takeaway>
 
 </Scene>
 
@@ -184,15 +198,15 @@ Khi chuyển kho hoá đơn từ trung tâm dữ liệu lên S3, bộ phận b�
 
 </Scene>
 
-<Scene id="s5" label="Phần 5/7" title="Tối ưu tốc độ tải lên và khả năng chịu tải cao điểm" questions={["exam4_q14", "exam1_q64", "exam1_q18", "exam1_q40", "exam1_q51", "exam6_q20", "exam5_q21"]}>
+<Scene id="s5" label="Phần 5/7" title="Tối ưu tốc độ tải lên và khả năng chịu tải cao điểm" questions={["exam4_q14", "exam1_q64", "exam1_q18", "exam1_q40", "exam1_q51", "exam6_q20", "exam5_q21", "exam3_q37"]}>
 
 Phần này trình bày bốn sự cố ShopViet gặp phải khi khối lượng dữ liệu và số lượng người dùng tăng lên, cùng chi phí của một lần tải lên qua Transfer Acceleration. Chạy từng tình huống, sau đó bật tính năng S3 tương ứng để so sánh kết quả:
 
 <UploadSim client:visible />
 
-Với người dùng ở xa vừa tải video xuống vừa tải tệp lên, cần kết hợp cả hai: **CloudFront** cho chiều tải xuống và **S3 Transfer Acceleration** cho chiều tải lên.
+**Transfer Acceleration tăng tốc cả hai chiều.** Theo S3 FAQ, Transfer Acceleration tăng tốc truyền dữ liệu đường dài **tới và từ** một bucket (request tải lên và tải xuống cùng gửi tới endpoint `<bucket>.s3-accelerate.amazonaws.com`) và phát huy rõ nhất với object lớn. Khi ShopViet mở cổng cho các studio ở nhiều châu lục vừa tải lên vừa tải xuống video thô tới 10 GB, bật Transfer Acceleration trên bucket là cải thiện được cả hai chiều; không bắt buộc ghép thêm CloudFront. AWS khuyến nghị cân nhắc PUT/POST qua CloudFront khi object hoặc tập dữ liệu nhỏ hơn 1 GB; với tệp lớn hơn, Transfer Acceleration cho throughput cao hơn. CloudFront phù hợp khi cùng một nội dung được rất nhiều người xem lặp lại (ảnh, video quảng cáo), vì edge location cache nội dung đó.
 
-<Takeaway>Tệp dung lượng lớn: multipart upload (bắt buộc với object trên 5 GB). Người tải lên ở xa: Transfer Acceleration (đi qua edge location của CloudFront; có thể phát sinh phí truyền dữ liệu bổ sung). Số lượng request quá lớn: phân bổ key ra nhiều prefix. Chỉ cần một phần của tệp: byte-range fetch (header `Range` trong request GET). Chi phí: data transfer in từ Internet vào S3 miễn phí; phí Transfer Acceleration cộng thêm vào phí data transfer và chỉ tính cho lần truyền được tăng tốc. S3 Select (truy vấn SQL trên nội dung một object CSV, JSON hoặc Parquet) không còn nhận khách hàng mới.</Takeaway>
+<Takeaway>Tệp dung lượng lớn: multipart upload (bắt buộc với object trên 5 GB). Truyền tệp lớn (từ khoảng 1 GB) qua khoảng cách xa tới hoặc từ một bucket: Transfer Acceleration, tăng tốc cả tải lên lẫn tải xuống (đi qua edge location của CloudFront; có thể phát sinh phí truyền dữ liệu bổ sung); tệp nhỏ hơn 1 GB: cân nhắc PUT/POST qua CloudFront. Số lượng request quá lớn: phân bổ key ra nhiều prefix. Chỉ cần một phần của tệp: byte-range fetch (header `Range` trong request GET). Chi phí: data transfer in từ Internet vào S3 miễn phí; phí Transfer Acceleration cộng thêm vào phí data transfer và chỉ tính cho lần truyền được tăng tốc. S3 Select (truy vấn SQL trên nội dung một object CSV, JSON hoặc Parquet) không còn nhận khách hàng mới.</Takeaway>
 
 </Scene>
 
@@ -317,6 +331,10 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["1 năm kể từ khi tạo, vì default của bucket được ưu tiên", "Tới Retain Until Date sau 3 năm", "Request bị từ chối vì xung đột với default retention"],
     a: 1,
     why: "Thiết lập retention chỉ định trong request ghi đè default retention của bucket. Default retention chỉ là một khoảng thời gian dùng cho phiên bản không mang thiết lập riêng." },
+  { q: "Bộ phận tuân thủ gắn Vault Lock policy cấm xoá archive dưới 10 năm vào một vault Amazon Glacier hiện có và nhận lock ID. Ba ngày sau mới gọi lệnh hoàn tất khoá. Điều gì xảy ra?",
+    opts: ["Vault đã bị khoá vĩnh viễn từ lúc gắn policy", "Lock ID đã hết hạn sau 24 giờ và policy bị xoá; phải khởi tạo lại", "Policy được hoàn tất bình thường vì lock ID không hết hạn"],
+    a: 1,
+    why: "Gắn Vault Lock policy chỉ đưa lock vào trạng thái in-progress. Phải hoàn tất bằng lock ID trong 24 giờ; quá hạn thì policy bị xoá. Chỉ sau khi hoàn tất, policy mới không thể thay đổi hoặc xoá." },
   { q: "Ứng dụng cho phép khách hàng tải ảnh lên S3 qua CloudFront với tên miền riêng và HTTPS. Origin nào phù hợp?",
     opts: ["Website endpoint của bucket", "REST endpoint của bucket, kết hợp origin access control (OAC)", "Website endpoint, kết hợp OAC"],
     a: 1,

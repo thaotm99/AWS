@@ -17,6 +17,8 @@ docs:
     url: "https://docs.aws.amazon.com/global-accelerator/latest/dg/what-is-global-accelerator.html"
   - title: "Amazon S3 Transfer Acceleration"
     url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/transfer-acceleration.html"
+  - title: "Amazon S3 FAQs (S3 Transfer Acceleration)"
+    url: "https://aws.amazon.com/s3/faqs/"
   - title: "Gateway endpoints for Amazon S3"
     url: "https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-s3.html"
   - title: "Working with DB instance read replicas (Amazon RDS)"
@@ -109,15 +111,15 @@ ShopViet runs 2 EC2 web servers behind a load balancer. Each dot represents a us
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/7" title="Edge locations: CloudFront for downloads, S3 Transfer Acceleration for uploads" questions={["exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
+<Scene id="en-s4" label="Part 4/7" title="Edge locations: CloudFront caches content, S3 Transfer Acceleration speeds transfers to and from a bucket" questions={["exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
 
 **Edge locations** are AWS points of presence located close to users, far more numerous than Regions. **CloudFront** caches content at these locations; the origin can be S3, an ALB or an on-premises server. ShopViet's product images are stored in S3 in Singapore. Fetch an image twice to compare the results.
 
 <EdgeCacheDemo client:visible />
 
-In the other direction, when a distant supplier **uploads** large files to S3, the right solution is **S3 Transfer Acceleration**: data enters the edge location close to the upload source, then travels over the AWS network to the bucket; this solution is often combined with **multipart upload**.
+**S3 Transfer Acceleration** also uses edge locations, but not to cache content: data enters the edge location close to the client, then travels over an optimized AWS network path to the bucket. According to the S3 FAQs, Transfer Acceleration speeds up long-distance transfers **to and from** a single bucket, meaning both uploads (PUT) and downloads (GET), and helps most with larger objects. When suppliers on several continents both upload and download videos of up to 10 GB from the Singapore bucket, enabling Transfer Acceleration alone improves both directions; large uploads are usually combined with **multipart upload**. AWS suggests considering CloudFront's PUT/POST when objects or the data set are smaller than 1 GB; for larger files, Transfer Acceleration gives higher throughput.
 
-<Takeaway>High latency when distant users fetch content: CloudFront (even when the backend must stay where it is). Slow uploads of large files to S3: S3 Transfer Acceleration combined with multipart upload. A requirement in both directions: use both together.</Takeaway>
+<Takeaway>Many distant users repeatedly fetching the same content: CloudFront caches it at edge locations (even when the backend must stay where it is). Large files (about 1 GB and up) moved over long distances to or from an S3 bucket, uploads and downloads alike: S3 Transfer Acceleration (combine uploads with multipart upload). Files under 1 GB: consider CloudFront PUT/POST.</Takeaway>
 
 </Scene>
 

@@ -17,6 +17,8 @@ docs:
     url: "https://docs.aws.amazon.com/global-accelerator/latest/dg/what-is-global-accelerator.html"
   - title: "Amazon S3 Transfer Acceleration"
     url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/transfer-acceleration.html"
+  - title: "Amazon S3 FAQs (S3 Transfer Acceleration)"
+    url: "https://aws.amazon.com/s3/faqs/"
   - title: "Gateway endpoints for Amazon S3"
     url: "https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-s3.html"
   - title: "Working with DB instance read replicas (Amazon RDS)"
@@ -109,15 +111,15 @@ ShopViet vận hành 2 web server EC2 phía sau một Load Balancer. Mỗi chấ
 
 </Scene>
 
-<Scene id="s4" label="Phần 4/7" title="Edge location: CloudFront cho chiều tải xuống, S3 Transfer Acceleration cho chiều tải lên" questions={["exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
+<Scene id="s4" label="Phần 4/7" title="Edge location: CloudFront cache nội dung, S3 Transfer Acceleration tăng tốc truyền tới và từ bucket" questions={["exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
 
 **Edge location** là các điểm hiện diện của AWS đặt gần người dùng, với số lượng lớn hơn nhiều so với số Region. **CloudFront** cache nội dung tại các điểm này; origin có thể là S3, ALB hoặc máy chủ on-premises. Ảnh sản phẩm của ShopViet được lưu tại S3 Singapore. Truy xuất ảnh hai lần để so sánh kết quả.
 
 <EdgeCacheDemo client:visible />
 
-Ở chiều ngược lại, khi nhà cung cấp ở xa **tải lên** tệp dung lượng lớn vào S3, giải pháp phù hợp là **S3 Transfer Acceleration**: dữ liệu đi vào edge location gần nguồn tải lên, sau đó truyền qua mạng AWS tới bucket; giải pháp này thường được kết hợp với **multipart upload**.
+**S3 Transfer Acceleration** cũng dùng edge location nhưng không nhằm cache nội dung: dữ liệu đi vào edge location gần client, sau đó truyền qua đường mạng tối ưu của AWS tới bucket. Theo S3 FAQ, Transfer Acceleration tăng tốc truyền dữ liệu đường dài **tới và từ** một bucket, tức cả tải lên (PUT) lẫn tải xuống (GET), và phát huy rõ nhất với object lớn. Khi nhà cung cấp ở nhiều châu lục vừa tải lên vừa tải xuống video tới 10 GB từ bucket Singapore, chỉ cần bật Transfer Acceleration là cải thiện được cả hai chiều; tải lên tệp lớn thường kết hợp thêm **multipart upload**. AWS khuyến nghị cân nhắc PUT/POST qua CloudFront khi object hoặc tập dữ liệu nhỏ hơn 1 GB; với tệp lớn hơn, Transfer Acceleration cho throughput cao hơn.
 
-<Takeaway>Độ trễ cao khi người dùng ở xa truy xuất nội dung: CloudFront (kể cả khi backend phải duy trì tại vị trí hiện tại). Tải lên tệp dung lượng lớn vào S3 chậm: S3 Transfer Acceleration kết hợp multipart upload. Yêu cầu cả hai chiều: sử dụng đồng thời cả hai.</Takeaway>
+<Takeaway>Nhiều người dùng ở xa xem lặp lại cùng một nội dung: CloudFront cache tại edge location (kể cả khi backend phải duy trì tại vị trí hiện tại). Truyền tệp lớn (từ khoảng 1 GB) qua khoảng cách xa tới hoặc từ một bucket S3, cả tải lên lẫn tải xuống: S3 Transfer Acceleration (tải lên kết hợp multipart upload). Tệp nhỏ hơn 1 GB: cân nhắc PUT/POST qua CloudFront.</Takeaway>
 
 </Scene>
 

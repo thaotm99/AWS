@@ -808,8 +808,8 @@
         {
           "keyword": "S3 Access Points",
           "lesson": "s3",
-          "status": "partial",
-          "where": "s3.mdx#s3 (per-prefix access only; does not say an access point keeps the same network path / public endpoint)"
+          "status": "covered",
+          "where": "s3.mdx#s3 / RequirementPicker (access point does not change the network path; Internet vs VPC network origin; VPC endpoint needed)"
         },
         {
           "keyword": "NAT gateway",

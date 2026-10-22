@@ -246,8 +246,8 @@
         {
           "keyword": "S3 Lifecycle minimum 30 days before transition to IA",
           "lesson": "s3",
-          "status": "partial",
-          "where": "s3.mdx#s1 / LifecycleValidator (teaches only the 30-day minimum storage charge in IA; validator accepts Standard→IA after 7 days; neither the old 30-day transition rule nor its July 2026 removal is mentioned)"
+          "status": "covered",
+          "where": "s3.mdx#s1 / RequirementPicker, LifecycleValidator (since 2026-07-16 transitions to Standard-IA/One Zone-IA allowed from day 0; former 30-day-in-Standard rule taught as history; 30-day minimum storage charge kept)"
         },
         {
           "keyword": "S3 Lifecycle rule",

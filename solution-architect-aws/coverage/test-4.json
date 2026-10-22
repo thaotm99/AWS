@@ -2030,8 +2030,8 @@
         {
           "keyword": "Glacier Vault Lock",
           "lesson": "s3",
-          "status": "partial",
-          "where": "s3.mdx#s7 / QuickCompare (ACL row, name only)"
+          "status": "covered",
+          "where": "s3.mdx#s2 (Vault Lock policy vs vault access policy, 24h in-progress lock, immutable once locked, Amazon Glacier closed to new customers) / Quiz in s3.mdx#challenge"
         },
         {
           "keyword": "S3 Glacier Flexible Retrieval",

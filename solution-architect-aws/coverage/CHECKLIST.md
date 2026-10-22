@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **983 keyword** khác nhau: ✅ 976 (99%) · 🟡 6 (1%) · ❌ 1 (0%).
+Có **983 keyword** khác nhau: ✅ 980 (100%) · 🟡 2 (0%) · ❌ 1 (0%).
 
 ### Theo bài học
 
@@ -33,7 +33,7 @@ Có **983 keyword** khác nhau: ✅ 976 (99%) · 🟡 6 (1%) · ❌ 1 (0%).
 | [asg](#asg) | 47 | 47 | 0 | 0 | 100% |
 | [containers](#containers) | 23 | 23 | 0 | 0 | 100% |
 | [lambda](#lambda) | 37 | 37 | 0 | 0 | 100% |
-| [s3](#s3) | 72 | 68 | 4 | 0 | 94% |
+| [s3](#s3) | 72 | 72 | 0 | 0 | 100% |
 | [storage](#storage) | 70 | 68 | 2 | 0 | 97% |
 | [storage-migration](#storage-migration) | 35 | 35 | 0 | 0 | 100% |
 | [rds](#rds) | 61 | 61 | 0 | 0 | 100% |
@@ -50,11 +50,11 @@ Có **983 keyword** khác nhau: ✅ 976 (99%) · 🟡 6 (1%) · ❌ 1 (0%).
 
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
-| Đề 1 | 225 | 1 | 0 |
+| Đề 1 | 226 | 0 | 0 |
 | Đề 2 | 203 | 0 | 1 |
-| Đề 3 | 225 | 2 | 0 |
-| Đề 4 | 236 | 1 | 0 |
-| Đề 5 | 224 | 2 | 0 |
+| Đề 3 | 226 | 1 | 0 |
+| Đề 4 | 237 | 0 | 0 |
+| Đề 5 | 225 | 1 | 0 |
 | Đề 6 | 217 | 0 | 0 |
 
 ## global-infra
@@ -637,10 +637,6 @@ Có **983 keyword** khác nhau: ✅ 976 (99%) · 🟡 6 (1%) · ❌ 1 (0%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | S3 Access Points | 🟡 Một phần ⚠ | 2 | exam1_q9, exam5_q24 | s3.mdx#s3<br>s3.mdx#s3 (per-prefix access only; does not say an access point keeps the same network path / public endpoint) |
-| [ ] | CloudFront vs S3 Transfer Acceleration for large uploads | 🟡 Một phần | 1 | exam3_q37 | global-infra.mdx#s4; global-infra.mdx#s5 / EdgeChoiceSim; s3.mdx#s5 / UploadSim |
-| [ ] | Glacier Vault Lock | 🟡 Một phần | 1 | exam4_q64 | s3.mdx#s7 / QuickCompare (ACL row, name only) |
-| [ ] | S3 Lifecycle minimum 30 days before transition to IA | 🟡 Một phần | 1 | exam1_q8 | s3.mdx#s1 / LifecycleValidator (teaches only the 30-day minimum storage charge in IA; validator accepts Standard→IA after 7 days; neither the old 30-day transition rule nor its July 2026 removal is mentioned) |
 | [ ] | S3 Transfer Acceleration | ✅ Đã có | 9 | exam1_q18, exam1_q64, exam2_q12, exam3_q37, exam4_q18, exam4_q29, exam5_q21, exam5_q48, exam6_q58 | s3.mdx#s5 / UploadSim<br>s3.mdx#s5 |
 | [ ] | S3 One Zone-IA | ✅ Đã có | 5 | exam1_q8, exam4_q43, exam5_q49, exam5_q51, exam6_q28 | s3.mdx#s1<br>s3.mdx#s1 / LifecycleValidator |
 | [ ] | S3 Standard-IA | ✅ Đã có | 5 | exam1_q15, exam4_q43, exam5_q51, exam6_q26, exam6_q28 | s3.mdx#s1 / messaging.mdx#s4<br>s3.mdx#s1 |
@@ -652,6 +648,7 @@ Có **983 keyword** khác nhau: ✅ 976 (99%) · 🟡 6 (1%) · ❌ 1 (0%).
 | [ ] | S3 Cross-Region Replication | ✅ Đã có | 3 | exam1_q62, exam2_q46, exam6_q58 | s3.mdx#s7 / analytics.mdx#s4<br>analytics.mdx#s4; s3.mdx#s7 / QuickCompare; kms.mdx#s4 / QuickCompare |
 | [ ] | S3 multipart upload | ✅ Đã có | 3 | exam1_q18, exam1_q64, exam4_q14 | s3.mdx#s5 / UploadSim |
 | [ ] | Amazon S3 static website hosting | ✅ Đã có | 2 | exam2_q2, exam4_q53 | s3.mdx#s6 / WebsiteEndpointSim; cloudfront.mdx#s2 / RequirementPicker<br>s3.mdx#s6 / WebsiteEndpointSim |
+| [ ] | S3 Access Points | ✅ Đã có | 2 | exam1_q9, exam5_q24 | s3.mdx#s3<br>s3.mdx#s3 / RequirementPicker (access point does not change the network path; Internet vs VPC network origin; VPC endpoint needed) |
 | [ ] | S3 Glacier Flexible Retrieval | ✅ Đã có | 2 | exam4_q64, exam6_q28 | s3.mdx#s1<br>s3.mdx#s1 / LifecycleValidator |
 | [ ] | S3 Object Lock (compliance mode) | ✅ Đã có | 2 | exam4_q64, exam5_q50 | s3.mdx#s2<br>s3.mdx#s2 / DeleteGuardSim |
 | [ ] | S3 Object Lock (governance mode) | ✅ Đã có | 2 | exam4_q64, exam5_q50 | s3.mdx#s2<br>s3.mdx#s2 / DeleteGuardSim |
@@ -660,6 +657,8 @@ Có **983 keyword** khác nhau: ✅ 976 (99%) · 🟡 6 (1%) · ❌ 1 (0%).
 | [ ] | S3 Standard | ✅ Đã có | 2 | exam2_q29, exam5_q52 | s3.mdx#s1; storage.mdx#s1<br>s3.mdx#s1 |
 | [ ] | S3 Storage Class Analysis | ✅ Đã có | 2 | exam4_q30, exam6_q3 | s3.mdx#s3 / RequirementPicker |
 | [ ] | Access control list (ACL) | ✅ Đã có | 1 | exam4_q34 | s3.mdx#s3 |
+| [ ] | CloudFront vs S3 Transfer Acceleration for large uploads | ✅ Đã có | 1 | exam3_q37 | s3.mdx#s5 (S3TA accelerates uploads and downloads to/from one bucket; CloudFront PUT/POST for < 1 GB per S3 FAQ); global-infra.mdx#s4 (framing fixed) |
+| [ ] | Glacier Vault Lock | ✅ Đã có | 1 | exam4_q64 | s3.mdx#s2 (Vault Lock policy vs vault access policy, 24h in-progress lock, immutable once locked, Amazon Glacier closed to new customers) / Quiz in s3.mdx#challenge |
 | [ ] | S3 access control list (ACL) | ✅ Đã có | 1 | exam5_q39 | s3.mdx#s2 / s3.mdx#s7 / QuickCompare |
 | [ ] | S3 Access Point | ✅ Đã có | 1 | exam2_q24 | s3.mdx#s3 / RequirementPicker |
 | [ ] | S3 Batch Operations | ✅ Đã có | 1 | exam3_q48 | s3.mdx#s7 / QuickCompare |
@@ -676,6 +675,7 @@ Có **983 keyword** khác nhau: ✅ 976 (99%) · 🟡 6 (1%) · ❌ 1 (0%).
 | [ ] | S3 Glacier storage classes | ✅ Đã có | 1 | exam5_q52 | s3.mdx#s1 / LifecycleValidator |
 | [ ] | S3 Glacier Vault Lock policy | ✅ Đã có | 1 | exam5_q39 | s3.mdx#s2 |
 | [ ] | S3 Lifecycle (not a compliance control) | ✅ Đã có | 1 | exam5_q39 | s3.mdx#s1 / LifecycleValidator |
+| [ ] | S3 Lifecycle minimum 30 days before transition to IA | ✅ Đã có | 1 | exam1_q8 | s3.mdx#s1 / RequirementPicker, LifecycleValidator (since 2026-07-16 transitions to Standard-IA/One Zone-IA allowed from day 0; former 30-day-in-Standard rule taught as history; 30-day minimum storage charge kept) |
 | [ ] | S3 Lifecycle rule (transition + expiration) | ✅ Đã có | 1 | exam6_q28 | s3.mdx#s1 / RequirementPicker |
 | [ ] | S3 Lifecycle rule prefix filter | ✅ Đã có | 1 | exam4_q43 | s3.mdx#s1 / LifecycleFilterSim |
 | [ ] | S3 Lifecycle rule to Glacier Deep Archive | ✅ Đã có | 1 | exam2_q34 | s3.mdx#s1 / RequirementPicker; analytics.mdx#s4 / LakeCostSim |

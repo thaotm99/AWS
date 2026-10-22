@@ -67,6 +67,16 @@ docs:
     url: "https://aws.amazon.com/s3/pricing/"
   - title: "Amazon S3 Transfer Acceleration"
     url: "https://aws.amazon.com/s3/transfer-acceleration/"
+  - title: "Amazon S3 removes 30-day minimum for transitions to S3 Standard-IA and S3 One Zone-IA (07/2026)"
+    url: "https://aws.amazon.com/about-aws/whats-new/2026/07/s3-removes-30-day-transitions-standard-ia-one-zone-ia/"
+  - title: "Amazon S3 FAQs"
+    url: "https://aws.amazon.com/s3/faqs/"
+  - title: "Vault Lock Policies (Amazon Glacier)"
+    url: "https://docs.aws.amazon.com/amazonglacier/latest/dev/vault-lock-policy.html"
+  - title: "Creating access points restricted to a virtual private cloud"
+    url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-points-vpc.html"
+  - title: "Gateway endpoints for Amazon S3"
+    url: "https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-s3.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -102,8 +112,8 @@ ShopViet stores its product images, invoices, promotional videos, logs and analy
 S3 cost has two main components: a storage charge per GB and a data retrieval charge. The lower a storage class's storage charge, the higher its retrieval charge or the longer its retrieval time. Choose each type of ShopViet data to see the right storage class:
 
 <RequirementPicker client:visible items={[
-  { need: "Thumbnails that can be regenerated from the original images; accessed heavily in the first week, then less, but must still be retrievable immediately", answer: "Lifecycle to One Zone-IA after 30 days",
-    why: "Because the data can be regenerated, storing it in a single AZ at a lower cost than Standard-IA is acceptable. The data is still retrieved immediately." },
+  { need: "Thumbnails that can be regenerated from the original images; accessed heavily in the first week, then less, but must still be retrievable immediately", answer: "Lifecycle to One Zone-IA after 7 days",
+    why: "Because the data can be regenerated, storing it in a single AZ at a lower cost than Standard-IA is acceptable. The data is still retrieved immediately. Since July 16, 2026, a lifecycle rule can transition objects to One Zone-IA as soon as the day they are created, so moving them as soon as access drops (after the first week) costs the least. Before that date, objects had to stay at least 30 days in Standard before a transition to Standard-IA or One Zone-IA, which is why older study material picks 30 days." },
   { need: "A product video library of hundreds of TB, kept for many years, accessed only about once a quarter, but when accessed the data must be available in milliseconds", answer: "S3 Glacier Instant Retrieval",
     why: "AWS describes this class as being for long-lived archive data accessed about once a quarter that needs millisecond retrieval. The trade-off: a per-GB retrieval charge and a 90-day minimum storage duration. Glacier Flexible Retrieval and Deep Archive require a restore before reading, which takes from minutes to many hours." },
   { need: "Intermediate files of the order-processing pipeline, read again constantly", answer: "S3 Standard",
@@ -120,11 +130,13 @@ Lifecycle transitions objects in a waterfall model: one way only, down to lower-
 
 <LifecycleValidator client:visible />
 
+**When objects can move to an IA class.** Since July 16, 2026, a lifecycle rule can transition objects to Standard-IA or One Zone-IA as soon as 0 days after creation. Before that date, S3 required objects to stay at least 30 days in Standard before a transition to these two classes; study material written before July 2026 relies on the old rule and therefore rules out "transition after 7 days" options. The 30-day minimum storage duration of Standard-IA and One Zone-IA is unchanged: it is a billing rule for objects that leave the IA class early, not a condition for the transition. In addition, by default lifecycle does not transition objects smaller than 128 KB to any storage class.
+
 A lifecycle rule does not have to apply to the whole bucket. The rule's **filter** element selects the objects it acts on: by key **prefix**, by one or more **object tags** (each matching both key and value exactly), or by object size; when several conditions are combined, S3 applies a logical AND. A filter has only one prefix, so to apply an action to several different prefixes you create several rules. An empty filter applies to every object in the bucket. ShopViet's product image bucket keeps originals under `images/` and thumbnails under `thumbnails/`; the two groups have different access patterns:
 
 <LifecycleFilterSim client:visible />
 
-<Takeaway>Frequent access: Standard. Unpredictable access patterns: Intelligent-Tiering. Infrequent access that needs immediate retrieval: Standard-IA (One Zone-IA if the data can be regenerated and losing it with an AZ is acceptable). Long-term archive: the Glacier classes. Lifecycle does not transition objects back up. Only part of the data changes its access pattern: a lifecycle rule with a prefix or tag filter. Standard-IA and One Zone-IA have a 30-day minimum storage duration: an object deleted, overwritten or transitioned earlier is still charged for the full 30 days.</Takeaway>
+<Takeaway>Frequent access: Standard. Unpredictable access patterns: Intelligent-Tiering. Infrequent access that needs immediate retrieval: Standard-IA (One Zone-IA if the data can be regenerated and losing it with an AZ is acceptable). Long-term archive: the Glacier classes. Lifecycle does not transition objects back up. Only part of the data changes its access pattern: a lifecycle rule with a prefix or tag filter. Standard-IA and One Zone-IA have a 30-day minimum storage duration: an object deleted, overwritten or transitioned earlier is still charged for the full 30 days. Since July 16, 2026, a rule can transition to Standard-IA or One Zone-IA from day 0 (before that, objects had to stay in Standard for at least 30 days).</Takeaway>
 
 </Scene>
 
@@ -138,13 +150,13 @@ A retention period is set in one of two ways. When you apply it **explicitly** t
 
 <RetentionSim client:visible />
 
-Retention periods apply to individual object versions, so versions of the same key can have different retention modes and periods. **ACLs** cannot replace this mechanism: an ACL only defines which accounts or groups are granted access and the type of access; it has no notion of a retention period, so it cannot enforce WORM compliance controls. For data stored in an **Amazon Glacier** vault (a standalone vault service, distinct from the S3 Glacier storage classes and no longer open to new customers), **Vault Lock** works in a similar way: once a Vault Lock policy is locked, it can no longer be changed or deleted.
+Retention periods apply to individual object versions, so versions of the same key can have different retention modes and periods. **ACLs** cannot replace this mechanism: an ACL only defines which accounts or groups are granted access and the type of access; it has no notion of a retention period, so it cannot enforce WORM compliance controls. For data stored in an **Amazon Glacier** vault (a standalone vault service with its own API from 2012, distinct from the S3 Glacier storage classes), each vault can have one **vault access policy** and one **Vault Lock policy**, both written in the IAM policy language. The vault access policy is for ordinary access controls that are not compliance related and can be changed at any time. The Vault Lock policy is for compliance controls, for example denying `glacier:DeleteArchive` for archives younger than 365 days (condition key `ArchiveAgeInDays`). Locking a vault takes two steps: attaching the Vault Lock policy puts the lock in the **in-progress** state and returns a lock ID; within **24 hours** you validate the policy and complete the lock with that lock ID, otherwise the policy is deleted (if the policy is not right, you can stop and restart the process). Once completed, the Vault Lock policy **can no longer be changed or deleted**. Amazon Glacier is no longer open to new customers; existing data remains stored, and AWS recommends the S3 Glacier storage classes for long-term archives, where S3 Object Lock provides WORM protection.
 
-<Takeaway>Protect against accidental deletes: versioning (a simple delete only adds a delete marker). Require extra authentication for permanent deletes: MFA Delete. No one can delete, including root: Object Lock Compliance mode. Governance mode still lets users with bypass permission delete. Retention with no end date, for example during a dispute: legal hold. A bucket default retention is a duration; an explicit retention on a version is a Retain Until Date and overrides the default.</Takeaway>
+<Takeaway>Protect against accidental deletes: versioning (a simple delete only adds a delete marker). Require extra authentication for permanent deletes: MFA Delete. No one can delete, including root: Object Lock Compliance mode. Governance mode still lets users with bypass permission delete. Retention with no end date, for example during a dispute: legal hold. A bucket default retention is a duration; an explicit retention on a version is a Retain Until Date and overrides the default. Amazon Glacier vaults: a Vault Lock policy (completed within 24 hours, immutable afterwards), unlike a vault access policy (can be changed).</Takeaway>
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/7" title="Controlling bucket access" questions={["exam4_q65", "exam2_q24", "exam4_q8", "exam2_q15", "exam6_q30", "exam6_q3", "exam6_q54", "exam6_q29", "exam4_q34", "exam5_q39"]}>
+<Scene id="en-s3" label="Part 3/7" title="Controlling bucket access" questions={["exam4_q65", "exam2_q24", "exam4_q8", "exam2_q15", "exam6_q30", "exam6_q3", "exam6_q54", "exam6_q29", "exam4_q34", "exam5_q39", "exam5_q24"]}>
 
 As the number of teams and partners using the data grows, permissions need to be organized in a compact, clear way. Choose each scenario:
 
@@ -155,6 +167,8 @@ As the number of teams and partners using the data grows, permissions need to be
     why: "Attach a read/write policy to an IAM group and add the 50 users to it; a new employee only needs to be added to the group. Listing each user in a bucket policy is hard to maintain, and bucket policies are limited to 20 KB in size." },
   { need: "Three analytics teams (marketing, warehouse, finance); each team may read only one prefix", answer: "S3 Access Points, one access point per team",
     why: "Each access point has its own policy limited to a prefix, instead of one long bucket policy that is hard to maintain." },
+  { need: "A reporting tool on EC2 in a public subnet uploads files to S3 through the public endpoint; the traffic must not cross the internet. Does creating an access point and switching the application to its alias meet the requirement?", answer: "No: create a gateway VPC endpoint for S3",
+    why: "An access point is only an entry point with its own policy; it does not change the network path. An access point with an Internet network origin can be used from anywhere, and requests still go to the public S3 endpoint. An access point with a VPC network origin (chosen only at creation) rejects every request that does not originate from the specified VPC, and requests from the VPC still have to go through a VPC endpoint whose endpoint policy allows both the access point and the bucket. A gateway endpoint for S3 lets the VPC reach S3 without an internet gateway or NAT device, at no additional cost." },
   { need: "A bucket policy has IpAddress 54.240.143.0/24 and NotIpAddress 54.240.143.188/32. Which addresses are allowed access?", answer: "The whole /24 range except the .188 address",
     why: "Both conditions must be met at the same time: within the /24 range and not the .188 address." },
   { need: "The data team's Redshift (another account) UNLOADs files into the bucket, but ShopViet cannot read those files", answer: "Objects belong to the uploading account, not automatically to the bucket owner",
@@ -168,7 +182,7 @@ As the number of teams and partners using the data grows, permissions need to be
 
 An **ACL** is S3's legacy access control mechanism: every bucket and object has an ACL attached as a subresource that defines which AWS accounts or groups are granted access and the type of access. An ACL is not a JSON policy like a bucket policy or an IAM role trust policy. With Object Ownership = bucket owner enforced (the default), all ACLs are disabled, requests to set ACLs fail with the `AccessControlListNotSupported` error code, and access is managed only with policies. AWS recommends keeping ACLs disabled except when you need to control access to each object individually.
 
-<Takeaway>Grant permissions to another account: bucket policy (up to 20 KB). Grant extra permissions to a set of IAM users in the same account: an IAM group. Many teams, one prefix each: access points. Organization-wide monitoring: Storage Lens. New buckets use Object Ownership = bucket owner enforced, with ACLs disabled.</Takeaway>
+<Takeaway>Grant permissions to another account: bucket policy (up to 20 KB). Grant extra permissions to a set of IAM users in the same account: an IAM group. Many teams, one prefix each: access points; an access point does not change the network path, so private access to S3 from a VPC needs a VPC endpoint ([VPC lesson, VPC endpoints](/concepts/vpc/#en-s4)). Organization-wide monitoring: Storage Lens. New buckets use Object Ownership = bucket owner enforced, with ACLs disabled.</Takeaway>
 
 </Scene>
 
@@ -184,15 +198,15 @@ When the invoice archive moves from the data center to S3, the security team req
 
 </Scene>
 
-<Scene id="en-s5" label="Part 5/7" title="Optimizing upload speed and peak-load capacity" questions={["exam4_q14", "exam1_q64", "exam1_q18", "exam1_q40", "exam1_q51", "exam6_q20", "exam5_q21"]}>
+<Scene id="en-s5" label="Part 5/7" title="Optimizing upload speed and peak-load capacity" questions={["exam4_q14", "exam1_q64", "exam1_q18", "exam1_q40", "exam1_q51", "exam6_q20", "exam5_q21", "exam3_q37"]}>
 
 This part presents four problems ShopViet ran into as data volume and the number of users grew, plus the cost of one upload through Transfer Acceleration. Run each scenario, then turn on the matching S3 feature to compare the results:
 
 <UploadSim client:visible />
 
-For distant users who both download videos and upload files, combine both: **CloudFront** for downloads and **S3 Transfer Acceleration** for uploads.
+**Transfer Acceleration speeds up both directions.** According to the S3 FAQs, Transfer Acceleration speeds up long-distance transfers **to and from** a single bucket (uploads and downloads both go to the `<bucket>.s3-accelerate.amazonaws.com` endpoint) and helps most with larger objects. When ShopViet opens a portal where studios on several continents both upload and download raw videos of up to 10 GB, enabling Transfer Acceleration on the bucket improves both directions; adding CloudFront is not required. AWS suggests considering CloudFront's PUT/POST when objects or the data set are smaller than 1 GB; for larger files, Transfer Acceleration gives higher throughput. CloudFront fits when the same content is viewed repeatedly by many people (images, promotional videos), because edge locations cache that content.
 
-<Takeaway>Large files: multipart upload (required for objects over 5 GB). Distant uploaders: Transfer Acceleration (goes through CloudFront edge locations; can incur additional data transfer charges). Too many requests: spread keys across many prefixes. Only part of a file is needed: byte-range fetch (a `Range` header on a GET request). Cost: data transfer in from the internet to S3 is free; the Transfer Acceleration charge is in addition to data transfer pricing and applies only to transfers that are accelerated. S3 Select (SQL queries on the content of one CSV, JSON or Parquet object) is no longer available to new customers.</Takeaway>
+<Takeaway>Large files: multipart upload (required for objects over 5 GB). Large files (about 1 GB and up) moved over long distances to or from one bucket: Transfer Acceleration, which speeds up both uploads and downloads (goes through CloudFront edge locations; can incur additional data transfer charges); files under 1 GB: consider CloudFront PUT/POST. Too many requests: spread keys across many prefixes. Only part of a file is needed: byte-range fetch (a `Range` header on a GET request). Cost: data transfer in from the internet to S3 is free; the Transfer Acceleration charge is in addition to data transfer pricing and applies only to transfers that are accelerated. S3 Select (SQL queries on the content of one CSV, JSON or Parquet object) is no longer available to new customers.</Takeaway>
 
 </Scene>
 
@@ -317,6 +331,10 @@ Check question: as the designer of the ShopViet system, which option fits?
     opts: ["1 year from creation, because the bucket default takes precedence", "Until the Retain Until Date 3 years away", "The request is rejected because it conflicts with the default retention"],
     a: 1,
     why: "Retention settings specified in the request override the bucket default retention. The default retention is only a duration applied to versions that carry no settings of their own." },
+  { q: "The compliance team attaches a Vault Lock policy that forbids deleting archives younger than 10 years to an existing Amazon Glacier vault and receives a lock ID. It calls the complete-lock operation three days later. What happens?",
+    opts: ["The vault was locked permanently as soon as the policy was attached", "The lock ID expired after 24 hours and the policy was deleted; the lock must be started again", "The lock completes normally because lock IDs do not expire"],
+    a: 1,
+    why: "Attaching a Vault Lock policy only puts the lock in the in-progress state. It must be completed with the lock ID within 24 hours; otherwise the policy is deleted. Only after completion can the policy no longer be changed or deleted." },
   { q: "An application lets customers upload photos to S3 through CloudFront on a custom domain over HTTPS. Which origin fits?",
     opts: ["The bucket's website endpoint", "The bucket's REST endpoint, with origin access control (OAC)", "The website endpoint, with OAC"],
     a: 1,
