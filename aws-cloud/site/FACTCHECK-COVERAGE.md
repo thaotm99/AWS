@@ -291,3 +291,17 @@ Checked 2026-10-22 against the pages below (keyword → claim → URL).
 | SSM Parameter Store | IAM database authentication: authentication token instead of a password, lifetime 15 minutes (s6 "instead") | https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.html |
 | Systems Manager Session Manager | No open inbound ports, no bastion hosts, no SSH keys; access through IAM policies; session activity logged via CloudTrail, S3, CloudWatch Logs; works on managed nodes running SSM Agent (s6) | https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html |
 | Systems Manager Session Manager | EC2 Instance Connect pushes an SSH public key to instance metadata for 60 seconds; requests logged to CloudTrail; no additional cost (s6 "instead") | https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/connect-linux-inst-eic.html |
+
+## security
+
+Checked 2026-10-22 against the pages below (keyword → claim → URL).
+
+| Keyword | Claim written | Source |
+|---|---|---|
+| AWS Security Hub | Security Hub is a unified cloud security solution that prioritizes critical issues by correlating signals from posture management, Amazon Inspector, Amazon Macie and Amazon GuardDuty, with automated response workflows (s3, quiz) | https://docs.aws.amazon.com/securityhub/latest/userguide/what-is-securityhub-v2.html |
+| AWS Security Hub | Security Hub CSPM runs checks against standards (AWS Foundational Security Best Practices, CIS, PCI DSS, NIST), generates control findings, receives findings from GuardDuty, Inspector, Macie and third-party products (s3, quiz). Not in the request path, so it does not block requests (inferred from the description: it collects and analyzes findings) | https://docs.aws.amazon.com/securityhub/latest/userguide/what-is-securityhub.html |
+| AWS WAF is HTTP(S) only (not SFTP) | AWS WAF monitors HTTP and HTTPS requests forwarded to protected resources: CloudFront, API Gateway REST API, ALB, AppSync, Cognito user pool, App Runner, Verified Access, Amplify (Transfer Family is not in the list) (s1 Takeaway, s3) | https://docs.aws.amazon.com/waf/latest/developerguide/what-is-aws-waf.html |
+| AWS WAF is HTTP(S) only (not SFTP) | Transfer Family VPC hosted endpoint can be Internet Facing with an Elastic IP per subnet; VPC security groups restrict access to allowed source addresses; SSH inbound on port 22 (default), 2222 or 22000 (s3, quiz) | https://docs.aws.amazon.com/transfer/latest/userguide/create-server-in-vpc.html |
+| AWS WAF is HTTP(S) only (not SFTP) | Security group rules specify source, port range and protocol | https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html |
+| AWS Firewall Manager (s3 row) | Sets up protections once (WAF, Shield Advanced, security groups, network ACLs, Network Firewall, Route 53 Resolver DNS Firewall) and applies them across accounts and resources, including new ones | https://docs.aws.amazon.com/waf/latest/developerguide/fms-chapter.html |
+| Amazon Route 53 (s3 row) | Highly available DNS service: domain registration, DNS routing, health checking | https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/Welcome.html |

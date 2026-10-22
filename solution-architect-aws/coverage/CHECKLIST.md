@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 920 (96%) · 🟡 20 (2%) · ❌ 20 (2%).
+Có **960 keyword** khác nhau: ✅ 922 (96%) · 🟡 19 (2%) · ❌ 19 (2%).
 
 ### Theo bài học
 
@@ -26,7 +26,7 @@ Có **960 keyword** khác nhau: ✅ 920 (96%) · 🟡 20 (2%) · ❌ 20 (2%).
 | [cloudfront](#cloudfront) | 31 | 31 | 0 | 0 | 100% |
 | [iam](#iam) | 49 | 49 | 0 | 0 | 100% |
 | [kms](#kms) | 21 | 21 | 0 | 0 | 100% |
-| [security](#security) | 27 | 25 | 1 | 1 | 93% |
+| [security](#security) | 27 | 27 | 0 | 0 | 100% |
 | [cognito](#cognito) | 15 | 13 | 1 | 1 | 87% |
 | [ec2](#ec2) | 57 | 57 | 0 | 0 | 100% |
 | [elb](#elb) | 42 | 42 | 0 | 0 | 100% |
@@ -54,7 +54,7 @@ Có **960 keyword** khác nhau: ✅ 920 (96%) · 🟡 20 (2%) · ❌ 20 (2%).
 | Đề 2 | 191 | 2 | 5 |
 | Đề 3 | 215 | 4 | 3 |
 | Đề 4 | 229 | 4 | 3 |
-| Đề 5 | 211 | 7 | 3 |
+| Đề 5 | 213 | 6 | 2 |
 | Đề 6 | 207 | 0 | 3 |
 
 ## global-infra
@@ -349,8 +349,6 @@ Có **960 keyword** khác nhau: ✅ 920 (96%) · 🟡 20 (2%) · ❌ 20 (2%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | AWS Security Hub | ❌ Thiếu | 1 | exam5_q13 |  |
-| [ ] | AWS WAF is HTTP(S) only (not SFTP) | 🟡 Một phần | 1 | exam5_q62 | security.mdx#s1 / WafSim |
 | [ ] | AWS Shield Advanced | ✅ Đã có | 4 | exam3_q58, exam6_q4, exam6_q14, exam6_q60 | security.mdx#s2 / IncidentSim |
 | [ ] | Amazon GuardDuty | ✅ Đã có | 3 | exam1_q12, exam3_q1, exam6_q4 | security.mdx#s2<br>security.mdx#s2 / IncidentSim |
 | [ ] | Amazon Inspector | ✅ Đã có | 3 | exam3_q58, exam5_q17, exam6_q4 | security.mdx#s2 / IncidentSim |
@@ -364,6 +362,7 @@ Có **960 keyword** khác nhau: ✅ 920 (96%) · 🟡 20 (2%) · ❌ 20 (2%).
 | [ ] | Amazon GuardDuty (S3 malicious activity detection) | ✅ Đã có | 1 | exam1_q36 | security.mdx#s2 |
 | [ ] | Amazon Inspector (EC2 vulnerability scanning) | ✅ Đã có | 1 | exam1_q36 | security.mdx#s2 |
 | [ ] | Amazon Security Lake | ✅ Đã có | 1 | exam2_q44 | security.mdx#s2 / IncidentSim |
+| [ ] | AWS Security Hub | ✅ Đã có | 1 | exam5_q13 | security.mdx#s3 / QuickCompare |
 | [ ] | AWS Shield Response Team (SRT/DRT) | ✅ Đã có | 1 | exam3_q58 | security.mdx#s2 / IncidentSim |
 | [ ] | AWS Shield Standard | ✅ Đã có | 1 | exam6_q5 | security.mdx#s2 / IncidentSim |
 | [ ] | AWS WAF (SQL injection / XSS managed rules) | ✅ Đã có | 1 | exam5_q13 | security.mdx#s1 / WafSim |
@@ -372,6 +371,7 @@ Có **960 keyword** khác nhau: ✅ 920 (96%) · 🟡 20 (2%) · ❌ 20 (2%).
 | [ ] | AWS WAF IP set (IP match) | ✅ Đã có | 1 | exam2_q30 | security.mdx#s1 / WafSim; cloudfront.mdx#s1 |
 | [ ] | AWS WAF IP set on CloudFront | ✅ Đã có | 1 | exam3_q60 | cloudfront.mdx#s1 / ScenarioFlow; security.mdx#s1 / WafSim |
 | [ ] | AWS WAF IP set statement | ✅ Đã có | 1 | exam5_q45 | security.mdx#s1 / WafSim |
+| [ ] | AWS WAF is HTTP(S) only (not SFTP) | ✅ Đã có | 1 | exam5_q62 | security.mdx#s1 / Takeaway; security.mdx#s3 / QuickCompare |
 | [ ] | AWS WAF on Application Load Balancer | ✅ Đã có | 1 | exam1_q6 | security.mdx#s1 / WafSim |
 | [ ] | AWS WAF rate-based rule | ✅ Đã có | 1 | exam6_q60 | security.mdx#s1 / WafSim |
 | [ ] | AWS WAF supported resources (CloudFront, ALB, API Gateway; not EC2) | ✅ Đã có | 1 | exam5_q57 | security.mdx#s1 / WafSim |

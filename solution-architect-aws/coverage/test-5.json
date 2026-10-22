@@ -440,8 +440,8 @@
         {
           "keyword": "AWS Security Hub",
           "lesson": "security",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "security.mdx#s3 / QuickCompare"
         }
       ]
     },
@@ -1909,8 +1909,8 @@
         {
           "keyword": "AWS WAF is HTTP(S) only (not SFTP)",
           "lesson": "security",
-          "status": "partial",
-          "where": "security.mdx#s1 / WafSim"
+          "status": "covered",
+          "where": "security.mdx#s1 / Takeaway; security.mdx#s3 / QuickCompare"
         }
       ]
     },
