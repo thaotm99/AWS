@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 934 (97%) · 🟡 15 (2%) · ❌ 11 (1%).
+Có **960 keyword** khác nhau: ✅ 937 (98%) · 🟡 12 (1%) · ❌ 11 (1%).
 
 ### Theo bài học
 
@@ -39,7 +39,7 @@ Có **960 keyword** khác nhau: ✅ 934 (97%) · 🟡 15 (2%) · ❌ 11 (1%).
 | [rds](#rds) | 58 | 58 | 0 | 0 | 100% |
 | [dynamodb](#dynamodb) | 23 | 22 | 0 | 1 | 96% |
 | [analytics](#analytics) | 47 | 37 | 5 | 5 | 79% |
-| [messaging](#messaging) | 50 | 47 | 3 | 0 | 94% |
+| [messaging](#messaging) | 50 | 50 | 0 | 0 | 100% |
 | [kinesis](#kinesis) | 26 | 25 | 1 | 0 | 96% |
 | [monitoring](#monitoring) | 33 | 33 | 0 | 0 | 100% |
 | [iac](#iac) | 9 | 9 | 0 | 0 | 100% |
@@ -50,9 +50,9 @@ Có **960 keyword** khác nhau: ✅ 934 (97%) · 🟡 15 (2%) · ❌ 11 (1%).
 
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
-| Đề 1 | 219 | 3 | 2 |
+| Đề 1 | 220 | 2 | 2 |
 | Đề 2 | 196 | 1 | 1 |
-| Đề 3 | 217 | 3 | 2 |
+| Đề 3 | 219 | 1 | 2 |
 | Đề 4 | 230 | 3 | 3 |
 | Đề 5 | 214 | 5 | 2 |
 | Đề 6 | 209 | 0 | 1 |
@@ -960,9 +960,6 @@ Có **960 keyword** khác nhau: ✅ 934 (97%) · 🟡 15 (2%) · ❌ 11 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | Amazon SNS (no retry for streaming ingestion) | 🟡 Một phần | 1 | exam3_q46 | messaging.mdx#s4 |
-| [ ] | EventBridge at-least-once delivery | 🟡 Một phần | 1 | exam1_q13 | messaging.mdx#s4 |
-| [ ] | SQS delay queue / message timer | 🟡 Một phần | 1 | exam3_q34 | messaging.mdx#s2 / MessageLifeSim |
 | [ ] | Amazon SNS | ✅ Đã có | 4 | exam3_q10, exam4_q35, exam4_q46, exam6_q61 | messaging.mdx#s4 / EventRouterSim<br>messaging.mdx#s4 |
 | [ ] | AWS Step Functions | ✅ Đã có | 3 | exam1_q15, exam2_q27, exam6_q55 | messaging.mdx#s4<br>messaging.mdx#s4 / EventRouterSim |
 | [ ] | SQS dead-letter queue | ✅ Đã có | 3 | exam5_q44, exam6_q16, exam6_q37 | messaging.mdx#s2 / MessageLifeSim<br>messaging.mdx#s2 |
@@ -976,6 +973,7 @@ Có **960 keyword** khác nhau: ✅ 934 (97%) · 🟡 15 (2%) · ❌ 11 (1%).
 | [ ] | Amazon MQ (AMQP broker) | ✅ Đã có | 1 | exam2_q1 | messaging.mdx#s4 / EventRouterSim; containers.mdx#s2 |
 | [ ] | Amazon MQ (MQTT) | ✅ Đã có | 1 | exam4_q51 | messaging.mdx#s4 / EventRouterSim |
 | [ ] | Amazon MQ (RabbitMQ/ActiveMQ migration) | ✅ Đã có | 1 | exam6_q61 | messaging.mdx#s4 / EventRouterSim |
+| [ ] | Amazon SNS (no retry for streaming ingestion) | ✅ Đã có | 1 | exam3_q46 | messaging.mdx#s5 / QuickCompare |
 | [ ] | Amazon SNS (push, no polling) | ✅ Đã có | 1 | exam2_q47 | messaging.mdx#s4 |
 | [ ] | Amazon SNS (push, pub/sub) | ✅ Đã có | 1 | exam3_q39 | messaging.mdx#s4 / EventRouterSim |
 | [ ] | Amazon SNS invoking Lambda | ✅ Đã có | 1 | exam1_q50 | messaging.mdx#s4 |
@@ -985,12 +983,14 @@ Có **960 keyword** khác nhau: ✅ 934 (97%) · 🟡 15 (2%) · ❌ 11 (1%).
 | [ ] | API Gateway to SQS integration | ✅ Đã có | 1 | exam5_q32 | messaging.mdx#s1; lambda.mdx#s3 / ApiGatewaySim |
 | [ ] | AWS Step Functions with ECS Fargate task | ✅ Đã có | 1 | exam2_q14 | messaging.mdx#s4 / EventRouterSim |
 | [ ] | EventBridge (S3 events) | ✅ Đã có | 1 | exam4_q27 | messaging.mdx#s4 |
+| [ ] | EventBridge at-least-once delivery | ✅ Đã có | 1 | exam1_q13 | messaging.mdx#s3 / messaging.mdx#s5 / QuickCompare |
 | [ ] | EventBridge partner event source (SaaS) | ✅ Đã có | 1 | exam4_q35 | messaging.mdx#s4 / EventRouterSim |
 | [ ] | EventBridge scheduled rule | ✅ Đã có | 1 | exam6_q52 | messaging.mdx#s4 / EventRouterSim |
 | [ ] | S3 Event Notification | ✅ Đã có | 1 | exam4_q27 | messaging.mdx#s1 |
 | [ ] | S3 Event Notification to SQS | ✅ Đã có | 1 | exam2_q14 | messaging.mdx#s1 / RequirementPicker; lambda.mdx#s1 |
 | [ ] | SQS (retry via visibility timeout) | ✅ Đã có | 1 | exam4_q46 | messaging.mdx#s2 |
 | [ ] | SQS decoupling between tiers | ✅ Đã có | 1 | exam5_q26 | messaging.mdx#s1 / QueueBufferSim |
+| [ ] | SQS delay queue / message timer | ✅ Đã có | 1 | exam3_q34 | messaging.mdx#s2 / MessageLifeSim; messaging.mdx#s5 / QuickCompare |
 | [ ] | SQS FIFO ordering | ✅ Đã có | 1 | exam1_q34 | messaging.mdx#s3 / FifoSim |
 | [ ] | SQS FIFO queue (exactly-once) | ✅ Đã có | 1 | exam1_q13 | messaging.mdx#s3 / FifoSim |
 | [ ] | SQS FIFO queue message group ID | ✅ Đã có | 1 | exam2_q42 | messaging.mdx#s3 / FifoSim |

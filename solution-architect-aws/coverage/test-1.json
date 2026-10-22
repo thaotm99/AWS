@@ -454,8 +454,8 @@
         {
           "keyword": "EventBridge at-least-once delivery",
           "lesson": "messaging",
-          "status": "partial",
-          "where": "messaging.mdx#s4"
+          "status": "covered",
+          "where": "messaging.mdx#s3 / messaging.mdx#s5 / QuickCompare"
         }
       ]
     },
