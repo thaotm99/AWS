@@ -14,36 +14,36 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **978 keyword** khác nhau: ✅ 961 (98%) · 🟡 7 (1%) · ❌ 10 (1%).
+Có **983 keyword** khác nhau: ✅ 959 (98%) · 🟡 13 (1%) · ❌ 11 (1%).
 
 ### Theo bài học
 
 | Bài học | Keyword | ✅ Đã có | 🟡 Một phần | ❌ Thiếu | Tỷ lệ đã có |
 |---|---:|---:|---:|---:|---:|
-| [global-infra](#global-infra) | 22 | 22 | 0 | 0 | 100% |
-| [vpc](#vpc) | 107 | 107 | 0 | 0 | 100% |
+| [global-infra](#global-infra) | 23 | 22 | 0 | 1 | 96% |
+| [vpc](#vpc) | 108 | 107 | 1 | 0 | 99% |
 | [route53](#route53) | 28 | 28 | 0 | 0 | 100% |
 | [cloudfront](#cloudfront) | 32 | 31 | 0 | 1 | 97% |
 | [iam](#iam) | 49 | 49 | 0 | 0 | 100% |
 | [kms](#kms) | 21 | 21 | 0 | 0 | 100% |
-| [security](#security) | 27 | 27 | 0 | 0 | 100% |
+| [security](#security) | 27 | 26 | 1 | 0 | 96% |
 | [cognito](#cognito) | 15 | 15 | 0 | 0 | 100% |
 | [ec2](#ec2) | 58 | 57 | 0 | 1 | 98% |
 | [elb](#elb) | 43 | 42 | 0 | 1 | 98% |
 | [asg](#asg) | 47 | 44 | 2 | 1 | 94% |
 | [containers](#containers) | 23 | 23 | 0 | 0 | 100% |
 | [lambda](#lambda) | 37 | 37 | 0 | 0 | 100% |
-| [s3](#s3) | 71 | 68 | 3 | 0 | 96% |
-| [storage](#storage) | 70 | 69 | 1 | 0 | 99% |
+| [s3](#s3) | 72 | 68 | 4 | 0 | 94% |
+| [storage](#storage) | 70 | 68 | 2 | 0 | 97% |
 | [storage-migration](#storage-migration) | 35 | 34 | 0 | 1 | 97% |
-| [rds](#rds) | 61 | 58 | 0 | 3 | 95% |
-| [dynamodb](#dynamodb) | 24 | 24 | 0 | 0 | 100% |
+| [rds](#rds) | 61 | 57 | 1 | 3 | 93% |
+| [dynamodb](#dynamodb) | 25 | 25 | 0 | 0 | 100% |
 | [analytics](#analytics) | 48 | 47 | 0 | 1 | 98% |
-| [messaging](#messaging) | 50 | 50 | 0 | 0 | 100% |
+| [messaging](#messaging) | 51 | 51 | 0 | 0 | 100% |
 | [kinesis](#kinesis) | 28 | 26 | 1 | 1 | 93% |
 | [monitoring](#monitoring) | 34 | 34 | 0 | 0 | 100% |
 | [iac](#iac) | 9 | 9 | 0 | 0 | 100% |
-| [backup-dr](#backup-dr) | 13 | 13 | 0 | 0 | 100% |
+| [backup-dr](#backup-dr) | 13 | 12 | 1 | 0 | 92% |
 | [others](#others) | 26 | 26 | 0 | 0 | 100% |
 
 ### Theo đề (số lượt keyword, chưa gộp)
@@ -54,13 +54,14 @@ Có **978 keyword** khác nhau: ✅ 961 (98%) · 🟡 7 (1%) · ❌ 10 (1%).
 | Đề 2 | 198 | 1 | 5 |
 | Đề 3 | 221 | 3 | 3 |
 | Đề 4 | 235 | 1 | 1 |
-| Đề 5 | 221 | 0 | 0 |
+| Đề 5 | 219 | 6 | 1 |
 | Đề 6 | 217 | 0 | 0 |
 
 ## global-infra
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
+| [ ] | Direct Connect data transfer out priced lower than internet data transfer out | ❌ Thiếu | 1 | exam5_q2 |  |
 | [ ] | AWS Global Accelerator | ✅ Đã có | 7 | exam1_q18, exam2_q32, exam3_q8, exam4_q18, exam5_q4, exam6_q5, exam6_q47 | global-infra.mdx#s5<br>global-infra.mdx#s5 / GlobalAcceleratorSim |
 | [ ] | AMI copy across Regions (creates snapshot) | ✅ Đã có | 1 | exam1_q41 | global-infra.mdx#s1 / AmiCopySim / challenge |
 | [ ] | AMI Region scope | ✅ Đã có | 1 | exam4_q5 | global-infra.mdx#s1; backup-dr.mdx#s1 |
@@ -88,6 +89,7 @@ Có **978 keyword** khác nhau: ✅ 961 (98%) · 🟡 7 (1%) · ❌ 10 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
+| [ ] | AWS PrivateLink unidirectional (consumer-initiated connections only) | 🟡 Một phần | 1 | exam5_q9 | vpc.mdx#s4 RequirementPicker (only 'one service exposed'; not that the provider cannot initiate connections to the consumer) |
 | [ ] | AWS Direct Connect | ✅ Đã có | 10 | exam1_q18, exam1_q27, exam2_q59, exam3_q31, exam4_q14, exam4_q45, exam4_q48, exam5_q2, exam5_q4, exam6_q5 | vpc.mdx#s6<br>vpc.mdx#s6 / HybridLinkSim |
 | [ ] | AWS Site-to-Site VPN | ✅ Đã có | 8 | exam1_q18, exam1_q37, exam3_q7, exam3_q16, exam4_q36, exam5_q9, exam5_q41, exam6_q25 | vpc.mdx#s6<br>vpc.mdx#s6 / HybridLinkSim |
 | [ ] | AWS Transit Gateway | ✅ Đã có | 8 | exam1_q37, exam1_q39, exam2_q21, exam2_q36, exam3_q16, exam4_q28, exam5_q14, exam6_q12 | vpc.mdx#s5<br>vpc.mdx#s5 / VpcConnectSim |
@@ -350,6 +352,7 @@ Có **978 keyword** khác nhau: ✅ 961 (98%) · 🟡 7 (1%) · ❌ 10 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
+| [ ] | AWS WAF IP set statement | 🟡 Một phần | 1 | exam5_q45 | security.mdx#s1 / WafSim (IP set only as a block list; allow-list exception ahead of a geo-match block rule / rule priority not taught) |
 | [ ] | AWS Shield Advanced | ✅ Đã có | 4 | exam3_q58, exam6_q4, exam6_q14, exam6_q60 | security.mdx#s2 / IncidentSim |
 | [ ] | Amazon GuardDuty | ✅ Đã có | 3 | exam1_q12, exam3_q1, exam6_q4 | security.mdx#s2<br>security.mdx#s2 / IncidentSim |
 | [ ] | Amazon Inspector | ✅ Đã có | 3 | exam3_q58, exam5_q17, exam6_q4 | security.mdx#s2 / IncidentSim |
@@ -371,7 +374,6 @@ Có **978 keyword** khác nhau: ✅ 961 (98%) · 🟡 7 (1%) · ❌ 10 (1%).
 | [ ] | AWS WAF geo match statement | ✅ Đã có | 1 | exam5_q45 | security.mdx#s1 / WafSim |
 | [ ] | AWS WAF IP set (IP match) | ✅ Đã có | 1 | exam2_q30 | security.mdx#s1 / WafSim; cloudfront.mdx#s1 |
 | [ ] | AWS WAF IP set on CloudFront | ✅ Đã có | 1 | exam3_q60 | cloudfront.mdx#s1 / ScenarioFlow; security.mdx#s1 / WafSim |
-| [ ] | AWS WAF IP set statement | ✅ Đã có | 1 | exam5_q45 | security.mdx#s1 / WafSim |
 | [ ] | AWS WAF is HTTP(S) only (not SFTP) | ✅ Đã có | 1 | exam5_q62 | security.mdx#s1 / Takeaway; security.mdx#s3 / QuickCompare |
 | [ ] | AWS WAF on Application Load Balancer | ✅ Đã có | 1 | exam1_q6 | security.mdx#s1 / WafSim |
 | [ ] | AWS WAF rate-based rule | ✅ Đã có | 1 | exam6_q60 | security.mdx#s1 / WafSim |
@@ -408,7 +410,7 @@ Có **978 keyword** khác nhau: ✅ 961 (98%) · 🟡 7 (1%) · ❌ 10 (1%).
 | [ ] | EC2 Dedicated Instance | ✅ Đã có | 5 | exam2_q23, exam3_q21, exam4_q60, exam6_q21, exam6_q33 | ec2.mdx#s1 / Ec2CostSim<br>ec2.mdx#s1; ec2.mdx#challenge |
 | [ ] | EC2 Dedicated Host | ✅ Đã có | 4 | exam2_q23, exam3_q21, exam4_q49, exam6_q21 | ec2.mdx#s1 / Ec2CostSim<br>ec2.mdx#s1 |
 | [ ] | EC2 cluster placement group | ✅ Đã có | 3 | exam1_q23, exam4_q20, exam4_q60 | ec2.mdx#s3 / Ec2NetSim |
-| [ ] | EC2 instance store | ✅ Đã có | 3 | exam1_q43, exam5_q43, exam6_q15 | ec2.mdx#s4 / Ec2OpsSim / challenge<br>ec2.mdx#s4 / Ec2OpsSim |
+| [ ] | EC2 instance store | ✅ Đã có | 3 | exam1_q43, exam5_q43, exam6_q15 | ec2.mdx#s4 / Ec2OpsSim / challenge<br>ec2.mdx#s6; ec2.mdx#s4 / Ec2OpsSim |
 | [ ] | EC2 user data | ✅ Đã có | 3 | exam2_q51, exam4_q1, exam4_q5 | ec2.mdx#s2 |
 | [ ] | Elastic IP address | ✅ Đã có | 3 | exam1_q2, exam4_q26, exam4_q38 | ec2.mdx#s6 / Ec2LifecycleSim<br>ec2.mdx#s6 |
 | [ ] | Amazon Machine Image (AMI) | ✅ Đã có | 2 | exam5_q36, exam6_q27 | ec2.mdx#s2<br>ec2.mdx#s2 / StepSim |
@@ -542,7 +544,7 @@ Có **978 keyword** khác nhau: ✅ 961 (98%) · 🟡 7 (1%) · ❌ 10 (1%).
 | [ ] | Auto Scaling group AZ distribution and balancing | ✅ Đã có | 1 | exam5_q61 | asg.mdx#s2 / AzCapacityCalc; asg.mdx#s3 |
 | [ ] | Auto Scaling group behind ALB | ✅ Đã có | 1 | exam2_q53 | global-infra.mdx#s3; asg.mdx#s1 |
 | [ ] | Auto Scaling group cannot span Regions | ✅ Đã có | 1 | exam5_q61 | asg.mdx#setup / GroupSetupSim |
-| [ ] | Auto Scaling group health check type (EC2 vs ELB) | ✅ Đã có | 1 | exam5_q1 | asg.mdx#s4 / elb.mdx#s4 HealthCheckSim |
+| [ ] | Auto Scaling group health check type (EC2 vs ELB) | ✅ Đã có | 1 | exam5_q1 | asg.mdx#health / HealthReplaceSim; asg.mdx#s4; elb.mdx#s4 |
 | [ ] | Auto Scaling group min=max=1 (single-AZ instance) | ✅ Đã có | 1 | exam6_q27 | ec2.mdx#s4 / Ec2OpsSim |
 | [ ] | Auto Scaling group min=max=desired=1 across 2 AZs | ✅ Đã có | 1 | exam6_q57 | ec2.mdx#s4 / Ec2OpsSim |
 | [ ] | Auto Scaling group minimum/maximum/desired capacity | ✅ Đã có | 1 | exam5_q61 | asg.mdx#s2 / AzCapacityCalc |
@@ -635,6 +637,7 @@ Có **978 keyword** khác nhau: ✅ 961 (98%) · 🟡 7 (1%) · ❌ 10 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
+| [ ] | S3 Access Points | 🟡 Một phần ⚠ | 2 | exam1_q9, exam5_q24 | s3.mdx#s3<br>s3.mdx#s3 (per-prefix access only; does not say an access point keeps the same network path / public endpoint) |
 | [ ] | CloudFront vs S3 Transfer Acceleration for large uploads | 🟡 Một phần | 1 | exam3_q37 | global-infra.mdx#s4; global-infra.mdx#s5 / EdgeChoiceSim; s3.mdx#s5 / UploadSim |
 | [ ] | Glacier Vault Lock | 🟡 Một phần | 1 | exam4_q64 | s3.mdx#s7 / QuickCompare (ACL row, name only) |
 | [ ] | S3 Lifecycle minimum 30 days before transition to IA | 🟡 Một phần | 1 | exam1_q8 | s3.mdx#s1 / LifecycleValidator (teaches only the 30-day minimum storage charge in IA; validator accepts Standard→IA after 7 days; neither the old 30-day transition rule nor its July 2026 removal is mentioned) |
@@ -649,7 +652,6 @@ Có **978 keyword** khác nhau: ✅ 961 (98%) · 🟡 7 (1%) · ❌ 10 (1%).
 | [ ] | S3 Cross-Region Replication | ✅ Đã có | 3 | exam1_q62, exam2_q46, exam6_q58 | s3.mdx#s7 / analytics.mdx#s4<br>analytics.mdx#s4; s3.mdx#s7 / QuickCompare; kms.mdx#s4 / QuickCompare |
 | [ ] | S3 multipart upload | ✅ Đã có | 3 | exam1_q18, exam1_q64, exam4_q14 | s3.mdx#s5 / UploadSim |
 | [ ] | Amazon S3 static website hosting | ✅ Đã có | 2 | exam2_q2, exam4_q53 | s3.mdx#s6 / WebsiteEndpointSim; cloudfront.mdx#s2 / RequirementPicker<br>s3.mdx#s6 / WebsiteEndpointSim |
-| [ ] | S3 Access Points | ✅ Đã có | 2 | exam1_q9, exam5_q24 | s3.mdx#s3 |
 | [ ] | S3 Glacier Flexible Retrieval | ✅ Đã có | 2 | exam4_q64, exam6_q28 | s3.mdx#s1<br>s3.mdx#s1 / LifecycleValidator |
 | [ ] | S3 Object Lock (compliance mode) | ✅ Đã có | 2 | exam4_q64, exam5_q50 | s3.mdx#s2<br>s3.mdx#s2 / DeleteGuardSim |
 | [ ] | S3 Object Lock (governance mode) | ✅ Đã có | 2 | exam4_q64, exam5_q50 | s3.mdx#s2<br>s3.mdx#s2 / DeleteGuardSim |
@@ -684,6 +686,7 @@ Có **978 keyword** khác nhau: ✅ 961 (98%) · 🟡 7 (1%) · ❌ 10 (1%).
 | [ ] | S3 Object Lock bucket default retention (duration, overridden by explicit setting) | ✅ Đã có | 1 | exam1_q56 | s3.mdx#s2 / RetentionSim |
 | [ ] | S3 Object Lock retention modes (governance, compliance) | ✅ Đã có | 1 | exam1_q56 | s3.mdx#s2 / DeleteGuardSim / challenge |
 | [ ] | S3 Object Lock retention period (Retain Until Date per object version) | ✅ Đã có | 1 | exam1_q56 | s3.mdx#s2 / DeleteGuardSim |
+| [ ] | S3 Object Ownership | ✅ Đã có | 1 | exam5_q15 | s3.mdx#s3; cloudfront.mdx#s6 QuickCompare |
 | [ ] | S3 Object Ownership (object writer vs bucket owner enforced) | ✅ Đã có | 1 | exam2_q15 | s3.mdx#s3 / RequirementPicker; analytics.mdx#s3 / DataJobSim |
 | [ ] | S3 on Outposts | ✅ Đã có | 1 | exam5_q49 | s3.mdx#s7 / QuickCompare |
 | [ ] | S3 request rate per prefix (3,500 PUT / 5,500 GET) | ✅ Đã có | 1 | exam1_q51 | s3.mdx#s5 / challenge |
@@ -711,8 +714,8 @@ Có **978 keyword** khác nhau: ✅ 961 (98%) · 🟡 7 (1%) · ❌ 10 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
+| [ ] | Amazon FSx for Lustre | 🟡 Một phần ⚠ | 6 | exam1_q65, exam2_q56, exam3_q5, exam3_q43, exam5_q28, exam5_q47 | storage.mdx#s4 / FsxSim<br>storage.mdx#s4 / FsxSim (taught as HPC; never says FSx for Lustre is single-AZ, which rules it out here) |
 | [ ] | Amazon S3 cannot be mounted as a file system | 🟡 Một phần | 1 | exam3_q32 | storage.mdx#s1; storage.mdx#s5 / MountpointSim |
-| [ ] | Amazon FSx for Lustre | ✅ Đã có | 6 | exam1_q65, exam2_q56, exam3_q5, exam3_q43, exam5_q28, exam5_q47 | storage.mdx#s4 / FsxSim |
 | [ ] | Amazon EFS | ✅ Đã có | 3 | exam1_q43, exam1_q51, exam2_q56 | storage.mdx#s1<br>storage.mdx#s1, #s3 |
 | [ ] | Amazon FSx for Windows File Server | ✅ Đã có | 3 | exam1_q24, exam3_q5, exam4_q37 | storage.mdx#s4 / FsxSim<br>storage.mdx#s4 |
 | [ ] | EBS Provisioned IOPS SSD (io1/io2) | ✅ Đã có | 3 | exam1_q43, exam3_q27, exam5_q22 | storage.mdx#s2 / VolumeChooser |
@@ -829,6 +832,7 @@ Có **978 keyword** khác nhau: ✅ 961 (98%) · 🟡 7 (1%) · ❌ 10 (1%).
 | [ ] | Aurora multi-master cluster (single Region) | ❌ Thiếu | 1 | exam2_q61 |  |
 | [ ] | RDS DB snapshot storage (not accessible as objects in a customer S3 bucket) | ❌ Thiếu | 1 | exam2_q57 |  |
 | [ ] | RDS magnetic storage (previous generation, backward compatibility only) | ❌ Thiếu | 1 | exam3_q41 |  |
+| [ ] | Aurora failover (replica promotion, no standby instance) | 🟡 Một phần | 1 | exam5_q3 | rds.mdx#s3 / AuroraSim (replica promotion shown; never says Aurora has no separate standby instance) |
 | [ ] | RDS Multi-AZ standby (not readable) | ✅ Đã có | 6 | exam2_q13, exam3_q41, exam4_q13, exam4_q50, exam6_q19, exam6_q46 | rds.mdx#s1 / MultiAzSim<br>rds.mdx#s1 |
 | [ ] | Aurora Global Database | ✅ Đã có | 4 | exam1_q7, exam1_q47, exam2_q5, exam4_q12 | rds.mdx#s3<br>rds.mdx#s3 / AuroraSim |
 | [ ] | Aurora Serverless v2 | ✅ Đã có | 4 | exam2_q53, exam4_q2, exam4_q12, exam6_q17 | rds.mdx#s3 / RequirementPicker<br>rds.mdx#s3 |
@@ -851,7 +855,6 @@ Có **978 keyword** khác nhau: ✅ 961 (98%) · 🟡 7 (1%) · ❌ 10 (1%).
 | [ ] | Aurora cross-Region read replica (manual promotion) | ✅ Đã có | 1 | exam6_q23 | backup-dr.mdx#s2 |
 | [ ] | Aurora cross-Region read replica (read-only) | ✅ Đã có | 1 | exam1_q55 | rds.mdx#s3 |
 | [ ] | Aurora database cloning (Aurora only) | ✅ Đã có | 1 | exam5_q42 | rds.mdx#s6 / QuickCompare |
-| [ ] | Aurora failover (replica promotion, no standby instance) | ✅ Đã có | 1 | exam5_q3 | rds.mdx#s3 / AuroraSim |
 | [ ] | Aurora Global Database (managed failover) | ✅ Đã có | 1 | exam6_q23 | backup-dr.mdx#s2 / DataFailoverSim; rds.mdx#s3 |
 | [ ] | Aurora Global Database (RPO seconds, RTO minute) | ✅ Đã có | 1 | exam2_q61 | rds.mdx#s3 / AuroraSim; backup-dr.mdx |
 | [ ] | Aurora Global Database (single writer Region) | ✅ Đã có | 1 | exam5_q59 | rds.mdx#s3 / AuroraSim; dynamodb.mdx#s5 / MultiRegionSim |
@@ -901,7 +904,8 @@ Có **978 keyword** khác nhau: ✅ 961 (98%) · 🟡 7 (1%) · ❌ 10 (1%).
 | [ ] | DynamoDB provisioned capacity with auto scaling | ✅ Đã có | 2 | exam4_q62, exam5_q27 | dynamodb.mdx#s2<br>dynamodb.mdx#s2 / CapacitySim |
 | [ ] | DynamoDB Streams | ✅ Đã có | 2 | exam4_q54, exam5_q35 | dynamodb.mdx#s3<br>dynamodb.mdx#s3 / DataFlowSim |
 | [ ] | Amazon DynamoDB | ✅ Đã có | 1 | exam1_q60 | dynamodb.mdx#s1 |
-| [ ] | DynamoDB (not in-memory cache) | ✅ Đã có | 1 | exam5_q37 | dynamodb.mdx#s1 |
+| [ ] | DynamoDB (no full-text search) | ✅ Đã có | 1 | exam5_q6 | analytics.mdx#s3 / DataJobSim; kinesis.mdx#s3 / StreamPipelineSim |
+| [ ] | DynamoDB (not in-memory cache) | ✅ Đã có | 1 | exam5_q37 | dynamodb.mdx#s2 |
 | [ ] | DynamoDB (serverless key-value, single-digit ms) | ✅ Đã có | 1 | exam4_q10 | dynamodb.mdx#s1 |
 | [ ] | DynamoDB auto scaling / on-demand capacity | ✅ Đã có | 1 | exam1_q33 | dynamodb.mdx#s2 |
 | [ ] | DynamoDB deletion protection | ✅ Đã có | 1 | exam4_q42 | dynamodb.mdx#s4 |
@@ -1011,6 +1015,7 @@ Có **978 keyword** khác nhau: ✅ 961 (98%) · 🟡 7 (1%) · ❌ 10 (1%).
 | [ ] | SQS FIFO queue name suffix (.fifo) | ✅ Đã có | 1 | exam3_q2 | messaging.mdx#s3 |
 | [ ] | SQS FIFO throughput (300 API calls/s, 3,000 msg/s with batching) | ✅ Đã có | 1 | exam3_q2 | messaging.mdx#s3 / FifoBatchCalc |
 | [ ] | SQS FIFO throughput (300 msg/s, 3000 with batching) | ✅ Đã có | 1 | exam1_q34 | messaging.mdx#s3 / FifoBatchCalc |
+| [ ] | SQS is poll-based (no notifications to drive scaling) | ✅ Đã có | 1 | exam5_q26 | messaging.mdx#s1 |
 | [ ] | SQS queue as buffer (decoupling) | ✅ Đã có | 1 | exam2_q47 | messaging.mdx#s1 / QueueBufferSim |
 | [ ] | SQS queue decoupling with Auto Scaling workers | ✅ Đã có | 1 | exam1_q55 | messaging.mdx#s1 |
 | [ ] | SQS queue for decoupling producers and consumers | ✅ Đã có | 1 | exam3_q39 | messaging.mdx#s1 / QueueBufferSim |
@@ -1115,12 +1120,12 @@ Có **978 keyword** khác nhau: ✅ 961 (98%) · 🟡 7 (1%) · ❌ 10 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
+| [ ] | AWS Backup Vault Lock | 🟡 Một phần | 1 | exam5_q16 | backup-dr.mdx#s3 / BackupPlanSim (never says Vault Lock only protects AWS Backup recovery points, not script/EC2-API snapshots) |
 | [ ] | ALB with Auto Scaling group (pre-provisioned standby) | ✅ Đã có | 1 | exam2_q59 | backup-dr.mdx#s1 / DrStrategySim |
 | [ ] | AMI copy across Regions | ✅ Đã có | 1 | exam4_q5 | backup-dr.mdx#s1; ec2.mdx#s2 |
 | [ ] | AWS Backup (not for fast cloning) | ✅ Đã có | 1 | exam5_q64 | backup-dr.mdx#s3 / backup-dr.mdx#s5 QuickCompare |
 | [ ] | AWS Backup (restore is not HA) | ✅ Đã có | 1 | exam6_q27 | backup-dr.mdx#s3 |
 | [ ] | AWS Backup cross-Region copy (RPO) | ✅ Đã có | 1 | exam5_q47 | backup-dr.mdx#s3 / BackupPlanSim |
-| [ ] | AWS Backup Vault Lock | ✅ Đã có | 1 | exam5_q16 | backup-dr.mdx#s3 / BackupPlanSim |
 | [ ] | AWS DMS continuous replication (not for DR) | ✅ Đã có | 1 | exam6_q23 | backup-dr.mdx#s2 / DataFailoverSim |
 | [ ] | AWS Elastic Disaster Recovery (CloudEndure DR) | ✅ Đã có | 1 | exam6_q48 | backup-dr.mdx#s5 / QuickCompare |
 | [ ] | DR backup and restore | ✅ Đã có | 1 | exam4_q41 | backup-dr.mdx#s1 |
