@@ -217,7 +217,7 @@ export default function CostWatchSim() {
             return <rect key={d} className={cls} x={X0 + d * bw + 2} y={top} width={bw - 4} height={y(0) - top} rx={2} />;
           })}
           <line className="cws-limit" x1={X0} x2={X0 + W} y1={y(P.limit)} y2={y(P.limit)} />
-          <text className="cws-limit-t" x={X0 + W} y={y(P.limit) - 6} textAnchor="end">{L(P.limitLabel)}</text>
+          <text className="cws-limit-t" x={X0 + W} y={y(P.limit) - 9} textAnchor="end">{L(P.limitLabel)}</text>
           {T.alertDay !== undefined && shown >= T.alertDay && (
             <line className="cws-mark alert" x1={X0 + T.alertDay * bw + bw / 2} x2={X0 + T.alertDay * bw + bw / 2} y1={Y0 - 6} y2={y(0)} />
           )}

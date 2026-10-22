@@ -1,10 +1,10 @@
 /* CloudFormation stack events (iac/StackSim) */
 .sks-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
 .sks .stage-bar .sks-play { margin-left: auto; }
-.sks-status { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+.sks-status { font-family: var(--font-mono); font-size: 0.8125rem; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
 .sks-status.ok { background: var(--ok-soft); color: var(--ok); border-color: var(--ok); }
 .sks-status.bad { background: var(--bad-soft); color: var(--bad); border-color: var(--bad); }
-.sks-template { margin: 12px 14px 0; padding: 10px 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; font-family: var(--font-mono); font-size: 0.78rem; line-height: 1.5; overflow-x: auto; color: var(--ink); }
+.sks-template { margin: 12px 14px 0; padding: 10px 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.5; overflow-x: auto; color: var(--ink); }
 .sks-line { display: inline; }
 .sks-line.key { color: var(--accent); }
 .sks-line.add { background: var(--ok-soft); color: var(--ok); }
@@ -70,4 +70,4 @@
 .bts-result.bad { background: var(--bad-soft); }
 
 /* Security group snippet read by sending traffic (iac/SgRuleSim) */
-.sgr-template { margin: 12px 0 0; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.5; overflow-x: auto; color: var(--ink); }
+.sgr-template { margin: 12px 0 0; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.5; overflow-x: auto; color: var(--ink); }

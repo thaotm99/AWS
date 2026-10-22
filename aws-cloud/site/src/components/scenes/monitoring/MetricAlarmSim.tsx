@@ -225,7 +225,7 @@ export default function MetricAlarmSim() {
           ))}
           <rect className="mas-zone" x={X0} y={Y0} width={W} height={py(sc.threshold) - Y0} />
           <line className="mas-threshold" x1={X0} x2={X0 + W} y1={py(sc.threshold)} y2={py(sc.threshold)} />
-          <text className="mas-th-label" x={X0 + W - 4} y={py(sc.threshold) - 6} textAnchor="end">{L({ vi: "ngưỡng alarm", en: "alarm threshold" })} {sc.threshold}{sc.unit}</text>
+          <text className="mas-th-label" x={X0 + W - 4} y={py(sc.threshold) - 9} textAnchor="end">{L({ vi: "ngưỡng alarm", en: "alarm threshold" })} {sc.threshold}{sc.unit}</text>
           {[0, 5, 10, 15, 20, 25].map((m) => (
             <text key={m} className="ts" x={px(m)} y={Y0 + H + 18} textAnchor="middle">{L({ vi: "phút", en: "min" })} {m}</text>
           ))}
@@ -243,10 +243,10 @@ export default function MetricAlarmSim() {
           <g className="mas-legend" transform={`translate(${X0} 240)`}>
             <line className="mas-raw" x1={0} x2={20} y1={-4} y2={-4} />
             <text className="ts" x={26} y={0}>{L({ vi: "giá trị thực tế", en: "actual value" })}</text>
-            <circle className="mas-pt" cx={130} cy={-4} r={4.5} />
-            <text className="ts" x={140} y={0}>{L({ vi: "datapoint CloudWatch nhận được", en: "CloudWatch datapoints" })}</text>
-            <line className="mas-threshold" x1={330} x2={350} y1={-4} y2={-4} />
-            <text className="ts" x={356} y={0}>{L({ vi: "ngưỡng", en: "threshold" })}</text>
+            <circle className="mas-pt" cx={142} cy={-4} r={4.5} />
+            <text className="ts" x={152} y={0}>{L({ vi: "datapoint CloudWatch nhận được", en: "CloudWatch datapoints" })}</text>
+            <line className="mas-threshold" x1={376} x2={396} y1={-4} y2={-4} />
+            <text className="ts" x={402} y={0}>{L({ vi: "ngưỡng", en: "threshold" })}</text>
           </g>
           <g ref={fx} />
         </svg>

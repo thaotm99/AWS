@@ -1,5 +1,5 @@
 /* Luyện đề: certification picker, exam list, one-question runner, result. Classes are prefixed pr- to stay clear of lesson scenes. */
-.pr-muted { color: var(--muted); font-size: var(--step--1); margin: 0; }
+.pr-muted { color: var(--muted); font-size: var(--step--1); margin: 0; text-wrap: pretty; }
 .pr-error { color: var(--bad); background: var(--bad-soft); border-radius: 8px; padding: 10px 14px; margin: 12px 0 0; max-width: none; }
 .pr-empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 10px; padding: 24px; color: var(--muted); max-width: none; }
 .pr-visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -20,7 +20,7 @@
 .pr-exam { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 14px; align-items: center; text-decoration: none; color: var(--ink);
   background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; }
 .pr-exam:hover { border-color: var(--accent); box-shadow: var(--shadow); }
-.pr-exam-no { font-family: var(--font-mono); font-size: 0.8rem; font-weight: 500; color: var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 4px 8px; text-align: center; }
+.pr-exam-no { font-family: var(--font-mono); font-size: 0.8125rem; font-weight: 500; color: var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 4px 8px; text-align: center; }
 .pr-exam-body { display: grid; min-width: 0; }
 .pr-exam-title { font-weight: 600; }
 .pr-badge { font-size: var(--step--1); font-weight: 600; white-space: nowrap; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
@@ -39,20 +39,20 @@
 .pr-bar .cur { background: var(--accent); }
 .pr-map summary { cursor: pointer; font-size: var(--step--1); color: var(--muted); margin-top: 8px; width: fit-content; }
 .pr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 4px; margin-top: 10px; }
-.pr-grid button { font-family: var(--font-mono); font-size: 0.75rem; font-variant-numeric: tabular-nums; padding: 5px 0; border-radius: 5px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; }
+.pr-grid button { font-family: var(--font-mono); font-size: 0.8125rem; font-variant-numeric: tabular-nums; padding: 5px 0; border-radius: 5px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; }
 .pr-grid button:disabled { opacity: 0.4; cursor: default; }
 .pr-grid button.r { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
 .pr-grid button.w { background: var(--bad-soft); border-color: var(--bad); color: var(--bad); }
 .pr-grid button.cur { outline: 2px solid var(--accent); outline-offset: 1px; }
 
 .pr-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 22px; box-shadow: var(--shadow); }
-.pr-q-meta { display: flex; gap: 6px 14px; flex-wrap: wrap; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-bottom: 8px; }
+.pr-q-meta { display: flex; gap: 6px 14px; flex-wrap: wrap; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-bottom: 8px; }
 .pr-multi { color: var(--edge); }
 .pr-html { min-width: 0; overflow-wrap: anywhere; }
 .pr-html p { margin: 0 0 10px; max-width: none; }
 .pr-html p:last-child { margin-bottom: 0; }
 .pr-html img { max-width: 100%; height: auto; border-radius: 6px; border: 1px solid var(--line); background: #fff; }
-.pr-html pre { overflow-x: auto; background: var(--bg); padding: 10px; border-radius: 6px; font-size: 0.85rem; }
+.pr-html pre { overflow-x: auto; background: var(--bg); padding: 10px; border-radius: 6px; font-size: 0.875rem; }
 .pr-prompt { font-size: 1.0625rem; margin-bottom: 18px; }
 
 .pr-options { display: grid; gap: 8px; }
@@ -60,11 +60,11 @@
   border: 1.5px solid var(--line); background: var(--surface); border-radius: 8px; padding: 10px 12px; cursor: pointer; line-height: 1.5; }
 .pr-option:hover:not(:disabled) { border-color: var(--accent); }
 .pr-option:disabled { cursor: default; }
-.pr-key { font-family: var(--font-mono); font-size: 0.8rem; font-weight: 500; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line); color: var(--muted); }
+.pr-key { font-family: var(--font-mono); font-size: 0.8125rem; font-weight: 500; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line); color: var(--muted); }
 .pr-option.multi .pr-key { border-radius: 5px; }
 .pr-option[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); }
 .pr-option[aria-checked="true"] .pr-key { background: var(--accent); border-color: var(--accent); color: var(--surface); }
-.pr-tag { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; align-self: center; }
+.pr-tag { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; align-self: center; }
 .pr-option.right { border-color: var(--ok); background: var(--ok-soft); }
 .pr-option.right .pr-key { background: var(--ok); border-color: var(--ok); color: var(--surface); }
 .pr-option.right .pr-tag { color: var(--ok); }
@@ -91,7 +91,7 @@
 .pr-score-big { font-size: 3rem; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1; }
 .pr-domains { display: grid; gap: 10px; margin: 20px 0 4px; max-width: 560px; }
 .pr-domain { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; font-size: 0.9375rem; }
-.pr-domain-val { font-family: var(--font-mono); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+.pr-domain-val { font-family: var(--font-mono); font-size: 0.875rem; font-variant-numeric: tabular-nums; }
 .pr-meter { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
 .pr-meter span { display: block; height: 100%; background: var(--accent); }
 .pr-review-title { margin: 28px 0 8px; }
@@ -112,7 +112,7 @@
 }
 
 /* Translated questions: compare with the English original */
-.pr-lang { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: -2px 0 10px; }
+.pr-lang { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 6px 0 12px; }
 .pr-lang-btn { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 2px 10px; font-size: var(--step--1); color: var(--muted); cursor: pointer; }
 .pr-lang-btn:hover { color: var(--ink); border-color: var(--accent); }
 .pr-lang-btn[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
@@ -127,7 +127,7 @@
 .pr-illus-tab.right { border-color: var(--ok); }
 .pr-illus-tab.wrong { border-color: var(--bad); }
 .pr-illus-tab[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.pr-illus-tag { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ok); }
+.pr-illus-tag { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ok); }
 .pr-illus-tab.wrong .pr-illus-tag { color: var(--bad); }
 .pr-illus-tab[aria-selected="true"] .pr-illus-tag { color: inherit; opacity: 0.85; }
 .pr-illus-frame { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
