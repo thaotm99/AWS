@@ -1,0 +1,142 @@
+---
+title: "ElastiCache và dữ liệu phân tích: Redshift, Athena, Glue"
+lede: "ShopViet có hai loại việc với dữ liệu. Một là trả lời khách thật nhanh: cache, session, bảng xếp hạng, tìm shipper gần nhất. Hai là hiểu chuyện gì đang xảy ra: kiểm tra dữ liệu, kho dữ liệu, dashboard, nghe lại cuộc gọi. Bài này chọn đúng dịch vụ cho từng việc, và giữ cho data lake không đắt dần theo năm tháng."
+minutes: 25
+scenes: 4
+prerequisites: ["rds", "dynamodb", "s3"]
+docs:
+  - title: "What is Amazon ElastiCache?"
+    url: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/WhatIs.html"
+  - title: "What is Amazon Athena?"
+    url: "https://docs.aws.amazon.com/athena/latest/ug/what-is.html"
+  - title: "What is Amazon Redshift?"
+    url: "https://docs.aws.amazon.com/redshift/latest/mgmt/welcome.html"
+  - title: "What is AWS Glue?"
+    url: "https://docs.aws.amazon.com/glue/latest/dg/what-is-glue.html"
+  - title: "What is AWS Glue DataBrew?"
+    url: "https://docs.aws.amazon.com/databrew/latest/dg/what-is.html"
+  - title: "What is Amazon EMR?"
+    url: "https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-what-is-emr.html"
+---
+import Scene from "../../components/Scene.astro";
+import Takeaway from "../../components/Takeaway.astro";
+import Story from "../../components/lessons/global-infra/Story.astro";
+import CacheSim from "../../components/scenes/analytics/CacheSim.tsx";
+import CacheEngineSim from "../../components/scenes/analytics/CacheEngineSim.tsx";
+import DataJobSim from "../../components/scenes/analytics/DataJobSim.tsx";
+import LakeCostSim from "../../components/scenes/analytics/LakeCostSim.tsx";
+import SortGame from "../../components/scenes/SortGame.tsx";
+import Quiz from "../../components/scenes/Quiz.tsx";
+
+<Story toc={[
+  { href: "#s1", label: "1 · Cache trước database" },
+  { href: "#s2", label: "2 · Redis hay Memcached" },
+  { href: "#s3", label: "3 · Mỗi việc dữ liệu một công cụ" },
+  { href: "#s4", label: "4 · Data lake không đắt dần" },
+  { href: "#challenge", label: "Thử thách" },
+]}>
+ShopViet đông khách hơn mỗi tháng. Aurora bắt đầu quá tải vì những câu hỏi lặp đi lặp lại, còn phòng phân tích thì muốn hiểu dữ liệu mà không làm chậm hệ thống bán hàng. **ElastiCache** giữ dữ liệu nóng trong bộ nhớ. **Athena**, **Redshift** và **Glue** lo phần phân tích trên data lake S3.
+</Story>
+
+<Scene id="s1" label="Cảnh 1/4" title="Cache trước database" questions={["exam4_q12", "exam3_q33", "exam5_q37", "exam4_q50", "exam4_q32", "exam6_q6", "exam1_q29"]}>
+
+**ElastiCache** là kho dữ liệu in-memory managed, trả lời dưới một mili giây. Cách dùng phổ biến nhất là **cache-aside**: app hỏi cache trước; không có thì đọc database rồi ghi kết quả vào cache kèm TTL. Thử năm chuyện ShopViet gặp:
+
+<CacheSim client:visible />
+
+ElastiCache hợp với hai kiểu tải: **đọc nhiều** (cùng một dữ liệu được hỏi lặp lại) và **tính toán nặng** (kết quả tốn công tính, ví dụ bảng xếp hạng). Nó không giúp việc ghi nhiều, không chạy JOIN phức tạp, không làm ETL.
+
+Dữ liệu nằm ở DynamoDB thì có thêm lựa chọn **DAX** (bài DynamoDB). ElastiCache dùng được cho mọi nguồn: RDS, Aurora, DynamoDB, hay chính nó làm session store.
+
+<Takeaway>Đọc lặp lại đè nặng database: ElastiCache với cache-aside và TTL. Session dùng chung giữa các server: ElastiCache. Ít ngừng, ít mất dữ liệu cache: Multi-AZ với automatic failover.</Takeaway>
+
+</Scene>
+
+<Scene id="s2" label="Cảnh 2/4" title="Redis hay Memcached?" questions={["exam6_q47", "exam5_q65", "exam1_q29", "exam4_q32"]}>
+
+ElastiCache có hai họ engine. **Redis OSS** (và **Valkey**, bản fork tương thích) có nhiều cấu trúc dữ liệu và tính năng sẵn sàng cao. **Memcached** đơn giản hơn nhưng chạy nhiều thread. Gửi cùng một loạt lệnh vào hai node giống nhau, rồi chọn nhu cầu của ShopViet:
+
+<CacheEngineSim client:visible />
+
+Ví dụ: cache kết quả các câu JOIN chậm trên RDS và muốn tận dụng nhiều core: Memcached. Bảng xếp hạng thời gian thực, tìm cửa hàng gần nhất, cần failover: Redis OSS. Với bảng xếp hạng trên dữ liệu DynamoDB, DynamoDB + DAX cũng là một lựa chọn in-memory.
+
+<Takeaway>Multi-threaded, key-value đơn giản: Memcached. Sorted set, geospatial, pub/sub, replica, Multi-AZ failover, backup: Redis OSS hoặc Valkey.</Takeaway>
+
+</Scene>
+
+<Scene id="s3" label="Cảnh 3/4" title="Mỗi việc dữ liệu một công cụ" questions={["exam5_q12", "exam1_q26", "exam1_q53", "exam5_q58", "exam5_q6", "exam4_q11", "exam2_q15", "exam6_q26"]}>
+
+Dữ liệu của ShopViet nằm trong data lake trên S3. Mỗi việc có một dịch vụ hợp nhất:
+
+- **Athena**: SQL thẳng trên file ở S3, serverless, trả theo dữ liệu quét. Hợp với truy vấn ad-hoc.
+- **Redshift**: kho dữ liệu (data warehouse) MPP cho báo cáo và dashboard chạy thường xuyên. Có bản **Serverless**. **Redshift Spectrum** cho cluster Redshift query thêm dữ liệu trên S3.
+- **Glue**: ETL serverless và Data Catalog. **Glue DataBrew**: làm sạch dữ liệu bằng giao diện, không code.
+- **EMR**: cluster Spark/Hadoop tự chọn cỡ, khi cần kiểm soát framework và cấu hình.
+
+Chọn một việc, chạy thử, rồi đổi sang công cụ hợp hơn:
+
+<DataJobSim client:visible />
+
+<Takeaway>SQL ad-hoc trên S3: Athena. Kho dữ liệu MPP serverless: Redshift Serverless, nạp bằng Glue. Làm sạch không code: DataBrew. Ghi âm thành văn bản: Transcribe. Tìm kiếm full-text: OpenSearch. Quan hệ bạn bè: Neptune. Dữ liệu lạnh vẫn cần SQL ngay: S3 Standard-IA + Athena.</Takeaway>
+
+</Scene>
+
+<Scene id="s4" label="Cảnh 4/4" title="Data lake không đắt dần" questions={["exam2_q34", "exam6_q26", "exam5_q11"]}>
+
+Data lake của ShopViet chia hai zone. **Raw zone** giữ dữ liệu gốc như lúc nhận về. **Refined zone** giữ dữ liệu đã được Glue làm sạch để analyst query. Mỗi zone thêm 1 TB mỗi ngày. Chọn cách lưu, chạy một năm:
+
+<LakeCostSim client:visible />
+
+Khi data lake cần thêm một bản ở Region khác để phòng sự cố:
+
+- Bật **Cross-Region Replication** trên bucket. CRR chỉ sao chép object ghi **sau khi** bật; object cũ cần S3 Batch Replication. Làm từ đầu với bucket mới thì đơn giản nhất.
+- Mã hoá bằng **SSE-KMS với multi-Region key**: key có bản sao ở Region kia với cùng key material, nên dữ liệu ở cả hai nơi dùng một bộ key và quyền giống nhau.
+- Athena query được ở Region nào có dữ liệu.
+
+<Takeaway>Dữ liệu gốc phải giữ nhưng hiếm đọc: lifecycle sang Glacier Deep Archive. Dữ liệu còn query: giữ ở lớp truy cập ngay, ghi định dạng cột có nén (Parquet). Athena không đọc được dữ liệu trong Glacier Deep Archive khi chưa restore.</Takeaway>
+
+</Scene>
+
+<Scene id="challenge" label="Thử thách" title="Đặt từng việc vào đúng dịch vụ" questions={["exam4_q12", "exam6_q47", "exam5_q12", "exam1_q53", "exam2_q34"]}>
+
+Xếp từng việc của ShopViet vào nhóm dịch vụ phù hợp. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
+
+<SortGame client:visible
+  bins={[
+    { id: "cache", title: "ElastiCache", sub: "Redis OSS, Memcached", hint: "Gợi ý: việc này cần trả lời khách trong tích tắc, từ bộ nhớ." },
+    { id: "query", title: "Phân tích bằng SQL", sub: "Athena, Redshift", hint: "Gợi ý: việc này là đặt câu hỏi SQL trên nhiều dữ liệu." },
+    { id: "prep", title: "Chuẩn bị dữ liệu", sub: "Glue, DataBrew", hint: "Gợi ý: việc này biến đổi dữ liệu trước khi dùng." },
+  ]}
+  cards={[
+    ["Session đăng nhập dùng chung giữa các server", "cache"], ["Top 10 người bán cập nhật liên tục", "cache"], ["Shipper gần khách nhất", "cache"],
+    ["Kiểm tra dữ liệu click vừa đổ về S3", "query"], ["Dashboard doanh thu chạy mỗi sáng trên kho dữ liệu", "query"], ["Đếm cuộc gọi phàn nàn trong bản ghi văn bản", "query"],
+    ["Đổi CSV thành Parquet nén mỗi đêm", "prep"], ["Analyst lọc bất thường bằng giao diện kéo thả", "prep"],
+  ]}
+/>
+
+Kiểm tra nhanh: nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
+
+<Quiz client:visible items={[
+  { q: "Aurora đã có read replica mà vẫn quá tải vì khách hỏi trạng thái đơn lặp đi lặp lại. Cách rẻ và hiệu quả nhất?",
+    opts: ["Thêm read replica nữa", "ElastiCache trước Aurora, cache kết quả với TTL", "Chuyển sang Aurora Serverless v2"],
+    a: 1,
+    why: "Phần lớn tải là đọc lặp lại; cache trả lời từ bộ nhớ nên các câu hỏi giống nhau không chạm tới database." },
+  { q: "ShopViet cần cache cho các câu JOIN chậm trên RDS, chạy trên node nhiều core và tận dụng hết các core. Chọn engine nào?",
+    opts: ["Memcached", "Redis OSS", "DAX"],
+    a: 0,
+    why: "Memcached chạy lệnh trên nhiều thread. DAX chỉ dành cho DynamoDB." },
+  { q: "Kỹ sư dữ liệu muốn chạy vài câu SQL kiểm tra dữ liệu thô trên S3, rẻ và không phải bảo trì gì. Dùng gì?",
+    opts: ["Nạp vào Redshift mỗi giờ", "Amazon Athena", "EMR cluster với SparkSQL"],
+    a: 1,
+    why: "Athena query thẳng trên S3, serverless, chỉ trả theo dữ liệu quét." },
+  { q: "Raw zone phải giữ 5 năm nhưng gần như không ai đọc; refined zone được query mỗi ngày. Làm gì để giảm chi phí lưu trữ?",
+    opts: ["Lifecycle cả hai zone sang Glacier Deep Archive", "Raw zone sang Glacier Deep Archive, Glue ghi refined zone dạng nén", "Lambda xóa raw zone sau 1 ngày"],
+    a: 1,
+    why: "Raw zone vẫn được giữ với giá thấp nhất; refined zone còn query được bằng Athena và nhỏ hơn nhờ định dạng nén." },
+  { q: "Redshift UNLOAD file vào bucket của account đối tác, nhưng chính đối tác lại bị AccessDenied. Vì sao?",
+    opts: ["Redshift không ghi được sang account khác", "Object thuộc account đã ghi khi bucket còn dùng ACL (Object writer)", "Đối tác chưa bật versioning"],
+    a: 1,
+    why: "Với ACL bật, object thuộc account upload. Đặt Object Ownership = Bucket owner enforced để chủ bucket sở hữu mọi object." },
+]} />
+
+</Scene>
