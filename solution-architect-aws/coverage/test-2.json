@@ -54,7 +54,7 @@
           "keyword": "Amazon S3 static website hosting",
           "lesson": "s3",
           "status": "covered",
-          "where": "cloudfront.mdx#s2 / RequirementPicker"
+          "where": "s3.mdx#s6 / WebsiteEndpointSim; cloudfront.mdx#s2 / RequirementPicker"
         },
         {
           "keyword": "CloudFront S3 origin",
@@ -132,7 +132,7 @@
           "keyword": "Amazon AppFlow",
           "lesson": "others",
           "status": "covered",
-          "where": "others.mdx#s5 / QuickCompare; storage-migration.mdx#s2"
+          "where": "analytics.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "Route 53 private hosted zone",
@@ -161,7 +161,7 @@
           "keyword": "DynamoDB global tables",
           "lesson": "dynamodb",
           "status": "covered",
-          "where": "dynamodb.mdx (global tables section)"
+          "where": "dynamodb.mdx#s5; analytics.mdx#s6 / QuickCompare"
         },
         {
           "keyword": "RDS read replica",
@@ -310,7 +310,7 @@
           "keyword": "AWS Config managed rule acm-certificate-expiration-check",
           "lesson": "monitoring",
           "status": "covered",
-          "where": "monitoring.mdx (Config scene Takeaway) / ConfigTimelineSim; kms.mdx#s3"
+          "where": "monitoring.mdx#s4 / GuardrailSim; kms.mdx#s3 / DataGuardSim; messaging.mdx#s4 / EventRouterSim"
         },
         {
           "keyword": "ACM DaysToExpiry CloudWatch metric",
@@ -509,13 +509,13 @@
           "keyword": "S3 Object Ownership (object writer vs bucket owner enforced)",
           "lesson": "s3",
           "status": "covered",
-          "where": "s3.mdx#s3 / RequirementPicker; analytics.mdx / DataJobSim"
+          "where": "s3.mdx#s3 / RequirementPicker; analytics.mdx#s3 / DataJobSim"
         },
         {
           "keyword": "Redshift UNLOAD to cross-account bucket",
           "lesson": "analytics",
           "status": "covered",
-          "where": "analytics.mdx#challenge / DataJobSim"
+          "where": "analytics.mdx#s3 / DataJobSim; analytics.mdx#challenge / Quiz; s3.mdx#s3 / RequirementPicker"
         },
         {
           "keyword": "IAM cross-account role",
@@ -575,6 +575,12 @@
           "lesson": "elb",
           "status": "covered",
           "where": "elb.mdx#s3 / AlbRuleSim"
+        },
+        {
+          "keyword": "CloudFront (no built-in Cognito authentication)",
+          "lesson": "cloudfront",
+          "status": "missing",
+          "where": ""
         }
       ]
     },
@@ -610,6 +616,12 @@
           "lesson": "asg",
           "status": "covered",
           "where": "asg.mdx#health / HealthReplaceSim"
+        },
+        {
+          "keyword": "ASG minimum capacity (does not keep unhealthy instances)",
+          "lesson": "asg",
+          "status": "covered",
+          "where": "asg.mdx#health"
         }
       ]
     },
@@ -803,19 +815,19 @@
           "keyword": "Amazon Comprehend (sentiment, entities)",
           "lesson": "others",
           "status": "covered",
-          "where": "others.mdx (AI services section) / AiPipelineSim"
+          "where": "others.mdx#s3 / AiPipelineSim"
         },
         {
           "keyword": "Amazon Textract",
           "lesson": "others",
           "status": "covered",
-          "where": "others.mdx (AI services section) / AiPipelineSim"
+          "where": "others.mdx#s3 / AiPipelineSim"
         },
         {
           "keyword": "Amazon SageMaker (custom model)",
           "lesson": "others",
           "status": "covered",
-          "where": "others.mdx (AI services section)"
+          "where": "others.mdx#s3"
         },
         {
           "keyword": "Amazon Rekognition",
@@ -1052,13 +1064,13 @@
           "keyword": "S3 Lifecycle rule to Glacier Deep Archive",
           "lesson": "s3",
           "status": "covered",
-          "where": "s3.mdx#s1; analytics.mdx / LakeCostSim"
+          "where": "s3.mdx#s1 / RequirementPicker; analytics.mdx#s4 / LakeCostSim"
         },
         {
           "keyword": "AWS Glue ETL compressed columnar format (Parquet)",
           "lesson": "analytics",
           "status": "covered",
-          "where": "analytics.mdx / LakeCostSim"
+          "where": "analytics.mdx#s4 / LakeCostSim"
         },
         {
           "keyword": "Amazon Athena",
@@ -1207,7 +1219,7 @@
           "keyword": "Amazon Timestream",
           "lesson": "others",
           "status": "covered",
-          "where": "others.mdx#s5 / QuickCompare; rds.mdx#s1"
+          "where": "others.mdx#s5 / QuickCompare"
         }
       ]
     },
@@ -1255,7 +1267,13 @@
           "keyword": "Kinesis Data Streams partition key",
           "lesson": "kinesis",
           "status": "covered",
-          "where": "kinesis.mdx / ShardStreamSim"
+          "where": "kinesis.mdx#s1 / ShardStreamSim"
+        },
+        {
+          "keyword": "Kinesis Data Streams consumer parallelism bounded by shard count",
+          "lesson": "kinesis",
+          "status": "missing",
+          "where": ""
         }
       ]
     },
@@ -1347,25 +1365,25 @@
           "keyword": "KMS multi-Region key",
           "lesson": "kms",
           "status": "covered",
-          "where": "kms.mdx#s1 / S3EncryptSim"
+          "where": "kms.mdx#s1; kms.mdx#s4 / QuickCompare; kms.mdx#challenge / Quiz"
         },
         {
           "keyword": "S3 Cross-Region Replication",
           "lesson": "s3",
           "status": "covered",
-          "where": "analytics.mdx (CRR paragraph); kms.mdx#s1 / S3EncryptSim"
+          "where": "analytics.mdx#s4; s3.mdx#s7 / QuickCompare; kms.mdx#s4 / QuickCompare"
         },
         {
           "keyword": "S3 Batch Replication",
-          "lesson": "storage-migration",
+          "lesson": "s3",
           "status": "covered",
-          "where": "storage-migration.mdx#s2 / RequirementPicker"
+          "where": "s3.mdx#s7 / QuickCompare; analytics.mdx#s4"
         },
         {
           "keyword": "KMS single-Region key cannot be converted to multi-Region",
           "lesson": "kms",
           "status": "covered",
-          "where": "kms.mdx#s1 / S3EncryptSim; kms.mdx#s4 / QuickCompare"
+          "where": "kms.mdx#s4 / QuickCompare; kms.mdx#challenge / Quiz"
         }
       ]
     },
@@ -1387,13 +1405,13 @@
           "keyword": "Amazon Data Firehose",
           "lesson": "kinesis",
           "status": "covered",
-          "where": "kinesis.mdx / StreamPipelineSim"
+          "where": "kinesis.mdx#s3 / StreamPipelineSim"
         },
         {
           "keyword": "AWS IoT Core rule",
           "lesson": "others",
           "status": "covered",
-          "where": "others.mdx#s5 / QuickCompare; messaging.mdx#s1"
+          "where": "others.mdx#s5 / QuickCompare"
         },
         {
           "keyword": "Amazon SNS (push, no polling)",
@@ -1560,7 +1578,7 @@
           "keyword": "Amazon Neptune",
           "lesson": "analytics",
           "status": "covered",
-          "where": "analytics.mdx#s1 Takeaway"
+          "where": "analytics.mdx#s6 / QuickCompare; analytics.mdx#s3 / DataJobSim"
         }
       ]
     },
@@ -1650,7 +1668,13 @@
           "keyword": "RDS IAM database authentication",
           "lesson": "rds",
           "status": "covered",
-          "where": "rds.mdx#s4 / RequirementPicker"
+          "where": "iam.mdx#s3 / RequirementPicker; monitoring.mdx#s6 / QuickCompare"
+        },
+        {
+          "keyword": "RDS DB snapshot storage (not accessible as objects in a customer S3 bucket)",
+          "lesson": "rds",
+          "status": "missing",
+          "where": ""
         }
       ]
     },
@@ -1708,13 +1732,13 @@
           "keyword": "ALB with Auto Scaling group (pre-provisioned standby)",
           "lesson": "backup-dr",
           "status": "covered",
-          "where": "backup-dr.mdx / DrStrategySim"
+          "where": "backup-dr.mdx#s1 / DrStrategySim"
         },
         {
           "keyword": "AWS CloudFormation",
           "lesson": "iac",
           "status": "covered",
-          "where": "iac.mdx / StackSim"
+          "where": "iac.mdx#s1 / StackSim"
         },
         {
           "keyword": "AWS Direct Connect",
@@ -1771,6 +1795,12 @@
           "lesson": "rds",
           "status": "covered",
           "where": "rds.mdx#s3"
+        },
+        {
+          "keyword": "Aurora multi-master cluster (single Region)",
+          "lesson": "rds",
+          "status": "missing",
+          "where": ""
         }
       ]
     },
@@ -1849,8 +1879,14 @@
         {
           "keyword": "ASG default termination policy",
           "lesson": "asg",
-          "status": "covered",
-          "where": "asg.mdx#s3 / TerminationSim"
+          "status": "partial",
+          "where": "asg.mdx#s3 / TerminationSim; asg.mdx#challenge / Quiz"
+        },
+        {
+          "keyword": "ASG termination: oldest launch configuration (groups using a launch configuration)",
+          "lesson": "asg",
+          "status": "missing",
+          "where": ""
         }
       ]
     }
