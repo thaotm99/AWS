@@ -77,7 +77,12 @@ export default function QueueBufferSim() {
   const [mode, setMode] = useState<Mode>("direct");
   const [shown, setShown] = useState(-1);
   const [busy, setBusy] = useState(false);
-  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
 
   const ticks = simulate(mode);
   const cur = shown >= 0 ? ticks[shown] : undefined;

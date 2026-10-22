@@ -43,7 +43,12 @@ export default function StackSetSim() {
   const [cells, setCells] = useState<Record<string, "busy" | "done">>({});
   const [busy, setBusy] = useState(false);
   const [ran, setRan] = useState(false);
-  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
 
   const accounts = joined ? [...ACCOUNTS, NEW_ACCOUNT] : ACCOUNTS;
   const count = Object.values(cells).filter((v) => v === "done").length;

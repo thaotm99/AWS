@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useId, useRef, useState, type ReactNode } from "react";
 import { flashText, travel, type Pt } from "../../../lib/animate";
 import { useLang, type Bi } from "../../../lib/lang";
 
@@ -49,6 +49,8 @@ export default function RoutingPolicySim() {
   const [busy, setBusy] = useState(false);
   const pk = useRef<SVGGElement>(null);
   const L = useLang();
+  // Both language copies of the lesson render this component, so ids must be unique per instance.
+  const uid = useId().replace(/:/g, "");
 
   function answer(u: Uid): Rid | "error" | null {
     switch (policy) {
@@ -91,8 +93,8 @@ export default function RoutingPolicySim() {
       <div className="stage-bar">
         {policy === "geoproximity" && (
           <>
-            <label className="label" htmlFor="geoBias">{L({ vi: "Bias của Singapore: ", en: "Singapore bias: " })}{bias}</label>
-            <input id="geoBias" type="range" min={0} max={99} value={bias} onChange={(e) => setBias(Number(e.target.value))} disabled={busy} />
+            <label className="label" htmlFor={`${uid}-geoBias`}>{L({ vi: "Bias của Singapore: ", en: "Singapore bias: " })}{bias}</label>
+            <input id={`${uid}-geoBias`} type="range" min={0} max={99} value={bias} onChange={(e) => setBias(Number(e.target.value))} disabled={busy} />
           </>
         )}
         {policy === "failover" && (

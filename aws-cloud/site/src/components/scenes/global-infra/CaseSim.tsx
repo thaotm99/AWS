@@ -172,35 +172,38 @@ export default function CaseSim({ scenarios, action: actionProp, label }: { scen
     const layer = pk.current;
     if (!layer || busy) return;
     setBusy(true);
-    clear();
-    const out = sc.run(v);
-    const startPt = center(byId[sc.start]);
-    let at: Pt = startPt;
-    const trail: Pt[] = [startPt];
-    let blocked = false;
-    for (const step of out.steps) {
-      const node = byId[step.at];
-      const target = center(node);
-      const pts: Pt[] = [at, ...(step.via ?? []), target];
-      let dist = 0;
-      for (let i = 1; i < pts.length; i++) dist += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
-      if (dist > 0) await travel(layer, pts, Math.max(260, dist * 1.7), step.state === "block" || step.state === "down" ? "pkt-bad" : step.pkt ?? "pkt");
-      trail.push(...(step.via ?? []), target);
-      at = target;
-      setLit((s) => ({ ...s, [step.at]: step.state }));
-      setLog((l) => [...l, { tag: step.tag ? { text: step.tag, cls: TAG[step.state].cls } : TAG[step.state], node: node.l1, msg: rich(step.msg) }]);
-      if (step.state === "block" || step.state === "down") {
-        flashText(layer, target[0], node.y - 10, step.flash ?? "✕", "cs-flash", 1000);
-        blocked = true;
-        if (trail.length > 1) await travel(layer, [...trail].reverse(), 600, "pkt-bad");
-        break;
+    try {
+      clear();
+      const out = sc.run(v);
+      const startPt = center(byId[sc.start]);
+      let at: Pt = startPt;
+      const trail: Pt[] = [startPt];
+      let blocked = false;
+      for (const step of out.steps) {
+        const node = byId[step.at];
+        const target = center(node);
+        const pts: Pt[] = [at, ...(step.via ?? []), target];
+        let dist = 0;
+        for (let i = 1; i < pts.length; i++) dist += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+        if (dist > 0) await travel(layer, pts, Math.max(260, dist * 1.7), step.state === "block" || step.state === "down" ? "pkt-bad" : step.pkt ?? "pkt");
+        trail.push(...(step.via ?? []), target);
+        at = target;
+        setLit((s) => ({ ...s, [step.at]: step.state }));
+        setLog((l) => [...l, { tag: step.tag ? { text: step.tag, cls: TAG[step.state].cls } : TAG[step.state], node: node.l1, msg: rich(step.msg) }]);
+        if (step.state === "block" || step.state === "down") {
+          flashText(layer, target[0], node.y - 10, step.flash ?? "✕", "cs-flash", 1000);
+          blocked = true;
+          if (trail.length > 1) await travel(layer, [...trail].reverse(), 600, "pkt-bad");
+          break;
+        }
       }
+      if (!blocked && out.back !== false && trail.length > 1) {
+        await travel(layer, [...trail].reverse(), 700, out.ok ? "pkt-back" : "pkt-bad");
+      }
+      setLog((l) => [...l, { ok: out.ok, msg: rich(out.result) }]);
+    } finally {
+      setBusy(false);
     }
-    if (!blocked && out.back !== false && trail.length > 1) {
-      await travel(layer, [...trail].reverse(), 700, out.ok ? "pkt-back" : "pkt-bad");
-    }
-    setLog((l) => [...l, { ok: out.ok, msg: rich(out.result) }]);
-    setBusy(false);
   }
 
   const marks: Partial<Record<string, CaseState>> = preview.marks ?? {};

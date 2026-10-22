@@ -15,7 +15,8 @@ type OriginId = "s3a" | "s3b" | "alb";
 type State = "pass" | "block" | "skip" | "change";
 
 const GATES: { id: GateId; l1: string; l2: string | Bi }[] = [
-  { id: "tls", l1: "TLS", l2: { vi: "chứng chỉ ACM", en: "ACM cert" } },
+  // Gate boxes are 68 units wide; a "\n" splits a sub-label that is too long for one line.
+  { id: "tls", l1: "TLS", l2: { vi: "chứng chỉ\nACM", en: "ACM cert" } },
   { id: "waf", l1: "AWS WAF", l2: "web ACL" },
   { id: "geo", l1: "Geo", l2: "restriction" },
   { id: "sign", l1: "Signed", l2: "URL/cookie" },
@@ -154,6 +155,7 @@ const TAG: Record<State, { text: Bi; cls: string }> = {
 
 export default function EdgePipelineSim() {
   const L = useLang();
+  const sub = (g: (typeof GATES)[number]) => (typeof g.l2 === "string" ? g.l2 : L(g.l2)).split("\n");
   const SCENARIOS = scenarios(L);
   const pk = useRef<SVGGElement>(null);
   const [index, setIndex] = useState(0);
@@ -191,7 +193,7 @@ export default function EdgePipelineSim() {
       await travel(layer, [at, next], i === 0 ? 420 : 260, step.state === "block" ? "pkt-bad" : "pkt");
       at = next;
       setLit((s) => ({ ...s, [g.id]: step.state }));
-      setLog((l) => [...l, { tag: step.state, gate: `${g.l1} ${typeof g.l2 === "string" ? g.l2 : L(g.l2)}`, msg: rich(step.msg) }]);
+      setLog((l) => [...l, { tag: step.state, gate: `${g.l1} ${sub(g).join(" ")}`, msg: rich(step.msg) }]);
       if (step.state === "block") {
         flashText(layer, GX(i), LANE - 50, "403", "flash-bad", 900);
         await travel(layer, [at, USER], 500, "pkt-bad");
@@ -250,8 +252,19 @@ export default function EdgePipelineSim() {
           {GATES.map((g, i) => (
             <g key={g.id} className={`cfp-gate ${lit[g.id] ?? ""}`}>
               <rect x={GX(i) - 34} y={LANE - 37} width={68} height={74} rx={8} />
-              <text className="cfp-gt" x={GX(i)} y={LANE - 4} textAnchor="middle">{g.l1}</text>
-              <text className="cfp-gs" x={GX(i)} y={LANE + 12} textAnchor="middle">{typeof g.l2 === "string" ? g.l2 : L(g.l2)}</text>
+              {(() => {
+                const lines = sub(g);
+                // Two sub-label lines: move the block up so it stays centred in the box.
+                const top = lines.length > 1 ? LANE - 10 : LANE - 4;
+                return (
+                  <>
+                    <text className="cfp-gt" x={GX(i)} y={top} textAnchor="middle">{g.l1}</text>
+                    {lines.map((line, k) => (
+                      <text key={k} className="cfp-gs" x={GX(i)} y={top + 16 + k * 12} textAnchor="middle">{line}</text>
+                    ))}
+                  </>
+                );
+              })()}
             </g>
           ))}
           <rect className="cfp-group" x={632} y={38} width={180} height={124} rx={10} />

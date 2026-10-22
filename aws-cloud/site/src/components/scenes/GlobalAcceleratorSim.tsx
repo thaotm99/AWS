@@ -27,6 +27,8 @@ export default function GlobalAcceleratorSim() {
   const pk = useRef<SVGGElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const visible = useRef(true);
+  // Bumped on every mode pick so packets already in flight are not counted against the new mode.
+  const generation = useRef(0);
   const L = useLang();
 
   useEffect(() => {
@@ -45,17 +47,20 @@ export default function GlobalAcceleratorSim() {
       const layer = pk.current;
       if (!layer || !visible.current || document.hidden) return;
       const user = USERS[turn++ % USERS.length];
+      const gen = generation.current;
+      const live = () => gen === generation.current;
       const start: Pt = [USER_X + 22, user.y];
       if (mode === "ga") {
         // Nearest healthy endpoint; the other Region takes over when home is down.
         const target = down === user.home ? (user.home === "sg" ? "fra" : "sg") : user.home;
         const ty = REGIONS[target].y;
-        travel(layer, [start, [EDGE_X, user.y], [ALB_X - 50, ty]], 1300, "pkt", 5).then(() => setOk((n) => n + 1));
+        travel(layer, [start, [EDGE_X, user.y], [ALB_X - 50, ty]], 1300, "pkt", 5).then(() => { if (live()) setOk((n) => n + 1); });
       } else {
         // Plain DNS: the client keeps its cached answer and goes to the old Region until the TTL expires.
         const ty = REGIONS[user.home].y;
         const failing = down === user.home;
         travel(layer, [start, [ALB_X - 50, ty]], 1300, failing ? "pkt-bad" : "pkt-edge", 5).then(() => {
+          if (!live()) return;
           if (failing) {
             setErr((n) => n + 1);
             flashText(layer, ALB_X - 90, ty - 30, "timeout", "err-t");
@@ -67,6 +72,7 @@ export default function GlobalAcceleratorSim() {
   }, [paused, mode, down]);
 
   function pick(m: Mode) {
+    generation.current++;
     setMode(m);
     setOk(0);
     setErr(0);

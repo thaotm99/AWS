@@ -38,7 +38,12 @@ export default function CacheEngineSim() {
   const [busy, setBusy] = useState(false);
   const [doneAt, setDoneAt] = useState<Partial<Record<Engine, number>>>({});
   const [hot, setHot] = useState<Partial<Record<Engine, number[]>>>({});
-  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
 
   const chosen = NEEDS.filter((n) => picked.includes(n.id));
   const fits = (e: Engine) => chosen.every((n) => n[e]);

@@ -46,7 +46,12 @@ const FLAG_EN: Record<string, string> = { "gửi lại": "resent", "trùng": "du
 export default function FifoSim() {
   const L = useLang();
   const alive = useRef(true);
-  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
   const [type, setType] = useState<QType>("standard");
   const [groups, setGroups] = useState(false);
   const [place, setPlace] = useState<Record<string, Place>>({});

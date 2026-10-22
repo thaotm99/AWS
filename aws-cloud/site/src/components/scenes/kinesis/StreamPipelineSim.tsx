@@ -287,7 +287,12 @@ export default function StreamPipelineSim() {
   const L = useLang();
   const fx = useRef<SVGGElement>(null);
   const alive = useRef(true);
-  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
   const [ni, setNi] = useState(0);
   const need = L({ vi: NEEDS[ni], en: NEEDS_EN[ni] });
   const [choice, setChoice] = useState<number[]>(() => need.slots.map(() => -1));

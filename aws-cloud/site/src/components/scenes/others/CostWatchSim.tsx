@@ -142,7 +142,12 @@ export default function CostWatchSim() {
   const L = useLang();
   const fx = useRef<SVGGElement>(null);
   const alive = useRef(true);
-  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
   const [pid, setPid] = useState<ProblemId>("dev");
   const [ti, setTi] = useState(0);
   const [shown, setShown] = useState(-1);

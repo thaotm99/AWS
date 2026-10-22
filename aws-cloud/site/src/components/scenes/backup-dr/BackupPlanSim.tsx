@@ -105,7 +105,12 @@ export default function BackupPlanSim() {
   const L = useLang();
   const fx = useRef<SVGGElement>(null);
   const alive = useRef(true);
-  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
   const [freq, setFreq] = useState<FreqId>("24h");
   const [keep, setKeep] = useState<KeepId>("35");
   const [region, setRegion] = useState(false);

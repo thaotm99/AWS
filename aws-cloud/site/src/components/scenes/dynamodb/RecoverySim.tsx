@@ -103,7 +103,12 @@ export default function RecoverySim() {
   const [clock, setClock] = useState(0);
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
-  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
 
   const inc = INCIDENTS[incident];
   const opt = inc.options.find((o) => o.id === optId) ?? inc.options[0];

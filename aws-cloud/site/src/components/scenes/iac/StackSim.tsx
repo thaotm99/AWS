@@ -216,7 +216,12 @@ export default function StackSim() {
   const sc = L({ vi: SCENARIOS, en: SCENARIOS_EN })[index];
   const [shown, setShown] = useState(-1);
   const [busy, setBusy] = useState(false);
-  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
 
   const status: Record<string, Status> = Object.fromEntries(sc.resources.map((r) => [r.id, sc.start]));
   for (const ev of sc.events.slice(0, shown + 1)) status[ev.res] = ev.status;

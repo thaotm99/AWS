@@ -151,7 +151,12 @@ export default function MetricAlarmSim() {
   const [detailed, setDetailed] = useState(false);
   const [shown, setShown] = useState(-1);
   const [busy, setBusy] = useState(false);
-  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
 
   const sc = SCENARIOS[id];
   const run = simulate(sc, detailed);

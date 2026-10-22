@@ -304,7 +304,12 @@ export default function MessageLifeSim() {
   const [log, setLog] = useState<LogLine[]>([]);
   const [busy, setBusy] = useState(false);
   const alive = useRef(true);
-  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
 
   function reset(s: Setup = setup) {
     setToks(s.init.map((t, i) => ({ ...t, seq: i })));

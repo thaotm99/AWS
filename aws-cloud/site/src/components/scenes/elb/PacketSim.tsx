@@ -139,51 +139,54 @@ export default function PacketSim({ scenarios, layout, action, hint }: Props) {
     const layer = pk.current;
     if (!layer || busy) return;
     setBusy(true);
-    reset();
-    const out = sc.run(on);
-    const start = lay.nodes[0];
-    let cur: PNode = start;
-    let origin: PNode = start;
-    let path: Pt[] = [[start.x, start.y]];
-    let lastBlocked = false;
-    const shownName: Record<string, string> = {};
-    for (const step of out.steps) {
-      const target = byId[step.at];
-      if (!target) continue;
-      if (step.from && byId[step.from]) {
-        cur = origin = byId[step.from];
-        path = [[cur.x, cur.y]];
+    try {
+      reset();
+      const out = sc.run(on);
+      const start = lay.nodes[0];
+      let cur: PNode = start;
+      let origin: PNode = start;
+      let path: Pt[] = [[start.x, start.y]];
+      let lastBlocked = false;
+      const shownName: Record<string, string> = {};
+      for (const step of out.steps) {
+        const target = byId[step.at];
+        if (!target) continue;
+        if (step.from && byId[step.from]) {
+          cur = origin = byId[step.from];
+          path = [[cur.x, cur.y]];
+        }
+        const hop = step.jump || cur.id === target.id ? [[cur.x, cur.y] as Pt] : route(cur, target);
+        const cls = step.state === "block" ? "pkt-bad" : step.state === "change" ? "pkt-edge" : "pkt";
+        if (hop.length > 1) await travel(layer, hop, dur(hop), cls);
+        if (!step.jump) path = path.concat(hop.slice(1));
+        setLit((s) => ({ ...s, [target.id]: step.state }));
+        if (step.relabel) setNames((s) => ({ ...s, [target.id]: { ...s[target.id], ...step.relabel } }));
+        const label = step.label ?? shownName[target.id] ?? target.l1;
+        if (step.relabel?.l1) shownName[target.id] = step.relabel.l1;
+        setLog((l) => [...l, { tag: step.state, tagText: step.tag, label, msg: rich(step.msg) }]);
+        if (step.flash) {
+          const { h } = size(target);
+          flashText(layer, target.x, target.y - h / 2 - 8, step.flash, step.state === "block" ? "pks-flash bad" : "pks-flash", 1100);
+        }
+        lastBlocked = step.state === "block" && !step.jump;
+        if (step.jump) continue;
+        if (step.roundTrip || lastBlocked) {
+          const backTo = [...path].reverse();
+          if (backTo.length > 1) await travel(layer, backTo, dur(backTo), lastBlocked ? "pkt-bad" : "pkt-back");
+          cur = origin;
+          path = [[cur.x, cur.y]];
+        } else {
+          cur = target;
+        }
       }
-      const hop = step.jump || cur.id === target.id ? [[cur.x, cur.y] as Pt] : route(cur, target);
-      const cls = step.state === "block" ? "pkt-bad" : step.state === "change" ? "pkt-edge" : "pkt";
-      if (hop.length > 1) await travel(layer, hop, dur(hop), cls);
-      if (!step.jump) path = path.concat(hop.slice(1));
-      setLit((s) => ({ ...s, [target.id]: step.state }));
-      if (step.relabel) setNames((s) => ({ ...s, [target.id]: { ...s[target.id], ...step.relabel } }));
-      const label = step.label ?? shownName[target.id] ?? target.l1;
-      if (step.relabel?.l1) shownName[target.id] = step.relabel.l1;
-      setLog((l) => [...l, { tag: step.state, tagText: step.tag, label, msg: rich(step.msg) }]);
-      if (step.flash) {
-        const { h } = size(target);
-        flashText(layer, target.x, target.y - h / 2 - 8, step.flash, step.state === "block" ? "pks-flash bad" : "pks-flash", 1100);
+      if (out.back !== false && !lastBlocked && path.length > 1) {
+        const back = [...path].reverse();
+        await travel(layer, back, dur(back), out.ok ? "pkt-back" : "pkt-bad");
       }
-      lastBlocked = step.state === "block" && !step.jump;
-      if (step.jump) continue;
-      if (step.roundTrip || lastBlocked) {
-        const backTo = [...path].reverse();
-        if (backTo.length > 1) await travel(layer, backTo, dur(backTo), lastBlocked ? "pkt-bad" : "pkt-back");
-        cur = origin;
-        path = [[cur.x, cur.y]];
-      } else {
-        cur = target;
-      }
+      setLog((l) => [...l, { ok: out.ok, msg: rich(out.result) }]);
+    } finally {
+      setBusy(false);
     }
-    if (out.back !== false && !lastBlocked && path.length > 1) {
-      const back = [...path].reverse();
-      await travel(layer, back, dur(back), out.ok ? "pkt-back" : "pkt-bad");
-    }
-    setLog((l) => [...l, { ok: out.ok, msg: rich(out.result) }]);
-    setBusy(false);
   }
 
   return (

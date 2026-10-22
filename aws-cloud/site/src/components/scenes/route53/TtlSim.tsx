@@ -44,7 +44,7 @@ export default function TtlSim() {
       <div className="stage-bar">
         <span className="label">{L({ vi: "TTL của record", en: "Record TTL" })}</span>
         {TTLS.map((t) => (
-          <button key={t} className="btn" aria-pressed={t === ttl} onClick={() => { setTtl(t); setElapsed(null); }}>{t} {L({ vi: "giây", en: "seconds" })}</button>
+          <button key={t} className="btn" aria-pressed={t === ttl} onClick={() => { cancelAnimationFrame(raf.current); setTtl(t); setElapsed(null); }}>{t} {L({ vi: "giây", en: "seconds" })}</button>
         ))}
         <span className="sep" />
         <button className="btn primary" onClick={change}>{L({ vi: "Cập nhật record sang ALB mới", en: "Update record to the new ALB" })}</button>

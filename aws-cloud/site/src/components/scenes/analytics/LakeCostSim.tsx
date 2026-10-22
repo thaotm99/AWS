@@ -58,7 +58,12 @@ export default function LakeCostSim() {
   const [fmt, setFmt] = useState<FmtId>("csv");
   const [shown, setShown] = useState(0);
   const [busy, setBusy] = useState(false);
-  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
 
   const bars = Array.from({ length: MONTHS }, (_, i) => month(i + 1, raw, ref, fmt));
   const total = bars.reduce((s, c) => s + c.raw + c.ref, 0);

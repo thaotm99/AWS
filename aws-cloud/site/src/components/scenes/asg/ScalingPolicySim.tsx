@@ -132,7 +132,12 @@ export default function ScalingPolicySim() {
   const [policy, setPolicy] = useState<PolicyId>("tt");
   const [shown, setShown] = useState(-1);
   const [busy, setBusy] = useState(false);
-  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
 
   const need = PATTERNS[pattern].need;
   const cap = capacity(pattern, policy);

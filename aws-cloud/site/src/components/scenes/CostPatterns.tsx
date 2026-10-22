@@ -1,5 +1,5 @@
 // Source questions: exam2_q62, exam3_q47, exam5_q2.
-import { useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { useLang } from "../../lib/lang";
 
 type Lang = ReturnType<typeof useLang>;
@@ -106,6 +106,8 @@ function NodeBox({ n }: { n: Node }) {
 
 export default function CostPatterns() {
   const L = useLang();
+  // Both language copies of the lesson render this component, so ids must be unique per instance.
+  const uid = useId().replace(/:/g, "");
   const PATTERNS = patterns(L);
   const [pi, setPi] = useState(0);
   const [oi, setOi] = useState(0);
@@ -129,8 +131,8 @@ export default function CostPatterns() {
       <div className="svg-wrap">
         <svg viewBox="0 0 760 250" role="img" aria-label={`${p.name}: ${o.name}`}>
           <defs>
-            <marker id="cpFree" viewBox="0 0 10 10" refX={7} refY={5} markerWidth={5} markerHeight={5} orient="auto"><path className="mk-free" d="M0 0 L10 5 L0 10 z" /></marker>
-            <marker id="cpPaid" viewBox="0 0 10 10" refX={7} refY={5} markerWidth={5} markerHeight={5} orient="auto"><path className="mk-paid" d="M0 0 L10 5 L0 10 z" /></marker>
+            <marker id={`${uid}-cpFree`} viewBox="0 0 10 10" refX={7} refY={5} markerWidth={5} markerHeight={5} orient="auto"><path className="mk-free" d="M0 0 L10 5 L0 10 z" /></marker>
+            <marker id={`${uid}-cpPaid`} viewBox="0 0 10 10" refX={7} refY={5} markerWidth={5} markerHeight={5} orient="auto"><path className="mk-paid" d="M0 0 L10 5 L0 10 z" /></marker>
           </defs>
           {p.boxes.map((b) => (
             <g key={b.label}>
@@ -143,7 +145,7 @@ export default function CostPatterns() {
             {o.flows.map((f, i) => (
               <g key={i}>
                 <path className={"flow " + (f.paid ? "paid" : "free") + (f.heavy ? " heavy" : "")} d={f.d}
-                  markerEnd={`url(#${f.paid ? "cpPaid" : "cpFree"})`} />
+                  markerEnd={`url(#${uid}-${f.paid ? "cpPaid" : "cpFree"})`} />
                 {f.label && <text className={f.paid ? "flow-t paid" : "flow-t free"} x={f.lx} y={f.ly} textAnchor="middle">{f.label}</text>}
               </g>
             ))}

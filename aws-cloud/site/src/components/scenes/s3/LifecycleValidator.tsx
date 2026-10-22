@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useLang, type Bi } from "../../../lib/lang";
 
 // S3 Lifecycle transitions follow a one-way "waterfall". Standard-IA and One Zone-IA have a
@@ -30,6 +30,8 @@ const name = (c: C) => CLASSES.find((x) => x.id === c)!.label;
 
 export default function LifecycleValidator() {
   const L = useLang();
+  // Both language copies of the lesson render this component, so ids must be unique per instance.
+  const uid = useId().replace(/:/g, "");
   const [from, setFrom] = useState<C>("it");
   const [to, setTo] = useState<C>("std");
   const [days, setDays] = useState(30);
@@ -74,8 +76,8 @@ export default function LifecycleValidator() {
         </div>
       </div>
       <div className="stage-bar">
-        <label className="label" htmlFor="lcDays">{L({ vi: `Sau ${days} ngày kể từ khi tạo object`, en: `${days} days after object creation` })}</label>
-        <input id="lcDays" type="range" min={1} max={365} value={days} onChange={(e) => setDays(Number(e.target.value))} />
+        <label className="label" htmlFor={`${uid}-lcDays`}>{L({ vi: `Sau ${days} ngày kể từ khi tạo object`, en: `${days} days after object creation` })}</label>
+        <input id={`${uid}-lcDays`} type="range" min={1} max={365} value={days} onChange={(e) => setDays(Number(e.target.value))} />
       </div>
       <div className="readout" aria-live="polite">
         <span className={"pill " + (ok ? "ok" : "bad")}><i />{ok ? L({ vi: "Transition hợp lệ", en: "Valid transition" }) : L({ vi: "Không hợp lệ", en: "Not valid" })}</span>

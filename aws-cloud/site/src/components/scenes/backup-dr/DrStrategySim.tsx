@@ -191,7 +191,12 @@ export default function DrStrategySim() {
   const fm = (min: number) => L({ vi: fmt(min), en: fmtEn(min) });
   const fx = useRef<SVGGElement>(null);
   const alive = useRef(true);
-  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
   const [target, setTarget] = useState<TargetId>("daily");
   const [strat, setStrat] = useState<StratId>("br");
   const [ami, setAmi] = useState(false);

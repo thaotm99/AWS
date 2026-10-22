@@ -110,7 +110,12 @@ export default function CapacitySim() {
   const [mode, setMode] = useState<ModeId>("prov");
   const [shown, setShown] = useState(-1);
   const [busy, setBusy] = useState(false);
-  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
 
   const hours = simulate(pattern, mode);
   const visible = shown + 1;

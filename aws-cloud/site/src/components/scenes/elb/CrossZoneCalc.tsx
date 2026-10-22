@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useLang } from "../../../lib/lang";
 
 // Traffic share per target with cross-zone load balancing on or off. DNS splits traffic
 // evenly between the load balancer nodes (one per AZ) (exam3_q14, exam4_q59).
 export default function CrossZoneCalc() {
   const L = useLang();
+  // Both language copies of the lesson render this component, so ids must be unique per instance.
+  const uid = useId().replace(/:/g, "");
   const [a, setA] = useState(1);
   const [b, setB] = useState(4);
   const [cross, setCross] = useState(true);
@@ -32,10 +34,10 @@ export default function CrossZoneCalc() {
   return (
     <div className="stage">
       <div className="stage-bar">
-        <label className="label" htmlFor="czA">{L({ vi: "Số target tại AZ A", en: "Targets in AZ A" })}: {a}</label>
-        <input id="czA" type="range" min={1} max={8} value={a} onChange={(e) => setA(Number(e.target.value))} />
-        <label className="label" htmlFor="czB">{L({ vi: "Số target tại AZ B", en: "Targets in AZ B" })}: {b}</label>
-        <input id="czB" type="range" min={1} max={8} value={b} onChange={(e) => setB(Number(e.target.value))} />
+        <label className="label" htmlFor={`${uid}-czA`}>{L({ vi: "Số target tại AZ A", en: "Targets in AZ A" })}: {a}</label>
+        <input id={`${uid}-czA`} type="range" min={1} max={8} value={a} onChange={(e) => setA(Number(e.target.value))} />
+        <label className="label" htmlFor={`${uid}-czB`}>{L({ vi: "Số target tại AZ B", en: "Targets in AZ B" })}: {b}</label>
+        <input id={`${uid}-czB`} type="range" min={1} max={8} value={b} onChange={(e) => setB(Number(e.target.value))} />
         <span className="sep" />
         <button className="btn" aria-pressed={cross} onClick={() => setCross(true)}>{L({ vi: "Cross-zone bật", en: "Cross-zone on" })}</button>
         <button className="btn" aria-pressed={!cross} onClick={() => setCross(false)}>{L({ vi: "Cross-zone tắt", en: "Cross-zone off" })}</button>

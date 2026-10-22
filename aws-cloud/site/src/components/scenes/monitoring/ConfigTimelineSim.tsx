@@ -74,7 +74,12 @@ export default function ConfigTimelineSim() {
   const alive = useRef(true);
   const [at, setAt] = useState(0);
   const [busy, setBusy] = useState(false);
-  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
   const it = ITEMS[at];
 
   async function play() {

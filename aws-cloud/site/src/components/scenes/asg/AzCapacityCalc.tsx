@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useLang } from "../../../lib/lang";
 
 // How many instances, in how many AZs, keep the required minimum running after one AZ
 // fails (exam2_q31, exam5_q61).
 export default function AzCapacityCalc() {
   const L = useLang();
+  // Both language copies of the lesson render this component, so ids must be unique per instance.
+  const uid = useId().replace(/:/g, "");
   const [need, setNeed] = useState(4);
   const [azs, setAzs] = useState(2);
   const [down, setDown] = useState(false);
@@ -16,8 +18,8 @@ export default function AzCapacityCalc() {
   return (
     <div className="stage">
       <div className="stage-bar">
-        <label className="label" htmlFor="needN">{L({ vi: "Số instance tối thiểu", en: "Minimum instances" })}: {need}</label>
-        <input id="needN" type="range" min={2} max={12} value={need} onChange={(e) => setNeed(Number(e.target.value))} />
+        <label className="label" htmlFor={`${uid}-needN`}>{L({ vi: "Số instance tối thiểu", en: "Minimum instances" })}: {need}</label>
+        <input id={`${uid}-needN`} type="range" min={2} max={12} value={need} onChange={(e) => setNeed(Number(e.target.value))} />
         <span className="sep" />
         <span className="label">{L({ vi: "Số AZ", en: "AZs" })}</span>
         {[2, 3, 4].map((k) => (

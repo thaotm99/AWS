@@ -67,7 +67,12 @@ export default function SavingsPlanSim() {
   const L = useLang();
   const fx = useRef<SVGGElement>(null);
   const alive = useRef(true);
-  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
   const [sel, setSel] = useState<PlanId[]>(["ec2i"]);
   const [lit, setLit] = useState<WorkId[]>([]);
   const [busy, setBusy] = useState(false);

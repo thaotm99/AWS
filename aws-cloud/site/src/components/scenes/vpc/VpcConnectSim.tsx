@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { flashText, travel, type Pt } from "../../../lib/animate";
 import { useLang, type Bi } from "../../../lib/lang";
 
@@ -24,6 +24,8 @@ export default function VpcConnectSim() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<Bi | null>(null);
   const L = useLang();
+  // Both language copies of the lesson render this component, so ids must be unique per instance.
+  const uid = useId().replace(/:/g, "");
   const pk = useRef<SVGGElement>(null);
   const pts = positions(n);
 
@@ -57,8 +59,8 @@ export default function VpcConnectSim() {
         <button className="btn" aria-pressed={mode === "peering"} onClick={() => { setMode("peering"); setMsg(null); }} disabled={busy}>VPC peering</button>
         <button className="btn" aria-pressed={mode === "tgw"} onClick={() => { setMode("tgw"); setChain(false); setMsg(null); }} disabled={busy}>Transit Gateway</button>
         <span className="sep" />
-        <label className="label" htmlFor="vpcCount">{L({ vi: "Số VPC: ", en: "VPC count: " })}{n}</label>
-        <input id="vpcCount" type="range" min={3} max={10} value={n} onChange={(e) => { setN(Number(e.target.value)); setMsg(null); }} disabled={busy} />
+        <label className="label" htmlFor={`${uid}-vpcCount`}>{L({ vi: "Số VPC: ", en: "VPC count: " })}{n}</label>
+        <input id={`${uid}-vpcCount`} type="range" min={3} max={10} value={n} onChange={(e) => { setN(Number(e.target.value)); setMsg(null); }} disabled={busy} />
         {mode === "peering" && (
           <button className="btn" aria-pressed={chain} onClick={() => { setChain(!chain); setMsg(null); }} disabled={busy}>{L({ vi: "Chỉ peering A–B, B–C", en: "Only peering A–B, B–C" })}</button>
         )}

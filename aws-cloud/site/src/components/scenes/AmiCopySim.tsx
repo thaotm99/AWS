@@ -40,8 +40,13 @@ export default function AmiCopySim() {
     setError(false);
     if (step === 2 && pk.current) {
       setBusy(true);
-      await travel(pk.current, [[340, 182], [420, 182]], 900, "pkt", 7);
-      setBusy(false);
+      try {
+        await travel(pk.current, [[340, 182], [420, 182]], 900, "pkt", 7);
+      } finally {
+        setBusy(false);
+      }
+      // A failed launch pressed before or during the copy no longer applies once the copy is done.
+      setError(false);
     }
     setStep((s) => (s + 1) as Step);
   }
@@ -70,7 +75,7 @@ export default function AmiCopySim() {
           <button className="btn" onClick={reset}>{L({ vi: "Đặt lại", en: "Reset" })}</button>
         )}
         {step < 3 && (
-          <button className="btn danger" onClick={launchWithoutCopy}>{L({ vi: "Launch EC2 tại Tokyo khi chưa copy", en: "Launch EC2 in Tokyo without copying" })}</button>
+          <button className="btn danger" onClick={launchWithoutCopy} disabled={busy}>{L({ vi: "Launch EC2 tại Tokyo khi chưa copy", en: "Launch EC2 in Tokyo without copying" })}</button>
         )}
       </div>
       <div className="svg-wrap">

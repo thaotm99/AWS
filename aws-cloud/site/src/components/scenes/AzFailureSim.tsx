@@ -51,6 +51,8 @@ export default function AzFailureSim() {
   const svgRef = useRef<SVGSVGElement>(null);
   const pkRef = useRef<SVGGElement>(null);
   const visible = useRef(true);
+  // Bumped on every mode pick so packets already in flight are not counted against the new mode.
+  const generation = useRef(0);
   const L = useLang();
 
   const servers = serversFor(mode);
@@ -70,10 +72,12 @@ export default function AzFailureSim() {
     const timer = setInterval(() => {
       const layer = pkRef.current;
       if (!layer || !visible.current || document.hidden) return;
+      const gen = generation.current;
       const ux = USERS_X[Math.floor(Math.random() * USERS_X.length)];
       if (alive.length) {
         const target = alive[Math.floor(Math.random() * alive.length)];
         travel(layer, [[ux, 46], LB_BOTTOM, [target.cx, target.y]], 1100, "pkt", 5).then(() => {
+          if (gen !== generation.current) return;
           setOk((n) => n + 1);
           const g = svgRef.current?.querySelector(`[data-server="${target.name}"]`);
           g?.classList.add("hit");
@@ -81,6 +85,7 @@ export default function AzFailureSim() {
         });
       } else {
         travel(layer, [[ux, 46], LB_BOTTOM], 600, "pkt-bad", 5).then(() => {
+          if (gen !== generation.current) return;
           setErr((n) => n + 1);
           flashText(layer, 480, 96, "503", "err-t");
         });
@@ -92,6 +97,7 @@ export default function AzFailureSim() {
   }, [paused, mode, down]);
 
   function pickMode(next: Mode) {
+    generation.current++;
     setMode(next);
     setOk(0);
     setErr(0);

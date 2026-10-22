@@ -72,7 +72,12 @@ export default function BootTimeSim() {
   const [now, setNow] = useState(0);
   const [busy, setBusy] = useState(false);
   const [sel, setSel] = useState("golden");
-  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
 
   function play() {
     if (busy) return;

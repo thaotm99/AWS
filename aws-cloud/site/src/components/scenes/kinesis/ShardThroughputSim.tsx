@@ -77,7 +77,12 @@ export default function ShardThroughputSim() {
   const nf = nfFor(L({ vi: "vi-VN", en: "en-US" }));
   const fx = useRef<SVGGElement>(null);
   const alive = useRef(true);
-  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
   const [index, setIndex] = useState(0);
   const sc = SCENARIOS[index];
   const [on, setOn] = useState(false);

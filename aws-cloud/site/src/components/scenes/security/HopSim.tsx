@@ -167,27 +167,30 @@ export default function HopSim({ scenarios, action, height, label }: Props) {
     const layer = pk.current;
     if (!layer || busy) return;
     setBusy(true);
-    reset();
-    const out = sc.run(on);
-    // The starting node lights up too, unless it is the trouble itself or AWS acting on its own.
-    if (byId[sc.start] && byId[sc.start].kind !== "bad" && byId[sc.start].kind !== "aws" && !hidden.has(sc.start)) setLit({ [sc.start]: "pass" });
-    for (const h of resolve(sc, out)) {
-      const a = byId[h.from], b = byId[h.to];
-      if (!a || !b) throw new Error(`HopSim: unknown node in hop ${h.from} → ${h.to}`);
-      const [p, q] = segment(a, b);
-      const dur = Math.max(320, Math.hypot(q[0] - p[0], q[1] - p[1]) * 1.5);
-      const cls = h.packet ?? PACKET[h.state] ?? "pkt";
-      const n = h.times ?? 1;
-      await Promise.all(Array.from({ length: n }, (_, i) =>
-        new Promise<void>((done) => setTimeout(() => travel(layer, [p, q], dur, cls, 5.5).then(done), i * 150))));
-      setLit((s) => ({ ...s, [h.to]: h.state }));
-      setLinks((s) => ({ ...s, [key(h.from, h.to)]: h.state }));
-      if (h.flash) flashText(layer, b.x, b.y - size(b).h / 2 - 8, h.flash, FLASH[h.state], 1300);
-      if (!h.silent) setLog((l) => [...l, { state: h.state, tag: h.tag, who: b.label, msg: rich(h.msg) }]);
-      await new Promise((r) => setTimeout(r, 120));
+    try {
+      reset();
+      const out = sc.run(on);
+      // The starting node lights up too, unless it is the trouble itself or AWS acting on its own.
+      if (byId[sc.start] && byId[sc.start].kind !== "bad" && byId[sc.start].kind !== "aws" && !hidden.has(sc.start)) setLit({ [sc.start]: "pass" });
+      for (const h of resolve(sc, out)) {
+        const a = byId[h.from], b = byId[h.to];
+        if (!a || !b) throw new Error(`HopSim: unknown node in hop ${h.from} → ${h.to}`);
+        const [p, q] = segment(a, b);
+        const dur = Math.max(320, Math.hypot(q[0] - p[0], q[1] - p[1]) * 1.5);
+        const cls = h.packet ?? PACKET[h.state] ?? "pkt";
+        const n = h.times ?? 1;
+        await Promise.all(Array.from({ length: n }, (_, i) =>
+          new Promise<void>((done) => setTimeout(() => travel(layer, [p, q], dur, cls, 5.5).then(done), i * 150))));
+        setLit((s) => ({ ...s, [h.to]: h.state }));
+        setLinks((s) => ({ ...s, [key(h.from, h.to)]: h.state }));
+        if (h.flash) flashText(layer, b.x, b.y - size(b).h / 2 - 8, h.flash, FLASH[h.state], 1300);
+        if (!h.silent) setLog((l) => [...l, { state: h.state, tag: h.tag, who: b.label, msg: rich(h.msg) }]);
+        await new Promise((r) => setTimeout(r, 120));
+      }
+      setLog((l) => [...l, { ok: out.ok, msg: rich(out.result) }]);
+    } finally {
+      setBusy(false);
     }
-    setLog((l) => [...l, { ok: out.ok, msg: rich(out.result) }]);
-    setBusy(false);
   }
 
   return (

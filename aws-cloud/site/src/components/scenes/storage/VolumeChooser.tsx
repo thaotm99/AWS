@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useLang } from "../../../lib/lang";
 
 // EBS volume type from the requirements the tests give: IOPS (exam3_q27, exam5_q22),
@@ -8,6 +8,8 @@ type Pattern = "random" | "sequential";
 
 export default function VolumeChooser() {
   const L = useLang();
+  // Both language copies of the lesson render this component, so ids must be unique per instance.
+  const uid = useId().replace(/:/g, "");
   const num = (n: number) => n.toLocaleString(L({ vi: "vi-VN", en: "en-US" }));
   const [iops, setIops] = useState(25000);
   const [pattern, setPattern] = useState<Pattern>("random");
@@ -39,8 +41,8 @@ export default function VolumeChooser() {
   return (
     <div className="stage">
       <div className="stage-bar">
-        <label className="label" htmlFor="volIops">{L({ vi: "IOPS yêu cầu: ", en: "Required IOPS: " })}{num(iops)}</label>
-        <input id="volIops" type="range" min={1000} max={256000} step={1000} value={iops} onChange={(e) => setIops(Number(e.target.value))} />
+        <label className="label" htmlFor={`${uid}-volIops`}>{L({ vi: "IOPS yêu cầu: ", en: "Required IOPS: " })}{num(iops)}</label>
+        <input id={`${uid}-volIops`} type="range" min={1000} max={256000} step={1000} value={iops} onChange={(e) => setIops(Number(e.target.value))} />
       </div>
       <div className="stage-bar">
         <span className="label">{L({ vi: "Mẫu truy cập", en: "Access pattern" })}</span>

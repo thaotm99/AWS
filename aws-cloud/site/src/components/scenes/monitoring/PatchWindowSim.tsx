@@ -60,7 +60,12 @@ export default function PatchWindowSim() {
   const [ok, setOk] = useState(0);
   const [fail, setFail] = useState(0);
   const [busy, setBusy] = useState(false);
-  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
 
   const total = ticksOf(mode);
   const done = tick === total - 1;

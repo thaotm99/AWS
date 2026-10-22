@@ -32,7 +32,8 @@ export default function SortGame({ bins, cards }: Props) {
   const placedCount = Object.keys(placed).length;
 
   function drop(binId: string, name = picked) {
-    if (!name || placed[name]) return;
+    // Ignore anything that is not one of our cards, such as page text dragged onto a bin.
+    if (!name || !cards.some(([n]) => n === name) || placed[name]) return;
     setPicked(null);
     if (answer[name] === binId) {
       const next = { ...placed, [name]: binId };
@@ -49,21 +50,34 @@ export default function SortGame({ bins, cards }: Props) {
 
   const card = (name: string) => {
     const isPlaced = !!placed[name];
+    const toggle = () => !isPlaced && setPicked(picked === name ? null : name);
+    // A div rather than a <button>: Firefox will not start a drag from a draggable button.
     return (
-      <button
+      <div
         key={name}
         className={"card" + (isPlaced ? " placed" : "") + (shake === name ? " shake" : "")}
+        role="button"
+        tabIndex={isPlaced ? -1 : 0}
         aria-pressed={picked === name}
+        aria-disabled={isPlaced || undefined}
         draggable={!isPlaced}
         onDragStart={(e) => {
           e.dataTransfer.setData("text/plain", name);
+          e.dataTransfer.effectAllowed = "move";
           setPicked(name);
         }}
-        onClick={() => !isPlaced && setPicked(picked === name ? null : name)}
+        onClick={toggle}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            e.stopPropagation();
+            toggle();
+          }
+        }}
         onAnimationEnd={() => setShake(null)}
       >
         {name}
-      </button>
+      </div>
     );
   };
 
