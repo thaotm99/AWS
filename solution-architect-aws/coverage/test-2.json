@@ -596,8 +596,8 @@
         {
           "keyword": "EC2 instance Impaired status (ASG delays termination)",
           "lesson": "asg",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "asg.mdx#health / HealthReplaceSim"
         },
         {
           "keyword": "ASG ELB health check type",
@@ -608,8 +608,8 @@
         {
           "keyword": "ASG custom health check (SetInstanceHealth)",
           "lesson": "asg",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "asg.mdx#health / HealthReplaceSim"
         }
       ]
     },
@@ -1035,8 +1035,8 @@
         {
           "keyword": "ASG mixed instances policy (On-Demand + Spot)",
           "lesson": "asg",
-          "status": "partial",
-          "where": "monitoring.mdx Takeaway (mixed instances group, termination only)"
+          "status": "covered",
+          "where": "asg.mdx#setup / GroupSetupSim"
         }
       ]
     },

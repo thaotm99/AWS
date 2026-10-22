@@ -1,8 +1,8 @@
 ---
 title: "Amazon EC2 Auto Scaling: co giãn, chịu lỗi AZ và scale in"
-lede: "Lượng truy cập của ShopViet biến động theo giờ, theo đợt khuyến mãi và theo độ dài hàng đợi đơn hàng. Bài học trình bày cơ chế tự động điều chỉnh số lượng instance: lựa chọn scaling policy phù hợp với từng dạng tải, duy trì đủ capacity khi mất một AZ, thứ tự lựa chọn instance bị terminate khi scale in, và bảo trì instance mà không bị Auto Scaling thay thế."
-minutes: 25
-scenes: 4
+lede: "Lượng truy cập của ShopViet biến động theo giờ, theo đợt khuyến mãi và theo độ dài hàng đợi đơn hàng. Bài học trình bày cơ chế tự động điều chỉnh số lượng instance: cấu hình nhóm (launch template, subnet, min/desired/max, On-Demand kết hợp Spot), lựa chọn scaling policy phù hợp với từng dạng tải, duy trì đủ capacity khi mất một AZ, thứ tự lựa chọn instance bị terminate khi scale in, bảo trì instance mà không bị Auto Scaling thay thế, và các điều kiện để ASG thay thế một instance lỗi."
+minutes: 40
+scenes: 7
 prerequisites: ["ec2", "elb"]
 docs:
   - title: "Target tracking scaling policies"
@@ -23,6 +23,36 @@ docs:
     url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/health-checks-overview.html"
   - title: "Cluster Autoscaler (EKS best practices)"
     url: "https://docs.aws.amazon.com/eks/latest/best-practices/cas.html"
+  - title: "Auto Scaling launch templates"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-templates.html"
+  - title: "Set scaling limits for your Auto Scaling group"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-capacity-limits.html"
+  - title: "Scheduled scaling"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-scheduled-scaling.html"
+  - title: "Setup overview for creating a mixed instances group"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/mixed-instances-groups-set-up-overview.html"
+  - title: "Auto Scaling groups with multiple instance types and purchase options"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-mixed-instances-groups.html"
+  - title: "Amazon EC2 Auto Scaling FAQs"
+    url: "https://aws.amazon.com/ec2/autoscaling/faqs/"
+  - title: "Step and simple scaling policies"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-scaling-simple-step.html"
+  - title: "Simple scaling policies"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/simple-scaling-policies.html"
+  - title: "Scaling cooldowns"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-scaling-cooldowns.html"
+  - title: "Set the default instance warmup"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-default-instance-warmup.html"
+  - title: "Use instance scale-in protection"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-protection.html"
+  - title: "Set up a custom health check"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/set-up-a-custom-health-check.html"
+  - title: "View the reason for health check failures"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/replace-unhealthy-instance.html"
+  - title: "Instance maintenance policies"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-maintenance-policy.html"
+  - title: "Rebalancing activities (Amazon EC2 Auto Scaling benefits)"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-benefits.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -31,20 +61,43 @@ import ScalingPolicySim from "../../components/scenes/asg/ScalingPolicySim.tsx";
 import TerminationSim from "../../components/scenes/asg/TerminationSim.tsx";
 import AzCapacityCalc from "../../components/scenes/asg/AzCapacityCalc.tsx";
 import MaintenanceSim from "../../components/scenes/asg/MaintenanceSim.tsx";
+import GroupSetupSim from "../../components/scenes/asg/GroupSetupSim.tsx";
+import CapacityRangeSim from "../../components/scenes/asg/CapacityRangeSim.tsx";
+import DynamicPolicySim from "../../components/scenes/asg/DynamicPolicySim.tsx";
+import HealthReplaceSim from "../../components/scenes/asg/HealthReplaceSim.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
-  { href: "#s1", label: "1 · Scaling policy" },
-  { href: "#s2", label: "2 · Capacity khi mất một AZ" },
-  { href: "#s3", label: "3 · Termination policy khi scale in" },
-  { href: "#s4", label: "4 · Bảo trì và health check" },
+  { href: "#setup", label: "1 · Cấu hình Auto Scaling group" },
+  { href: "#s1", label: "2 · Scaling policy" },
+  { href: "#dynamic", label: "3 · Simple, step và target tracking" },
+  { href: "#s2", label: "4 · Capacity khi mất một AZ" },
+  { href: "#s3", label: "5 · Termination policy khi scale in" },
+  { href: "#s4", label: "6 · Bảo trì instance" },
+  { href: "#health", label: "7 · Health check và thay thế instance" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
 Ban đêm ShopViet chỉ cần 2 instance; tối thứ Sáu có chương trình khuyến mãi thì cần 12. Duy trì 12 instance cả ngày gây lãng phí chi phí, trong khi chỉ duy trì 2 instance làm tăng độ trễ cho người dùng. **Auto Scaling group** (ASG) tự động điều chỉnh số EC2 instance theo tải. Người thiết kế cần cấu hình: thời điểm scale out, capacity tối thiểu, và instance nào bị loại khi scale in.
 </Story>
 
-<Scene id="s1" label="Phần 1/4" title="Scaling policy theo từng dạng tải" questions={["exam1_q30", "exam3_q54", "exam6_q52", "exam1_q45", "exam4_q21", "exam3_q15", "exam4_q56", "exam4_q53"]}>
+<Scene id="setup" label="Phần 1/7" title="Cấu hình Auto Scaling group cho website ShopViet" questions={["exam5_q36", "exam2_q33", "exam5_q61", "exam1_q45"]}>
+
+Trước đây ứng dụng báo cáo của ShopViet chạy trên một EC2 On-Demand duy nhất, và mỗi đợt tăng tải đều gây lỗi 5xx. Để chuyển sang Auto Scaling group, nhóm vận hành tạo AMI từ instance hiện tại, khai báo AMI đó trong một **launch template**, sau đó chọn subnet và purchase options cho nhóm. Thử từng lựa chọn dưới đây:
+
+<GroupSetupSim client:visible />
+
+Ba điểm cần nắm. Thứ nhất, **launch template** mô tả cách launch instance (AMI, instance type, key pair, security group…) và có nhiều phiên bản; launch configuration là cơ chế cũ, không sửa được sau khi tạo và không hỗ trợ kết hợp On-Demand với Spot hay nhiều instance type. Thứ hai, ASG là tài nguyên theo Region: trải được trên nhiều AZ nhưng **không trải được trên nhiều Region**; hệ thống đa Region cần một ASG tại mỗi Region. Thứ ba, **mixed instances policy** cho phép một ASG chạy cả On-Demand và Spot: phần base On-Demand cho tải nền, phần vượt base chia theo tỉ lệ. Khi tải nền ổn định ở một mức suốt năm, mua Reserved Instances (hoặc Savings Plans) cho phần nền đó; không dùng Spot cho phần nền vì EC2 có thể thu hồi Spot Instance khi không còn capacity.
+
+Kích thước nhóm do ba giá trị quyết định. **Desired capacity** là số instance ASG cố gắng duy trì; **minimum** và **maximum** là giới hạn mà scaling policy và scheduled action không được vượt qua. Phòng kế toán cần đúng 10 instance vào giờ chạy bảng lương cuối tháng:
+
+<CapacityRangeSim client:visible />
+
+<Takeaway>Launch template: định nghĩa instance, có phiên bản, bắt buộc khi kết hợp On-Demand với Spot. ASG trải trên nhiều AZ trong một Region, không trải qua Region. Cần một số instance cụ thể vào một thời điểm: scheduled action đặt desired capacity; min/max chỉ là giới hạn của khoảng co giãn. Tải nền cố định: Reserved Instances; phần dao động: On-Demand và Spot qua mixed instances policy.</Takeaway>
+
+</Scene>
+
+<Scene id="s1" label="Phần 2/7" title="Scaling policy theo từng dạng tải" questions={["exam1_q30", "exam3_q54", "exam6_q52", "exam1_q45", "exam4_q21", "exam3_q15", "exam4_q56", "exam4_q53"]}>
 
 Website ShopViet có nội dung động thay đổi liên tục, cache không thể tiếp nhận toàn bộ tải, do đó cần bổ sung instance khi lượng truy cập tăng. Tuy nhiên, thời điểm scale out phụ thuộc vào dạng tải. Chọn một ngày vận hành của ShopViet, chọn scaling policy, sau đó chạy mô phỏng cả ngày để xác định các khung giờ người dùng phải chờ:
 
@@ -56,7 +109,19 @@ Container được scale theo cơ chế tương tự. Khi ECS service quá tải
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/4" title="Số instance cần thiết để chịu được sự cố một AZ" questions={["exam2_q31", "exam5_q61"]}>
+<Scene id="dynamic" label="Phần 3/7" title="Simple, step và target tracking khi tải tăng đột ngột" questions={["exam1_q30", "exam3_q54", "exam4_q21"]}>
+
+Ba loại dynamic scaling policy đều phản ứng theo CloudWatch metric, nhưng khác nhau ở cách tính số instance cần thêm và thời điểm được phản ứng tiếp. Với simple scaling và step scaling, người thiết kế tự tạo CloudWatch alarm với ngưỡng cố định; với target tracking, chỉ cần chọn metric và giá trị mục tiêu, Auto Scaling tự tạo và quản lý alarm. Chạy cùng một đợt tăng tải với từng policy:
+
+<DynamicPolicySim client:visible />
+
+Hai khái niệm thời gian dễ nhầm lẫn. **Cooldown** (mặc định 300 giây) áp dụng cho simple scaling: sau mỗi scaling activity, policy không phản hồi alarm mới cho tới khi cooldown kết thúc. **Instance warmup** áp dụng cho target tracking và step scaling: instance mới chưa được tính vào metric tổng hợp của nhóm cho tới khi hết warmup, nhưng đã được tính vào desired capacity, nên policy không launch thừa instance. AWS khuyến nghị bật **default instance warmup** cho nhóm.
+
+<Takeaway>Giữ metric quanh một giá trị (CPU 50%, backlog SQS trên mỗi instance): target tracking, không phải step hay simple. Step scaling: mức điều chỉnh theo độ lớn breach, phản hồi alarm liên tục. Simple scaling: một mức điều chỉnh, chờ activity và cooldown, phản ứng chậm với tải tăng đột ngột; AWS khuyến nghị không dùng. Cả ba đều phản ứng sau khi tải tăng; tải có chu kỳ cần predictive scaling.</Takeaway>
+
+</Scene>
+
+<Scene id="s2" label="Phần 4/7" title="Số instance cần thiết để chịu được sự cố một AZ" questions={["exam2_q31", "exam5_q61"]}>
 
 ShopViet cần duy trì tối thiểu N instance, kể cả khi một AZ gặp sự cố. Điều chỉnh N, chọn số AZ, sau đó nhấn "Mô phỏng sự cố AZ 1" để kiểm tra.
 
@@ -68,17 +133,19 @@ Hai trường hợp thường gặp. Yêu cầu tối thiểu 4 instance: 3 AZ �
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/4" title="Scale in: thứ tự lựa chọn instance bị terminate" questions={["exam4_q16", "exam2_q65", "exam1_q54"]}>
+<Scene id="s3" label="Phần 5/7" title="Scale in: thứ tự lựa chọn instance bị terminate" questions={["exam4_q16", "exam2_q65", "exam1_q54", "exam5_q33"]}>
 
 Sau đợt khuyến mãi, ASG thực hiện scale in. Với default termination policy, ASG đánh giá theo một thứ tự cố định. Chọn kịch bản, dự đoán instance bị terminate, sau đó quan sát từng bước.
 
 <TerminationSim client:visible />
 
+Kịch bản thứ ba dùng **instance scale-in protection**: instance được bảo vệ không bị chọn khi scale in. Có thể bật cho cả nhóm (instance mới kế thừa thiết lập) hoặc cho từng instance. Scale-in protection **không** bảo vệ instance khỏi health check replacement, Spot interruption hay thao tác terminate thủ công. Khi kỹ sư cần log của một instance đã bị scale in, giải pháp bền vững là gửi log ra CloudWatch Logs bằng CloudWatch agent (bài Monitoring), không phải giữ instance lại.
+
 <Takeaway>Thứ tự mặc định: AZ có nhiều instance nhất → instance dùng cấu hình lỗi thời (launch configuration trước, sau đó launch template khác template hiện tại, rồi phiên bản cũ nhất của template hiện tại) → nếu còn nhiều instance: gần giờ tính phí tiếp theo nhất (AWS lưu ý tiêu chí này ít tác dụng vì phần lớn EC2 tính phí theo giây). ASG cũng tự động cân bằng lại giữa các AZ và thay thế instance unhealthy.</Takeaway>
 
 </Scene>
 
-<Scene id="s4" label="Phần 4/4" title="Bảo trì instance mà không bị ASG thay thế" questions={["exam1_q32", "exam5_q1", "exam2_q18", "exam4_q49"]}>
+<Scene id="s4" label="Phần 6/7" title="Bảo trì instance mà không bị ASG thay thế" questions={["exam1_q32", "exam5_q1", "exam2_q18", "exam4_q49"]}>
 
 ASG thay thế mọi instance được xác định là unhealthy. Cơ chế này phù hợp khi instance thực sự lỗi, nhưng gây vấn đề khi instance đang được vá lỗi hoặc instance mới chưa hoàn tất khởi động. Bài ELB đã trình bày việc ASG cần sử dụng **ELB health check** để dựa theo kết quả của load balancer; trong phần này ASG đang sử dụng ELB health check. Thử ba tác vụ bảo trì:
 
@@ -90,7 +157,19 @@ Về chi phí: ShopViet luôn cần tối thiểu 2 instance, nhiều hơn vào 
 
 </Scene>
 
-<Scene id="challenge" label="Bài tập" title="Phân loại tình huống theo scaling policy" questions={["exam2_q31", "exam4_q16", "exam2_q65", "exam3_q54"]}>
+<Scene id="health" label="Phần 7/7" title="Khi nào ASG thay thế một instance lỗi" questions={["exam2_q18", "exam1_q54"]}>
+
+Một instance của ShopViet có dấu hiệu lỗi nhưng ASG chưa thay thế, hoặc thay thế theo thứ tự khác với dự kiến. Kết quả phụ thuộc vào loại health check phát hiện lỗi và loại hoạt động mà ASG thực hiện. Chạy từng tình huống, sau đó đổi tuỳ chọn để so sánh:
+
+<HealthReplaceSim client:visible />
+
+Khi ASG chưa terminate một instance lỗi, kiểm tra lần lượt: instance còn trong health check grace period; status check đang impaired và ASG đang chờ vài phút; health check type của nhóm là EC2 nên kết quả của ELB bị bỏ qua. Tăng minimum capacity không giữ lại instance unhealthy, và Spot Instance trong nhóm cũng được thay thế khi unhealthy.
+
+<Takeaway>Status check impaired: ASG chờ vài phút trước khi đánh dấu Unhealthy; instance không còn running: thay ngay. ELB health check chỉ có tác dụng khi bật cho ASG. Custom health check gọi SetInstanceHealth thì ASG thay thế instance (tôn trọng grace period theo mặc định). Health check replacement: terminate trước, launch sau (đổi được bằng instance maintenance policy). AZ rebalancing: launch trước, terminate sau.</Takeaway>
+
+</Scene>
+
+<Scene id="challenge" label="Bài tập" title="Phân loại tình huống theo scaling policy" questions={["exam2_q31", "exam4_q16", "exam2_q65", "exam3_q54", "exam1_q45", "exam2_q18", "exam5_q61", "exam4_q21"]}>
 
 Phân loại từng tình huống vào scaling policy phù hợp nhất. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
@@ -99,11 +178,13 @@ Phân loại từng tình huống vào scaling policy phù hợp nhất. Trên t
     { id: "tt", title: "Target tracking", sub: "Duy trì giá trị mục tiêu", hint: "Gợi ý: tải thay đổi liên tục, cần duy trì metric ổn định." },
     { id: "sch", title: "Scheduled", sub: "Theo lịch xác định trước", hint: "Gợi ý: thời điểm tải tăng được biết chính xác." },
     { id: "pred", title: "Predictive", sub: "Dự báo từ dữ liệu lịch sử", hint: "Gợi ý: tải có chu kỳ lặp lại." },
+    { id: "step", title: "Step scaling", sub: "Mức điều chỉnh theo độ lớn breach", hint: "Gợi ý: alarm với ngưỡng tự đặt, mỗi khoảng giá trị một mức thêm instance." },
   ]}
   cards={[
     ["Giữ CPU ở 50%", "tt"], ["Giữ số message trên mỗi instance ổn định", "tt"],
     ["Ngày cuối tháng 9 giờ sáng cần 10 instance", "sch"], ["Mỗi thứ Hai trước giờ mở bán", "sch"],
     ["Tải lặp lại theo ngày và tuần, cần chuẩn bị capacity trước", "pred"],
+    ["CPU 70–85% thêm 2 instance, trên 85% thêm 5 instance", "step"],
   ]}
 />
 
@@ -126,6 +207,22 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Chuyển instance sang Standby", "Tắt health check của ALB", "Đặt desired capacity = 0"],
     a: 0,
     why: "Instance ở Standby được gỡ khỏi target group và ASG không thực hiện health check trên instance đó. Phương án khác: suspend ReplaceUnhealthy, sau khi vá xong thì resume." },
+  { q: "Bảng lương chạy lúc 9:00 ngày cuối tháng và cần đúng 10 instance; ngày thường 2 instance là đủ. Cấu hình nào phù hợp?",
+    opts: ["Scheduled action đặt min = max = 10", "Scheduled action đặt desired capacity = 10", "Target tracking đặt số instance = 10 lúc 9:00"],
+    a: 1,
+    why: "Desired capacity là số instance ASG duy trì; min/max chỉ là giới hạn. Đặt min = max = 10 khoá kích thước nhóm. Target tracking điều chỉnh theo metric, không theo thời điểm." },
+  { q: "Worker xử lý đơn hàng từ SQS không đứng sau load balancer. Script giám sát phát hiện worker treo và gọi SetInstanceHealth với trạng thái Unhealthy. ASG xử lý thế nào?",
+    opts: ["Bỏ qua, vì ASG chỉ dựa vào EC2 status check", "Terminate và thay thế instance (mặc định tôn trọng health check grace period)", "Chuyển instance sang Standby"],
+    a: 1,
+    why: "Custom health check bổ sung cho các health check sẵn có. Instance bị đánh dấu Unhealthy được ASG thay thế; mặc định lệnh set-instance-health tôn trọng grace period." },
+  { q: "ShopViet mở thêm Region us-east-1 và muốn instance tại Singapore và Virginia cùng thuộc một Auto Scaling group với minimum 4. Đánh giá nào đúng?",
+    opts: ["Được, ASG tự cân bằng giữa hai Region", "Không được: ASG chỉ trải trên các AZ của một Region; cần một ASG tại mỗi Region", "Được, nếu dùng launch template"],
+    a: 1,
+    why: "Auto Scaling group là tài nguyên theo Region: trải được trên nhiều AZ, không trải được trên nhiều Region." },
+  { q: "Đơn hàng tăng đột ngột gấp bốn lần. Policy nào phản ứng chậm nhất?",
+    opts: ["Target tracking theo CPU 50%", "Step scaling với ba bước", "Simple scaling +2 instance, cooldown 300 giây"],
+    a: 2,
+    why: "Simple scaling chỉ thêm một mức cố định, rồi chờ scaling activity hoàn tất và cooldown kết thúc mới phản hồi alarm tiếp theo." },
 ]} />
 
 </Scene>

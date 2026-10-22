@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 781 (81%) · 🟡 85 (9%) · ❌ 94 (10%).
+Có **960 keyword** khác nhau: ✅ 795 (83%) · 🟡 79 (8%) · ❌ 86 (9%).
 
 ### Theo bài học
 
@@ -30,7 +30,7 @@ Có **960 keyword** khác nhau: ✅ 781 (81%) · 🟡 85 (9%) · ❌ 94 (10%).
 | [cognito](#cognito) | 15 | 13 | 1 | 1 | 87% |
 | [ec2](#ec2) | 57 | 41 | 7 | 9 | 72% |
 | [elb](#elb) | 42 | 32 | 6 | 4 | 76% |
-| [asg](#asg) | 44 | 30 | 6 | 8 | 68% |
+| [asg](#asg) | 44 | 44 | 0 | 0 | 100% |
 | [containers](#containers) | 22 | 17 | 2 | 3 | 77% |
 | [lambda](#lambda) | 37 | 28 | 4 | 5 | 76% |
 | [s3](#s3) | 70 | 55 | 8 | 7 | 79% |
@@ -50,11 +50,11 @@ Có **960 keyword** khác nhau: ✅ 781 (81%) · 🟡 85 (9%) · ❌ 94 (10%).
 
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
-| Đề 1 | 189 | 19 | 16 |
-| Đề 2 | 174 | 12 | 12 |
-| Đề 3 | 194 | 10 | 18 |
-| Đề 4 | 194 | 18 | 24 |
-| Đề 5 | 180 | 25 | 16 |
+| Đề 1 | 194 | 16 | 14 |
+| Đề 2 | 177 | 11 | 10 |
+| Đề 3 | 195 | 10 | 17 |
+| Đề 4 | 196 | 18 | 22 |
+| Đề 5 | 183 | 23 | 15 |
 | Đề 6 | 189 | 8 | 13 |
 
 ## global-infra
@@ -510,45 +510,45 @@ Có **960 keyword** khác nhau: ✅ 781 (81%) · 🟡 85 (9%) · ❌ 94 (10%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | ASG custom health check (SetInstanceHealth) | ❌ Thiếu | 1 | exam2_q18 |  |
-| [ ] | ASG simple scaling policy (cooldown) | ❌ Thiếu | 1 | exam4_q21 |  |
-| [ ] | ASG step scaling / simple scaling policy | ❌ Thiếu | 1 | exam3_q54 |  |
-| [ ] | ASG step scaling policy | ❌ Thiếu | 1 | exam4_q21 |  |
-| [ ] | Auto Scaling group cannot span Regions | ❌ Thiếu | 1 | exam5_q61 |  |
-| [ ] | Auto Scaling simple scaling policy | ❌ Thiếu | 1 | exam1_q30 |  |
-| [ ] | Auto Scaling step scaling policy | ❌ Thiếu | 1 | exam1_q30 |  |
-| [ ] | EC2 instance Impaired status (ASG delays termination) | ❌ Thiếu | 1 | exam2_q18 |  |
-| [ ] | ASG mixed instances policy (On-Demand + Spot) | 🟡 Một phần | 1 | exam2_q33 | monitoring.mdx Takeaway (mixed instances group, termination only) |
-| [ ] | Auto Scaling AZ rebalancing (launch before terminate) | 🟡 Một phần | 1 | exam1_q54 | asg.mdx#s3 / TerminationSim |
-| [ ] | Auto Scaling desired capacity vs min/max | 🟡 Một phần | 1 | exam1_q45 | asg.mdx#s1 / ScalingPolicySim |
-| [ ] | Auto Scaling group with launch template | 🟡 Một phần | 1 | exam5_q36 | asg.mdx#s3 / TerminationSim |
-| [ ] | Auto Scaling instance scale-in protection | 🟡 Một phần | 1 | exam5_q33 | monitoring.mdx#s2 / AlarmActionSim |
-| [ ] | Auto Scaling unhealthy instance replacement (terminate then launch) | 🟡 Một phần | 1 | exam1_q54 | asg.mdx#s4 |
 | [ ] | ASG scheduled action | ✅ Đã có | 3 | exam3_q54, exam4_q21, exam6_q52 | asg.mdx#s1 / ScalingPolicySim<br>asg.mdx#s1 |
 | [ ] | Auto Scaling group | ✅ Đã có | 3 | exam4_q9, exam4_q53, exam6_q43 | asg.mdx#s1<br>asg.mdx#s1 / ScalingPolicySim |
 | [ ] | ASG default termination policy | ✅ Đã có | 2 | exam2_q65, exam4_q16 | asg.mdx#s3 / TerminationSim |
 | [ ] | Auto Scaling group across multiple AZs behind ALB | ✅ Đã có | 2 | exam2_q32, exam5_q7 | global-infra.mdx#s3 / AzFailureSim<br>asg.mdx#s2 / AzCapacityCalc |
 | [ ] | Auto Scaling target tracking scaling policy | ✅ Đã có | 2 | exam1_q30, exam1_q45 | asg.mdx#s1 / ScalingPolicySim<br>asg.mdx#s1 |
+| [ ] | ASG custom health check (SetInstanceHealth) | ✅ Đã có | 1 | exam2_q18 | asg.mdx#health / HealthReplaceSim |
 | [ ] | ASG ELB health check type | ✅ Đã có | 1 | exam2_q18 | asg.mdx#s4; elb.mdx#s4 / HealthCheckSim |
 | [ ] | ASG health check grace period | ✅ Đã có | 1 | exam2_q18 | asg.mdx#s4 / MaintenanceSim |
 | [ ] | ASG minimum capacity across AZs | ✅ Đã có | 1 | exam4_q49 | asg.mdx#s2; asg.mdx#s4 |
+| [ ] | ASG mixed instances policy (On-Demand + Spot) | ✅ Đã có | 1 | exam2_q33 | asg.mdx#setup / GroupSetupSim |
 | [ ] | ASG predictive scaling | ✅ Đã có | 1 | exam4_q21 | asg.mdx#s1 |
 | [ ] | ASG scale-in | ✅ Đã có | 1 | exam4_q16 | asg.mdx#s3 |
+| [ ] | ASG simple scaling policy (cooldown) | ✅ Đã có | 1 | exam4_q21 | asg.mdx#dynamic / DynamicPolicySim |
+| [ ] | ASG step scaling / simple scaling policy | ✅ Đã có | 1 | exam3_q54 | asg.mdx#dynamic / DynamicPolicySim |
+| [ ] | ASG step scaling policy | ✅ Đã có | 1 | exam4_q21 | asg.mdx#dynamic / DynamicPolicySim |
 | [ ] | ASG target tracking on SQS backlog (ApproximateNumberOfMessages) | ✅ Đã có | 1 | exam6_q52 | asg.mdx#s1; messaging.mdx#s1 / QueueBufferSim |
 | [ ] | ASG target tracking on SQS backlog per instance | ✅ Đã có | 1 | exam3_q54 | asg.mdx#s1 / ScalingPolicySim |
 | [ ] | ASG target tracking scaling policy | ✅ Đã có | 1 | exam4_q21 | asg.mdx#s1 |
+| [ ] | Auto Scaling AZ rebalancing (launch before terminate) | ✅ Đã có | 1 | exam1_q54 | asg.mdx#health / HealthReplaceSim |
 | [ ] | Auto Scaling based on SQS queue depth (backlog per instance) | ✅ Đã có | 1 | exam5_q26 | asg.mdx#s1 / ScalingPolicySim |
+| [ ] | Auto Scaling desired capacity vs min/max | ✅ Đã có | 1 | exam1_q45 | asg.mdx#setup / CapacityRangeSim |
 | [ ] | Auto Scaling group (replace unhealthy instance) | ✅ Đã có | 1 | exam1_q2 | asg.mdx#s4 |
 | [ ] | Auto Scaling group across multiple AZs | ✅ Đã có | 1 | exam6_q53 | asg.mdx#s2 / AzCapacityCalc |
 | [ ] | Auto Scaling group AZ distribution and balancing | ✅ Đã có | 1 | exam5_q61 | asg.mdx#s2 / AzCapacityCalc; asg.mdx#s3 |
 | [ ] | Auto Scaling group behind ALB | ✅ Đã có | 1 | exam2_q53 | global-infra.mdx#s3; asg.mdx#s1 |
+| [ ] | Auto Scaling group cannot span Regions | ✅ Đã có | 1 | exam5_q61 | asg.mdx#setup / GroupSetupSim |
 | [ ] | Auto Scaling group health check type (EC2 vs ELB) | ✅ Đã có | 1 | exam5_q1 | asg.mdx#s4 / elb.mdx#s4 HealthCheckSim |
 | [ ] | Auto Scaling group min=max=1 (single-AZ instance) | ✅ Đã có | 1 | exam6_q27 | ec2.mdx#s4 / Ec2OpsSim |
 | [ ] | Auto Scaling group min=max=desired=1 across 2 AZs | ✅ Đã có | 1 | exam6_q57 | ec2.mdx#s4 / Ec2OpsSim |
 | [ ] | Auto Scaling group minimum/maximum/desired capacity | ✅ Đã có | 1 | exam5_q61 | asg.mdx#s2 / AzCapacityCalc |
+| [ ] | Auto Scaling group with launch template | ✅ Đã có | 1 | exam5_q36 | asg.mdx#setup / GroupSetupSim |
+| [ ] | Auto Scaling instance scale-in protection | ✅ Đã có | 1 | exam5_q33 | asg.mdx#s3 / TerminationSim |
 | [ ] | Auto Scaling scheduled action | ✅ Đã có | 1 | exam1_q45 | asg.mdx#s1 / ScalingPolicySim |
+| [ ] | Auto Scaling simple scaling policy | ✅ Đã có | 1 | exam1_q30 | asg.mdx#dynamic / DynamicPolicySim |
 | [ ] | Auto Scaling Standby state | ✅ Đã có | 1 | exam1_q32 | asg.mdx#s4 / MaintenanceSim |
+| [ ] | Auto Scaling step scaling policy | ✅ Đã có | 1 | exam1_q30 | asg.mdx#dynamic / DynamicPolicySim |
 | [ ] | Auto Scaling suspend ReplaceUnhealthy process | ✅ Đã có | 1 | exam1_q32 | asg.mdx#s4 / MaintenanceSim |
+| [ ] | Auto Scaling unhealthy instance replacement (terminate then launch) | ✅ Đã có | 1 | exam1_q54 | asg.mdx#health / HealthReplaceSim |
+| [ ] | EC2 instance Impaired status (ASG delays termination) | ✅ Đã có | 1 | exam2_q18 | asg.mdx#health / HealthReplaceSim |
 | [ ] | EC2 launch template | ✅ Đã có | 1 | exam3_q21 | ec2.mdx#s2 |
 | [ ] | ELB health check with Auto Scaling | ✅ Đã có | 1 | exam1_q54 | asg.mdx#s4 / elb.mdx#s4 |
 | [ ] | Multi-AZ capacity planning (survive one AZ failure) | ✅ Đã có | 1 | exam2_q31 | asg.mdx#s2 / AzCapacityCalc |

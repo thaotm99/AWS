@@ -1,8 +1,8 @@
 ---
 title: "Amazon EC2 Auto Scaling: scaling, AZ fault tolerance and scale in"
-lede: "ShopViet's traffic varies by the hour, by sale event and by the length of the order queue. This lesson covers how the number of instances is adjusted automatically: choosing a scaling policy that fits each load pattern, keeping enough capacity when an AZ is lost, the order in which instances are terminated on scale in, and maintaining instances without Auto Scaling replacing them."
-minutes: 25
-scenes: 4
+lede: "ShopViet's traffic varies by the hour, by sale event and by the length of the order queue. This lesson covers how the number of instances is adjusted automatically: configuring the group (launch template, subnets, min/desired/max, On-Demand combined with Spot), choosing a scaling policy that fits each load pattern, keeping enough capacity when an AZ is lost, the order in which instances are terminated on scale in, maintaining instances without Auto Scaling replacing them, and the conditions under which the ASG replaces a failed instance."
+minutes: 40
+scenes: 7
 prerequisites: ["ec2", "elb"]
 docs:
   - title: "Target tracking scaling policies"
@@ -23,6 +23,36 @@ docs:
     url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/health-checks-overview.html"
   - title: "Cluster Autoscaler (EKS best practices)"
     url: "https://docs.aws.amazon.com/eks/latest/best-practices/cas.html"
+  - title: "Auto Scaling launch templates"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-templates.html"
+  - title: "Set scaling limits for your Auto Scaling group"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-capacity-limits.html"
+  - title: "Scheduled scaling"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-scheduled-scaling.html"
+  - title: "Setup overview for creating a mixed instances group"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/mixed-instances-groups-set-up-overview.html"
+  - title: "Auto Scaling groups with multiple instance types and purchase options"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-mixed-instances-groups.html"
+  - title: "Amazon EC2 Auto Scaling FAQs"
+    url: "https://aws.amazon.com/ec2/autoscaling/faqs/"
+  - title: "Step and simple scaling policies"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-scaling-simple-step.html"
+  - title: "Simple scaling policies"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/simple-scaling-policies.html"
+  - title: "Scaling cooldowns"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-scaling-cooldowns.html"
+  - title: "Set the default instance warmup"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-default-instance-warmup.html"
+  - title: "Use instance scale-in protection"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-protection.html"
+  - title: "Set up a custom health check"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/set-up-a-custom-health-check.html"
+  - title: "View the reason for health check failures"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/replace-unhealthy-instance.html"
+  - title: "Instance maintenance policies"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-maintenance-policy.html"
+  - title: "Rebalancing activities (Amazon EC2 Auto Scaling benefits)"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-benefits.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -31,20 +61,43 @@ import ScalingPolicySim from "../../components/scenes/asg/ScalingPolicySim.tsx";
 import TerminationSim from "../../components/scenes/asg/TerminationSim.tsx";
 import AzCapacityCalc from "../../components/scenes/asg/AzCapacityCalc.tsx";
 import MaintenanceSim from "../../components/scenes/asg/MaintenanceSim.tsx";
+import GroupSetupSim from "../../components/scenes/asg/GroupSetupSim.tsx";
+import CapacityRangeSim from "../../components/scenes/asg/CapacityRangeSim.tsx";
+import DynamicPolicySim from "../../components/scenes/asg/DynamicPolicySim.tsx";
+import HealthReplaceSim from "../../components/scenes/asg/HealthReplaceSim.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
-  { href: "#en-s1", label: "1 · Scaling policy" },
-  { href: "#en-s2", label: "2 · Capacity when an AZ is lost" },
-  { href: "#en-s3", label: "3 · Termination policy on scale in" },
-  { href: "#en-s4", label: "4 · Maintenance and health checks" },
+  { href: "#en-setup", label: "1 · Configuring an Auto Scaling group" },
+  { href: "#en-s1", label: "2 · Scaling policy" },
+  { href: "#en-dynamic", label: "3 · Simple, step and target tracking" },
+  { href: "#en-s2", label: "4 · Capacity when an AZ is lost" },
+  { href: "#en-s3", label: "5 · Termination policy on scale in" },
+  { href: "#en-s4", label: "6 · Instance maintenance" },
+  { href: "#en-health", label: "7 · Health checks and instance replacement" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
 At night ShopViet needs only 2 instances; on Friday evening, during a sale, it needs 12. Running 12 instances all day wastes money, while running only 2 increases latency for users. An **Auto Scaling group** (ASG) automatically adjusts the number of EC2 instances to the load. The designer needs to configure when to scale out, the minimum capacity, and which instance is removed on scale in.
 </Story>
 
-<Scene id="en-s1" label="Part 1/4" title="A scaling policy for each load pattern" questions={["exam1_q30", "exam3_q54", "exam6_q52", "exam1_q45", "exam4_q21", "exam3_q15", "exam4_q56", "exam4_q53"]}>
+<Scene id="en-setup" label="Part 1/7" title="Configuring the Auto Scaling group for the ShopViet website" questions={["exam5_q36", "exam2_q33", "exam5_q61", "exam1_q45"]}>
+
+ShopViet's reporting application used to run on a single On-Demand EC2 instance, and every load spike caused 5xx errors. To move it to an Auto Scaling group, the operations team creates an AMI from the current instance, declares that AMI in a **launch template**, then chooses the subnets and purchase options for the group. Try each choice below:
+
+<GroupSetupSim client:visible />
+
+Three points matter. First, a **launch template** describes how to launch an instance (AMI, instance type, key pair, security groups…) and has multiple versions; a launch configuration is the legacy mechanism, cannot be modified after creation and does not support combining On-Demand and Spot or multiple instance types. Second, an ASG is a regional construct: it can span Availability Zones but **cannot span AWS Regions**; a multi-Region system needs one ASG in each Region. Third, a **mixed instances policy** lets one ASG run both On-Demand and Spot: an On-Demand base for the steady load, and capacity above the base split by percentage. When the steady load stays at a known level all year, buy Reserved Instances (or a Savings Plan) for it; do not use Spot for the baseline, because EC2 can reclaim a Spot Instance when capacity is no longer available.
+
+Three values decide the group's size. **Desired capacity** is the number of instances the ASG tries to maintain; **minimum** and **maximum** are limits that scaling policies and scheduled actions cannot cross. The accounting team needs exactly 10 instances during the month-end payroll hour:
+
+<CapacityRangeSim client:visible />
+
+<Takeaway>Launch template: defines the instance, is versioned, and is required to combine On-Demand and Spot. An ASG spans multiple AZs in one Region, never across Regions. A specific number of instances at a specific time: a scheduled action sets desired capacity; min/max are only the limits of the scaling range. Fixed baseline load: Reserved Instances; the variable part: On-Demand and Spot through a mixed instances policy.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s1" label="Part 2/7" title="A scaling policy for each load pattern" questions={["exam1_q30", "exam3_q54", "exam6_q52", "exam1_q45", "exam4_q21", "exam3_q15", "exam4_q56", "exam4_q53"]}>
 
 The ShopViet website has dynamic content that changes constantly and a cache cannot absorb all the load, so instances must be added when traffic rises. However, when to scale out depends on the load pattern. Pick a day of ShopViet operations, choose a scaling policy, then run the simulation for the whole day to find the hours when users have to wait:
 
@@ -56,7 +109,19 @@ Containers scale in a similar way. When an ECS service is CPU-bound, turn on **S
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/4" title="How many instances to tolerate an AZ failure" questions={["exam2_q31", "exam5_q61"]}>
+<Scene id="en-dynamic" label="Part 3/7" title="Simple, step and target tracking under a sudden surge" questions={["exam1_q30", "exam3_q54", "exam4_q21"]}>
+
+All three dynamic scaling policies react to a CloudWatch metric, but they differ in how they calculate the instances to add and when they may react again. With simple and step scaling, the designer creates CloudWatch alarms with fixed thresholds; with target tracking, the designer only picks a metric and a target value, and Auto Scaling creates and manages the alarms. Run the same surge under each policy:
+
+<DynamicPolicySim client:visible />
+
+Two time settings are easy to confuse. The **cooldown** (300 seconds by default) applies to simple scaling: after each scaling activity, the policy does not respond to new alarms until the cooldown ends. **Instance warmup** applies to target tracking and step scaling: a new instance does not count toward the group's aggregated metrics until its warmup ends, but it already counts toward desired capacity, so the policy does not launch extra instances. AWS recommends enabling the **default instance warmup** for the group.
+
+<Takeaway>Keep a metric near a value (CPU 50%, SQS backlog per instance): target tracking, not step or simple. Step scaling: the adjustment depends on the size of the breach and alarms keep being answered. Simple scaling: one adjustment, then wait for the activity and the cooldown, so it reacts slowly to a sudden surge; AWS recommends against it. All three react after load rises; cyclical load needs predictive scaling.</Takeaway>
+
+</Scene>
+
+<Scene id="en-s2" label="Part 4/7" title="How many instances to tolerate an AZ failure" questions={["exam2_q31", "exam5_q61"]}>
 
 ShopViet must keep at least N instances running, even when one AZ fails. Adjust N, choose the number of AZs, then press "Simulate AZ 1 failure" to check.
 
@@ -68,17 +133,19 @@ Two common cases. A minimum of 4 instances: 3 AZs × 2 = 6 is the lowest-cost op
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/4" title="Scale in: the order in which instances are terminated" questions={["exam4_q16", "exam2_q65", "exam1_q54"]}>
+<Scene id="en-s3" label="Part 5/7" title="Scale in: the order in which instances are terminated" questions={["exam4_q16", "exam2_q65", "exam1_q54", "exam5_q33"]}>
 
 After the sale, the ASG scales in. With the default termination policy, the ASG evaluates in a fixed order. Pick a scenario, predict which instance will be terminated, then follow each step.
 
 <TerminationSim client:visible />
 
+The third scenario uses **instance scale-in protection**: a protected instance is not selected on scale in. It can be enabled for the whole group (new instances inherit the setting) or for individual instances. Scale-in protection does **not** protect an instance from health check replacement, Spot interruptions or manual termination. When engineers need the logs of an instance that was scaled in, the durable solution is to ship logs to CloudWatch Logs with the CloudWatch agent (Monitoring lesson), not to keep the instance around.
+
 <Takeaway>Default order: the AZ with the most instances → instances with an outdated configuration (launch configuration first, then a launch template other than the current one, then the oldest version of the current template) → if several instances remain: the one closest to the next billing hour (AWS notes this criterion has little effect because most EC2 usage is billed per second). The ASG also automatically rebalances across AZs and replaces unhealthy instances.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/4" title="Maintaining instances without the ASG replacing them" questions={["exam1_q32", "exam5_q1", "exam2_q18", "exam4_q49"]}>
+<Scene id="en-s4" label="Part 6/7" title="Maintaining instances without the ASG replacing them" questions={["exam1_q32", "exam5_q1", "exam2_q18", "exam4_q49"]}>
 
 The ASG replaces every instance it determines to be unhealthy. That works when an instance has really failed, but causes problems when an instance is being patched or a new instance has not finished starting. The ELB lesson explained that the ASG needs to use **ELB health checks** to follow the load balancer's results; in this part the ASG is using ELB health checks. Try three maintenance tasks:
 
@@ -90,7 +157,19 @@ On cost: ShopViet always needs at least 2 instances, more at peak hours. Set min
 
 </Scene>
 
-<Scene id="en-challenge" label="Exercise" title="Classify the scenarios by scaling policy" questions={["exam2_q31", "exam4_q16", "exam2_q65", "exam3_q54"]}>
+<Scene id="en-health" label="Part 7/7" title="When the ASG replaces a failed instance" questions={["exam2_q18", "exam1_q54"]}>
+
+A ShopViet instance shows signs of failure but the ASG has not replaced it, or replaces it in a different order than expected. The outcome depends on which health check detects the failure and which kind of activity the ASG performs. Run each situation, then switch the option to compare:
+
+<HealthReplaceSim client:visible />
+
+When the ASG has not terminated a failed instance, check in turn: the instance is still within its health check grace period; the status check is impaired and the ASG is waiting a few minutes; the group's health check type is EC2, so ELB results are ignored. Raising the minimum capacity does not keep an unhealthy instance alive, and Spot Instances in the group are also replaced when unhealthy.
+
+<Takeaway>Impaired status check: the ASG waits a few minutes before marking the instance Unhealthy; an instance no longer running is replaced immediately. ELB health checks only count when turned on for the ASG. A custom health check that calls SetInstanceHealth makes the ASG replace the instance (respecting the grace period by default). Health check replacement: terminate first, then launch (changeable with an instance maintenance policy). AZ rebalancing: launch first, then terminate.</Takeaway>
+
+</Scene>
+
+<Scene id="en-challenge" label="Exercise" title="Classify the scenarios by scaling policy" questions={["exam2_q31", "exam4_q16", "exam2_q65", "exam3_q54", "exam1_q45", "exam2_q18", "exam5_q61", "exam4_q21"]}>
 
 Sort each scenario into the scaling policy that fits it best. On a mobile device: tap a card, then tap the target box.
 
@@ -99,11 +178,13 @@ Sort each scenario into the scaling policy that fits it best. On a mobile device
     { id: "tt", title: "Target tracking", sub: "Maintain a target value", hint: "Hint: the load changes constantly and a metric must be kept steady." },
     { id: "sch", title: "Scheduled", sub: "On a predefined schedule", hint: "Hint: the time when load rises is known exactly." },
     { id: "pred", title: "Predictive", sub: "Forecast from historical data", hint: "Hint: the load follows a repeating cycle." },
+    { id: "step", title: "Step scaling", sub: "Adjustment by breach size", hint: "Hint: alarms with your own thresholds, one adjustment per range of values." },
   ]}
   cards={[
     ["Keep CPU at 50%", "tt"], ["Keep the number of messages per instance steady", "tt"],
     ["10 instances needed at 9 a.m. on the last day of the month", "sch"], ["Every Monday before sales open", "sch"],
     ["Load repeats daily and weekly; capacity must be prepared in advance", "pred"],
+    ["CPU 70–85% adds 2 instances, above 85% adds 5 instances", "step"],
   ]}
 />
 
@@ -126,6 +207,22 @@ Check your understanding: as the designer of the ShopViet system, which option f
     opts: ["Move the instance to Standby", "Turn off the ALB health check", "Set desired capacity = 0"],
     a: 0,
     why: "An instance in Standby is deregistered from the target group and the ASG does not health check it. Alternative: suspend ReplaceUnhealthy, then resume it after patching." },
+  { q: "Payroll runs at 9:00 on the last day of the month and needs exactly 10 instances; 2 are enough on normal days. Which configuration fits?",
+    opts: ["A scheduled action that sets min = max = 10", "A scheduled action that sets desired capacity = 10", "Target tracking that sets the instance count to 10 at 9:00"],
+    a: 1,
+    why: "Desired capacity is the number of instances the ASG maintains; min/max are only limits. Setting min = max = 10 locks the group's size. Target tracking adjusts by metric, not by time." },
+  { q: "An SQS order worker is not behind a load balancer. A monitoring script detects that the worker hangs and calls SetInstanceHealth with status Unhealthy. What does the ASG do?",
+    opts: ["Ignores it, because the ASG relies only on EC2 status checks", "Terminates and replaces the instance (respecting the health check grace period by default)", "Moves the instance to Standby"],
+    a: 1,
+    why: "Custom health checks complement the built-in health checks. The ASG replaces an instance marked Unhealthy; by default set-instance-health respects the grace period." },
+  { q: "ShopViet opens us-east-1 and wants instances in Singapore and Virginia in one Auto Scaling group with a minimum of 4. Which assessment is correct?",
+    opts: ["Yes, the ASG balances across the two Regions", "No: an ASG spans only the AZs of one Region; create one ASG in each Region", "Yes, if it uses a launch template"],
+    a: 1,
+    why: "An Auto Scaling group is a regional construct: it can span Availability Zones, but not AWS Regions." },
+  { q: "Orders suddenly quadruple. Which policy reacts the slowest?",
+    opts: ["Target tracking on CPU 50%", "Step scaling with three steps", "Simple scaling +2 instances, 300-second cooldown"],
+    a: 2,
+    why: "Simple scaling adds one fixed adjustment, then waits for the scaling activity to complete and the cooldown to end before responding to the next alarm." },
 ]} />
 
 </Scene>

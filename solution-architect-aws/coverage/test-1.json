@@ -970,14 +970,14 @@
         {
           "keyword": "Auto Scaling step scaling policy",
           "lesson": "asg",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "asg.mdx#dynamic / DynamicPolicySim"
         },
         {
           "keyword": "Auto Scaling simple scaling policy",
           "lesson": "asg",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "asg.mdx#dynamic / DynamicPolicySim"
         }
       ]
     },
@@ -1394,8 +1394,8 @@
         {
           "keyword": "Auto Scaling desired capacity vs min/max",
           "lesson": "asg",
-          "status": "partial",
-          "where": "asg.mdx#s1 / ScalingPolicySim"
+          "status": "covered",
+          "where": "asg.mdx#setup / CapacityRangeSim"
         },
         {
           "keyword": "Auto Scaling target tracking scaling policy",
@@ -1638,14 +1638,14 @@
         {
           "keyword": "Auto Scaling AZ rebalancing (launch before terminate)",
           "lesson": "asg",
-          "status": "partial",
-          "where": "asg.mdx#s3 / TerminationSim"
+          "status": "covered",
+          "where": "asg.mdx#health / HealthReplaceSim"
         },
         {
           "keyword": "Auto Scaling unhealthy instance replacement (terminate then launch)",
           "lesson": "asg",
-          "status": "partial",
-          "where": "asg.mdx#s4"
+          "status": "covered",
+          "where": "asg.mdx#health / HealthReplaceSim"
         },
         {
           "keyword": "ELB health check with Auto Scaling",

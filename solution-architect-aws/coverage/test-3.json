@@ -1666,8 +1666,8 @@
         {
           "keyword": "ASG step scaling / simple scaling policy",
           "lesson": "asg",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "asg.mdx#dynamic / DynamicPolicySim"
         },
         {
           "keyword": "ASG scheduled action",

@@ -4,7 +4,7 @@ import { useLang, type Bi } from "../../../lib/lang";
 // Default termination policy, step by step (exam4_q16, exam2_q65):
 // 1. AZ with the most instances; 2. outdated configurations: launch configuration first,
 // then the oldest launch template version; 3. if several remain, closest to the next billing hour.
-interface Inst { id: string; az: string; kind: "LT" | "LC"; age: number; label: string | Bi; billing: number }
+interface Inst { id: string; az: string; kind: "LT" | "LC"; age: number; label: string | Bi; billing: number; prot?: boolean }
 
 type Lang = ReturnType<typeof useLang>;
 
@@ -32,16 +32,31 @@ const SCENARIOS: { name: Bi; instances: Inst[] }[] = [
       { id: "F", az: "us-east-1b", kind: "LT", age: 2, label: "launch template", billing: 12 },
     ],
   },
+  {
+    name: { vi: "Có instance được bật scale-in protection", en: "Some instances have scale-in protection" },
+    instances: [
+      { id: "p1", az: "AZ-A", kind: "LT", age: 3, label: { vi: "template v1 · đang điều tra lỗi", en: "template v1 · under investigation" }, billing: 8, prot: true },
+      { id: "p2", az: "AZ-A", kind: "LT", age: 3, label: { vi: "template v1 · đang điều tra lỗi", en: "template v1 · under investigation" }, billing: 20, prot: true },
+      { id: "p3", az: "AZ-A", kind: "LT", age: 3, label: { vi: "template v1 · đang điều tra lỗi", en: "template v1 · under investigation" }, billing: 33, prot: true },
+      { id: "q1", az: "AZ-B", kind: "LT", age: 3, label: "template v1", billing: 40 },
+      { id: "q2", az: "AZ-B", kind: "LT", age: 1, label: "template v2", billing: 6 },
+    ],
+  },
 ];
 
 function decide(L: Lang, list: Inst[]) {
   const steps: { text: string; keep: string[] }[] = [];
   const counts: Record<string, number> = {};
   list.forEach((i) => (counts[i.az] = (counts[i.az] ?? 0) + 1));
-  const max = Math.max(...Object.values(counts));
-  const azs = Object.keys(counts).filter((k) => counts[k] === max);
-  let pool = list.filter((i) => azs.includes(i.az));
-  steps.push({ text: L({ vi: `Chọn AZ có nhiều instance nhất: ${azs.join(", ")} (${max} instance), nhằm duy trì cân bằng giữa các AZ.`, en: `Pick the AZ with the most instances: ${azs.join(", ")} (${max} instances), to keep the AZs balanced.` }), keep: pool.map((i) => i.id) });
+  // Only AZs with at least one instance that is not protected from scale in qualify.
+  const open = Object.keys(counts).filter((k) => list.some((i) => i.az === k && !i.prot));
+  const max = Math.max(...open.map((k) => counts[k]));
+  const azs = open.filter((k) => counts[k] === max);
+  let pool = list.filter((i) => azs.includes(i.az) && !i.prot);
+  const skipped = Object.keys(counts).filter((k) => !open.includes(k));
+  steps.push({ text: skipped.length
+    ? L({ vi: `${skipped.join(", ")} : mọi instance đều được bật scale-in protection, nên AZ này bị bỏ qua dù có nhiều instance hơn. Chọn AZ có nhiều instance nhất còn instance không được bảo vệ: ${azs.join(", ")}.`, en: `${skipped.join(", ")} : every instance is protected from scale in, so this AZ is skipped even though it has more instances. Pick the AZ with the most instances that has an unprotected instance: ${azs.join(", ")}.` })
+    : L({ vi: `Chọn AZ có nhiều instance nhất: ${azs.join(", ")} (${max} instance), nhằm duy trì cân bằng giữa các AZ.`, en: `Pick the AZ with the most instances: ${azs.join(", ")} (${max} instances), to keep the AZs balanced.` }), keep: pool.map((i) => i.id) });
   const lc = pool.filter((i) => i.kind === "LC");
   if (lc.length) {
     pool = lc;
@@ -92,7 +107,7 @@ export default function TerminationSim() {
                 return (
                   <button key={i.id} className={cls} onClick={() => !shown && setGuess(i.id)} disabled={shown > 0}>
                     <span className="term-id">{i.id}</span>
-                    <span>{typeof i.label === "string" ? i.label : L(i.label)}</span>
+                    <span>{typeof i.label === "string" ? i.label : L(i.label)}{i.prot && <b className="term-prot"> · scale-in protection</b>}</span>
                     <span className="term-meta">{i.kind === "LC" ? "launch configuration" : "launch template"} · {L({ vi: `còn ${i.billing} phút tới giờ tính phí`, en: `${i.billing} min to billing hour` })}</span>
                   </button>
                 );

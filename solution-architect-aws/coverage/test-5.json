@@ -1034,8 +1034,8 @@
         {
           "keyword": "Auto Scaling instance scale-in protection",
           "lesson": "asg",
-          "status": "partial",
-          "where": "monitoring.mdx#s2 / AlarmActionSim"
+          "status": "covered",
+          "where": "asg.mdx#s3 / TerminationSim"
         }
       ]
     },
@@ -1115,8 +1115,8 @@
         {
           "keyword": "Auto Scaling group with launch template",
           "lesson": "asg",
-          "status": "partial",
-          "where": "asg.mdx#s3 / TerminationSim"
+          "status": "covered",
+          "where": "asg.mdx#setup / GroupSetupSim"
         },
         {
           "keyword": "Amazon Machine Image (AMI)",
@@ -1866,8 +1866,8 @@
         {
           "keyword": "Auto Scaling group cannot span Regions",
           "lesson": "asg",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "asg.mdx#setup / GroupSetupSim"
         }
       ]
     },
