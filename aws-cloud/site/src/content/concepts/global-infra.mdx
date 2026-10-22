@@ -5,6 +5,10 @@ minutes: 26
 scenes: 7
 prerequisites: []
 docs:
+  - title: "AWS Direct Connect pricing (data transfer out)"
+    url: "https://aws.amazon.com/directconnect/pricing/"
+  - title: "Hybrid Connectivity whitepaper: Cost (reduced Direct Connect data transfer rate)"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/hybrid-connectivity/cost.html"
   - title: "Copy an AMI (Amazon EC2)"
     url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/CopyingAMIs.html"
   - title: "NAT gateways (Amazon VPC)"
@@ -148,11 +152,11 @@ Chọn cơ chế, đặt tỷ lệ chuyển sang green và áp dụng thay đổ
 
 <Scene id="s6" label="Phần 7/7" title="Các luồng dữ liệu phát sinh chi phí data transfer" questions={["exam2_q62", "exam3_q47", "exam5_q2"]}>
 
-Chi phí AWS của ShopViet tăng thường không do đơn giá dịch vụ mà do luồng dữ liệu được thiết kế chưa phù hợp. Dưới đây là ba tình huống thường phát sinh chi phí. Chọn một tình huống và so sánh hai phương án.
+Chi phí AWS của ShopViet tăng thường không do đơn giá dịch vụ mà do luồng dữ liệu được thiết kế chưa phù hợp. Dưới đây là ba tình huống thường phát sinh chi phí. Chọn một tình huống và so sánh các phương án.
 
 <CostPatterns client:visible />
 
-<Takeaway>Read Replica trong cùng Region không tính phí replication; Read Replica khác Region thì có. EC2 trong private subnet đọc ghi S3 cùng Region: sử dụng S3 gateway endpoint thay cho NAT gateway. Lưu lượng lớn nên được giữ trong AWS, chỉ phần dữ liệu nhỏ được truyền ra ngoài.</Takeaway>
+<Takeaway>Read Replica trong cùng Region không tính phí replication; Read Replica khác Region thì có. EC2 trong private subnet đọc ghi S3 cùng Region: sử dụng S3 gateway endpoint thay cho NAT gateway. Lưu lượng lớn nên được giữ trong AWS, chỉ phần dữ liệu nhỏ được truyền ra ngoài. Dữ liệu truyền ra qua Direct Connect được tính theo đơn giá Direct Connect data transfer, thấp hơn đơn giá data transfer out qua internet.</Takeaway>
 
 </Scene>
 

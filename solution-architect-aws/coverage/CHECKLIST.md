@@ -14,13 +14,13 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **983 keyword** khác nhau: ✅ 969 (99%) · 🟡 9 (1%) · ❌ 5 (1%).
+Có **983 keyword** khác nhau: ✅ 970 (99%) · 🟡 9 (1%) · ❌ 4 (0%).
 
 ### Theo bài học
 
 | Bài học | Keyword | ✅ Đã có | 🟡 Một phần | ❌ Thiếu | Tỷ lệ đã có |
 |---|---:|---:|---:|---:|---:|
-| [global-infra](#global-infra) | 23 | 22 | 0 | 1 | 96% |
+| [global-infra](#global-infra) | 23 | 23 | 0 | 0 | 100% |
 | [vpc](#vpc) | 108 | 108 | 0 | 0 | 100% |
 | [route53](#route53) | 28 | 28 | 0 | 0 | 100% |
 | [cloudfront](#cloudfront) | 32 | 31 | 0 | 1 | 97% |
@@ -54,14 +54,13 @@ Có **983 keyword** khác nhau: ✅ 969 (99%) · 🟡 9 (1%) · ❌ 5 (1%).
 | Đề 2 | 202 | 0 | 2 |
 | Đề 3 | 224 | 2 | 1 |
 | Đề 4 | 236 | 1 | 0 |
-| Đề 5 | 221 | 4 | 1 |
+| Đề 5 | 222 | 4 | 0 |
 | Đề 6 | 217 | 0 | 0 |
 
 ## global-infra
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | Direct Connect data transfer out priced lower than internet data transfer out | ❌ Thiếu | 1 | exam5_q2 |  |
 | [ ] | AWS Global Accelerator | ✅ Đã có | 7 | exam1_q18, exam2_q32, exam3_q8, exam4_q18, exam5_q4, exam6_q5, exam6_q47 | global-infra.mdx#s5<br>global-infra.mdx#s5 / GlobalAcceleratorSim |
 | [ ] | AMI copy across Regions (creates snapshot) | ✅ Đã có | 1 | exam1_q41 | global-infra.mdx#s1 / AmiCopySim / challenge |
 | [ ] | AMI Region scope | ✅ Đã có | 1 | exam4_q5 | global-infra.mdx#s1; backup-dr.mdx#s1 |
@@ -76,6 +75,7 @@ Có **983 keyword** khác nhau: ✅ 969 (99%) · 🟡 9 (1%) · ❌ 5 (1%).
 | [ ] | AWS Local Zones | ✅ Đã có | 1 | exam1_q27 | global-infra.mdx#deep / QuickCompare |
 | [ ] | Data transfer in from internet is free | ✅ Đã có | 1 | exam1_q40 | s3.mdx#s5 / UploadSim |
 | [ ] | Data transfer out (DTO) pricing | ✅ Đã có | 1 | exam5_q2 | global-infra.mdx#s6 / CostPatterns |
+| [ ] | Direct Connect data transfer out priced lower than internet data transfer out | ✅ Đã có | 1 | exam5_q2 | global-infra.mdx#s6 / CostPatterns + Takeaway |
 | [ ] | EBS snapshot (Regional resource) | ✅ Đã có | 1 | exam1_q41 | global-infra.mdx#s1 / AmiCopySim |
 | [ ] | EFS access via inter-Region VPC peering | ✅ Đã có | 1 | exam1_q42 | global-infra.mdx#confuse / ScopeExplorer / GlobalMythsSim |
 | [ ] | Global Accelerator (no caching, not for S3 uploads) | ✅ Đã có | 1 | exam3_q37 | global-infra.mdx#s5 / EdgeChoiceSim |

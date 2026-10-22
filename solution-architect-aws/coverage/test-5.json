@@ -47,8 +47,8 @@
         {
           "keyword": "Direct Connect data transfer out priced lower than internet data transfer out",
           "lesson": "global-infra",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "global-infra.mdx#s6 / CostPatterns + Takeaway"
         }
       ]
     },

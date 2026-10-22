@@ -5,6 +5,10 @@ minutes: 26
 scenes: 7
 prerequisites: []
 docs:
+  - title: "AWS Direct Connect pricing (data transfer out)"
+    url: "https://aws.amazon.com/directconnect/pricing/"
+  - title: "Hybrid Connectivity whitepaper: Cost (reduced Direct Connect data transfer rate)"
+    url: "https://docs.aws.amazon.com/whitepapers/latest/hybrid-connectivity/cost.html"
   - title: "Copy an AMI (Amazon EC2)"
     url: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/CopyingAMIs.html"
   - title: "NAT gateways (Amazon VPC)"
@@ -148,11 +152,11 @@ Choose a mechanism, set the share sent to green and apply the change. The cache 
 
 <Scene id="en-s6" label="Part 7/7" title="Data flows that incur data transfer charges" questions={["exam2_q62", "exam3_q47", "exam5_q2"]}>
 
-When ShopViet's AWS bill grows, the cause is often not the unit price of a service but data flows that were not designed well. Below are three scenarios that commonly incur charges. Choose a scenario and compare the two options.
+When ShopViet's AWS bill grows, the cause is often not the unit price of a service but data flows that were not designed well. Below are three scenarios that commonly incur charges. Choose a scenario and compare the options.
 
 <CostPatterns client:visible />
 
-<Takeaway>A Read Replica in the same Region has no replication charge; a Read Replica in another Region does. EC2 in a private subnet reading and writing S3 in the same Region: use an S3 gateway endpoint instead of a NAT gateway. Keep large traffic volumes inside AWS and send only the small amount of data out.</Takeaway>
+<Takeaway>A Read Replica in the same Region has no replication charge; a Read Replica in another Region does. EC2 in a private subnet reading and writing S3 in the same Region: use an S3 gateway endpoint instead of a NAT gateway. Keep large traffic volumes inside AWS and send only the small amount of data out. Data sent out over Direct Connect is charged at the reduced Direct Connect data transfer rate, lower than internet data transfer out rates.</Takeaway>
 
 </Scene>
 
