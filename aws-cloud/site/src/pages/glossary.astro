@@ -14,6 +14,9 @@ const concept = (id: string) => concepts.find((c) => c.id === id)!;
 /** Lower case without Vietnamese marks, so "do tre" finds "độ trễ"; the page script uses the same rule. */
 const fold = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").replace(/đ/g, "d").replace(/Đ/g, "d").toLowerCase();
 
+/** "Appears in" shows this many lessons before a "+N" button. */
+const SEEN_VISIBLE = 10;
+
 const groups = layers
   .map((layer) => ({
     layer,
@@ -67,12 +70,19 @@ const groups = layers
             {t.seen.length > 0 && (
               <p class="gl-seen">
                 <span><T k="shell.glossary.seenIn" /></span>
-                {t.seen.map((c) => <a href={`/concepts/${c.id}/`}><L vi={c.title} en={c.titleEn} /></a>)}
+                {t.seen.map((c, i) => <a href={`/concepts/${c.id}/`} hidden={i >= SEEN_VISIBLE}><L vi={c.title} en={c.titleEn} /></a>)}
+                {t.seen.length > SEEN_VISIBLE && (
+                  <button type="button" class="gl-seen-more"><L vi={`+${t.seen.length - SEEN_VISIBLE} bài`} en={`+${t.seen.length - SEEN_VISIBLE} lessons`} /></button>
+                )}
               </p>
             )}
           </article>
         ))}
       </div>
+      <button type="button" class="gl-more" hidden>
+        <span data-lang="vi">Xem thêm <b data-more-n></b> thuật ngữ</span><span data-lang="en">Show <b data-more-n></b> more terms</span>
+        <small><span data-lang="vi">còn <i data-left-n></i></span><span data-lang="en"><i data-left-n></i> left</span></small>
+      </button>
     </section>
   ))}
   <p class="gl-empty" hidden><T k="shell.glossary.empty" /></p>
@@ -82,31 +92,74 @@ const groups = layers
     const input = document.getElementById("gl-q") as HTMLInputElement;
     const filters = [...document.querySelectorAll<HTMLButtonElement>(".gl-filter")];
     const empty = document.querySelector<HTMLElement>(".gl-empty")!;
+    const sections = [...document.querySelectorAll<HTMLElement>(".gl-layer")];
+    /** Cards shown per layer before "Show more", and how many each click adds. */
+    const PAGE = 6;
+    const limits = new Map(sections.map((s) => [s, PAGE]));
     let layer = "all";
 
     function apply() {
       const q = fold(input.value.trim());
       let shown = 0;
-      document.querySelectorAll<HTMLElement>(".gl-layer").forEach((section) => {
-        let inSection = 0;
+      for (const section of sections) {
+        const matches = [...section.querySelectorAll<HTMLElement>(".gl-card")].filter(
+          (card) => (layer === "all" || card.dataset.layer === layer) && (!q || card.dataset.search!.includes(q)),
+        );
+        const limit = limits.get(section)!;
         section.querySelectorAll<HTMLElement>(".gl-card").forEach((card) => {
-          const match = (layer === "all" || card.dataset.layer === layer) && (!q || card.dataset.search!.includes(q));
-          card.hidden = !match;
-          if (match) inSection++;
+          const at = matches.indexOf(card);
+          card.hidden = at < 0 || at >= limit;
         });
-        section.hidden = inSection === 0;
-        shown += inSection;
-      });
+        const left = Math.max(0, matches.length - limit);
+        const more = section.querySelector<HTMLElement>(".gl-more")!;
+        more.hidden = left === 0;
+        more.querySelectorAll("[data-more-n]").forEach((n) => (n.textContent = String(Math.min(PAGE, left))));
+        more.querySelectorAll("[data-left-n]").forEach((n) => (n.textContent = String(left)));
+        section.hidden = matches.length === 0;
+        shown += matches.length;
+      }
       empty.hidden = shown > 0;
     }
 
-    input.addEventListener("input", apply);
+    /** Back to the first page of every layer whenever the search or the filter changes. */
+    function reset() {
+      for (const s of sections) limits.set(s, PAGE);
+      apply();
+    }
+
+    /** A link to /glossary/#term opens enough of its layer to show that card. */
+    function reveal() {
+      const card = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
+      const section = card?.closest<HTMLElement>(".gl-layer");
+      if (!card || !section) return;
+      const index = [...section.querySelectorAll(".gl-card")].indexOf(card);
+      limits.set(section, Math.max(limits.get(section)!, Math.ceil((index + 1) / PAGE) * PAGE));
+      apply();
+      card.scrollIntoView({ block: "start" });
+    }
+
+    input.addEventListener("input", reset);
     for (const button of filters) {
       button.addEventListener("click", () => {
         layer = button.dataset.filter!;
         for (const b of filters) b.setAttribute("aria-pressed", String(b === button));
+        reset();
+      });
+    }
+    for (const section of sections) {
+      section.querySelector(".gl-more")!.addEventListener("click", () => {
+        limits.set(section, limits.get(section)! + PAGE);
         apply();
       });
     }
+    document.querySelectorAll<HTMLButtonElement>(".gl-seen-more").forEach((button) => {
+      button.addEventListener("click", () => {
+        button.parentElement!.querySelectorAll<HTMLElement>("a[hidden]").forEach((a) => (a.hidden = false));
+        button.remove();
+      });
+    });
+    window.addEventListener("hashchange", reveal);
+    apply();
+    reveal();
   </script>
 </BaseLayout>

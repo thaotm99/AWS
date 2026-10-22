@@ -878,6 +878,14 @@ input[type="checkbox"]:disabled, input[type="range"]:disabled { opacity: .5; cur
 .gl-seen a { padding: 2px 8px; border-radius: 99px; background: var(--bg); color: var(--ink); text-decoration: none; }
 .gl-seen a:hover { background: var(--accent-soft); }
 .gl-empty { text-align: center; color: var(--muted); padding: 40px 0; }
+.gl-seen a[hidden] { display: none; }
+.gl-seen-more { padding: 2px 9px; border-radius: 99px; border: 1px dashed var(--line); background: none; color: var(--accent); font: inherit; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+.gl-seen-more:hover { border-color: var(--accent); }
+.gl-more { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 48px; margin-top: 14px; border-radius: 14px; border: 1px dashed color-mix(in srgb, var(--layer) 55%, var(--line)); background: var(--surface); color: var(--ink); font: inherit; font-weight: 600; cursor: pointer; transition: background .2s, border-color .2s, transform .2s; }
+.gl-more:hover { border-style: solid; border-color: var(--layer); transform: translateY(-1px); }
+.gl-more[hidden] { display: none; }
+.gl-more b { color: var(--layer); }
+.gl-more small { font-weight: 500; color: var(--muted); }
 @keyframes gl-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes gl-flash { 0%, 100% { box-shadow: var(--shadow); } 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--layer) 30%, transparent); } }
 
