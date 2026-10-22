@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 894 (93%) · 🟡 31 (3%) · ❌ 35 (4%).
+Có **960 keyword** khác nhau: ✅ 902 (94%) · 🟡 27 (3%) · ❌ 31 (3%).
 
 ### Theo bài học
 
@@ -32,7 +32,7 @@ Có **960 keyword** khác nhau: ✅ 894 (93%) · 🟡 31 (3%) · ❌ 35 (4%).
 | [elb](#elb) | 42 | 42 | 0 | 0 | 100% |
 | [asg](#asg) | 44 | 44 | 0 | 0 | 100% |
 | [containers](#containers) | 22 | 22 | 0 | 0 | 100% |
-| [lambda](#lambda) | 37 | 29 | 4 | 4 | 78% |
+| [lambda](#lambda) | 37 | 37 | 0 | 0 | 100% |
 | [s3](#s3) | 70 | 70 | 0 | 0 | 100% |
 | [storage](#storage) | 70 | 70 | 0 | 0 | 100% |
 | [storage-migration](#storage-migration) | 34 | 31 | 1 | 2 | 91% |
@@ -50,10 +50,10 @@ Có **960 keyword** khác nhau: ✅ 894 (93%) · 🟡 31 (3%) · ❌ 35 (4%).
 
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
-| Đề 1 | 213 | 6 | 5 |
-| Đề 2 | 188 | 3 | 7 |
-| Đề 3 | 210 | 5 | 7 |
-| Đề 4 | 223 | 6 | 7 |
+| Đề 1 | 215 | 4 | 5 |
+| Đề 2 | 189 | 2 | 7 |
+| Đề 3 | 212 | 5 | 5 |
+| Đề 4 | 226 | 5 | 5 |
 | Đề 5 | 205 | 10 | 6 |
 | Đề 6 | 205 | 1 | 4 |
 
@@ -586,14 +586,6 @@ Có **960 keyword** khác nhau: ✅ 894 (93%) · 🟡 31 (3%) · ❌ 35 (4%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | API Gateway Lambda authorizer | ❌ Thiếu | 1 | exam3_q52 |  |
-| [ ] | Lambda container image | ❌ Thiếu | 1 | exam4_q25 |  |
-| [ ] | Lambda ephemeral storage (/tmp) | ❌ Thiếu | 1 | exam3_q32 |  |
-| [ ] | Lambda memory and CPU allocation | ❌ Thiếu | 1 | exam4_q25 |  |
-| [ ] | API Gateway (no security group or subnet) | 🟡 Một phần | 1 | exam2_q58 | lambda.mdx#s3 |
-| [ ] | API Gateway REST API direct integration with AWS service (Kinesis) | 🟡 Một phần | 1 | exam1_q57 | lambda.mdx#s3 / ApiGatewaySim |
-| [ ] | Lambda deployment package size (cold start) | 🟡 Một phần | 1 | exam4_q25 | lambda.mdx#s2 / LambdaRunSim |
-| [ ] | Lambda layer | 🟡 Một phần | 1 | exam1_q9 | lambda.mdx#challenge |
 | [ ] | Lambda 15-minute timeout limit | ✅ Đã có | 2 | exam1_q11, exam1_q21 | lambda.mdx#s2 |
 | [ ] | Lambda execution role | ✅ Đã có | 2 | exam2_q16, exam4_q39 | iam.mdx#s3 / RequirementPicker; lambda.mdx#s2<br>lambda.mdx#challenge; iam.mdx#s3 |
 | [ ] | Lambda maximum timeout (15 minutes) | ✅ Đã có | 2 | exam6_q18, exam6_q35 | lambda.mdx#s2<br>lambda.mdx#s2; kinesis.mdx#s3 / StreamPipelineSim |
@@ -601,11 +593,14 @@ Có **960 keyword** khác nhau: ✅ 894 (93%) · 🟡 31 (3%) · ❌ 35 (4%).
 | [ ] | S3 Event Notification to Lambda | ✅ Đã có | 2 | exam2_q11, exam5_q23 | lambda.mdx#s1 / ScenarioFlow<br>lambda.mdx#s1 |
 | [ ] | Amazon API Gateway | ✅ Đã có | 1 | exam3_q20 | lambda.mdx#s3 / ApiGatewaySim |
 | [ ] | Amazon API Gateway REST API with Lambda | ✅ Đã có | 1 | exam1_q11 | lambda.mdx#s3 |
+| [ ] | API Gateway (no security group or subnet) | ✅ Đã có | 1 | exam2_q58 | lambda.mdx#s3 / ApiGatewaySim |
 | [ ] | API Gateway caching | ✅ Đã có | 1 | exam4_q44 | lambda.mdx#s3 / ApiGatewaySim |
 | [ ] | API Gateway HTTP API JWT authorizer | ✅ Đã có | 1 | exam3_q52 | lambda.mdx#s3 |
 | [ ] | API Gateway HTTP API vs REST API | ✅ Đã có | 1 | exam3_q52 | lambda.mdx#s3 |
+| [ ] | API Gateway Lambda authorizer | ✅ Đã có | 1 | exam3_q52 | lambda.mdx#s3 / QuickCompare |
 | [ ] | API Gateway resource policy (IP allow list) | ✅ Đã có | 1 | exam2_q58 | lambda.mdx#s3 / ApiGatewaySim |
 | [ ] | API Gateway REST API (stateless) | ✅ Đã có | 1 | exam1_q49 | lambda.mdx#s3 |
+| [ ] | API Gateway REST API direct integration with AWS service (Kinesis) | ✅ Đã có | 1 | exam1_q57 | lambda.mdx#s3 / ApiGatewaySim |
 | [ ] | API Gateway throttling and quota | ✅ Đã có | 1 | exam3_q53 | lambda.mdx#s3 / ApiGatewaySim |
 | [ ] | API Gateway throttling and usage plans | ✅ Đã có | 1 | exam1_q55 | lambda.mdx#s3 / ApiGatewaySim |
 | [ ] | API Gateway usage plan and API key | ✅ Đã có | 1 | exam3_q53 | lambda.mdx#s3 / ApiGatewaySim |
@@ -616,7 +611,12 @@ Có **960 keyword** khác nhau: ✅ 894 (93%) · 🟡 31 (3%) · ❌ 35 (4%).
 | [ ] | Lambda account concurrency quota (1000 per Region) | ✅ Đã có | 1 | exam1_q50 | lambda.mdx#s2 / LambdaRunSim |
 | [ ] | Lambda concurrency | ✅ Đã có | 1 | exam5_q3 | lambda.mdx#s2 / LambdaRunSim |
 | [ ] | Lambda ConcurrentExecutions alarm | ✅ Đã có | 1 | exam4_q25 | lambda.mdx#s2 |
+| [ ] | Lambda container image | ✅ Đã có | 1 | exam4_q25 | lambda.mdx#sizing / FunctionConfigSim |
+| [ ] | Lambda deployment package size (cold start) | ✅ Đã có | 1 | exam4_q25 | lambda.mdx#sizing / FunctionConfigSim |
+| [ ] | Lambda ephemeral storage (/tmp) | ✅ Đã có | 1 | exam3_q32 | lambda.mdx#sizing / FunctionConfigSim |
+| [ ] | Lambda layer | ✅ Đã có | 1 | exam1_q9 | lambda.mdx#sizing / FunctionConfigSim |
 | [ ] | Lambda Layers | ✅ Đã có | 1 | exam4_q25 | lambda.mdx#s2 |
+| [ ] | Lambda memory and CPU allocation | ✅ Đã có | 1 | exam4_q25 | lambda.mdx#sizing / FunctionConfigSim |
 | [ ] | Lambda mounting EFS | ✅ Đã có | 1 | exam1_q9 | storage.mdx#s3 / StepSim (links to lambda.mdx#s2) |
 | [ ] | Lambda provisioned concurrency | ✅ Đã có | 1 | exam3_q20 | lambda.mdx#s2 / LambdaRunSim |
 | [ ] | Lambda SQS event source | ✅ Đã có | 1 | exam2_q14 | lambda.mdx#s1 / ScenarioFlow |

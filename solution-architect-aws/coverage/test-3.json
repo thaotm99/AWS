@@ -1009,8 +1009,8 @@
         {
           "keyword": "Lambda ephemeral storage (/tmp)",
           "lesson": "lambda",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "lambda.mdx#sizing / FunctionConfigSim"
         },
         {
           "keyword": "Amazon S3 cannot be mounted as a file system",
@@ -1604,8 +1604,8 @@
         {
           "keyword": "API Gateway Lambda authorizer",
           "lesson": "lambda",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "lambda.mdx#s3 / QuickCompare"
         },
         {
           "keyword": "API Gateway WebSocket API",

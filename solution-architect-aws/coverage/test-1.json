@@ -293,8 +293,8 @@
         {
           "keyword": "Lambda layer",
           "lesson": "lambda",
-          "status": "partial",
-          "where": "lambda.mdx#challenge"
+          "status": "covered",
+          "where": "lambda.mdx#sizing / FunctionConfigSim"
         },
         {
           "keyword": "S3 Access Points",
@@ -1741,7 +1741,7 @@
         {
           "keyword": "API Gateway REST API direct integration with AWS service (Kinesis)",
           "lesson": "lambda",
-          "status": "partial",
+          "status": "covered",
           "where": "lambda.mdx#s3 / ApiGatewaySim"
         },
         {

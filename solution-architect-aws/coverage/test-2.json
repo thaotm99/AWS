@@ -1670,8 +1670,8 @@
         {
           "keyword": "API Gateway (no security group or subnet)",
           "lesson": "lambda",
-          "status": "partial",
-          "where": "lambda.mdx#s3"
+          "status": "covered",
+          "where": "lambda.mdx#s3 / ApiGatewaySim"
         },
         {
           "keyword": "AWS Outposts",

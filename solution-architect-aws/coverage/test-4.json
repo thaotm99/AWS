@@ -805,20 +805,20 @@
         {
           "keyword": "Lambda memory and CPU allocation",
           "lesson": "lambda",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "lambda.mdx#sizing / FunctionConfigSim"
         },
         {
           "keyword": "Lambda deployment package size (cold start)",
           "lesson": "lambda",
-          "status": "partial",
-          "where": "lambda.mdx#s2 / LambdaRunSim"
+          "status": "covered",
+          "where": "lambda.mdx#sizing / FunctionConfigSim"
         },
         {
           "keyword": "Lambda container image",
           "lesson": "lambda",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "lambda.mdx#sizing / FunctionConfigSim"
         }
       ]
     },
