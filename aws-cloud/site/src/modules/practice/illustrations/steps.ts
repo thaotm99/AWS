@@ -84,7 +84,8 @@ export class FlowStep extends Step {
         nodes[p[i]] = this.tone;
       }
     }
-    const last = this.paths[0].at(-1)!;
+    const first = this.paths[0];
+    const last = first[first.length - 1];
     return this.withBadge({ ...scene, nodes, links }, last, this.tone);
   }
 }

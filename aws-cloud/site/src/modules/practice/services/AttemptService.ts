@@ -28,6 +28,11 @@ export class AttemptService extends ApiService {
     return this.api.post<Attempt>("/attempts", input);
   }
 
+  /** Deletes every attempt of the viewer ("reset progress"). */
+  async clear(): Promise<void> {
+    await this.api.delete<unknown>("/attempts");
+  }
+
   answer(attemptId: AttemptId, questionId: QuestionId, input: AnswerInput): Promise<Attempt> {
     return this.api.put<Attempt>(ApiService.path("attempts", attemptId, "answers", questionId), input);
   }

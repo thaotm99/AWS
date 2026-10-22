@@ -77,7 +77,12 @@ export interface AnswerRecord {
   answeredAt: string;
 }
 
+/** Shape version written into new attempts; records saved without one are version 1. */
+export const ATTEMPT_VERSION = 1;
+
 export interface Attempt {
+  /** Record shape version (see ATTEMPT_VERSION); missing on attempts saved before it existed. */
+  version?: number;
   id: AttemptId;
   certId: CertificationId;
   examId: ExamId;

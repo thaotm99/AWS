@@ -23,9 +23,28 @@ export class LocalStorageDriver extends StorageDriver {
     return `${this.prefix}:${collection}:${key}`;
   }
 
+  /** A damaged entry (cut-off write, manual edit) reads as missing instead of failing the request. */
+  private static parse<T>(raw: string | null): T | undefined {
+    if (raw === null) return undefined;
+    try {
+      return JSON.parse(raw) as T;
+    } catch {
+      return undefined;
+    }
+  }
+
+  private keys(collection: string): string[] {
+    const start = this.storageKey(collection, "");
+    const out: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k?.startsWith(start)) out.push(k);
+    }
+    return out;
+  }
+
   async get<T>(collection: string, key: string): Promise<T | undefined> {
-    const raw = localStorage.getItem(this.storageKey(collection, key));
-    return raw === null ? undefined : (JSON.parse(raw) as T);
+    return LocalStorageDriver.parse<T>(localStorage.getItem(this.storageKey(collection, key)));
   }
 
   async put<T>(collection: string, key: string, value: T): Promise<void> {
@@ -37,12 +56,15 @@ export class LocalStorageDriver extends StorageDriver {
   }
 
   async list<T>(collection: string): Promise<T[]> {
-    const start = this.storageKey(collection, "");
     const out: T[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (k?.startsWith(start)) out.push(JSON.parse(localStorage.getItem(k)!) as T);
+    for (const k of this.keys(collection)) {
+      const value = LocalStorageDriver.parse<T>(localStorage.getItem(k));
+      if (value !== undefined) out.push(value);
     }
     return out;
+  }
+
+  async clear(collection: string): Promise<void> {
+    for (const k of this.keys(collection)) localStorage.removeItem(k);
   }
 }

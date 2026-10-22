@@ -1,5 +1,5 @@
 import { Scoring } from "../../domain/Scoring";
-import type { CertificationId, ContentLocale, Exam, OptionKey, QuestionSetRef } from "../../domain/types";
+import type { CertificationId, ContentLocale, Exam, OptionKey, QuestionId, QuestionSetRef } from "../../domain/types";
 import type { AttemptService } from "../../services/AttemptService";
 import type { CatalogService } from "../../services/CatalogService";
 import { Controller } from "../../../../core/state/Controller";
@@ -10,6 +10,11 @@ import { ExamStore, type ExamState } from "../stores/ExamStore";
 /** One question at a time: pick, submit, see the verdict, move on. Works for practice tests and per-service sets. */
 export class ExamController extends Controller<PracticeEvent, ExamState, ExamStore> {
   private set: QuestionSetRef | null = null;
+  /** Language the viewer asked for last; the store's locale only changes once its text has loaded. */
+  private requestedLocale: ContentLocale = "vi";
+  /** Request counters: a response is applied only if no newer request of its kind was made since. */
+  private openRequest = 0;
+  private contentRequest = 0;
 
   constructor(
     bus: EventBus<PracticeEvent>,
@@ -38,32 +43,56 @@ export class ExamController extends Controller<PracticeEvent, ExamState, ExamSto
     ]);
   }
 
-  /** Resumes the newest attempt; a finished one opens on its result. */
+  private static questionIds(exam: Exam): QuestionId[] {
+    return exam.questions.map((q) => q.id);
+  }
+
+  /**
+   * Resumes the newest attempt; a finished one opens on its result. An attempt saved for a
+   * different version of the question set (questions added, removed or replaced) is not resumed:
+   * a new one starts instead.
+   */
   private async open(certId: CertificationId, set: QuestionSetRef, locale: ContentLocale): Promise<void> {
+    const request = ++this.openRequest;
+    this.contentRequest++; // a language load still in flight belongs to the previous page state
     this.set = set;
+    this.requestedLocale = locale;
     this.store.loading();
     try {
       const [cert, [exam, original]] = await Promise.all([this.catalog.getCertification(certId), this.content(certId, set, locale)]);
       // Attempts are keyed by the set's id ("3", "topic-s3"), so the two kinds never collide.
       const examId = exam.id;
+      const ids = ExamController.questionIds(exam);
       const latest = await this.attempts.latest(certId, examId);
-      const attempt = latest ?? (await this.attempts.start({ certId, examId, questionCount: exam.questions.length }));
-      this.store.loaded(cert, exam, attempt, Scoring.isFinished(attempt) ? "result" : "question");
+      const attempt = latest && Scoring.fits(latest, ids) ? latest : await this.attempts.start({ certId, examId, questionCount: ids.length });
+      if (request !== this.openRequest) return;
+      this.store.loaded(cert, exam, attempt, Scoring.isFinished(attempt, ids) ? "result" : "question");
       this.store.content(exam, original);
     } catch (e) {
-      this.store.failed({ code: "loadExam", detail: Controller.message(e) });
+      if (request === this.openRequest) this.store.failed({ code: "loadExam", detail: Controller.message(e) });
+      return;
     }
+    // The viewer may have switched language while the exam was loading.
+    if (this.requestedLocale !== locale) await this.language(this.requestedLocale);
   }
 
-  /** Answers are stored by question id and option key, so switching language never touches the attempt. */
+  /**
+   * Answers are stored by question id and option key, so switching language never touches the attempt.
+   * Only the newest request may write: VI → EN → VI ends in VI whatever order the files arrive in.
+   */
   private async language(locale: ContentLocale): Promise<void> {
-    const { exam, cert, locale: current } = this.store.getState();
-    if (!exam || !cert || !this.set || locale === current) return;
+    this.requestedLocale = locale;
+    const { exam, cert, status } = this.store.getState();
+    // Still opening: open() applies the requested language when it finishes.
+    if (status !== "ready" || !exam || !cert || !this.set) return;
+    const request = ++this.contentRequest;
+    if (exam.locale === locale) return; // already shown; the bump above discards older loads
+    const openRequest = this.openRequest;
     try {
       const [next, original] = await this.content(cert.id, this.set, locale);
-      this.store.content(next, original);
+      if (request === this.contentRequest && openRequest === this.openRequest) this.store.content(next, original);
     } catch (e) {
-      this.store.saveFailed({ code: "loadExam", detail: Controller.message(e) });
+      if (request === this.contentRequest && openRequest === this.openRequest) this.store.saveFailed({ code: "loadExam", detail: Controller.message(e) });
     }
   }
 
@@ -109,9 +138,12 @@ export class ExamController extends Controller<PracticeEvent, ExamState, ExamSto
     if (index <= this.store.frontier) this.store.show(index);
   }
 
+  /** The result needs every current question answered; otherwise go to the first open one. */
   private showResult(): void {
-    const { attempt } = this.store.getState();
-    if (attempt && Scoring.isFinished(attempt)) this.store.showResult();
+    const { attempt, exam } = this.store.getState();
+    if (!attempt || !exam) return;
+    if (Scoring.isFinished(attempt, ExamController.questionIds(exam))) this.store.showResult();
+    else this.store.show(Math.min(this.store.frontier, exam.questions.length - 1));
   }
 
   private async restart(): Promise<void> {

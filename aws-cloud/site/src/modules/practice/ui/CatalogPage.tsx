@@ -9,9 +9,12 @@ import { routes } from "./routes";
 import { useT, type PracticeT } from "./useT";
 
 function examStatus(t: PracticeT, exam: ExamSummary, attempt: Attempt | undefined, cert: Certification) {
-  if (!attempt || !Object.keys(attempt.answers).length) return { cls: "", text: t("catalog.notStarted") };
-  const s = Scoring.score(attempt, cert);
-  if (!Scoring.isFinished(attempt)) return { cls: "wip", text: t("catalog.inProgress", { done: s.answered, total: exam.questionCount }) };
+  // An attempt saved for a different version of the set is replaced when the exam is opened.
+  if (!attempt || !Object.keys(attempt.answers).length || attempt.questionCount !== exam.questionCount) {
+    return { cls: "", text: t("catalog.notStarted") };
+  }
+  const s = Scoring.score(attempt, cert, exam.questionCount);
+  if (!Scoring.isFinished(attempt, exam.questionCount)) return { cls: "wip", text: t("catalog.inProgress", { done: s.answered, total: exam.questionCount }) };
   return s.passed
     ? { cls: "pass", text: t("catalog.passed", { percent: s.percent }) }
     : { cls: "fail", text: t("catalog.failed", { percent: s.percent }) };
