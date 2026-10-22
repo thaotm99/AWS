@@ -12,7 +12,7 @@
 /* RuleMatchSim: listener rule tables */
 .elbx-lst { padding: 10px 14px 0; display: grid; gap: 4px; }
 .elbx-lst-h { font-size: 0.75rem; font-weight: 600; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
-.elbx-lst.dim { opacity: .55; }
+.elbx-lst.dim { opacity: .7; }
 .elbx-rule { display: grid; grid-template-columns: 3.2rem minmax(0, 1.5fr) minmax(0, 1fr) 1.6rem; gap: 8px; align-items: center; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-size: 0.8125rem; transition: background .25s, border-color .25s; }
 .elbx-pri { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }
 .elbx-cond { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; }
@@ -22,7 +22,7 @@
 .elbx-act { overflow-wrap: anywhere; }
 .elbx-st { text-align: center; font-weight: 700; }
 .elbx-rule.check { border-color: var(--accent); background: var(--accent-soft); }
-.elbx-rule.miss { opacity: .6; }
+.elbx-rule.miss { opacity: .7; }
 .elbx-rule.miss .elbx-st { color: var(--bad); }
 .elbx-rule.match { border-color: var(--ok); background: var(--ok-soft); }
 .elbx-rule.match .elbx-st { color: var(--ok); }

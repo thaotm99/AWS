@@ -18,7 +18,7 @@
 .vpx-facts dt { color: var(--muted); font-weight: 600; }
 .vpx-facts dd { margin: 0; overflow-wrap: anywhere; }
 .vpx-reserved { list-style: none; margin: 8px 14px 0; padding: 8px 10px; display: grid; gap: 2px; font-size: var(--step--1); background: var(--bg); border-radius: 8px; }
-.vpx-reserved code { display: inline-block; min-width: 7.5rem; }
+.vpx-reserved li { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); column-gap: 8px; }
 .vpx-policy { margin-top: 10px; display: grid; gap: 6px; }
 .vpx-policy p { margin: 0; }
 .vpx-code { display: block; white-space: pre; overflow-x: auto; font-size: 0.75rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; }
@@ -37,6 +37,6 @@
 @media (max-width: 560px) {
   .vpx-assoc { grid-template-columns: minmax(0, 1fr); }
   .vpx-facts div { grid-template-columns: minmax(0, 1fr); gap: 0; }
-  .vpx-bits { font-size: 0.55rem; gap: 1px; padding: 12px 8px 4px; }
-  .vpx-bits .gap { margin-right: 2px; }
+  .vpx-bits { grid-template-columns: repeat(16, minmax(0, 1fr)); row-gap: 6px; font-size: 0.72rem; padding: 12px 10px 4px; }
+  .vpx-bits .gap { margin-right: 3px; }
 }

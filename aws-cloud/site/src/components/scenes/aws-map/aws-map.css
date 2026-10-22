@@ -10,7 +10,7 @@
 .am-btn:focus-visible, .am-seg button:focus-visible, .am-chip:focus-visible, .am-group:focus-visible { outline: 2px solid var(--am-amber); outline-offset: 2px; }
 
 /* Hero */
-.am-hero { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 420px); align-items: center; gap: 12px; margin: 6px 0 22px; padding: 28px 32px; border-radius: 26px; color: #e4ecf0; background: radial-gradient(120% 140% at 85% 20%, #12303b 0%, #0b1218 55%); }
+.am-hero { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 420px); align-items: center; gap: 12px; margin: 6px 0 22px; padding: 28px 32px; border-radius: 26px; border: 1px solid rgba(76, 194, 223, 0.14); color: #e4ecf0; background: radial-gradient(120% 140% at 85% 20%, #12303b 0%, #0b1218 55%); }
 .am-hero h2 { margin: 0 0 10px; font-size: clamp(1.6rem, 3.4vw, 2.3rem); line-height: 1.12; letter-spacing: -0.02em; font-weight: 800; color: #e4ecf0; }
 .am-hero p { margin: 0; max-width: 46ch; color: #b4c4cc; line-height: 1.6; }
 .am-hero-eyebrow { display: block; margin-bottom: 10px; font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.14em; color: #f0a95a; }
@@ -62,7 +62,7 @@
 .am-node { position: absolute; z-index: 2; width: 22%; height: 58px; transform: translate(-50%, -50%); transition: transform .4s cubic-bezier(.3,.8,.2,1); }
 .am-node.cur { transform: translate(-50%, -50%) scale(1.07); }
 .am-node.cur::before { content: ""; position: absolute; inset: -6px; border-radius: 20px; border: 2px solid var(--c); animation: am-nodering 1.4s ease-out infinite; }
-.am-node div { height: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 0 10px; border-radius: 16px; background: #0f1a21; border: 1.5px solid var(--am-line); opacity: .55; transition: background .4s, border-color .4s, opacity .4s; }
+.am-node div { height: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 0 10px; border-radius: 16px; background: #0f1a21; border: 1.5px solid var(--am-line); opacity: .75; transition: background .4s, border-color .4s, opacity .4s; }
 .am-node.on div { opacity: 1; border-color: var(--c); background: #16262f; }
 .am-node em { flex: none; width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; font-style: normal; font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600; background: #1b2a33; color: var(--am-muted); transition: background .4s, color .4s; }
 .am-node.on em { background: var(--c); color: #06121a; }
