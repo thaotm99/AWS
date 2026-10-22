@@ -1,5 +1,8 @@
 ---
-import { assertListed } from "../data/exam";
+import { assertListed, getCurriculum } from "../data/exam";
+import { stripTerms } from "../data/glossary-scan";
+import { spellings } from "../data/glossary-rules";
+import KeywordStrip, { type StripTerm } from "./glossary/KeywordStrip.tsx";
 
 interface Props {
   id: string;
@@ -10,8 +13,29 @@ interface Props {
 }
 const { id, label, title, questions = [] } = Astro.props;
 assertListed(questions, `Scene "${id}"`);
+
+// Key terms the scene introduces, read from the lesson source at build time. English scenes
+// carry an "en-" id prefix; only lesson pages (/concepts/<id>/) get a strip.
+const lesson = /^\/concepts\/([^/]+)\/?$/.exec(Astro.url.pathname)?.[1];
+const concepts = getCurriculum().flatMap((l) => l.concepts);
+const terms: StripTerm[] = lesson
+  ? stripTerms(id.startsWith("en-") ? "en" : "vi", lesson, id).map((t) => {
+      const home = concepts.find((c) => c.id === t.lesson)!;
+      return {
+        id: t.id,
+        name: t.name,
+        docs: t.docs,
+        flow: t.flow,
+        spell: spellings(t),
+        vi: t.vi,
+        en: t.en,
+        learn: t.lesson === lesson ? undefined : { id: home.id, vi: home.title, en: home.titleEn },
+      };
+    })
+  : [];
 ---
 <section class="scene prose" id={id}>
   <div class="scene-head"><span class="scene-no">{label}</span><h2>{title}</h2></div>
+  {terms.length > 0 && <KeywordStrip client:idle terms={terms} />}
   <slot />
 </section>

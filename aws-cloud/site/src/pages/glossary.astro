@@ -1,0 +1,112 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import L from "../components/L.astro";
+import T from "../app/T.astro";
+import FlowFigure from "../components/glossary/FlowFigure.tsx";
+import { GLOSSARY } from "../data/glossary";
+import { lessonsUsing } from "../data/glossary-scan";
+import { getCurriculum } from "../data/exam";
+
+const layers = getCurriculum();
+const concepts = layers.flatMap((l) => l.concepts.map((c) => ({ ...c, layer: l.n })));
+const concept = (id: string) => concepts.find((c) => c.id === id)!;
+
+/** Lower case without Vietnamese marks, so "do tre" finds "độ trễ"; the page script uses the same rule. */
+const fold = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").replace(/đ/g, "d").replace(/Đ/g, "d").toLowerCase();
+
+const groups = layers
+  .map((layer) => ({
+    layer,
+    terms: GLOSSARY.filter((t) => concept(t.lesson).layer === layer.n).map((t) => ({
+      ...t,
+      home: concept(t.lesson),
+      seen: lessonsUsing(t.id).map(concept),
+      search: fold([t.name, ...t.aliases, t.vi.def, t.en.def].join(" ")),
+    })),
+  }))
+  .filter((g) => g.terms.length);
+---
+<BaseLayout title="Thuật ngữ · AWS Thực Chiến" titleKey="shell.glossary.pageTitle" description="Thuật ngữ AWS dùng trong các bài học, định nghĩa theo tài liệu AWS." section="glossary" sidebar={false}>
+  <header class="gl-head">
+    <span class="gl-eyebrow"><T k="shell.glossary.eyebrow" /></span>
+    <h1><T k="shell.glossary.title" /></h1>
+    <p class="lede"><T k="shell.glossary.lede" params={{ n: GLOSSARY.length }} /></p>
+  </header>
+
+  <div class="gl-tools">
+    <label class="gl-search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
+      <input id="gl-q" type="search" autocomplete="off" placeholder="Tìm thuật ngữ, ví dụ: subnet, stateless, độ trễ" aria-label="Tìm thuật ngữ" data-i18n-attr="placeholder:shell.glossary.search;aria-label:shell.glossary.searchLabel" />
+    </label>
+    <div class="gl-filters" role="group" aria-label="Lọc theo lớp" data-i18n-attr="aria-label:shell.glossary.filter">
+      <button type="button" class="gl-filter" data-filter="all" aria-pressed="true"><T k="shell.glossary.all" /> <b>{GLOSSARY.length}</b></button>
+      {groups.map((g) => (
+        <button type="button" class="gl-filter" data-filter={String(g.layer.n)} aria-pressed="false" style={`--layer: var(--l${g.layer.n})`}>
+          <i aria-hidden="true" /><L vi={g.layer.name} en={g.layer.nameEn} /> <b>{g.terms.length}</b>
+        </button>
+      ))}
+    </div>
+  </div>
+
+  {groups.map((g) => (
+    <section class="gl-layer" data-layer={String(g.layer.n)} style={`--layer: var(--l${g.layer.n})`}>
+      <h2><span class="gl-layer-no"><L vi={`Lớp ${g.layer.n}`} en={`Layer ${g.layer.n}`} /></span><L vi={g.layer.name} en={g.layer.nameEn} /></h2>
+      <div class="gl-grid">
+        {g.terms.map((t) => (
+          <article class="gl-card" id={t.id} data-layer={String(g.layer.n)} data-search={t.search}>
+            <h3><a href={`#${t.id}`}>{t.name}</a></h3>
+            <p class="gl-def"><L vi={t.vi.def} en={t.en.def} /></p>
+            {t.flow && <FlowFigure flow={t.flow} lang="both" />}
+            {t.vi.example && (
+              <p class="gl-ex"><b><T k="shell.glossary.example" /></b> <L vi={t.vi.example} en={t.en.example} /></p>
+            )}
+            <div class="gl-links">
+              <a class="gl-learn" href={`/concepts/${t.lesson}/`}><L vi={`Học kỹ ở bài ${t.home.title}`} en={`Covered in ${t.home.titleEn}`} /> →</a>
+              <a class="gl-docs" href={t.docs} target="_blank" rel="noopener"><T k="shell.glossary.docs" /> ↗</a>
+            </div>
+            {t.seen.length > 0 && (
+              <p class="gl-seen">
+                <span><T k="shell.glossary.seenIn" /></span>
+                {t.seen.map((c) => <a href={`/concepts/${c.id}/`}><L vi={c.title} en={c.titleEn} /></a>)}
+              </p>
+            )}
+          </article>
+        ))}
+      </div>
+    </section>
+  ))}
+  <p class="gl-empty" hidden><T k="shell.glossary.empty" /></p>
+
+  <script>
+    const fold = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").replace(/đ/g, "d").replace(/Đ/g, "d").toLowerCase();
+    const input = document.getElementById("gl-q") as HTMLInputElement;
+    const filters = [...document.querySelectorAll<HTMLButtonElement>(".gl-filter")];
+    const empty = document.querySelector<HTMLElement>(".gl-empty")!;
+    let layer = "all";
+
+    function apply() {
+      const q = fold(input.value.trim());
+      let shown = 0;
+      document.querySelectorAll<HTMLElement>(".gl-layer").forEach((section) => {
+        let inSection = 0;
+        section.querySelectorAll<HTMLElement>(".gl-card").forEach((card) => {
+          const match = (layer === "all" || card.dataset.layer === layer) && (!q || card.dataset.search!.includes(q));
+          card.hidden = !match;
+          if (match) inSection++;
+        });
+        section.hidden = inSection === 0;
+        shown += inSection;
+      });
+      empty.hidden = shown > 0;
+    }
+
+    input.addEventListener("input", apply);
+    for (const button of filters) {
+      button.addEventListener("click", () => {
+        layer = button.dataset.filter!;
+        for (const b of filters) b.setAttribute("aria-pressed", String(b === button));
+        apply();
+      });
+    }
+  </script>
+</BaseLayout>
