@@ -98,3 +98,19 @@ Checked 2026-10-22 against the pages below (keyword → claim → URL).
 | S3 Intelligent-Tiering (lý do loại ONTAP tiering) | Tự chuyển object giữa các tier theo mức truy cập | https://docs.aws.amazon.com/AmazonS3/latest/userguide/intelligent-tiering-overview.html |
 
 Ghi chú mô phỏng `BurstCreditSim`: credit được tính theo quy tắc trong tài liệu (tích luỹ khi dưới baseline, trừ phần vượt baseline). Ví dụ "100 GiB burst 72 phút" trong tài liệu EFS chia credit cho toàn bộ tốc độ burst, nên thời gian trong mô phỏng (khoảng 76 phút) lệch nhẹ; bài không trích con số 72 phút.
+
+## kms
+
+| Keyword | Nội dung đã viết | Tài liệu |
+|---|---|---|
+| KMS single-Region key cannot be converted to multi-Region | "You cannot convert an existing single-Region key to a multi-Region key" (và ngược lại); thiết kế giữ data residency; AWS managed key luôn là single-Region (S3EncryptSim kịch bản "Sao lưu sang Region khác", QuickCompare s4, quiz) | https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html |
+| KMS single-Region key cannot be converted to multi-Region | Replication rule chỉ định `ReplicaKmsKeyID` ở cùng Region với bucket đích; S3 xử lý multi-Region key như single-Region key | https://docs.aws.amazon.com/AmazonS3/latest/userguide/replication-config-for-kms-objects.html |
+| KMS single-Region key cannot be converted to multi-Region | Object hiện có: replicate theo yêu cầu bằng S3 Batch Replication (live replication cho object mới) | https://docs.aws.amazon.com/AmazonS3/latest/userguide/replication.html |
+| KMS single-Region key cannot be converted to multi-Region | Mã hoá lại object hiện có bằng CopyObject hoặc Batch Operations Copy | https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucket-encryption.html |
+| KMS encryption context | Cặp key–value không bí mật, dùng làm AAD, gắn với ciphertext nên giải mã phải gửi đúng context; plaintext trong CloudTrail; không chứa thông tin nhạy cảm; điều kiện `kms:EncryptionContext:` trong key policy/IAM policy, ràng buộc grant (QuickCompare s4, S3EncryptSim kịch bản audit) | https://docs.aws.amazon.com/kms/latest/developerguide/encrypt_context.html |
+| KMS encryption context | SSE-KMS: S3 mặc định dùng ARN của object, hoặc ARN của bucket khi bật S3 Bucket Key; thêm context qua `x-amz-server-side-encryption-context` | https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingKMSEncryption.html |
+| KMS imported key material | BYOK: tạo KMS key không có key material rồi import; khách hàng chịu trách nhiệm key material; lý do: chứng minh entropy, giữ bản gốc ngoài AWS, đặt expiration | https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html |
+| KMS imported key material | Automatic rotation chỉ cho symmetric key origin `AWS_KMS`; on-demand rotation hỗ trợ cả origin `EXTERNAL` (khách hàng import key material mới); KMS key trong custom key store chỉ xoay thủ công; rotation period mặc định 365 ngày | https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html |
+| AWS CloudHSM | HSM single-tenant, FIPS 140-2/140-3 level 3 ở FIPS mode; toàn quyền key/thuật toán; tự quản lý user; đánh đổi là nhiều trách nhiệm hơn dịch vụ managed; PKCS #11, JCE, CNG/KSP | https://docs.aws.amazon.com/cloudhsm/latest/userguide/introduction.html |
+| AWS CloudHSM | CloudHSM key store là custom key store của KMS, key material non-extractable trong cluster của khách hàng | https://docs.aws.amazon.com/kms/latest/developerguide/keystore-cloudhsm.html |
+| Client-side encryption | Amazon S3 Encryption Client mã hoá trước khi gửi; S3 không tham gia mã hoá/giải mã, không nhận biết object đã mã hoá; mỗi object một data key; không dùng S3 Bucket Keys kể cả khi wrapping key là KMS key | https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingClientSideEncryption.html |

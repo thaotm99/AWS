@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 839 (87%) · 🟡 58 (6%) · ❌ 63 (7%).
+Có **960 keyword** khác nhau: ✅ 844 (88%) · 🟡 58 (6%) · ❌ 58 (6%).
 
 ### Theo bài học
 
@@ -25,7 +25,7 @@ Có **960 keyword** khác nhau: ✅ 839 (87%) · 🟡 58 (6%) · ❌ 63 (7%).
 | [route53](#route53) | 28 | 24 | 2 | 2 | 86% |
 | [cloudfront](#cloudfront) | 31 | 22 | 5 | 4 | 71% |
 | [iam](#iam) | 49 | 38 | 6 | 5 | 78% |
-| [kms](#kms) | 21 | 16 | 0 | 5 | 76% |
+| [kms](#kms) | 21 | 21 | 0 | 0 | 100% |
 | [security](#security) | 27 | 25 | 1 | 1 | 93% |
 | [cognito](#cognito) | 15 | 13 | 1 | 1 | 87% |
 | [ec2](#ec2) | 57 | 57 | 0 | 0 | 100% |
@@ -51,10 +51,10 @@ Có **960 keyword** khác nhau: ✅ 839 (87%) · 🟡 58 (6%) · ❌ 63 (7%).
 | Đề | ✅ Đã có | 🟡 Một phần | ❌ Thiếu |
 |---|---:|---:|---:|
 | Đề 1 | 205 | 10 | 9 |
-| Đề 2 | 179 | 9 | 10 |
-| Đề 3 | 201 | 9 | 12 |
-| Đề 4 | 210 | 11 | 15 |
-| Đề 5 | 193 | 17 | 11 |
+| Đề 2 | 180 | 9 | 9 |
+| Đề 3 | 202 | 9 | 11 |
+| Đề 4 | 212 | 11 | 13 |
+| Đề 5 | 194 | 17 | 10 |
 | Đề 6 | 197 | 5 | 8 |
 
 ## global-infra
@@ -323,16 +323,16 @@ Có **960 keyword** khác nhau: ✅ 839 (87%) · 🟡 58 (6%) · ❌ 63 (7%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | AWS CloudHSM | ❌ Thiếu | 1 | exam4_q6 |  |
-| [ ] | Client-side encryption | ❌ Thiếu | 1 | exam5_q46 |  |
-| [ ] | KMS encryption context | ❌ Thiếu | 1 | exam3_q24 |  |
-| [ ] | KMS imported key material | ❌ Thiếu | 1 | exam4_q6 |  |
-| [ ] | KMS single-Region key cannot be converted to multi-Region | ❌ Thiếu | 1 | exam2_q46 |  |
 | [ ] | KMS multi-Region key | ✅ Đã có | 3 | exam2_q46, exam3_q24, exam5_q11 | kms.mdx#s1 / S3EncryptSim<br>kms.mdx#s1 / S3EncryptSim; analytics.mdx#s4 |
 | [ ] | ACM imported certificate (no automatic renewal) | ✅ Đã có | 1 | exam2_q9 | kms.mdx#s3 / DataGuardSim |
+| [ ] | AWS CloudHSM | ✅ Đã có | 1 | exam4_q6 | kms.mdx#s4 / QuickCompare; kms.mdx#challenge / Quiz |
+| [ ] | Client-side encryption | ✅ Đã có | 1 | exam5_q46 | kms.mdx#s4 / QuickCompare |
 | [ ] | CloudTrail logging of KMS key usage | ✅ Đã có | 1 | exam2_q50 | kms.mdx#s1, #challenge |
 | [ ] | KMS automatic key rotation | ✅ Đã có | 1 | exam4_q6 | kms.mdx#s1 / S3EncryptSim |
 | [ ] | KMS customer managed key | ✅ Đã có | 1 | exam4_q6 | kms.mdx#s1 |
+| [ ] | KMS encryption context | ✅ Đã có | 1 | exam3_q24 | kms.mdx#s4 / QuickCompare; kms.mdx#s1 / S3EncryptSim |
+| [ ] | KMS imported key material | ✅ Đã có | 1 | exam4_q6 | kms.mdx#s4 / QuickCompare; kms.mdx#challenge / Quiz |
+| [ ] | KMS single-Region key cannot be converted to multi-Region | ✅ Đã có | 1 | exam2_q46 | kms.mdx#s1 / S3EncryptSim; kms.mdx#s4 / QuickCompare |
 | [ ] | RDS encrypted snapshot sharing with KMS key policy | ✅ Đã có | 1 | exam2_q57 | kms.mdx#s2 / StepSim; rds.mdx#s4 |
 | [ ] | RDS encryption at rest (KMS) | ✅ Đã có | 1 | exam2_q40 | kms.mdx#s3 / DataGuardSim; rds.mdx#s4 |
 | [ ] | S3 Bucket Key | ✅ Đã có | 1 | exam5_q46 | kms.mdx#s1 / S3EncryptSim; s3.mdx#s4 / EncryptionSim |

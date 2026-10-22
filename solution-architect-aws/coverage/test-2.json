@@ -1364,8 +1364,8 @@
         {
           "keyword": "KMS single-Region key cannot be converted to multi-Region",
           "lesson": "kms",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "kms.mdx#s1 / S3EncryptSim; kms.mdx#s4 / QuickCompare"
         }
       ]
     },

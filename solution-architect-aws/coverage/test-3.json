@@ -744,8 +744,8 @@
         {
           "keyword": "KMS encryption context",
           "lesson": "kms",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "kms.mdx#s4 / QuickCompare; kms.mdx#s1 / S3EncryptSim"
         },
         {
           "keyword": "KMS multi-Region key",

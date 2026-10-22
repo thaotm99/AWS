@@ -194,14 +194,14 @@
         {
           "keyword": "KMS imported key material",
           "lesson": "kms",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "kms.mdx#s4 / QuickCompare; kms.mdx#challenge / Quiz"
         },
         {
           "keyword": "AWS CloudHSM",
           "lesson": "kms",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "kms.mdx#s4 / QuickCompare; kms.mdx#challenge / Quiz"
         },
         {
           "keyword": "S3 client-side encryption",
