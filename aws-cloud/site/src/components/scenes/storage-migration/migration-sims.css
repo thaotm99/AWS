@@ -1,0 +1,43 @@
+/* Storage migration lesson simulations (storage-migration/TransferPlannerSim). Theme tokens only. */
+.mgx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
+.mgx-row + .mgx-row { padding-top: 8px; }
+.mgx-lbl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
+.mgx-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; overflow-wrap: anywhere; }
+.mgx-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
+.mgx .stage-bar { margin-top: 12px; border-top: 1px solid var(--line); }
+.mgx .stage-bar .btn.primary { margin-left: auto; }
+.mgx-wire { stroke: var(--line); stroke-width: 2; fill: none; }
+.mgx-wire.dash { stroke-dasharray: 5 5; }
+.mgx-box { fill: var(--bg); stroke: var(--muted); stroke-width: 1.2; }
+.mgx-box.dash { fill: none; stroke-dasharray: 6 4; }
+.mgx-node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill .2s, stroke .2s, opacity .2s; }
+.mgx-node.pass rect, .mgx-node.ok rect { fill: var(--ok-soft); stroke: var(--ok); }
+.mgx-node.block rect, .mgx-node.bad rect { fill: var(--bad-soft); stroke: var(--bad); }
+.mgx-node.change rect, .mgx-node.warn rect { fill: var(--edge-soft); stroke: var(--edge); }
+.mgx-node.on rect { stroke: var(--accent); fill: var(--accent-soft); }
+.mgx-node.skip, .mgx-node.off { opacity: .4; }
+.mgx-t { fill: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
+.mgx-s { fill: var(--muted); font-family: var(--font-body); font-size: 10px; }
+.mgx-m { fill: var(--muted); font-family: var(--font-mono); font-size: 10.5px; }
+.mgx-m.ok { fill: var(--ok); }
+.mgx-m.bad { fill: var(--bad); }
+.mgx-m.edge { fill: var(--edge); }
+.mgx-strike { stroke: var(--bad); stroke-width: 2; }
+.mgx-flash-ok { fill: var(--ok); font-family: var(--font-mono); font-size: 13px; font-weight: 700; text-anchor: middle; }
+.mgx-flash-edge { fill: var(--edge); font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-anchor: middle; }
+.mgx-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
+.mgx-result { margin-top: 6px; padding: 8px 10px; border-radius: 8px; display: block !important; }
+.mgx-result.ok { background: var(--ok-soft); }
+.mgx-result.bad { background: var(--bad-soft); }
+.mgx-result.warn { background: var(--edge-soft); }
+.mgx .tag.lock { background: var(--accent-soft); color: var(--accent); }
+.mgx-pop { animation: mgx-pop .4s ease-out both; transform-box: fill-box; transform-origin: center; }
+@keyframes mgx-pop { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .mgx-pop { animation: none; } }
+.mgx-size { display: inline-flex; align-items: center; gap: 8px; font-size: var(--step--1); }
+.mgx-size input { width: 180px; max-width: 45vw; }
+.mgx-size b { font-family: var(--font-mono); min-width: 5.5em; }
+.mgx-days { fill: var(--ink); font-family: var(--font-mono); font-size: 13px; font-weight: 700; }
+.mgx-days.win { fill: var(--ok); }
+.mgx-days.lose { fill: var(--muted); }
+.mgx-road { stroke: var(--muted); stroke-width: 2; stroke-dasharray: 10 7; fill: none; }

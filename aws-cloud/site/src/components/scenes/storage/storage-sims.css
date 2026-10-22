@@ -1,0 +1,41 @@
+/* Storage lesson simulations (storage/SharedStorageSim, storage/FsxSim). Theme tokens only. */
+.stx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
+.stx-row + .stx-row { padding-top: 8px; }
+.stx-lbl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
+.stx-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; overflow-wrap: anywhere; }
+.stx-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
+.stx .stage-bar { margin-top: 12px; border-top: 1px solid var(--line); }
+.stx .stage-bar .btn.primary { margin-left: auto; }
+.stx-wire { stroke: var(--line); stroke-width: 2; fill: none; }
+.stx-wire.dash { stroke-dasharray: 5 5; }
+.stx-box { fill: var(--bg); stroke: var(--muted); stroke-width: 1.2; }
+.stx-box.dash { fill: none; stroke-dasharray: 6 4; }
+.stx-node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill .2s, stroke .2s, opacity .2s; }
+.stx-node.pass rect, .stx-node.ok rect { fill: var(--ok-soft); stroke: var(--ok); }
+.stx-node.block rect, .stx-node.bad rect { fill: var(--bad-soft); stroke: var(--bad); }
+.stx-node.change rect, .stx-node.warn rect { fill: var(--edge-soft); stroke: var(--edge); }
+.stx-node.on rect { stroke: var(--accent); fill: var(--accent-soft); }
+.stx-node.skip, .stx-node.off { opacity: .4; }
+.stx-t { fill: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
+.stx-s { fill: var(--muted); font-family: var(--font-body); font-size: 10px; }
+.stx-m { fill: var(--muted); font-family: var(--font-mono); font-size: 10.5px; }
+.stx-m.ok { fill: var(--ok); }
+.stx-m.bad { fill: var(--bad); }
+.stx-m.edge { fill: var(--edge); }
+.stx-strike { stroke: var(--bad); stroke-width: 2; }
+.stx-flash-ok { fill: var(--ok); font-family: var(--font-mono); font-size: 13px; font-weight: 700; text-anchor: middle; }
+.stx-flash-edge { fill: var(--edge); font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-anchor: middle; }
+.stx-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
+.stx-result { margin-top: 6px; padding: 8px 10px; border-radius: 8px; display: block !important; }
+.stx-result.ok { background: var(--ok-soft); }
+.stx-result.bad { background: var(--bad-soft); }
+.stx-result.warn { background: var(--edge-soft); }
+.stx .tag.lock { background: var(--accent-soft); color: var(--accent); }
+.stx-pop { animation: stx-pop .4s ease-out both; transform-box: fill-box; transform-origin: center; }
+@keyframes stx-pop { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .stx-pop { animation: none; } }
+.stx-region { fill: var(--bg); stroke: var(--muted); stroke-width: 1.2; }
+.stx-az { fill: var(--surface); fill-opacity: .6; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 5 4; transition: fill .25s, stroke .25s; }
+.stx-az.down { fill: var(--bad-soft); fill-opacity: 1; stroke: var(--bad); stroke-width: 2; stroke-dasharray: none; }
+.stx-node.down { opacity: .35; }
+.stx-node.pick rect { stroke: var(--accent); stroke-width: 2.5; }

@@ -1,0 +1,36 @@
+/* S3 lesson simulations (s3/DeleteGuardSim, s3/EncryptionSim, s3/UploadSim). Theme tokens only. */
+.s3x-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
+.s3x-row + .s3x-row { padding-top: 8px; }
+.s3x-lbl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
+.s3x-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; overflow-wrap: anywhere; }
+.s3x-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
+.s3x .stage-bar { margin-top: 12px; border-top: 1px solid var(--line); }
+.s3x .stage-bar .btn.primary { margin-left: auto; }
+.s3x-wire { stroke: var(--line); stroke-width: 2; fill: none; }
+.s3x-wire.dash { stroke-dasharray: 5 5; }
+.s3x-box { fill: var(--bg); stroke: var(--muted); stroke-width: 1.2; }
+.s3x-box.dash { fill: none; stroke-dasharray: 6 4; }
+.s3x-node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill .2s, stroke .2s, opacity .2s; }
+.s3x-node.pass rect, .s3x-node.ok rect { fill: var(--ok-soft); stroke: var(--ok); }
+.s3x-node.block rect, .s3x-node.bad rect { fill: var(--bad-soft); stroke: var(--bad); }
+.s3x-node.change rect, .s3x-node.warn rect { fill: var(--edge-soft); stroke: var(--edge); }
+.s3x-node.on rect { stroke: var(--accent); fill: var(--accent-soft); }
+.s3x-node.skip, .s3x-node.off { opacity: .4; }
+.s3x-t { fill: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
+.s3x-s { fill: var(--muted); font-family: var(--font-body); font-size: 10px; }
+.s3x-m { fill: var(--muted); font-family: var(--font-mono); font-size: 10.5px; }
+.s3x-m.ok { fill: var(--ok); }
+.s3x-m.bad { fill: var(--bad); }
+.s3x-m.edge { fill: var(--edge); }
+.s3x-strike { stroke: var(--bad); stroke-width: 2; }
+.s3x-flash-ok { fill: var(--ok); font-family: var(--font-mono); font-size: 13px; font-weight: 700; text-anchor: middle; }
+.s3x-flash-edge { fill: var(--edge); font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-anchor: middle; }
+.s3x-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
+.s3x-result { margin-top: 6px; padding: 8px 10px; border-radius: 8px; display: block !important; }
+.s3x-result.ok { background: var(--ok-soft); }
+.s3x-result.bad { background: var(--bad-soft); }
+.s3x-result.warn { background: var(--edge-soft); }
+.s3x .tag.lock { background: var(--accent-soft); color: var(--accent); }
+.s3x-pop { animation: s3x-pop .4s ease-out both; transform-box: fill-box; transform-origin: center; }
+@keyframes s3x-pop { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .s3x-pop { animation: none; } }
