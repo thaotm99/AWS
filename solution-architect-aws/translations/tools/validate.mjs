@@ -13,6 +13,8 @@ const vi = JSON.parse(readFileSync(path, "utf8"));
 const tags = (h) => [...h.matchAll(/<\/?([a-zA-Z][\w-]*)/g)].map((m) => m[0].toLowerCase()).join(" ");
 const urls = (h) => [...h.matchAll(/(?:href|src)\s*=\s*"([^"]*)"/g)].map((m) => m[1]).sort().join(" ");
 const text = (h) => h.replace(/<[^>]+>/g, " ").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ").trim();
+// Prose only: code blocks are kept verbatim and never translated.
+const prose = (h) => text(h.replace(/<(pre|code)\b[\s\S]*?<\/\1>/gi, " "));
 const VI = /[ăâđêôơưàáảãạằắẳẵặầấẩẫậèéẻẽẹềếểễệìíỉĩịòóỏõọồốổỗộờớởỡợùúủũụừứửữựỳýỷỹỵ]/i;
 
 const problems = [];
@@ -30,9 +32,9 @@ for (const q of src) {
     if (typeof b !== "string" || !b.trim()) { problems.push(`${where} ${name}: trống`); continue; }
     if (tags(a) !== tags(b)) problems.push(`${where} ${name}: cấu trúc thẻ HTML khác bản gốc`);
     if (urls(a) !== urls(b)) problems.push(`${where} ${name}: link/ảnh khác bản gốc`);
-    const words = text(b).split(" ").length;
+    const words = prose(b).split(" ").filter(Boolean).length;
     // Short answers can be pure AWS names ("Amazon S3"); longer text must contain Vietnamese.
-    if (words > 12 && !VI.test(text(b))) problems.push(`${where} ${name}: có vẻ chưa dịch`);
+    if (words > 12 && !VI.test(prose(b))) problems.push(`${where} ${name}: có vẻ chưa dịch`);
   }
 }
 const extra = Object.keys(vi).filter((id) => !src.some((q) => q.id === id));

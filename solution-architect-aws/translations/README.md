@@ -43,6 +43,10 @@ Văn phong của tài liệu kỹ thuật: câu hoàn chỉnh, chính xác, tran
 | Correct option: / Correct options: | Phương án đúng: |
 | Incorrect options: | Phương án sai: |
 | References: | Tài liệu tham khảo: |
+| Exam Alert: | Lưu ý khi thi: |
+| decouple | tách rời (decouple) |
+| archive / archival | lưu trữ dài hạn (archive) |
+| ingest | tiếp nhận |
 | via - | via - (giữ nguyên, đứng trước link nguồn ảnh) |
 
 **HTML**
