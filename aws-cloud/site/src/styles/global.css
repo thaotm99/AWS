@@ -737,3 +737,46 @@ input[type="range"] { accent-color: var(--accent); }
 .cfp-result { margin-top: 6px; padding: 8px 10px; border-radius: 8px; display: block !important; }
 .cfp-result.ok { background: var(--ok-soft); }
 .cfp-result.bad { background: var(--bad-soft); }
+
+/* UI/UX review fixes (CSS only): contrast, header sizing, stage-bar wrap, drawer depth, native controls. */
+.topnav .soon, .drawer-nav .soon { opacity: 1; color: var(--muted); text-decoration: underline dotted; text-underline-offset: 4px; }
+.topnav a { display: inline-flex; align-items: center; height: 32px; padding-block: 0; }
+.topnav a[aria-current="page"] { box-shadow: inset 0 -2px 0 var(--accent); }
+.lang-switch, .theme-toggle { height: 32px; }
+.lang-switch button { height: 30px; padding: 0 10px; font-size: var(--step--1); }
+.brand { min-height: 32px; }
+.menu-btn { height: 32px; }
+.stage-bar .sep { width: 0; background: none; margin: 0 8px; }
+.concept { align-items: flex-start; padding-block: 6px; }
+.concept .dot { margin-top: 6px; }
+.layer > button { font-weight: 500; }
+.toc a { padding: 5px 12px; }
+.chip { padding: 5px 12px; }
+.donate-field dd { flex-wrap: wrap; }
+.meta-row dd a { padding-block: 3px; }
+.next-col li { padding-block: 3px; }
+
+/* Labels below 12px */
+.side-label, .meta-row dt, .stage-bar .label, .picker-answer .label, .next-col h3, .policy-reqs .label, .eval-row .label,
+.lc-grid .label, .donate-field dt, .toc-keys, .term-meta, .concept-quiz-n, .tag, .log .tag, .timebar .tag, .rt th,
+.exam-refs > span, .toc-keys kbd { font-size: 0.75rem; }
+
+/* Native controls */
+input[type="range"] { -webkit-appearance: none; appearance: none; height: 24px; background: transparent; cursor: pointer; }
+input[type="range"]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: var(--line); }
+input[type="range"]::-moz-range-track { height: 4px; border-radius: 2px; background: var(--line); }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -7px; border-radius: 50%; background: var(--accent); border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--accent); }
+input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--accent); }
+input[type="checkbox"] { -webkit-appearance: none; appearance: none; width: 24px; height: 24px; margin: 0; flex: none; display: inline-grid; place-content: center;
+  border: 1.5px solid var(--muted); border-radius: 5px; background: var(--surface); cursor: pointer; }
+input[type="checkbox"]::after { content: ""; width: 11px; height: 6px; border: solid var(--on-accent); border-width: 0 0 2px 2px; transform: rotate(-45deg) translate(1px, -1px) scale(0); transition: transform .12s; }
+input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
+input[type="checkbox"]:checked::after { transform: rotate(-45deg) translate(1px, -1px) scale(1); }
+input[type="checkbox"]:disabled, input[type="range"]:disabled { opacity: .5; cursor: default; }
+
+@media (max-width: 900px) {
+  html.drawer-open .sidebar { box-shadow: var(--shadow); }
+}
+@media (max-width: 560px) {
+  .lede { font-size: 1.0625rem; }
+}
