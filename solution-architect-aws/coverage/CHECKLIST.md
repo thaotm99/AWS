@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 922 (96%) · 🟡 19 (2%) · ❌ 19 (2%).
+Có **960 keyword** khác nhau: ✅ 924 (96%) · 🟡 18 (2%) · ❌ 18 (2%).
 
 ### Theo bài học
 
@@ -27,7 +27,7 @@ Có **960 keyword** khác nhau: ✅ 922 (96%) · 🟡 19 (2%) · ❌ 19 (2%).
 | [iam](#iam) | 49 | 49 | 0 | 0 | 100% |
 | [kms](#kms) | 21 | 21 | 0 | 0 | 100% |
 | [security](#security) | 27 | 27 | 0 | 0 | 100% |
-| [cognito](#cognito) | 15 | 13 | 1 | 1 | 87% |
+| [cognito](#cognito) | 15 | 15 | 0 | 0 | 100% |
 | [ec2](#ec2) | 57 | 57 | 0 | 0 | 100% |
 | [elb](#elb) | 42 | 42 | 0 | 0 | 100% |
 | [asg](#asg) | 44 | 44 | 0 | 0 | 100% |
@@ -52,7 +52,7 @@ Có **960 keyword** khác nhau: ✅ 922 (96%) · 🟡 19 (2%) · ❌ 19 (2%).
 |---|---:|---:|---:|
 | Đề 1 | 217 | 3 | 4 |
 | Đề 2 | 191 | 2 | 5 |
-| Đề 3 | 215 | 4 | 3 |
+| Đề 3 | 217 | 3 | 2 |
 | Đề 4 | 229 | 4 | 3 |
 | Đề 5 | 213 | 6 | 2 |
 | Đề 6 | 207 | 0 | 3 |
@@ -381,13 +381,13 @@ Có **960 keyword** khác nhau: ✅ 922 (96%) · 🟡 19 (2%) · ❌ 19 (2%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | Amazon Cloud Directory | ❌ Thiếu | 1 | exam3_q28 |  |
-| [ ] | Simple AD | 🟡 Một phần ⚠ | 2 | exam3_q28, exam6_q44 | cognito.mdx#challenge / Quiz<br>cognito.mdx#challenge |
 | [ ] | AD Connector | ✅ Đã có | 2 | exam3_q28, exam6_q44 | cognito.mdx#s2 / StaffSignInSim |
 | [ ] | AWS Managed Microsoft AD | ✅ Đã có | 2 | exam1_q65, exam3_q28 | cognito.mdx#s2 / challenge<br>cognito.mdx#s2 / StaffSignInSim |
 | [ ] | Cognito identity pool | ✅ Đã có | 2 | exam2_q17, exam4_q4 | cognito.mdx#s1 / ScenarioFlow<br>cognito.mdx#s1 |
 | [ ] | IAM Identity Center permission set | ✅ Đã có | 2 | exam4_q4, exam6_q10 | cognito.mdx#s2 / StaffSignInSim |
+| [ ] | Simple AD | ✅ Đã có | 2 | exam3_q28, exam6_q44 | cognito.mdx#s3 / QuickCompare; cognito.mdx#challenge / Quiz<br>cognito.mdx#challenge |
 | [ ] | Active Directory trust relationship | ✅ Đã có | 1 | exam3_q28 | cognito.mdx#s2 / StaffSignInSim |
+| [ ] | Amazon Cloud Directory | ✅ Đã có | 1 | exam3_q28 | cognito.mdx#s3 / QuickCompare |
 | [ ] | AWS Directory Service AD Connector | ✅ Đã có | 1 | exam1_q10 | cognito.mdx#s2 |
 | [ ] | AWS Managed Microsoft AD (trust relationship) | ✅ Đã có | 1 | exam1_q10 | cognito.mdx#s2 / challenge |
 | [ ] | AWS Managed Microsoft AD (trust with on-premises AD) | ✅ Đã có | 1 | exam6_q44 | cognito.mdx#s2 / StaffSignInSim |

@@ -879,8 +879,8 @@
         {
           "keyword": "Simple AD",
           "lesson": "cognito",
-          "status": "partial",
-          "where": "cognito.mdx#challenge / Quiz"
+          "status": "covered",
+          "where": "cognito.mdx#s3 / QuickCompare; cognito.mdx#challenge / Quiz"
         },
         {
           "keyword": "Active Directory trust relationship",
@@ -891,8 +891,8 @@
         {
           "keyword": "Amazon Cloud Directory",
           "lesson": "cognito",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "cognito.mdx#s3 / QuickCompare"
         }
       ]
     },

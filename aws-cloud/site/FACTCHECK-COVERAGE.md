@@ -305,3 +305,15 @@ Checked 2026-10-22 against the pages below (keyword → claim → URL).
 | AWS WAF is HTTP(S) only (not SFTP) | Security group rules specify source, port range and protocol | https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html |
 | AWS Firewall Manager (s3 row) | Sets up protections once (WAF, Shield Advanced, security groups, network ACLs, Network Firewall, Route 53 Resolver DNS Firewall) and applies them across accounts and resources, including new ones | https://docs.aws.amazon.com/waf/latest/developerguide/fms-chapter.html |
 | Amazon Route 53 (s3 row) | Highly available DNS service: domain registration, DNS routing, health checking | https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/Welcome.html |
+
+## cognito
+
+Checked 2026-10-22 against the pages below (keyword → claim → URL).
+
+| Keyword | Claim written | Source |
+|---|---|---|
+| Simple AD | Standalone managed directory powered by Samba 4; Small up to 500 users, Large up to 5,000 users; basic features (users, groups, group policies, EC2 join, Kerberos SSO); no MFA, no trust relationships with other domains, no schema extensions; not supported with RDS for SQL Server, RDS for Oracle, IAM Identity Center, FSx; **no longer open to new customers** (s3, quiz) | https://docs.aws.amazon.com/directoryservice/latest/admin-guide/directory_simple_ad.html |
+| Simple AD | AWS Managed Microsoft AD: actual Microsoft AD managed by AWS, works with SQL Server, trust with existing AD; Standard Edition for up to 5,000 employees (about 30,000 objects), Enterprise Edition up to about 500,000 objects; AD Connector is a proxy, not compatible with RDS SQL Server, seamless domain join to the on-premises domain; Cognito recommended for SaaS subscribers with social identities (s3) | https://docs.aws.amazon.com/directoryservice/latest/admin-guide/what_is.html |
+| Amazon Cloud Directory | Multi-tenant directory-based store, multiple hierarchies, for developers (org charts, device registries, catalogs) via API; not a directory service for IT administrators; **no longer open to new customers, end of support July 24, 2027**; alternatives DynamoDB and Neptune (s3) | https://docs.aws.amazon.com/clouddirectory/latest/developerguide/what_is_cloud_directory.html |
+
+Doc vs exam note: the practice-test explanation recommends Simple AD as "the least expensive option ... for 5,000 or fewer users". Current docs say Simple AD and Amazon Cloud Directory are no longer open to new customers; the lesson teaches that status. The correct answer of the question (AWS Managed Microsoft AD) is unaffected.
