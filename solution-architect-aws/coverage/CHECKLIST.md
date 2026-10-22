@@ -14,7 +14,7 @@ Dữ liệu gốc: `coverage/test-1.json` … `test-6.json`. Tạo lại file n�
 
 ## Tổng quan
 
-Có **960 keyword** khác nhau: ✅ 938 (98%) · 🟡 11 (1%) · ❌ 11 (1%).
+Có **960 keyword** khác nhau: ✅ 942 (98%) · 🟡 9 (1%) · ❌ 9 (1%).
 
 ### Theo bài học
 
@@ -22,7 +22,7 @@ Có **960 keyword** khác nhau: ✅ 938 (98%) · 🟡 11 (1%) · ❌ 11 (1%).
 |---|---:|---:|---:|---:|---:|
 | [global-infra](#global-infra) | 22 | 20 | 2 | 0 | 91% |
 | [vpc](#vpc) | 107 | 107 | 0 | 0 | 100% |
-| [route53](#route53) | 28 | 24 | 2 | 2 | 86% |
+| [route53](#route53) | 28 | 28 | 0 | 0 | 100% |
 | [cloudfront](#cloudfront) | 31 | 31 | 0 | 0 | 100% |
 | [iam](#iam) | 49 | 49 | 0 | 0 | 100% |
 | [kms](#kms) | 21 | 21 | 0 | 0 | 100% |
@@ -52,8 +52,8 @@ Có **960 keyword** khác nhau: ✅ 938 (98%) · 🟡 11 (1%) · ❌ 11 (1%).
 |---|---:|---:|---:|
 | Đề 1 | 220 | 2 | 2 |
 | Đề 2 | 196 | 1 | 1 |
-| Đề 3 | 219 | 1 | 2 |
-| Đề 4 | 230 | 3 | 3 |
+| Đề 3 | 222 | 0 | 0 |
+| Đề 4 | 231 | 2 | 3 |
 | Đề 5 | 215 | 4 | 2 |
 | Đề 6 | 209 | 0 | 1 |
 
@@ -200,10 +200,6 @@ Có **960 keyword** khác nhau: ✅ 938 (98%) · 🟡 11 (1%) · ❌ 11 (1%).
 
 | | Keyword | Trạng thái | Số câu | Câu hỏi | Vị trí trong bài |
 |---|---|---|---:|---|---|
-| [ ] | DNS MX record / NS record | ❌ Thiếu | 1 | exam3_q19 |  |
-| [ ] | DNS PTR record | ❌ Thiếu | 1 | exam3_q64 |  |
-| [ ] | DNS A record | 🟡 Một phần | 1 | exam3_q64 | route53.mdx#s1 / AliasCnameSim |
-| [ ] | Route 53 multivalue answer routing | 🟡 Một phần | 1 | exam4_q53 | route53.mdx#challenge |
 | [ ] | Route 53 failover routing | ✅ Đã có | 4 | exam1_q38, exam2_q6, exam2_q59, exam5_q7 | route53.mdx#s3<br>route53.mdx#s3, #confuse / Route53MythsSim |
 | [ ] | Route 53 alias record | ✅ Đã có | 3 | exam2_q2, exam3_q19, exam4_q3 | route53.mdx#s1 / AliasCnameSim |
 | [ ] | Route 53 geolocation routing | ✅ Đã có | 3 | exam1_q38, exam2_q6, exam4_q61 | route53.mdx#s3<br>route53.mdx#s3 / RoutingPolicySim; route53.mdx#confuse / Route53MythsSim |
@@ -216,7 +212,10 @@ Có **960 keyword** khác nhau: ✅ 938 (98%) · 🟡 11 (1%) · ❌ 11 (1%).
 | [ ] | Route 53 geoproximity routing | ✅ Đã có | 2 | exam1_q62, exam5_q55 | route53.mdx#s3<br>route53.mdx#s3 / RoutingPolicySim |
 | [ ] | Route 53 Resolver inbound endpoint | ✅ Đã có | 2 | exam1_q63, exam3_q35 | route53.mdx#s4 / HybridDnsSim |
 | [ ] | Route 53 Resolver outbound endpoint | ✅ Đã có | 2 | exam1_q63, exam3_q35 | route53.mdx#s4 / HybridDnsSim |
+| [ ] | DNS A record | ✅ Đã có | 1 | exam3_q64 | route53.mdx#s1 / RecordTypeSim |
 | [ ] | DNS caching and TTL | ✅ Đã có | 1 | exam2_q22 | route53.mdx#s2 / TtlSim; global-infra.mdx#s5 / GlobalAcceleratorSim |
+| [ ] | DNS MX record / NS record | ✅ Đã có | 1 | exam3_q19 | route53.mdx#s1 / RecordTypeSim |
+| [ ] | DNS PTR record | ✅ Đã có | 1 | exam3_q64 | route53.mdx#s1 / RecordTypeSim |
 | [ ] | Route 53 (DNS-based failover) | ✅ Đã có | 1 | exam1_q59 | route53.mdx#s3 |
 | [ ] | Route 53 active-active vs active-passive | ✅ Đã có | 1 | exam5_q56 | route53.mdx#confuse / Route53MythsSim |
 | [ ] | Route 53 alias queries to AWS resources are free | ✅ Đã có | 1 | exam3_q19 | route53.mdx#s1 / AliasCnameSim |
@@ -224,6 +223,7 @@ Có **960 keyword** khác nhau: ✅ 938 (98%) · 🟡 11 (1%) · ❌ 11 (1%).
 | [ ] | Route 53 failover routing (active-passive) | ✅ Đã có | 1 | exam5_q56 | route53.mdx#s3 / RoutingPolicySim |
 | [ ] | Route 53 geoproximity routing (bias) | ✅ Đã có | 1 | exam4_q61 | route53.mdx#s3 / RoutingPolicySim |
 | [ ] | Route 53 latency routing | ✅ Đã có | 1 | exam2_q6 | route53.mdx#s3 / RoutingPolicySim |
+| [ ] | Route 53 multivalue answer routing | ✅ Đã có | 1 | exam4_q53 | route53.mdx#confuse / Route53MythsSim |
 | [ ] | Route 53 traffic to load balancer nodes | ✅ Đã có | 1 | exam4_q59 | route53.mdx#confuse |
 | [ ] | Route 53 TTL | ✅ Đã có | 1 | exam4_q3 | route53.mdx#s2 / TtlSim |
 | [ ] | Route 53 weighted and latency routing | ✅ Đã có | 1 | exam5_q56 | route53.mdx#s3 / RoutingPolicySim |

@@ -391,3 +391,19 @@ Checked 2026-10-22 against the pages below (keyword → claim → URL).
 
 Doc-vs-exam notes:
 - Test 5 Q58 option names "Amazon Kinesis Data Analytics"; the service is now Amazon Managed Service for Apache Flink, and Kinesis Data Analytics for SQL Applications is discontinued (already stated in s3). No contradiction with the correct answer (Transcribe + Athena).
+
+## route53
+
+Checked 2026-10-22 against the pages below (keyword → claim → URL).
+
+| Keyword | Claim written | Source |
+|---|---|---|
+| DNS A record | A routes a name to an IPv4 address; AAAA to an IPv6 address (s1 RecordTypeSim) | https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/ResourceRecordTypes.html |
+| DNS MX record / NS record | MX specifies mail server names and priority; the lowest priority value takes precedence, equal values route approximately equally (s1 RecordTypeSim, quiz) | https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/ResourceRecordTypes.html |
+| DNS MX record / NS record | NS identifies the name servers for the hosted zone; an NS record in the parent zone delegates a subdomain to a separate hosted zone (s1 RecordTypeSim) | https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/ResourceRecordTypes.html |
+| DNS PTR record | PTR maps an IP address to the corresponding domain name (s1 RecordTypeSim) | https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/ResourceRecordTypes.html |
+| DNS A record / CNAME | CNAME maps a name to another domain name; not allowed at the zone apex; Alias points to supported AWS resources or another record in the same hosted zone; no charge for alias queries to AWS resources; a CNAME redirecting to another Route 53 record is charged as two queries | https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-choosing-alias-non-alias.html |
+| Route 53 multivalue answer routing | Returns up to eight healthy records, different answers to different resolvers; "not a substitute for a load balancer", improves uptime and load sharing (confuse Route53MythsSim case 5, takeaway, quiz) | https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-multivalue.html |
+| Route 53 multivalue answer routing | ASG scaling policies adjust desired capacity between min and max and launch/terminate instances ("instead" path) | https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-groups.html |
+
+Note: the AliasCnameSim case "shopviet.vn → www" (unchanged) calls Alias the lowest-cost option; the docs' free-query statement covers alias queries to AWS resources, so the new RecordTypeSim text avoids claiming the apex→www alias query is free.

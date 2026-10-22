@@ -1,7 +1,7 @@
 ---
 title: "Route 53: bản ghi, TTL, routing policy và DNS lai"
 lede: "Bài học trình bày cấu hình DNS cho tên miền shopviet.vn: lựa chọn giữa bản ghi Alias và CNAME, nguyên nhân người dùng vẫn truy cập đích cũ sau khi thay đổi bản ghi DNS, routing policy phù hợp với từng yêu cầu, và cơ chế phân giải tên miền hai chiều giữa VPC và văn phòng."
-minutes: 20
+minutes: 24
 scenes: 4
 prerequisites: ["vpc"]
 docs:
@@ -23,6 +23,12 @@ docs:
     url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver.html"
   - title: "DNS attributes for your VPC"
     url: "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-dns.html"
+  - title: "Supported DNS record types"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/ResourceRecordTypes.html"
+  - title: "Multivalue answer routing"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-multivalue.html"
+  - title: "Auto Scaling groups"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-groups.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -32,6 +38,7 @@ import RoutingPolicySim from "../../components/scenes/route53/RoutingPolicySim.t
 import HybridDnsSim from "../../components/scenes/route53/HybridDnsSim.tsx";
 import AliasCnameSim from "../../components/scenes/route53/AliasCnameSim.tsx";
 import Route53MythsSim from "../../components/scenes/route53/Route53MythsSim.tsx";
+import RecordTypeSim from "../../components/scenes/route53/RecordTypeSim.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
@@ -51,7 +58,11 @@ ShopViet cần bốn record: tên miền chính trỏ tới CloudFront, tên mi�
 
 <AliasCnameSim client:visible />
 
-<Takeaway>Zone apex: không tạo được CNAME; trỏ tới tài nguyên AWS tại zone apex bằng Alias. Trỏ tới CloudFront, ALB, S3 website: Alias (không tính phí truy vấn Alias tới tài nguyên AWS). Subdomain trỏ tới một tên miền khác: có thể sử dụng CNAME.</Takeaway>
+Alias và CNAME chỉ là hai trong số các loại record của một hosted zone. Mỗi loại record trả lời một loại truy vấn khác nhau: A và AAAA trả về địa chỉ IP, MX chỉ định mail server, NS xác định name server, PTR tra cứu ngược từ địa chỉ IP về tên miền. Chọn từng yêu cầu của ShopViet, sau đó thử các loại record để xác định loại phù hợp và lý do các loại còn lại không đáp ứng.
+
+<RecordTypeSim client:visible />
+
+<Takeaway>Zone apex: không tạo được CNAME; trỏ tới tài nguyên AWS tại zone apex bằng Alias. Trỏ tới CloudFront, ALB, S3 website: Alias (không tính phí truy vấn Alias tới tài nguyên AWS). Subdomain trỏ tới một tên miền khác: có thể sử dụng CNAME. Tên miền → IPv4: A; IPv6: AAAA. Email: MX (priority thấp hơn được ưu tiên). Ủy quyền subdomain cho hosted zone khác: NS. IP → tên miền: PTR.</Takeaway>
 
 </Scene>
 
@@ -85,13 +96,13 @@ Server trong VPC cần phân giải địa chỉ database tại văn phòng (`db
 
 </Scene>
 
-<Scene id="confuse" label="Lỗi thường gặp" title="Bốn lỗi cấu hình DNS thường gặp" questions={["exam4_q59", "exam5_q56", "exam1_q38", "exam4_q61"]}>
+<Scene id="confuse" label="Lỗi thường gặp" title="Năm lỗi cấu hình DNS thường gặp" questions={["exam4_q59", "exam5_q56", "exam1_q38", "exam4_q61", "exam4_q53"]}>
 
-Bốn tình huống phát sinh khi ShopViet vận hành DNS. Thử phương án thường được lựa chọn đầu tiên, sau đó chuyển sang phương án khác để so sánh.
+Năm tình huống phát sinh khi ShopViet vận hành DNS. Thử phương án thường được lựa chọn đầu tiên, sau đó chuyển sang phương án khác để so sánh.
 
 <Route53MythsSim client:visible />
 
-<Takeaway>NLB tắt cross-zone load balancing: mỗi node chỉ phân phối traffic cho target trong cùng AZ, do đó tại AZ có ít target, mỗi target chịu tải lớn hơn. Hiển thị trang thông báo lỗi khi gặp sự cố: failover active-passive, không sử dụng weighted. Điều chỉnh phạm vi khu vực: geoproximity với bias. Giới hạn theo quốc gia: Route 53 geolocation tại tầng DNS, CloudFront geo restriction tại tầng phân phối nội dung.</Takeaway>
+<Takeaway>NLB tắt cross-zone load balancing: mỗi node chỉ phân phối traffic cho target trong cùng AZ, do đó tại AZ có ít target, mỗi target chịu tải lớn hơn. Hiển thị trang thông báo lỗi khi gặp sự cố: failover active-passive, không sử dụng weighted. Điều chỉnh phạm vi khu vực: geoproximity với bias. Giới hạn theo quốc gia: Route 53 geolocation tại tầng DNS, CloudFront geo restriction tại tầng phân phối nội dung. Lưu lượng tăng đột biến: multivalue answer (tối đa 8 record healthy, chọn ngẫu nhiên) không bổ sung năng lực xử lý và không thay thế load balancer; tăng năng lực bằng [Auto Scaling group](/concepts/asg/#s1) phía sau ALB.</Takeaway>
 
 </Scene>
 
@@ -130,6 +141,14 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Load balancer mới chưa có target", "TTL của record cũ vẫn còn hiệu lực", "Phải xóa hosted zone và tạo lại"],
     a: 1,
     why: "Client và resolver lưu phản hồi cũ trong cache cho tới khi hết TTL." },
+  { q: "ShopViet dự kiến lưu lượng tăng gấp 10 lần trong đợt flash sale cuối tuần; nội dung website là nội dung động. Cấu hình nào giúp hệ thống đáp ứng được tải?",
+    opts: ["Record multivalue answer trỏ tới các web server hiện có", "ALB kết hợp Auto Scaling group", "CloudFront cache toàn bộ trang"],
+    a: 1,
+    why: "Auto Scaling group tăng số instance theo scaling policy. Multivalue answer chỉ trả về tối đa 8 IP healthy của các server hiện có, không bổ sung năng lực; nội dung thay đổi liên tục nên cache CloudFront không giải quyết được tải động." },
+  { q: "Đội vận hành cần các email gửi tới @shopviet.vn được chuyển tới mail server mx1, và chỉ chuyển sang mx2 khi mx1 không khả dụng. Loại record nào cần tạo?",
+    opts: ["NS", "MX với priority 10 cho mx1 và 20 cho mx2", "CNAME từ shopviet.vn tới mx1"],
+    a: 1,
+    why: "MX chỉ định mail server và thứ tự ưu tiên; giá trị priority thấp hơn được ưu tiên. NS chỉ xác định name server; CNAME không tạo được tại zone apex." },
 ]} />
 
 </Scene>

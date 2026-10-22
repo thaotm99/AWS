@@ -1690,8 +1690,8 @@
         {
           "keyword": "Route 53 multivalue answer routing",
           "lesson": "route53",
-          "status": "partial",
-          "where": "route53.mdx#challenge"
+          "status": "covered",
+          "where": "route53.mdx#confuse / Route53MythsSim"
         },
         {
           "keyword": "S3 static website hosting",

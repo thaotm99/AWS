@@ -598,8 +598,8 @@
         {
           "keyword": "DNS MX record / NS record",
           "lesson": "route53",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "route53.mdx#s1 / RecordTypeSim"
         }
       ]
     },
@@ -1959,14 +1959,14 @@
         {
           "keyword": "DNS A record",
           "lesson": "route53",
-          "status": "partial",
-          "where": "route53.mdx#s1 / AliasCnameSim"
+          "status": "covered",
+          "where": "route53.mdx#s1 / RecordTypeSim"
         },
         {
           "keyword": "DNS PTR record",
           "lesson": "route53",
-          "status": "missing",
-          "where": ""
+          "status": "covered",
+          "where": "route53.mdx#s1 / RecordTypeSim"
         }
       ]
     },

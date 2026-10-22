@@ -1,7 +1,7 @@
 ---
 title: "Route 53: records, TTL, routing policies and hybrid DNS"
 lede: "This lesson covers the DNS configuration for the domain shopviet.vn: choosing between Alias and CNAME records, why users still reach the old target after a DNS record changes, the routing policy that fits each requirement, and two-way name resolution between the VPC and the office."
-minutes: 20
+minutes: 24
 scenes: 4
 prerequisites: ["vpc"]
 docs:
@@ -23,6 +23,12 @@ docs:
     url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver.html"
   - title: "DNS attributes for your VPC"
     url: "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-dns.html"
+  - title: "Supported DNS record types"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/ResourceRecordTypes.html"
+  - title: "Multivalue answer routing"
+    url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-multivalue.html"
+  - title: "Auto Scaling groups"
+    url: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-groups.html"
 ---
 import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
@@ -32,6 +38,7 @@ import RoutingPolicySim from "../../components/scenes/route53/RoutingPolicySim.t
 import HybridDnsSim from "../../components/scenes/route53/HybridDnsSim.tsx";
 import AliasCnameSim from "../../components/scenes/route53/AliasCnameSim.tsx";
 import Route53MythsSim from "../../components/scenes/route53/Route53MythsSim.tsx";
+import RecordTypeSim from "../../components/scenes/route53/RecordTypeSim.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
@@ -51,7 +58,11 @@ ShopViet needs four records: the main domain pointing to CloudFront, the main do
 
 <AliasCnameSim client:visible />
 
-<Takeaway>Zone apex: a CNAME cannot be created; point to an AWS resource at the zone apex with an Alias record. Pointing to CloudFront, an ALB or an S3 website: Alias (no charge for Alias queries to AWS resources). A subdomain pointing to another domain name: a CNAME can be used.</Takeaway>
+Alias and CNAME are only two of the record types in a hosted zone. Each record type answers a different kind of query: A and AAAA return IP addresses, MX specifies mail servers, NS identifies name servers, and PTR looks up a domain name from an IP address. Choose each ShopViet requirement, then try the record types to find the one that fits and see why the others do not.
+
+<RecordTypeSim client:visible />
+
+<Takeaway>Zone apex: a CNAME cannot be created; point to an AWS resource at the zone apex with an Alias record. Pointing to CloudFront, an ALB or an S3 website: Alias (no charge for Alias queries to AWS resources). A subdomain pointing to another domain name: a CNAME can be used. Name → IPv4: A; IPv6: AAAA. Email: MX (the lower priority value takes precedence). Delegating a subdomain to another hosted zone: NS. IP → name: PTR.</Takeaway>
 
 </Scene>
 
@@ -85,13 +96,13 @@ Servers in the VPC need to resolve the address of the database at the office (`d
 
 </Scene>
 
-<Scene id="en-confuse" label="Common mistakes" title="Four common DNS configuration mistakes" questions={["exam4_q59", "exam5_q56", "exam1_q38", "exam4_q61"]}>
+<Scene id="en-confuse" label="Common mistakes" title="Five common DNS configuration mistakes" questions={["exam4_q59", "exam5_q56", "exam1_q38", "exam4_q61", "exam4_q53"]}>
 
-Four situations that come up as ShopViet operates its DNS. Try the option that is usually chosen first, then switch to another option to compare.
+Five situations that come up as ShopViet operates its DNS. Try the option that is usually chosen first, then switch to another option to compare.
 
 <Route53MythsSim client:visible />
 
-<Takeaway>NLB with cross-zone load balancing turned off: each node distributes traffic only to targets in its own AZ, so in an AZ with fewer targets, each target carries more load. Showing an error notice page during a failure: active-passive failover, not weighted. Adjusting the size of a region: geoproximity with bias. Restricting by country: Route 53 geolocation at the DNS layer, CloudFront geo restriction at the content delivery layer.</Takeaway>
+<Takeaway>NLB with cross-zone load balancing turned off: each node distributes traffic only to targets in its own AZ, so in an AZ with fewer targets, each target carries more load. Showing an error notice page during a failure: active-passive failover, not weighted. Adjusting the size of a region: geoproximity with bias. Restricting by country: Route 53 geolocation at the DNS layer, CloudFront geo restriction at the content delivery layer. A traffic spike: multivalue answer (up to 8 healthy records, chosen at random) adds no capacity and is not a substitute for a load balancer; add capacity with an [Auto Scaling group](/concepts/asg/#en-s1) behind the ALB.</Takeaway>
 
 </Scene>
 
@@ -130,6 +141,14 @@ Check your understanding: as the designer of the ShopViet system, which option i
     opts: ["The new load balancer has no targets yet", "The old record's TTL is still in effect", "The hosted zone must be deleted and recreated"],
     a: 1,
     why: "Clients and resolvers keep the old response in their cache until the TTL expires." },
+  { q: "ShopViet expects 10 times its usual traffic during a weekend flash sale, and the website content is dynamic. Which configuration lets the system handle the load?",
+    opts: ["A multivalue answer record pointing to the existing web servers", "An ALB with an Auto Scaling group", "CloudFront caching every page"],
+    a: 1,
+    why: "The Auto Scaling group adds instances according to its scaling policy. Multivalue answer only returns up to 8 healthy IPs of the existing servers and adds no capacity; the content changes constantly, so CloudFront caching does not absorb the dynamic load." },
+  { q: "The operations team needs email sent to @shopviet.vn to go to mail server mx1, and to mx2 only when mx1 is unavailable. Which record type is needed?",
+    opts: ["NS", "MX with priority 10 for mx1 and 20 for mx2", "A CNAME from shopviet.vn to mx1"],
+    a: 1,
+    why: "MX specifies mail servers and their priority order; the lower priority value takes precedence. NS only identifies name servers; a CNAME cannot be created at the zone apex." },
 ]} />
 
 </Scene>
