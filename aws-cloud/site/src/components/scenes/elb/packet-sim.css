@@ -1,0 +1,29 @@
+/* Packet simulations of the ELB, ASG, container and Lambda lessons (elb/PacketSim) */
+.pks-scenarios { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
+.pks-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; overflow-wrap: anywhere; }
+.pks-from { font-size: var(--step--1); color: var(--muted); }
+.pks-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
+.pks .stage-bar .btn.primary { margin-left: auto; }
+.pks-link { fill: none; stroke: var(--line); stroke-width: 2; }
+.pks-box rect { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 4 4; }
+.pks-box text { fill: var(--muted); font-family: var(--font-body); font-size: 11.5px; font-weight: 600; }
+.pks-box.edge rect { fill: var(--edge-soft); fill-opacity: .35; stroke: var(--edge); stroke-width: 1.5; stroke-dasharray: 6 5; }
+.pks-box.edge text { fill: var(--edge); }
+.pks-node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill .2s, stroke .2s, opacity .2s; }
+.pks-l1 { fill: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
+.pks-l2 { fill: var(--muted); font-family: var(--font-body); font-size: 10px; }
+.pks-user circle, .pks-user path { fill: var(--muted); transition: fill .2s; }
+.pks-node.pass rect { fill: var(--ok-soft); stroke: var(--ok); }
+.pks-node.block rect { fill: var(--bad-soft); stroke: var(--bad); }
+.pks-node.change rect { fill: var(--edge-soft); stroke: var(--edge); }
+.pks-node.wait rect { fill: var(--accent-soft); stroke: var(--accent); stroke-dasharray: 5 4; }
+.pks-node.skip { opacity: .45; }
+.pks-user.pass circle, .pks-user.pass path { fill: var(--ok); }
+.pks-user.block circle, .pks-user.block path { fill: var(--bad); }
+.pks-flash { fill: var(--ok); font-family: var(--font-mono); font-size: 14px; font-weight: 700; text-anchor: middle; }
+.pks-flash.bad { fill: var(--bad); }
+.pks .tag.pks-tag.bad { background: var(--bad-soft); color: var(--bad); }
+.pks-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
+.pks .log li.pks-result { margin-top: 6px; padding: 8px 10px; border-radius: 8px; display: block; }
+.pks-result.ok { background: var(--ok-soft); }
+.pks-result.bad { background: var(--bad-soft); }

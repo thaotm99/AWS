@@ -1,6 +1,6 @@
 ---
 title: "Lambda + API Gateway: serverless theo sự kiện"
-lede: "Bài viết từ 31 câu đề. Các mẫu kiến trúc theo sự kiện đề hay hỏi (S3, SQS, Kinesis, lịch cron gọi Lambda), các giới hạn và cấu hình Lambda cần nhớ, và những tính năng API Gateway phân biệt các đáp án."
+lede: "Nhiều việc của ShopViet chỉ cần chạy khi có chuyện xảy ra. Bài này dựng các luồng theo sự kiện (ảnh mới, dữ liệu stream, việc định kỳ), sửa những lỗi hay gặp khi Lambda chạy thật (VPC, cold start, quota, quyền), và mở API cho app và đối tác bằng API Gateway."
 minutes: 20
 scenes: 3
 prerequisites: ["iam", "vpc"]
@@ -20,22 +20,25 @@ import Scene from "../../components/Scene.astro";
 import Takeaway from "../../components/Takeaway.astro";
 import Story from "../../components/lessons/global-infra/Story.astro";
 import ScenarioFlow from "../../components/scenes/ScenarioFlow.tsx";
-import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
+import LambdaRunSim from "../../components/scenes/lambda/LambdaRunSim.tsx";
+import ApiGatewaySim from "../../components/scenes/lambda/ApiGatewaySim.tsx";
 import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#s1", label: "1 · Mẫu theo sự kiện" },
-  { href: "#s2", label: "2 · Giới hạn, cấu hình Lambda" },
+  { href: "#s2", label: "2 · Lambda chạy thật" },
   { href: "#s3", label: "3 · API Gateway" },
   { href: "#challenge", label: "Thử thách" },
 ]}>
 Nhiều việc của ShopViet chỉ chạy khi có chuyện xảy ra: có ảnh mới, có đơn hàng mới, đến giờ dọn dữ liệu. Thay vì để EC2 chạy chờ cả ngày, **Lambda** chạy đúng lúc có sự kiện, và **API Gateway** mở API cho app gọi vào.
 </Story>
 
-<Scene id="s1" label="Cảnh 1/3" title="Các mẫu kiến trúc theo sự kiện" questions={["exam5_q23", "exam2_q14", "exam1_q60", "exam5_q35", "exam6_q31", "exam3_q30", "exam1_q33"]}>
+<Scene id="s1" label="Cảnh 1/3" title="Chạy code khi có sự kiện" questions={["exam5_q23", "exam2_q14", "exam1_q60", "exam5_q35", "exam6_q31", "exam3_q30", "exam1_q33"]}>
 
-<ScenarioFlow client:visible height={220} legend={["Đề chọn", "Tốn kém hoặc nhiều vận hành"]} scenarios={[
+Ba việc của ShopViet: tạo thumbnail khi người bán tải ảnh, cập nhật bảng xếp hạng từ lượt xem, và dọn dữ liệu cũ mỗi tuần. So sánh cách làm "bật server chờ sẵn" với cách để sự kiện gọi Lambda:
+
+<ScenarioFlow client:visible height={220} legend={["Nên chọn", "Tốn kém hoặc nhiều vận hành"]} scenarios={[
   { name: "Xử lý ảnh khi upload",
     nodes: [
       { id: "s3", x: 30, y: 90, label: "S3: ảnh gốc", kind: "store" },
@@ -57,7 +60,7 @@ Nhiều việc của ShopViet chỉ chạy khi có chuyện xảy ra: có ảnh 
     ] },
   { name: "Dữ liệu stream thời gian thực",
     nodes: [
-      { id: "src", x: 30, y: 90, label: "Điểm số, giao dịch", kind: "user" },
+      { id: "src", x: 30, y: 90, label: "Lượt xem, đơn hàng", kind: "user" },
       { id: "kds", x: 230, y: 90, label: "Kinesis Data Streams", kind: "net" },
       { id: "fn", x: 450, y: 90, label: "Lambda", sub: "xử lý từng bản ghi", kind: "edge" },
       { id: "ddb", x: 640, y: 90, w: 100, label: "DynamoDB", kind: "db" },
@@ -88,51 +91,37 @@ Nhiều việc của ShopViet chỉ chạy khi có chuyện xảy ra: có ảnh 
 
 </Scene>
 
-<Scene id="s2" label="Cảnh 2/3" title="Giới hạn và cấu hình Lambda cần nhớ" questions={["exam4_q25", "exam1_q50", "exam3_q20", "exam6_q35", "exam4_q39", "exam2_q16"]}>
+<Scene id="s2" label="Cảnh 2/3" title="Khi Lambda chạy thật" questions={["exam4_q25", "exam1_q50", "exam3_q20", "exam6_q35", "exam4_q39", "exam2_q16"]}>
 
-<RequirementPicker client:visible items={[
-  { need: "Lambda gắn vào VPC rồi không gọi được API trên internet nữa", answer: "Cần NAT gateway cho subnet của Lambda",
-    why: "Mặc định Lambda chạy trong VPC của AWS và ra internet được. Khi gắn vào VPC của bạn, nó cần route qua NAT gateway." },
-  { need: "Dùng lại cùng một đoạn code cho nhiều function", answer: "Lambda Layers", why: "Đóng gói thư viện dùng chung thành layer." },
-  { need: "Theo dõi khi Lambda scale quá nhanh", answer: "CloudWatch alarm trên ConcurrentExecutions / Invocations", why: "Cảnh báo sớm khi số lần chạy đồng thời tăng vọt." },
-  { need: "SNS đẩy rất nhiều thông báo, một phần không tới Lambda", answer: "Vượt account concurrency quota của Lambda, xin tăng hạn mức",
-    why: "Số lần chạy đồng thời có giới hạn theo account và Region." },
-  { need: "Microservice Python cần độ trễ ổn định lúc cao điểm", answer: "Lambda + API Gateway + provisioned concurrency",
-    why: "Provisioned concurrency giữ sẵn môi trường chạy, tránh cold start." },
-  { need: "Job chạy 30 phút", answer: "Không dùng Lambda; dùng Fargate", why: "Một lần chạy Lambda tối đa 15 phút." },
-  { need: "Lambda kết nối RDS không dùng mật khẩu cứng", answer: "IAM database authentication + execution role", why: "Token xác thực ngắn hạn thay cho mật khẩu." },
-  { need: "Lambda ở account A đọc S3 ở account B", answer: "Execution role + bucket policy ở account B", why: "Cả hai phía đều phải cho phép." },
-]} />
+Chạy thử trên máy thì ổn, lên production mới lộ chuyện: function gắn vào VPC rồi không ra được internet, khách chờ lâu lúc cao điểm, thông báo bị rơi, mật khẩu database nằm trong cấu hình. Chọn từng chuyện, chạy thử, rồi bật công tắc để sửa:
 
-<Takeaway>Lambda trong VPC cần NAT để ra internet. Tối đa 15 phút mỗi lần chạy. Concurrency có hạn mức theo account. Cold start: provisioned concurrency.</Takeaway>
+<LambdaRunSim client:visible />
+
+Hai điều nữa. Một lần chạy Lambda tối đa **15 phút**; job dài hơn thì chạy container trên Fargate (bài Containers). Nhiều function dùng chung thư viện thì đóng gói thư viện đó thành **Lambda Layers**.
+
+<Takeaway>Lambda trong VPC cần NAT gateway để ra internet. Cold start lúc cao điểm: provisioned concurrency. Concurrency có quota theo account và Region; đặt alarm trên ConcurrentExecutions. Không lưu mật khẩu: IAM database authentication. Truy cập chéo account: cả execution role lẫn bucket policy phải cho phép.</Takeaway>
 
 </Scene>
 
-<Scene id="s3" label="Cảnh 3/3" title="API Gateway: tính năng phân biệt đáp án" questions={["exam1_q49", "exam3_q52", "exam3_q53", "exam2_q58", "exam4_q44", "exam5_q32", "exam1_q57", "exam1_q11"]}>
+<Scene id="s3" label="Cảnh 3/3" title="Mở API cho app và đối tác" questions={["exam1_q49", "exam3_q52", "exam3_q53", "exam2_q58", "exam4_q44", "exam5_q32", "exam1_q57", "exam1_q11"]}>
 
-<RequirementPicker client:visible items={[
-  { need: "Ứng dụng chat cần kết nối hai chiều, giữ trạng thái", answer: "WebSocket API",
-    why: "REST API là stateless; WebSocket API giữ kết nối stateful hai chiều." },
-  { need: "Xác thực JWT từ OIDC provider mà không tự viết code", answer: "HTTP API với JWT authorizer có sẵn",
-    why: "HTTP API hỗ trợ JWT authorizer native." },
-  { need: "Giới hạn tốc độ và quota khác nhau cho từng khách hàng dùng API", answer: "Usage plans + API keys",
-    why: "Mỗi API key gắn với một usage plan có throttle và quota riêng." },
-  { need: "Chỉ cho các dải IP nội bộ gọi API", answer: "Resource policy của API Gateway",
-    why: "Resource policy từ chối mọi IP ngoài danh sách cho phép." },
-  { need: "Database tốn kém vì request lặp lại, sửa ít nhất", answer: "Bật API Gateway caching",
-    why: "Cache kết quả ở API Gateway, giảm số request xuống backend." },
-  { need: "Nhận phản hồi khách hàng, xử lý bất đồng bộ, phân tích cảm xúc", answer: "API Gateway → SQS → Lambda → Comprehend",
-    why: "API Gateway đẩy thẳng vào SQS, Lambda xử lý và gọi Comprehend." },
-  { need: "Thu thập vị trí liên tục rồi phân tích", answer: "API Gateway + Kinesis Data Analytics", why: "API Gateway nhận dữ liệu, Kinesis phân tích stream." },
-  { need: "Nhận giao dịch từ app, kiểm tra nhẹ rồi xử lý backend, ít vận hành nhất", answer: "API Gateway REST + Lambda validate, backend serverless",
-    why: "Không có server hay container nào phải vá." },
-]} />
+App di động, đối tác bán hàng và trang quản trị đều gọi vào `api.shopviet.vn`. **API Gateway** chạy một loạt kiểm tra trước khi tới code của bạn. Chọn tình huống và gửi request:
 
-<Takeaway>Chat hai chiều: WebSocket. JWT không viết code: HTTP API. Quota theo khách: usage plan + API key. Giới hạn IP: resource policy. Giảm tải backend: caching.</Takeaway>
+<ApiGatewaySim client:visible />
+
+Còn vài nhu cầu khác:
+
+- Chat giữa khách và người bán cần kết nối hai chiều, server tự đẩy tin nhắn xuống: **WebSocket API**. REST API thì mỗi request độc lập, không giữ kết nối.
+- Shipper gửi vị trí liên tục để theo dõi đơn: API Gateway nhận dữ liệu, đẩy vào Kinesis để **Kinesis Data Analytics** phân tích stream.
+- Nhận giao dịch từ app, kiểm tra nhẹ rồi xử lý, ít vận hành nhất: **REST API + Lambda** kiểm tra dữ liệu, backend serverless phía sau. Không có server hay container nào phải vá.
+
+<Takeaway>Chỉ cho dải IP nội bộ: resource policy. JWT mà không viết code: HTTP API với JWT authorizer. Giới hạn theo từng khách: usage plan + API key. Giảm tải backend khi request lặp lại: caching. Việc chậm: API Gateway đẩy vào SQS. Chat hai chiều: WebSocket API.</Takeaway>
 
 </Scene>
 
 <Scene id="challenge" label="Thử thách" title="Ghép yêu cầu với tính năng" questions={["exam5_q23", "exam4_q25", "exam3_q53", "exam3_q30"]}>
+
+Xếp từng thứ vào nơi bạn cấu hình nó. Trên điện thoại: chạm vào thẻ rồi chạm vào ô.
 
 <SortGame client:visible
   bins={[
@@ -145,20 +134,22 @@ Nhiều việc của ShopViet chỉ chạy khi có chuyện xảy ra: có ảnh 
   ]}
 />
 
+Kiểm tra nhanh: nếu bạn vận hành ShopViet, bạn sẽ chọn gì?
+
 <Quiz client:visible items={[
-  { q: "Ảnh mới tải lên S3 cần được tạo thumbnail ngay, chi phí thấp, ít quản lý hạ tầng. Chọn gì?",
+  { q: "Người bán tải ảnh sản phẩm lên S3. ShopViet muốn có thumbnail ngay, chi phí thấp, không quản lý server. Dựng thế nào?",
     opts: ["EC2 quét bucket mỗi giờ", "S3 Event Notification gọi Lambda", "Glue job hằng ngày"],
     a: 1,
     why: "S3 event gọi Lambda ngay khi có object mới; chỉ trả tiền khi chạy." },
-  { q: "Sau khi gắn Lambda vào VPC, function không gọi được API public. Vì sao?",
+  { q: "Sau khi gắn Lambda vào VPC để đọc database, function không gọi được API giao hàng trên internet nữa. Vì sao?",
     opts: ["Lambda trong VPC cần NAT gateway để ra internet", "Lambda không hỗ trợ HTTPS", "Thiếu Lambda Layer"],
     a: 0,
     why: "ENI của Lambda trong subnet private chỉ có private IP; ra internet phải qua NAT." },
-  { q: "Cần giới hạn số request khác nhau cho từng đối tác dùng API. Chọn gì?",
+  { q: "Mỗi đối tác của ShopViet được gọi API một số lần khác nhau mỗi ngày tuỳ gói. Cấu hình gì?",
     opts: ["Usage plans với API keys", "WAF rate-based rule", "Lambda reserved concurrency"],
     a: 0,
     why: "Usage plan đặt throttle và quota theo từng API key." },
-  { q: "Job dọn dữ liệu chạy mỗi tuần một lần, rẻ và tin cậy nhất?",
+  { q: "ShopViet cần dọn dữ liệu cũ mỗi tuần một lần, việc chạy vài phút. Cách rẻ và tin cậy nhất?",
     opts: ["EC2 chạy crontab", "EventBridge cron gọi Lambda", "Lambda chạy liên tục và sleep"],
     a: 1,
     why: "Chỉ trả tiền cho vài phút chạy mỗi tuần." },

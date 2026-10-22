@@ -1,0 +1,18 @@
+/* One day of scaling (asg/ScalingPolicySim) */
+.sps-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
+.sps .stage-bar .sps-play { margin-left: auto; }
+.sps-about { margin: 10px 16px 0; font-size: var(--step--1); color: var(--muted); }
+.sps-grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
+.sps-bar { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1; transition: fill .2s, stroke .2s, opacity .2s; }
+.sps-bar.over { fill: var(--bad-soft); stroke: var(--bad); }
+.sps-bar.ghost { opacity: .25; }
+.sps-cap { fill: none; stroke: var(--ok); stroke-width: 3; stroke-linejoin: round; }
+.sps-now { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 2 3; }
+.sps-flash { fill: var(--muted); font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-anchor: middle; }
+.sps-flash.up { fill: var(--ok); }
+.sps-flash.bad { fill: var(--bad); }
+.sps-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
+.sps-idle { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+.sps-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 8px; font-size: var(--step--1); }
+.sps-result.ok { background: var(--ok-soft); }
+.sps-result.bad { background: var(--bad-soft); }
