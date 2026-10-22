@@ -25,7 +25,6 @@ export const en: Messages<typeof vi> = {
     filter: "Filter by layer",
     all: "All",
     example: "At ShopViet:",
-    seenIn: "Appears in",
     learnIn: "Covered in {title}",
     docs: "AWS documentation",
     empty: "No matching terms.",

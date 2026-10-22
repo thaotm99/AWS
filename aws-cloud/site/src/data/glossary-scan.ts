@@ -107,18 +107,3 @@ export function stripTerms(lang: Lang, lesson: string, sceneId: string): Glossar
   }
   return [];
 }
-
-let usage: Map<string, string[]> | undefined;
-
-/** Lessons (Vietnamese text, study-path order) that use a term. */
-export function lessonsUsing(termId: string): string[] {
-  if (!usage) {
-    usage = new Map();
-    for (const lesson of LESSON_IDS) {
-      const src = lessonSource("vi", lesson);
-      if (!src) continue;
-      for (const id of termIdsIn(readable(src))) usage.set(id, [...(usage.get(id) ?? []), lesson]);
-    }
-  }
-  return usage.get(termId) ?? [];
-}

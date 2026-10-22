@@ -10,7 +10,7 @@
 .pg-rack:hover:not(:disabled) { border-color: var(--bad); }
 .pg-rack:disabled { cursor: default; }
 .pg-rack.down { background: var(--bad-soft); border-color: var(--bad); }
-.pg-rack-t { font-family: var(--font-mono); font-size: 0.62rem; color: var(--muted); }
+.pg-rack-t { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); }
 .pg-part { font-family: var(--font-mono); font-size: 0.58rem; line-height: 1.1; padding: 1px 4px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); }
 .pg-inst { width: 20px; height: 14px; border-radius: 3px; background: var(--ok); }
 .pg-inst.lost { background: var(--bad); }
