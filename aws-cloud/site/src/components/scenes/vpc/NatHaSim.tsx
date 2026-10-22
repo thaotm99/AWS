@@ -82,13 +82,13 @@ export default function NatHaSim() {
 
   const brokenB = stats.b.err > 0;
   const note = mode === "private"
-    ? "NAT gateway phải nằm ở public subnet, nơi có route 0.0.0.0/0 tới Internet Gateway. Đặt ở private subnet thì NAT gateway cũng không ra được internet. Đây là đáp án sai hay gặp."
+    ? "NAT gateway phải nằm ở public subnet, nơi có route 0.0.0.0/0 tới Internet Gateway. Đặt ở private subnet thì NAT gateway cũng không ra được internet. Đây là lỗi bố trí hay gặp."
     : mode === "shared"
       ? down
         ? "AZ a sập kéo theo NAT gateway duy nhất. Private subnet ở AZ b vẫn khỏe nhưng mất internet vì route table của nó trỏ sang NAT ở AZ a."
         : "Hai private subnet dùng chung NAT gateway ở AZ a. Chạy bình thường, nhưng thử bấm \"Sự cố AZ a\"."
       : down
-        ? "Mỗi AZ có NAT gateway riêng và route table riêng trỏ tới NAT cùng AZ. AZ a sập không ảnh hưởng AZ b. Đây là thiết kế đề chọn."
+        ? "Mỗi AZ có NAT gateway riêng và route table riêng trỏ tới NAT cùng AZ. AZ a sập không ảnh hưởng AZ b. Đây là thiết kế nên dùng."
         : "Mỗi AZ một NAT gateway trong public subnet, mỗi AZ một route table riêng. Thử gây sự cố AZ a.";
 
   return (
