@@ -4,6 +4,7 @@ Các quy tắc này do chủ repo đặt ra, áp dụng cho mọi phiên làm vi
 
 ## Quy trình thay đổi
 - Mọi thay đổi đi qua Pull Request vào `master`.
+- Mỗi tính năng là một commit riêng.
 - **Chỉ merge khi chủ repo đồng ý rõ ràng trong cuộc trò chuyện.** CI xanh không phải là sự đồng ý.
 - Trước khi tạo PR: `npm run build` (gồm `astro check`) sạch, và kiểm tra trên trình duyệt ở cả chế độ sáng/tối, desktop và điện thoại.
 
