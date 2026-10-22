@@ -494,7 +494,8 @@ html.zoom-rotate .zoom-close { top: auto; right: calc(8px + env(safe-area-inset-
   .hero-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .home-features { grid-template-columns: 1fr; }
 }
-.cta { display: inline-block; margin-top: 4px; text-decoration: none; }
+.cta { display: inline-block; text-decoration: none; }
+.placeholder .cta { margin-top: 4px; }
 .prose > p, .prose > ul { max-width: 68ch; }
 .timebar .tag { font-family: var(--font-mono); font-size: 0.7rem; font-weight: 500; padding: 0 6px; border-radius: 4px; width: fit-content; }
 .key i { display: inline-block; }
@@ -746,7 +747,7 @@ input[type="range"] { accent-color: var(--accent); }
 .lang-switch button { height: 30px; padding: 0 10px; font-size: var(--step--1); }
 .brand { min-height: 32px; }
 .menu-btn { height: 32px; }
-.stage-bar .sep { width: 0; background: none; margin: 0 8px; }
+.stage-bar .sep { width: 0; background: none; margin: 0 2px; }
 .concept { align-items: flex-start; padding-block: 6px; }
 .concept .dot { margin-top: 6px; }
 .layer > button { font-weight: 500; }
@@ -788,3 +789,12 @@ input[type="checkbox"]:disabled, input[type="range"]:disabled { opacity: .5; cur
 .doc-more { margin-top: 10px; }
 .doc-more summary { cursor: pointer; font-size: var(--step--1); font-weight: 600; color: var(--accent); padding-block: 4px; }
 .doc-more[open] summary { margin-bottom: 8px; }
+
+/* Second review pass: tap targets, leftover small labels, button heights, wrapped actions */
+.crumbs { align-items: center; }
+.crumbs a, .amap-caption a { display: inline-flex; align-items: center; min-height: 28px; }
+.hero-stats dt, .story .eyebrow { font-size: 0.75rem; }
+.lang-switch button, .zoom-btn, .donate-copy { min-height: 32px; }
+.lang-switch button { height: 32px; }
+.stage-bar > .btn.primary { margin-left: auto; }
+.topnav a[aria-current="page"] { background: var(--accent-soft); }

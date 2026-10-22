@@ -1,7 +1,7 @@
 /* Home-page architecture map (components/home/ArchitectureMap). Category hues come from the theme tokens. */
 .amap { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; margin: 18px 0 8px; }
 .amap-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 12px 14px; border-bottom: 1px solid var(--line); }
-.amap-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; margin-right: 4px; }
+.amap-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; margin-right: 4px; }
 .amap-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .amap-play { margin-left: auto; }
 .amap .svg-wrap svg { min-width: 860px; }
