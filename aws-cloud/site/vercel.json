@@ -5,6 +5,11 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "trailingSlash": true,
+  "git": {
+    "deploymentEnabled": {
+      "claude/*": false
+    }
+  },
   "redirects": [
     {
       "source": "/on-tap",
