@@ -188,7 +188,7 @@ As the number of teams and partners using the data grows, permissions need to be
 
 An **ACL** is S3's legacy access control mechanism: every bucket and object has an ACL attached as a subresource that defines which AWS accounts or groups are granted access and the type of access. An ACL is not a JSON policy like a bucket policy or an IAM role trust policy. With Object Ownership = bucket owner enforced (the default), all ACLs are disabled, requests to set ACLs fail with the `AccessControlListNotSupported` error code, and access is managed only with policies. AWS recommends keeping ACLs disabled except when you need to control access to each object individually.
 
-<Takeaway>Grant permissions to another account: bucket policy (up to 20 KB). Grant extra permissions to a set of IAM users in the same account: an IAM group. Many teams, one prefix each: access points; an access point does not change the network path, so private access to S3 from a VPC needs a VPC endpoint ([VPC lesson, VPC endpoints](/concepts/vpc/#en-s4)). Organization-wide monitoring: Storage Lens. New buckets use Object Ownership = bucket owner enforced, with ACLs disabled.</Takeaway>
+<Takeaway>Grant permissions to another account: bucket policy (up to 20 KB). Grant extra permissions to a set of IAM users in the same account: an IAM group. Many teams, one prefix each: access points; an access point does not change the network path, so private access to S3 from a VPC needs a VPC endpoint ([VPC lesson, VPC endpoints](/concepts/vpc/vpc-endpoints/)). Organization-wide monitoring: Storage Lens. New buckets use Object Ownership = bucket owner enforced, with ACLs disabled.</Takeaway>
 
 </Scene>
 

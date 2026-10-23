@@ -1,0 +1,115 @@
+---
+// Lesson overview: progress, a "continue" link and one card per part, grouped by kind.
+import L from "../L.astro";
+import T from "../../app/T.astro";
+import type { LessonPart, PartKind } from "../../data/lesson-parts";
+
+interface Props {
+  lesson: string;
+  parts: LessonPart[];
+  /** Questions in the lesson quiz, when it has one. */
+  quiz?: number;
+  minutes: number;
+}
+const { lesson, parts, quiz, minutes } = Astro.props;
+
+// "NAT gateway: kết nối internet…" → heading "NAT gateway", subheading "kết nối internet…".
+const split = (s: string) => {
+  const i = s.indexOf(": ");
+  return i > 0 ? [s.slice(0, i), s.slice(i + 2)] : [s, ""];
+};
+const card = (p: LessonPart) => {
+  const [vi, viSub] = split(p.title.vi);
+  const [en, enSub] = split(p.title.en);
+  return { ...p, href: `/concepts/${lesson}/${p.slug}/`, head: { vi, en }, sub: { vi: viSub, en: enSub } };
+};
+const groups = (["learn", "review", "exercise"] as PartKind[])
+  .map((kind) => ({ kind, items: parts.filter((p) => p.kind === kind).map(card) }))
+  .filter((g) => g.items.length || (g.kind === "exercise" && quiz));
+const learnCount = parts.filter((p) => p.kind === "learn").length;
+const first = card(parts[0]);
+---
+<section class="lp" id="parts" data-lesson={lesson} data-parts={JSON.stringify(parts.map((p) => p.slug))} aria-labelledby="lp-title">
+  <h2 class="sr-only" id="lp-title"><T k="lesson.parts.label" /></h2>
+  <div class="lp-progress">
+    <div class="lp-progress-head">
+      <b><T k="lesson.parts.progress" /></b>
+      <span class="lp-count"><span data-lp-done>0</span> / {parts.length}</span>
+    </div>
+    <div class="lp-bar" aria-hidden="true">
+      {parts.map((p) => <i data-slug={p.slug} data-kind={p.kind} />)}
+    </div>
+    <a class="btn cta lp-cta" href={first.href} data-lp-cta>
+      <span class="lp-cta-verb" data-verb="start"><T k="lesson.parts.start" /></span>
+      <span class="lp-cta-verb" data-verb="resume"><T k="lesson.parts.resume" /></span>
+      <span class="lp-cta-verb" data-verb="again"><T k="lesson.parts.again" /></span>
+      <span class="lp-cta-title" data-lp-cta-title><L vi={first.head.vi} en={first.head.en} /></span>
+      <span aria-hidden="true">→</span>
+    </a>
+    <small class="lp-total"><T k="lesson.parts.total" params={{ minutes }} /></small>
+  </div>
+
+  {groups.map((g) => (
+    <div class:list={["lp-group", `lp-${g.kind}`]}>
+      <div class="lp-group-head">
+        <h3><T k={`lesson.parts.${g.kind}`} /></h3>
+        <span><T k={`lesson.parts.${g.kind}Hint`} params={{ n: learnCount }} /></span>
+      </div>
+      <ol class="lp-grid">
+        {g.items.map((p) => (
+          <li>
+            <a class="lp-card" href={p.href} data-slug={p.slug} data-scene={p.id} data-kind={p.kind}>
+              <span class="lp-meta">
+                <span><L vi={p.label.vi} en={p.label.en} /> · <T k="lesson.parts.minutes" params={{ n: p.minutes }} /></span>
+                <span class="lp-state">
+                  <span class="lp-state-read"><T k="lesson.parts.read" /> ✓</span>
+                  <span class="lp-state-current"><T k="lesson.parts.current" /></span>
+                </span>
+              </span>
+              <b class="lp-head"><L vi={p.head.vi} en={p.head.en} /></b>
+              {(p.sub.vi || p.sub.en) && <span class="lp-sub"><L vi={p.sub.vi} en={p.sub.en} /></span>}
+            </a>
+          </li>
+        ))}
+        {g.kind === "exercise" && quiz ? (
+          <li>
+            <a class="lp-card" href={`/concepts/${lesson}/quiz/`} data-kind="quiz">
+              <span class="lp-meta"><span><T k="lesson.parts.quiz" /> · <T k="lesson.parts.quizCount" params={{ n: quiz }} /></span></span>
+              <b class="lp-head"><T k="lesson.parts.quiz" /></b>
+            </a>
+          </li>
+        ) : null}
+      </ol>
+    </div>
+  ))}
+</section>
+
+<script>
+  import { getPartsRead, onProgressChange } from "../../lib/progress";
+
+  const root = document.querySelector<HTMLElement>(".lp");
+  if (root) {
+    const lesson = root.dataset.lesson!;
+    const slugs: string[] = JSON.parse(root.dataset.parts!);
+    const cards = [...root.querySelectorAll<HTMLAnchorElement>(".lp-card[data-slug]")];
+
+    // Links written before lessons were split point at /concepts/<lesson>/#<scene>: open that part.
+    const target = location.hash && cards.find((c) => c.dataset.scene === decodeURIComponent(location.hash.slice(1)).replace(/^en-/, ""));
+    if (target) location.replace(target.href);
+
+    const cta = root.querySelector<HTMLAnchorElement>("[data-lp-cta]")!;
+    const sync = () => {
+      const read = getPartsRead(lesson);
+      const next = slugs.find((s) => !read.has(s));
+      const nextCard = cards.find((c) => c.dataset.slug === (next ?? slugs[0]))!;
+      for (const c of cards) c.dataset.state = read.has(c.dataset.slug!) ? "read" : c === nextCard && read.size > 0 ? "current" : "";
+      root.querySelectorAll<HTMLElement>(".lp-bar i").forEach((i) => (i.dataset.state = read.has(i.dataset.slug!) ? "read" : i.dataset.slug === next && read.size > 0 ? "current" : ""));
+      root.querySelector("[data-lp-done]")!.textContent = String(slugs.filter((s) => read.has(s)).length);
+      cta.href = nextCard.href;
+      cta.dataset.verb = read.size === 0 ? "start" : next ? "resume" : "again";
+      cta.querySelector("[data-lp-cta-title]")!.innerHTML = nextCard.querySelector(".lp-head")!.innerHTML;
+    };
+    sync();
+    onProgressChange(sync);
+  }
+</script>

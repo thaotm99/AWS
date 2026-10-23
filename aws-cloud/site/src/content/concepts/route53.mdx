@@ -116,7 +116,7 @@ Năm tình huống phát sinh khi ShopViet vận hành DNS. Thử phương án t
 
 <Route53MythsSim client:visible />
 
-<Takeaway>NLB tắt cross-zone load balancing: mỗi node chỉ phân phối traffic cho target trong cùng AZ, do đó tại AZ có ít target, mỗi target chịu tải lớn hơn. Hiển thị trang thông báo lỗi khi gặp sự cố: failover active-passive, không sử dụng weighted. Điều chỉnh phạm vi khu vực: geoproximity với bias. Giới hạn theo quốc gia: Route 53 geolocation tại tầng DNS, CloudFront geo restriction tại tầng phân phối nội dung. Lưu lượng tăng đột biến: multivalue answer (tối đa 8 record healthy, chọn ngẫu nhiên) không bổ sung năng lực xử lý và không thay thế load balancer; tăng năng lực bằng [Auto Scaling group](/concepts/asg/#s1) phía sau ALB.</Takeaway>
+<Takeaway>NLB tắt cross-zone load balancing: mỗi node chỉ phân phối traffic cho target trong cùng AZ, do đó tại AZ có ít target, mỗi target chịu tải lớn hơn. Hiển thị trang thông báo lỗi khi gặp sự cố: failover active-passive, không sử dụng weighted. Điều chỉnh phạm vi khu vực: geoproximity với bias. Giới hạn theo quốc gia: Route 53 geolocation tại tầng DNS, CloudFront geo restriction tại tầng phân phối nội dung. Lưu lượng tăng đột biến: multivalue answer (tối đa 8 record healthy, chọn ngẫu nhiên) không bổ sung năng lực xử lý và không thay thế load balancer; tăng năng lực bằng [Auto Scaling group](/concepts/asg/scaling-policies/) phía sau ALB.</Takeaway>
 
 </Scene>
 

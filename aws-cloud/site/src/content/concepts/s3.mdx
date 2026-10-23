@@ -188,7 +188,7 @@ Khi số lượng team và đối tác sử dụng dữ liệu tăng lên, việ
 
 **ACL** là cơ chế kiểm soát truy cập kiểu cũ của S3: mỗi bucket và object có một ACL gắn kèm dưới dạng subresource, xác định account hoặc group nào được cấp quyền và loại quyền. ACL không phải JSON policy như bucket policy hay trust policy của IAM role. Với Object Ownership = bucket owner enforced (mặc định), mọi ACL bị vô hiệu hoá, request đặt ACL thất bại với lỗi `AccessControlListNotSupported`, và quyền truy cập chỉ được quản lý bằng policy. AWS khuyến nghị giữ ACL ở trạng thái tắt, trừ khi cần kiểm soát quyền cho từng object riêng lẻ.
 
-<Takeaway>Cấp quyền cho account khác: bucket policy (tối đa 20 KB). Cấp thêm quyền cho một nhóm IAM user trong cùng account: IAM group. Nhiều team, mỗi team một prefix: access point; access point không đổi đường mạng, truy cập S3 riêng tư từ VPC cần VPC endpoint ([bài VPC, phần VPC endpoint](/concepts/vpc/#s4)). Giám sát toàn tổ chức: Storage Lens. Bucket mới sử dụng Object Ownership = bucket owner enforced, ACL bị tắt.</Takeaway>
+<Takeaway>Cấp quyền cho account khác: bucket policy (tối đa 20 KB). Cấp thêm quyền cho một nhóm IAM user trong cùng account: IAM group. Nhiều team, mỗi team một prefix: access point; access point không đổi đường mạng, truy cập S3 riêng tư từ VPC cần VPC endpoint ([bài VPC, phần VPC endpoint](/concepts/vpc/vpc-endpoints/)). Giám sát toàn tổ chức: Storage Lens. Bucket mới sử dụng Object Ownership = bucket owner enforced, ACL bị tắt.</Takeaway>
 
 </Scene>
 

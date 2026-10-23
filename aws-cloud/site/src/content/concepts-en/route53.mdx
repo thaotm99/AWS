@@ -116,7 +116,7 @@ Five situations that come up as ShopViet operates its DNS. Try the option that i
 
 <Route53MythsSim client:visible />
 
-<Takeaway>NLB with cross-zone load balancing turned off: each node distributes traffic only to targets in its own AZ, so in an AZ with fewer targets, each target carries more load. Showing an error notice page during a failure: active-passive failover, not weighted. Adjusting the size of a region: geoproximity with bias. Restricting by country: Route 53 geolocation at the DNS layer, CloudFront geo restriction at the content delivery layer. A traffic spike: multivalue answer (up to 8 healthy records, chosen at random) adds no capacity and is not a substitute for a load balancer; add capacity with an [Auto Scaling group](/concepts/asg/#en-s1) behind the ALB.</Takeaway>
+<Takeaway>NLB with cross-zone load balancing turned off: each node distributes traffic only to targets in its own AZ, so in an AZ with fewer targets, each target carries more load. Showing an error notice page during a failure: active-passive failover, not weighted. Adjusting the size of a region: geoproximity with bias. Restricting by country: Route 53 geolocation at the DNS layer, CloudFront geo restriction at the content delivery layer. A traffic spike: multivalue answer (up to 8 healthy records, chosen at random) adds no capacity and is not a substitute for a load balancer; add capacity with an [Auto Scaling group](/concepts/asg/scaling-policies/) behind the ALB.</Takeaway>
 
 </Scene>
 

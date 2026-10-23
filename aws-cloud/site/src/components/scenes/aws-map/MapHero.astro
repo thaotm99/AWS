@@ -2,6 +2,10 @@
 // Lesson 0 opening visual: the six service groups orbiting ShopViet. CSS-only motion (aws-map.css).
 import "./aws-map.css";
 import L from "../../L.astro";
+import { lessonRoute } from "../../../data/lesson-parts";
+
+// Shown on the lesson overview only.
+const onOverview = !lessonRoute(Astro.url.pathname)?.part;
 
 const GROUPS = [
   { vi: "Mạng", en: "Networking", c: "#4cc2df" },
@@ -16,6 +20,7 @@ const GROUPS = [
   return { ...g, a, x: 50 + Math.cos(r) * 36, y: 50 + Math.sin(r) * 36, d: i * 0.43, f: 3 + i * 0.4 };
 });
 ---
+{onOverview && (
 <div class="am-hero">
   <div>
     <span class="am-hero-eyebrow"><L vi="LỚP 0 · BẮT ĐẦU" en="LAYER 0 · START HERE" /></span>
@@ -32,3 +37,4 @@ const GROUPS = [
     ))}
   </div>
 </div>
+)}

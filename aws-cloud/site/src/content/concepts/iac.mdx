@@ -136,7 +136,7 @@ Service Catalog, CodeDeploy và Control Tower thường xuất hiện cạnh Clo
     instead: "Control Tower cho account và guardrail; **CloudFormation** (Phần 1) và **StackSets** (Phần 2) cho tài nguyên bên trong account." },
 ]} />
 
-Các nội dung liên quan: AWS Budgets actions và Control Tower tại [bài IAM, Phần 4](/concepts/iam/#s4); Global Accelerator tại [bài Global Infrastructure, Phần 5](/concepts/global-infra/#s5).
+Các nội dung liên quan: AWS Budgets actions và Control Tower tại [bài IAM, Phần 4](/concepts/iam/organizations/); Global Accelerator tại [bài Global Infrastructure, Phần 5](/concepts/global-infra/global-accelerator/).
 
 <Takeaway>Cho nhân sự tự tạo tài nguyên đã phê duyệt mà không cần quyền trực tiếp trên dịch vụ: Service Catalog (product là template CloudFormation, template constraint giới hạn tham số, launch constraint cấp IAM role). Tự động chặn khi vượt ngân sách: AWS Budgets actions, không phải Service Catalog. Tạo account mới có guardrail và mạng dùng chung: Control Tower + VPC sharing qua RAM. CodeDeploy triển khai phiên bản ứng dụng; chia traffic blue/green giữa các Region không phụ thuộc DNS: Global Accelerator.</Takeaway>
 

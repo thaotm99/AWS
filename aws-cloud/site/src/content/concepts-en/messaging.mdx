@@ -210,7 +210,7 @@ Three ShopViet situations: seller registration forms must be processed **exactly
     instead: "Kinesis Data Streams: records are retained for 24 hours by default, up to 365 days; multiple applications read the same stream; the Lambda event source mapping retries a failed batch until the records expire or exceed the maximum age." },
 ]} />
 
-Ingesting a data stream with Kinesis Data Streams and letting several applications read the same stream are covered in [the Kinesis lesson, Part 1](/concepts/kinesis/#en-s1).
+Ingesting a data stream with Kinesis Data Streams and letting several applications read the same stream are covered in [the Kinesis lesson, Part 1](/concepts/kinesis/queues-and-streams/).
 
 <Takeaway>Exactly-once processing between two tiers: SQS FIFO; standard queues and the classic EventBridge event bus are both at-least-once. Lower cost from empty receives: long polling, not message timers or the visibility timeout. SNS has retries and DLQs, but a standard topic does not keep messages for re-reading; a data stream that must be retained and reprocessed: Kinesis Data Streams.</Takeaway>
 

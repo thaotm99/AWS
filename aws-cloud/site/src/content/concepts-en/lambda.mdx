@@ -173,7 +173,7 @@ Pick each ShopViet workload, adjust the configuration and deploy it:
 
 <FunctionConfigSim client:visible />
 
-A layer is not a place to keep data. When the recommendations team needs to read a large, growing dataset on EFS in a partner's account, Lambda mounts that EFS file system directly through an access point, with a file system policy that allows cross-account access and VPC peering for connectivity: see the [Storage lesson, part 3](/concepts/storage/#en-s3). Packaging data into a layer does not fit, because layer versions are immutable and share the 250 MB limit with the package.
+A layer is not a place to keep data. When the recommendations team needs to read a large, growing dataset on EFS in a partner's account, Lambda mounts that EFS file system directly through an access point, with a file system policy that allows cross-account access and VPC peering for connectivity: see the [Storage lesson, part 3](/concepts/storage/efs-configuration/). Packaging data into a layer does not fit, because layer versions are immutable and share the 250 MB limit with the package.
 
 <Takeaway>CPU is proportional to memory (1,769 MB ≈ 1 vCPU). `/tmp` is 512 MB to 10,240 MB, temporary and unique to each execution environment; durable data goes to S3 or EFS. Set the timeout from load tests, not with a large margin. A .zip package is at most 250 MB unzipped including layers; anything larger uses a container image (up to 10 GB). Layers are for shared libraries, not data.</Takeaway>
 

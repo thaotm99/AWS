@@ -240,7 +240,7 @@ Một số thiết lập của CloudFront có tên gần với yêu cầu thực
     instead: "Cải thiện hiệu năng cho người dùng ở xa mà không di chuyển ứng dụng: **AWS Global Accelerator** với listener TCP 443, endpoint là EC2/ALB hiện có. Nếu dùng CloudFront: CachingDisabled kèm origin request policy phù hợp." },
 ]} />
 
-<Takeaway>Price class quyết định chi phí và tập edge location, không định tuyến origin. Origin request policy quyết định thông tin gửi tới origin, không cấp quyền. HTTPS tới origin bảo vệ đường truyền, không giới hạn người xem. Lambda@Edge tuỳ biến request/response tại edge, không tạo tính sẵn sàng cao cho ứng dụng và database. CloudFront không có xác thực Cognito dựng sẵn: xác thực tại edge cần Lambda@Edge; cách ít code nhất là để ALB phía sau xác thực bằng Cognito user pool ([bài ELB](/concepts/elb/#s3)).</Takeaway>
+<Takeaway>Price class quyết định chi phí và tập edge location, không định tuyến origin. Origin request policy quyết định thông tin gửi tới origin, không cấp quyền. HTTPS tới origin bảo vệ đường truyền, không giới hạn người xem. Lambda@Edge tuỳ biến request/response tại edge, không tạo tính sẵn sàng cao cho ứng dụng và database. CloudFront không có xác thực Cognito dựng sẵn: xác thực tại edge cần Lambda@Edge; cách ít code nhất là để ALB phía sau xác thực bằng Cognito user pool ([bài ELB](/concepts/elb/one-alb-many-services/)).</Takeaway>
 
 </Scene>
 

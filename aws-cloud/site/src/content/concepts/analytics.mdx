@@ -166,7 +166,7 @@ Dữ liệu của ShopViet được lưu trong data lake trên S3. Mỗi tác v�
 - **Glue**: ETL serverless và Data Catalog; **Glue Studio** là giao diện trực quan để tạo, chạy và giám sát Glue job. **Glue DataBrew**: làm sạch dữ liệu qua giao diện trực quan, không cần viết code, có data profiling, recipe chia sẻ được và sơ đồ data lineage.
 - **EMR**: cluster Spark/Hadoop với kích thước tự lựa chọn, dùng khi cần kiểm soát framework và cấu hình.
 
-Chọn một tác vụ, chạy mô phỏng, sau đó chuyển sang công cụ phù hợp hơn. Tác vụ đồng bộ liên tục database được trình bày chi tiết tại [bài di chuyển dữ liệu](/concepts/storage-migration/#s3):
+Chọn một tác vụ, chạy mô phỏng, sau đó chuyển sang công cụ phù hợp hơn. Tác vụ đồng bộ liên tục database được trình bày chi tiết tại [bài di chuyển dữ liệu](/concepts/storage-migration/server-database-migration/):
 
 <DataJobSim client:visible />
 
@@ -225,7 +225,7 @@ Một số dịch vụ có tên hoặc tính năng gần với nhu cầu của S
     instead: "**Glue → Redshift Serverless → Redshift ML**: lệnh `CREATE MODEL` bằng SQL dùng dữ liệu trong Redshift để tạo mô hình trong SageMaker AI, sau đó dự đoán bằng hàm SQL (phần 4). Athena ML phù hợp khi đã có endpoint và chỉ cần gọi inference từ truy vấn ad-hoc trên S3." },
 ]} />
 
-Chi tiết về Security Lake: [bài Security, phần 2](/concepts/security/#s2). Chi tiết về global tables: [bài DynamoDB, phần 5](/concepts/dynamodb/#s5).
+Chi tiết về Security Lake: [bài Security, phần 2](/concepts/security/security-incidents/). Chi tiết về global tables: [bài DynamoDB, phần 5](/concepts/dynamodb/multi-region/).
 
 <Takeaway>Xây dựng ETL job trực quan: Glue Studio; chuẩn bị dữ liệu có profiling và recipe dùng chung: DataBrew. Đưa dữ liệu từ SaaS vào AWS: AppFlow. Phân quyền chi tiết trên data lake: Lake Formation; tập trung log bảo mật: Security Lake. Vị trí cập nhật liên tục: Redis geospatial; tìm kiếm và bản đồ: OpenSearch. Đồ thị: Neptune; ghi đa Region: DynamoDB global tables. Gọi endpoint SageMaker AI có sẵn từ SQL trên S3: Athena ML; huấn luyện mô hình bằng SQL trên data warehouse: Redshift ML.</Takeaway>
 

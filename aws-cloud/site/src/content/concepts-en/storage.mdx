@@ -185,7 +185,7 @@ ShopViet's recommendation team runs a Lambda function in a VPC that must read a 
       note: "In the function configuration, choose the **access point** and a local mount path that starts with `/mnt/`. The function reads and writes files directly, with no copy to S3 and no proxy function in between." },
   ]} />
 
-For other considerations when Lambda runs in a VPC (internet access, NAT gateway), see the [Lambda lesson](/concepts/lambda/#en-s2).
+For other considerations when Lambda runs in a VPC (internet access, NAT gateway), see the [Lambda lesson](/concepts/lambda/production/).
 
 <Takeaway>EFS: an NFS file system shared across multiple AZs. Recommended configuration: General Purpose performance mode + Elastic throughput; Max I/O is previous generation (older material may still recommend Max I/O for parallel workloads). Bursting: throughput tied to Standard storage size, using burst credits. Throughput needs known in advance: Provisioned throughput. Rarely accessed files: the IA class. No need to survive an AZ loss and low cost first: One Zone. Mount targets in the same AZ to reduce latency. Lambda mounts EFS through an access point.</Takeaway>
 

@@ -1,12 +1,15 @@
 ---
 import T from "../../../app/T.astro";
+import { lessonRoute } from "../../../data/lesson-parts";
 
 interface Props {
-  toc: { href: string; label: string }[];
+  /** The lesson's parts; the overview page lists them as cards, so the story shows only its text. */
+  toc?: { href: string; label: string }[];
 }
-const { toc } = Astro.props;
+// The story opens the lesson overview; part pages go straight to their content.
+const onOverview = !lessonRoute(Astro.url.pathname)?.part;
 ---
-<div class="story">
+{onOverview && <div class="story">
   <svg viewBox="0 0 150 120" aria-hidden="true">
     <rect x="18" y="38" width="114" height="72" rx="6" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/>
     <path d="M12 40 L28 16 H122 L138 40 Z" fill="var(--edge)"/>
@@ -18,8 +21,5 @@ const { toc } = Astro.props;
   <div>
     <div class="eyebrow"><T k="lesson.story.eyebrow" /></div>
     <p><slot /></p>
-    <nav class="toc" aria-label="Các phần của bài học" data-i18n-attr="aria-label:lesson.story.toc">
-      {toc.map((t) => <a href={t.href}>{t.label}</a>)}
-    </nav>
   </div>
-</div>
+</div>}
