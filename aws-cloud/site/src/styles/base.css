@@ -20,6 +20,16 @@ a {
   color: var(--accent);
   text-decoration: underline;
 }
+/* Plain lists (Markdown and simple text lists, no class) keep the browser's bullets and indent, which preflight
+   removes. Styled lists carry their own utilities. */
+:where(ul, ol):not([class]) {
+  margin-block: 1em;
+  padding-left: 40px;
+}
+ul:not([class]) { list-style: disc; }
+ol:not([class]) { list-style: decimal; }
+:where(li) > ul:not([class]) { list-style: circle; margin-block: 0; }
+:where(li) > ol:not([class]) { margin-block: 0; }
 code {
   font-family: var(--font-mono);
   font-size: 0.88em;

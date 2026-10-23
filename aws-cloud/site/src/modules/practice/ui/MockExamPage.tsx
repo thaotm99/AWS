@@ -192,7 +192,7 @@ function MockExam({ certId, examId }: Props) {
         {crumbs}
         <h1>{title}</h1>
         <div className="mt-3 rounded-[18px] border border-line bg-surface px-5 py-4.5">
-          <ul className="mx-0 mt-0 mb-4 grid gap-1.5 pl-5">
+          <ul className="list-disc mx-0 mt-0 mb-4 grid gap-1.5 pl-5">
             <li>{t("mock.rule1", { n: exam.questions.length, minutes: cert.minutes })}</li>
             <li>{t("mock.rule2")}</li>
             <li>{t("mock.rule3")}</li>

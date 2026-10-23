@@ -108,7 +108,7 @@ export default function GroupSetupSim() {
             <span className="inline-flex items-center gap-1.5 text-step--1"><span className="gss-inst spot" />{`Spot: ${m.spot}`}</span>
           </div>
         )}
-        <ul className="mx-0 mt-2 mb-0 grid gap-1 pl-5 text-step--1">
+        <ul className="list-disc mx-0 mt-2 mb-0 grid gap-1 pl-5 text-step--1">
           {issues.map((x, i) => <li key={i} className={x.ok ? "marker:text-ok" : "marker:text-bad"}>{rich(L(x.text))}</li>)}
           {lt && valid && <li className="marker:text-ok">{rich(L({ vi: "Mixed instances policy: phần **base** luôn là On-Demand (ASG launch đủ base trước khi launch Spot); phần vượt base chia theo tỉ lệ phần trăm, làm tròn lên về phía On-Demand. Reserved Instances hoặc Savings Plans giảm giá cho các instance On-Demand, Spot giảm chi phí cho phần tải tăng thêm của ứng dụng stateless.", en: "Mixed instances policy: the **base** is always On-Demand (the ASG launches the base before any Spot); capacity above base is split by percentage, rounded up in favor of On-Demand. Reserved Instances or Savings Plans discount the On-Demand instances, while Spot lowers the cost of the extra capacity of a stateless application." }))}</li>}
         </ul>

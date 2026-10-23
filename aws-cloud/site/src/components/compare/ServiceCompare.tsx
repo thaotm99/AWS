@@ -75,7 +75,7 @@ export default function ServiceCompare({ id, learn }: { id: string; learn: Link 
         ) : rec ? (
           <>
             <b>{t(rec.full ? "shell.compare.best" : "shell.compare.bestPartial", { name: name(rec.id) })}</b>
-            <ul className="m-0 pl-[1.2em] text-muted">
+            <ul className="list-disc m-0 pl-[1.2em] text-muted">
               {needs.map((n) => <li key={n.id}>{L(n.fit[rec.id].why)}</li>)}
             </ul>
             {!rec.full && <p className="m-0">{L(set.combine)}</p>}

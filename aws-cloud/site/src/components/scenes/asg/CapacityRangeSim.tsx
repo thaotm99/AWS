@@ -85,7 +85,7 @@ export default function CapacityRangeSim() {
         {log.length === 0
           ? <p className="m-0 text-step--1 text-muted">{L({ vi: "Phòng kế toán của MFTech chạy bảng lương lúc 9:00 ngày cuối tháng, cần 10 instance; ngày thường 2 instance là đủ. Thử từng thao tác và quan sát desired capacity.", en: "MFTech's accounting team runs payroll at 9:00 on the last day of the month and needs 10 instances; 2 are enough on normal days. Try each action and watch desired capacity." })}</p>
           : (
-            <ol className="mx-0 mt-2 mb-0 grid gap-1 pl-5 text-step--1 [&_.count]:mr-1">
+            <ol className="list-decimal mx-0 mt-2 mb-0 grid gap-1 pl-5 text-step--1 [&_.count]:mr-1">
               {log.map((x, i) => (
                 <li key={log.length - i} className={i === 0 ? "" : "opacity-60"}>
                   <span className={"pill " + (x.ok ? "ok" : "bad")}><i />{L(x.name)}</span> {rich(L(x.msg))}

@@ -253,7 +253,7 @@ export default function HealthReplaceSim() {
         {shown === 0 ? (
           <p className="m-0 text-step--1 text-muted">{L({ vi: "Chọn tình huống và tuỳ chọn, sau đó nhấn Chạy tình huống. Chạy lại với tuỳ chọn còn lại để so sánh.", en: "Choose a situation and an option, then press Run the situation. Run it again with the other option to compare." })}</p>
         ) : (
-          <ol className="mx-0 mt-2 mb-0 grid gap-1 pl-5 text-step--1 [&_.count]:mr-1">
+          <ol className="list-decimal mx-0 mt-2 mb-0 grid gap-1 pl-5 text-step--1 [&_.count]:mr-1">
             {steps.slice(0, shown).map((s, i) => <li key={i}>{rich(L(s.msg))}</li>)}
           </ol>
         )}

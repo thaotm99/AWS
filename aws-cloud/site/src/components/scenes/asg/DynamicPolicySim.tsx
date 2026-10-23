@@ -237,7 +237,7 @@ export default function DynamicPolicySim() {
               <span className="count">{L({ vi: `Phút ${shown} · ${run.ready[shown]} instance sẵn sàng · desired ${run.desired[shown]}`, en: `Minute ${shown} · ${run.ready[shown]} ready instances · desired ${run.desired[shown]}` })}</span>
               <span className={"pill " + (hot > 8 ? "bad" : "ok")}><i />{L({ vi: `${hot} phút CPU > 60%`, en: `${hot} minutes with CPU > 60%` })}</span>
             </div>
-            <ol className="mx-0 mt-2 mb-0 grid gap-1 pl-5 text-step--1 [&_.count]:mr-1">
+            <ol className="list-decimal mx-0 mt-2 mb-0 grid gap-1 pl-5 text-step--1 [&_.count]:mr-1">
               {events.map((e, i) => <li key={i}><span className="count">{L({ vi: `phút ${e.t}`, en: `min ${e.t}` })}</span> {L(e.text)}</li>)}
             </ol>
             {done && <p className={`mx-0 mt-2.5 mb-0 rounded-[12px] px-2.5 py-2 text-step--1 ${policy === "simple" ? "bg-bad-soft" : "bg-ok-soft"}`}>{rich(L(NOTE[policy]))}</p>}

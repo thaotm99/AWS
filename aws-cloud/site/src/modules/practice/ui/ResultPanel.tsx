@@ -82,7 +82,7 @@ export default function ResultPanel({ cert, exam, attempt, topic, review, mock, 
       {suggestions.length > 0 && (
         <div className="mx-0 mt-4.5 mb-1.5 rounded-[18px] bg-accent-soft px-4 py-3.5">
           <h3 className="mx-0 mt-0 mb-2 text-[1rem] text-accent">{t("result.learnAgain")}</h3>
-          <ol className="m-0 grid gap-1.5 pl-5 text-[0.9rem]">
+          <ol className="list-decimal m-0 grid gap-1.5 pl-5 text-[0.9rem]">
             {suggestions.map(({ link, misses }) => (
               <li key={link.url}>
                 <a className="font-semibold" href={link.url}>{link.title[locale]}</a>
