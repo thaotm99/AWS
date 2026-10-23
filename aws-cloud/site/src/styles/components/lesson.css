@@ -1,0 +1,39 @@
+/* Lesson pages: the parts that markup cannot carry as utilities. MDX prose, classes that scripts create or toggle
+   (highlights, the notes panel, key-term marks, the full-screen diagram view) and the importance bars shared with
+   the sidebar. Everything else on lesson pages is utilities in the components themselves. */
+
+/* ---------- Importance: three bars, filled up to the level (3 core, 2 important, 1 supporting) ---------- */
+.imp {
+  @apply inline-flex flex-none items-end gap-0.5;
+  & i {
+    @apply w-1 rounded-[1px] bg-line;
+  }
+  & i:nth-child(1) {
+    @apply h-1.5;
+  }
+  & i:nth-child(2) {
+    @apply h-[9px];
+  }
+  & i:nth-child(3) {
+    @apply h-3;
+  }
+}
+.imp-1 i:nth-child(-n + 1),
+.imp-2 i:nth-child(-n + 2) {
+  @apply bg-accent;
+}
+.imp-3 i {
+  @apply bg-edge;
+}
+
+/* ---------- Part pages ---------- */
+/* On phones the part pager is pinned to the bottom of the screen: keep the end of the text, and focused or
+   scrolled-to controls, clear of it. */
+@variant max-sm {
+  body:has(.part-pager) .article {
+    @apply pb-21;
+  }
+  html:has(.part-pager) {
+    @apply scroll-pb-24;
+  }
+}

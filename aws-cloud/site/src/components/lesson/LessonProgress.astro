@@ -13,28 +13,30 @@ const { lesson, parts } = Astro.props;
 const first = parts[0];
 const head = (s: string) => s.split(": ")[0];
 const firstHref = `/concepts/${lesson}/${first.slug}/`;
+// The link names its verb (start, continue, read again); LessonParts sets data-verb and only that one shows.
+const verb = "hidden after:content-[':']";
 ---
-<div class="lp-progress">
-  <div class="lp-progress-head">
+<div class="mt-[22px] mb-2 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-5 gap-y-3 rounded-lg border border-line bg-surface px-5 py-[18px] shadow-soft max-sm:grid-cols-[minmax(0,1fr)] max-sm:p-3.5">
+  <div class="flex items-baseline gap-3 text-[0.9375rem]">
     <b><T k="lesson.parts.progress" /></b>
-    <span class="lp-count"><span data-lp-done>0</span> / {parts.length}</span>
-    <span class="lp-complete" hidden><T k="lesson.parts.complete" /></span>
+    <span class="font-mono text-[0.8125rem] font-semibold text-ok"><span data-lp-done>0</span> / {parts.length}</span>
+    <span class="lp-complete ml-auto text-[0.8125rem] font-semibold text-ok" hidden><T k="lesson.parts.complete" /></span>
   </div>
-  <div class="lp-bar" aria-hidden="true">
-    {parts.map((p) => <i data-slug={p.slug} data-kind={p.kind} />)}
+  <div class="lp-bar col-[1] flex gap-[3px]" aria-hidden="true">
+    {parts.map((p) => <i class="h-1.5 flex-1 rounded-[3px] bg-line transition-[background] duration-300 data-[state=current]:bg-accent data-[state=read]:bg-ok" data-slug={p.slug} data-kind={p.kind} />)}
   </div>
-  <a class="btn cta lp-cta" href={firstHref} data-lp-cta>
-    <span class="lp-cta-verb" data-verb="start"><T k="lesson.parts.start" /></span>
-    <span class="lp-cta-verb" data-verb="resume"><T k="lesson.parts.resume" /></span>
-    <span class="lp-cta-verb" data-verb="again"><T k="lesson.parts.again" /></span>
-    <span class="lp-cta-title" data-lp-cta-title><L vi={head(first.title.vi)} en={head(first.title.en)} /></span>
+  <a class="btn cta group col-[2] row-[1/span_2] max-w-[380px] gap-1.5 whitespace-nowrap max-sm:col-[1] max-sm:row-auto max-sm:max-w-none max-sm:whitespace-normal" href={firstHref} data-lp-cta>
+    <span class={`${verb} group-not-data-verb:inline group-data-[verb=start]:inline`} data-verb="start"><T k="lesson.parts.start" /></span>
+    <span class={`${verb} group-data-[verb=resume]:inline`} data-verb="resume"><T k="lesson.parts.resume" /></span>
+    <span class={`${verb} group-data-[verb=again]:inline`} data-verb="again"><T k="lesson.parts.again" /></span>
+    <span class="overflow-hidden text-ellipsis" data-lp-cta-title><L vi={head(first.title.vi)} en={head(first.title.en)} /></span>
     <span aria-hidden="true">→</span>
   </a>
-  <div class="lp-offline">
+  <div class="col-span-full flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-dashed border-line pt-2.5">
     <button type="button" class="btn lp-save" data-urls={JSON.stringify([`/concepts/${lesson}/`, ...parts.map((p) => `/concepts/${lesson}/${p.slug}/`)])}>
       <T k="shell.offline.save" />
     </button>
-    <span class="lp-save-status" role="status" aria-live="polite"></span>
+    <span class="lp-save-status text-[0.8125rem] text-muted" role="status" aria-live="polite"></span>
   </div>
 </div>
 

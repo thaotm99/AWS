@@ -66,39 +66,49 @@ function splitGroups(groups: ReturnType<typeof groupDocs>) {
   }
   return { shown, rest, more: rest.reduce((n, g) => n + g.items.length, 0) };
 }
+// Shared class lists (several elements below look the same).
+const crumbs = "flex flex-wrap items-center gap-2 text-step--1 text-muted";
+const dt = "text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase";
+const dd = "mt-0.5 flex flex-wrap items-center gap-1.5";
+const colHead = "mb-2 text-[0.75rem] tracking-[0.08em] text-muted uppercase";
+const list = "m-0 grid list-none gap-1.5 p-0";
+const item = "py-[3px] text-[0.9375rem]";
+const link = "no-underline hover:underline";
+const docService = "mt-0 mb-1.5 text-[0.75rem] font-semibold tracking-[0.08em] text-accent uppercase";
+const docGroup = "[&+&]:mt-3.5";
 const docParts = [
   { lang: "vi", ...splitGroups(groupDocs(docs)) },
   { lang: "en", ...splitGroups(groupDocs(docsEn)) },
 ];
 ---
 <BaseLayout title={`${concept.title} · CloudLab`} description={entry?.data.lede} current={id}>
-  <div class="crumbs">
+  <div class={crumbs}>
     <span><T k="lesson.frame.layer" params={{ n: concept.layer.n }} /> · <L vi={concept.layer.name} en={concept.layer.nameEn} /></span>
-    <span aria-hidden="true">/</span><b><L vi={concept.title} en={concept.titleEn} /></b>
+    <span aria-hidden="true">/</span><b class="font-medium text-ink"><L vi={concept.title} en={concept.titleEn} /></b>
   </div>
   <h1><L vi={title} en={titleEn} /></h1>
-  {entry && <p class="lede"><L vi={entry.data.lede} en={entryEn?.data.lede ?? entry.data.lede} /></p>}
+  {entry && <p class="mt-0 mb-[18px] text-step-1 leading-[1.6] text-muted"><L vi={entry.data.lede} en={entryEn?.data.lede ?? entry.data.lede} /></p>}
   {entry && parts.length > 0 && <LessonProgress lesson={id} parts={parts} />}
-  <dl class="meta-row">
+  <dl class="m-0 grid grid-cols-2 gap-x-7 gap-y-3.5 border-y border-line py-3.5 text-step--1 max-sm:grid-cols-1">
     {!concept.intro && (
       <div>
-        <dt><T k="shell.importance.label" /></dt>
-        <dd><Importance level={concept.importance} hint /></dd>
+        <dt class={dt}><T k="shell.importance.label" /></dt>
+        <dd class={dd}><Importance level={concept.importance} hint /></dd>
       </div>
     )}
     {entry && (
       <>
         <div>
-          <dt><T k="lesson.frame.prerequisites" /></dt>
-          <dd>
+          <dt class={dt}><T k="lesson.frame.prerequisites" /></dt>
+          <dd class={dd}>
             {prereqs.length
-              ? prereqs.map((p) => <a href={`/concepts/${p!.id}/`}><L vi={p!.title} en={p!.titleEn} /></a>)
+              ? prereqs.map((p) => <a class={`py-[3px] ${link}`} href={`/concepts/${p!.id}/`}><L vi={p!.title} en={p!.titleEn} /></a>)
               : <T k="lesson.frame.noPrerequisites" />}
           </dd>
         </div>
         <div>
-          <dt><T k="lesson.frame.duration" /></dt>
-          <dd><T k="lesson.frame.durationValue" params={{ minutes: entry.data.minutes, scenes: entry.data.scenes }} /></dd>
+          <dt class={dt}><T k="lesson.frame.duration" /></dt>
+          <dd class={dd}><T k="lesson.frame.durationValue" params={{ minutes: entry.data.minutes, scenes: entry.data.scenes }} /></dd>
         </div>
       </>
     )}
@@ -113,56 +123,56 @@ const docParts = [
         </>
       ) : (
         <>
-          <p class="untranslated" data-lang="en"><T k="lesson.frame.untranslated" /></p>
+          <p class="rounded-r-sm border-l-[3px] border-edge bg-edge-soft px-3 py-1.5 text-step--1 text-muted" data-lang="en"><T k="lesson.frame.untranslated" /></p>
           <Content />
         </>
       )}
       {parts.length > 0 && (
         <LessonParts lesson={id} parts={parts} quiz={concept.exact && concept.questions > 0 ? concept.questions : undefined} />
       )}
-      <section class="scene prose" id="next">
-        <div class="scene-head">
-          <span class="scene-no"><T k="lesson.frame.nextLabel" /></span>
+      <section class="mt-11 scroll-mt-20" id="next">
+        <div class="mb-1 flex flex-col items-start gap-0.5">
+          <span class="text-[0.8125rem] font-bold tracking-[0.08em] text-accent uppercase"><T k="lesson.frame.nextLabel" /></span>
           <h2><T k="lesson.frame.nextTitle" /></h2>
         </div>
-        <div class="next">
-          <div class="next-col">
-            <h3><T k="lesson.frame.nextLessons" /></h3>
-            <ul>
+        <div class="mt-3 grid grid-cols-3 gap-4 max-lg:grid-cols-1">
+          <div>
+            <h3 class={colHead}><T k="lesson.frame.nextLessons" /></h3>
+            <ul class={list}>
               {next.map((c) => (
-                <li>
-                  <a href={`/concepts/${c.id}/`}><L vi={c.title} en={c.titleEn} /></a>
-                  {!ready.has(c.id) && <span class="tag-soon"><T k="lesson.frame.soon" /></span>}
+                <li class={item}>
+                  <a class={link} href={`/concepts/${c.id}/`}><L vi={c.title} en={c.titleEn} /></a>
+                  {!ready.has(c.id) && <span class="ml-1 rounded-[4px] border border-dashed border-line px-1.5 text-[0.75rem] whitespace-nowrap text-muted"><T k="lesson.frame.soon" /></span>}
                 </li>
               ))}
             </ul>
           </div>
-          <div class="next-col">
-            <h3><T k="lesson.frame.practice" /></h3>
-            <ul>
+          <div>
+            <h3 class={colHead}><T k="lesson.frame.practice" /></h3>
+            <ul class={list}>
               {concept.exact && concept.questions > 0 && (
-                <li><a href={`/concepts/${id}/quiz/`}><T k="lesson.frame.quizLink" params={{ n: concept.questions }} /></a></li>
+                <li class={item}><a class={link} href={`/concepts/${id}/quiz/`}><T k="lesson.frame.quizLink" params={{ n: concept.questions }} /></a></li>
               )}
-              <li><a href="/practice/"><T k="lesson.frame.practiceLink" /></a></li>
+              <li class={item}><a class={link} href="/practice/"><T k="lesson.frame.practiceLink" /></a></li>
             </ul>
           </div>
-          <div class="next-col">
-            <h3><T k="lesson.frame.docs" /></h3>
+          <div>
+            <h3 class={colHead}><T k="lesson.frame.docs" /></h3>
             {docParts.map(({ lang, shown, rest, more }) => (
-              <div class="doc-groups" data-lang={lang}>
+              <div data-lang={lang}>
                 {shown.map((g) => (
-                  <div class="doc-group">
-                    {g.service && <h4 class="doc-service">{g.service}</h4>}
-                    <ul>{g.items.map((d) => <li><a href={d.url} target="_blank" rel="noopener">{d.title}</a></li>)}</ul>
+                  <div class={docGroup}>
+                    {g.service && <h4 class={docService}>{g.service}</h4>}
+                    <ul class={list}>{g.items.map((d) => <li class={item}><a class={link} href={d.url} target="_blank" rel="noopener">{d.title}</a></li>)}</ul>
                   </div>
                 ))}
                 {more > 0 && (
-                  <details class="doc-more">
-                    <summary><T k="lesson.frame.docsMore" params={{ n: more }} /></summary>
+                  <details class="group mt-2.5">
+                    <summary class="cursor-pointer py-1 text-step--1 font-semibold text-accent group-open:mb-2"><T k="lesson.frame.docsMore" params={{ n: more }} /></summary>
                     {rest.map((g) => (
-                      <div class="doc-group">
-                        {g.service && <h4 class="doc-service">{g.service}</h4>}
-                        <ul>{g.items.map((d) => <li><a href={d.url} target="_blank" rel="noopener">{d.title}</a></li>)}</ul>
+                      <div class={docGroup}>
+                        {g.service && <h4 class={docService}>{g.service}</h4>}
+                        <ul class={list}>{g.items.map((d) => <li class={item}><a class={link} href={d.url} target="_blank" rel="noopener">{d.title}</a></li>)}</ul>
                       </div>
                     ))}
                   </details>
@@ -175,9 +185,9 @@ const docParts = [
       <Donate />
     </>
   ) : (
-    <div class="placeholder">
-      <p><T k="lesson.frame.placeholder" /></p>
-      <a class="btn cta" href="/concepts/global-infra/"><T k="lesson.frame.placeholderCta" /></a>
+    <div class="py-12">
+      <p class="text-muted"><T k="lesson.frame.placeholder" /></p>
+      <a class="btn cta mt-1" href="/concepts/global-infra/"><T k="lesson.frame.placeholderCta" /></a>
     </div>
   )}
 </BaseLayout>
