@@ -12,7 +12,8 @@ if (!pattern) {
   process.exit(1);
 }
 const re = new RegExp(pattern);
-const files = globSync("src/**/*.css").filter((f) => !/styles\/(app|tokens|base)\.css$|styles\/components\//.test(f));
+// Only legacy files: anything already ported to Tailwind (no "@layer legacy") is left alone.
+const files = globSync("src/**/*.css").filter((f) => readFileSync(f, "utf8").includes("@layer legacy"));
 
 let total = 0;
 for (const file of files) {

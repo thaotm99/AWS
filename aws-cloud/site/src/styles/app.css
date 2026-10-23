@@ -77,9 +77,9 @@
 }
 
 @import "./components/controls.css" layer(components);
+@import "./components/primitives.css" layer(components);
+@import "./components/sim.css" layer(components);
 @import "./components/shell.css" layer(components);
 @import "./components/lesson.css" layer(components);
 @import "./components/practice.css" layer(components);
 @import "./components/tools.css" layer(components);
-@import "./components/primitives.css" layer(components);
-@import "./components/sim.css" layer(components);
