@@ -1,7 +1,7 @@
 /* CaseSim engine (scenes/global-infra/CaseSim.tsx), used by the global-infra,
    vpc, route53 and iam simulations. Theme tokens only. */
 .cs-scenarios { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
-.cs-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; overflow-wrap: anywhere; }
+.cs-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 3px 8px; overflow-wrap: anywhere; }
 .cs-from { font-size: var(--step--1); color: var(--muted); }
 .cs-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
 .cs .stage-bar .cs-go { margin-left: auto; }
@@ -26,6 +26,6 @@
 .cs-user.ok .user { fill: var(--ok); }
 .cs-flash { fill: var(--bad); font-family: var(--font-mono); font-size: 14px; font-weight: 700; text-anchor: middle; }
 .cs-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
-.cs-result { margin-top: 6px; padding: 8px 10px; border-radius: 8px; display: block !important; }
+.cs-result { margin-top: 6px; padding: 8px 10px; border-radius: 12px; display: block !important; }
 .cs-result.ok { background: var(--ok-soft); }
 .cs-result.bad { background: var(--bad-soft); }

@@ -16,6 +16,6 @@
 .cws-flash.act { fill: var(--ok); }
 .cws-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
 .cws-sum { background: var(--bg); color: var(--ink); border: 1px solid var(--line); }
-.cws-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 8px; font-size: var(--step--1); }
+.cws-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 12px; font-size: var(--step--1); }
 .cws-result.ok { background: var(--ok-soft); }
 .cws-result.bad { background: var(--bad-soft); }

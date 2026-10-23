@@ -20,13 +20,13 @@
 .qbs-line { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; }
 .qbs-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
 .qbs-wait { background: var(--accent-soft); color: var(--ink); }
-.qbs-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 8px; font-size: var(--step--1); }
+.qbs-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 12px; font-size: var(--step--1); }
 .qbs-result.ok { background: var(--ok-soft); }
 .qbs-result.bad { background: var(--bad-soft); }
 
 /* Life of a message (messaging/MessageLifeSim), shared by FifoSim */
 .mls-scenarios { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
-.mls-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; overflow-wrap: anywhere; }
+.mls-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 3px 8px; overflow-wrap: anywhere; }
 .mls-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
 .mls .stage-bar .btn.primary { margin-left: auto; }
 .mls-clock { fill: var(--accent); font-family: var(--font-mono); font-size: 13px; font-weight: 700; }
@@ -69,7 +69,7 @@
 .mls-tag.bad { background: var(--bad-soft); color: var(--bad); }
 .mls-tag.info { background: var(--bg); color: var(--muted); }
 .mls-tag.edge { background: var(--edge-soft); color: var(--edge); }
-.log li.mls-result { margin-top: 6px; padding: 8px 10px; border-radius: 8px; display: block; }
+.log li.mls-result { margin-top: 6px; padding: 8px 10px; border-radius: 12px; display: block; }
 .mls-result.ok { background: var(--ok-soft); }
 .mls-result.bad { background: var(--bad-soft); }
 @media (prefers-reduced-motion: reduce) { .mls-tok { transition: none; } }
@@ -94,7 +94,7 @@
 .fbc-fill.ok { background: var(--ok); }
 .fbc-fill.bad { background: var(--bad); }
 .fbc-limit { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--ink); }
-.fbc-result { margin: 0; padding: 8px 10px; border-radius: 8px; font-size: var(--step--1); }
+.fbc-result { margin: 0; padding: 8px 10px; border-radius: 12px; font-size: var(--step--1); }
 .fbc-result.ok { background: var(--ok-soft); }
 .fbc-result.bad { background: var(--bad-soft); }
 @media (max-width: 520px) {

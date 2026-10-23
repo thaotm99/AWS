@@ -11,6 +11,6 @@
 .sav-t { fill: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
 .sav-s { fill: var(--muted); font-family: var(--font-body); font-size: 10px; }
 .sav-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
-.sav-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 8px; font-size: var(--step--1); }
+.sav-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 12px; font-size: var(--step--1); }
 .sav-result.ok { background: var(--ok-soft); }
 .sav-result.bad { background: var(--bad-soft); }

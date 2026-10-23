@@ -13,7 +13,7 @@
 .sps-flash.bad { fill: var(--bad); }
 .sps-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
 .sps-idle { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
-.sps-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 8px; font-size: var(--step--1); }
+.sps-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 12px; font-size: var(--step--1); }
 .sps-result.ok { background: var(--ok-soft); }
 .sps-result.bad { background: var(--bad-soft); }
 
@@ -31,7 +31,7 @@
 
 /* Health check replacement (asg/HealthReplaceSim) */
 .hrs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; padding: 14px; }
-.hrs-inst { display: grid; gap: 2px; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 8px 10px; font-size: 0.85rem; transition: background .25s, border-color .25s; }
+.hrs-inst { display: grid; gap: 2px; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 8px 10px; font-size: 0.85rem; transition: background .25s, border-color .25s; }
 .hrs-inst.ok { border-color: var(--ok); }
 .hrs-inst.impaired, .hrs-inst.oos { border-color: var(--violet); background: color-mix(in srgb, var(--violet) 10%, var(--surface)); }
 .hrs-inst.unhealthy, .hrs-inst.terminating { border-color: var(--bad); background: var(--bad-soft); }

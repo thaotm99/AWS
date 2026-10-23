@@ -1,6 +1,6 @@
 /* Packet simulations of the ELB, ASG, container and Lambda lessons (elb/PacketSim) */
 .pks-scenarios { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
-.pks-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; overflow-wrap: anywhere; }
+.pks-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 3px 8px; overflow-wrap: anywhere; }
 .pks-from { font-size: var(--step--1); color: var(--muted); }
 .pks-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
 .pks .stage-bar .btn.primary { margin-left: auto; }
@@ -24,6 +24,6 @@
 .pks-flash.bad { fill: var(--bad); }
 .pks .tag.pks-tag.bad { background: var(--bad-soft); color: var(--bad); }
 .pks-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
-.pks .log li.pks-result { margin-top: 6px; padding: 8px 10px; border-radius: 8px; display: block; }
+.pks .log li.pks-result { margin-top: 6px; padding: 8px 10px; border-radius: 12px; display: block; }
 .pks-result.ok { background: var(--ok-soft); }
 .pks-result.bad { background: var(--bad-soft); }

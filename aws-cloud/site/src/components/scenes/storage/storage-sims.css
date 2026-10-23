@@ -2,7 +2,7 @@
 .stx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
 .stx-row + .stx-row { padding-top: 8px; }
 .stx-lbl { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
-.stx-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; overflow-wrap: anywhere; }
+.stx-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 3px 8px; overflow-wrap: anywhere; }
 .stx-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
 .stx .stage-bar { margin-top: 12px; border-top: 1px solid var(--line); }
 .stx .stage-bar .btn.primary { margin-left: auto; }
@@ -26,7 +26,7 @@
 .stx-flash-ok { fill: var(--ok); font-family: var(--font-mono); font-size: 13px; font-weight: 700; text-anchor: middle; }
 .stx-flash-edge { fill: var(--edge); font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-anchor: middle; }
 .stx-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
-.stx-result { margin-top: 6px; padding: 8px 10px; border-radius: 8px; display: block !important; }
+.stx-result { margin-top: 6px; padding: 8px 10px; border-radius: 12px; display: block !important; }
 .stx-result.ok { background: var(--ok-soft); }
 .stx-result.bad { background: var(--bad-soft); }
 .stx-result.warn { background: var(--edge-soft); }

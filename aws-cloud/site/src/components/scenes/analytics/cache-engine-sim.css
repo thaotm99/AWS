@@ -19,7 +19,7 @@
 .cen-table th { color: var(--muted); font-weight: 600; }
 .cen-table td.yes { color: var(--ok); font-weight: 600; }
 .cen-table td.no { color: var(--bad); font-weight: 600; }
-.cen-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 8px; font-size: var(--step--1); }
+.cen-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 12px; font-size: var(--step--1); }
 .cen-result.ok { background: var(--ok-soft); }
 .cen-result.bad { background: var(--bad-soft); }
 @media (prefers-reduced-motion: reduce) { .cen-core { transition: none; } }

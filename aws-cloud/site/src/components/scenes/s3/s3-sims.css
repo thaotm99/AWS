@@ -10,7 +10,7 @@
 .s3x-lc-key { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; min-width: 0; overflow-wrap: anywhere; }
 .s3x-lc-tag { font-size: 0.6875rem; padding: 1px 6px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
 .s3x-lc-use { color: var(--muted); font-size: 0.75rem; }
-.s3x-lc-cls { justify-self: start; font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: var(--surface); border: 1px solid var(--line); transition: background .4s, border-color .4s; }
+.s3x-lc-cls { justify-self: start; font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); transition: background .4s, border-color .4s; }
 .s3x-lc-cls.ia { background: var(--ok-soft); border-color: var(--ok); }
 .s3x-lc-cls.oz { background: var(--edge-soft); border-color: var(--edge); }
 .s3x-lc-cls.gfr { background: var(--accent-soft); border-color: var(--accent); }
@@ -25,14 +25,14 @@
 .s3x-rt-row { display: grid; gap: 4px; }
 .s3x-rt-row.off { opacity: .5; }
 .s3x-rt-head { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; font-size: 0.8125rem; }
-.s3x-rt-track { position: relative; height: 26px; margin: 0 4px; border-radius: 6px; background: var(--bg); border: 1px solid var(--line); }
+.s3x-rt-track { position: relative; height: 26px; margin: 0 4px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); }
 .s3x-rt-lock { position: absolute; top: 2px; bottom: 2px; border-radius: 4px; background: var(--bad-soft); border: 1px solid var(--bad); color: var(--bad); font-size: 0.6875rem; font-weight: 600; display: flex; align-items: center; padding: 0 6px; white-space: nowrap; overflow: hidden; }
 .s3x-rt-now { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--accent); }
 .s3x-rt-row .btn { justify-self: start; display: inline-flex; align-items: center; gap: 8px; }
 .s3x-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
 .s3x-row + .s3x-row { padding-top: 8px; }
 .s3x-lbl { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
-.s3x-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; overflow-wrap: anywhere; }
+.s3x-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 3px 8px; overflow-wrap: anywhere; }
 .s3x-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
 .s3x .stage-bar { margin-top: 12px; border-top: 1px solid var(--line); }
 .s3x .stage-bar .btn.primary { margin-left: auto; }
@@ -56,7 +56,7 @@
 .s3x-flash-ok { fill: var(--ok); font-family: var(--font-mono); font-size: 13px; font-weight: 700; text-anchor: middle; }
 .s3x-flash-edge { fill: var(--edge); font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-anchor: middle; }
 .s3x-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
-.s3x-result { margin-top: 6px; padding: 8px 10px; border-radius: 8px; display: block !important; }
+.s3x-result { margin-top: 6px; padding: 8px 10px; border-radius: 12px; display: block !important; }
 .s3x-result.ok { background: var(--ok-soft); }
 .s3x-result.bad { background: var(--bad-soft); }
 .s3x-result.warn { background: var(--edge-soft); }

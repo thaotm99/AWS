@@ -3,7 +3,7 @@
 .ec2-story { margin: 0; padding: 10px 14px 0; font-size: var(--step--1); }
 
 /* PlacementSim: one Availability Zone drawn as a row of racks */
-.pg-az { margin: 12px 14px 0; border: 1.5px dashed var(--accent); border-radius: 10px; padding: 22px 8px 8px; position: relative; }
+.pg-az { margin: 12px 14px 0; border: 1.5px dashed var(--accent); border-radius: 14px; padding: 22px 8px 8px; position: relative; }
 .pg-az-t { position: absolute; top: 4px; left: 10px; font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent); }
 .pg-racks { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; }
 .pg-rack { border: 1px solid var(--line); border-radius: 7px; background: var(--bg); padding: 4px 3px 6px; display: grid; gap: 4px; justify-items: center; align-content: start; min-height: 132px; cursor: pointer; font: inherit; color: inherit; }
@@ -18,7 +18,7 @@
 .pg-over { margin: 8px 14px 0; font-size: var(--step--1); color: var(--bad); }
 .pg-hint { margin: 8px 14px 0; font-size: 0.78rem; color: var(--muted); }
 .pg-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
-.pg-metric { border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 0.8rem; }
+.pg-metric { border: 1px solid var(--line); border-radius: 12px; padding: 6px 8px; font-size: 0.8rem; }
 .pg-metric span { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
 .pg-metric b.good { color: var(--ok); }
 .pg-metric b.bad { color: var(--bad); }

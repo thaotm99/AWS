@@ -8,7 +8,7 @@
 .lkc-ghost { opacity: .2; }
 .lkc-flash { fill: var(--ink); font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-anchor: middle; }
 .lkc-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
-.lkc-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 8px; font-size: var(--step--1); }
+.lkc-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 12px; font-size: var(--step--1); }
 .lkc-result.ok { background: var(--ok-soft); }
 .lkc-result.bad { background: var(--bad-soft); }
 @media (prefers-reduced-motion: reduce) { .lkc-raw, .lkc-ref { transition: none; } }

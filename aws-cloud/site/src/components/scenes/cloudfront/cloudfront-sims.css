@@ -2,13 +2,13 @@
 .cft-row, .cft-opts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
 .cft-opts { padding-top: 8px; }
 .cft-lbl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
-.cft-opt { border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; border-radius: 8px; padding: 4px 10px; font-size: var(--step--1); text-align: left; max-width: 100%; overflow-wrap: anywhere; }
+.cft-opt { border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; border-radius: 12px; padding: 4px 10px; font-size: var(--step--1); text-align: left; max-width: 100%; overflow-wrap: anywhere; }
 .cft-opt[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .cft-opt:disabled, .cft .chip:disabled { cursor: default; opacity: .6; }
 .cft-opt[aria-pressed="true"]:disabled { opacity: 1; }
 .cft .stage-bar { margin-top: 12px; border-top: 1px solid var(--line); flex-wrap: wrap; }
 .cft .stage-bar .btn.primary { margin-left: auto; }
-.cft-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; overflow-wrap: anywhere; min-width: 0; }
+.cft-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 3px 8px; overflow-wrap: anywhere; min-width: 0; }
 .cft-wire { stroke: var(--line); stroke-width: 2; fill: none; }
 .cft-wire.dash { stroke-dasharray: 5 5; }
 .cft-node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill .2s, stroke .2s, opacity .2s; }
@@ -23,6 +23,6 @@
 .cft-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
 .cft-reqline { display: block !important; margin-top: 6px; }
 .cft-reqline:first-child { margin-top: 0; }
-.cft-result { margin-top: 6px; padding: 8px 10px; border-radius: 8px; display: block !important; }
+.cft-result { margin-top: 6px; padding: 8px 10px; border-radius: 12px; display: block !important; }
 .cft-result.ok { background: var(--ok-soft); }
 .cft-result.bad { background: var(--bad-soft); }

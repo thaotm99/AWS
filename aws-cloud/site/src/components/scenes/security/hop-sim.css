@@ -1,11 +1,11 @@
 /* HopSim engine (security/HopSim.tsx), shared by the KMS, security, Cognito and EC2 simulations */
 .hop-scenarios { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
-.hop-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; overflow-wrap: anywhere; }
+.hop-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 3px 8px; overflow-wrap: anywhere; }
 .hop-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
 .hop .stage-bar .btn.primary { margin-left: auto; }
 .hop-hint { margin: 0; font-size: var(--step--1); }
 .hop-hint span { color: var(--muted); }
-.hop-result { margin-top: 6px; padding: 8px 10px; border-radius: 8px; display: block !important; }
+.hop-result { margin-top: 6px; padding: 8px 10px; border-radius: 12px; display: block !important; }
 .hop-result.ok { background: var(--ok-soft); }
 .hop-result.bad { background: var(--bad-soft); }
 

@@ -13,10 +13,10 @@
 .elbx-lst { padding: 10px 14px 0; display: grid; gap: 4px; }
 .elbx-lst-h { font-size: 0.75rem; font-weight: 600; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
 .elbx-lst.dim { opacity: .7; }
-.elbx-rule { display: grid; grid-template-columns: 3.2rem minmax(0, 1.5fr) minmax(0, 1fr) 1.6rem; gap: 8px; align-items: center; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-size: 0.8125rem; transition: background .25s, border-color .25s; }
+.elbx-rule { display: grid; grid-template-columns: 3.2rem minmax(0, 1.5fr) minmax(0, 1fr) 1.6rem; gap: 8px; align-items: center; padding: 6px 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font-size: 0.8125rem; transition: background .25s, border-color .25s; }
 .elbx-pri { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }
 .elbx-cond { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; }
-.elbx-cond code { font-size: 0.75rem; padding: 1px 6px; border-radius: 6px; background: var(--bg); border: 1px solid var(--line); overflow-wrap: anywhere; }
+.elbx-cond code { font-size: 0.75rem; padding: 1px 6px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); overflow-wrap: anywhere; }
 .elbx-cond code.miss { border-color: var(--bad); color: var(--bad); }
 .elbx-cond code.hit { border-color: var(--ok); color: var(--ok); }
 .elbx-act { overflow-wrap: anywhere; }
@@ -35,7 +35,7 @@
 /* HttpsListenerSim: result table */
 .elbx-goal { margin: 0; padding: 10px 14px 0; font-size: var(--step--1); }
 .elbx-res { list-style: none; margin: 0; padding: 12px 14px; display: grid; gap: 6px; }
-.elbx-res li { display: grid; grid-template-columns: minmax(0, 1.2fr) 6.5rem minmax(0, 2fr); gap: 8px; align-items: start; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-size: 0.8125rem; }
+.elbx-res li { display: grid; grid-template-columns: minmax(0, 1.2fr) 6.5rem minmax(0, 2fr); gap: 8px; align-items: start; padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font-size: 0.8125rem; }
 .elbx-res li.ok { border-color: var(--ok); }
 .elbx-res li.bad { border-color: var(--bad); background: var(--bad-soft); }
 .elbx-res li.warn { border-color: var(--edge); background: var(--edge-soft); }

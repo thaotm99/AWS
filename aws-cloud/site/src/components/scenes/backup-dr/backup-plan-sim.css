@@ -36,6 +36,6 @@
 .bps-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
 .bps-hint b { color: var(--ink); }
 .bps-log li { display: block; }
-.bps-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 8px; font-size: var(--step--1); }
+.bps-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 12px; font-size: var(--step--1); }
 .bps-result.ok { background: var(--ok-soft); }
 .bps-result.bad { background: var(--bad-soft); }

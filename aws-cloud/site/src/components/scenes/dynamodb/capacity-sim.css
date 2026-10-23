@@ -18,7 +18,7 @@
 .dcap-flash { fill: var(--bad); font-family: var(--font-mono); font-size: 11px; font-weight: 700; text-anchor: middle; }
 .dcap-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
 .dcap-muted { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
-.dcap-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 8px; font-size: var(--step--1); }
+.dcap-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 12px; font-size: var(--step--1); }
 .dcap-result.ok { background: var(--ok-soft); }
 .dcap-result.bad { background: var(--bad-soft); }
 @media (prefers-reduced-motion: reduce) { .dcap-part { transition: none; } }

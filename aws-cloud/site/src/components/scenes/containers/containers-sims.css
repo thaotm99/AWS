@@ -5,7 +5,7 @@
 .ctx-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; border: 1px solid var(--line); border-radius: 999px; padding: 3px 11px; background: var(--surface); }
 .ctx-toggle input { margin: 0; }
 .ctx-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: 6px; padding: 10px 14px 0; }
-.ctx-stat { border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; background: var(--bg); min-width: 0; }
+.ctx-stat { border: 1px solid var(--line); border-radius: 12px; padding: 6px 8px; background: var(--bg); min-width: 0; }
 .ctx-stat span { display: block; font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; overflow-wrap: anywhere; }
 .ctx-stat b { font-family: var(--font-mono); font-size: 0.95rem; }
 .ctx-stat.bad { border-color: var(--bad); background: var(--bad-soft); }
@@ -29,7 +29,7 @@
 .ctx .stage-bar { margin-top: 12px; border-top: 1px solid var(--line); }
 /* EksPlacementSim */
 .ctx-opts { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); gap: 8px; padding: 12px 14px 0; }
-.ctx-opt { text-align: left; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); padding: 8px 10px; cursor: pointer; display: grid; gap: 4px; font: inherit; color: inherit; min-width: 0; }
+.ctx-opt { text-align: left; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); padding: 8px 10px; cursor: pointer; display: grid; gap: 4px; font: inherit; color: inherit; min-width: 0; }
 .ctx-opt:hover { border-color: var(--accent); }
 .ctx-opt[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .ctx-opt.fit { background: var(--ok-soft); border-color: var(--ok); }
@@ -40,7 +40,7 @@
 .ctx-mark { font-family: var(--font-mono); font-weight: 700; width: 1em; flex: none; }
 .ctx-mark.y { color: var(--ok); }
 .ctx-mark.n { color: var(--bad); }
-.ctx-need { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; overflow-wrap: anywhere; }
+.ctx-need { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 3px 8px; overflow-wrap: anywhere; }
 .ctx-detail p { margin: 4px 0 0; }
 .ctx-verdict { display: inline-block; font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600; padding: 0 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
 .ctx-verdict.y { background: var(--ok-soft); color: var(--ok); }
