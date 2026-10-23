@@ -11,15 +11,18 @@ interface Props {
   attempt: Attempt;
   /** Set when the questions are a service's set rather than a practice test. */
   topic?: { id: string; title: string };
+  /** Set when the questions are the wrong-answer review. */
+  review?: boolean;
   saving: boolean;
   dispatch: Dispatch;
 }
 
-export default function ResultPanel({ cert, exam, attempt, topic, saving, dispatch }: Props) {
+export default function ResultPanel({ cert, exam, attempt, topic, review, saving, dispatch }: Props) {
   const tr = useT();
   const { t } = tr;
   const score = Scoring.score(attempt, cert, exam.questions.map((q) => q.id));
-  const next = topic ? undefined : cert.exams[cert.exams.findIndex((e) => e.id === exam.id) + 1];
+  const wrong = exam.questions.filter((q) => attempt.answers[q.id] && !attempt.answers[q.id].correct).length;
+  const next = topic || review ? undefined : cert.exams[cert.exams.findIndex((e) => e.id === exam.id) + 1];
 
   const domains = new Map<string, { right: number; total: number }>();
   for (const q of exam.questions) {
@@ -34,10 +37,12 @@ export default function ResultPanel({ cert, exam, attempt, topic, saving, dispat
       <h2 id="pr-result" className="pr-visually-hidden">{t("result.heading")}</h2>
       <div className="pr-score">
         <span className="pr-score-big">{score.percent}%</span>
-        <span className={`pr-badge ${score.passed ? "pass" : "fail"}`}>{score.passed ? t("result.passed") : t("result.failed")}</span>
+        {!review && <span className={`pr-badge ${score.passed ? "pass" : "fail"}`}>{score.passed ? t("result.passed") : t("result.failed")}</span>}
       </div>
       <p className="pr-muted">
-        {t("result.summary", { correct: score.correct, total: score.total, percent: Scoring.passPercent(cert), score: cert.passingScore })}
+        {review
+          ? t("review.summary", { correct: score.correct, total: score.total })
+          : t("result.summary", { correct: score.correct, total: score.total, percent: Scoring.passPercent(cert), score: cert.passingScore })}
       </p>
 
       <div className="pr-domains">
@@ -51,8 +56,11 @@ export default function ResultPanel({ cert, exam, attempt, topic, saving, dispat
       </div>
 
       <div className="pr-actions">
-        <button type="button" className="btn" disabled={saving} onClick={() => dispatch({ type: "exam/restart" })}>{t("result.retake")}</button>
-        {topic ? (
+        <button type="button" className="btn" disabled={saving} onClick={() => dispatch({ type: "exam/restart" })}>{review ? t("review.again") : t("result.retake")}</button>
+        {!review && wrong > 0 && <a className="btn" href={routes.review(cert.id)}>{t("review.cta", { n: wrong })}</a>}
+        {review ? (
+          <a className="btn primary" href={routes.catalog(cert.id)}>{t("exam.backToList")}</a>
+        ) : topic ? (
           <a className="btn primary" href={routes.lesson(topic.id)}>{t("topic.backToLesson")}</a>
         ) : next ? (
           <a className="btn primary" href={routes.exam(cert.id, next.id)}>{t("result.nextExam", { n: next.number })}</a>

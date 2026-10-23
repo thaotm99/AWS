@@ -8,10 +8,10 @@ export class AttemptService extends ApiService {
     return this.api.get<Attempt[]>("/attempts", { certId, examId });
   }
 
-  /** Newest attempt of each exam in a certification, keyed by exam id. */
-  async latestByExam(certId: CertificationId): Promise<Map<ExamId, Attempt>> {
+  /** Newest attempt of each exam, keyed by exam id, from a list sorted newest first (as list() returns). */
+  static latestByExam(attempts: readonly Attempt[]): Map<ExamId, Attempt> {
     const latest = new Map<ExamId, Attempt>();
-    for (const a of await this.list(certId)) if (!latest.has(a.examId)) latest.set(a.examId, a);
+    for (const a of attempts) if (!latest.has(a.examId)) latest.set(a.examId, a);
     return latest;
   }
 

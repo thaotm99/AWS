@@ -1,5 +1,6 @@
-import type { Attempt, CertificationId, ExamId } from "../../domain/types";
-import type { AttemptService } from "../../services/AttemptService";
+import type { Attempt, CertificationId } from "../../domain/types";
+import { AttemptService } from "../../services/AttemptService";
+import { Review } from "../../domain/Review";
 import type { CatalogService } from "../../services/CatalogService";
 import { Controller } from "../../../../core/state/Controller";
 import type { EventBus } from "../../../../core/state/EventBus";
@@ -28,17 +29,17 @@ export class CatalogController extends Controller<PracticeEvent, CatalogState, C
     try {
       const certifications = await this.catalog.listCertifications();
       const id = certId ?? certifications[0]?.id;
-      const [selected, latest] = id
+      const [selected, attempts] = id
         ? await Promise.all([
             this.catalog.getCertification(id),
             // Progress badges are extras: unreadable storage must not hide the exam list.
-            this.attempts.latestByExam(id).catch((e) => {
+            this.attempts.list(id).catch((e) => {
               console.warn("[practice] could not load attempts", e);
-              return new Map<ExamId, Attempt>();
+              return [] as Attempt[];
             }),
           ])
-        : [null, new Map<ExamId, Attempt>()];
-      if (request === this.request) this.store.loaded(certifications, selected, latest);
+        : [null, [] as Attempt[]];
+      if (request === this.request) this.store.loaded(certifications, selected, AttemptService.latestByExam(attempts), Review.wrongIds(attempts).length);
     } catch (e) {
       if (request === this.request) this.store.failed({ code: "loadCatalog", detail: Controller.message(e) });
     }

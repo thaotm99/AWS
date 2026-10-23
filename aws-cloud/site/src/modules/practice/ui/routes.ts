@@ -5,4 +5,5 @@ export const routes = {
   exam: (certId: CertificationId, examId: ExamId) => `/practice/${certId}/${examId}/`,
   lesson: (topicId: string) => `/concepts/${topicId}/`,
   topic: (topicId: string) => `/concepts/${topicId}/quiz/`,
+  review: (certId: CertificationId) => `/practice/${certId}/review/`,
 };

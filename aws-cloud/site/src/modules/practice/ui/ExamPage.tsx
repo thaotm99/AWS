@@ -14,18 +14,24 @@ interface Props {
   certId: string;
   /** A practice test… */
   examId?: string;
-  /** …or every question about one service, opened from its lesson. */
+  /** …or every question about one service, opened from its lesson… */
   topic?: { id: string; title: string };
+  /** …or the questions whose latest answer was wrong. */
+  review?: boolean;
 }
 
-function ExamView({ certId, examId, topic }: Props) {
+function ExamView({ certId, examId, topic, review }: Props) {
   const app = PracticeApp.get();
   const store = app.exam.store;
   const state = useStore(store);
   const { cert, exam, attempt, index, view } = state;
   const { t, locale } = useT();
 
-  const set = topic ? { kind: "topic" as const, id: topic.id } : { kind: "exam" as const, id: examId! };
+  const set = review
+    ? { kind: "review" as const, id: "review" }
+    : topic
+      ? { kind: "topic" as const, id: topic.id }
+      : { kind: "exam" as const, id: examId! };
   useEffect(() => {
     app.dispatch({ type: "exam/open", certId, set, locale });
   }, [certId, set.kind, set.id]);
@@ -54,8 +60,9 @@ function ExamView({ certId, examId, topic }: Props) {
 
   // The static <title> is in the default language; keep it in the chosen one.
   useEffect(() => {
-    if (!cert || !exam) return;
-    document.title = topic ? t("topic.pageTitle", { title: topic.title }) : t("catalog.examPageTitle", { code: cert.code, n: exam.number });
+    if (!cert) return;
+    if (review) document.title = t("review.pageTitle", { code: cert.code });
+    else if (exam) document.title = topic ? t("topic.pageTitle", { title: topic.title }) : t("catalog.examPageTitle", { code: cert.code, n: exam.number });
   }, [cert, exam, t]);
 
   // Each new question or the result starts at the top of the page.
@@ -73,15 +80,37 @@ function ExamView({ certId, examId, topic }: Props) {
       </p>
     );
   }
+  const reviewCrumbs = cert && (
+    <div className="crumbs">
+      <a href={routes.catalog()}>{t("catalog.crumb")}</a><span aria-hidden="true">/</span>
+      <a href={routes.catalog(cert.id)}>{cert.code}</a><span aria-hidden="true">/</span>
+      <b>{t("review.crumb")}</b>
+    </div>
+  );
+  if (review && state.empty && cert && state.status === "ready") {
+    return (
+      <>
+        {reviewCrumbs}
+        <h1>{t("review.title")}</h1>
+        <div className="pr-empty-review">
+          <p><b>{t("review.emptyTitle")}</b></p>
+          <p className="pr-muted">{t("review.emptyBody")}</p>
+          <a className="btn primary" href={routes.catalog(cert.id)}>{t("review.toTests")}</a>
+        </div>
+      </>
+    );
+  }
   if (!cert || !exam || !attempt || state.status !== "ready") return <p className="pr-muted">{t("exam.loading")}</p>;
   const examLabel = t("catalog.examLabel", { n: exam.number });
-  const heading = topic ? t("topic.title", { title: topic.title }) : `${cert.code} · ${examLabel}`;
+  const heading = review ? t("review.title") : topic ? t("topic.title", { title: topic.title }) : `${cert.code} · ${examLabel}`;
 
   const question = exam.questions[index];
   const finished = Scoring.isFinished(attempt, exam.questions.map((q) => q.id));
   return (
     <>
-      {topic ? (
+      {review ? (
+        reviewCrumbs
+      ) : topic ? (
         <div className="crumbs">
           <a href={routes.lesson(topic.id)}>{topic.title}</a><span aria-hidden="true">/</span>
           <b>{t("topic.crumb")}</b>
@@ -101,7 +130,7 @@ function ExamView({ certId, examId, topic }: Props) {
       </div>
 
       {view === "result" ? (
-        <ResultPanel cert={cert} exam={exam} attempt={attempt} topic={topic} saving={state.saving} dispatch={app.dispatch} />
+        <ResultPanel cert={cert} exam={exam} attempt={attempt} topic={topic} review={review} saving={state.saving} dispatch={app.dispatch} />
       ) : (
         <>
           <QuestionMap exam={exam} attempt={attempt} index={index} frontier={store.frontier} dispatch={app.dispatch} />

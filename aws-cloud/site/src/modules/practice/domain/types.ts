@@ -65,10 +65,10 @@ export interface Question {
 }
 
 /** A set of questions to work through: a practice test, or every question about one service ("topic"). */
-export type QuestionSetKind = "exam" | "topic";
+export type QuestionSetKind = "exam" | "topic" | "review";
 export interface QuestionSetRef {
   kind: QuestionSetKind;
-  /** Exam id, or the service id of a topic (e.g. "s3"). */
+  /** Exam id, the service id of a topic (e.g. "s3"), or "review". */
   id: string;
 }
 

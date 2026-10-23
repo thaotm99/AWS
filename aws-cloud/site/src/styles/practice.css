@@ -200,3 +200,11 @@
 .pr-learn b { display: block; margin-bottom: 4px; color: var(--accent); }
 .pr-learn ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
 .pr-learn a { font-weight: 600; }
+
+/* Wrong-answer review: the card on the exam list and the empty state. */
+.pr-review-card { display: flex; align-items: center; gap: 14px; margin-top: 16px; padding: 14px 18px; border-radius: 12px; border: 1.5px solid color-mix(in srgb, var(--edge) 45%, var(--line)); background: var(--edge-soft); color: var(--ink); text-decoration: none; }
+.pr-review-card:hover { border-color: var(--edge); }
+.pr-review-card > span:nth-child(2) { flex: 1; display: grid; gap: 2px; font-size: 0.9rem; }
+.pr-review-card-n { min-width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; background: var(--edge); color: var(--on-accent); font-family: var(--font-mono); font-weight: 700; }
+.pr-empty-review { margin-top: 12px; padding: 20px; border-radius: 12px; border: 1px dashed var(--line); background: var(--surface); }
+.pr-empty-review p { margin: 0 0 8px; }

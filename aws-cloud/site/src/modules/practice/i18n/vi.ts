@@ -88,6 +88,18 @@ export const vi = {
     confirmReset: "Xoá toàn bộ tiến độ luyện đề đã lưu trên trình duyệt này?",
     details: "Chi tiết lỗi",
   },
+  review: {
+    crumb: "Câu cần ôn lại",
+    title: "Câu cần ôn lại",
+    pageTitle: "Câu cần ôn lại · {code} · AWS Thực Chiến",
+    cardBody: "{n} câu bạn trả lời sai ở lần làm gần nhất, ở mọi đề và mọi bài Kiểm tra. Làm lại để đưa chúng ra khỏi danh sách.",
+    cta: "Ôn lại {n} câu sai",
+    again: "Ôn tiếp các câu còn sai",
+    summary: "Lượt này đúng {correct}/{total} câu. Câu trả lời đúng đã ra khỏi danh sách; câu còn sai sẽ xuất hiện ở lượt sau.",
+    emptyTitle: "Chưa có câu nào cần ôn lại.",
+    emptyBody: "Câu trả lời sai ở đề luyện tập hoặc ở trang Kiểm tra của từng bài sẽ được gom vào đây để làm lại.",
+    toTests: "Tới danh sách đề",
+  },
   topic: {
     crumb: "Kiểm tra",
     title: "Kiểm tra: {title}",

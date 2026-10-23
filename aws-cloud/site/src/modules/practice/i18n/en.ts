@@ -90,6 +90,18 @@ export const en: Messages<typeof vi> = {
     confirmReset: "Clear all practice progress saved in this browser?",
     details: "Error details",
   },
+  review: {
+    crumb: "Questions to review",
+    title: "Questions to review",
+    pageTitle: "Questions to review · {code} · AWS Thực Chiến",
+    cardBody: "{n} questions you got wrong the last time you answered them, in any practice test or lesson quiz. Answer them again to clear them.",
+    cta: "Review {n} wrong answers",
+    again: "Review the ones still wrong",
+    summary: "This round: {correct}/{total} correct. Questions you got right are off the list; the ones still wrong come back next round.",
+    emptyTitle: "Nothing to review yet.",
+    emptyBody: "Questions you get wrong in a practice test or a lesson quiz are collected here to try again.",
+    toTests: "Go to the practice tests",
+  },
   topic: {
     crumb: "Quiz",
     title: "Quiz: {title}",
