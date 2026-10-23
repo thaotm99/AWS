@@ -191,8 +191,8 @@ function MockExam({ certId, examId }: Props) {
       <>
         {crumbs}
         <h1>{title}</h1>
-        <div className="pr-mock-intro">
-          <ul>
+        <div className="mt-3 rounded-[18px] border border-line bg-surface px-5 py-4.5">
+          <ul className="mx-0 mt-0 mb-4 grid gap-1.5 pl-5">
             <li>{t("mock.rule1", { n: exam.questions.length, minutes: cert.minutes })}</li>
             <li>{t("mock.rule2")}</li>
             <li>{t("mock.rule3")}</li>
@@ -253,10 +253,10 @@ function MockExam({ certId, examId }: Props) {
   const answered = exam.questions.filter((q) => (draft.answers[q.id] ?? []).length > 0).length;
   const unanswered = exam.questions.length - answered;
   const head = (
-    <div className={`pr-mock-bar${left < 10 * 60_000 ? " low" : ""}`} role="timer" aria-live="off">
-      <span className="pr-mock-clock" aria-label={t("mock.timeLeft")}>{clock(left)}</span>
+    <div className="sticky top-[calc(env(safe-area-inset-top,0px)+60px)] z-5 mx-0 mt-2 mb-3.5 flex flex-wrap items-center gap-x-4 gap-y-2.5 rounded-[18px] border border-line bg-surface/92 px-3.5 py-2.5 backdrop-blur-sm" role="timer" aria-live="off">
+      <span className={`font-mono text-[1.15rem] font-bold tabular-nums ${left < 10 * 60_000 ? "text-bad" : "text-accent"}`} aria-label={t("mock.timeLeft")}>{clock(left)}</span>
       <span className="pr-muted">{t("mock.progress", { done: answered, total: exam.questions.length, flagged: draft.flags.length })}</span>
-      <button type="button" className="btn" onClick={() => setPhase(phase === "overview" ? "running" : "overview")}>
+      <button type="button" className="btn ml-auto" onClick={() => setPhase(phase === "overview" ? "running" : "overview")}>
         {phase === "overview" ? t("mock.backToQuestion") : t("mock.overview")}
       </button>
     </div>
@@ -270,8 +270,8 @@ function MockExam({ certId, examId }: Props) {
         {crumbs}
         <h1>{title}</h1>
         {head}
-        <p className="pr-muted pr-mock-legend">
-          <i className="sw done" aria-hidden="true" /> {t("mock.answered")} <i className="sw flag" aria-hidden="true" /> {t("mock.flagged")}
+        <p className="pr-muted flex items-center gap-1.5 text-[0.8125rem]">
+          <i className="inline-block size-3.5 rounded-[4px] border border-accent bg-accent-soft" aria-hidden="true" /> {t("mock.answered")} <i className="ml-2.5 inline-block size-3.5 rounded-[4px] border border-line bg-surface inset-shadow-[0_-3px_0] inset-shadow-edge" aria-hidden="true" /> {t("mock.flagged")}
         </p>
         <div className="pr-grid pr-mock-grid">
           {exam.questions.map((q, i) => {
@@ -293,7 +293,7 @@ function MockExam({ certId, examId }: Props) {
             );
           })}
         </div>
-        <div className="pr-mock-submit">
+        <div className="mt-4 flex flex-col items-start gap-2">
           {confirming && unanswered > 0 && <p className="pr-error" role="alert">{t("mock.confirmUnanswered", { n: unanswered })}</p>}
           <button
             type="button"
