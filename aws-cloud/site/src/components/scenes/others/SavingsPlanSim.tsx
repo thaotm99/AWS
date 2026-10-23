@@ -112,7 +112,7 @@ export default function SavingsPlanSim() {
   const coveredCount = done ? lit.length : 0;
 
   return (
-    <div className="stage sav">
+    <div className="stage">
       <div className="stage-bar">
         <span className="label">{L({ vi: "Mua", en: "Buy" })}</span>
         {PLANS.map((p) => (
@@ -120,7 +120,7 @@ export default function SavingsPlanSim() {
             {p.l1}
           </button>
         ))}
-        <button className="btn primary sav-play" onClick={apply} disabled={busy}>{L({ vi: "Áp dụng giảm giá", en: "Apply discounts" })}</button>
+        <button className="btn primary ml-auto" onClick={apply} disabled={busy}>{L({ vi: "Áp dụng giảm giá", en: "Apply discounts" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 0 820 290" role="img" aria-label={L({ vi: "Các Savings Plans ở bên trái, workload của MFTech ở bên phải; đường nối thể hiện plan giảm giá cho workload", en: "Savings Plans on the left, MFTech workloads on the right; lines show which plan discounts which workload" })}>
@@ -152,14 +152,14 @@ export default function SavingsPlanSim() {
       </div>
       <div className="readout" aria-live="polite">
         {!done ? (
-          <p className="sav-hint">{L({ vi: <>Chọn các Savings Plans cần mua, sau đó chọn <b>Áp dụng giảm giá</b>. Mục tiêu: mọi workload được giảm giá với số plan tối thiểu.</>, en: <>Choose the Savings Plans to buy, then choose <b>Apply discounts</b>. Goal: every workload discounted with the fewest plans.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn các Savings Plans cần mua, sau đó chọn <b>Áp dụng giảm giá</b>. Mục tiêu: mọi workload được giảm giá với số plan tối thiểu.</>, en: <>Choose the Savings Plans to buy, then choose <b>Apply discounts</b>. Goal: every workload discounted with the fewest plans.</> })}</p>
         ) : (
           <>
             <div className="status">
               <span className={"pill " + (coveredCount === WORKS.length ? "ok" : "bad")}><i />{coveredCount}/{WORKS.length} {L({ vi: "workload được giảm giá", en: "workloads discounted" })}</span>
               <span className="count">{sel.length} {L({ vi: "plan", en: sel.length === 1 ? "plan" : "plans" })}</span>
             </div>
-            <p className={"sav-result " + (v.ok ? "ok" : "bad")}>{rich(L(v.text))}</p>
+            <p className={"mx-0 mt-2.5 mb-0 rounded-[12px] px-2.5 py-2 text-step--1 " + (v.ok ? "bg-ok-soft" : "bg-bad-soft")}>{rich(L(v.text))}</p>
           </>
         )}
       </div>

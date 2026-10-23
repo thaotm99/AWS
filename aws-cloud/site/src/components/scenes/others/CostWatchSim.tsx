@@ -187,21 +187,21 @@ export default function CostWatchSim() {
   }
 
   return (
-    <div className="stage cws">
-      <div className="cws-row" role="group" aria-label={L({ vi: "Vấn đề chi phí", en: "Cost problems" })}>
+    <div className="stage">
+      <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Vấn đề chi phí", en: "Cost problems" })}>
         {ORDER.map((id) => (
           <button key={id} className="chip" aria-pressed={id === pid} disabled={busy && id !== pid} onClick={() => change(() => { setPid(id); setTi(0); })}>
             {L(PROBLEMS[id].name)}
           </button>
         ))}
       </div>
-      <p className="cws-about">{L(P.about)}</p>
+      <p className="mx-4 mt-2 mb-2.5 text-step--1 text-muted">{L(P.about)}</p>
       <div className="stage-bar">
         <span className="label">{L({ vi: "Công cụ", en: "Tool" })}</span>
         {P.tools.map((t, i) => (
           <button key={i} className="btn" aria-pressed={i === ti} disabled={busy && i !== ti} onClick={() => change(() => setTi(i))}>{L(t.name)}</button>
         ))}
-        <button className="btn primary cws-play" onClick={play} disabled={busy}>{L({ vi: "Chạy mô phỏng một tháng", en: "Run one-month simulation" })}</button>
+        <button className="btn primary ml-auto" onClick={play} disabled={busy}>{L({ vi: "Chạy mô phỏng một tháng", en: "Run one-month simulation" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 0 820 240" role="img" aria-label={L({ vi: `Biểu đồ 30 ngày: ${P.cumulative ? "chi tiêu cộng dồn" : "giá trị mỗi ngày"} so với ${P.limitLabel.vi}`, en: `30-day chart: ${P.cumulative ? "cumulative spend" : "daily value"} against ${P.limitLabel.en}` })}>
@@ -233,16 +233,16 @@ export default function CostWatchSim() {
       </div>
       <div className="readout" aria-live="polite">
         {shown < 0 ? (
-          <p className="cws-hint">{L({ vi: <>Chọn công cụ, sau đó chọn <b>Chạy mô phỏng một tháng</b>.</>, en: <>Choose a tool, then choose <b>Run one-month simulation</b>.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn công cụ, sau đó chọn <b>Chạy mô phỏng một tháng</b>.</>, en: <>Choose a tool, then choose <b>Run one-month simulation</b>.</> })}</p>
         ) : (
           <>
             <div className="status">
               <span className="count">{L({ vi: "Ngày", en: "Day" })} {shown + 1} · {P.unit(vals[shown])}</span>
               <span className={"pill " + (T.alertDay !== undefined && shown >= T.alertDay ? "ok" : "bad")}><i />{T.alertDay !== undefined && shown >= T.alertDay ? L({ vi: `đã cảnh báo ngày ${T.alertDay + 1}`, en: `alerted on day ${T.alertDay + 1}` }) : L({ vi: "chưa có cảnh báo", en: "no alert yet" })}</span>
-              {done && <span className="pill cws-sum"><i />{L(P.summary(daily))}</span>}
+              {done && <span className="pill border border-line bg-bg text-ink"><i />{L(P.summary(daily))}</span>}
             </div>
             {done && (
-              <p className={"cws-result " + (T.ok ? "ok" : "bad")}>
+              <p className={"mx-0 mt-2.5 mb-0 rounded-[12px] px-2.5 py-2 text-step--1 " + (T.ok ? "bg-ok-soft" : "bg-bad-soft")}>
                 <b>{T.ok ? L({ vi: "Công cụ phù hợp. ", en: "The right tool. " }) : L({ vi: "Chưa giải quyết được vấn đề. ", en: "The problem is not solved. " })}</b>{rich(L(T.note))}
               </p>
             )}
