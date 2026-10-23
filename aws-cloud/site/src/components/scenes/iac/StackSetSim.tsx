@@ -147,7 +147,7 @@ export default function StackSetSim() {
       </div>
       <div className="readout" aria-live="polite">
         {!ran && !busy ? (
-          <p className="sts-hint">{L({ vi: "Chọn phương án triển khai, sau đó chọn nút triển khai. Template baseline quy định loại EC2 được phép sử dụng và IAM role tiêu chuẩn cho Lambda.", en: "Choose a deployment approach, then choose the deploy button. The baseline template defines the allowed EC2 types and the standard IAM role for Lambda." })}</p>
+          <p className="sts-hint">{L({ vi: "Chọn phương án triển khai, sau đó chọn nút triển khai. Template baseline quy định EC2 instance type được phép sử dụng và IAM role tiêu chuẩn cho Lambda.", en: "Choose a deployment approach, then choose the deploy button. The baseline template defines the allowed EC2 instance types and the standard IAM role for Lambda." })}</p>
         ) : (
           <>
             <div className="status">

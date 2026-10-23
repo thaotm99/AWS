@@ -23,12 +23,12 @@ function layout(src: string, sub: string, outbound = false): PLayout {
 
 const SCENARIOS: PScenario[] = [
   {
-    name: "Client bất kỳ → cổng 80",
+    name: "Client bất kỳ → port 80",
     request: "TCP 80 từ 14.232.8.9",
     layout: layout("Client", "IP bất kỳ"),
     run: () => ({
       steps: [
-        { at: "sg", state: "pass", tag: "RULE 1", msg: "`FromPort: 80, ToPort: 80, CidrIp: 0.0.0.0/0`: mọi địa chỉ IP được phép truy cập cổng 80." },
+        { at: "sg", state: "pass", tag: "RULE 1", msg: "`FromPort: 80, ToPort: 80, CidrIp: 0.0.0.0/0`: mọi địa chỉ IP được phép truy cập port 80." },
         { at: "ec2", state: "pass", flash: "200", msg: "Nginx trả về trang chủ." }],
       ok: true, result: "0.0.0.0/0 biểu thị **mọi** địa chỉ IPv4, không phải một địa chỉ IP cụ thể là 0.0.0.0.",
     }),
@@ -41,7 +41,7 @@ const SCENARIOS: PScenario[] = [
       steps: [
         { at: "sg", state: "pass", tag: "RULE 2", msg: "`FromPort: 22, ToPort: 22, CidrIp: 203.0.113.25/32`: /32 tương ứng với đúng **một** địa chỉ IP." },
         { at: "ec2", state: "pass", msg: "Kết nối SSH thành công." }],
-      ok: true, result: "Chỉ một địa chỉ IP được phép SSH. Rule này không ảnh hưởng tới cổng 80.",
+      ok: true, result: "Chỉ một địa chỉ IP được phép SSH. Rule này không ảnh hưởng tới port 80.",
     }),
   },
   {
@@ -50,15 +50,15 @@ const SCENARIOS: PScenario[] = [
     layout: layout("Nguồn lạ", "198.51.100.7"),
     run: () => ({
       steps: [
-        { at: "sg", state: "block", tag: "KHÔNG KHỚP", msg: "Cổng 22 chỉ có rule cho 203.0.113.25/32. Gói tin không khớp rule cho phép nào sẽ bị loại bỏ." }],
+        { at: "sg", state: "block", tag: "KHÔNG KHỚP", msg: "Port 22 chỉ có rule cho 203.0.113.25/32. Gói tin không khớp rule cho phép nào sẽ bị loại bỏ." }],
       ok: true, result: "Security group chỉ hỗ trợ rule **cho phép**. Không thể khai báo rule từ chối; mọi traffic không được cho phép đều bị chặn.",
     }),
   },
   {
-    name: "Máy chủ tải package từ bên ngoài",
+    name: "EC2 instance tải package từ bên ngoài",
     action: "Gửi request ra ngoài",
-    request: "EC2 web → HTTPS 443 tới kho package",
-    layout: layout("Internet", "kho package", true),
+    request: "EC2 web → HTTPS 443 tới package repository",
+    layout: layout("Internet", "package repository", true),
     run: () => ({
       steps: [
         { at: "sg", state: "pass", tag: "EGRESS", msg: "Snippet chỉ khai báo `SecurityGroupIngress`. Khi không khai báo egress, security group giữ rule mặc định: **cho phép mọi outbound traffic**." },
@@ -127,7 +127,7 @@ const SCENARIOS_EN: PScenario[] = [
     }),
   },
   {
-    name: "Server downloads packages from outside",
+    name: "EC2 instance downloads packages from outside",
     action: "Send outbound request",
     request: "EC2 web → HTTPS 443 to the package repository",
     layout: layoutEn("Internet", "package repository", true),
