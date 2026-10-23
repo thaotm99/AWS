@@ -21,10 +21,10 @@ const links = [
 
   <DailyGoals client:load />
 
-  <section class="progress-more" aria-labelledby="progress-more">
-    <h2 id="progress-more"><T k="shell.progress.more" /></h2>
-    <ul>
-      {links.map((l) => <li><a href={l.href}><T k={l.k} />{" →"}</a></li>)}
+  <section class="mt-7" aria-labelledby="progress-more">
+    <h2 id="progress-more" class="m-0 mb-2.5 text-[1.125rem]"><T k="shell.progress.more" /></h2>
+    <ul class="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2.5 p-0">
+      {links.map((l) => <li><a class="flex min-h-11 items-center rounded-[14px] border-2 border-line bg-surface px-3.5 py-2.5 font-semibold no-underline shadow-[0_4px_0] shadow-line hover:border-accent" href={l.href}><T k={l.k} />{" →"}</a></li>)}
     </ul>
   </section>
 </BaseLayout>
