@@ -46,7 +46,7 @@ return [
           ok: true, result: L({ vi: "CloudTrail tiếp tục hoạt động. IAM policy cho phép cũng không vượt được giới hạn của SCP.", en: "CloudTrail keeps running. An IAM policy that allows the action cannot exceed the SCP's limit." }) },
   },
   {
-    name: L({ vi: "Tạo EC2 thiếu tag phân loại dữ liệu", en: "Create EC2 without a data classification tag" }),
+    name: L({ vi: "Khởi chạy EC2 instance thiếu tag phân loại dữ liệu", en: "Launch an EC2 instance without a data classification tag" }),
     request: L({ vi: "ec2:RunInstances (không có tag dataClassification)", en: "ec2:RunInstances (no dataClassification tag)" }),
     from: L({ vi: "từ developer", en: "from a developer" }),
     boxes: GATE_BOXES,
@@ -73,7 +73,7 @@ return [
       { id: "mail", x: 250, y: 20, w: 170, l1: L({ vi: "Email cảnh báo", en: "Alert email" }) },
       { id: "act", x: 250, y: 170, w: 170, l1: "Budgets action", l2: L({ vi: "áp policy hạn chế", en: "applies a restrictive policy" }) },
       { id: "dev", x: 490, y: 97, w: 130, l1: L({ vi: "Role developer", en: "Developer role" }) },
-      { id: "ec2", x: 670, y: 97, w: 130, l1: L({ vi: "EC2 mới", en: "New EC2" }) },
+      { id: "ec2", x: 670, y: 97, w: 130, l1: L({ vi: "EC2 instance mới", en: "New EC2 instance" }) },
     ],
     links: [
       { a: "bud", b: "mail", via: [[100, 43]] }, { a: "bud", b: "act", via: [[100, 193]] },
@@ -89,7 +89,7 @@ return [
           ],
           ok: false, result: L({ vi: "Cảnh báo được gửi nhưng không có phản ứng kịp thời.", en: "The alert is sent, but there is no timely response." }) }
       : { hide: ["mail"], back: false, steps: [
-            { at: "act", via: [[100, 193]], state: "change", tag: L({ vi: "TỰ ĐỘNG", en: "AUTOMATIC" }), msg: L({ vi: "Khi vượt ngưỡng (thực tế hoặc dự báo), Budgets action tự động thực thi.", en: "When the threshold is exceeded (actual or forecasted), the Budgets action runs automatically." }) },
+            { at: "act", via: [[100, 193]], state: "change", tag: L({ vi: "TỰ ĐỘNG", en: "AUTOMATIC" }), msg: L({ vi: "Khi vượt ngưỡng (thực tế hoặc dự báo), budget action của AWS Budgets tự động thực thi.", en: "When the threshold is exceeded (actual or forecasted), the AWS Budgets budget action runs automatically." }) },
             { at: "dev", via: [[555, 193]], state: "change", tag: L({ vi: "HẠN CHẾ", en: "RESTRICTED" }), msg: L({ vi: "Gắn IAM policy (hoặc SCP) cấm tạo thêm tài nguyên.", en: "Attaches an IAM policy (or SCP) that forbids creating more resources." }) },
             { at: "ec2", state: "block", msg: L({ vi: "`ec2:RunInstances` bị từ chối.", en: "`ec2:RunInstances` is denied." }) },
           ],
@@ -182,5 +182,5 @@ return [
 
 export default function OrgGuardSim() {
   const L = useLang();
-  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Quản trị nhiều account của ShopViet bằng Organizations", en: "Governing ShopViet's many accounts with Organizations" })} action={L({ vi: "Chạy mô phỏng", en: "Run simulation" })} />;
+  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Quản lý nhiều AWS account của ShopViet bằng AWS Organizations", en: "Managing ShopViet's AWS accounts with AWS Organizations" })} action={L({ vi: "Chạy mô phỏng", en: "Run simulation" })} />;
 }

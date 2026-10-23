@@ -42,8 +42,8 @@ const policies = (L: Lang): Pol[] => [
   }]
 }`,
     requests: [
-      { label: L({ vi: "Chạy EC2 tại eu-west-1, bên gọi đang ở Việt Nam", en: "Run EC2 in eu-west-1, caller is in Vietnam" }), allowed: true, why: L({ vi: "aws:RequestedRegion là Region nhận API call, không phải vị trí của bên gọi. API call được phép từ bất kỳ vị trí nào.", en: "aws:RequestedRegion is the Region that receives the API call, not the caller's location. The API call is allowed from any location." }) },
-      { label: L({ vi: "Chạy EC2 tại ap-southeast-1", en: "Run EC2 in ap-southeast-1" }), allowed: false, why: L({ vi: "Region của request không phải eu-west-1 nên điều kiện không khớp.", en: "The request's Region is not eu-west-1, so the condition does not match." }) },
+      { label: L({ vi: "Khởi chạy EC2 instance tại eu-west-1, bên gọi đang ở Việt Nam", en: "Launch an EC2 instance in eu-west-1, caller is in Vietnam" }), allowed: true, why: L({ vi: "aws:RequestedRegion là Region nhận API call, không phải vị trí của bên gọi. API call được phép từ bất kỳ vị trí nào.", en: "aws:RequestedRegion is the Region that receives the API call, not the caller's location. The API call is allowed from any location." }) },
+      { label: L({ vi: "Khởi chạy EC2 instance tại ap-southeast-1", en: "Launch an EC2 instance in ap-southeast-1" }), allowed: false, why: L({ vi: "Region của request không phải eu-west-1 nên điều kiện không khớp.", en: "The request's Region is not eu-west-1, so the condition does not match." }) },
     ],
   },
   {

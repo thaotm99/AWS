@@ -87,10 +87,10 @@ import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 
 <Story toc={[
   { href: "#s1", label: "1 · Phân tích policy" },
-  { href: "#s2", label: "2 · Đánh giá nhiều lớp quyền" },
+  { href: "#s2", label: "2 · Policy evaluation logic" },
   { href: "#s3", label: "3 · IAM role" },
   { href: "#s4", label: "4 · Organizations" },
-  { href: "#s5", label: "5 · Truy cập tập trung cho nhân sự" },
+  { href: "#s5", label: "5 · IAM Identity Center" },
   { href: "#s6", label: "6 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
@@ -99,7 +99,7 @@ ShopViet bổ sung developer, account production và kiểm toán viên. Mỗi n
 
 <Scene id="s1" label="Phần 1/6" title="Phân tích phạm vi quyền của một policy" questions={["exam2_q37", "exam2_q38", "exam2_q48", "exam2_q54", "exam1_q58"]}>
 
-<p class="scene-intro">Mỗi quyền trên AWS được mô tả bằng một policy, tức một tài liệu JSON liệt kê hành động nào được phép hoặc bị từ chối trên tài nguyên nào; đọc được policy là kỹ năng cần có trước khi cấp quyền.</p>
+<p class="scene-intro">Mỗi quyền trên AWS được mô tả bằng một policy, tức một tài liệu JSON liệt kê action nào được phép hoặc bị từ chối trên resource nào; đọc được policy là kỹ năng cần có trước khi cấp quyền.</p>
 
 Trước khi gắn một policy do người khác soạn vào user hoặc role của ShopViet, cần xác định chính xác phạm vi quyền mà policy đó cấp. Chọn policy, dự đoán kết quả, sau đó gửi từng request để kiểm tra.
 
@@ -109,11 +109,11 @@ Trước khi gắn một policy do người khác soạn vào user hoặc role c
 
 <LeastPrivilegeSim client:visible />
 
-<Takeaway>Khi không có statement Allow nào khớp, request bị từ chối ngầm định (implicit deny). aws:SourceIp là IP của bên gọi, aws:RequestedRegion là Region nhận API call. ListBucket áp dụng trên ARN của bucket, GetObject/DeleteObject áp dụng trên bucket/*. Wildcard trong tên action (`s3:*Object`), `s3:*` và dấu `*` ở cuối ARN (`bucket*`, khớp cả `/` và bucket khác cùng tiền tố) đều dễ cấp thừa quyền.</Takeaway>
+<Takeaway>Khi không có statement Allow nào khớp, request bị từ chối ngầm định (implicit deny). aws:SourceIp là địa chỉ IP của bên gửi request, aws:RequestedRegion là Region nhận API call. ListBucket áp dụng trên ARN của bucket, GetObject/DeleteObject áp dụng trên bucket/*. Wildcard trong tên action (`s3:*Object`), `s3:*` và dấu `*` ở cuối ARN (`bucket*`, khớp cả `/` và bucket khác cùng tiền tố) đều dễ cấp thừa quyền.</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/6" title="Các lớp quyền tham gia đánh giá request" questions={["exam3_q59", "exam1_q25", "exam2_q39", "exam2_q16"]}>
+<Scene id="s2" label="Phần 2/6" title="Policy evaluation logic: các loại policy tham gia đánh giá request" questions={["exam3_q59", "exam1_q25", "exam2_q39", "exam2_q16"]}>
 
 <p class="scene-intro">Một request tới AWS chỉ được thực hiện khi mọi lớp kiểm soát quyền liên quan đều cho phép; chỉ cần một lớp từ chối là request bị chặn.</p>
 
@@ -125,14 +125,14 @@ Một request có thể bị chặn tại nhiều lớp: **SCP** của Organizat
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/6" title="IAM role thay cho access key" questions={["exam2_q3", "exam3_q23", "exam1_q17", "exam4_q34", "exam1_q5", "exam4_q39", "exam2_q16", "exam3_q6", "exam1_q16"]}>
+<Scene id="s3" label="Phần 3/6" title="IAM role cho ứng dụng thay cho access key" questions={["exam2_q3", "exam3_q23", "exam1_q17", "exam4_q34", "exam1_q5", "exam4_q39", "exam2_q16", "exam3_q6", "exam1_q16"]}>
 
 <p class="scene-intro">Ứng dụng cần quyền để gọi dịch vụ AWS; thay vì lưu thông tin xác thực cố định (access key) trong mã nguồn, ứng dụng nên nhận quyền tạm thời thông qua một IAM role.</p>
 
-Server của ShopViet cần đọc dữ liệu từ DynamoDB. Phương án đơn giản nhưng rủi ro là lưu access key trong mã nguồn: khi mã nguồn bị lộ, access key cũng bị lộ. Phương án an toàn:
+Ứng dụng của ShopViet chạy trên EC2 instance cần đọc dữ liệu từ một bảng DynamoDB. Phương án đơn giản nhưng rủi ro là lưu access key trong mã nguồn: khi mã nguồn bị lộ, access key cũng bị lộ. Phương án an toàn:
 
 <StepSim client:visible height={220}
-  intro="EC2 web-1 cần đọc bảng orders trong DynamoDB. Thực hiện lần lượt từng bước để cấp quyền mà không lưu access key trên server."
+  intro="EC2 instance web-1 cần đọc bảng orders trong DynamoDB. Thực hiện lần lượt từng bước để cấp quyền mà không lưu access key trên instance."
   nodes={[
     { id: "ec2", x: 40, y: 90, label: "EC2 web-1", kind: "ec2" },
     { id: "role", x: 250, y: 30, label: "IAM role", sub: "qua instance profile", kind: "net" },
@@ -141,12 +141,12 @@ Server của ShopViet cần đọc dữ liệu từ DynamoDB. Phương án đơn
   ]}
   initial={["ec2", "ddb"]}
   steps={[
-    { button: "1. Gắn IAM role vào EC2", show: ["role"], flows: [{ path: ["role", "ec2"], tone: "good", label: "instance profile" }],
-      note: "Tạo IAM role có quyền đọc bảng orders và gắn vào EC2 qua **instance profile**. Trust policy của role cho phép dịch vụ EC2 assume role. Một instance chỉ gắn được **một** IAM role; một instance profile chứa đúng một role và giới hạn này không tăng được." },
+    { button: "1. Gắn IAM role vào EC2 instance", show: ["role"], flows: [{ path: ["role", "ec2"], tone: "good", label: "instance profile" }],
+      note: "Tạo IAM role có quyền đọc bảng orders và gắn vào instance qua **instance profile**. Trust policy của role cho phép dịch vụ EC2 assume role. Một instance chỉ gắn được **một** IAM role; một instance profile chứa đúng một role và giới hạn này không tăng được." },
     { button: "2. Ứng dụng nhận credentials tạm thời", show: ["sts"], flows: [{ path: ["ec2", "sts"], tone: "good", label: "tự động, tự động xoay vòng" }],
-      note: "SDK trên EC2 tự động lấy **credentials tạm thời** từ STS thông qua instance metadata. Credentials có thời hạn và được làm mới tự động." },
+      note: "AWS SDK trên instance tự động lấy **temporary credentials** (credentials tạm thời) của role thông qua instance metadata. Credentials có thời hạn và được làm mới tự động." },
     { button: "3. Gọi DynamoDB", flows: [{ path: ["ec2", "ddb"], tone: "good", label: "đã được cấp quyền" }], move: ["ec2", "ddb"],
-      note: "EC2 gọi DynamoDB với quyền của role. Không có access key nào trong mã nguồn hay trên ổ đĩa. Đây là phương án **an toàn nhất**." },
+      note: "Ứng dụng trên instance gọi DynamoDB với quyền của role. Không có access key nào trong mã nguồn hay trên ổ đĩa. Đây là phương án **an toàn nhất**." },
   ]} />
 
 Nguyên tắc tương tự áp dụng cho các trường hợp khác:
@@ -156,13 +156,13 @@ Nguyên tắc tương tự áp dụng cho các trường hợp khác:
     why: "Role tại account đích có trust policy tin cậy account dev. Developer sử dụng credentials tạm thời của role, không cần tạo user mới tại production." },
   { need: "Lambda xử lý đơn hàng tại account A đọc ảnh trong S3 tại account B", answer: "Execution role của Lambda + bucket policy tại account B",
     why: "Execution role cấp quyền phía Lambda; bucket policy phía account B phải cho phép role đó." },
-  { need: "Mỗi Pod trên EKS của ShopViet chỉ được gọi đúng dịch vụ mà Pod đó cần", answer: "IAM Roles for Service Accounts (IRSA)",
+  { need: "Mỗi Pod trên cluster Amazon EKS của ShopViet chỉ được gọi đúng dịch vụ mà Pod đó cần", answer: "IAM Roles for Service Accounts (IRSA)",
     why: "Mỗi Kubernetes service account được ánh xạ tới một IAM role riêng, đảm bảo least privilege cho từng Pod." },
   { need: "Lambda kết nối RDS PostgreSQL mà không lưu mật khẩu trong mã nguồn", answer: "IAM database authentication + IAM role cho Lambda",
     why: "Lambda sử dụng role để lấy token xác thực ngắn hạn khi kết nối RDS." },
   { need: "Quy định principal nào được assume một role", answer: "Trust policy của role",
     why: "Trust policy là resource-based policy duy nhất của chính IAM: gắn vào role và xác định principal nào được assume role đó." },
-  { need: "Fleet EC2 đã có role đọc RDS và Secrets Manager, nay cần thêm quyền cho Systems Manager vá OS", answer: "Bật Default Host Management Configuration, hoặc thêm policy vào role hiện có",
+  { need: "Các EC2 instance đã có role đọc RDS và Secrets Manager, nay cần thêm quyền để Systems Manager patch hệ điều hành", answer: "Bật Default Host Management Configuration, hoặc thêm policy vào role hiện có",
     why: "Không gắn được role thứ hai vào instance. Default Host Management Configuration của Systems Manager tạo và áp dụng một IAM role mặc định cho mọi instance trong account và Region, không cần sửa instance profile (yêu cầu IMDSv2 và SSM Agent 3.2.582.0 trở lên). Instance profile hiện có không được cho phép ssm:UpdateInstanceInformation, nếu không SSM Agent dùng quyền của instance profile trước." },
   { need: "Một dịch vụ AWS cần quyền gọi dịch vụ khác thay mặt ShopViet", answer: "Service-linked role",
     why: "Service-linked role do dịch vụ định nghĩa sẵn, gồm trust policy và permissions policy. Chỉ dịch vụ đó assume được role (trừ khi dịch vụ quy định khác); quản trị viên xem được nhưng không sửa được quyền, và permissions policy này không gắn được cho identity khác." },
@@ -172,23 +172,23 @@ Nguyên tắc tương tự áp dụng cho các trường hợp khác:
 
 </Scene>
 
-<Scene id="s4" label="Phần 4/6" title="Quản trị nhiều account bằng AWS Organizations" questions={["exam2_q43", "exam5_q18", "exam6_q41", "exam3_q36", "exam6_q22", "exam5_q17", "exam2_q36", "exam3_q17"]}>
+<Scene id="s4" label="Phần 4/6" title="Quản lý nhiều AWS account bằng AWS Organizations" questions={["exam2_q43", "exam5_q18", "exam6_q41", "exam3_q36", "exam6_q22", "exam5_q17", "exam2_q36", "exam3_q17"]}>
 
-<p class="scene-intro">Khi doanh nghiệp dùng nhiều tài khoản AWS cho các môi trường và team khác nhau, cần một điểm quản lý tập trung để áp chính sách chung và hợp nhất hoá đơn.</p>
+<p class="scene-intro">Khi doanh nghiệp dùng nhiều AWS account cho các môi trường và team khác nhau, cần một điểm quản lý tập trung để áp dụng policy chung và dùng consolidated billing.</p>
 
 ShopViet hiện có nhiều account: dev, staging, prod, sandbox, marketing. Quản trị thủ công từng account không thể duy trì khi quy mô tăng. Mỗi tình huống dưới đây là một tác vụ quản trị thực tế. Thử phương án thủ công trước, sau đó chuyển sang công cụ của AWS để so sánh.
 
 <OrgGuardSim client:visible />
 
-<Takeaway>SCP: giới hạn quyền tối đa cho toàn bộ account, kể cả admin. Tag policy + SCP: bắt buộc gắn tag đúng chuẩn. Budgets actions: tự động hạn chế khi vượt ngân sách. Access Analyzer: phát hiện tài nguyên được chia sẻ ngoài ý muốn. StackSets: triển khai một template tới nhiều account và Region. Control Tower: tạo account mới theo tiêu chuẩn chung.</Takeaway>
+<Takeaway>SCP: giới hạn quyền tối đa cho toàn bộ account, kể cả admin. Tag policy + SCP: bắt buộc gắn tag đúng chuẩn. Budget actions của AWS Budgets: tự động hạn chế khi vượt ngân sách. IAM Access Analyzer: phát hiện tài nguyên được chia sẻ ngoài ý muốn. CloudFormation StackSets: triển khai một template tới nhiều account và Region. AWS Control Tower: tạo account mới theo landing zone chung.</Takeaway>
 
 </Scene>
 
-<Scene id="s5" label="Phần 5/6" title="Truy cập tập trung cho nhân sự bằng danh tính có sẵn" questions={["exam1_q10", "exam4_q4", "exam6_q10"]}>
+<Scene id="s5" label="Phần 5/6" title="Quản lý truy cập tập trung cho nhân sự bằng IAM Identity Center" questions={["exam1_q10", "exam4_q4", "exam6_q10"]}>
 
-<p class="scene-intro">Nhân viên đã có tài khoản trong hệ thống danh tính của công ty; thay vì tạo thêm thông tin đăng nhập AWS riêng cho từng người, có thể cho họ đăng nhập AWS bằng chính tài khoản đó.</p>
+<p class="scene-intro">Nhân viên đã có danh tính trong identity provider (IdP) của công ty; thay vì tạo thêm thông tin đăng nhập AWS riêng cho từng người, federation cho phép họ đăng nhập AWS bằng chính danh tính đó.</p>
 
-ShopViet có 6 account trong Organizations và quản lý nhân sự trong Active Directory on-premises; một công ty con dùng Microsoft Entra ID. Nhân viên cần vào đúng account theo vai trò công việc, bằng chính tài khoản công ty. AWS khuyến nghị người dùng là con người truy cập AWS qua **federation** với một identity provider và dùng credentials tạm thời; để quản lý tập trung nhiều account, AWS khuyến nghị **IAM Identity Center**.
+ShopViet có 6 account trong Organizations và quản lý nhân sự trong Active Directory on-premises; một công ty con dùng Microsoft Entra ID. Nhân viên cần vào đúng account theo vai trò công việc, bằng chính danh tính công ty. AWS khuyến nghị người dùng là con người truy cập AWS qua **federation** với một identity provider và dùng credentials tạm thời; để quản lý tập trung nhiều account, AWS khuyến nghị **IAM Identity Center**.
 
 Identity Center có đúng một identity source cho mỗi organization: Identity Center directory, Active Directory (qua **AD Connector** hoặc **AWS Managed Microsoft AD**), hoặc IdP bên ngoài qua **SAML 2.0**. Quyền được định nghĩa bằng **permission set** (tập hợp IAM policy) và gán cho user hoặc group trên từng account. Chọn tình huống và so sánh các phương án.
 
@@ -200,11 +200,11 @@ Directory dùng cho Identity Center phải nằm trong management account của 
 
 </Scene>
 
-<Scene id="confuse" label="Lỗi thường gặp" title="Năm nguyên tắc bảo vệ account" questions={["exam1_q31", "exam6_q40", "exam1_q16", "exam6_q29", "exam1_q25"]}>
+<Scene id="confuse" label="Lỗi thường gặp" title="Security best practices cho AWS account" questions={["exam1_q31", "exam6_q40", "exam1_q16", "exam6_q29", "exam1_q25"]}>
 
-<p class="scene-intro">Phần lớn sự cố mất quyền kiểm soát tài khoản AWS bắt nguồn từ việc bỏ qua một vài nguyên tắc cơ bản về quản lý danh tính và thông tin đăng nhập.</p>
+<p class="scene-intro">Phần lớn sự cố mất quyền kiểm soát AWS account bắt nguồn từ việc bỏ qua một vài nguyên tắc cơ bản về quản lý danh tính và thông tin đăng nhập.</p>
 
-Năm nguyên tắc dưới đây quyết định mức độ an toàn của account ShopViet. Chọn tình huống, thử phương án tắt trước, sau đó chuyển sang phương án đúng.
+Năm best practice dưới đây quyết định mức độ an toàn của AWS account ShopViet. Chọn tình huống, thử phương án không được khuyến nghị trước, sau đó chuyển sang phương án đúng.
 
 <IamMythsSim client:visible />
 
@@ -269,12 +269,12 @@ Phân loại từng chức năng vào loại policy tương ứng. Trên thiết
 Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "Ứng dụng của ShopViet trên EC2 cần đọc ảnh trên S3 và đơn hàng trên DynamoDB. Phương án cấp quyền nào an toàn nhất?",
-    opts: ["Lưu access key của một IAM user trong file cấu hình", "Gắn IAM role vào EC2 qua instance profile", "Dùng access key của root user"],
+  { q: "Ứng dụng của ShopViet trên EC2 instance cần đọc ảnh trên S3 và đơn hàng trên DynamoDB. Phương án cấp quyền nào an toàn nhất?",
+    opts: ["Lưu access key của một IAM user trong file cấu hình", "Gắn IAM role vào EC2 instance qua instance profile", "Dùng access key của root user"],
     a: 1,
-    why: "Role cấp credentials tạm thời, tự động xoay vòng, không lưu khóa nào trên server." },
+    why: "Role cấp credentials tạm thời, tự động xoay vòng, không lưu access key nào trên instance." },
   { q: "Một policy cho phép ec2:RunInstances với điều kiện aws:RequestedRegion = eu-west-1. Developer của ShopViet đang ở Việt Nam. Nhận định nào đúng?",
-    opts: ["Chỉ chạy được EC2 ở eu-west-1, gọi API từ đâu cũng được", "Chỉ gọi được API khi người dùng ở châu Âu", "Chạy EC2 ở mọi Region nhưng phải gọi từ eu-west-1"],
+    opts: ["Chỉ khởi chạy được EC2 instance ở eu-west-1, gọi API từ đâu cũng được", "Chỉ gọi được API khi người dùng ở châu Âu", "Khởi chạy được EC2 instance ở mọi Region nhưng phải gọi API từ eu-west-1"],
     a: 0,
     why: "aws:RequestedRegion là Region mà API call hướng tới, không phải vị trí của bên gọi." },
   { q: "IAM policy của một developer cho phép xóa log group, nhưng SCP của account dev không cho phép thao tác này. Kết quả là gì?",
