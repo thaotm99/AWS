@@ -56,13 +56,13 @@ A **user pool** is a user directory: it provides sign-up and sign-in and returns
       { id: "user", x: 30, y: 90, label: "User", kind: "user" },
       { id: "alb", x: 230, y: 90, label: "ALB", sub: "HTTPS listener", kind: "net" },
       { id: "pool", x: 230, y: 175, label: "Cognito user pool", kind: "edge" },
-      { id: "app", x: 520, y: 90, label: "Application EC2", sub: "business logic only", kind: "ec2" },
+      { id: "app", x: 520, y: 90, label: "EC2 instance", sub: "application, business logic only", kind: "ec2" },
       { id: "code", x: 520, y: 10, label: "Custom-built auth code", kind: "warn" },
     ],
     options: [
       { name: "Build sign-in yourself", verdict: "bad", hide: ["pool"],
         flows: [{ path: ["user", "alb", "app"], tone: "neutral" }, { path: ["app", "code"], tone: "bad", label: "self-maintained" }],
-        text: "Every server has to handle sign-in, session management and passwords itself, which raises development cost and the risk of mistakes." },
+        text: "Every EC2 instance has to handle sign-in, session management and passwords itself, which raises development cost and the risk of mistakes." },
       { name: "ALB + Cognito user pool", verdict: "good", hide: ["code"],
         flows: [{ path: ["user", "alb"], tone: "good" }, { path: ["alb", "pool"], tone: "good", label: "authenticate" }, { path: ["alb", "app"], tone: "good", label: "authenticated" }],
         text: "Configure an **authenticate-cognito** action in a listener rule of the HTTPS listener on the ALB. The ALB handles authentication; the application only receives authenticated requests. ShopViet's development team **does not need to write authentication code**." },
@@ -90,9 +90,9 @@ A **user pool** is a user directory: it provides sign-up and sign-in and returns
 
 <Scene id="en-s2" label="Part 2/3" title="Authenticating employees, Active Directory and partners" questions={["exam6_q10", "exam4_q4", "exam1_q10", "exam3_q28", "exam6_q44", "exam3_q5", "exam2_q4"]}>
 
-<p class="scene-intro">Employees and partners already have accounts in the company's systems; the goal is to reuse those accounts instead of creating a new set on AWS.</p>
+<p class="scene-intro">Employees and partners already have identities in the company's directory or identity provider; the goal is to reuse those identities instead of creating a new set of sign-in credentials on AWS.</p>
 
-Cognito serves the application's customers. Employees and partners have different requirements: single sign-on into multiple AWS accounts, reusing on-premises Active Directory accounts, accessing file shares, and transferring files over SFTP. Pick each scenario, change the configuration, then press Sign in.
+Cognito serves the application's customers. Employees and partners have different requirements: single sign-on into multiple AWS accounts, reusing identities in the on-premises Active Directory, accessing file shares, and transferring files over SFTP. Pick each scenario, change the configuration, then press Sign in.
 
 <StaffSignInSim client:visible />
 
@@ -125,7 +125,7 @@ ShopViet's accounting application runs SQL Server on AWS and needs an Active Dir
     instead: "**AWS Managed Microsoft AD** for employees and Windows workloads; Cognito for customers of the web and mobile applications (Part 1)." },
 ]} />
 
-<Takeaway>A domain on AWS with a trust to the on-premises AD, AD-aware workloads (SQL Server): AWS Managed Microsoft AD. Only using on-premises AD accounts to sign in to AWS services: AD Connector. Simple AD does not support trusts and is no longer open to new customers. Amazon Cloud Directory is a data store for applications, not Active Directory, and is also no longer open to new customers.</Takeaway>
+<Takeaway>A domain on AWS with a trust to the on-premises AD, AD-aware workloads (SQL Server): AWS Managed Microsoft AD. Only using on-premises AD credentials to sign in to AWS services: AD Connector. Simple AD does not support trusts and is no longer open to new customers. Amazon Cloud Directory is a data store for applications, not Active Directory, and is also no longer open to new customers.</Takeaway>
 
 </Scene>
 
@@ -149,7 +149,7 @@ Sort each requirement into the matching service. On a mobile device: tap a card,
 Check your understanding: as the designer of the ShopViet system, which option fits?
 
 <Quiz client:visible items={[
-  { q: "The ShopViet development team wants the ALB to handle authentication so that servers only run business logic, with the least code to write. Which option fits?",
+  { q: "The ShopViet development team wants the ALB to handle authentication so that EC2 instances only run business logic, with the least code to write. Which option fits?",
     opts: ["Cognito user pool integrated with the ALB", "Write a sign-in module on each EC2 instance", "An IAM user for each customer"],
     a: 0,
     why: "An ALB listener rule (HTTPS listener) supports the authenticate-cognito action to authenticate with a Cognito user pool." },

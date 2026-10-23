@@ -56,13 +56,13 @@ Hệ thống ShopViet có hai nhóm danh tính cần xác thực: **khách hàng
       { id: "user", x: 30, y: 90, label: "Người dùng", kind: "user" },
       { id: "alb", x: 230, y: 90, label: "ALB", sub: "listener HTTPS", kind: "net" },
       { id: "pool", x: 230, y: 175, label: "Cognito user pool", kind: "edge" },
-      { id: "app", x: 520, y: 90, label: "EC2 ứng dụng", sub: "chỉ xử lý nghiệp vụ", kind: "ec2" },
+      { id: "app", x: 520, y: 90, label: "EC2 instance", sub: "ứng dụng, chỉ xử lý nghiệp vụ", kind: "ec2" },
       { id: "code", x: 520, y: 10, label: "Mã xác thực tự phát triển", kind: "warn" },
     ],
     options: [
       { name: "Tự phát triển chức năng đăng nhập", verdict: "bad", hide: ["pool"],
         flows: [{ path: ["user", "alb", "app"], tone: "neutral" }, { path: ["app", "code"], tone: "bad", label: "tự bảo trì" }],
-        text: "Mỗi máy chủ phải tự xử lý đăng nhập, quản lý phiên và mật khẩu, làm tăng chi phí phát triển và nguy cơ sai sót." },
+        text: "Mỗi EC2 instance phải tự xử lý đăng nhập, quản lý session và mật khẩu, làm tăng chi phí phát triển và nguy cơ sai sót." },
       { name: "ALB + Cognito user pool", verdict: "good", hide: ["code"],
         flows: [{ path: ["user", "alb"], tone: "good" }, { path: ["alb", "pool"], tone: "good", label: "authenticate" }, { path: ["alb", "app"], tone: "good", label: "đã xác thực" }],
         text: "Cấu hình action **authenticate-cognito** trong listener rule của listener HTTPS trên ALB. ALB đảm nhận việc xác thực; ứng dụng chỉ tiếp nhận request đã được xác thực. Đội phát triển của ShopViet **không cần viết mã xác thực**." },
@@ -90,9 +90,9 @@ Hệ thống ShopViet có hai nhóm danh tính cần xác thực: **khách hàng
 
 <Scene id="s2" label="Phần 2/3" title="Xác thực nhân viên, Active Directory và đối tác" questions={["exam6_q10", "exam4_q4", "exam1_q10", "exam3_q28", "exam6_q44", "exam3_q5", "exam2_q4"]}>
 
-<p class="scene-intro">Nhân viên và đối tác đã có tài khoản trong hệ thống của công ty; mục tiêu là dùng lại các tài khoản đó thay vì tạo thêm một bộ tài khoản mới trên AWS.</p>
+<p class="scene-intro">Nhân viên và đối tác đã có danh tính trong directory hoặc identity provider của công ty; mục tiêu là dùng lại các danh tính đó thay vì tạo thêm một bộ thông tin đăng nhập mới trên AWS.</p>
 
-Cognito phục vụ khách hàng của ứng dụng. Nhân viên và đối tác có các yêu cầu khác: single sign-on vào nhiều AWS account, tái sử dụng tài khoản Active Directory on-premises, truy cập file share và truyền tệp qua SFTP. Chọn từng tình huống, thay đổi cấu hình, sau đó nhấn Đăng nhập.
+Cognito phục vụ khách hàng của ứng dụng. Nhân viên và đối tác có các yêu cầu khác: single sign-on vào nhiều AWS account, tái sử dụng danh tính trong Active Directory on-premises, truy cập file share và truyền tệp qua SFTP. Chọn từng tình huống, thay đổi cấu hình, sau đó nhấn Đăng nhập.
 
 <StaffSignInSim client:visible />
 
@@ -108,7 +108,7 @@ Cognito phục vụ khách hàng của ứng dụng. Nhân viên và đối tác
 
 <QuickCompare client:visible items={[
   { name: "AD Connector",
-    use: "Proxy chuyển tiếp yêu cầu đăng nhập tới domain controller on-premises; người dùng on-premises đăng nhập ứng dụng và dịch vụ AWS bằng tài khoản AD hiện có, không cần đồng bộ thư mục. Hỗ trợ seamless domain join EC2 vào domain on-premises.",
+    use: "Proxy chuyển tiếp yêu cầu đăng nhập tới domain controller on-premises; người dùng on-premises đăng nhập ứng dụng và dịch vụ AWS bằng thông tin đăng nhập AD hiện có (existing corporate credentials), không cần đồng bộ thư mục. Hỗ trợ seamless domain join EC2 instance vào domain on-premises.",
     notHere: "AD Connector không tạo domain trên AWS nên không có domain nào để thiết lập trust, và không tương thích với RDS for SQL Server.",
     instead: "**AWS Managed Microsoft AD**: Active Directory thực sự do AWS vận hành, chạy workload phụ thuộc AD như SQL Server và thiết lập trust với AD on-premises." },
   { name: "Simple AD",
@@ -120,12 +120,12 @@ Cognito phục vụ khách hàng của ứng dụng. Nhân viên và đối tác
     notHere: "Cloud Directory không phải dịch vụ thư mục cho quản trị viên IT: không phải Active Directory, không join domain, không thiết lập trust với AD on-premises.",
     instead: "**AWS Managed Microsoft AD** cho domain và trust; DynamoDB hoặc Neptune nếu chỉ cần lưu dữ liệu phân cấp của ứng dụng." },
   { name: "Amazon Cognito user pool",
-    use: "Thư mục có khả năng mở rộng cao để quản lý và xác thực người dùng của ứng dụng (khách hàng, subscriber của SaaS), hỗ trợ đăng nhập bằng mạng xã hội.",
+    use: "Thư mục có khả năng mở rộng cao để quản lý và xác thực người dùng của ứng dụng (khách hàng, subscriber của SaaS), hỗ trợ đăng nhập qua social identity provider.",
     notHere: "Cognito không phải Active Directory: không có domain, Kerberos hay trust, nên ứng dụng SQL Server phụ thuộc AD không join được.",
     instead: "**AWS Managed Microsoft AD** cho nhân viên và workload Windows; Cognito cho khách hàng của ứng dụng web và mobile (Phần 1)." },
 ]} />
 
-<Takeaway>Domain trên AWS có trust với AD on-premises, workload phụ thuộc AD (SQL Server): AWS Managed Microsoft AD. Chỉ dùng tài khoản AD on-premises để đăng nhập dịch vụ AWS: AD Connector. Simple AD không hỗ trợ trust và không còn mở cho khách hàng mới. Amazon Cloud Directory là kho dữ liệu cho ứng dụng, không phải Active Directory, cũng không còn mở cho khách hàng mới.</Takeaway>
+<Takeaway>Domain trên AWS có trust với AD on-premises, workload phụ thuộc AD (SQL Server): AWS Managed Microsoft AD. Chỉ dùng thông tin đăng nhập AD on-premises để đăng nhập dịch vụ AWS: AD Connector. Simple AD không hỗ trợ trust và không còn mở cho khách hàng mới. Amazon Cloud Directory là kho dữ liệu cho ứng dụng, không phải Active Directory, cũng không còn mở cho khách hàng mới.</Takeaway>
 
 </Scene>
 
@@ -149,8 +149,8 @@ Phân loại từng yêu cầu vào dịch vụ tương ứng. Trên thiết b�
 Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "Đội phát triển ShopViet muốn ALB đảm nhận xác thực để máy chủ chỉ xử lý nghiệp vụ, với lượng mã cần viết ít nhất. Phương án nào phù hợp?",
-    opts: ["Cognito user pool tích hợp với ALB", "Viết module đăng nhập trên từng EC2", "IAM user cho từng khách hàng"],
+  { q: "Đội phát triển ShopViet muốn ALB đảm nhận xác thực để EC2 instance chỉ xử lý nghiệp vụ, với lượng mã cần viết ít nhất. Phương án nào phù hợp?",
+    opts: ["Cognito user pool tích hợp với ALB", "Viết module đăng nhập trên từng EC2 instance", "IAM user cho từng khách hàng"],
     a: 0,
     why: "Listener rule của ALB (listener HTTPS) hỗ trợ action authenticate-cognito để xác thực bằng Cognito user pool." },
   { q: "Ứng dụng kế toán của ShopViet cần join domain trên AWS, và domain đó phải thiết lập trust với AD on-premises. Dịch vụ nào đáp ứng yêu cầu?",

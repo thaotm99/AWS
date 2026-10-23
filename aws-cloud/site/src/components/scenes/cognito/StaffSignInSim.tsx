@@ -42,9 +42,9 @@ const scenarios = (L: Lang): HopScenario[] => {
           en: "40 people × many accounts = hundreds of IAM users to manage by hand. The right solution: **IAM Identity Center** with permission sets." }) },
   },
   {
-    name: L({ vi: "Tái sử dụng tài khoản Active Directory", en: "Reuse Active Directory accounts" }),
-    story: L({ vi: "Nhân viên đã có tài khoản trong Active Directory on-premises. Yêu cầu: sử dụng chính tài khoản đó để truy cập AWS và **không lưu trữ dữ liệu thư mục trên AWS**.",
-      en: "Employees already have accounts in the on-premises Active Directory. Requirement: use those same accounts to access AWS and **store no directory data on AWS**." }),
+    name: L({ vi: "Tái sử dụng danh tính trong Active Directory", en: "Reuse Active Directory identities" }),
+    story: L({ vi: "Nhân viên đã là user trong Active Directory on-premises. Yêu cầu: sử dụng chính thông tin đăng nhập AD đó để truy cập AWS và **không lưu trữ dữ liệu thư mục trên AWS**.",
+      en: "Employees are already users in the on-premises Active Directory. Requirement: use those same AD credentials to access AWS and **store no directory data on AWS**." }),
     request: L({ vi: "Đăng nhập bằng lan@shopviet.local", en: "Sign in as lan@shopviet.local" }),
     toggle: { label: L({ vi: "Sử dụng AD Connector (tắt: tạo lại user trên AWS)", en: "Use AD Connector (off: recreate users on AWS)" }), initial: false },
     start: "lan",
@@ -60,7 +60,7 @@ const scenarios = (L: Lang): HopScenario[] => {
     hidden: (on) => (on ? ["copy"] : ["conn"]),
     run: (on) => on
       ? { hops: [
-          { to: "ic", state: "pass", tag: L({ vi: "ĐĂNG NHẬP", en: "SIGN-IN" }), msg: L({ vi: "Đăng nhập bằng tài khoản AD hiện có.", en: "Signs in with the existing AD account." }) },
+          { to: "ic", state: "pass", tag: L({ vi: "ĐĂNG NHẬP", en: "SIGN-IN" }), msg: L({ vi: "Đăng nhập bằng thông tin đăng nhập AD hiện có.", en: "Signs in with existing AD credentials." }) },
           { to: "conn", state: "pass", tag: L({ vi: "NGUỒN", en: "SOURCE" }), msg: L({ vi: "IAM Identity Center sử dụng AD Connector làm identity source.", en: "IAM Identity Center uses AD Connector as its identity source." }) },
           { to: "ad", state: "change", tag: L({ vi: "XÁC THỰC", en: "AUTHN" }), msg: L({ vi: "AD Connector chuyển tiếp yêu cầu xác thực tới AD on-premises.", en: "AD Connector forwards the authentication request to the on-premises AD." }) },
           { from: "ic", to: "acc", state: "pass", tag: L({ vi: "TRUY CẬP", en: "ACCESS" }), msg: L({ vi: "Quyền truy cập account được xác định theo nhóm AD của Lan.", en: "Account access is determined by Lan's AD groups." }) },
@@ -75,9 +75,9 @@ const scenarios = (L: Lang): HopScenario[] => {
   },
   {
     name: L({ vi: "Ứng dụng kế toán cần AD trên AWS", en: "Accounting app needs AD on AWS" }),
-    story: L({ vi: "Ứng dụng kế toán chạy trên EC2 Windows, phải **join domain** và xác thực Kerberos trên AWS. Domain mới cần thiết lập **trust** với AD on-premises.",
-      en: "The accounting application runs on Windows EC2 and must **join a domain** and use Kerberos authentication on AWS. The new domain needs a **trust** with the on-premises AD." }),
-    request: L({ vi: "EC2 join domain corp.shopviet", en: "EC2 joins domain corp.shopviet" }),
+    story: L({ vi: "Ứng dụng kế toán chạy trên EC2 instance Windows, phải **join domain** và xác thực Kerberos trên AWS. Domain mới cần thiết lập **trust** với AD on-premises.",
+      en: "The accounting application runs on a Windows EC2 instance and must **join a domain** and use Kerberos authentication on AWS. The new domain needs a **trust** with the on-premises AD." }),
+    request: L({ vi: "EC2 instance join domain corp.shopviet", en: "EC2 instance joins domain corp.shopviet" }),
     toggle: { label: L({ vi: "AWS Managed Microsoft AD (tắt: AD Connector)", en: "AWS Managed Microsoft AD (off: AD Connector)" }), initial: false },
     start: "app",
     boxes: [ONPREM],
@@ -91,9 +91,9 @@ const scenarios = (L: Lang): HopScenario[] => {
     hidden: (on) => (on ? ["conn"] : ["mad"]),
     run: (on) => on
       ? { hops: [
-          { to: "mad", state: "pass", tag: "JOIN", msg: L({ vi: "EC2 join domain; xác thực Kerberos được thực hiện trong AWS.", en: "EC2 joins the domain; Kerberos authentication happens inside AWS." }) },
+          { to: "mad", state: "pass", tag: "JOIN", msg: L({ vi: "EC2 instance join domain; xác thực Kerberos được thực hiện trong AWS.", en: "The EC2 instance joins the domain; Kerberos authentication happens inside AWS." }) },
           { to: "ad", state: "change", tag: "TRUST", msg: L({ vi: "Thiết lập trust relationship với domain on-premises.", en: "Sets up a trust relationship with the on-premises domain." }) },
-          { from: "users", to: "app", state: "pass", tag: L({ vi: "TRUY CẬP", en: "ACCESS" }), msg: L({ vi: "Kế toán viên sử dụng tài khoản on-premises để truy cập ứng dụng.", en: "Accountants use their on-premises accounts to access the application." }) },
+          { from: "users", to: "app", state: "pass", tag: L({ vi: "TRUY CẬP", en: "ACCESS" }), msg: L({ vi: "Kế toán viên sử dụng thông tin đăng nhập AD on-premises để truy cập ứng dụng.", en: "Accountants use their on-premises AD credentials to access the application." }) },
         ], ok: true, result: L({ vi: "**AWS Managed Microsoft AD** là Active Directory đầy đủ do AWS vận hành: hỗ trợ workload phụ thuộc AD và thiết lập trust.",
           en: "**AWS Managed Microsoft AD** is a full Active Directory operated by AWS: it supports AD-dependent workloads and trusts." }) }
       : { hops: [
@@ -137,7 +137,7 @@ const scenarios = (L: Lang): HopScenario[] => {
     nodes: [
       { id: "ptn", x: 90, y: 130, label: L({ vi: "Nhà cung cấp", en: "Supplier" }), kind: "user" },
       { id: "tf", x: 330, y: 130, label: "AWS Transfer Family", sub: L({ vi: "endpoint SFTP", en: "SFTP endpoint" }), kind: "svc" },
-      { id: "ec2", x: 330, y: 130, label: L({ vi: "Máy chủ SFTP tự triển khai", en: "Self-managed SFTP server" }), sub: L({ vi: "EC2, tự vá lỗi, tự scale", en: "EC2, self-patched, self-scaled" }), kind: "bad" },
+      { id: "ec2", x: 330, y: 130, label: L({ vi: "SFTP server tự triển khai", en: "Self-managed SFTP server" }), sub: L({ vi: "EC2 instance, tự vá lỗi, tự scale", en: "EC2 instance, self-patched, self-scaled" }), kind: "bad" },
       { id: "idp", x: 330, y: 220, label: L({ vi: "IdP riêng (qua Lambda)", en: "Own IdP (via Lambda)" }), sub: L({ vi: "ví dụ Cognito, Okta", en: "e.g. Cognito, Okta" }), kind: "key" },
       { id: "s3", x: 650, y: 130, w: 120, label: "S3 bucket", sub: "bang-gia/", kind: "store" },
     ],
