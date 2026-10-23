@@ -384,7 +384,6 @@ export const en: Messages<typeof vi> = {
     supportingHint: "Used for specific needs",
   },
   home: {
-    badge: "Free · Vietnamese and English",
     titleA: "Learn AWS by",
     titleHl: "building",
     titleB: "a real-world system",
