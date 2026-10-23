@@ -169,22 +169,22 @@ export default function DeleteGuardSim() {
   const versioned = guard !== "none";
 
   return (
-    <div className="stage s3x">
-      <div className="s3x-row" role="group" aria-label={L({ vi: "Cơ chế bảo vệ bucket", en: "Bucket protection" })}>
-        <span className="s3x-lbl">Bucket</span>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-3" role="group" aria-label={L({ vi: "Cơ chế bảo vệ bucket", en: "Bucket protection" })}>
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">Bucket</span>
         {GUARDS.map((g) => (
           <button key={g.id} className="chip" aria-pressed={g.id === guard} disabled={busy} onClick={() => { setGuard(g.id); reset(); }}>{L(g.name)}</button>
         ))}
       </div>
-      <div className="s3x-row" role="group" aria-label={L({ vi: "Chủ thể xoá", en: "Who deletes" })}>
-        <span className="s3x-lbl">{L({ vi: "Chủ thể", en: "Actor" })}</span>
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-2" role="group" aria-label={L({ vi: "Chủ thể xoá", en: "Who deletes" })}>
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Chủ thể", en: "Actor" })}</span>
         {ACTORS.map((a) => (
           <button key={a.id} className="chip" aria-pressed={a.id === actorId} disabled={busy} onClick={() => { setActorId(a.id); reset(); }}>{L(a.name)}</button>
         ))}
       </div>
-      <div className="stage-bar">
-        <code className="s3x-req">{actor.request}</code>
-        <button className="btn primary" onClick={send} disabled={busy}>{L({ vi: "Xoá hoá đơn", en: "Delete invoice" })}</button>
+      <div className="stage-bar mt-3 border-t border-line">
+        <code className="rounded-[10px] border border-line bg-bg px-2 py-[3px] text-[0.8125rem] wrap-anywhere">{actor.request}</code>
+        <button className="btn primary ml-auto" onClick={send} disabled={busy}>{L({ vi: "Xoá hoá đơn", en: "Delete invoice" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 20 820 205" role="img" aria-label={L({ vi: "Request xoá hoá đơn đi qua versioning, MFA Delete và Object Lock trước khi tới object trong bucket S3", en: "The invoice delete request passes versioning, MFA Delete and Object Lock before it reaches the object in the S3 bucket" })}>
@@ -225,7 +225,7 @@ export default function DeleteGuardSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="s3x-hint">{L({ vi: <>Chọn cơ chế bảo vệ và chủ thể xoá, sau đó nhấn <b>Xoá hoá đơn</b>. Thay đổi lựa chọn và thực hiện lại để so sánh kết quả.</>, en: <>Choose a protection and who deletes, then press <b>Delete invoice</b>. Change the choices and run again to compare the results.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn cơ chế bảo vệ và chủ thể xoá, sau đó nhấn <b>Xoá hoá đơn</b>. Thay đổi lựa chọn và thực hiện lại để so sánh kết quả.</>, en: <>Choose a protection and who deletes, then press <b>Delete invoice</b>. Change the choices and run again to compare the results.</> })}</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) =>

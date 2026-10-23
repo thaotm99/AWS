@@ -227,19 +227,19 @@ export default function UploadSim() {
   const accel = index === 1 || index === 4;
 
   return (
-    <div className="stage s3x">
-      <div className="s3x-row" role="group" aria-label={tr({ vi: "Tình huống", en: "Scenario" })}>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-3" role="group" aria-label={tr({ vi: "Tình huống", en: "Scenario" })}>
         {SCENARIOS.map((s, i) => (
           <button key={s.name.vi} className="chip" aria-pressed={i === index} disabled={busy && i !== index} onClick={() => pick(i)}>{tr(s.name)}</button>
         ))}
       </div>
-      <div className="stage-bar">
-        <code className="s3x-req">{tr(sc.request(on))}</code>
-        <label className="s3x-toggle">
+      <div className="stage-bar mt-3 border-t border-line">
+        <code className="rounded-[10px] border border-line bg-bg px-2 py-[3px] text-[0.8125rem] wrap-anywhere">{tr(sc.request(on))}</code>
+        <label className="inline-flex cursor-pointer items-center gap-1.5 text-step--1">
           <input type="checkbox" checked={on} disabled={busy} onChange={(e) => { setOn(e.target.checked); reset(); }} />
           {tr(sc.toggle)}
         </label>
-        <button className="btn primary" onClick={go} disabled={busy}>{tr({ vi: "Chạy", en: "Run" })}</button>
+        <button className="btn primary ml-auto" onClick={go} disabled={busy}>{tr({ vi: "Chạy", en: "Run" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 20 820 225" role="img" aria-label={tr({ vi: "Dữ liệu được truyền từ nguồn qua Internet hoặc edge location tới các prefix trong bucket S3", en: "Data travels from the source over the internet or through an edge location to prefixes in the S3 bucket" })}>
@@ -278,7 +278,7 @@ export default function UploadSim() {
       </div>
       <div className="readout">
         {log.length === 0 && !result ? (
-          <p className="s3x-hint">{tr({ vi: <>Chọn tình huống và nhấn <b>Chạy</b>. Sau đó bật tính năng tương ứng và chạy lại để so sánh kết quả.</>, en: <>Choose a scenario and press <b>Run</b>. Then turn on the matching feature and run again to compare the results.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{tr({ vi: <>Chọn tình huống và nhấn <b>Chạy</b>. Sau đó bật tính năng tương ứng và chạy lại để so sánh kết quả.</>, en: <>Choose a scenario and press <b>Run</b>. Then turn on the matching feature and run again to compare the results.</> })}</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) => (

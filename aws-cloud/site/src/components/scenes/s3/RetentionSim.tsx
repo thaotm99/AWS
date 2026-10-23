@@ -49,39 +49,39 @@ export default function RetentionSim() {
   const reset = () => setMsg(null);
 
   return (
-    <div className="stage s3x">
-      <div className="s3x-row" role="group" aria-label={L({ vi: "Default retention của bucket", en: "Bucket default retention" })}>
-        <span className="s3x-lbl">{L({ vi: "Default retention", en: "Default retention" })}</span>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-3" role="group" aria-label={L({ vi: "Default retention của bucket", en: "Bucket default retention" })}>
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Default retention", en: "Default retention" })}</span>
         <button className="chip" aria-pressed={def === "none"} onClick={() => { setDef("none"); reset(); }}>{L({ vi: "Không đặt", en: "Not set" })}</button>
         <button className="chip" aria-pressed={def === "d30"} onClick={() => { setDef("d30"); reset(); }}>{L({ vi: "Compliance · 30 ngày", en: "Compliance · 30 days" })}</button>
       </div>
-      <div className="s3x-row" role="group" aria-label={L({ vi: "Request PUT ngày 15", en: "PUT request on day 15" })}>
-        <span className="s3x-lbl">{L({ vi: "PUT ngày 15 (cùng key)", en: "PUT on day 15 (same key)" })}</span>
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-2" role="group" aria-label={L({ vi: "Request PUT ngày 15", en: "PUT request on day 15" })}>
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "PUT ngày 15 (cùng key)", en: "PUT on day 15 (same key)" })}</span>
         <button className="chip" aria-pressed={put2 === "plain"} onClick={() => { setPut2("plain"); reset(); }}>{L({ vi: "Không chỉ định retention", en: "No retention in request" })}</button>
         <button className="chip" aria-pressed={put2 === "explicit"} onClick={() => { setPut2("explicit"); reset(); }}>{L({ vi: "Retain Until Date = ngày 75", en: "Retain Until Date = day 75" })}</button>
       </div>
-      <div className="stage-bar">
+      <div className="stage-bar mt-3 border-t border-line">
         <label className="label" htmlFor={`${uid}-today`}>{L({ vi: `Hôm nay: ngày ${today}`, en: `Today: day ${today}` })}</label>
         <input id={`${uid}-today`} type="range" min={0} max={MAX} value={today} onChange={(e) => { setToday(Number(e.target.value)); reset(); }} />
       </div>
-      <div className="s3x-rt">
-        <div className="s3x-rt-axis" aria-hidden="true">
-          {[0, 15, 30, 45, 60, 75, 90].map((d) => <span key={d} style={{ left: pct(d) }}>{d}</span>)}
+      <div className="grid gap-2.5 px-3.5 pt-3 pb-1">
+        <div className="relative mx-1 my-0 h-4 text-[0.6875rem] text-muted" aria-hidden="true">
+          {[0, 15, 30, 45, 60, 75, 90].map((d) => <span key={d} className="absolute -translate-x-1/2 first:translate-x-0 last:-translate-x-full" style={{ left: pct(d) }}>{d}</span>)}
         </div>
         {[v1, v2].map((v) => {
           const exists = v.day <= today;
           const locked = v.until !== null && today < v.until;
           return (
-            <div key={v.id} className={`s3x-rt-row${exists ? "" : " off"}`}>
-              <div className="s3x-rt-head">
+            <div key={v.id} className={`grid gap-1${exists ? "" : " opacity-50"}`}>
+              <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1 text-[0.8125rem]">
                 <b>hd-0815.pdf · {v.id}</b>
-                <span className="term-meta">{exists ? `${L({ vi: "tạo ngày", en: "created day" })} ${v.day} · ${L(v.source)}` : L({ vi: `chưa tạo (ngày ${v.day})`, en: `not created yet (day ${v.day})` })}</span>
+                <span className="text-[0.75rem] text-muted">{exists ? `${L({ vi: "tạo ngày", en: "created day" })} ${v.day} · ${L(v.source)}` : L({ vi: `chưa tạo (ngày ${v.day})`, en: `not created yet (day ${v.day})` })}</span>
               </div>
-              <div className="s3x-rt-track">
-                {v.until !== null && exists && <span className="s3x-rt-lock" style={{ left: pct(v.day), width: pct(Math.min(v.until, MAX) - v.day) }}>{L({ vi: `khoá tới ngày ${v.until}`, en: `locked until day ${v.until}` })}</span>}
-                <span className="s3x-rt-now" style={{ left: pct(today) }} />
+              <div className="relative mx-1 my-0 h-[26px] rounded-[10px] border border-line bg-bg">
+                {v.until !== null && exists && <span className="absolute top-0.5 bottom-0.5 flex items-center overflow-hidden rounded-[4px] border border-bad bg-bad-soft px-1.5 text-[0.6875rem] font-semibold whitespace-nowrap text-bad" style={{ left: pct(v.day), width: pct(Math.min(v.until, MAX) - v.day) }}>{L({ vi: `khoá tới ngày ${v.until}`, en: `locked until day ${v.until}` })}</span>}
+                <span className="absolute -top-1 -bottom-1 -ml-px w-0.5 bg-accent" style={{ left: pct(today) }} />
               </div>
-              <button className="btn" disabled={!exists} onClick={() => del(v)}>
+              <button className="btn inline-flex items-center gap-2 justify-self-start" disabled={!exists} onClick={() => del(v)}>
                 {L({ vi: `Xoá ${v.id}`, en: `Delete ${v.id}` })} {exists && <span className={`pill ${locked ? "bad" : "ok"}`}><i />{locked ? L({ vi: "đang khoá", en: "locked" }) : L({ vi: "xoá được", en: "deletable" })}</span>}
               </button>
             </div>
@@ -92,7 +92,7 @@ export default function RetentionSim() {
         {msg ? (
           <p className={`s3x-result ${msg.ok ? "ok" : "bad"}`}>{rich(L(msg.text))}</p>
         ) : (
-          <p className="s3x-hint">{rich(L(put2 === "explicit" && def === "d30"
+          <p className="m-0 text-step--1 text-muted">{rich(L(put2 === "explicit" && def === "d30"
             ? { vi: "Phiên bản v2 có retention chỉ định trong request, nên **ghi đè** default retention của bucket: v2 khoá tới ngày 75, không phải ngày 45. Phiên bản v1 vẫn giữ thời hạn riêng (ngày 30). Kéo thanh thời gian và thử xoá từng phiên bản.", en: "Version v2 carries an explicit retention setting, so it **overrides** the bucket default: v2 is locked until day 75, not day 45. Version v1 keeps its own period (day 30). Drag the timeline and try deleting each version." }
             : { vi: "Default retention của bucket là một **khoảng thời gian** (ngày hoặc năm); S3 cộng khoảng này vào thời điểm tạo của từng phiên bản để tính Retain Until Date. Kéo thanh thời gian và thử xoá từng phiên bản.", en: "A bucket's default retention is a **duration** (days or years); S3 adds it to each version's creation time to compute the Retain Until Date. Drag the timeline and try deleting each version." }))}</p>
         )}

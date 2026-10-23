@@ -103,21 +103,21 @@ export default function WebsiteEndpointSim() {
   }
 
   return (
-    <div className="stage s3x">
-      <div className="s3x-row" role="group" aria-label={L({ vi: "Endpoint", en: "Endpoint" })}>
-        <span className="s3x-lbl">Endpoint</span>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-3" role="group" aria-label={L({ vi: "Endpoint", en: "Endpoint" })}>
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">Endpoint</span>
         <button className="chip" aria-pressed={ep === "rest"} onClick={() => choose(() => setEp("rest"))}>REST API endpoint</button>
         <button className="chip" aria-pressed={ep === "web"} onClick={() => choose(() => setEp("web"))}>Website endpoint</button>
       </div>
-      <div className="s3x-row" role="group" aria-label={L({ vi: "Request", en: "Request" })}>
-        <span className="s3x-lbl">Request</span>
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-2" role="group" aria-label={L({ vi: "Request", en: "Request" })}>
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">Request</span>
         {REQS.map((r, i) => (
           <button key={r.id} className="chip" aria-pressed={i === ri} onClick={() => choose(() => setRi(i))}>{L(r.name)}</button>
         ))}
       </div>
-      <div className="stage-bar">
-        <code className="s3x-req">{`${req.line.replace("https://…", `https://${HOST[ep]}`)}${req.id === "https" ? "" : `  ·  Host: ${HOST[ep]}`}`}</code>
-        <button className="btn primary" onClick={send} disabled={busy}>{L({ vi: "Gửi request", en: "Send request" })}</button>
+      <div className="stage-bar mt-3 border-t border-line">
+        <code className="rounded-[10px] border border-line bg-bg px-2 py-[3px] text-[0.8125rem] wrap-anywhere">{`${req.line.replace("https://…", `https://${HOST[ep]}`)}${req.id === "https" ? "" : `  ·  Host: ${HOST[ep]}`}`}</code>
+        <button className="btn primary ml-auto" onClick={send} disabled={busy}>{L({ vi: "Gửi request", en: "Send request" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 10 760 200" role="img" aria-label={L({ vi: "Trình duyệt gửi request tới REST API endpoint hoặc website endpoint của cùng một bucket S3", en: "A browser sends a request to the REST API endpoint or the website endpoint of the same S3 bucket" })}>
@@ -147,7 +147,7 @@ export default function WebsiteEndpointSim() {
         {out ? (
           <p className={`s3x-result ${out.tone}`}><b>{out.code}</b> · {rich(L(out.msg))}</p>
         ) : (
-          <p className="s3x-hint">{L({ vi: <>Chọn endpoint và request, sau đó nhấn <b>Gửi request</b>. Gửi cùng request qua endpoint còn lại để so sánh.</>, en: <>Choose an endpoint and a request, then press <b>Send request</b>. Send the same request through the other endpoint to compare.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn endpoint và request, sau đó nhấn <b>Gửi request</b>. Gửi cùng request qua endpoint còn lại để so sánh.</>, en: <>Choose an endpoint and a request, then press <b>Send request</b>. Send the same request through the other endpoint to compare.</> })}</p>
         )}
       </div>
     </div>

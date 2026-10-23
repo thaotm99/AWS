@@ -160,21 +160,21 @@ export default function EncryptionSim() {
   };
 
   return (
-    <div className="stage s3x">
-      <div className="s3x-row" role="group" aria-label={tr({ vi: "Tình huống", en: "Scenario" })}>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-3" role="group" aria-label={tr({ vi: "Tình huống", en: "Scenario" })}>
         {SCENARIOS.map((s, i) => (
           <button key={s.id} className="chip" aria-pressed={i === index} disabled={busy && i !== index} onClick={() => pick(i)}>{tr(s.name)}</button>
         ))}
       </div>
-      <div className="stage-bar">
-        <code className="s3x-req">{sc.method}</code>
+      <div className="stage-bar mt-3 border-t border-line">
+        <code className="rounded-[10px] border border-line bg-bg px-2 py-[3px] text-[0.8125rem] wrap-anywhere">{sc.method}</code>
         {sc.toggle && (
-          <label className="s3x-toggle">
+          <label className="inline-flex cursor-pointer items-center gap-1.5 text-step--1">
             <input type="checkbox" checked={on} disabled={busy} onChange={(e) => { setOn(e.target.checked); reset(); }} />
             {tr(sc.toggle.label)}
           </label>
         )}
-        <button className="btn primary" onClick={upload} disabled={busy}>{tr({ vi: "Tải lên 3 hoá đơn", en: "Upload 3 invoices" })}</button>
+        <button className="btn primary ml-auto" onClick={upload} disabled={busy}>{tr({ vi: "Tải lên 3 hoá đơn", en: "Upload 3 invoices" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 8 820 236" role="img" aria-label={tr({ vi: "Hoá đơn được gửi từ ứng dụng tới S3 rồi tới tầng lưu trữ; KMS, CloudTrail và kho key nội bộ tham gia tuỳ theo phương thức mã hoá", en: "Invoices travel from the application to S3 and then to storage; KMS, CloudTrail and the internal key store take part depending on the encryption method" })}>
@@ -190,7 +190,7 @@ export default function EncryptionSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="s3x-hint">{tr({ vi: <>Chọn một yêu cầu, sau đó nhấn <b>Tải lên 3 hoá đơn</b> để quan sát vị trí mã hoá dữ liệu và nơi lưu trữ key.</>, en: <>Choose a requirement, then press <b>Upload 3 invoices</b> to see where the data is encrypted and where the key is kept.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{tr({ vi: <>Chọn một yêu cầu, sau đó nhấn <b>Tải lên 3 hoá đơn</b> để quan sát vị trí mã hoá dữ liệu và nơi lưu trữ key.</>, en: <>Choose a requirement, then press <b>Upload 3 invoices</b> to see where the data is encrypted and where the key is kept.</> })}</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) =>
@@ -198,7 +198,7 @@ export default function EncryptionSim() {
                 <li key={i} className="s3x-result ok">{rich(tr(e.msg))}</li>
               ) : (
                 <li key={i}>
-                  <span className={`tag ${"cls" in e ? e.cls : ""}`}>{e.tag}</span>
+                  <span className={`tag ${"cls" in e ? (e.cls === "lock" ? "bg-accent-soft text-accent" : e.cls) : ""}`}>{e.tag}</span>
                   <span>{rich(tr(e.msg))}</span>
                 </li>
               ),
