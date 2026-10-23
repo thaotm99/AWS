@@ -104,7 +104,7 @@ export default function ConfigTimelineSim() {
         <button className="btn primary cts-play" onClick={play} disabled={busy}>{L({ vi: "Xem toàn bộ tuần", en: "Play the whole week" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 0 820 120" role="img" aria-label={L({ vi: "Dòng thời gian cấu hình của sg-web trong một tuần", en: "Configuration timeline of sg-web over one week" })}>
+        <svg viewBox="0 0 820 120" role="group" aria-label={L({ vi: "Dòng thời gian cấu hình của sg-web trong một tuần", en: "Configuration timeline of sg-web over one week" })}>
           <line className="cts-axis" x1={X0 - 30} x2={X1 + 30} y1={60} y2={60} />
           {ITEMS.map((x, i) => (
             <g
@@ -131,14 +131,14 @@ export default function ConfigTimelineSim() {
         </div>
         <div className="cts-panels">
           <div className="cts-panel">
-            <h4>{L({ vi: "AWS Config: trạng thái cấu hình", en: "AWS Config: configuration state" })}</h4>
+            <h2>{L({ vi: "AWS Config: trạng thái cấu hình", en: "AWS Config: configuration state" })}</h2>
             <ul className="cts-rules">
               {it.rules.map((r) => <li key={r.text} className={r.mark}>{r.mark === "add" ? "+ " : r.mark === "gone" ? "− " : r.mark === "risk" ? "! " : "  "}{r.text}</li>)}
             </ul>
             <p className="cts-note">{L({ vi: "Đang được gắn vào", en: "Attached to" })}: <code>{it.usedBy}</code></p>
           </div>
           <div className="cts-panel">
-            <h4>{L({ vi: "CloudTrail: người thực hiện thay đổi", en: "CloudTrail: who made the change" })}</h4>
+            <h2>{L({ vi: "CloudTrail: người thực hiện thay đổi", en: "CloudTrail: who made the change" })}</h2>
             <p className="cts-event">{it.event}</p>
           </div>
         </div>

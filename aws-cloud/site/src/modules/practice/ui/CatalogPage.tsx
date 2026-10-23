@@ -33,15 +33,17 @@ function CatalogView({ certId }: { certId: string | null }) {
 
   return (
     <>
-      <div className="pr-certs" role="list" aria-label={t("catalog.certifications")}>
+      <ul className="pr-certs" aria-label={t("catalog.certifications")}>
         {state.certifications.map((c) => (
-          <a key={c.id} role="listitem" className="pr-cert" href={routes.catalog(c.id)} aria-current={c.id === cert?.id ? "page" : undefined}>
-            <span className="pr-cert-code">{c.code}</span>
-            <span className="pr-cert-name">{c.name}</span>
-            <span className="pr-cert-count">{c.examCount ? t("catalog.examCount", { n: c.examCount }) : t("catalog.noExams")}</span>
-          </a>
+          <li key={c.id}>
+            <a className="pr-cert" href={routes.catalog(c.id)} aria-current={c.id === cert?.id ? "page" : undefined}>
+              <span className="pr-cert-code">{c.code}</span>
+              <span className="pr-cert-name">{c.name}</span>
+              <span className="pr-cert-count">{c.examCount ? t("catalog.examCount", { n: c.examCount }) : t("catalog.noExams")}</span>
+            </a>
+          </li>
         ))}
-      </div>
+      </ul>
 
       {!cert ? (
         <p className="pr-muted">{state.status === "ready" ? t("catalog.noCertifications") : t("catalog.loading")}</p>

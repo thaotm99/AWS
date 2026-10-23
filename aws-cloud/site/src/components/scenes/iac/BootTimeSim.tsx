@@ -114,7 +114,7 @@ export default function BootTimeSim() {
         <button className="btn primary bts-play" onClick={play} disabled={busy}>{L({ vi: "Khởi động 4 instance", en: "Launch 4 instances" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox={`0 0 820 ${Y0 + LANES.length * LH + 34}`} role="img" aria-label={L({ vi: "So sánh thời gian của bốn phương án khởi động instance trên cùng một trục thời gian", en: "Timing of four instance startup approaches compared on one time axis" })}>
+        <svg viewBox={`0 0 820 ${Y0 + LANES.length * LH + 34}`} role="group" aria-label={L({ vi: "So sánh thời gian của bốn phương án khởi động instance trên cùng một trục thời gian", en: "Timing of four instance startup approaches compared on one time axis" })}>
           {[0, 2, 10, 20, 30, 45].map((m) => (
             <g key={m}>
               <line className="bts-grid" x1={px(m)} x2={px(m)} y1={Y0 - 6} y2={Y0 + LANES.length * LH} />

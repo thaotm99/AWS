@@ -36,7 +36,7 @@
 .cts-time { fill: var(--muted); font-family: var(--font-mono); font-size: 10.5px; }
 .cts-panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
 .cts-panel { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--bg); min-width: 0; }
-.cts-panel h4 { margin: 0 0 6px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.cts-panel h2 { margin: 0 0 6px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
 .cts-rules { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-family: var(--font-mono); font-size: 0.8125rem; }
 .cts-rules li { padding: 2px 6px; border-radius: 4px; overflow-wrap: anywhere; }
 .cts-rules li.add { background: var(--ok-soft); }
