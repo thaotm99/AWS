@@ -1,3 +1,5 @@
+import { recordActivity } from "./goals";
+
 // Per-browser learning progress. Phase 2 moves this to Cognito + DynamoDB and
 // keeps localStorage as the guest fallback.
 const DONE_KEY = "done";
@@ -76,6 +78,7 @@ export function setPartRead(lesson: string, slug: string, all: string[]) {
   finished.add(slug);
   parts[lesson] = [...finished];
   write(PARTS_KEY, JSON.stringify(parts));
+  recordActivity("parts");
   if (all.every((p) => finished.has(p)) && !getDone().has(lesson)) setDone(lesson, true);
   else window.dispatchEvent(new Event(PROGRESS_EVENT));
 }

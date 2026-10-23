@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useI18n } from "../app/i18n";
 import { BOX_DAYS, boxCounts, grade, readDeck, sessionCards, today, writeDeck, type Deck } from "../lib/flashcards";
 import { noteCard, readSettings, readTimer, writeTimer } from "../lib/pomodoro";
+import { recordActivity } from "../lib/goals";
 
 interface Card {
   id: string;
@@ -63,6 +64,7 @@ export default function Flashcards({ layers }: { layers: Layer[] }) {
     const next = { ...deck, [current.id]: grade(deck[current.id], remembered, day) };
     setDeck(next);
     writeDeck(next);
+    recordActivity("cards");
     // Cards answered during a Pomodoro break show up in its summary.
     const timer = readTimer(readSettings());
     const noted = noteCard(timer, remembered);

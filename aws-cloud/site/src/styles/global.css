@@ -1474,3 +1474,43 @@ mark.hl.flash { box-shadow: 0 0 0 3px var(--edge); }
 .np-actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .np-actions small { color: var(--muted); font-size: 0.75rem; }
 .np-empty { color: var(--muted); }
+
+/* ---------- Daily goals and streak (home) ---------- */
+.dg { margin: 8px 0 32px; padding: 20px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; gap: 16px; }
+.dg-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.dg-head > div { flex: 1 1 260px; }
+.dg-head h2 { margin: 0; font-size: 1.25rem; }
+.dg-head p { margin: 4px 0 0; font-size: 0.875rem; color: var(--muted); }
+.dg-head .btn { min-height: 40px; }
+.dg-streak { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border-radius: 18px; border: 1px solid var(--edge); background: var(--edge-soft); font-size: 0.8125rem; }
+.dg-streak b { font-family: var(--font-mono); }
+.dg-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; padding: 12px; border-radius: 12px; background: var(--bg); }
+.dg-form label { display: flex; flex-direction: column; gap: 4px; font-size: 0.8125rem; color: var(--muted); }
+.dg-form input { width: 120px; min-height: 40px; box-sizing: border-box; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-family: var(--font-mono); }
+.dg-form .btn { min-height: 40px; }
+.dg-form small { flex-basis: 100%; color: var(--muted); }
+.dg-goals { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.dg-goal { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); text-decoration: none; }
+.dg-goal:hover { border-color: var(--accent); }
+.dg-goal[data-done] { border-color: var(--ok); background: var(--ok-soft); }
+.dg-goal > span:last-child { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dg-goal small { color: var(--muted); font-size: 0.8125rem; overflow: hidden; text-overflow: ellipsis; }
+.dg-ring-wrap { position: relative; width: 64px; height: 64px; flex: none; }
+.dg-ring-wrap > b { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-mono); font-size: 0.875rem; }
+.dg-ring-track { stroke: var(--line); }
+.dg-ring-fill { stroke: var(--accent); transition: stroke-dashoffset .4s; }
+[data-done] .dg-ring-fill { stroke: var(--ok); }
+.dg-bottom { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; align-items: start; }
+.dg-cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; }
+.dg-dow { font-size: 0.6875rem; color: var(--muted); text-align: center; }
+.dg-cal i { height: 22px; border-radius: 5px; background: var(--bg); border: 1px solid var(--line); }
+.dg-cal i[data-level="1"] { background: color-mix(in srgb, var(--accent) 35%, var(--bg)); border-color: transparent; }
+.dg-cal i[data-level="2"] { background: var(--accent); border-color: transparent; }
+.dg-cal i[data-level="-1"] { background: transparent; border-style: dashed; }
+.dg-cal i[data-today] { outline: 2px solid var(--edge); outline-offset: 1px; }
+.dg-stats { margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 0.875rem; }
+.dg-stats div { display: flex; justify-content: space-between; gap: 10px; }
+.dg-stats dt { color: var(--muted); }
+.dg-stats dd { margin: 0; font-family: var(--font-mono); font-weight: 600; }
+.dg-stats p { margin: 4px 0 0; font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
+@media (max-width: 700px) { .dg-bottom { grid-template-columns: minmax(0, 1fr); } .dg { padding: 16px; } }
