@@ -1,0 +1,33 @@
+---
+// Lesson overview, top of the page: parts read, a bar per part and the Start / Continue link.
+// LessonParts (further down the page) fills them in from the saved progress.
+import L from "../L.astro";
+import T from "../../app/T.astro";
+import type { LessonPart } from "../../data/lesson-parts";
+
+interface Props {
+  lesson: string;
+  parts: LessonPart[];
+}
+const { lesson, parts } = Astro.props;
+const first = parts[0];
+const head = (s: string) => s.split(": ")[0];
+const firstHref = `/concepts/${lesson}/${first.slug}/`;
+---
+<div class="lp-progress">
+  <div class="lp-progress-head">
+    <b><T k="lesson.parts.progress" /></b>
+    <span class="lp-count"><span data-lp-done>0</span> / {parts.length}</span>
+    <span class="lp-complete" hidden><T k="lesson.parts.complete" /></span>
+  </div>
+  <div class="lp-bar" aria-hidden="true">
+    {parts.map((p) => <i data-slug={p.slug} data-kind={p.kind} />)}
+  </div>
+  <a class="btn cta lp-cta" href={firstHref} data-lp-cta>
+    <span class="lp-cta-verb" data-verb="start"><T k="lesson.parts.start" /></span>
+    <span class="lp-cta-verb" data-verb="resume"><T k="lesson.parts.resume" /></span>
+    <span class="lp-cta-verb" data-verb="again"><T k="lesson.parts.again" /></span>
+    <span class="lp-cta-title" data-lp-cta-title><L vi={head(first.title.vi)} en={head(first.title.en)} /></span>
+    <span aria-hidden="true">→</span>
+  </a>
+</div>

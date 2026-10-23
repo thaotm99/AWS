@@ -71,7 +71,7 @@ const after = next
     </ol>
   </div>
 
-  <article class="part-body" data-lesson={id} data-part={part.slug} data-parts={JSON.stringify(parts.map((p) => p.slug))}>
+  <article class="part-body" data-lesson={id} data-part={part.slug} data-parts={JSON.stringify(parts.map((p) => p.slug))} data-title={JSON.stringify({ vi: head(part.title.vi), en: head(part.title.en) })}>
     {ContentEn ? (
       <>
         <div data-lang="vi"><Content /></div>
@@ -103,7 +103,7 @@ const after = next
 </BaseLayout>
 
 <script>
-  import { getPartsRead, onProgressChange, setPartRead } from "../../../lib/progress";
+  import { getPartsRead, onProgressChange, setLastPart, setPartRead } from "../../../lib/progress";
 
   const body = document.querySelector<HTMLElement>(".part-body");
   if (body) {
@@ -111,6 +111,7 @@ const after = next
     const part = body.dataset.part!;
     const all: string[] = JSON.parse(body.dataset.parts!);
     const pager = document.querySelector<HTMLElement>(".part-pager")!;
+    setLastPart({ lesson, slug: part, title: JSON.parse(body.dataset.title!) });
 
     // Read state on the part list (desktop column) and the step bar.
     const sync = () => {

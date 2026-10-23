@@ -18,6 +18,8 @@ const questions = certs.reduce((s, c) => s + c.examCount * c.questionCount, 0);
 const titles = Object.fromEntries(concepts.map((c) => [c.id, c.title]));
 const titlesEn = Object.fromEntries(concepts.map((c) => [c.id, c.titleEn]));
 const features = [1, 2, 3] as const;
+// Lessons in study order, for the "Continue" link a returning reader gets instead of "Start learning".
+const order = concepts.filter((c) => ready.has(c.id)).map((c) => ({ id: c.id, vi: c.title, en: c.titleEn }));
 ---
 <BaseLayout title="AWS Thực Chiến" sidebar={false} wide>
   <section class="hero">
@@ -25,7 +27,12 @@ const features = [1, 2, 3] as const;
     <h1><T k="shell.home.title" /></h1>
     <p class="lede"><T k="shell.home.lede" /></p>
     <div class="hero-actions">
-      {first && <a class="btn primary cta" href={`/concepts/${first.id}/`}><T k="shell.home.start" /></a>}
+      {first && (
+        <a class="btn primary cta home-start" href={`/concepts/${first.id}/`} data-lessons={JSON.stringify(order)}>
+          <span data-cta="start"><T k="shell.home.start" /></span>
+          <span data-cta="resume" hidden><T k="shell.home.resume" /> <span data-cta-title></span></span>
+        </a>
+      )}
       <a class="btn cta" href="/practice/"><T k="shell.home.practice" /></a>
     </div>
     <dl class="hero-stats">
@@ -52,3 +59,34 @@ const features = [1, 2, 3] as const;
     ))}
   </section>
 </BaseLayout>
+
+<script>
+  import { getDone, getLastPart } from "../lib/progress";
+
+  // A returning reader continues where they stopped: the last part opened, or the next lesson not yet done.
+  const cta = document.querySelector<HTMLAnchorElement>(".home-start");
+  if (cta) {
+    const lessons: { id: string; vi: string; en: string }[] = JSON.parse(cta.dataset.lessons!);
+    const done = getDone();
+    const last = getLastPart();
+    let target: { href: string; title: { vi: string; en: string } } | undefined;
+    if (last && !done.has(last.lesson)) target = { href: `/concepts/${last.lesson}/${last.slug}/`, title: last.title };
+    else if (last || done.size) {
+      const next = lessons.find((l) => !done.has(l.id));
+      if (next) target = { href: `/concepts/${next.id}/`, title: { vi: next.vi, en: next.en } };
+    }
+    if (target) {
+      cta.href = target.href;
+      const slot = cta.querySelector("[data-cta-title]")!;
+      for (const lang of ["vi", "en"] as const) {
+        const span = document.createElement("span");
+        span.dataset.lang = lang;
+        span.textContent = target.title[lang];
+        slot.append(span);
+      }
+      cta.querySelector<HTMLElement>('[data-cta="start"]')!.hidden = true;
+      cta.querySelector<HTMLElement>('[data-cta="resume"]')!.hidden = false;
+    }
+  }
+</script>
+

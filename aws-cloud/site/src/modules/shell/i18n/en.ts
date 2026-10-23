@@ -2,6 +2,21 @@ import type { Messages } from "../../../core/i18n/types";
 import type { vi } from "./vi";
 
 export const en: Messages<typeof vi> = {
+  search: {
+    open: "Search",
+    shortcut: "Search (/ or Ctrl+K)",
+    label: "Search the whole site",
+    placeholder: "Search lessons, parts, terms…",
+    close: "Close search",
+    closeShort: "Close",
+    results: "Search results",
+    hint: "Type a service, a concept or a situation, for example: NAT gateway, latency, restore. ↑↓ to pick, Enter to open.",
+    loading: "Loading the search data…",
+    error: "Could not load the search data. Check your connection and try again.",
+    count: "{n} results",
+    empty: "No results for “{q}”.",
+    kind: { lesson: "Lesson", part: "Part", term: "Term" },
+  },
   nav: {
     main: "Main",
     theory: "Concepts",
@@ -14,6 +29,7 @@ export const en: Messages<typeof vi> = {
     closeMenu: "Close menu",
     language: "Language",
     soon: "{page} is coming soon.",
+    skip: "Skip to content",
   },
   glossary: {
     pageTitle: "Glossary · AWS Thực Chiến",
@@ -48,6 +64,7 @@ export const en: Messages<typeof vi> = {
     title: "Designing systems on AWS, from requirements to a complete architecture",
     lede: "AWS Thực Chiến teaches AWS architecture through ShopViet, a fictional e-commerce system. The study path runs from global infrastructure, networking and security to compute, storage, databases and operations; each design decision starts from a requirement and is shown with an interactive simulation.",
     start: "Start learning",
+    resume: "Continue:",
     practice: "Practice tests",
     statLessons: "Lessons",
     statExams: "Practice tests",

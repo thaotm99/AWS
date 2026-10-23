@@ -1,5 +1,20 @@
 // Source dictionary of the site shell (top bar, study path).
 export const vi = {
+  search: {
+    open: "Tìm kiếm",
+    shortcut: "Tìm kiếm (/ hoặc Ctrl+K)",
+    label: "Tìm kiếm trên toàn site",
+    placeholder: "Tìm bài học, phần học, thuật ngữ…",
+    close: "Đóng tìm kiếm",
+    closeShort: "Đóng",
+    results: "Kết quả tìm kiếm",
+    hint: "Gõ tên dịch vụ, khái niệm hoặc tình huống, ví dụ: NAT gateway, độ trễ, khôi phục. ↑↓ để chọn, Enter để mở.",
+    loading: "Đang tải dữ liệu tìm kiếm…",
+    error: "Không tải được dữ liệu tìm kiếm. Kiểm tra kết nối rồi thử lại.",
+    count: "{n} kết quả",
+    empty: "Không có kết quả cho “{q}”.",
+    kind: { lesson: "Bài học", part: "Phần học", term: "Thuật ngữ" },
+  },
   nav: {
     main: "Chính",
     theory: "Lý thuyết",
@@ -12,6 +27,7 @@ export const vi = {
     closeMenu: "Đóng menu",
     language: "Ngôn ngữ",
     soon: "Mục {page} đang được phát triển.",
+    skip: "Bỏ qua tới nội dung",
   },
   glossary: {
     pageTitle: "Thuật ngữ · AWS Thực Chiến",
@@ -46,6 +62,7 @@ export const vi = {
     title: "Thiết kế hệ thống trên AWS từ yêu cầu đến kiến trúc hoàn chỉnh",
     lede: "AWS Thực Chiến xây dựng kiến thức kiến trúc AWS thông qua ShopViet, một hệ thống thương mại điện tử giả định. Lộ trình đi từ hạ tầng toàn cầu, mạng và bảo mật đến tính toán, lưu trữ, cơ sở dữ liệu và vận hành; mỗi quyết định thiết kế được phân tích từ yêu cầu và minh hoạ bằng mô phỏng tương tác.",
     start: "Bắt đầu học",
+    resume: "Tiếp tục:",
     practice: "Luyện đề",
     statLessons: "Bài học",
     statExams: "Đề luyện tập",

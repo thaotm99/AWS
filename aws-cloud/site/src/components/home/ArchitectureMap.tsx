@@ -209,7 +209,7 @@ export default function ArchitectureMap({ titles, titlesEn }: { titles: Record<s
         </button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 0 1180 712" role="img" aria-label={t("shell.home.map.label")}>
+        <svg viewBox="0 0 1180 712" role="group" aria-label={t("shell.home.map.label")}>
           <rect className="amap-frame region" x={300} y={40} width={745} height={588} rx={14} />
           <text className="amap-ft" x={316} y={60}>{t("shell.home.map.region")}</text>
           <a href="/concepts/vpc/">

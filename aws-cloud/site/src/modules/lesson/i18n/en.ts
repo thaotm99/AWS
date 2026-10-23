@@ -8,7 +8,6 @@ export const en: Messages<typeof vi> = {
     noPrerequisites: "None. This is the first lesson of the study path",
     duration: "Duration",
     durationValue: "~{minutes} min, {scenes} parts with simulations",
-    progress: "Progress",
     nextLabel: "Next",
     nextTitle: "Next lessons in the study path",
     nextLessons: "Next lessons",
@@ -32,6 +31,7 @@ export const en: Messages<typeof vi> = {
     exerciseHint: "before moving to the next lesson",
     progress: "Lesson progress",
     count: "{done} / {total} parts",
+    complete: "Lesson completed ✓",
     start: "Start the lesson",
     resume: "Continue",
     again: "Read again from the start",
@@ -44,11 +44,6 @@ export const en: Messages<typeof vi> = {
     finish: "Finish the lesson",
     quiz: "Quiz",
     quizCount: "{n} questions",
-    total: "About {minutes} min for the whole lesson",
-  },
-  done: {
-    mark: "Mark as completed",
-    done: "Completed ✓",
   },
   takeaway: "Key point:",
   story: {

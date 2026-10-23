@@ -220,7 +220,7 @@ export default function EdgePipelineSim() {
     <div className="stage cfp">
       <div className="cfp-scenarios" role="tablist" aria-label={L({ vi: "Tình huống", en: "Scenario" })}>
         {SCENARIOS.map((s, i) => (
-          <button key={s.name} role="tab" aria-selected={i === index} className="chip" aria-pressed={i === index} onClick={() => pick(i)} disabled={busy && i !== index}>
+          <button key={s.name} role="tab" aria-selected={i === index} className="chip" onClick={() => pick(i)} disabled={busy && i !== index}>
             {s.name}
           </button>
         ))}

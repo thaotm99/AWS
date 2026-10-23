@@ -77,7 +77,7 @@ export default function CapacityRangeSim() {
         <div className="crs-mark max" style={{ left: pct(cap.max) }}><span>max {cap.max}</span></div>
         <div className="crs-mark desired" style={{ left: pct(cap.desired) }}><span>desired {cap.desired}</span></div>
       </div>
-      <div className="crs-insts" aria-label={L({ vi: `${cap.desired} instance đang chạy`, en: `${cap.desired} instances running` })}>
+      <div className="crs-insts" role="img" aria-label={L({ vi: `${cap.desired} instance đang chạy`, en: `${cap.desired} instances running` })}>
         {Array.from({ length: cap.desired }, (_, i) => <span key={i} className="cap-inst" />)}
       </div>
       <div className="readout" aria-live="polite">

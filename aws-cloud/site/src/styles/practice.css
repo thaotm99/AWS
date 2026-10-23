@@ -5,8 +5,9 @@
 .pr-visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* Certification picker */
-.pr-certs { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; margin: 8px 0 26px; }
-.pr-cert { display: grid; gap: 2px; text-decoration: none; color: var(--ink); background: var(--surface); border: 1.5px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.pr-certs { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; margin: 8px 0 26px; }
+.pr-certs li { display: flex; }
+.pr-cert { flex: 1; display: grid; gap: 2px; text-decoration: none; color: var(--ink); background: var(--surface); border: 1.5px solid var(--line); border-radius: 10px; padding: 12px 14px; }
 .pr-cert:hover { border-color: var(--accent); }
 .pr-cert[aria-current="page"] { border-color: var(--accent); background: var(--accent-soft); }
 .pr-cert-code { font-family: var(--font-mono); font-weight: 500; font-size: 0.875rem; color: var(--accent); }
