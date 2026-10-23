@@ -236,7 +236,7 @@ export class Highlighter<M> {
     const lang = document.documentElement.lang === "en" ? "en" : "vi";
     // Typing in a note writes on every keystroke; redrawing then would take the cursor away.
     if (this.panel.contains(document.activeElement) && document.activeElement?.tagName === "TEXTAREA") return;
-    this.panel.innerHTML = `<div class="notes-head"><h2>${esc(this.t("panelTitle", { n: list.length }))}</h2><a href="/notes/">${esc(this.t("all"))}</a></div>` +
+    this.panel.innerHTML = `<div class="notes-head"><h2>${esc(list.length ? this.t("panelTitle", { n: list.length }) : this.t("panelLabel"))}</h2><a href="/notes/">${esc(this.t("all"))}</a></div>` +
       (list.length
         ? `<ul>${list
             .map(
