@@ -1,0 +1,17 @@
+/* Tool pages (Lab, Glossary, Flashcards, Notes, Pomodoro, Compare): pieces shared by several pages. */
+
+/* Page header: eyebrow, title and lede. Also used by the progress and practice pages. */
+.gl-head {
+  @apply mb-[22px] flex flex-col gap-1.5;
+  & h1 {
+    @apply m-0;
+  }
+  & .lede {
+    @apply m-0 max-w-[70ch];
+  }
+}
+
+/* Small label above a page title. */
+.gl-eyebrow {
+  @apply font-body text-[0.8125rem] font-bold tracking-[0.08em] text-accent uppercase;
+}

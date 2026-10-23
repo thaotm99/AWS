@@ -80,3 +80,4 @@
 @import "./components/shell.css" layer(components);
 @import "./components/lesson.css" layer(components);
 @import "./components/practice.css" layer(components);
+@import "./components/tools.css" layer(components);

@@ -17,8 +17,8 @@ const head = (s: string) => s.split(": ")[0];
 const learn = { href: `/concepts/${drill.learn.lesson}/${drill.learn.part}/`, vi: head(part.title.vi), en: head(part.title.en) };
 ---
 <BaseLayout title={`${drill.title.vi} · Diễn tập sự cố · CloudLab`} description={drill.brief.vi} section="lab" sidebar={false}>
-  <header class="gl-head lab-head">
-    <span class="gl-eyebrow"><a href="/lab/"><T k="shell.lab.eyebrow" /></a> · <T k="shell.drill.eyebrow" /></span>
+  <header class="gl-head">
+    <span class="gl-eyebrow"><a class="text-inherit" href="/lab/"><T k="shell.lab.eyebrow" /></a> · <T k="shell.drill.eyebrow" /></span>
     <h1><L vi={drill.title.vi} en={drill.title.en} /></h1>
     <p class="lede"><L vi={drill.brief.vi} en={drill.brief.en} /></p>
   </header>

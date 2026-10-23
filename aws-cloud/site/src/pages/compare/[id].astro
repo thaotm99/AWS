@@ -17,8 +17,8 @@ const head = (s: string) => s.split(": ")[0];
 const learn = { href: `/concepts/${set.learn.lesson}/${set.learn.part}/`, vi: head(part.title.vi), en: head(part.title.en) };
 ---
 <BaseLayout title={`${set.title.vi} · So sánh dịch vụ · CloudLab`} description={set.lede.vi} section="lab" sidebar={false}>
-  <header class="gl-head lab-head">
-    <span class="gl-eyebrow"><a href="/lab/"><T k="shell.lab.eyebrow" /></a> · <T k="shell.compare.eyebrow" /></span>
+  <header class="gl-head">
+    <span class="gl-eyebrow"><a class="text-inherit" href="/lab/"><T k="shell.lab.eyebrow" /></a> · <T k="shell.compare.eyebrow" /></span>
     <h1><L vi={set.title.vi} en={set.title.en} /></h1>
     <p class="lede"><L vi={set.lede.vi} en={set.lede.en} /></p>
   </header>
