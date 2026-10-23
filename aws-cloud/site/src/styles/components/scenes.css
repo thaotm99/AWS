@@ -33,3 +33,11 @@
   --color-map-kw-chip-line: #6b4a26;
   --color-map-kw-ink: #f3e3cf;
 }
+
+/* Small print under a simulation (source notes, assumptions). */
+.note-small { @apply mx-0 mt-2 mb-0 text-[0.8125rem] text-muted; }
+
+/* SVG parts drawn by several lessons: a connector lane, a green label and a red failure mark. */
+.lane { @apply fill-none stroke-line stroke-2; }
+.ok-t { @apply fill-ok font-mono text-[12px] font-medium; }
+.flash-bad { @apply fill-bad font-mono text-[15px] font-bold; text-anchor: middle; }

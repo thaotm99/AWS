@@ -117,21 +117,21 @@ export default function PlacementSim() {
 
   return (
     <div className="stage">
-      <div className="ec2-chips" role="group" aria-label={L({ vi: "Workload", en: "Workload" })}>
+      <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Workload", en: "Workload" })}>
         {(Object.keys(WORKS) as WorkId[]).map((id) => (
           <button key={id} className="chip" aria-pressed={id === work} onClick={() => pickWork(id)}>{L(WORKS[id].name)}</button>
         ))}
       </div>
-      <p className="ec2-story">{rich(L(w.story))}</p>
+      <p className="m-0 px-3.5 pt-2.5 pb-0 text-step--1">{rich(L(w.story))}</p>
       <div className="stage-bar">
         <span className="label">{L({ vi: "Placement strategy", en: "Placement strategy" })}</span>
         {(Object.keys(STRATS) as Strategy[]).map((s) => (
           <button key={s} className="btn" aria-pressed={s === strat} onClick={() => pickStrat(s)}>{L(STRATS[s])}</button>
         ))}
       </div>
-      <div className="pg-az">
-        <span className="pg-az-t">{L({ vi: "AZ ap-southeast-1a · 8 rack", en: "AZ ap-southeast-1a · 8 racks" })}</span>
-        <div className="pg-racks">
+      <div className="relative mx-3.5 mt-3 mb-0 rounded-[14px] border-[1.5px] border-dashed border-accent px-2 pt-[22px] pb-2">
+        <span className="absolute top-1 left-2.5 font-mono text-[0.7rem] text-accent">{L({ vi: "AZ ap-southeast-1a · 8 rack", en: "AZ ap-southeast-1a · 8 racks" })}</span>
+        <div className="grid grid-cols-8 gap-1.5 max-sm:gap-[3px]">
           {Array.from({ length: RACKS }, (_, r) => {
             const here = racks.map((x, i) => [x, i] as const).filter(([x]) => x === r);
             const p = strat === "partition" ? partOf(r) : null;
@@ -139,8 +139,8 @@ export default function PlacementSim() {
               <button key={r} className={"pg-rack" + (down === r ? " down" : "")} onClick={() => setDown(down === r ? null : r)}
                 aria-pressed={down === r}
                 aria-label={L({ vi: `Rack ${r + 1}: ${here.length} instance. Nhấn để mô phỏng rack hỏng`, en: `Rack ${r + 1}: ${here.length} instances. Press to simulate a rack failure` })}>
-                <span className="pg-rack-t">R{r + 1}</span>
-                {p !== null && <span className="pg-part">P{p}</span>}
+                <span className="font-mono text-[0.7rem] text-muted">R{r + 1}</span>
+                {p !== null && <span className="rounded-[4px] bg-accent-soft px-1 py-px font-mono text-[0.58rem] leading-[1.1] text-accent">P{p}</span>}
                 {here.map(([, i]) => <span key={i} className={"pg-inst" + (down === r ? " lost" : "")} />)}
               </button>
             );
@@ -148,10 +148,10 @@ export default function PlacementSim() {
         </div>
       </div>
       {notLaunched > 0 && (
-        <p className="pg-over">{L({ vi: `${notLaunched} instance không launch được: spread placement group đã đủ 7 instance đang chạy trong AZ này.`,
+        <p className="mx-3.5 mt-2 mb-0 text-step--1 text-bad">{L({ vi: `${notLaunched} instance không launch được: spread placement group đã đủ 7 instance đang chạy trong AZ này.`,
           en: `${notLaunched} instances cannot launch: the spread placement group already has 7 running instances in this AZ.` })}</p>
       )}
-      <p className="pg-hint">{L({ vi: "Nhấn vào một rack để mô phỏng sự cố phần cứng (nguồn điện hoặc mạng của rack); nhấn lại để khôi phục.",
+      <p className="mx-3.5 mt-2 mb-0 text-[0.78rem] text-muted">{L({ vi: "Nhấn vào một rack để mô phỏng sự cố phần cứng (nguồn điện hoặc mạng của rack); nhấn lại để khôi phục.",
         en: "Press a rack to simulate a hardware failure (the rack's power or network); press it again to restore it." })}</p>
       <div className="readout" aria-live="polite">
         <div className="status">
@@ -162,7 +162,7 @@ export default function PlacementSim() {
             ? L({ vi: `${launched}/${w.count} instance đang chạy`, en: `${launched}/${w.count} instances running` })
             : L({ vi: `Rack R${down + 1} hỏng: mất ${lost}/${w.count} instance`, en: `Rack R${down + 1} failed: ${lost}/${w.count} instances lost` })}</span>
         </div>
-        <div className="pg-metrics">
+        <div className="mt-2 grid grid-cols-3 gap-2 max-sm:grid-cols-1">
           <div className="pg-metric"><span>{L({ vi: "Mạng giữa các instance", en: "Inter-instance network" })}</span><b className={network.good ? "good" : ""}>{network.text}</b></div>
           <div className="pg-metric"><span>{L({ vi: "Phạm vi", en: "Scope" })}</span><b>{scope}</b></div>
           <div className="pg-metric"><span>{L({ vi: "Ảnh hưởng khi 1 rack hỏng", en: "Impact of one failed rack" })}</span><b className={down === null ? "" : lost > 1 ? "bad" : "good"}>{down === null

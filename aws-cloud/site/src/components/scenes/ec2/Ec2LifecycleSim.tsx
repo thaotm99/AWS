@@ -142,16 +142,16 @@ export default function Ec2LifecycleSim() {
 
   return (
     <div className="stage">
-      <p className="ec2-story">{rich(L({ vi: "Instance **shop-transcode** chuyển mã video sản phẩm. Tệp đang xử lý nằm trên instance store; đối tác CDN đưa địa chỉ public của instance vào allow list. Chọn một thao tác để xem thành phần nào còn lại.",
+      <p className="m-0 px-3.5 pt-2.5 pb-0 text-step--1">{rich(L({ vi: "Instance **shop-transcode** chuyển mã video sản phẩm. Tệp đang xử lý nằm trên instance store; đối tác CDN đưa địa chỉ public của instance vào allow list. Chọn một thao tác để xem thành phần nào còn lại.",
         en: "The **shop-transcode** instance transcodes product videos. Files in progress are on the instance store; a CDN partner has put the instance's public address on its allow list. Pick an action to see what remains." }))}</p>
       <div className="stage-bar">
-        <label className="lc-toggle">
+        <label className="inline-flex cursor-pointer items-center gap-1.5 text-step--1">
           <input type="checkbox" checked={eip} onChange={(e) => setEip(e.target.checked)} />
           {L({ vi: "Gắn Elastic IP cho instance", en: "Associate an Elastic IP address" })}
         </label>
-        <span className="count">{L({ vi: "Trạng thái: ", en: "State: " })}<span className="lc-state">{out ? L(out.state) : "running"}</span></span>
+        <span className="count">{L({ vi: "Trạng thái: ", en: "State: " })}<span className="font-mono text-[0.78rem]">{out ? L(out.state) : "running"}</span></span>
       </div>
-      <div className="lc-actions" role="group" aria-label={L({ vi: "Thao tác", en: "Action" })}>
+      <div className="flex flex-wrap gap-1.5 border-b border-line px-3.5 py-3" role="group" aria-label={L({ vi: "Thao tác", en: "Action" })}>
         {(Object.keys(ACTIONS) as Action[]).map((a) => (
           <button key={a} className={"btn" + (a === "terminate" || a === "undo" ? " danger" : "")} aria-pressed={a === act} onClick={() => setAct(a === act ? null : a)}>{L(ACTIONS[a])}</button>
         ))}

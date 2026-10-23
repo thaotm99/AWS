@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLang, type Bi } from "../../../lib/lang";
+import "./ec2-sims.css";
 
 // Mixing purchase options against a daily demand curve: Reserved Instances for the
 // steady baseline, On-Demand or Spot for the rest (exam2_q33, exam2_q35, exam4_q49, exam5_q60).
@@ -61,8 +62,8 @@ export default function PurchaseMixSim() {
       </div>
       <div className="svg-wrap">
         <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={L({ vi: `Số instance theo giờ, phân theo tuỳ chọn mua: ${L(STRATEGIES[s].label)}`, en: `Instances per hour, by purchasing option: ${L(STRATEGIES[s].label)}` })}>
-          <line x1={pad} y1={y(BASE)} x2={W - pad} y2={y(BASE)} className="base-line" />
-          <text className="ts base-t" x={pad + 4} y={y(BASE) - 6}>{L({ vi: `tải nền: ${BASE} instance`, en: `baseline: ${BASE} instances` })}</text>
+          <line x1={pad} y1={y(BASE)} x2={W - pad} y2={y(BASE)} className="demand-base" />
+          <text className="ts demand-base-t" x={pad + 4} y={y(BASE) - 6}>{L({ vi: `tải nền: ${BASE} instance`, en: `baseline: ${BASE} instances` })}</text>
           {DEMAND.map((need, h) => {
             const x = split(s, need);
             const x0 = pad + h * bw + 2;
@@ -75,17 +76,17 @@ export default function PurchaseMixSim() {
             };
             return (
               <g key={h}>
-                {seg(x.ri, "mix-ri")}{seg(x.od, "mix-od")}{seg(x.spot, s === "spot" ? "mix-spot risky" : "mix-spot")}
+                {seg(x.ri, "buy-ri")}{seg(x.od, "buy-od")}{seg(x.spot, s === "spot" ? "buy-spot risky" : "buy-spot")}
                 {h % 3 === 0 && <text className="ts" x={x0 + bw / 2 - 2} y={H - 8} textAnchor="middle">{h}h</text>}
               </g>
             );
           })}
         </svg>
       </div>
-      <div className="mix-legend key">
-        <span><i className="mix-ri" />Reserved Instance</span>
-        <span><i className="mix-od" />On-Demand</span>
-        <span><i className="mix-spot" />Spot</span>
+      <div className="key px-4 pt-1 pb-2.5">
+        <span><i className="buy-ri size-3 rounded-[3px]" />Reserved Instance</span>
+        <span><i className="buy-od size-3 rounded-[3px]" />On-Demand</span>
+        <span><i className="buy-spot size-3 rounded-[3px]" />Spot</span>
       </div>
       <div className="readout" aria-live="polite">
         <div className="status">
