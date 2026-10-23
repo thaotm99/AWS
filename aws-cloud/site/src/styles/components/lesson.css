@@ -2,6 +2,18 @@
    (highlights, the notes panel, key-term marks, the full-screen diagram view) and the importance bars shared with
    the sidebar. Everything else on lesson pages is utilities in the components themselves. */
 
+/* ---------- Prose of a lesson scene (MDX output) ---------- */
+.prose {
+  & > p,
+  & > ul {
+    @apply max-w-[68ch];
+  }
+  /* Plain-language opening sentence of a scene: what problem the section solves, before the terms. */
+  & > .scene-intro {
+    @apply mt-0.5 mb-3.5 text-[1.06rem] leading-[1.7] font-medium text-pretty text-ink;
+  }
+}
+
 /* ---------- Importance: three bars, filled up to the level (3 core, 2 important, 1 supporting) ---------- */
 .imp {
   @apply inline-flex flex-none items-end gap-0.5;
@@ -24,6 +36,61 @@
 }
 .imp-3 i {
   @apply bg-edge;
+}
+
+/* ---------- Key terms (components/glossary/KeywordStrip.tsx) ---------- */
+/* Term chip; the open term is pressed, a term the reader knows is green. */
+.kw-chip {
+  @apply inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full border-[1.5px] bg-surface px-3.5 text-[0.82rem] font-semibold text-ink;
+  border-color: color-mix(in srgb, var(--color-edge) 35%, var(--color-line));
+  transition: background 0.2s, color 0.2s, border-color 0.2s, translate 0.2s;
+  @apply hover:-translate-y-px hover:border-edge;
+  &[data-known] {
+    @apply bg-ok-soft text-ok;
+    border-color: color-mix(in srgb, var(--color-ok) 45%, transparent);
+  }
+  &[data-known] svg {
+    animation: kw-check 0.35s ease both;
+  }
+  &[aria-pressed="true"] {
+    @apply -translate-y-0.5 border-edge bg-edge text-surface;
+  }
+}
+/* First use of a term in the scene text, wrapped in a button by the strip. */
+.kw-term {
+  @apply cursor-pointer rounded-[4px] border-0 bg-transparent px-px font-semibold text-edge underline decoration-dotted decoration-[1.5px] underline-offset-4;
+  transition: background 0.2s, color 0.2s;
+  @apply hover:bg-edge-soft;
+  &.known {
+    @apply text-inherit no-underline;
+    font-weight: inherit;
+  }
+}
+@keyframes kw-open {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes kw-check {
+  0% {
+    transform: scale(0);
+  }
+  70% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kw-chip[data-known] svg {
+    animation: none;
+  }
 }
 
 /* ---------- Part pages ---------- */

@@ -43,10 +43,10 @@ const terms: StripTerm[] = lesson && visible
   : [];
 ---
 {visible && (
-  <section class="scene prose" id={id}>
-    <div class="scene-head">
-      <span class="scene-no">{label}{part && <> · <T k="lesson.parts.minutes" params={{ n: part.minutes }} /></>}</span>
-      {route ? <h1>{title}</h1> : <h2>{title}</h2>}
+  <section class="scene prose mt-11 scroll-mt-20" id={id}>
+    <div class="scene-head mb-1 flex flex-col items-start gap-0.5">
+      <span class="text-[0.8125rem] font-bold tracking-[0.08em] text-accent uppercase">{label}{part && <> · <T k="lesson.parts.minutes" params={{ n: part.minutes }} /></>}</span>
+      {route ? <h1 class="mt-1 mb-0 text-[clamp(1.6rem,3vw,2.1rem)] leading-[1.2] tracking-[-0.015em]">{title}</h1> : <h2>{title}</h2>}
     </div>
     {terms.length > 0 && <KeywordStrip client:idle terms={terms} />}
     <slot />
