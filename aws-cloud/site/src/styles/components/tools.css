@@ -113,3 +113,8 @@
   88% { opacity: 1; }
   100% { left: 100%; opacity: 0; }
 }
+
+/* Flashcards: the answer side slides in (animate-[fc-in_…] on the element). */
+@keyframes fc-in {
+  from { opacity: 0; transform: translateY(-4px); }
+}
