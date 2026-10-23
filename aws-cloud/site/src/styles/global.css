@@ -1243,3 +1243,75 @@ main.article:focus { outline: none; }
   .pomo-chip:not([data-state="idle"]) .pomo-ring { display: none; }
   .pomo-chip[data-state="running"], .pomo-chip[data-state="paused"] { padding: 0 8px; }
 }
+
+/* ---------- Lab (/lab/) ---------- */
+.lab-hub h2 { font-size: var(--step-1); margin: 8px 0 12px; }
+.lab-list { list-style: none; margin: 0 0 40px; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.lab-list a { height: 100%; box-sizing: border-box; display: flex; gap: 14px; align-items: flex-start; padding: 16px 18px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); text-decoration: none; }
+.lab-list a:hover { border-color: var(--accent); }
+.lab-list-no { font-family: var(--font-mono); font-size: 0.875rem; color: var(--accent); padding-top: 2px; }
+.lab-list-text { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.lab-list-text small { color: var(--muted); font-size: 0.8125rem; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.lab-list-done { flex: none; font-size: 0.75rem; font-weight: 600; color: var(--ok); }
+.lab-head .gl-eyebrow a { color: inherit; }
+
+.lab { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 24px; margin-bottom: 40px; align-items: start; }
+.lab-side { display: flex; flex-direction: column; gap: 20px; }
+.lab-h { margin: 0 0 10px; font-size: 0.875rem; font-weight: 600; }
+.lab-rules { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; font-size: 0.8125rem; line-height: 1.5; }
+.lab-rules li { display: flex; gap: 10px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); }
+.lab-rules li[data-state="pass"] { border-color: var(--ok); background: var(--ok-soft); }
+.lab-rules li[data-state="fail"] { border-color: var(--edge); background: var(--edge-soft); }
+.lab-rule-state { flex: none; min-width: 34px; font-family: var(--font-mono); font-weight: 600; color: var(--muted); }
+[data-state="pass"] > .lab-rule-state { color: var(--ok); }
+[data-state="fail"] > .lab-rule-state { color: var(--edge); }
+.lab-palette { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.lab-svc { min-height: 48px; padding: 8px 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: grab; }
+.lab-svc b { font-size: 0.875rem; }
+.lab-svc small { font-size: 0.75rem; color: var(--muted); line-height: 1.4; }
+.lab-svc:hover { border-color: var(--accent); }
+.lab-svc[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 2px var(--accent); }
+.lab-tip { margin: 10px 0 0; font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
+.lab-main { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.lab-board { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 16px; border: 1px solid var(--line); background: var(--bg); }
+.lab-row { display: flex; flex-wrap: wrap; gap: 12px; }
+.lab-row > * { flex: 1 1 200px; }
+.lab-edge { padding-bottom: 12px; border-bottom: 1px dashed var(--line); }
+.lab-region { display: flex; flex-direction: column; gap: 12px; padding: 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); }
+.lab-region-label, .lab-az-label { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }
+.lab-azs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.lab-az { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 12px; border: 1px dashed color-mix(in srgb, var(--muted) 45%, transparent); }
+.lab-slot { min-height: 64px; box-sizing: border-box; padding: 10px 12px; display: flex; flex-direction: column; justify-content: center; gap: 3px; border-radius: 10px; border: 1.5px dashed var(--line); background: var(--surface); color: var(--muted); font: inherit; text-align: left; cursor: pointer; }
+.lab-slot small { font-size: 0.75rem; }
+.lab-slot b { font-size: 0.875rem; font-weight: 600; }
+.lab-slot[data-filled] { border-style: solid; border-color: var(--accent); background: var(--accent-soft); color: var(--ink); }
+.lab-slot[data-target]:not([data-filled]) { border-color: var(--accent); color: var(--ink); }
+.lab-slot[data-target] { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+.lab-slot.fixed { border-style: solid; background: var(--bg); color: var(--ink); cursor: default; }
+.lab-slot.fixed small { color: var(--muted); }
+.lab-slot.none { visibility: hidden; }
+.lab-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.lab-actions .btn { min-height: 44px; padding: 0 16px; }
+.lab-done-tag { font-size: 0.8125rem; color: var(--ok); font-weight: 600; }
+.lab-hint { margin: 0; padding: 12px 14px; border-radius: 10px; background: var(--accent-soft); font-size: 0.875rem; }
+.lab-result { padding: 14px 16px; border-radius: 12px; border: 1px solid var(--edge); background: var(--surface); display: flex; flex-direction: column; gap: 6px; }
+.lab-result[data-ok] { border-color: var(--ok); }
+.lab-result p { margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--muted); }
+.lab-links { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 6px !important; }
+.lab-links .btn { min-height: 40px; text-decoration: none; }
+.lab-count { margin: 0; font-size: 0.75rem; color: var(--muted); }
+@media (max-width: 900px) {
+  .lab { grid-template-columns: minmax(0, 1fr); }
+  .lab-palette { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lab-list { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  .lab-board { padding: 10px; }
+  .lab-region { padding: 10px; }
+  .lab-azs { gap: 8px; }
+  .lab-az { padding: 8px; }
+  .lab-slot { padding: 8px; min-height: 60px; }
+  .lab-palette { grid-template-columns: minmax(0, 1fr); }
+  .lab-svc small { display: none; }
+  .lab-palette { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

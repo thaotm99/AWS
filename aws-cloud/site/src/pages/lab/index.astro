@@ -1,0 +1,40 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import T from "../../app/T.astro";
+import L from "../../components/L.astro";
+import { LABS } from "../../lib/labs";
+---
+<BaseLayout title="Lab · CloudLab" titleKey="shell.lab.pageTitle" description="Dựng kiến trúc ShopViet trên AWS theo yêu cầu và kiểm tra thiết kế." section="lab" sidebar={false}>
+  <header class="gl-head">
+    <span class="gl-eyebrow"><T k="shell.lab.eyebrow" /></span>
+    <h1><T k="shell.lab.title" /></h1>
+    <p class="lede"><T k="shell.lab.lede" /></p>
+  </header>
+
+  <section class="lab-hub" aria-labelledby="lab-build">
+    <h2 id="lab-build"><T k="shell.lab.build" /></h2>
+    <ol class="lab-list">
+      {LABS.map((lab, i) => (
+        <li>
+          <a href={`/lab/${lab.id}/`} data-lab={lab.id}>
+            <span class="lab-list-no">{String(i + 1).padStart(2, "0")}</span>
+            <span class="lab-list-text">
+              <b><L vi={lab.title.vi} en={lab.title.en} /></b>
+              <small><L vi={lab.brief.vi} en={lab.brief.en} /></small>
+            </span>
+            <span class="lab-list-done" hidden><T k="shell.lab.doneShort" /></span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </section>
+</BaseLayout>
+
+<script>
+  import { readLabs } from "../../lib/labs";
+
+  const labs = readLabs();
+  for (const a of document.querySelectorAll<HTMLElement>("[data-lab]")) {
+    if (labs[a.dataset.lab!]?.done) a.querySelector<HTMLElement>(".lab-list-done")!.hidden = false;
+  }
+</script>
