@@ -82,7 +82,7 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s6", label: "6 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-MFTech's order database must meet three requirements: no data loss, no service interruption, and no performance degradation when the accounting department runs reports. **Amazon RDS** and **Amazon Aurora** meet these three requirements with different mechanisms; understanding the differences between those mechanisms is the basis for choosing the right configuration.
+MFTECH's order database must meet three requirements: no data loss, no service interruption, and no performance degradation when the accounting department runs reports. **Amazon RDS** and **Amazon Aurora** meet these three requirements with different mechanisms; understanding the differences between those mechanisms is the basis for choosing the right configuration.
 </Story>
 
 <Scene id="en-s1" label="Part 1/6" title="Multi-AZ deployments and Read Replicas" questions={["exam1_q52", "exam5_q25", "exam6_q49", "exam2_q25", "exam3_q63", "exam3_q41"]}>
@@ -103,7 +103,7 @@ The simulation above is a **Multi-AZ DB instance deployment** (one standby). RDS
 
 <p class="scene-intro">As a system grows, the database runs into new problems, such as reports slowing the website or too many database connections at once; RDS has a specific feature for each.</p>
 
-As MFTech grows, the database runs into more problems: reports slow the website, Lambda functions open too many database connections, storage runs out, a Region-level outage. Choose each incident, run it to see the impact, then turn on the matching RDS feature and run again:
+As MFTECH grows, the database runs into more problems: reports slow the website, Lambda functions open too many database connections, storage runs out, a Region-level outage. Choose each incident, run it to see the impact, then turn on the matching RDS feature and run again:
 
 <RdsOpsSim client:visible />
 
@@ -117,11 +117,11 @@ Two further measures reduce the load on the operations team. The accounting syst
 
 <p class="scene-intro">Aurora is a MySQL- and PostgreSQL-compatible relational database engine with a storage layer AWS redesigned, so Aurora Replicas have lower replica lag and clusters extend across Regions more easily.</p>
 
-The RDS for MySQL Read Replica starts to show several minutes of replica lag at peak hours, so MFTech moves to **Aurora MySQL**. The biggest difference: all instances share one **cluster volume**, so replicas do not have to copy the data again. Try each action in turn:
+The RDS for MySQL Read Replica starts to show several minutes of replica lag at peak hours, so MFTECH moves to **Aurora MySQL**. The biggest difference: all instances share one **cluster volume**, so replicas do not have to copy the data again. Try each action in turn:
 
 <AuroraSim client:visible />
 
-Some other MFTech decisions involving Aurora:
+Some other MFTECH decisions involving Aurora:
 
 <RequirementPicker client:visible items={[
   { need: "The development team needs a database with production-like data to test new features", answer: "Restore from an Aurora automated backup (or create a clone)",
@@ -164,7 +164,7 @@ A security audit finds that the order database is not encrypted. RDS lets you en
       note: "Restore the encrypted snapshot to a new encrypted DB instance, switch the application to the new DB instance's endpoint, then delete the old DB instance." },
   ]} />
 
-Encryption at rest is only one part. MFTech's other security requirements:
+Encryption at rest is only one part. MFTECH's other security requirements:
 
 <RequirementPicker client:visible items={[
   { need: "The database is already encrypted at rest; data in transit from the application to the database must also be protected", answer: "Connect with SSL/TLS", why: "KMS protects data only at rest." },
@@ -188,7 +188,7 @@ The accounting team needs a copy of the order database (RDS for MySQL, unencrypt
 
 <ReplicaLab client:visible />
 
-For DR, MFTech combines two mechanisms in another Region: a **cross-Region read replica** (promoted to a standalone DB instance if the primary Region fails) and **cross-Region automated backups** (RDS copies snapshots and transaction logs to the destination Region as soon as they are ready). The storage type, for example Provisioned IOPS, determines only I/O performance and is not a DR measure.
+For DR, MFTECH combines two mechanisms in another Region: a **cross-Region read replica** (promoted to a standalone DB instance if the primary Region fails) and **cross-Region automated backups** (RDS copies snapshots and transaction logs to the destination Region as soon as they are ready). The storage type, for example Provisioned IOPS, determines only I/O performance and is not a DR measure.
 
 <Takeaway>Reports: a same-Region Read Replica with the same compute and storage as the source (scale the replica when you scale the source). A replica's encryption follows the source. The standby of a Multi-AZ DB instance deployment serves no reads and stays in the same Region, but automated backups and snapshots are taken from it. DR for RDS: cross-Region read replicas and cross-Region automated backups.</Takeaway>
 
@@ -198,7 +198,7 @@ For DR, MFTech combines two mechanisms in another Region: a **cross-Region read 
 
 <p class="scene-intro">Many RDS and Aurora features have names close to real needs; telling them apart helps you pick the right one for each case.</p>
 
-Some features have names close to a real need but solve a different problem. Choose each feature to see when to use it, why it does not fit the matching MFTech situation, and what to choose instead:
+Some features have names close to a real need but solve a different problem. Choose each feature to see when to use it, why it does not fit the matching MFTECH situation, and what to choose instead:
 
 <QuickCompare client:visible items={[
   { name: "Aurora machine learning",
@@ -250,7 +250,7 @@ Sort each property into the matching feature. On a mobile device: tap a card, th
   ]}
 />
 
-Check question: as the designer of the MFTech system, which option fits?
+Check question: as the designer of the MFTECH system, which option fits?
 
 <Quiz client:visible items={[
   { q: "Which statement correctly describes the difference between a Multi-AZ DB instance deployment and Read Replicas?",
@@ -265,7 +265,7 @@ Check question: as the designer of the MFTech system, which option fits?
     opts: ["A same-Region Read Replica, with the reports run on it", "Enable Multi-AZ", "Move to a DB instance class twice as large"],
     a: 0,
     why: "A same-Region replica offloads the read traffic and has no charge for replication data transfer." },
-  { q: "MFTech uses Aurora and requires an RPO measured in seconds and an RTO measured in minutes if the entire Singapore Region fails. Which option fits?",
+  { q: "MFTECH uses Aurora and requires an RPO measured in seconds and an RTO measured in minutes if the entire Singapore Region fails. Which option fits?",
     opts: ["An Aurora Replica in the same Region", "Aurora Global Database", "Daily snapshots copied to another Region"],
     a: 1,
     why: "Global Database replicates to another Region with lag typically under one second; on failover, RPO is typically measured in seconds and RTO can be measured in minutes." },

@@ -55,7 +55,7 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s5", label: "5 · Multi-Region deployment" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-MFTech's order and reporting data is already stored on Aurora. Shopping carts, login sessions and shipper locations are different: a simple data structure, constant reads and writes, and highly variable traffic. **Amazon DynamoDB** is a serverless NoSQL database: there are no servers to manage, it scales out automatically, and it delivers single-digit millisecond latency at any scale.
+MFTECH's order and reporting data is already stored on Aurora. Shopping carts, login sessions and shipper locations are different: a simple data structure, constant reads and writes, and highly variable traffic. **Amazon DynamoDB** is a serverless NoSQL database: there are no servers to manage, it scales out automatically, and it delivers single-digit millisecond latency at any scale.
 </Story>
 
 <Scene id="en-s1" label="Part 1/5" title="Tables, items and primary keys" questions={["exam4_q10", "exam2_q29", "exam3_q11", "exam6_q17", "exam4_q23", "exam6_q65"]}>
@@ -67,7 +67,7 @@ A **table** contains **items**; each item is a set of **attributes**, and items 
 - **Partition key**: DynamoDB hashes this value to determine the partition that holds the item.
 - **Sort key** (optional): orders the items that share a partition key, for example by order date.
 
-Data is stored on SSDs and automatically replicated across multiple AZs in the Region. AWS describes DynamoDB as delivering single-digit millisecond performance at any scale, so queries by key do not slow down as the table grows. Try five MFTech tasks:
+Data is stored on SSDs and automatically replicated across multiple AZs in the Region. AWS describes DynamoDB as delivering single-digit millisecond performance at any scale, so queries by key do not slow down as the table grows. Try five MFTECH tasks:
 
 <KeyAccessSim client:visible />
 
@@ -109,7 +109,7 @@ DynamoDB itself stores data on SSDs; it is **not** an in-memory database. When y
 
 <p class="scene-intro">A database does not operate in isolation: data must be ingested, expired data must be deleted, and other components must be notified when data changes.</p>
 
-When integrating DynamoDB with other components, MFTech must answer three questions: how data gets in, how old data is deleted, and which component is notified when data changes.
+When integrating DynamoDB with other components, MFTECH must answer three questions: how data gets in, how old data is deleted, and which component is notified when data changes.
 
 <DataFlowSim client:visible />
 
@@ -124,7 +124,7 @@ When integrating DynamoDB with other components, MFTech must answer three questi
 
 <p class="scene-intro">The most common data incidents come from human actions such as bad writes or accidental deletes; a way to restore to a point before the incident must be ready in advance.</p>
 
-The two most common data incidents come not from hardware but from human actions: a deployment that writes bad data, and an accidental delete. Choose the measure MFTech put in place, then run the simulation:
+The two most common data incidents come not from hardware but from human actions: a deployment that writes bad data, and an accidental delete. Choose the measure MFTECH put in place, then run the simulation:
 
 <RecoverySim client:visible />
 
@@ -135,7 +135,7 @@ The two most common data incidents come not from hardware but from human actions
 | **Deletion protection** | Prevent accidental deletes | Nothing to restore: the delete request is denied |
 | **Export to S3** | Analytics with Athena, Glue, EMR; moving data to a bucket in another account or Region | Any point in time within the PITR window, written as DynamoDB JSON or Amazon Ion files in S3 |
 
-**Export to S3** is a fully managed feature: it exports the whole table (full export) or the data changed during a time period (incremental export) from any point in time within the PITR window, so **the table must have PITR enabled**. Exports are asynchronous, **do not consume RCUs** and have no impact on table performance or availability; AWS does not guarantee completion times. It is a copy of the data for analytics, not a protection mechanism for the table: an export does not stop a table from being deleted, and reusing the data requires **import from S3**, which always creates a **new table**. If MFTech only exported manually every week, a deleted table could lose up to a week of data, plus the time to import and switch the application to the new table.
+**Export to S3** is a fully managed feature: it exports the whole table (full export) or the data changed during a time period (incremental export) from any point in time within the PITR window, so **the table must have PITR enabled**. Exports are asynchronous, **do not consume RCUs** and have no impact on table performance or availability; AWS does not guarantee completion times. It is a copy of the data for analytics, not a protection mechanism for the table: an export does not stop a table from being deleted, and reusing the data requires **import from S3**, which always creates a **new table**. If MFTECH only exported manually every week, a deleted table could lose up to a week of data, plus the time to import and switch the application to the new table.
 
 <Takeaway>Restore to an exact point in time, down to the second: PITR. Prevent accidental deletes with the least operational overhead: deletion protection. Analyze table data with Athena without consuming RCUs: export to S3 (requires PITR). Streams, global tables and export to S3 do not replace deletion protection and PITR.</Takeaway>
 
@@ -145,7 +145,7 @@ The two most common data incidents come not from hardware but from human actions
 
 <p class="scene-intro">When an application serves customers on several continents, the data must also sit close to them and stay in sync across Regions.</p>
 
-MFTech expands into the European and US markets. The application is deployed in each Region; the problem to solve is how to organize the data.
+MFTECH expands into the European and US markets. The application is deployed in each Region; the problem to solve is how to organize the data.
 
 <MultiRegionSim client:visible />
 
@@ -158,7 +158,7 @@ MFTech expands into the European and US markets. The application is deployed in 
 
 <Scene id="en-challenge" label="Exercise" title="Sort the requirements by DynamoDB feature" questions={["exam4_q62", "exam4_q54", "exam3_q49", "exam4_q42", "exam5_q59", "exam5_q32"]}>
 
-Sort each MFTech requirement into the feature that meets it. On a mobile device: tap a card, then tap the target box.
+Sort each MFTECH requirement into the feature that meets it. On a mobile device: tap a card, then tap the target box.
 
 <SortGame client:visible
   bins={[
@@ -173,7 +173,7 @@ Sort each MFTech requirement into the feature that meets it. On a mobile device:
   ]}
 />
 
-Check question: as the designer of the MFTech system, which option fits?
+Check question: as the designer of the MFTECH system, which option fits?
 
 <Quiz client:visible items={[
   { q: "The shipper app runs only during the day; load spikes within minutes without warning. Which capacity mode should the DynamoDB table use?",
@@ -188,7 +188,7 @@ Check question: as the designer of the MFTech system, which option fits?
     opts: ["Last night's on-demand backup", "Point-in-time recovery", "A global table replica in another Region"],
     a: 1,
     why: "PITR restores to any second within up to 35 days. Last night's backup loses a whole day of valid data; the replica has already received the bad data." },
-  { q: "An engineer nearly deleted a production table. MFTech must prevent this completely with the least operational overhead. Which feature must be enabled?",
+  { q: "An engineer nearly deleted a production table. MFTECH must prevent this completely with the least operational overhead. Which feature must be enabled?",
     opts: ["Deletion protection", "PITR", "EventBridge catches DeleteTable and recreates the table"],
     a: 0,
     why: "Deletion protection blocks the delete request up front: while it is on, no one can delete the table. PITR can only restore after the table has been deleted and the application has gone down." },

@@ -1,6 +1,6 @@
 ---
 title: "ElastiCache and data analytics: Redshift, Athena, Glue"
-lede: "This lesson covers two groups of MFTech data needs: responding to users with low latency (caching, sessions, leaderboards, finding the nearest shipper) and analyzing data (data checks, a data warehouse, dashboards, converting call recordings). It covers choosing the right service for each task and controlling the storage cost of a data lake over time."
+lede: "This lesson covers two groups of MFTECH data needs: responding to users with low latency (caching, sessions, leaderboards, finding the nearest shipper) and analyzing data (data checks, a data warehouse, dashboards, converting call recordings). It covers choosing the right service for each task and controlling the storage cost of a data lake over time."
 minutes: 35
 scenes: 6
 prerequisites: ["rds", "dynamodb", "s3"]
@@ -103,18 +103,18 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s6", label: "6 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-MFTech's user base grows every month. Aurora starts to get overloaded by repeated queries, while the analytics department needs to work with the data without affecting the performance of the sales system. **Amazon ElastiCache** keeps frequently accessed data in an in-memory cache. **Amazon Athena**, **Amazon Redshift** and **AWS Glue** handle analytics on the S3 data lake.
+MFTECH's user base grows every month. Aurora starts to get overloaded by repeated queries, while the analytics department needs to work with the data without affecting the performance of the sales system. **Amazon ElastiCache** keeps frequently accessed data in an in-memory cache. **Amazon Athena**, **Amazon Redshift** and **AWS Glue** handle analytics on the S3 data lake.
 </Story>
 
 <Scene id="en-s1" label="Part 1/6" title="Caching strategies with ElastiCache" questions={["exam4_q12", "exam3_q33", "exam5_q37", "exam4_q50", "exam4_q32", "exam6_q6", "exam1_q29", "exam1_q55"]}>
 
 <p class="scene-intro">Many queries return the same result again and again; keeping that result in an in-memory cache returns it faster and takes load off the database.</p>
 
-**ElastiCache** is a fully managed in-memory data store with sub-millisecond latency. The most common usage pattern is **cache-aside** (AWS calls it lazy loading): the application queries the cache first; if the data is not there (a cache miss), the application reads from the database and writes the result to the cache with a TTL. The **write-through** pattern adds this: whenever the application writes to the database, it also updates the cache. In both patterns the database remains the system of record. Try six MFTech scenarios:
+**ElastiCache** is a fully managed in-memory data store with sub-millisecond latency. The most common usage pattern is **cache-aside** (AWS calls it lazy loading): the application queries the cache first; if the data is not there (a cache miss), the application reads from the database and writes the result to the cache with a TTL. The **write-through** pattern adds this: whenever the application writes to the database, it also updates the cache. In both patterns the database remains the system of record. Try six MFTECH scenarios:
 
 <CacheSim client:visible />
 
-ElastiCache fits two kinds of workload: **heavy read traffic** (the same data is queried repeatedly) and **compute-intensive results** (results that take a lot of resources to compute, such as leaderboards). ElastiCache does not solve heavy write traffic, does not run complex JOINs and does not perform ETL. Cache nodes keep data in memory and replicate to replicas asynchronously, so transactions such as purchases are not written to the cache **instead of** the database: when a write peak makes the database time out, use an Amazon SQS queue to absorb the peak and RDS Proxy for connection pooling. ElastiCache for Valkey offers a **durability** option (a Multi-AZ transactional log) for using ElastiCache as a primary data store; MFTech's ordinary cache configuration does not turn it on.
+ElastiCache fits two kinds of workload: **heavy read traffic** (the same data is queried repeatedly) and **compute-intensive results** (results that take a lot of resources to compute, such as leaderboards). ElastiCache does not solve heavy write traffic, does not run complex JOINs and does not perform ETL. Cache nodes keep data in memory and replicate to replicas asynchronously, so transactions such as purchases are not written to the cache **instead of** the database: when a write peak makes the database time out, use an Amazon SQS queue to absorb the peak and RDS Proxy for connection pooling. ElastiCache for Valkey offers a **durability** option (a Multi-AZ transactional log) for using ElastiCache as a primary data store; MFTECH's ordinary cache configuration does not turn it on.
 
 For data on DynamoDB, there is also **DAX** (DynamoDB lesson). ElastiCache works with any data source: RDS, Aurora, DynamoDB, or ElastiCache itself acting as a session store.
 
@@ -126,7 +126,7 @@ For data on DynamoDB, there is also **DAX** (DynamoDB lesson). ElastiCache works
 
 <p class="scene-intro">ElastiCache supports several engines; they differ in the data types they support, in backups and in fault tolerance.</p>
 
-ElastiCache supports three engines: **Valkey**, **Redis OSS** and **Memcached**. Valkey and Redis OSS support many data structures and high availability features. **Memcached** is simpler but multithreaded. Send the same sequence of commands to two identically configured nodes, then choose MFTech's requirements:
+ElastiCache supports three engines: **Valkey**, **Redis OSS** and **Memcached**. Valkey and Redis OSS support many data structures and high availability features. **Memcached** is simpler but multithreaded. Send the same sequence of commands to two identically configured nodes, then choose MFTECH's requirements:
 
 <CacheEngineSim client:visible />
 
@@ -140,7 +140,7 @@ Examples: caching the results of slow JOIN queries on RDS while making use of ma
 
 <p class="scene-intro">A cache often holds important data such as shopping carts; when a cache node fails, both the downtime and the data lost must be kept small.</p>
 
-MFTech's ElastiCache cluster (Redis OSS, node-based) holds carts and query results for RDS. When the primary node has a hardware failure, the two goals are **the shortest possible downtime** and **the least possible data loss**. Choose each protection option, then simulate the failure:
+MFTECH's ElastiCache cluster (Redis OSS, node-based) holds carts and query results for RDS. When the primary node has a hardware failure, the two goals are **the shortest possible downtime** and **the least possible data loss**. Choose each protection option, then simulate the failure:
 
 <CacheRecoverySim client:visible />
 
@@ -159,7 +159,7 @@ Each mechanism solves a different problem:
 
 <p class="scene-intro">Analytics data is usually centralized in a data lake on S3; each task, such as quick queries, data transformation or reporting, has a best-fit service.</p>
 
-MFTech's data is stored in a data lake on S3. Each task has a best-fit service:
+MFTECH's data is stored in a data lake on S3. Each task has a best-fit service:
 
 - **Athena**: SQL queries directly on files in S3, serverless, billed by the bytes of data scanned. Suits ad-hoc queries.
 - **Redshift**: an MPP data warehouse for reports and dashboards that run on a schedule. Has a **Serverless** option. **Redshift Spectrum** lets a Redshift cluster also query data on S3.
@@ -178,7 +178,7 @@ Choose a task, run the simulation, then switch to the better-suited tool. Contin
 
 <p class="scene-intro">A data lake grows every day; without an S3 Lifecycle policy over time, costs keep rising even though most old data is rarely used.</p>
 
-MFTech's data lake is split into two zones. The **raw zone** stores the original data as it was received. The **refined zone** stores data that Glue has cleaned for analysts to query. Each zone grows by 1 TB a day. Choose a storage option, then simulate one year:
+MFTECH's data lake is split into two zones. The **raw zone** stores the original data as it was received. The **refined zone** stores data that Glue has cleaned for analysts to query. Each zone grows by 1 TB a day. Choose a storage option, then simulate one year:
 
 <LakeCostSim client:visible />
 
@@ -196,12 +196,12 @@ When the data lake needs another copy in a different Region for disaster recover
 
 <p class="scene-intro">Many data services have similar names or features; telling them apart helps you pick the right one for each need.</p>
 
-Some services have names or features close to a MFTech need but solve a different problem. Choose each service to see when to use it, why it does not fit the matching situation, and what to choose instead:
+Some services have names or features close to a MFTECH need but solve a different problem. Choose each service to see when to use it, why it does not fit the matching situation, and what to choose instead:
 
 <QuickCompare client:visible items={[
   { name: "AWS Glue Studio",
     use: "A visual interface for **creating, running and monitoring Glue ETL jobs** on the serverless Apache Spark engine; drag and drop source, transform and target nodes without writing Spark; generates an editable PySpark script; includes a Data Quality node to check data against rules.",
-    notHere: "MFTech's engineers and analysts need to prepare Parquet data on S3 together, see a **profile of every column** (distributions, null values, data types), save the steps as a shared recipe and view **data lineage**. Those are the features of a data preparation tool; Glue Studio is a tool for building ETL jobs.",
+    notHere: "MFTECH's engineers and analysts need to prepare Parquet data on S3 together, see a **profile of every column** (distributions, null values, data types), save the steps as a shared recipe and view **data lineage**. Those are the features of a data preparation tool; Glue Studio is a tool for building ETL jobs.",
     instead: "**AWS Glue DataBrew**: more than 250 built-in transformations, versioned **recipes** you can download and reuse, **profile jobs**, a data lineage map (part 4)." },
   { name: "Amazon AppFlow",
     use: "Exchanges data between **SaaS applications** (Salesforce, Zendesk…) and AWS services (S3, Redshift) with no code, on demand or on a schedule; for example, pulling support tickets from Zendesk into S3.",
@@ -209,19 +209,19 @@ Some services have names or features close to a MFTech need but solve a differen
     instead: "**Glue DataBrew** to prepare data on S3. AppFlow is for when the source is a SaaS application." },
   { name: "AWS Lake Formation",
     use: "Centrally governs, secures and shares a data lake: **fine-grained permissions down to column, row and cell** on S3 data and the Glue Data Catalog, enforced across Athena, Redshift Spectrum, EMR and Glue; shares data across accounts.",
-    notHere: "MFTech's security team needs to centralize security logs and events from every account with the least development effort. With Lake Formation, MFTech would still have to build the log collection and the Glue jobs that normalize the formats itself.",
-    instead: "**Amazon Security Lake**: automatically collects security data from AWS services, third-party sources, many accounts and Regions, converts it to Parquet in the standard **OCSF** schema, and stores it in S3 in MFTech's own account (Security lesson, part 2)." },
+    notHere: "MFTECH's security team needs to centralize security logs and events from every account with the least development effort. With Lake Formation, MFTECH would still have to build the log collection and the Glue jobs that normalize the formats itself.",
+    instead: "**Amazon Security Lake**: automatically collects security data from AWS services, third-party sources, many accounts and Regions, converts it to Parquet in the standard **OCSF** schema, and stores it in S3 in MFTECH's own account (Security lesson, part 2)." },
   { name: "OpenSearch Service (coordinate data)",
     use: "Full-text search and log analytics; OpenSearch Dashboards includes a map service for coordinate map visualizations. Suits searching and analyzing location data.",
     notHere: "Shipper locations are updated thousands of times a second and must be read back immediately. OpenSearch indexes have **eventual read consistency**: a change becomes searchable only after a refresh (every second by default), and AWS recommends raising the refresh interval to 30 seconds or more for indexing performance.",
     instead: "**ElastiCache (Redis OSS or Valkey)** with geospatial commands and TTLs, in front of PostgreSQL (part 1, nearest shipper scenario)." },
   { name: "Amazon Neptune",
     use: "A graph database for **highly connected data**: product recommendations, fraud detection, knowledge graphs. A **Neptune global database** has one primary cluster that takes writes and up to 5 read-only clusters in other Regions, with replication latency typically under a second.",
-    notHere: "MFTech's global orders are not graph data, and the application in every Region needs to **write** locally. A Neptune global database accepts writes only in the primary Region; building replication yourself with Lambda and SQS adds complexity.",
+    notHere: "MFTECH's global orders are not graph data, and the application in every Region needs to **write** locally. A Neptune global database accepts writes only in the primary Region; building replication yourself with Lambda and SQS adds complexity.",
     instead: "**DynamoDB global tables**: every Region has a replica table that accepts reads and writes (DynamoDB lesson, part 5)." },
   { name: "Amazon Athena ML",
     use: "Calls a **SageMaker AI model endpoint** from a SQL statement: define a function with the `USING EXTERNAL FUNCTION … RETURNS … SAGEMAKER '<endpoint>'` clause, then the `SELECT` passes values to the model and gets inference results back, for example flagging anomalous transactions directly on S3 data. The endpoint must accept and return `text/csv`; the principal running the query needs `sagemaker:InvokeEndpoint`.",
-    notHere: "MFTech's analysts need to **build and train** models with SQL, on an MPP data warehouse loaded every morning. Athena ML only runs inference against a model **already deployed** to a SageMaker AI endpoint (someone still has to build and deploy the model), and Athena queries files on S3 in place rather than being a data warehouse.",
+    notHere: "MFTECH's analysts need to **build and train** models with SQL, on an MPP data warehouse loaded every morning. Athena ML only runs inference against a model **already deployed** to a SageMaker AI endpoint (someone still has to build and deploy the model), and Athena queries files on S3 in place rather than being a data warehouse.",
     instead: "**Glue → Redshift Serverless → Redshift ML**: a SQL `CREATE MODEL` statement uses data in Redshift to create a model in SageMaker AI, then predictions run as a SQL function (part 4). Athena ML fits when an endpoint already exists and you only need inference from ad-hoc queries on S3." },
 ]} />
 
@@ -233,7 +233,7 @@ More on Security Lake: [Security lesson, part 2](/concepts/security/security-inc
 
 <Scene id="en-challenge" label="Exercise" title="Sort the tasks by service group" questions={["exam4_q12", "exam6_q47", "exam5_q12", "exam1_q53", "exam2_q34"]}>
 
-Sort each MFTech task into the matching service group. On a mobile device: tap a card, then tap the target box.
+Sort each MFTECH task into the matching service group. On a mobile device: tap a card, then tap the target box.
 
 <SortGame client:visible
   bins={[
@@ -248,14 +248,14 @@ Sort each MFTech task into the matching service group. On a mobile device: tap a
   ]}
 />
 
-Check question: as the designer of the MFTech system, which option fits?
+Check question: as the designer of the MFTECH system, which option fits?
 
 <Quiz client:visible items={[
   { q: "Aurora already has a read replica but is still overloaded because users query order status over and over. Which solution is effective at the lowest cost?",
     opts: ["Add another read replica", "ElastiCache in front of Aurora, caching results with a TTL", "Move to Aurora Serverless v2"],
     a: 1,
     why: "Most of the load is repeated reads; the cache responds from memory, so identical queries do not reach the database." },
-  { q: "MFTech needs to cache the results of slow JOIN queries on RDS, running on multi-core nodes and using all the cores. Which engine fits?",
+  { q: "MFTECH needs to cache the results of slow JOIN queries on RDS, running on multi-core nodes and using all the cores. Which engine fits?",
     opts: ["Memcached", "Redis OSS", "DAX"],
     a: 0,
     why: "Memcached processes commands on multiple threads. DAX is only for DynamoDB." },

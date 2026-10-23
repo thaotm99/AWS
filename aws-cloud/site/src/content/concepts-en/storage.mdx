@@ -86,20 +86,20 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s5", label: "5 · S3 through a file interface" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-The MFTech system has four different storage needs: the database needs high-performance block storage, the web servers need a shared file system, the office needs an SMB file share for Windows, and the data team needs a high-performance file system for high performance computing (HPC) workloads. Each need maps to a different type of storage service.
+The MFTECH system has four different storage needs: the database needs high-performance block storage, the web servers need a shared file system, the office needs an SMB file share for Windows, and the data team needs a high-performance file system for high performance computing (HPC) workloads. Each need maps to a different type of storage service.
 </Story>
 
 <Scene id="en-s1" label="Part 1/5" title="Shared storage for multiple EC2 instances" questions={["exam2_q29", "exam6_q15", "exam1_q46", "exam1_q9"]}>
 
 <p class="scene-intro">When several EC2 instances serve one website, files users upload must be stored where every instance can read them.</p>
 
-MFTech runs three EC2 instances as web servers in two Availability Zones (AZs) behind a load balancer. A user uploads a product video to any one instance, and other users must be able to watch that video whichever instance they are routed to. Try storing the video in three places:
+MFTECH runs three EC2 instances as web servers in two Availability Zones (AZs) behind a load balancer. A user uploads a product video to any one instance, and other users must be able to watch that video whichever instance they are routed to. Try storing the video in three places:
 
 <SharedStorageSim client:visible />
 
 When several AWS accounts (for example, the account of each sub-shop) need to mount the same folder, EFS still works: add a file system policy that grants access to the other account, and connect the two VPCs with VPC peering or a transit gateway. Part 3 builds this setup for a Lambda function with an EFS access point.
 
-The three kinds of service are also billed differently. The MFTech operations team needs to estimate what the same data costs to store on each service; adjust the amount of data and the EBS volume size:
+The three kinds of service are also billed differently. The MFTECH operations team needs to estimate what the same data costs to store on each service; adjust the amount of data and the EBS volume size:
 
 <StorageBillSim client:visible />
 
@@ -111,7 +111,7 @@ The three kinds of service are also billed differently. The MFTech operations te
 
 <p class="scene-intro">The database's EBS volume sets the IOPS and throughput of the whole system; Amazon EBS offers several volume types that differ in performance and price.</p>
 
-MFTech's order database runs on an EC2 instance, and its IOPS needs keep growing. Adjust the IOPS slider and turn on requirements to see the suitable volume type:
+MFTECH's order database runs on an EC2 instance, and its IOPS needs keep growing. Adjust the IOPS slider and turn on requirements to see the suitable volume type:
 
 <VolumeChooser client:visible />
 
@@ -140,7 +140,7 @@ Besides choosing a volume type, operating EBS also involves these tasks:
 
 <p class="scene-intro">A shared file system also needs tuning as load changes, as data is accessed less often and when access must be controlled.</p>
 
-After deploying Amazon EFS, MFTech has operational issues to solve: adjusting the performance mode and throughput mode under heavy load, optimizing the cost of storing old files, and controlling who can mount. Choose each scenario:
+After deploying Amazon EFS, MFTECH has operational issues to solve: adjusting the performance mode and throughput mode under heavy load, optimizing the cost of storing old files, and controlling who can mount. Choose each scenario:
 
 <RequirementPicker client:visible items={[
   { need: "A big data job runs in parallel on a very large number of instances, all reading and writing EFS", answer: "Performance mode: General Purpose", why: "AWS recommends General Purpose for all file systems. Max I/O is a previous-generation performance mode for highly parallel workloads that can tolerate higher latency; Max I/O does not support Elastic throughput or One Zone file systems." },
@@ -158,13 +158,13 @@ After deploying Amazon EFS, MFTech has operational issues to solve: adjusting th
 
 <BurstCreditSim client:visible kind="efs" />
 
-On performance modes: older study material often picks **Max I/O** for parallel big data jobs. Current AWS guidance ([Amazon EFS performance specifications](https://docs.aws.amazon.com/efs/latest/ug/performance.html)) lists Max I/O as previous generation with higher per-operation latency, and recommends **General Purpose** for all file systems, with **Elastic throughput** for spiky workloads. MFTech uses this current configuration.
+On performance modes: older study material often picks **Max I/O** for parallel big data jobs. Current AWS guidance ([Amazon EFS performance specifications](https://docs.aws.amazon.com/efs/latest/ug/performance.html)) lists Max I/O as previous generation with higher per-operation latency, and recommends **General Purpose** for all file systems, with **Elastic throughput** for spiky workloads. MFTECH uses this current configuration.
 
-MFTech's recommendation team runs a Lambda function in a VPC that must read a dataset on an EFS file system owned by a data partner's account. Lambda mounts EFS through an **access point**; build the setup step by step:
+MFTECH's recommendation team runs a Lambda function in a VPC that must read a dataset on an EFS file system owned by a data partner's account. Lambda mounts EFS through an **access point**; build the setup step by step:
 
 <StepSim client:visible height={240}
-  intro="The Lambda function runs in a VPC of the MFTech account; the EFS file system is in a VPC of the partner account."
-  boxes={[{ x: 10, y: 20, w: 260, h: 200, label: "MFTech account" }, { x: 300, y: 20, w: 450, h: 200, label: "Data partner account" }]}
+  intro="The Lambda function runs in a VPC of the MFTECH account; the EFS file system is in a VPC of the partner account."
+  boxes={[{ x: 10, y: 20, w: 260, h: 200, label: "MFTECH account" }, { x: 300, y: 20, w: 450, h: 200, label: "Data partner account" }]}
   nodes={[
     { id: "lam", x: 30, y: 95, label: "Lambda function", sub: "in a VPC · /mnt/data", kind: "ec2" },
     { id: "mt", x: 330, y: 150, label: "Mount target", sub: "each AZ · NFS 2049", kind: "net" },
@@ -176,9 +176,9 @@ MFTech's recommendation team runs a Lambda function in a VPC that must read a da
     { button: "1. Create a mount target in each AZ", show: ["mt"], flows: [{ path: ["mt", "efs"], tone: "neutral" }],
       note: "Mount targets provide network connectivity to the file system. The Lambda documentation recommends a mount target in every AZ the function connects to (at least two AZs), with security groups on the function and mount targets that allow NFS (port 2049)." },
     { button: "2. Connect the two VPCs", flows: [{ path: ["lam", "mt"], tone: "good", label: "VPC peering" }],
-      note: "Connect the MFTech VPC to the partner VPC with **VPC peering** or a transit gateway (or use a shared VPC). Lambda charges for data transfer between peered VPCs." },
+      note: "Connect the MFTECH VPC to the partner VPC with **VPC peering** or a transit gateway (or use a shared VPC). Lambda charges for data transfer between peered VPCs." },
     { button: "3. Grant access with a file system policy",
-      note: "The partner adds a **file system policy** that lets the MFTech account mount (`elasticfilesystem:ClientMount`, plus `ClientWrite` for writes). The function's execution role needs the same permissions." },
+      note: "The partner adds a **file system policy** that lets the MFTECH account mount (`elasticfilesystem:ClientMount`, plus `ClientWrite` for writes). The function's execution role needs the same permissions." },
     { button: "4. Create an access point", show: ["ap"], flows: [{ path: ["ap", "efs"], tone: "good" }],
       note: "The access point enforces the root directory `/mftech` and a POSIX user identity (UID/GID 1001) for every request made through it: the function sees only its directory, with no POSIX permission handling in code." },
     { button: "5. Attach the file system to Lambda", flows: [{ path: ["lam", "ap"], tone: "good", label: "access point" }], move: ["lam", "mt", "efs"],
@@ -195,13 +195,13 @@ For other considerations when Lambda runs in a VPC (internet access, NAT gateway
 
 <p class="scene-intro">Besides a shared Linux file system, many user groups have specific needs, such as SMB file shares for Windows or HPC; each need has a matching file system.</p>
 
-Besides EFS, AWS offers four **Amazon FSx** file system types for specialized needs. Each of MFTech's four user groups has three must-have requirements. Try mounting each file system for each group to find the file system that meets all the requirements:
+Besides EFS, AWS offers four **Amazon FSx** file system types for specialized needs. Each of MFTECH's four user groups has three must-have requirements. Try mounting each file system for each group to find the file system that meets all the requirements:
 
 <FsxSim client:visible />
 
 When the office needs to keep an on-premises SMB file share but store the data on S3, use **S3 File Gateway** (see the Storage Gateway lesson).
 
-Data management features of FSx for NetApp ONTAP and FSx for OpenZFS in MFTech's operations:
+Data management features of FSx for NetApp ONTAP and FSx for OpenZFS in MFTECH's operations:
 
 <RequirementPicker client:visible items={[
   { need: "The warehouse uses FSx for ONTAP; most files are accessed only in their first month, and SSD cost must come down", answer: "Volume tiering to the capacity pool", why: "ONTAP has two storage tiers: a provisioned SSD tier for active data, and an elastic, low-cost capacity pool for infrequently accessed data. The tiering policy is set per volume: Auto moves cold data after the cooling period (31 days by default, configurable from 2 to 183 days), Snapshot Only moves only snapshots, All keeps all data in the capacity pool. Metadata always stays on the SSD tier." },
@@ -220,7 +220,7 @@ Data management features of FSx for NetApp ONTAP and FSx for OpenZFS in MFTech's
 
 <p class="scene-intro">Some older applications can only read and write files in folders while the data lives in S3; they need a translation layer to use it without being rewritten.</p>
 
-The MFTech data team keeps all product images and the recommendation model's training data in S3. Some older applications only read and write files and cannot call the S3 API. **Mountpoint for Amazon S3** is an open source file client that mounts a bucket as a local directory on Linux and translates file operations (`open`, `read`) into S3 API calls. Mountpoint is not a fully POSIX file system: try common operations on Mountpoint and on EFS:
+The MFTECH data team keeps all product images and the recommendation model's training data in S3. Some older applications only read and write files and cannot call the S3 API. **Mountpoint for Amazon S3** is an open source file client that mounts a bucket as a local directory on Linux and translates file operations (`open`, `read`) into S3 API calls. Mountpoint is not a fully POSIX file system: try common operations on Mountpoint and on EFS:
 
 <MountpointSim client:visible />
 
@@ -258,7 +258,7 @@ Sort each property into the matching service. On a mobile device: tap a card, th
   ]}
 />
 
-Check question: as the designer of the MFTech system, which option fits?
+Check question: as the designer of the MFTECH system, which option fits?
 
 <Quiz client:visible items={[
   { q: "The order database on EC2 needs a consistent 25,000 IOPS per volume. Which volume type fits?",
@@ -273,7 +273,7 @@ Check question: as the designer of the MFTech system, which option fits?
     opts: ["Amazon EFS", "FSx for Windows File Server", "FSx for Lustre"],
     a: 1,
     why: "FSx for Windows supports SMB, NTFS and AD; Linux machines mount it over SMB." },
-  { q: "A MFTech analytics job runs in parallel on a very large number of instances, all reading and writing one EFS file system. Which performance mode fits?",
+  { q: "A MFTECH analytics job runs in parallel on a very large number of instances, all reading and writing one EFS file system. Which performance mode fits?",
     opts: ["General Purpose", "Max I/O", "Provisioned throughput"],
     a: 0,
     why: "AWS recommends General Purpose for all file systems because Max I/O (previous generation) has higher per-operation latency and does not support Elastic throughput. Provisioned throughput is a throughput mode, not a performance mode." },

@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./cost-watch-sim.css";
 
-// One month of a MFTech cost problem, day by day. Pick the problem, pick the tool the
+// One month of a MFTECH cost problem, day by day. Pick the problem, pick the tool the
 // team would reach for, then play the month: the bars show what happens to the money (or
 // to the Savings Plans coverage) and the flashes show when the tool warns somebody or
 // acts on its own. The right tool is the one that changes the bars without anyone
@@ -73,8 +73,8 @@ const PROBLEMS: Record<ProblemId, Problem> = {
   },
   coverage: {
     name: { vi: "Độ phủ Savings Plans giảm", en: "Savings Plans coverage drops" },
-    about: { vi: "MFTech đã mua Compute Savings Plans. Từ ngày 10, một đội khác chạy thêm nhiều Fargate và Lambda theo giá On-Demand nên tỷ lệ được giảm giá (coverage) giảm.",
-      en: "MFTech has bought Compute Savings Plans. From day 10, another team runs a lot more Fargate and Lambda at On-Demand prices, so the discounted share (coverage) drops." },
+    about: { vi: "MFTECH đã mua Compute Savings Plans. Từ ngày 10, một đội khác chạy thêm nhiều Fargate và Lambda theo giá On-Demand nên tỷ lệ được giảm giá (coverage) giảm.",
+      en: "MFTECH has bought Compute Savings Plans. From day 10, another team runs a lot more Fargate and Lambda at On-Demand prices, so the discounted share (coverage) drops." },
     base: (d) => (d < 9 ? 95 : 74),
     cumulative: false,
     max: 100,
@@ -98,8 +98,8 @@ const PROBLEMS: Record<ProblemId, Problem> = {
   },
   rightsize: {
     name: { vi: "Chi phí cao, chưa xác định điểm cắt giảm", en: "High cost, no idea where to cut" },
-    about: { vi: "Sau một năm, chi phí EC2, RDS và S3 của MFTech cao hơn nhu cầu thực tế. Chưa xác định được tài nguyên nào đang dư thừa.",
-      en: "After a year, MFTech's EC2, RDS and S3 costs are higher than actual needs. No one knows yet which resources are surplus." },
+    about: { vi: "Sau một năm, chi phí EC2, RDS và S3 của MFTECH cao hơn nhu cầu thực tế. Chưa xác định được tài nguyên nào đang dư thừa.",
+      en: "After a year, MFTECH's EC2, RDS and S3 costs are higher than actual needs. No one knows yet which resources are surplus." },
     base: () => 100,
     cumulative: false,
     max: 120,

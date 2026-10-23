@@ -83,7 +83,7 @@ export default function CapacityRangeSim() {
       <div className="readout" aria-live="polite">
         <span className="count">min {cap.min} · desired {cap.desired} · max {cap.max}</span>
         {log.length === 0
-          ? <p className="m-0 text-step--1 text-muted">{L({ vi: "Phòng kế toán của MFTech chạy bảng lương lúc 9:00 ngày cuối tháng, cần 10 instance; ngày thường 2 instance là đủ. Thử từng thao tác và quan sát desired capacity.", en: "MFTech's accounting team runs payroll at 9:00 on the last day of the month and needs 10 instances; 2 are enough on normal days. Try each action and watch desired capacity." })}</p>
+          ? <p className="m-0 text-step--1 text-muted">{L({ vi: "Phòng kế toán của MFTECH chạy bảng lương lúc 9:00 ngày cuối tháng, cần 10 instance; ngày thường 2 instance là đủ. Thử từng thao tác và quan sát desired capacity.", en: "MFTECH's accounting team runs payroll at 9:00 on the last day of the month and needs 10 instances; 2 are enough on normal days. Try each action and watch desired capacity." })}</p>
           : (
             <ol className="list-decimal mx-0 mt-2 mb-0 grid gap-1 pl-5 text-step--1 [&_.count]:mr-1">
               {log.map((x, i) => (

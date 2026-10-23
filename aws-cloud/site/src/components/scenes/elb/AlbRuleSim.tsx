@@ -1,7 +1,7 @@
 import PacketSim, { type PLayout, type PScenario, type PStep } from "./PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// One HTTPS request through the listener of MFTech's ALB: certificate chosen by SNI,
+// One HTTPS request through the listener of MFTECH's ALB: certificate chosen by SNI,
 // AWS WAF, login with a Cognito user pool, then listener rules (path, host, wildcard
 // host) pick a target group.
 

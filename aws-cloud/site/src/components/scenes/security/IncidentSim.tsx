@@ -3,7 +3,7 @@ import HopSim, { type HopScenario } from "./HopSim";
 
 type Lang = ReturnType<typeof useLang>;
 
-// Six incidents at MFTech, each one handled by the security service built for it:
+// Six incidents at MFTECH, each one handled by the security service built for it:
 // Shield Advanced, GuardDuty, Inspector, Macie, Firewall Manager and Security Lake.
 // Practice-test sources (build-time only): exam3_q58, exam6_q4, exam1_q36, exam3_q1, exam6_q14, exam2_q44.
 
@@ -13,7 +13,7 @@ const TEAM = { id: "team", label: L({ vi: "Đội vận hành", en: "Operations 
 return [
   {
     name: L({ vi: "DDoS trong đợt khuyến mãi", en: "DDoS during a sale" }),
-    story: L({ vi: "Trong đợt khuyến mãi 11/11, một botnet gửi hàng triệu request tới MFTech. Ban giám đốc yêu cầu có **đội ngũ AWS hỗ trợ** khi bị tấn công và **báo cáo** sau sự cố.", en: "During the 11/11 sale, a botnet sends millions of requests to MFTech. Management requires **support from the AWS team** during an attack and a **report** after the incident." }),
+    story: L({ vi: "Trong đợt khuyến mãi 11/11, một botnet gửi hàng triệu request tới MFTECH. Ban giám đốc yêu cầu có **đội ngũ AWS hỗ trợ** khi bị tấn công và **báo cáo** sau sự cố.", en: "During the 11/11 sale, a botnet sends millions of requests to MFTECH. Management requires **support from the AWS team** during an attack and a **report** after the incident." }),
     request: L({ vi: "Hàng triệu request / giây", en: "Millions of requests / second" }),
     toggle: { label: L({ vi: "Đăng ký AWS Shield Advanced", en: "Subscribe to AWS Shield Advanced" }), initial: false },
     start: "bot",
@@ -23,7 +23,7 @@ return [
       { id: "adv", x: 310, y: 130, label: "AWS Shield Advanced", sub: L({ vi: "trả phí", en: "paid" }), kind: "svc" },
       { id: "srt", x: 310, y: 225, label: "Shield Response Team", sub: L({ vi: "đội của AWS, 24/7", en: "AWS team, 24/7" }), kind: "aws" },
       { id: "cf", x: 540, y: 130, label: "CloudFront + ALB", kind: "svc" },
-      { id: "app", x: 725, y: 130, w: 110, label: "Web MFTech", kind: "app" },
+      { id: "app", x: 725, y: 130, w: 110, label: "Web MFTECH", kind: "app" },
     ],
     hidden: (on) => (on ? ["std"] : ["adv", "srt"]),
     run: (on) => on
@@ -41,7 +41,7 @@ return [
   },
   {
     name: L({ vi: "EC2 instance bị cài phần mềm đào tiền mã hoá", en: "An EC2 instance is infected with cryptocurrency mining software" }),
-    story: L({ vi: "Một EC2 instance của MFTech bị chiếm quyền và bị cài phần mềm đào tiền mã hoá. CPU luôn ở mức 100% nhưng chưa được phát hiện.", en: "One of MFTech's EC2 instances is compromised and has cryptocurrency mining software installed. CPU is always at 100%, but nobody has noticed." }),
+    story: L({ vi: "Một EC2 instance của MFTECH bị chiếm quyền và bị cài phần mềm đào tiền mã hoá. CPU luôn ở mức 100% nhưng chưa được phát hiện.", en: "One of MFTECH's EC2 instances is compromised and has cryptocurrency mining software installed. CPU is always at 100%, but nobody has noticed." }),
     request: L({ vi: "EC2 instance kết nối tới pool.mining.example", en: "The EC2 instance connects to pool.mining.example" }),
     toggle: { label: L({ vi: "Kích hoạt Amazon GuardDuty", en: "Enable Amazon GuardDuty" }), initial: false },
     start: "ec2",
@@ -66,7 +66,7 @@ return [
   },
   {
     name: L({ vi: "Thư viện phiên bản cũ có lỗ hổng", en: "An outdated library with a vulnerability" }),
-    story: L({ vi: "EC2 instance web của MFTech vẫn chạy một phiên bản OpenSSL cũ có lỗ hổng đã được công bố. Đội phát triển chưa nắm được thông tin này.", en: "MFTech's web EC2 instance still runs an old OpenSSL version with a published vulnerability. The development team is not aware of it." }),
+    story: L({ vi: "EC2 instance web của MFTECH vẫn chạy một phiên bản OpenSSL cũ có lỗ hổng đã được công bố. Đội phát triển chưa nắm được thông tin này.", en: "MFTECH's web EC2 instance still runs an old OpenSSL version with a published vulnerability. The development team is not aware of it." }),
     request: L({ vi: "Quét EC2 instance web-01", en: "Scan EC2 instance web-01" }),
     toggle: { label: L({ vi: "Kích hoạt Amazon Inspector", en: "Enable Amazon Inspector" }), initial: false },
     start: "ins",
@@ -85,7 +85,7 @@ return [
           { from: "att", to: "ec2", state: "block", tag: L({ vi: "THẤT BẠI", en: "FAILED" }), msg: L({ vi: "Lỗ hổng đã được vá, khai thác thất bại.", en: "The vulnerability has been patched, so the exploit fails." }) },
         ], ok: true, result: L({ vi: "Inspector quét liên tục lỗ hổng phần mềm và mức độ phơi nhiễm mạng (network exposure) của EC2 instance, container image và Lambda function.", en: "Inspector continuously scans EC2 instances, container images and Lambda functions for software vulnerabilities and network exposure." }) }
       : { hops: [
-          { from: "att", to: "ec2", state: "alert", tag: L({ vi: "KHAI THÁC", en: "EXPLOITED" }), flash: "!", msg: L({ vi: "Bên tấn công phát hiện lỗ hổng trước MFTech.", en: "The attacker finds the vulnerability before MFTech does." }) },
+          { from: "att", to: "ec2", state: "alert", tag: L({ vi: "KHAI THÁC", en: "EXPLOITED" }), flash: "!", msg: L({ vi: "Bên tấn công phát hiện lỗ hổng trước MFTECH.", en: "The attacker finds the vulnerability before MFTECH does." }) },
         ], ok: false, result: L({ vi: "Khi không quét, lỗ hổng không được phát hiện. Kích hoạt **Amazon Inspector** để phát hiện lỗ hổng trên EC2 instance.", en: "Without scanning, the vulnerability goes undetected. Enable **Amazon Inspector** to find vulnerabilities on EC2 instances." }) },
   },
   {
@@ -95,7 +95,7 @@ return [
     toggle: { label: L({ vi: "Kích hoạt Amazon Macie", en: "Enable Amazon Macie" }), initial: false },
     start: "dev",
     nodes: [
-      { id: "dev", x: 100, y: 130, label: "Dev MFTech", kind: "user" },
+      { id: "dev", x: 100, y: 130, label: "Dev MFTECH", kind: "user" },
       { id: "s3", x: 360, y: 130, label: "S3 bucket", sub: "exports/", kind: "store" },
       { id: "macie", x: 620, y: 70, label: "Amazon Macie", kind: "svc" },
       { ...TEAM, x: 620, y: 200 },
@@ -114,7 +114,7 @@ return [
   },
   {
     name: L({ vi: "Bổ sung 3 account mới", en: "Adding 3 new accounts" }),
-    story: L({ vi: "MFTech tạo thêm 3 AWS account cho các đội mới. Mọi ALB tại mọi account phải có cùng bộ rule WAF.", en: "MFTech creates 3 more AWS accounts for new teams. Every ALB in every account must have the same set of WAF rules." }),
+    story: L({ vi: "MFTECH tạo thêm 3 AWS account cho các đội mới. Mọi ALB tại mọi account phải có cùng bộ rule WAF.", en: "MFTECH creates 3 more AWS accounts for new teams. Every ALB in every account must have the same set of WAF rules." }),
     request: L({ vi: "Áp dụng web ACL chuẩn cho mọi account", en: "Apply the standard web ACL to every account" }),
     toggle: { label: L({ vi: "Sử dụng AWS Firewall Manager", en: "Use AWS Firewall Manager" }), initial: false },
     start: "sec",
@@ -128,7 +128,7 @@ return [
     hidden: (on) => (on ? [] : ["fm"]),
     run: (on) => on
       ? { hops: [
-          { to: "fm", state: "change", tag: "POLICY", msg: L({ vi: "Định nghĩa một policy: mọi ALB phải có web ACL chuẩn của MFTech.", en: "Define one policy: every ALB must have MFTech's standard web ACL." }) },
+          { to: "fm", state: "change", tag: "POLICY", msg: L({ vi: "Định nghĩa một policy: mọi ALB phải có web ACL chuẩn của MFTECH.", en: "Define one policy: every ALB must have MFTECH's standard web ACL." }) },
           { to: "a1", state: "pass", tag: L({ vi: "ÁP DỤNG", en: "APPLIED" }), msg: L({ vi: "Áp dụng tự động.", en: "Applied automatically." }) },
           { from: "fm", to: "a2", state: "pass", tag: L({ vi: "ÁP DỤNG", en: "APPLIED" }), msg: L({ vi: "Áp dụng tự động.", en: "Applied automatically." }) },
           { from: "fm", to: "a3", state: "pass", tag: L({ vi: "ÁP DỤNG", en: "APPLIED" }), msg: L({ vi: "Account vừa tạo cũng được áp dụng ngay.", en: "The newly created account gets it right away too." }) },
@@ -162,7 +162,7 @@ return [
         { from: "dns", to: mid, state: on ? "pass" : "alert", tag: on ? L({ vi: "TỰ ĐỘNG", en: "AUTOMATIC" }) : L({ vi: "THỦ CÔNG", en: "MANUAL" }), msg: on ? L({ vi: "Thu thập từ mọi account trong Organizations.", en: "Collects from every account in Organizations." }) : L({ vi: "Mỗi account mới phát sinh thêm tác vụ.", en: "Each new account adds more work." }) },
         { from: mid, to: "ana", state: on ? "pass" : "change", tag: on ? L({ vi: "SẴN SÀNG", en: "READY" }) : L({ vi: "CHẬM", en: "SLOW" }), msg: on ? L({ vi: "Truy vấn trực tiếp trên S3.", en: "Query directly on S3." }) : L({ vi: "Dữ liệu đến chậm và không đầy đủ.", en: "Data arrives late and incomplete." }) },
       ], ok: on, result: on
-        ? L({ vi: "Security Lake tự động tập trung log và sự kiện bảo mật thành data lake trên S3 thuộc account của MFTech.", en: "Security Lake automatically centralizes security logs and events into a data lake on S3 in MFTech's account." })
+        ? L({ vi: "Security Lake tự động tập trung log và sự kiện bảo mật thành data lake trên S3 thuộc account của MFTECH.", en: "Security Lake automatically centralizes security logs and events into a data lake on S3 in MFTECH's account." })
         : L({ vi: "Tốn công sức và dễ thiếu dữ liệu. Sử dụng **Amazon Security Lake**.", en: "Laborious and prone to missing data. Use **Amazon Security Lake**." }) };
     },
   },
@@ -172,5 +172,5 @@ return [
 export default function IncidentSim() {
   const L = useLang();
   return <HopSim scenarios={scenarios(L)} action={L({ vi: "Mô phỏng sự cố", en: "Simulate incident" })} height={250}
-    label={L({ vi: "Sáu sự cố bảo mật của MFTech và dịch vụ AWS phát hiện hoặc chặn từng sự cố", en: "Six MFTech security incidents and the AWS service that detects or blocks each one" })} />;
+    label={L({ vi: "Sáu sự cố bảo mật của MFTECH và dịch vụ AWS phát hiện hoặc chặn từng sự cố", en: "Six MFTECH security incidents and the AWS service that detects or blocks each one" })} />;
 }

@@ -3,7 +3,7 @@ import { flashText, prefersReducedMotion, travel, type Pt } from "../../lib/anim
 import { useI18n } from "../../app/i18n";
 import "./architecture-map.css";
 
-// Home-page hero: MFTech's whole architecture on one map. Seven flows play in
+// Home-page hero: MFTECH's whole architecture on one map. Seven flows play in
 // turn (or on demand); a packet walks the services involved, each one lights up
 // and the caption links to the lesson about it. Clicking a service opens its lesson.
 

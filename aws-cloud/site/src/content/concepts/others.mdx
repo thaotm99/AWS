@@ -1,6 +1,6 @@
 ---
 title: "Quản lý chi phí, AI services và các dịch vụ khác"
-lede: "Quy mô MFTech tăng lên: chi phí AWS cần được kiểm soát chặt chẽ, và lượng dữ liệu từ người dùng vượt quá khả năng xử lý thủ công. Bài học trình bày cách kiểm soát chi phí bằng AWS Budgets, Cost Optimization Hub, Compute Optimizer và Savings Plans; sử dụng Comprehend, Transcribe, Textract khi không có đội ngũ ML; và giới thiệu AWS Batch cùng AWS Outposts."
+lede: "Quy mô MFTECH tăng lên: chi phí AWS cần được kiểm soát chặt chẽ, và lượng dữ liệu từ người dùng vượt quá khả năng xử lý thủ công. Bài học trình bày cách kiểm soát chi phí bằng AWS Budgets, Cost Optimization Hub, Compute Optimizer và Savings Plans; sử dụng Comprehend, Transcribe, Textract khi không có đội ngũ ML; và giới thiệu AWS Batch cùng AWS Outposts."
 minutes: 25
 scenes: 5
 prerequisites: ["iam", "ec2", "lambda", "containers"]
@@ -95,7 +95,7 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s5", label: "5 · So sánh các dịch vụ dễ nhầm lẫn" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-MFTech hiện có nhiều AWS account, nhiều đội kỹ thuật, và chi phí hằng tháng liên tục tăng. Đồng thời, mỗi ngày phát sinh hàng nghìn đánh giá, cuộc gọi tổng đài và tài liệu scan vượt quá khả năng xử lý thủ công, trong khi MFTech không có chuyên gia machine learning. Bài học tổng hợp các dịch vụ đáp ứng những nhu cầu này: công cụ quản lý chi phí, AI services dựng sẵn, và hai dịch vụ cho các yêu cầu đặc thù.
+MFTECH hiện có nhiều AWS account, nhiều đội kỹ thuật, và chi phí hằng tháng liên tục tăng. Đồng thời, mỗi ngày phát sinh hàng nghìn đánh giá, cuộc gọi tổng đài và tài liệu scan vượt quá khả năng xử lý thủ công, trong khi MFTECH không có chuyên gia machine learning. Bài học tổng hợp các dịch vụ đáp ứng những nhu cầu này: công cụ quản lý chi phí, AI services dựng sẵn, và hai dịch vụ cho các yêu cầu đặc thù.
 </Story>
 
 <Scene id="s1" label="Phần 1/5" title="AWS Cost Management: Cost Explorer, AWS Budgets, Cost Optimization Hub" questions={["exam6_q22", "exam6_q1", "exam4_q30"]}>
@@ -109,7 +109,7 @@ Mỗi công cụ quản lý chi phí trả lời một câu hỏi khác nhau:
 - **Cost Optimization Hub**: cần cắt giảm ở đâu? Tổng hợp khuyến nghị tiết kiệm (rightsizing, xoá tài nguyên idle, Savings Plans, Reserved Instances) của các account và Region tại một nơi.
 - **Compute Optimizer**: kích thước tài nguyên nào là phù hợp? Đề xuất cấu hình phù hợp cho EC2 instance, Auto Scaling group, EBS volume, Lambda function, ECS service trên Fargate và các tài nguyên khác.
 
-Chọn một vấn đề của MFTech, chọn công cụ, sau đó chạy mô phỏng trong một tháng:
+Chọn một vấn đề của MFTECH, chọn công cụ, sau đó chạy mô phỏng trong một tháng:
 
 <CostWatchSim client:visible />
 
@@ -121,14 +121,14 @@ Chọn một vấn đề của MFTech, chọn công cụ, sau đó chạy mô ph
 
 <p class="scene-intro">Khi mức sử dụng đã ổn định, cam kết sử dụng trong một hoặc ba năm giúp giảm đáng kể chi phí so với On-Demand pricing.</p>
 
-Sau đợt ra mắt, tải của MFTech đã ổn định. Cam kết sử dụng một mức chi phí mỗi giờ trong 1 hoặc 3 năm để nhận mức giá thấp hơn On-Demand: đó là **Savings Plans**. AWS hiện có bốn loại:
+Sau đợt ra mắt, tải của MFTECH đã ổn định. Cam kết sử dụng một mức chi phí mỗi giờ trong 1 hoặc 3 năm để nhận mức giá thấp hơn On-Demand: đó là **Savings Plans**. AWS hiện có bốn loại:
 
 - **Compute Savings Plans**: linh hoạt nhất, giảm tới 66% so với On-Demand. Áp dụng cho EC2 (mọi instance family, instance size, OS, tenancy, Region), Fargate và Lambda.
 - **EC2 Instance Savings Plans**: giảm tới 72% nhưng chỉ áp dụng cho một instance family trong một Region.
 - **Database Savings Plans**: giảm tới 35% cho các dịch vụ database như Aurora, RDS, DynamoDB, ElastiCache, DocumentDB, Neptune, Keyspaces, Timestream, DMS và OpenSearch Service.
 - **SageMaker AI Savings Plans**: giảm tới 64%, dành riêng cho instance của SageMaker AI.
 
-Yêu cầu của MFTech: mọi workload đều được giảm giá, với số lượng plan tối thiểu để thuận tiện quản lý:
+Yêu cầu của MFTECH: mọi workload đều được giảm giá, với số lượng plan tối thiểu để thuận tiện quản lý:
 
 <SavingsPlanSim client:visible />
 
@@ -149,7 +149,7 @@ AWS cung cấp các AI service đã được huấn luyện sẵn, sử dụng t
 - **Amazon Translate**: **dịch** văn bản giữa các ngôn ngữ (có hỗ trợ tiếng Việt). Translate không xác định cảm xúc; khi cần phân tích đánh giá tiếng Việt, có thể dịch sang tiếng Anh bằng Translate rồi chuyển sang Comprehend.
 - **Amazon Polly**: chiều ngược lại của Transcribe, chuyển **văn bản thành giọng nói**. Transcribe chỉ nhận âm thanh làm đầu vào.
 
-Mỗi tình huống dưới đây là một pipeline xử lý của MFTech; văn bản đưa vào Comprehend và Textract là tiếng Anh (gian hàng quốc tế của MFTech), do giới hạn ngôn ngữ nêu trên. Gửi một tài liệu và quan sát kết quả đầu ra tại từng bước xử lý:
+Mỗi tình huống dưới đây là một pipeline xử lý của MFTECH; văn bản đưa vào Comprehend và Textract là tiếng Anh (gian hàng quốc tế của MFTECH), do giới hạn ngôn ngữ nêu trên. Gửi một tài liệu và quan sát kết quả đầu ra tại từng bước xử lý:
 
 <AiPipelineSim client:visible />
 
@@ -163,7 +163,7 @@ Mỗi tình huống dưới đây là một pipeline xử lý của MFTech; văn
 
 <p class="scene-intro">Một số nhu cầu không phù hợp với các dịch vụ đã học, như job xử lý chạy rất lâu hoặc hệ thống bắt buộc nằm trong on-premises data center của doanh nghiệp; AWS có dịch vụ riêng cho từng trường hợp.</p>
 
-Hai yêu cầu cuối của MFTech không phù hợp với các dịch vụ đã trình bày. Đội nội dung cần xử lý hàng chục nghìn ảnh mỗi đêm (thay đổi kích thước, gắn watermark), mỗi job chạy lâu hơn timeout tối đa của Lambda (15 phút). Đồng thời, MFTech vừa mua lại một công ty ví điện tử: quy định bắt buộc dữ liệu và ứng dụng phải nằm trong on-premises data center của công ty này, nhưng đội kỹ thuật cần sử dụng EKS, CloudWatch, IAM thống nhất với phần còn lại của MFTech.
+Hai yêu cầu cuối của MFTECH không phù hợp với các dịch vụ đã trình bày. Đội nội dung cần xử lý hàng chục nghìn ảnh mỗi đêm (thay đổi kích thước, gắn watermark), mỗi job chạy lâu hơn timeout tối đa của Lambda (15 phút). Đồng thời, MFTECH vừa mua lại một công ty ví điện tử: quy định bắt buộc dữ liệu và ứng dụng phải nằm trong on-premises data center của công ty này, nhưng đội kỹ thuật cần sử dụng EKS, CloudWatch, IAM thống nhất với phần còn lại của MFTECH.
 
 <ScenarioFlow client:visible height={250} legend={["Phương án khuyến nghị", "Khả thi nhưng chưa phù hợp"]} scenarios={[
   { name: "Xử lý ảnh theo batch",
@@ -216,7 +216,7 @@ Hai yêu cầu cuối của MFTech không phù hợp với các dịch vụ đã
 
 <p class="scene-intro">Nhiều dịch vụ có tên hoặc phạm vi gần với yêu cầu nhưng giải quyết vấn đề khác; phân biệt được chúng giúp tránh chọn nhầm.</p>
 
-Khi thiết kế các luồng xử lý của MFTech, một số dịch vụ có tên hoặc phạm vi gần với yêu cầu nhưng giải quyết vấn đề khác. Chọn từng dịch vụ để xem phạm vi sử dụng, lý do không phù hợp với tình huống của MFTech và phương án thay thế.
+Khi thiết kế các luồng xử lý của MFTECH, một số dịch vụ có tên hoặc phạm vi gần với yêu cầu nhưng giải quyết vấn đề khác. Chọn từng dịch vụ để xem phạm vi sử dụng, lý do không phù hợp với tình huống của MFTECH và phương án thay thế.
 
 <QuickCompare client:visible items={[
   { name: "Amazon Rekognition",
@@ -237,7 +237,7 @@ Khi thiết kế các luồng xử lý của MFTech, một số dịch vụ có 
     instead: "File mô tả trên S3 kích hoạt Lambda, Lambda gọi **Comprehend custom entity recognition**." },
   { name: "Amazon SageMaker AI",
     use: "Xây dựng, huấn luyện và triển khai model ML với hạ tầng được quản lý; phù hợp khi cần model riêng và có đội ngũ ML.",
-    notHere: "Đội API của MFTech cần nơi chạy container Docker mà không quản lý EC2 instance. SageMaker AI không phải dịch vụ điều phối container cho ứng dụng; với bài toán phân tích văn bản phổ biến, tự huấn luyện model tốn công hơn dùng AI service dựng sẵn.",
+    notHere: "Đội API của MFTECH cần nơi chạy container Docker mà không quản lý EC2 instance. SageMaker AI không phải dịch vụ điều phối container cho ứng dụng; với bài toán phân tích văn bản phổ biến, tự huấn luyện model tốn công hơn dùng AI service dựng sẵn.",
     instead: "Container API: **ECS hoặc EKS với Fargate**. Phân tích văn bản không có đội ML: **Comprehend**." },
   { name: "Amazon Lightsail",
     use: "Cách đơn giản nhất để bắt đầu với AWS cho website và ứng dụng web: instance (virtual private server), container service, managed database, load balancer, CDN với mức giá cố định hằng tháng.",
@@ -245,7 +245,7 @@ Khi thiết kế các luồng xử lý của MFTech, một số dịch vụ có 
     instead: "API Gateway + Lambda để kiểm tra hợp lệ, backend chạy dài hạn trên **ECS với Fargate**." },
   { name: "Amazon AppFlow",
     use: "Trao đổi dữ liệu giữa ứng dụng SaaS (Salesforce, Zendesk, Slack, ServiceNow…) và dịch vụ AWS như S3, Redshift; flow chạy theo lịch, theo sự kiện hoặc theo yêu cầu. Có Custom Connector SDK để kết nối API riêng hoặc hệ thống on-premises.",
-    notHere: "Các nhà cung cấp của MFTech chủ động đẩy file bằng phần mềm SFTP sẵn có và không thay đổi quy trình. AppFlow chủ động lấy dữ liệu qua API của ứng dụng nguồn; SFTP không có trong danh sách ứng dụng được hỗ trợ.",
+    notHere: "Các nhà cung cấp của MFTECH chủ động đẩy file bằng phần mềm SFTP sẵn có và không thay đổi quy trình. AppFlow chủ động lấy dữ liệu qua API của ứng dụng nguồn; SFTP không có trong danh sách ứng dụng được hỗ trợ.",
     instead: "**AWS Transfer Family** (SFTP endpoint được quản lý, lưu thẳng vào S3, IAM role theo từng nhà cung cấp)." },
   { name: "Amazon Timestream",
     use: "Database chuỗi thời gian (time series) serverless cho dữ liệu đo lường như telemetry, metric. Timestream for LiveAnalytics đã đóng với khách hàng mới từ 20/6/2025; AWS khuyến nghị Timestream for InfluxDB.",
@@ -265,7 +265,7 @@ Chi tiết các phương án thay thế: [ECS và EKS với Fargate](/concepts/c
 
 <Scene id="challenge" label="Bài tập" title="Phân loại tác vụ theo dịch vụ" questions={["exam6_q22", "exam4_q30", "exam6_q38", "exam5_q58", "exam1_q27", "exam2_q26"]}>
 
-Phân loại từng tác vụ của MFTech vào service tương ứng. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
+Phân loại từng tác vụ của MFTECH vào service tương ứng. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
 <SortGame client:visible
   bins={[
@@ -284,14 +284,14 @@ Phân loại từng tác vụ của MFTech vào service tương ứng. Trên thi
   ]}
 />
 
-Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTech, phương án nào phù hợp?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTECH, phương án nào phù hợp?
 
 <Quiz client:visible items={[
   { q: "Mỗi lập trình viên có một AWS account riêng. Yêu cầu: khi một account vượt ngân sách, việc tạo thêm tài nguyên bị chặn tự động, không cần viết mã hay giám sát thủ công. Phương án nào đáp ứng yêu cầu?",
     opts: ["Lambda chạy hằng ngày đọc Cost Explorer API và tự xử lý", "AWS Budgets với alert và budget action gắn IAM policy DenyAll", "Gửi báo cáo Cost Explorer cho từng người hằng ngày"],
     a: 1,
     why: "Budget action có sẵn trong Budgets: khi vượt ngưỡng, action gắn IAM policy được chạy tự động (hoặc sau khi phê duyệt, tuỳ cấu hình). Lambda tự phát triển phải tự bảo trì; báo cáo phụ thuộc vào việc người nhận có đọc hay không." },
-  { q: "MFTech chạy EC2, Fargate, Lambda và một endpoint SageMaker với tải ổn định. Yêu cầu: giảm giá dài hạn cho toàn bộ với số plan tối thiểu. Phương án nào phù hợp?",
+  { q: "MFTECH chạy EC2, Fargate, Lambda và một endpoint SageMaker với tải ổn định. Yêu cầu: giảm giá dài hạn cho toàn bộ với số plan tối thiểu. Phương án nào phù hợp?",
     opts: ["Compute Savings Plans + SageMaker AI Savings Plans", "EC2 Instance Savings Plans + Compute Savings Plans", "Reserved Instance cho từng EC2 instance"],
     a: 0,
     why: "Compute Savings Plans áp dụng cho EC2, Fargate, Lambda. SageMaker cần SageMaker AI Savings Plans. EC2 Reserved Instance không áp dụng cho Fargate hay Lambda, và Convertible RI muốn đổi instance family phải thực hiện exchange thủ công." },

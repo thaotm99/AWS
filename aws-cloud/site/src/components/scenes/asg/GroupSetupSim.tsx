@@ -3,7 +3,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./asg-sims.css";
 
-// Building the MFTech web Auto Scaling group: launch template vs launch configuration,
+// Building the MFTECH web Auto Scaling group: launch template vs launch configuration,
 // subnets (AZs of one Region only), and purchase options of a mixed instances group
 // (On-Demand base capacity + On-Demand percentage above base, the rest Spot).
 

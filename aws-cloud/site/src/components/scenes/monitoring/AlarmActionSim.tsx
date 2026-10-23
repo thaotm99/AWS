@@ -1,7 +1,7 @@
 import PacketSim, { type PLayout, type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// What a CloudWatch alarm can do by itself when one MFTech EC2 instance gets sick:
+// What a CloudWatch alarm can do by itself when one MFTECH EC2 instance gets sick:
 // reboot it (the problem is inside the instance), recover it onto new hardware (the
 // problem is the host), and what recovery keeps or loses. Last: an alarm that makes
 // an Auto Scaling group scale in, and which instance the default policy removes.

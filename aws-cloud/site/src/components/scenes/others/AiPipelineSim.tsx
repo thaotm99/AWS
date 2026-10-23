@@ -1,7 +1,7 @@
 import PacketSim, { type PLayout, type PNode, type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// MFTech has no machine learning team, but it has text, recordings and scanned paper
+// MFTECH has no machine learning team, but it has text, recordings and scanned paper
 // to understand. Each scenario is one pipeline built from managed AI services: the packet
 // is one document going through it, and each node says what it turns the document into.
 
@@ -64,7 +64,7 @@ const SCENARIOS: PScenario[] = [
       steps: [
         { at: "fn", state: "pass", msg: "**S3 Event Notification** kích hoạt Lambda ngay khi người bán tải lên." },
         custom
-          ? { at: "cmp", state: "change", tag: "TRÍCH", flash: "4 thành phần", msg: "Custom entity recognizer được huấn luyện từ **entity list** (danh sách tên thành phần sẵn có của MFTech, nhãn INGREDIENT) kèm một tập tài liệu chưa gán nhãn. Kết quả trả về: wheat flour, sugar, palm oil, butter." }
+          ? { at: "cmp", state: "change", tag: "TRÍCH", flash: "4 thành phần", msg: "Custom entity recognizer được huấn luyện từ **entity list** (danh sách tên thành phần sẵn có của MFTECH, nhãn INGREDIENT) kèm một tập tài liệu chưa gán nhãn. Kết quả trả về: wheat flour, sugar, palm oil, butter." }
           : { at: "cmp", state: "block", tag: "KHÔNG NHẬN DIỆN", msg: "Entity có sẵn gồm các loại chung như COMMERCIAL_ITEM, DATE, LOCATION, ORGANIZATION, PERSON, QUANTITY; không có loại \"thành phần\"." },
         ...(custom ? [{ at: "ddb", state: "pass" as const, msg: "Truy vấn điểm an toàn của từng thành phần và hiển thị trên trang sản phẩm." }] : []),
       ],
@@ -109,7 +109,7 @@ const SCENARIOS: PScenario[] = [
   {
     name: "Bài báo dạng scan",
     action: "Phân tích bài báo",
-    request: "500 bài báo tiếng Anh dạng PDF scan đề cập tới MFTech",
+    request: "500 bài báo tiếng Anh dạng PDF scan đề cập tới MFTECH",
     toggle: { label: "Xử lý qua Textract trước", initial: false },
     layout: (tx) => chain("PDF scan được xử lý qua Textract, Comprehend phân tích cảm xúc và thực thể, kết quả lưu vào S3", [
       { id: "pdf", x: 70, y: 135, w: 120, l1: "S3", l2: "PDF scan" },
@@ -121,7 +121,7 @@ const SCENARIOS: PScenario[] = [
       ? {
           steps: [
             { at: "tx", state: "change", tag: "ĐỌC", flash: "text", msg: "Trích xuất văn bản từ trang scan (Textract nhận dạng tiếng Anh, Pháp, Đức, Ý, Bồ Đào Nha, Tây Ban Nha)." },
-            { at: "cmp", state: "change", tag: "PHÂN TÍCH", flash: "POSITIVE", msg: "Bài 2023: **POSITIVE**; entity: MFTech (ORGANIZATION), Hanoi (LOCATION)." },
+            { at: "cmp", state: "change", tag: "PHÂN TÍCH", flash: "POSITIVE", msg: "Bài 2023: **POSITIVE**; entity: MFTECH (ORGANIZATION), Hanoi (LOCATION)." },
             { at: "out", state: "pass", msg: "Lưu kết quả vào S3 để xây dựng biểu đồ xu hướng sắc thái báo chí theo năm." },
           ],
           ok: true,
@@ -191,7 +191,7 @@ const SCENARIOS_EN: PScenario[] = [
       steps: [
         { at: "fn", state: "pass", msg: "An **S3 Event Notification** invokes Lambda as soon as the seller uploads." },
         custom
-          ? { at: "cmp", state: "change", tag: "EXTRACT", flash: "4 ingredients", msg: "The custom entity recognizer is trained from an **entity list** (MFTech's existing list of ingredient names, labeled INGREDIENT) plus a set of unlabeled documents. Result: wheat flour, sugar, palm oil, butter." }
+          ? { at: "cmp", state: "change", tag: "EXTRACT", flash: "4 ingredients", msg: "The custom entity recognizer is trained from an **entity list** (MFTECH's existing list of ingredient names, labeled INGREDIENT) plus a set of unlabeled documents. Result: wheat flour, sugar, palm oil, butter." }
           : { at: "cmp", state: "block", tag: "NOT RECOGNIZED", msg: "The built-in entities are general types such as COMMERCIAL_ITEM, DATE, LOCATION, ORGANIZATION, PERSON, QUANTITY; there is no \"ingredient\" type." },
         ...(custom ? [{ at: "ddb", state: "pass" as const, msg: "Looks up the safety score of each ingredient and shows it on the product page." }] : []),
       ],
@@ -236,7 +236,7 @@ const SCENARIOS_EN: PScenario[] = [
   {
     name: "Scanned news articles",
     action: "Analyze articles",
-    request: "500 scanned PDF articles in English that mention MFTech",
+    request: "500 scanned PDF articles in English that mention MFTECH",
     toggle: { label: "Process with Textract first", initial: false },
     layout: (tx) => chain("Scanned PDFs are processed by Textract, Comprehend analyzes sentiment and entities, and the results are stored in S3", [
       { id: "pdf", x: 70, y: 135, w: 120, l1: "S3", l2: "scanned PDFs" },
@@ -248,7 +248,7 @@ const SCENARIOS_EN: PScenario[] = [
       ? {
           steps: [
             { at: "tx", state: "change", tag: "READ", flash: "text", msg: "Extracts text from the scanned pages (Textract recognizes English, French, German, Italian, Portuguese and Spanish)." },
-            { at: "cmp", state: "change", tag: "ANALYZE", flash: "POSITIVE", msg: "2023 article: **POSITIVE**; entities: MFTech (ORGANIZATION), Hanoi (LOCATION)." },
+            { at: "cmp", state: "change", tag: "ANALYZE", flash: "POSITIVE", msg: "2023 article: **POSITIVE**; entities: MFTECH (ORGANIZATION), Hanoi (LOCATION)." },
             { at: "out", state: "pass", msg: "Stores the results in S3 to build a chart of press sentiment trends by year." },
           ],
           ok: true,

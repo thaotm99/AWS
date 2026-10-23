@@ -1,6 +1,6 @@
 ---
 title: "Containers: Amazon ECS, Amazon EKS and AWS Fargate"
-lede: "MFTech packages its services as containers. This lesson covers how to choose a runtime environment (EC2 launch type or Fargate, ECS or EKS) and solves five practical requirements: image storage shared between tasks, scheduled jobs, jobs that exceed Lambda's time limit, separate permissions for each Pod, Pods left in the Pending state because the cluster is out of resources; then scaling in two layers (Pods/tasks and nodes) and where to run Kubernetes when data must stay in the data center."
+lede: "MFTECH packages its services as containers. This lesson covers how to choose a runtime environment (EC2 launch type or Fargate, ECS or EKS) and solves five practical requirements: image storage shared between tasks, scheduled jobs, jobs that exceed Lambda's time limit, separate permissions for each Pod, Pods left in the Pending state because the cluster is out of resources; then scaling in two layers (Pods/tasks and nodes) and where to run Kubernetes when data must stay in the data center."
 minutes: 27
 scenes: 5
 prerequisites: ["ec2", "asg"]
@@ -71,7 +71,7 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s5", label: "5 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-The MFTech team has packaged the web application, the workers and the reporting jobs as containers. The first decision: do containers run on EC2 instances the team manages itself, or on AWS Fargate, where AWS manages the compute infrastructure? Next come the day-to-day operational requirements: file storage, scheduled runs, permissions, and scaling resources for the cluster.
+The MFTECH team has packaged the web application, the workers and the reporting jobs as containers. The first decision: do containers run on EC2 instances the team manages itself, or on AWS Fargate, where AWS manages the compute infrastructure? Next come the day-to-day operational requirements: file storage, scheduled runs, permissions, and scaling resources for the cluster.
 </Story>
 
 <Scene id="en-s1" label="Part 1/5" title="EC2 launch type and Fargate" questions={["exam1_q14", "exam4_q33", "exam3_q32", "exam2_q1"]}>
@@ -104,7 +104,7 @@ The MFTech team has packaged the web application, the workers and the reporting 
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/5" title="Five MFTech tasks that run in containers" questions={["exam3_q32", "exam2_q27", "exam6_q35", "exam1_q5", "exam4_q56", "exam3_q15", "exam1_q27", "exam2_q1"]}>
+<Scene id="en-s2" label="Part 2/5" title="Five MFTECH tasks that run in containers" questions={["exam3_q32", "exam2_q27", "exam6_q35", "exam1_q5", "exam4_q56", "exam3_q15", "exam1_q27", "exam2_q1"]}>
 
 <p class="scene-intro">Not every task suits an EC2 instance that runs all the time; containers fit many kinds of work, from web services to scheduled jobs.</p>
 
@@ -112,7 +112,7 @@ Pick a task, try it with the simplest option, then turn on the option to apply t
 
 <ContainerJobSim client:visible />
 
-Some other MFTech scenarios:
+Some other MFTECH scenarios:
 
 - An existing worker talks to a message broker over **AMQP** and the team does not want to manage nodes: run the worker on **EKS with Fargate** and move the broker to **Amazon MQ** (a managed broker that supports AMQP).
 - A service on ECS is CPU-bound: turn on **Service Auto Scaling** (based on Application Auto Scaling) to increase the number of tasks based on the service's CPU and memory metrics (part 3).
@@ -127,7 +127,7 @@ Some other MFTech scenarios:
 
 <p class="scene-intro">When load rises, you need more copies of the application (Pods or tasks) and more nodes to run those copies; the two happen at separate layers.</p>
 
-During a sale, traffic to MFTech's web service grows several times over. Scaling happens in two separate layers:
+During a sale, traffic to MFTECH's web service grows several times over. Scaling happens in two separate layers:
 
 - **The application layer** (number of Pods or tasks). On EKS, the **Horizontal Pod Autoscaler** (HPA) changes the number of Pods in a Deployment to keep CPU near a target (for example 50%). The HPA is a standard Kubernetes API resource; it only needs a metrics source such as the Kubernetes Metrics Server. On ECS, **Service Auto Scaling** changes the service's desired count (target tracking, step scaling, scheduled, predictive, or based on an SQS queue backlog).
 - **The infrastructure layer** (number of nodes). On EKS with EC2 nodes, the **Cluster Autoscaler** adjusts the Auto Scaling group's desired capacity when Pods cannot be scheduled; **Karpenter** and **EKS Auto Mode** (built on Karpenter) create new nodes when Pods do not fit on the existing ones. With Fargate this layer does not exist: each task or Pod gets its own capacity.
@@ -152,7 +152,7 @@ Amazon EKS has several deployment options outside a Region. They differ in **whe
 - **EKS Hybrid Nodes**: the company's existing servers become nodes; the control plane is in the Region, managed by AWS; a reliable connection to the Region is required.
 - **EKS Anywhere**: customer-managed Kubernetes management software that runs the whole cluster on the company's infrastructure, including air-gapped environments.
 
-Pick a MFTech situation and find the option that meets every requirement:
+Pick a MFTECH situation and find the option that meets every requirement:
 
 <EksPlacementSim client:visible />
 
@@ -177,7 +177,7 @@ Some services and features look like the right choice in this lesson's situation
     instead: "S3 → SQS → **Lambda** for short image processing; an HTTP microservice with no infrastructure to manage: Lambda + API Gateway, or ECS on Fargate / ECS Express Mode when the code is already containerized." },
   { name: "Amazon EKS Anywhere",
     use: "Runs Kubernetes on the company's infrastructure (vSphere, bare metal, Nutanix, CloudStack, AWS Snow), including air-gapped environments.",
-    notHere: "MFTech's payment backend has no on-premises requirement and the team wants the least operational effort; with EKS Anywhere the company manages the hardware, Kubernetes upgrades and node scaling itself.",
+    notHere: "MFTECH's payment backend has no on-premises requirement and the team wants the least operational effort; with EKS Anywhere the company manages the hardware, Kubernetes upgrades and node scaling itself.",
     instead: "ECS (or EKS) on **Fargate** in a Region (parts 1 and 4)." },
   { name: "CloudWatch alarm on node CPU",
     use: "Scales an EC2 Auto Scaling group on a metric such as average CPU, which suits applications that run directly on instances.",
@@ -202,22 +202,22 @@ Sort each feature into the matching runtime model. On a mobile device: tap a car
   ]}
 />
 
-Check your understanding: as the designer of the MFTech system, which option fits?
+Check your understanding: as the designer of the MFTECH system, which option fits?
 
 <Quiz client:visible items={[
   { q: "The accounting department needs to explain why this month's ECS bill differs from last month's, after the team moved from the EC2 launch type to Fargate. How has the billing basis changed?",
     opts: ["Both are billed by the task's vCPU and memory", "Previously billed by EC2 and EBS; now billed by the vCPU and memory the task requests", "Fargate is free; only EC2 is billed"],
     a: 1,
     why: "With the EC2 launch type, you pay for the running EC2 instances (and EBS volumes); with Fargate, you pay based on each task's vCPU and memory configuration." },
-  { q: "MFTech has a service on ECS and a service on EKS; the team no longer wants to manage EC2. Which option fits?",
+  { q: "MFTECH has a service on ECS and a service on EKS; the team no longer wants to manage EC2. Which option fits?",
     opts: ["Run both on Fargate", "Run both on the EC2 launch type", "Move everything to Elastic Beanstalk"],
     a: 0,
     why: "Fargate works for both ECS and EKS; no nodes are left to patch." },
-  { q: "Each MFTech stream aggregation job runs for about 2 hours and must not require managing servers. Which service should run the processing?",
+  { q: "Each MFTECH stream aggregation job runs for about 2 hours and must not require managing servers. Which service should run the processing?",
     opts: ["AWS Lambda", "ECS on Fargate", "EC2 Spot"],
     a: 1,
     why: "A standard Lambda function runs at most 15 minutes per invocation (Lambda Managed Instances: up to 90 minutes for some invocation types), not enough for a 2-hour job. An ECS task on Fargate runs until its process ends, with no servers to manage." },
-  { q: "MFTech's EKS cluster on EC2 nodes already has a CPU-based HPA. At peak hours many new Pods are Pending and the node count does not change even though every node is out of CPU. What should be added with the least operational effort?",
+  { q: "MFTECH's EKS cluster on EC2 nodes already has a CPU-based HPA. At peak hours many new Pods are Pending and the node count does not change even though every node is out of CPU. What should be added with the least operational effort?",
     opts: ["Raise the HPA's CPU target", "A Cluster Autoscaler tied to the nodes' Auto Scaling group", "A scheduled Lambda function that checks for Pending Pods and calls eksctl"],
     a: 1,
     why: "The HPA only changes the number of Pods. The Cluster Autoscaler detects Pods that cannot be scheduled and raises the Auto Scaling group's desired capacity; the Pods are scheduled onto the new nodes." },
@@ -225,7 +225,7 @@ Check your understanding: as the designer of the MFTech system, which option fit
     opts: ["Correct: RBAC limits each Pod's AWS API permissions", "Incorrect: RBAC controls only the Kubernetes API; each service needs its own service account and IAM role (IRSA or EKS Pod Identity)", "Incorrect: attach the policy directly to each Pod with an annotation"],
     a: 1,
     why: "Every Pod on a node inherits the node IAM role's permissions. The `eks.amazonaws.com/role-arn` annotation goes on the service account to point to an IAM role; no policy is attached to a Pod." },
-  { q: "MFTech Pay's Kubernetes workloads and data must stay in the data center; the team wants AWS to manage the control plane and Kubernetes upgrades. Which option fits?",
+  { q: "MFTECH Pay's Kubernetes workloads and data must stay in the data center; the team wants AWS to manage the control plane and Kubernetes upgrades. Which option fits?",
     opts: ["An Amazon EKS local cluster on AWS Outposts", "Amazon EKS in a Region, connected over Direct Connect", "ECS on Fargate in a Local Zone"],
     a: 0,
     why: "A local cluster runs both the control plane and the nodes on the Outpost in the data center, and AWS still manages the control plane; AWS recommends local clusters when data residency mandates apply. The other two options place workloads on AWS infrastructure outside the data center." },

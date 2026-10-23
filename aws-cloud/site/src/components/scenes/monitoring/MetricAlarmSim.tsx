@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./monitoring-sims.css";
 
-// Thirty minutes of one MFTech metric, minute by minute. The faint line is what
+// Thirty minutes of one MFTECH metric, minute by minute. The faint line is what
 // really happened; the dots are the datapoints CloudWatch receives (every minute, or
 // every 5 minutes with EC2 basic monitoring). The alarm fires when 2 datapoints in a
 // row are above the threshold, then runs its action. Scaling actions bring the metric
@@ -50,8 +50,8 @@ const ramp = (pts: [number, number][]) => {
 const SCENARIOS: Record<ScenarioId, Scenario> = {
   ec2: {
     name: { vi: "Livestream bán hàng", en: "Sales livestream" },
-    about: { vi: "Tại phút thứ 10, phiên livestream của MFTech bắt đầu. CPU của Auto Scaling group web tăng đột biến trong khoảng 10 phút rồi giảm.",
-      en: "At minute 10, MFTech's livestream starts. The web Auto Scaling group CPU spikes for about 10 minutes, then drops." },
+    about: { vi: "Tại phút thứ 10, phiên livestream của MFTECH bắt đầu. CPU của Auto Scaling group web tăng đột biến trong khoảng 10 phút rồi giảm.",
+      en: "At minute 10, MFTECH's livestream starts. The web Auto Scaling group CPU spikes for about 10 minutes, then drops." },
     metric: { vi: "CPUUtilization (EC2, trung bình của Auto Scaling group web)", en: "CPUUtilization (EC2, web Auto Scaling group average)" },
     unit: "%",
     max: 100,

@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./cloudfront-sims.css";
 
-// Path of a MFTech request through CloudFront: POP (edge location) → regional edge cache → origin.
+// Path of a MFTECH request through CloudFront: POP (edge location) → regional edge cache → origin.
 // Facts (AmazonCloudFront/latest/DeveloperGuide):
 // - HowCloudFrontWorks.html: a POP miss typically goes to the nearest regional edge cache (REC), which has a
 //   larger cache; an origin response is cached at both. PUT/POST/PATCH/OPTIONS/DELETE go directly from the POP

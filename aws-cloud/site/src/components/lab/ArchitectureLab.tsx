@@ -27,7 +27,7 @@ const LINKS = "mx-0 mt-1.5 mb-0 flex flex-wrap items-center gap-3 text-[0.9rem] 
 
 /**
  * One architecture lab: pick a service, then a slot (or drag the service onto it), and check the design
- * against MFTech's requirements. The design is kept in this browser.
+ * against MFTECH's requirements. The design is kept in this browser.
  */
 export default function ArchitectureLab({ id, n, total, learn, next }: Props) {
   const { t, locale } = useI18n();

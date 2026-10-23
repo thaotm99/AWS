@@ -1,5 +1,5 @@
 ---
-// Lesson 0 opening visual: the six service groups orbiting MFTech. CSS-only motion (aws-map.css).
+// Lesson 0 opening visual: the six service groups orbiting MFTECH. CSS-only motion (aws-map.css).
 import "./aws-map.css";
 import L from "../../L.astro";
 import { lessonRoute } from "../../../data/lesson-parts";
@@ -25,13 +25,13 @@ const GROUPS = [
   <div>
     <span class="mb-2.5 block font-mono text-[0.75rem] tracking-[0.14em] text-map-amber"><L vi="LỚP 0 · BẮT ĐẦU" en="LAYER 0 · START HERE" /></span>
     <h2 class="m-0 mb-2.5 text-[length:clamp(1.6rem,3.4vw,2.3rem)] leading-[1.12] font-extrabold tracking-[-0.02em] text-map-ink"><L vi="Bản đồ AWS cho người mới" en="An AWS map for newcomers" /></h2>
-    <p class="m-0 max-w-[46ch] leading-[1.6] text-map-soft"><L vi="Nhìn toàn cảnh trước khi đi vào từng dịch vụ: cloud khác gì tự vận hành máy chủ, mỗi nhóm dịch vụ làm gì, và một đơn hàng của MFTech đi qua những đâu." en="See the whole picture before the individual services: how cloud differs from running your own servers, what each group of services does, and where one MFTech order travels." /></p>
+    <p class="m-0 max-w-[46ch] leading-[1.6] text-map-soft"><L vi="Nhìn toàn cảnh trước khi đi vào từng dịch vụ: cloud khác gì tự vận hành máy chủ, mỗi nhóm dịch vụ làm gì, và một đơn hàng của MFTECH đi qua những đâu." en="See the whole picture before the individual services: how cloud differs from running your own servers, what each group of services does, and where one MFTECH order travels." /></p>
   </div>
-  <div class="relative aspect-square w-full max-w-[380px] justify-self-center max-md:max-w-[300px]" role="img" aria-label="Sáu nhóm dịch vụ AWS quanh hệ thống MFTech" data-i18n-attr="aria-label:lesson.awsMap.heroLabel">
+  <div class="relative aspect-square w-full max-w-[380px] justify-self-center max-md:max-w-[300px]" role="img" aria-label="Sáu nhóm dịch vụ AWS quanh hệ thống MFTECH" data-i18n-attr="aria-label:lesson.awsMap.heroLabel">
     <span class="absolute inset-[14%] rounded-[50%] border border-map-ring"></span>
     {GROUPS.map((g) => <span class="am-spoke" style={`--a:${g.a}deg; --c:${g.c}; --d:${g.d}s`}><i></i></span>)}
     <span class="am-sat"></span>
-    <span class="am-core">MFTech</span>
+    <span class="am-core">MFTECH</span>
     {GROUPS.map((g) => (
       <span class="am-orb" style={`left:${g.x.toFixed(1)}%; top:${g.y.toFixed(1)}%; --c:${g.c}; --d:${g.d}s; --f:${g.f}s`}><L vi={g.vi} en={g.en} /></span>
     ))}

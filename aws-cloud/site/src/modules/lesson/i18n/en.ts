@@ -79,7 +79,7 @@ export const en: Messages<typeof vi> = {
     optionGroup: "Choose an option",
   },
   awsMap: {
-    heroLabel: "Six groups of AWS services around the MFTech system",
+    heroLabel: "Six groups of AWS services around the MFTECH system",
   },
   notFound: {
     title: "Page not found",

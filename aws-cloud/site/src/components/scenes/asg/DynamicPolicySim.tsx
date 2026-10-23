@@ -187,7 +187,7 @@ export default function DynamicPolicySim() {
           <span className="font-mono text-[0.78rem] text-muted">{L({ vi: "Metric: CPU trung bình của nhóm · giá trị mục tiêu 50%", en: "Metric: group average CPU · target value 50%" })}</span>
         )}
       </div>
-      <p className="mx-4 mt-2.5 mb-0 text-step--1 text-muted">{L({ vi: "Lúc phút 4, MFTech mở bán một sản phẩm được quảng bá rộng rãi: tải tăng gấp bốn và giữ nguyên. Nhóm đang chạy 4 instance, tối đa 20. Trong mô phỏng, instance mới sẵn sàng sau 2 phút.", en: "At minute 4, MFTech opens sales of a heavily promoted product: load quadruples and stays there. The group runs 4 instances, maximum 20. In the simulation, a new instance is ready 2 minutes after launch." })}</p>
+      <p className="mx-4 mt-2.5 mb-0 text-step--1 text-muted">{L({ vi: "Lúc phút 4, MFTECH mở bán một sản phẩm được quảng bá rộng rãi: tải tăng gấp bốn và giữ nguyên. Nhóm đang chạy 4 instance, tối đa 20. Trong mô phỏng, instance mới sẵn sàng sau 2 phút.", en: "At minute 4, MFTECH opens sales of a heavily promoted product: load quadruples and stays there. The group runs 4 instances, maximum 20. In the simulation, a new instance is ready 2 minutes after launch." })}</p>
       <div className="svg-wrap">
         <svg viewBox="0 0 820 286" role="img" aria-label={L({ vi: "Biểu đồ 25 phút: CPU trung bình phía trên, số instance phía dưới", en: "25-minute chart: average CPU on top, number of instances below" })}>
           <text className="ts dps-axis" x={X0} y={CPU_Y0 - 10}>{L({ vi: "CPU trung bình (%)", en: "Average CPU (%)" })}</text>

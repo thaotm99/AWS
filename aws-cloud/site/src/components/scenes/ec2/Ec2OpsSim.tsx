@@ -1,7 +1,7 @@
 import HopSim, { type HopScenario } from "../security/HopSim";
 import { useLang } from "../../../lib/lang";
 
-// Things that go wrong with a MFTech server and the EC2 feature that handles each:
+// Things that go wrong with a MFTECH server and the EC2 feature that handles each:
 // alarm recover / reboot, instance store vs EBS on stop, Hibernate, a single instance that
 // keeps its Elastic IP through an Auto Scaling group, and detailed monitoring.
 // Practice-test sources (build-time only): exam1_q43, exam5_q43, exam5_q52, exam6_q42,
@@ -148,8 +148,8 @@ const scenarios = (L: Lang): HopScenario[] => [
   },
   {
     name: L({ vi: "Yêu cầu metric chu kỳ 1 phút", en: "1-minute metrics required" }),
-    story: L({ vi: "Trong đợt khuyến mãi, MFTech cần theo dõi CPU với độ chi tiết **1 phút** để scale kịp thời, không cần phát triển agent.",
-      en: "During a sale, MFTech needs to monitor CPU at **1-minute** granularity to scale in time, without developing an agent." }),
+    story: L({ vi: "Trong đợt khuyến mãi, MFTECH cần theo dõi CPU với độ chi tiết **1 phút** để scale kịp thời, không cần phát triển agent.",
+      en: "During a sale, MFTECH needs to monitor CPU at **1-minute** granularity to scale in time, without developing an agent." }),
     request: L({ vi: "Gửi metric CPUUtilization", en: "Send CPUUtilization metric" }),
     toggle: { label: L({ vi: "Kích hoạt detailed monitoring", en: "Enable detailed monitoring" }), initial: false },
     start: "ec2",
@@ -172,5 +172,5 @@ const scenarios = (L: Lang): HopScenario[] => [
 export default function Ec2OpsSim() {
   const L = useLang();
   return <HopSim scenarios={scenarios(L)} action={L({ vi: "Mô phỏng sự cố", en: "Simulate failure" })} height={250}
-    label={L({ vi: "Các sự cố của instance MFTech và tính năng EC2 xử lý từng sự cố", en: "MFTech instance failures and the EC2 feature that handles each one" })} />;
+    label={L({ vi: "Các sự cố của instance MFTECH và tính năng EC2 xử lý từng sự cố", en: "MFTECH instance failures and the EC2 feature that handles each one" })} />;
 }

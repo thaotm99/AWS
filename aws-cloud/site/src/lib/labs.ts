@@ -1,4 +1,4 @@
-// Architecture labs: the learner places AWS services into the slots of a MFTech diagram, then checks
+// Architecture labs: the learner places AWS services into the slots of a MFTECH diagram, then checks
 // the design against the requirements. Plain data plus rule functions, so the island imports it
 // directly (functions cannot travel as island props) and the rules can be tested without a browser.
 
@@ -45,7 +45,7 @@ export type Placement = Partial<Record<string, ServiceId>>;
 export interface Rule {
   text: Text;
   check: (p: Placement) => boolean;
-  /** Why the design fails this rule: what goes wrong for MFTech. */
+  /** Why the design fails this rule: what goes wrong for MFTECH. */
   why: Text;
   hint: Text;
 }
@@ -86,8 +86,8 @@ export const LABS: Lab[] = [
     id: "public-private",
     title: { vi: "Tầng web công khai, database riêng tư", en: "A public web tier, a private database" },
     brief: {
-      vi: "Khách hàng truy cập MFTech qua Internet. Các EC2 instance cần tải bản vá hệ điều hành từ Internet nhưng không được nhận kết nối trực tiếp từ Internet; database chỉ nhận kết nối từ tầng ứng dụng.",
-      en: "Customers reach MFTech over the internet. The EC2 instances must download OS patches from the internet but must not accept connections from it; the database accepts connections only from the application tier.",
+      vi: "Khách hàng truy cập MFTECH qua Internet. Các EC2 instance cần tải bản vá hệ điều hành từ Internet nhưng không được nhận kết nối trực tiếp từ Internet; database chỉ nhận kết nối từ tầng ứng dụng.",
+      en: "Customers reach MFTECH over the internet. The EC2 instances must download OS patches from the internet but must not accept connections from it; the database accepts connections only from the application tier.",
     },
     services: ["alb", "ec2", "rds", "nat", "s3"],
     slots: [

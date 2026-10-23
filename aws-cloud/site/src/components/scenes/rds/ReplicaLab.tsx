@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./rds-sims.css";
 
-// MFTech adds a copy of its (still unencrypted) RDS for MySQL order database for the reporting team.
+// MFTECH adds a copy of its (still unencrypted) RDS for MySQL order database for the reporting team.
 // The learner picks the kind of copy (Read Replica or Multi-AZ standby), its size, its encryption and
 // its Region, then creates it and points the reports at it.
 // Facts: replica of an unencrypted instance cannot be encrypted (Overview.Encryption.html, limitations);

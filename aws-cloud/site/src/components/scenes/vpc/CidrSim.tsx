@@ -3,14 +3,14 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./vpc-sims.css";
 
-// CIDR notation on MFTech's address plan: what range a block covers, whether it can be a VPC or
+// CIDR notation on MFTECH's address plan: what range a block covers, whether it can be a VPC or
 // subnet (/16 to /28, vpc-cidr-blocks.html, subnet-sizing.html), the five addresses AWS reserves in
 // every subnet, and how a bucket policy reads IpAddress + NotIpAddress (both conditions are ANDed;
 // AmazonS3/latest/userguide/amazon-s3-policy-keys.html, IAM condition logic).
 // Source questions: exam4_q8.
 
 const PRESETS: { ip: string; p: number; label: Bi }[] = [
-  { ip: "10.0.0.0", p: 16, label: { vi: "VPC MFTech", en: "MFTech VPC" } },
+  { ip: "10.0.0.0", p: 16, label: { vi: "VPC MFTECH", en: "MFTECH VPC" } },
   { ip: "10.0.1.0", p: 24, label: { vi: "Public subnet", en: "Public subnet" } },
   { ip: "192.0.2.0", p: 24, label: { vi: "Mạng kho đối tác", en: "Partner warehouse network" } },
   { ip: "192.0.2.188", p: 32, label: { vi: "Một máy kiosk", en: "One kiosk machine" } },

@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./asg-sims.css";
 
-// One day of MFTech traffic, hour by hour. Bars are how many EC2 instances the load
+// One day of MFTECH traffic, hour by hour. Bars are how many EC2 instances the load
 // really needs; the line is how many the Auto Scaling group runs under the chosen
 // scaling policy. Red bars are hours when customers wait. Each load pattern has a
 // policy that fits it: predictive for daily cycles, scheduled for a known sale,

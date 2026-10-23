@@ -3,7 +3,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./elb-sims.css";
 
-// MFTech serves checkout.mftech.vn, www.mftech.vn and mftech.com.vn/{profile,search} over
+// MFTECH serves checkout.mftech.vn, www.mftech.vn and mftech.com.vn/{profile,search} over
 // HTTPS from one ALB. The learner sets three independent things and sees every client's result:
 // - certificates: one certificate, a wildcard *.mftech.vn (one subdomain level, not the apex,
 //   not another domain), or a certificate list chosen by SNI (https-listener-certificates.html);
@@ -87,7 +87,7 @@ export default function HttpsListenerSim() {
 
   return (
     <div className="stage">
-      <p className="m-0 px-3.5 pt-2.5 pb-0 text-step--1">{rich(L({ vi: "Yêu cầu: mọi URL của MFTech chạy HTTPS trên **một** ALB, với cấu hình tối thiểu.", en: "Requirement: every MFTech URL runs over HTTPS on **one** ALB, with minimal configuration." }))}</p>
+      <p className="m-0 px-3.5 pt-2.5 pb-0 text-step--1">{rich(L({ vi: "Yêu cầu: mọi URL của MFTECH chạy HTTPS trên **một** ALB, với cấu hình tối thiểu.", en: "Requirement: every MFTECH URL runs over HTTPS on **one** ALB, with minimal configuration." }))}</p>
       <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-3" role="group" aria-label={L({ vi: "Chứng chỉ trên listener HTTPS", en: "Certificates on the HTTPS listener" })}>
         <span className="mr-1 text-[0.72rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Chứng chỉ", en: "Certificates" })}</span>
         <button className="chip" aria-pressed={cert === "one"} onClick={() => setCert("one")}>www.mftech.vn</button>

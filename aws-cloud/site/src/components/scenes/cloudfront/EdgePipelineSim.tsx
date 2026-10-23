@@ -6,7 +6,7 @@ import "./cloudfront-sims.css";
 
 type Lang = ReturnType<typeof useLang>;
 
-// One request of MFTech walks through the checks CloudFront runs at the edge,
+// One request of MFTECH walks through the checks CloudFront runs at the edge,
 // then reaches an origin. Each scenario turns on the feature that solves one real
 // problem: HTTPS certificate, WAF, geo restriction, signed cookies, field-level
 // encryption, cache behaviors and origin-group failover.

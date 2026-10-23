@@ -3,7 +3,7 @@ import CaseSim, { type CaseBox, type CaseLink, type CaseNode, type CaseScenario 
 
 type Lang = ReturnType<typeof useLang>;
 
-// MFTech now runs several AWS accounts in one Organization. Each situation is a
+// MFTECH now runs several AWS accounts in one Organization. Each situation is a
 // governance problem; pick a tool and watch what happens: SCP, tag policy,
 // Budgets actions, IAM Access Analyzer, StackSets, Control Tower.
 
@@ -182,5 +182,5 @@ return [
 
 export default function OrgGuardSim() {
   const L = useLang();
-  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Quản lý nhiều AWS account của MFTech bằng AWS Organizations", en: "Managing MFTech's AWS accounts with AWS Organizations" })} action={L({ vi: "Chạy mô phỏng", en: "Run simulation" })} />;
+  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Quản lý nhiều AWS account của MFTECH bằng AWS Organizations", en: "Managing MFTECH's AWS accounts with AWS Organizations" })} action={L({ vi: "Chạy mô phỏng", en: "Run simulation" })} />;
 }

@@ -3,7 +3,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./elb-sims.css";
 
-// MFTech's ALB has two listeners. HTTP :80 has only a default rule that redirects to HTTPS
+// MFTECH's ALB has two listeners. HTTP :80 has only a default rule that redirects to HTTPS
 // (redirect action, HTTP 301; HTTPS to HTTP is not allowed). HTTPS :443 has rules with the six
 // condition types (host-header, http-header, http-request-method, path-pattern, query-string,
 // source-ip), evaluated from the lowest priority value to the highest, the default rule last.

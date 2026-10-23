@@ -1,7 +1,7 @@
 import PacketSim, { type PLayout, type PNode, type PScenario } from "./PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// ALB or NLB for one MFTech need at a time. The switch swaps the load balancer;
+// ALB or NLB for one MFTECH need at a time. The switch swaps the load balancer;
 // the packet shows what each one can and cannot do (layer 7 routing, static IP,
 // TCP-only traffic, PrivateLink, TLS offload with private instances).
 
@@ -81,7 +81,7 @@ const scenarios = (L: Lang): PScenario[] => {
       [{ id: "ep", x: 170, y: 140, w: 110, l1: "Interface", l2: "endpoint" }], [["ep", "lb"]]),
     run: (nlb) => nlb
       ? { steps: [
-            { at: "ep", state: "pass", msg: L({ vi: "Interface endpoint trong VPC đối tác kết nối tới **endpoint service** (PrivateLink) của MFTech.", en: "The interface endpoint in the partner VPC connects to MFTech's **endpoint service** (PrivateLink)." }) },
+            { at: "ep", state: "pass", msg: L({ vi: "Interface endpoint trong VPC đối tác kết nối tới **endpoint service** (PrivateLink) của MFTECH.", en: "The interface endpoint in the partner VPC connects to MFTECH's **endpoint service** (PrivateLink)." }) },
             { at: "lb", state: "pass", msg: L({ vi: "Endpoint service sử dụng NLB làm backend.", en: "The endpoint service uses the NLB as its backend." }) },
             { at: "t1", state: "pass", msg: L({ vi: "API tồn kho phản hồi. Không cần VPC peering, không đi qua Internet.", en: "The inventory API responds. No VPC peering needed, no traffic over the internet." }) },
           ], ok: true, result: L({ vi: "Đối tác gọi được API qua mạng nội bộ của AWS. Phía cung cấp dịch vụ PrivateLink sử dụng **NLB**.", en: "The partner can call the API over the AWS internal network. The PrivateLink service provider side uses an **NLB**." }) }
@@ -97,7 +97,7 @@ const scenarios = (L: Lang): PScenario[] => {
     layout: (nlb) => ({
       viewBox: "0 40 820 210",
       aria: L({ vi: "Traffic UDP đi qua load balancer, qua Direct Connect tới máy chủ trong data center", en: "UDP traffic goes through the load balancer and over Direct Connect to servers in the data center" }),
-      boxes: [{ x: 520, y: 58, w: 280, h: 172, label: L({ vi: "Data center MFTech", en: "MFTech data center" }), edge: true }],
+      boxes: [{ x: 520, y: 58, w: 280, h: 172, label: L({ vi: "Data center MFTECH", en: "MFTECH data center" }), edge: true }],
       nodes: [
         { id: "c", x: 60, y: 140, l1: L({ vi: "Cửa hàng", en: "Stores" }), user: true },
         lb(L, nlb, 240, 140),
@@ -156,6 +156,6 @@ const scenarios = (L: Lang): PScenario[] => {
 export default function LbTypeSim() {
   const L = useLang();
   return <PacketSim scenarios={scenarios(L)} action={L({ vi: "Gửi request", en: "Send request" })}
-    hint={L({ vi: "Chọn một yêu cầu của MFTech, sau đó nhấn Gửi request (cấu hình hiện tại: ALB). Bật tuỳ chọn để chuyển sang NLB.",
-      en: "Pick a MFTech requirement, then press Send request (current configuration: ALB). Turn on the option to switch to an NLB." })} />;
+    hint={L({ vi: "Chọn một yêu cầu của MFTECH, sau đó nhấn Gửi request (cấu hình hiện tại: ALB). Bật tuỳ chọn để chuyển sang NLB.",
+      en: "Pick a MFTECH requirement, then press Send request (current configuration: ALB). Turn on the option to switch to an NLB." })} />;
 }

@@ -1,6 +1,6 @@
 ---
 title: "VPC: subnet, routing, bảo mật và kết nối"
-lede: "Bài học trình bày mạng riêng của MFTech trên AWS theo đường đi của gói tin: các lớp kiểm soát giữa internet và EC2 instance, khác biệt giữa security group và network ACL, cách quy hoạch khối CIDR và route table, cách bố trí NAT gateway, và tiêu chí lựa chọn giữa VPC endpoint, VPC peering, Transit Gateway, Site-to-Site VPN và Direct Connect."
+lede: "Bài học trình bày mạng riêng của MFTECH trên AWS theo đường đi của gói tin: các lớp kiểm soát giữa internet và EC2 instance, khác biệt giữa security group và network ACL, cách quy hoạch khối CIDR và route table, cách bố trí NAT gateway, và tiêu chí lựa chọn giữa VPC endpoint, VPC peering, Transit Gateway, Site-to-Site VPN và Direct Connect."
 minutes: 42
 scenes: 9
 prerequisites: ["global-infra"]
@@ -154,14 +154,14 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#compare", label: "9 · So sánh thành phần mạng" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-MFTech triển khai hệ thống tại Region Singapore. Bước tiếp theo là thiết kế **VPC**, mạng riêng của MFTech trên AWS: phân chia subnet, chỉ cho phép traffic hợp lệ từ người dùng, chặn truy cập trái phép, và kết nối VPC với các VPC khác cũng như với văn phòng. Mỗi phần tương ứng với một tác vụ triển khai thực tế, kèm mô phỏng để kiểm chứng cấu hình trước khi áp dụng trên console.
+MFTECH triển khai hệ thống tại Region Singapore. Bước tiếp theo là thiết kế **VPC**, mạng riêng của MFTECH trên AWS: phân chia subnet, chỉ cho phép traffic hợp lệ từ người dùng, chặn truy cập trái phép, và kết nối VPC với các VPC khác cũng như với văn phòng. Mỗi phần tương ứng với một tác vụ triển khai thực tế, kèm mô phỏng để kiểm chứng cấu hình trước khi áp dụng trên console.
 </Story>
 
 <Scene id="addr" label="Phần 1/9" title="Địa chỉ và định tuyến: CIDR, subnet và route table" questions={["exam4_q8", "exam5_q63"]}>
 
 <p class="scene-intro">Mỗi EC2 instance trong VPC cần một địa chỉ IP; VPC chia dải địa chỉ của mình thành các subnet, và route table của mỗi subnet quy định traffic được chuyển tới đâu.</p>
 
-Mọi địa chỉ trong VPC của MFTech được khai báo bằng **CIDR notation**: `10.0.0.0/16` nghĩa là 16 bit đầu cố định, 16 bit sau thay đổi, tức 65.536 địa chỉ. Cùng cách viết này xuất hiện trong rule của security group, network ACL và trong điều kiện `aws:SourceIp` của bucket policy. Chọn một khối mẫu hoặc kéo thanh prefix, sau đó nhập IP nguồn để kiểm tra IP đó có thuộc khối hay không.
+Mọi địa chỉ trong VPC của MFTECH được khai báo bằng **CIDR notation**: `10.0.0.0/16` nghĩa là 16 bit đầu cố định, 16 bit sau thay đổi, tức 65.536 địa chỉ. Cùng cách viết này xuất hiện trong rule của security group, network ACL và trong điều kiện `aws:SourceIp` của bucket policy. Chọn một khối mẫu hoặc kéo thanh prefix, sau đó nhập IP nguồn để kiểm tra IP đó có thuộc khối hay không.
 
 <CidrSim client:visible />
 
@@ -179,7 +179,7 @@ Sau khi chia subnet, mỗi subnet cần một **route table** quyết định tr
 
 <p class="scene-intro">Để một request từ internet tới được web server trong VPC, request phải đi qua ba lớp kiểm soát: internet gateway của VPC, network ACL của subnet và security group của instance.</p>
 
-Một subnet chỉ là **public subnet** khi route table của subnet đó có route `0.0.0.0/0` tới **internet gateway (IGW)**. Request từ internet tới web server của MFTech lần lượt đi qua IGW, **network ACL** tại ranh giới subnet, và **security group** gắn với instance. Bật hoặc tắt từng điều kiện và gửi request để xác định lớp kiểm soát đang chặn traffic.
+Một subnet chỉ là **public subnet** khi route table của subnet đó có route `0.0.0.0/0` tới **internet gateway (IGW)**. Request từ internet tới web server của MFTECH lần lượt đi qua IGW, **network ACL** tại ranh giới subnet, và **security group** gắn với instance. Bật hoặc tắt từng điều kiện và gửi request để xác định lớp kiểm soát đang chặn traffic.
 
 <PacketPath client:visible />
 
@@ -191,7 +191,7 @@ Một subnet chỉ là **public subnet** khi route table của subnet đó có r
 
 <p class="scene-intro">Hệ thống web thường có ba tầng: load balancer nhận request, EC2 instance chạy ứng dụng xử lý request, database lưu dữ liệu. Mỗi tầng chỉ nên nhận traffic từ tầng ngay trước nó.</p>
 
-Ứng dụng web của MFTech gồm ba tầng: ALB tiếp nhận request của người dùng, EC2 chạy ứng dụng, RDS lưu trữ dữ liệu. Mỗi tầng chỉ nên cho phép traffic từ tầng liền trước. Chọn rule inbound cho EC2 và RDS, chạy mô phỏng, và quan sát cả request hợp lệ của người dùng lẫn request truy cập trực tiếp từ bên ngoài.
+Ứng dụng web của MFTECH gồm ba tầng: ALB tiếp nhận request của người dùng, EC2 chạy ứng dụng, RDS lưu trữ dữ liệu. Mỗi tầng chỉ nên cho phép traffic từ tầng liền trước. Chọn rule inbound cho EC2 và RDS, chạy mô phỏng, và quan sát cả request hợp lệ của người dùng lẫn request truy cập trực tiếp từ bên ngoài.
 
 <SgChain client:visible />
 
@@ -203,7 +203,7 @@ Một subnet chỉ là **public subnet** khi route table của subnet đó có r
 
 <p class="scene-intro">EC2 instance trong private subnet không nhận kết nối khởi tạo từ internet, nhưng vẫn cần chủ động kết nối ra ngoài, ví dụ để tải bản vá hệ điều hành.</p>
 
-Database và worker của MFTech nằm trong **private subnet**, không có public IP, nhưng vẫn cần tải bản vá. **NAT gateway** cho phép kết nối đi ra nhưng không cho phép internet khởi tạo kết nối vào. Thử ba cách bố trí, sau đó tạo sự cố tại AZ a.
+Database và worker của MFTECH nằm trong **private subnet**, không có public IP, nhưng vẫn cần tải bản vá. **NAT gateway** cho phép kết nối đi ra nhưng không cho phép internet khởi tạo kết nối vào. Thử ba cách bố trí, sau đó tạo sự cố tại AZ a.
 
 <NatHaSim client:visible />
 
@@ -215,7 +215,7 @@ Database và worker của MFTech nằm trong **private subnet**, không có publ
 
 <p class="scene-intro">Workload trong VPC thường xuyên gọi các dịch vụ AWS như S3; theo mặc định, traffic này đi ra ngoài VPC tới endpoint public của dịch vụ, vừa phát sinh chi phí vừa không đi qua mạng riêng.</p>
 
-Các EC2 instance trong private subnet của MFTech ghi ảnh vào S3 và gửi job vào SQS. Theo mặc định, traffic này đi qua NAT gateway tới public endpoint của dịch vụ. Chọn từng phương án, gửi request và quan sát thay đổi trong route table.
+Các EC2 instance trong private subnet của MFTECH ghi ảnh vào S3 và gửi job vào SQS. Theo mặc định, traffic này đi qua NAT gateway tới public endpoint của dịch vụ. Chọn từng phương án, gửi request và quan sát thay đổi trong route table.
 
 <EndpointSim client:visible />
 
@@ -230,8 +230,8 @@ Chi phí là lý do chính để chuyển lưu lượng tới S3 sang gateway en
     why: "Gateway endpoint chỉ hỗ trợ S3 và DynamoDB; mỗi dịch vụ một endpoint, kèm route tương ứng." },
   { need: "Worker gửi job vào SQS mà không đi ra internet", answer: "Interface endpoint (PrivateLink)",
     why: "Tạo ENI có private IP trong subnet; các dịch vụ ngoài S3 và DynamoDB sử dụng loại endpoint này." },
-  { need: "Đối tác vận chuyển gọi API tồn kho của MFTech từ VPC của đối tác, không mở quyền truy cập toàn bộ mạng", answer: "AWS PrivateLink + NLB phía cung cấp",
-    why: "Phía cung cấp đặt NLB trước dịch vụ; phía sử dụng tạo interface endpoint (gửi traffic TCP hoặc UDP tới endpoint service). Chỉ một dịch vụ được công bố, không mở quyền truy cập toàn bộ mạng. Kết nối chỉ theo một chiều: client trong VPC của đối tác khởi tạo kết nối tới dịch vụ, phía MFTech không khởi tạo được kết nối vào VPC của đối tác. VPC peering thì ngược lại: route giữa hai VPC, instance ở cả hai phía giao tiếp được với nhau như trong cùng một mạng." },
+  { need: "Đối tác vận chuyển gọi API tồn kho của MFTECH từ VPC của đối tác, không mở quyền truy cập toàn bộ mạng", answer: "AWS PrivateLink + NLB phía cung cấp",
+    why: "Phía cung cấp đặt NLB trước dịch vụ; phía sử dụng tạo interface endpoint (gửi traffic TCP hoặc UDP tới endpoint service). Chỉ một dịch vụ được công bố, không mở quyền truy cập toàn bộ mạng. Kết nối chỉ theo một chiều: client trong VPC của đối tác khởi tạo kết nối tới dịch vụ, phía MFTECH không khởi tạo được kết nối vào VPC của đối tác. VPC peering thì ngược lại: route giữa hai VPC, instance ở cả hai phía giao tiếp được với nhau như trong cùng một mạng." },
   { need: "DataSync agent tại kho on-premises chép video hằng ngày vào EFS qua Direct Connect sẵn có, không đi qua internet", answer: "Interface endpoint (PrivateLink) + private VIF",
     why: "Interface endpoint là ENI có private IP trong VPC nên truy cập được từ on-premises qua private VIF của Direct Connect hoặc qua Site-to-Site VPN (DataSync agent dùng VPC service endpoint; EFS có interface endpoint cho EFS API). Gateway endpoint không dùng được từ on-premises." },
 ]} />
@@ -244,7 +244,7 @@ Chi phí là lý do chính để chuyển lưu lượng tới S3 sang gateway en
 
 <p class="scene-intro">Khi mỗi team dùng một VPC riêng, các VPC cần được kết nối với nhau; phương thức kết nối quyết định số kết nối phải quản lý và việc traffic có đi qua được VPC trung gian hay không.</p>
 
-MFTech thành lập thêm các team, mỗi team sử dụng một VPC. Tăng số lượng VPC, so sánh số kết nối cần thiết giữa VPC peering, Transit VPC và Transit Gateway, và thử gửi traffic từ A tới C khi chỉ có peering A–B và B–C. Với Transit Gateway, tắt route propagation để quan sát route table của Transit Gateway khi thiếu route.
+MFTECH thành lập thêm các team, mỗi team sử dụng một VPC. Tăng số lượng VPC, so sánh số kết nối cần thiết giữa VPC peering, Transit VPC và Transit Gateway, và thử gửi traffic từ A tới C khi chỉ có peering A–B và B–C. Với Transit Gateway, tắt route propagation để quan sát route table của Transit Gateway khi thiếu route.
 
 <VpcConnectSim client:visible />
 
@@ -253,7 +253,7 @@ MFTech thành lập thêm các team, mỗi team sử dụng một VPC. Tăng s�
     why: "Không tính phí tạo kết nối; data transfer trong cùng AZ miễn phí, chỉ tính phí khi đi qua AZ hoặc Region khác. Cấu hình đơn giản cho số lượng VPC nhỏ, hỗ trợ cả kết nối giữa hai Region." },
   { need: "Hàng chục VPC của các team và văn phòng cần kết nối qua một điểm trung tâm", answer: "AWS Transit Gateway",
     why: "Mô hình hub-and-spoke, hỗ trợ transitive routing, mỗi VPC một attachment, kết nối được cả VPN và Direct Connect." },
-  { need: "Các account của MFTech trong cùng Organization sử dụng chung một mạng, chi phí thấp nhất", answer: "VPC sharing qua AWS RAM",
+  { need: "Các account của MFTECH trong cùng Organization sử dụng chung một mạng, chi phí thấp nhất", answer: "VPC sharing qua AWS RAM",
     why: "Một account sở hữu VPC và chia sẻ subnet cho các account khác. Instance của các account nằm trong cùng VPC nên giao tiếp trực tiếp, không cần peering." },
   { need: "Tạo account mới cho từng team theo tiêu chuẩn chung, sử dụng mạng dùng chung", answer: "Control Tower + VPC dùng chung (RAM)",
     why: "Control Tower tạo và quản lý account; một account mạng chia sẻ subnet cho các account workload." },
@@ -271,7 +271,7 @@ MFTech thành lập thêm các team, mỗi team sử dụng một VPC. Tăng s�
 
 <p class="scene-intro">Văn phòng và data center của doanh nghiệp (on-premises) cũng cần kết nối vào VPC, hoặc qua internet có mã hoá, hoặc qua đường truyền riêng.</p>
 
-Văn phòng MFTech cần kết nối vào VPC. Có hai phương thức: **Site-to-Site VPN** truyền qua internet với mã hóa, và **Direct Connect** là kết nối chuyên dụng tới AWS. Mỗi tình huống dưới đây tương ứng với một yêu cầu thực tế của văn phòng. Chọn phương thức kết nối và gửi request để quan sát đường đi của traffic.
+Văn phòng MFTECH cần kết nối vào VPC. Có hai phương thức: **Site-to-Site VPN** truyền qua internet với mã hóa, và **Direct Connect** là kết nối chuyên dụng tới AWS. Mỗi tình huống dưới đây tương ứng với một yêu cầu thực tế của văn phòng. Chọn phương thức kết nối và gửi request để quan sát đường đi của traffic.
 
 <HybridLinkSim client:visible />
 
@@ -283,7 +283,7 @@ Văn phòng MFTech cần kết nối vào VPC. Có hai phương thức: **Site-t
 
 <p class="scene-intro">Khi số VPC và data center tăng lên, việc kết nối từng cặp với nhau trở nên khó quản lý; một điểm trung tâm cho phép mọi mạng kết nối qua đó và dùng chung các dịch vụ nền.</p>
 
-MFTech đã có 25 VPC cho các kho, một data center nối bằng Direct Connect, và vừa sáp nhập một công ty có data center và VPC tại châu Âu. Mỗi tình huống dưới đây so sánh thiết kế theo từng VPC với thiết kế tập trung. Chọn thiết kế và gửi request để quan sát đường đi.
+MFTECH đã có 25 VPC cho các kho, một data center nối bằng Direct Connect, và vừa sáp nhập một công ty có data center và VPC tại châu Âu. Mỗi tình huống dưới đây so sánh thiết kế theo từng VPC với thiết kế tập trung. Chọn thiết kế và gửi request để quan sát đường đi.
 
 <HubSim client:visible />
 
@@ -309,12 +309,12 @@ Các cấu hình dưới đây có vẻ hợp lý khi thao tác trên console, n
 
 <p class="scene-intro">Nhiều thành phần mạng có tên hoặc chức năng gần giống nhau; phân biệt được chúng giúp chọn đúng thành phần cho từng nhu cầu.</p>
 
-Một số thành phần mạng có tên hoặc chức năng gần với nhu cầu của MFTech nhưng giải quyết một vấn đề khác. Chọn từng thành phần để xem trường hợp sử dụng, lý do không phù hợp trong tình huống tương ứng, và phương án nên chọn:
+Một số thành phần mạng có tên hoặc chức năng gần với nhu cầu của MFTECH nhưng giải quyết một vấn đề khác. Chọn từng thành phần để xem trường hợp sử dụng, lý do không phù hợp trong tình huống tương ứng, và phương án nên chọn:
 
 <QuickCompare client:visible items={[
   { name: "AWS Client VPN",
     use: "VPN **cho từng người dùng**: dịch vụ managed, máy của nhân viên dùng OpenVPN client kết nối TLS tới Client VPN endpoint để truy cập VPC và mạng on-premises; xác thực bằng Active Directory, federated authentication hoặc certificate.",
-    notHere: "Toàn bộ mạng văn phòng MFTech cần kết nối mã hoá với VPC (mạng với mạng). Client VPN phục vụ từng thiết bị, không nối hai mạng với nhau.",
+    notHere: "Toàn bộ mạng văn phòng MFTECH cần kết nối mã hoá với VPC (mạng với mạng). Client VPN phục vụ từng thiết bị, không nối hai mạng với nhau.",
     instead: "**Site-to-Site VPN** (IPsec giữa customer gateway device và virtual private gateway), kết hợp route table, security group và network ACL để giới hạn traffic." },
   { name: "Bastion host",
     use: "EC2 instance trong public subnet làm điểm trung gian (jump host) SSH/RDP để quản trị viên truy cập instance trong private subnet.",
@@ -322,7 +322,7 @@ Một số thành phần mạng có tên hoặc chức năng gần với nhu c�
     instead: "Nối mạng: Site-to-Site VPN hoặc Direct Connect. Quản trị instance mà không mở port inbound và không duy trì bastion: **Session Manager** của AWS Systems Manager." },
   { name: "Transit VPC",
     use: "Mô hình hub-and-spoke cũ: EC2 instance chạy phần mềm router của bên thứ ba trong một VPC trung tâm, các VPC khác nối tới bằng VPN (BGP over IPsec). Vẫn có chỗ dùng khi cần tính năng của thiết bị bên thứ ba trên đường đi.",
-    notHere: "MFTech cần hub ít công vận hành: Transit VPC buộc tự quản lý HA của EC2 và license, mỗi tunnel VPN tối đa 1,25 Gbps, độ trễ tăng do mã hoá VPN.",
+    notHere: "MFTECH cần hub ít công vận hành: Transit VPC buộc tự quản lý HA của EC2 và license, mỗi tunnel VPN tối đa 1,25 Gbps, độ trễ tăng do mã hoá VPN.",
     instead: "**AWS Transit Gateway**: hub do AWS quản lý; mỗi VPC, VPN hoặc Direct Connect gateway là một attachment." },
   { name: "Network ACL",
     use: "Lọc traffic tại ranh giới subnet theo số thứ tự rule, protocol, port và **dải CIDR**; có cả Allow và Deny, stateless.",
@@ -334,7 +334,7 @@ Một số thành phần mạng có tên hoặc chức năng gần với nhu c�
     instead: "Kiểm tra route `0.0.0.0/0 → internet gateway` trong route table của subnet và rule ICMP inbound trong security group (mục Lỗi thường gặp)." },
   { name: "Elastic network interface (ENI)",
     use: "Thành phần mạng logic trong VPC, đại diện cho một card mạng ảo: private IP, Elastic IP, security group, source/destination check. Gắn vào instance cùng AZ; chuyển ENI sang instance khác thì traffic chuyển theo.",
-    notHere: "Workflow HPC của MFTech cần giao tiếp giữa các instance với độ trễ thấp. ENI chỉ là card mạng ảo, không tăng hiệu năng giao tiếp.",
+    notHere: "Workflow HPC của MFTECH cần giao tiếp giữa các instance với độ trễ thấp. ENI chỉ là card mạng ảo, không tăng hiệu năng giao tiếp.",
     instead: "**Elastic Fabric Adapter (EFA)**: toàn bộ chức năng của ENA cộng với OS-bypass cho HPC và machine learning (bài EC2)." },
   { name: "AWS PrivateLink",
     use: "Truy cập riêng tư một dịch vụ từ VPC của bên sử dụng qua interface endpoint (traffic TCP hoặc UDP); dịch vụ đặt sau NLB ở phía cung cấp.",
@@ -363,30 +363,30 @@ Phân loại từng đặc tính vào thành phần tương ứng. Trên thiết
   ]}
 />
 
-Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTech, phương án nào phù hợp?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTECH, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "Web server của MFTech nằm trong subnet có route tới internet gateway, có public IP, security group cho phép inbound port 443, network ACL chỉ có rule inbound cho port 443. Người dùng vẫn không truy cập được trang. Nguyên nhân là gì?",
+  { q: "Web server của MFTECH nằm trong subnet có route tới internet gateway, có public IP, security group cho phép inbound port 443, network ACL chỉ có rule inbound cho port 443. Người dùng vẫn không truy cập được trang. Nguyên nhân là gì?",
     opts: ["Security group thiếu rule outbound cho response", "Network ACL thiếu rule outbound cho ephemeral port (1024-65535)", "Internet gateway phải đặt trong subnet"],
     a: 1,
     why: "Security group là stateful nên response tự động được cho phép. NACL là stateless nên chiều trả về phải được cho phép tường minh." },
-  { q: "Ứng dụng của MFTech trong VPC cần đọc ảnh trên S3 và dữ liệu giỏ hàng trên DynamoDB mà không đi ra internet. Cấu hình nào đáp ứng yêu cầu?",
+  { q: "Ứng dụng của MFTECH trong VPC cần đọc ảnh trên S3 và dữ liệu giỏ hàng trên DynamoDB mà không đi ra internet. Cấu hình nào đáp ứng yêu cầu?",
     opts: ["Một interface endpoint dùng chung cho cả hai", "Hai gateway endpoint (S3 và DynamoDB), thêm route vào route table", "Một NAT gateway trong public subnet"],
     a: 1,
     why: "S3 và DynamoDB đều hỗ trợ gateway endpoint; mỗi dịch vụ một endpoint, mỗi endpoint bổ sung một route vào route table." },
-  { q: "VPC web và VPC báo cáo của MFTech cần trao đổi dữ liệu. Phương án nào có chi phí thấp nhất?",
+  { q: "VPC web và VPC báo cáo của MFTECH cần trao đổi dữ liệu. Phương án nào có chi phí thấp nhất?",
     opts: ["Transit Gateway", "VPC peering", "Site-to-Site VPN giữa hai VPC"],
     a: 1,
     why: "Với số lượng VPC nhỏ, VPC peering có chi phí thấp và cấu hình đơn giản nhất. Transit Gateway phù hợp khi có nhiều VPC." },
-  { q: "Văn phòng MFTech cần kết nối vào VPC trong vòng một tuần, chi phí thấp và có mã hóa. Phương án nào phù hợp?",
+  { q: "Văn phòng MFTECH cần kết nối vào VPC trong vòng một tuần, chi phí thấp và có mã hóa. Phương án nào phù hợp?",
     opts: ["AWS Direct Connect", "AWS Site-to-Site VPN", "VPC peering"],
     a: 1,
     why: "Site-to-Site VPN được thiết lập nhanh trên kết nối internet sẵn có và mã hóa bằng IPsec. Direct Connect cần nhiều thời gian triển khai." },
-  { q: "MFTech tạo private hosted zone mftech.internal và liên kết với VPC, nhưng EC2 instance không phân giải được tên miền. Thuộc tính nào cần được bật?",
+  { q: "MFTECH tạo private hosted zone mftech.internal và liên kết với VPC, nhưng EC2 instance không phân giải được tên miền. Thuộc tính nào cần được bật?",
     opts: ["enableDnsHostnames và enableDnsSupport", "Một Route 53 Resolver inbound endpoint", "Một internet gateway"],
     a: 0,
     why: "Private hosted zone yêu cầu VPC bật cả DNS hostnames và DNS resolution (enableDnsSupport)." },
-  { q: "Subnet mới của MFTech chưa được gắn tường minh với route table nào. Subnet đó dùng route table nào?",
+  { q: "Subnet mới của MFTECH chưa được gắn tường minh với route table nào. Subnet đó dùng route table nào?",
     opts: ["Không có route table nên không định tuyến được", "Main route table của VPC", "Đồng thời mọi route table trong VPC"],
     a: 1,
     why: "Subnet chưa gắn tường minh thì ngầm định dùng main route table. Mỗi subnet chỉ gắn với một route table tại một thời điểm." },

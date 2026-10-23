@@ -6,7 +6,7 @@ import "./cache-engine-sim.css";
 // Redis OSS (or Valkey) and Memcached side by side on a node with four vCPUs.
 // "Gửi 8 lệnh" sends the same eight commands to both: Memcached spreads them over
 // all cores (multi-threaded), Redis runs them one after another on its main thread.
-// Below, MFTech ticks the needs it has and sees which engine covers them all.
+// Below, MFTECH ticks the needs it has and sees which engine covers them all.
 
 type Engine = "redis" | "mem";
 
@@ -133,8 +133,8 @@ export default function CacheEngineSim() {
         </svg>
       </div>
       <div className="readout">
-        <p className="mx-0 mt-0 mb-2 text-step--1 text-muted">{L({ vi: "Chọn các yêu cầu của MFTech:", en: "Choose MFTech’s requirements:" })}</p>
-        <div className="flex flex-wrap gap-1.5" role="group" aria-label={L({ vi: "Yêu cầu của MFTech", en: "MFTech requirements" })}>
+        <p className="mx-0 mt-0 mb-2 text-step--1 text-muted">{L({ vi: "Chọn các yêu cầu của MFTECH:", en: "Choose MFTECH’s requirements:" })}</p>
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label={L({ vi: "Yêu cầu của MFTECH", en: "MFTECH requirements" })}>
           {NEEDS.map((n) => (
             <button key={n.id} className="chip" aria-pressed={picked.includes(n.id)} onClick={() => toggle(n.id)}>{L(n.name)}</button>
           ))}

@@ -105,14 +105,14 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s7", label: "7 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-MFTech stores its product images, invoices, promotional videos, logs and analytics data on **Amazon S3**. Each type of data has a different access frequency, retention period and group of users. This lesson analyzes each type of data to determine the right S3 configuration.
+MFTECH stores its product images, invoices, promotional videos, logs and analytics data on **Amazon S3**. Each type of data has a different access frequency, retention period and group of users. This lesson analyzes each type of data to determine the right S3 configuration.
 </Story>
 
 <Scene id="en-s1" label="Part 1/7" title="Choosing a storage class for each type of data" questions={["exam1_q8", "exam1_q15", "exam1_q28", "exam5_q49", "exam6_q9", "exam5_q51", "exam6_q28", "exam2_q34", "exam4_q43", "exam1_q19"]}>
 
 <p class="scene-intro">Data is accessed at very different rates: product images are viewed constantly, old invoices almost never; S3 lets each kind sit at a price that fits how often it is read.</p>
 
-S3 cost has two main components: a storage charge per GB and a data retrieval charge. The lower a storage class's storage charge, the higher its retrieval charge or the longer its retrieval time. Choose each type of MFTech data to see the right storage class:
+S3 cost has two main components: a storage charge per GB and a data retrieval charge. The lower a storage class's storage charge, the higher its retrieval charge or the longer its retrieval time. Choose each type of MFTECH data to see the right storage class:
 
 <RequirementPicker client:visible items={[
   { need: "Thumbnails that can be regenerated from the original images; accessed heavily in the first week, then less, but must still be retrievable immediately", answer: "Lifecycle to One Zone-IA after 7 days",
@@ -135,7 +135,7 @@ Lifecycle transitions objects in a waterfall model: one way only, down to lower-
 
 **When objects can transition to an IA storage class.** Since July 16, 2026, a lifecycle rule can transition objects to Standard-IA or One Zone-IA as soon as 0 days after creation. Before that date, S3 required objects to stay at least 30 days in Standard before a transition to these two classes; study material written before July 2026 relies on the old rule and therefore rules out "transition after 7 days" options. The 30-day minimum storage duration of Standard-IA and One Zone-IA is unchanged: it is a billing rule for objects that leave the IA class early, not a condition for the transition. In addition, by default lifecycle does not transition objects smaller than 128 KB to any storage class.
 
-A lifecycle rule does not have to apply to the whole bucket. The rule's **filter** element selects the objects it acts on: by key **prefix**, by one or more **object tags** (each matching both key and value exactly), or by object size; when several conditions are combined, S3 applies a logical AND. A filter has only one prefix, so to apply an action to several different prefixes you create several rules. An empty filter applies to every object in the bucket. MFTech's product image bucket keeps originals under `images/` and thumbnails under `thumbnails/`; the two groups have different access patterns:
+A lifecycle rule does not have to apply to the whole bucket. The rule's **filter** element selects the objects it acts on: by key **prefix**, by one or more **object tags** (each matching both key and value exactly), or by object size; when several conditions are combined, S3 applies a logical AND. A filter has only one prefix, so to apply an action to several different prefixes you create several rules. An empty filter applies to every object in the bucket. MFTECH's product image bucket keeps originals under `images/` and thumbnails under `thumbnails/`; the two groups have different access patterns:
 
 <LifecycleFilterSim client:visible />
 
@@ -151,7 +151,7 @@ How much data is read back decides which storage class is cheapest. Change the v
 
 <p class="scene-intro">Some data must stay untouched for years by regulation; it needs a mechanism that prevents deletion or overwriting, whether by mistake or by an administrator.</p>
 
-Regulations require MFTech to keep invoices for many years. The risk of data loss comes from an employee deleting by mistake, a faulty cleanup script, or an administrator deleting on purpose. Choose how the bucket is protected and who deletes, then see which layer of protection keeps the invoice:
+Regulations require MFTECH to keep invoices for many years. The risk of data loss comes from an employee deleting by mistake, a faulty cleanup script, or an administrator deleting on purpose. Choose how the bucket is protected and who deletes, then see which layer of protection keeps the invoice:
 
 <DeleteGuardSim client:visible />
 
@@ -172,7 +172,7 @@ Retention periods apply to individual object versions, so versions of the same k
 As the number of teams and partners using the data grows, permissions need to be organized in a compact, clear way. Choose each scenario:
 
 <RequirementPicker client:visible items={[
-  { need: "MFTech's accounting department and an audit firm (a different AWS account) both read the invoice bucket", answer: "Bucket policy",
+  { need: "MFTECH's accounting department and an audit firm (a different AWS account) both read the invoice bucket", answer: "Bucket policy",
     why: "A bucket policy is a resource-based policy, which can grant permissions to principals in other accounts." },
   { need: "200 employees have IAM users and can read the reports bucket; 50 of them also need write access", answer: "IAM group + identity-based policy",
     why: "Attach a read/write policy to an IAM group and add the 50 users to it; a new employee only needs to be added to the group. Listing each user in a bucket policy is hard to maintain, and bucket policies are limited to 20 KB in size." },
@@ -182,7 +182,7 @@ As the number of teams and partners using the data grows, permissions need to be
     why: "An access point is only an entry point with its own policy; it does not change the network path. An access point with an Internet network origin can be used from anywhere, and requests still go to the public S3 endpoint. An access point with a VPC network origin (chosen only at creation) rejects every request that does not originate from the specified VPC, and requests from the VPC still have to go through a VPC endpoint whose endpoint policy allows both the access point and the bucket. A gateway endpoint for S3 lets the VPC reach S3 without an internet gateway or NAT device, at no additional cost." },
   { need: "A bucket policy has IpAddress 54.240.143.0/24 and NotIpAddress 54.240.143.188/32. Which addresses are allowed access?", answer: "The whole /24 range except the .188 address",
     why: "Both conditions must be met at the same time: within the /24 range and not the .188 address." },
-  { need: "The data team's Redshift (another account) UNLOADs files into the bucket, but MFTech cannot read those files", answer: "Objects belong to the uploading account, not automatically to the bucket owner",
+  { need: "The data team's Redshift (another account) UNLOADs files into the bucket, but MFTECH cannot read those files", answer: "Objects belong to the uploading account, not automatically to the bucket owner",
     why: "This is how legacy ACLs work. New buckets default to Object Ownership = bucket owner enforced: ACLs are disabled and the bucket owner owns every object." },
   { need: "You need to find the buckets without versioning enabled across the whole company, in every Region and account", answer: "S3 Storage Lens",
     why: "Provides an aggregated dashboard for the entire Organization. The Versioning-enabled bucket count metric is one of the free metrics; advanced metrics are not needed." },
@@ -201,7 +201,7 @@ An **ACL** is S3's legacy access control mechanism: every bucket and object has 
 
 <p class="scene-intro">Data in S3 is always encrypted; what must be decided is who holds the encryption key and whether each use of it must be logged.</p>
 
-Every encryption method makes data at rest unusable without the key. The differences lie in which component performs the encryption, where the key is stored, and whether each use of the key is logged. Choose a MFTech requirement, upload three invoices and see where the data becomes encrypted:
+Every encryption method makes data at rest unusable without the key. The differences lie in which component performs the encryption, where the key is stored, and whether each use of the key is logged. Choose a MFTECH requirement, upload three invoices and see where the data becomes encrypted:
 
 <EncryptionSim client:visible />
 
@@ -215,11 +215,11 @@ When the invoice data moves from the data center to S3, the security team requir
 
 <p class="scene-intro">As data and users grow, upload speed and peak-time load become problems; S3 has a specific feature for each situation.</p>
 
-This part presents four problems MFTech ran into as data volume and the number of users grew, plus the cost of one upload through Transfer Acceleration. Run each scenario, then turn on the matching S3 feature to compare the results:
+This part presents four problems MFTECH ran into as data volume and the number of users grew, plus the cost of one upload through Transfer Acceleration. Run each scenario, then turn on the matching S3 feature to compare the results:
 
 <UploadSim client:visible />
 
-**Transfer Acceleration speeds up both directions.** According to the S3 FAQs, Transfer Acceleration speeds up long-distance transfers **to and from** a single bucket (uploads and downloads both go to the `<bucket>.s3-accelerate.amazonaws.com` endpoint) and helps most with larger objects. When MFTech opens a portal where studios on several continents both upload and download raw videos of up to 10 GB, enabling Transfer Acceleration on the bucket improves both directions; adding CloudFront is not required. AWS suggests considering CloudFront's PUT/POST when objects or the data set are smaller than 1 GB; for larger files, Transfer Acceleration gives higher throughput. CloudFront fits when the same content is viewed repeatedly by many people (images, promotional videos), because edge locations cache that content.
+**Transfer Acceleration speeds up both directions.** According to the S3 FAQs, Transfer Acceleration speeds up long-distance transfers **to and from** a single bucket (uploads and downloads both go to the `<bucket>.s3-accelerate.amazonaws.com` endpoint) and helps most with larger objects. When MFTECH opens a portal where studios on several continents both upload and download raw videos of up to 10 GB, enabling Transfer Acceleration on the bucket improves both directions; adding CloudFront is not required. AWS suggests considering CloudFront's PUT/POST when objects or the data set are smaller than 1 GB; for larger files, Transfer Acceleration gives higher throughput. CloudFront fits when the same content is viewed repeatedly by many people (images, promotional videos), because edge locations cache that content.
 
 <Takeaway>Large files: multipart upload (required for objects over 5 GB). Large files (about 1 GB and up) moved over long distances to or from one bucket: Transfer Acceleration, which speeds up both uploads and downloads (goes through CloudFront edge locations; can incur additional data transfer charges); files under 1 GB: consider CloudFront PUT/POST. Too many requests: spread keys across many prefixes. Only part of a file is needed: byte-range fetch (a `Range` header on a GET request). Cost: data transfer in from the internet to S3 is free; the Transfer Acceleration charge is in addition to data transfer pricing and applies only to transfers that are accelerated. S3 Select (SQL queries on the content of one CSV, JSON or Parquet object) is no longer available to new customers.</Takeaway>
 
@@ -229,7 +229,7 @@ This part presents four problems MFTech ran into as data volume and the number o
 
 <p class="scene-intro">A website made only of HTML, CSS and images needs no application tier such as EC2 instances; the objects are served directly from an S3 bucket.</p>
 
-MFTech's seasonal promotion site consists only of HTML, CSS, images and client-side scripts, so it can be served directly from the `mftech-promo` bucket. When you enable **static website hosting**, the bucket gets a Region-specific **website endpoint** (`http://<bucket>.s3-website-<region>.amazonaws.com` or `…s3-website.<region>…`, depending on the Region), separate from the **REST API endpoint** that applications send API requests to. The two endpoints handle the same request very differently. Send each request through each endpoint to compare:
+MFTECH's seasonal promotion site consists only of HTML, CSS, images and client-side scripts, so it can be served directly from the `mftech-promo` bucket. When you enable **static website hosting**, the bucket gets a Region-specific **website endpoint** (`http://<bucket>.s3-website-<region>.amazonaws.com` or `…s3-website.<region>…`, depending on the Region), separate from the **REST API endpoint** that applications send API requests to. The two endpoints handle the same request very differently. Send each request through each endpoint to compare:
 
 <WebsiteEndpointSim client:visible />
 
@@ -265,7 +265,7 @@ A static website on S3 is often used as a **failover page**: when the main websi
 
 <p class="scene-intro">Many S3 features have similar names or descriptions; telling them apart helps you pick the right one for each need.</p>
 
-Some S3 features have names or descriptions close to a real need but solve a different problem. Choose each feature to see what it is for, why it does not fit the matching MFTech situation, and what to choose instead:
+Some S3 features have names or descriptions close to a real need but solve a different problem. Choose each feature to see what it is for, why it does not fit the matching MFTECH situation, and what to choose instead:
 
 <QuickCompare client:visible items={[
   { name: "S3 Batch Operations",
@@ -323,7 +323,7 @@ Sort each property into the matching lock mechanism. On a mobile device: tap a c
   ]}
 />
 
-Check question: as the designer of the MFTech system, which option fits?
+Check question: as the designer of the MFTECH system, which option fits?
 
 <Quiz client:visible items={[
   { q: "When configuring a lifecycle rule for the image bucket, which transition does S3 NOT support?",

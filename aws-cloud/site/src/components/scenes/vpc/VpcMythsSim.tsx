@@ -4,7 +4,7 @@ import CaseSim, { type CaseScenario } from "../global-infra/CaseSim";
 type Lang = ReturnType<typeof useLang>;
 
 // Seven VPC settings that look fine but behave differently from what people expect,
-// each tried on MFTech's network.
+// each tried on MFTECH's network.
 
 function scenarios(L: Lang): CaseScenario[] {
 return [
@@ -12,7 +12,7 @@ return [
     name: L({ vi: "Tên miền nội bộ không phân giải được", en: "Internal domain name does not resolve" }),
     request: "dig api.mftech.internal",
     from: L({ vi: "từ EC2 instance trong VPC", en: "from an EC2 instance in the VPC" }),
-    boxes: [{ x: 20, y: 30, w: 520, h: 180, label: "VPC MFTech" }],
+    boxes: [{ x: 20, y: 30, w: 520, h: 180, label: "VPC MFTECH" }],
     nodes: [
       { id: "ec2", x: 50, y: 97, w: 130, l1: "EC2 web", l2: L({ vi: "gửi truy vấn DNS", en: "sends DNS query" }) },
       { id: "res", x: 280, y: 97, w: 180, l1: "Route 53 Resolver", l2: L({ vi: "địa chỉ VPC +2", en: "VPC base address +2" }) },
@@ -80,7 +80,7 @@ return [
     from: L({ vi: "từ Auto Scaling group", en: "from the Auto Scaling group" }),
     nodes: [
       { id: "lt", x: 30, y: 97, w: 170, l1: "Launch template", l2: "tenancy: default" },
-      { id: "vpc", x: 300, y: 97, w: 180, l1: "VPC MFTech" },
+      { id: "vpc", x: 300, y: 97, w: 180, l1: "VPC MFTECH" },
       { id: "ec2", x: 600, y: 97, w: 190, l1: L({ vi: "EC2 mới", en: "New EC2" }) },
     ],
     links: [{ a: "lt", b: "vpc" }, { a: "vpc", b: "ec2" }],
@@ -128,7 +128,7 @@ return [
     name: L({ vi: "Hai EC2 instance đồng bộ dữ liệu", en: "Two EC2 instances synchronize data" }),
     request: L({ vi: "rsync 200 GB/ngày", en: "rsync 200 GB/day" }),
     from: L({ vi: "giữa hai EC2 instance cùng Region", en: "between two EC2 instances in the same Region" }),
-    boxes: [{ x: 20, y: 70, w: 780, h: 160, label: "VPC MFTech" }],
+    boxes: [{ x: 20, y: 70, w: 780, h: 160, label: "VPC MFTECH" }],
     nodes: [
       { id: "a", x: 60, y: 140, w: 150, l1: "EC2 A" },
       { id: "igw", x: 335, y: 16, w: 150, h: 40, l1: "Internet Gateway" },

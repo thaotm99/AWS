@@ -2,7 +2,7 @@ import { useState } from "react";
 import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 
-// The MFTech finance team must list the reports bucket and delete old reports, nothing more.
+// The MFTECH finance team must list the reports bucket and delete old reports, nothing more.
 // The current policy only names the bucket ARN, so DeleteObject never matches an object.
 // Pick the statement to add and see which requests each one lets through. Matching follows the
 // IAM docs: wildcards are allowed inside action names (iam:*AccessKey*) and a trailing * in a

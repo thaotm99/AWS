@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./messaging-sims.css";
 
-// MFTech's wallet sends five balance changes for two customers, one of them sent
+// MFTECH's wallet sends five balance changes for two customers, one of them sent
 // twice after a network timeout. A standard queue may deliver out of order and more
 // than once, so a balance ends up wrong. A FIFO queue keeps the order and drops the
 // duplicate, but with one message group only one message is in flight at a time.

@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./kinesis-sims.css";
 
-// Ten seconds of a Kinesis data stream under three MFTech problems. Each shard takes
+// Ten seconds of a Kinesis data stream under three MFTECH problems. Each shard takes
 // 1,000 records or 1 MB per second in and gives 2 MB per second out.
 // 1. The mobile app sends every small event as its own record: too many records per
 //    shard, ProvisionedThroughputExceededException. Aggregating events fixes it for free.

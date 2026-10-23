@@ -1,6 +1,6 @@
 ---
 title: "CloudFormation và Elastic Beanstalk: Infrastructure as Code"
-lede: "Số lượng nhân sự mới và số account của MFTech tăng lên, và các thao tác thủ công trên console bắt đầu gây sự cố. Bài học trình bày ba nội dung: mô tả hạ tầng bằng CloudFormation template và quản lý việc tạo, cập nhật, rollback thông qua stack; áp dụng cùng một tiêu chuẩn cho mọi account và Region bằng StackSets; và rút ngắn thời gian khởi động instance mới của Elastic Beanstalk xuống 2 phút."
+lede: "Số lượng nhân sự mới và số account của MFTECH tăng lên, và các thao tác thủ công trên console bắt đầu gây sự cố. Bài học trình bày ba nội dung: mô tả hạ tầng bằng CloudFormation template và quản lý việc tạo, cập nhật, rollback thông qua stack; áp dụng cùng một tiêu chuẩn cho mọi account và Region bằng StackSets; và rút ngắn thời gian khởi động instance mới của Elastic Beanstalk xuống 2 phút."
 minutes: 19
 scenes: 4
 prerequisites: ["ec2", "vpc", "rds"]
@@ -66,18 +66,18 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s4", label: "4 · AWS Service Catalog" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-Tuần trước, một nhân sự mới của MFTech tạo database bằng console nhưng không bật Multi-AZ và backup. Khi database gặp sự cố, dữ liệu đơn hàng của nửa ngày bị mất. Từ sự cố này, hạ tầng cần được **định nghĩa bằng mã nguồn**, được review như mã nguồn và có thể tái tạo chính xác với số lần bất kỳ. **CloudFormation** đáp ứng yêu cầu này cho mọi loại tài nguyên; **Elastic Beanstalk** đảm nhiệm việc vận hành ứng dụng web cho các nhóm không muốn tự kết hợp từng thành phần hạ tầng.
+Tuần trước, một nhân sự mới của MFTECH tạo database bằng console nhưng không bật Multi-AZ và backup. Khi database gặp sự cố, dữ liệu đơn hàng của nửa ngày bị mất. Từ sự cố này, hạ tầng cần được **định nghĩa bằng mã nguồn**, được review như mã nguồn và có thể tái tạo chính xác với số lần bất kỳ. **CloudFormation** đáp ứng yêu cầu này cho mọi loại tài nguyên; **Elastic Beanstalk** đảm nhiệm việc vận hành ứng dụng web cho các nhóm không muốn tự kết hợp từng thành phần hạ tầng.
 </Story>
 
 <Scene id="s1" label="Phần 1/4" title="CloudFormation template, stack và change set" questions={["exam4_q47", "exam4_q15", "exam4_q17"]}>
 
 <p class="scene-intro">Tạo hạ tầng bằng thao tác thủ công trên AWS Management Console khó lặp lại chính xác; mô tả hạ tầng trong template giúp tạo, cập nhật và tái tạo môi trường một cách tự động.</p>
 
-**Template** là một file YAML hoặc JSON mô tả các tài nguyên cần tạo. CloudFormation đọc template và tạo một **stack**: nhóm tài nguyên được tạo, cập nhật và xoá cùng nhau. Để thay đổi hạ tầng, cập nhật template và thực hiện **update stack**; **change set** cho phép xem trước các thay đổi CloudFormation sẽ áp dụng. Chạy ba tình huống của MFTech:
+**Template** là một file YAML hoặc JSON mô tả các tài nguyên cần tạo. CloudFormation đọc template và tạo một **stack**: nhóm tài nguyên được tạo, cập nhật và xoá cùng nhau. Để thay đổi hạ tầng, cập nhật template và thực hiện **update stack**; **change set** cho phép xem trước các thay đổi CloudFormation sẽ áp dụng. Chạy ba tình huống của MFTECH:
 
 <StackSim client:visible />
 
-Khả năng đọc hiểu template quan trọng tương đương khả năng viết template. Dưới đây là security group của web tier trong template của MFTech. Gửi từng kết nối thử nghiệm để xem tác dụng của mỗi rule:
+Khả năng đọc hiểu template quan trọng tương đương khả năng viết template. Dưới đây là security group của web tier trong template của MFTECH. Gửi từng kết nối thử nghiệm để xem tác dụng của mỗi rule:
 
 <SgRuleSim client:visible />
 
@@ -89,7 +89,7 @@ Khả năng đọc hiểu template quan trọng tương đương khả năng vi�
 
 <p class="scene-intro">Khi doanh nghiệp có nhiều AWS account ở nhiều Region, cùng một tiêu chuẩn cần được áp dụng cho mọi account và Region mà không phải triển khai thủ công ở từng nơi.</p>
 
-MFTech hiện có nhiều account trong **AWS Organizations**: production, dev, data, và sắp bổ sung chi nhánh tại Nhật Bản. Mỗi account hoạt động ở nhiều Region. Mọi môi trường phải sử dụng đúng EC2 instance type đã được phê duyệt và IAM role tiêu chuẩn cho Lambda. Triển khai template baseline bằng ba phương án, sau đó bổ sung một account mới:
+MFTECH hiện có nhiều account trong **AWS Organizations**: production, dev, data, và sắp bổ sung chi nhánh tại Nhật Bản. Mỗi account hoạt động ở nhiều Region. Mọi môi trường phải sử dụng đúng EC2 instance type đã được phê duyệt và IAM role tiêu chuẩn cho Lambda. Triển khai template baseline bằng ba phương án, sau đó bổ sung một account mới:
 
 <StackSetSim client:visible />
 
@@ -101,7 +101,7 @@ MFTech hiện có nhiều account trong **AWS Organizations**: production, dev, 
 
 <p class="scene-intro">Đội phát triển muốn triển khai ứng dụng nhanh mà không phải tự cấp phát EC2 instance, load balancer và Auto Scaling group; Elastic Beanstalk đảm nhận phần hạ tầng đó.</p>
 
-Website chính của MFTech chạy trên **Elastic Beanstalk**: đội phát triển chỉ cần tải mã nguồn lên, Beanstalk tự động tạo EC2 instance, load balancer, Auto Scaling group và giám sát health. Đội vẫn có thể xem và điều chỉnh các tài nguyên bên dưới. Vấn đề là quá trình cài đặt ứng dụng mất 45 phút: khi lưu lượng tăng, Beanstalk bổ sung instance nhưng instance mới phải gần một giờ sau mới phục vụ được request. So sánh thời gian của bốn phương án khởi động:
+Website chính của MFTECH chạy trên **Elastic Beanstalk**: đội phát triển chỉ cần tải mã nguồn lên, Beanstalk tự động tạo EC2 instance, load balancer, Auto Scaling group và giám sát health. Đội vẫn có thể xem và điều chỉnh các tài nguyên bên dưới. Vấn đề là quá trình cài đặt ứng dụng mất 45 phút: khi lưu lượng tăng, Beanstalk bổ sung instance nhưng instance mới phải gần một giờ sau mới phục vụ được request. So sánh thời gian của bốn phương án khởi động:
 
 <BootTimeSim client:visible />
 
@@ -115,20 +115,20 @@ Website chính của MFTech chạy trên **Elastic Beanstalk**: đội phát tri
 
 Phần 1 đưa tiêu chuẩn vào template, nhưng người dùng template vẫn cần quyền CloudFormation và quyền trên mọi dịch vụ mà template tạo ra. **AWS Service Catalog** giải quyết bài toán self-service: quản trị viên nhập CloudFormation template thành **product**, gom product vào **portfolio** và cấp quyền cho IAM user, group hoặc role. **Template constraint** thu hẹp giá trị được phép của tham số trong template (ví dụ chỉ một số EC2 instance type); **launch constraint** chỉ định IAM role mà Service Catalog dùng khi tạo product, nên người dùng cuối không cần quyền trực tiếp trên CloudFormation và các dịch vụ bên dưới. Mỗi lần người dùng tạo product, kết quả là một **provisioned product**, tức một CloudFormation stack.
 
-Service Catalog, CodeDeploy và Control Tower thường xuất hiện cạnh CloudFormation nhưng giải quyết bài toán khác. Chọn từng mục để xem phạm vi sử dụng và phương án phù hợp với tình huống của MFTech.
+Service Catalog, CodeDeploy và Control Tower thường xuất hiện cạnh CloudFormation nhưng giải quyết bài toán khác. Chọn từng mục để xem phạm vi sử dụng và phương án phù hợp với tình huống của MFTECH.
 
 <QuickCompare client:visible items={[
   { name: "Service Catalog: kiểm soát chi phí",
     use: "Cho phép nhân sự tự tạo các tài nguyên đã được phê duyệt (product từ CloudFormation template), với tham số bị giới hạn bằng template constraint và quyền tạo do launch constraint cung cấp.",
-    notHere: "Mỗi lập trình viên MFTech có account dev riêng và chi phí có thể tăng đột biến. Service Catalog chỉ quy định cái gì được tạo qua catalog; nó không theo dõi chi tiêu, không cảnh báo và không tự động phản ứng khi vượt ngân sách. Lambda tắt tài nguyên theo lịch ở từng account còn tăng thêm việc vận hành.",
+    notHere: "Mỗi lập trình viên MFTECH có account dev riêng và chi phí có thể tăng đột biến. Service Catalog chỉ quy định cái gì được tạo qua catalog; nó không theo dõi chi tiêu, không cảnh báo và không tự động phản ứng khi vượt ngân sách. Lambda tắt tài nguyên theo lịch ở từng account còn tăng thêm việc vận hành.",
     instead: "**AWS Budgets** với ngưỡng cho từng account và **budget action** tự động áp dụng IAM policy hoặc SCP chặn tạo thêm tài nguyên khi vượt ngưỡng (xem bài IAM, Phần 4)." },
   { name: "Service Catalog: VPC cho từng account",
     use: "Phát hành một template VPC đã phê duyệt để mỗi account tự tạo VPC theo cùng chuẩn.",
-    notHere: "MFTech muốn quản lý mạng tập trung, không lặp lại cấu hình ở từng account. Mỗi account vẫn có VPC, NAT gateway, internet gateway riêng; Service Catalog cũng không tạo account mới hay bật logging bắt buộc cho account mới.",
+    notHere: "MFTECH muốn quản lý mạng tập trung, không lặp lại cấu hình ở từng account. Mỗi account vẫn có VPC, NAT gateway, internet gateway riêng; Service Catalog cũng không tạo account mới hay bật logging bắt buộc cho account mới.",
     instead: "**AWS Control Tower** tạo và quản trị account (landing zone, controls, Account Factory); một account mạng sở hữu VPC trung tâm và chia sẻ subnet cho các account workload qua **AWS RAM** (VPC sharing)." },
   { name: "AWS CodeDeploy",
     use: "Tự động triển khai phiên bản ứng dụng mới lên EC2, server on-premises, Lambda hoặc ECS, theo kiểu in-place hoặc blue/green. Với EC2, blue/green cài phiên bản mới lên instance thay thế, đăng ký chúng vào load balancer của deployment group rồi chuyển traffic.",
-    notHere: "MFTech cần thử bản blue/green của ứng dụng toàn cầu trên càng nhiều người dùng càng tốt trong 48 giờ, trong khi điện thoại cache DNS. CodeDeploy cài đặt ứng dụng; nó không phải điểm vào toàn cầu và không chia tỷ lệ traffic giữa các Region.",
+    notHere: "MFTECH cần thử bản blue/green của ứng dụng toàn cầu trên càng nhiều người dùng càng tốt trong 48 giờ, trong khi điện thoại cache DNS. CodeDeploy cài đặt ứng dụng; nó không phải điểm vào toàn cầu và không chia tỷ lệ traffic giữa các Region.",
     instead: "**AWS Global Accelerator**: traffic dial chỉnh phần trăm traffic tới từng Region, endpoint weight chỉnh tỷ lệ giữa các endpoint; thay đổi áp dụng cho kết nối mới mà không phụ thuộc cache DNS (xem bài Global Infrastructure, Phần 5)." },
   { name: "AWS Control Tower",
     use: "Thiết lập và quản trị môi trường nhiều account theo best practice: điều phối AWS Organizations, Service Catalog, IAM Identity Center để dựng landing zone, áp dụng controls (guardrails) và tạo account mới bằng Account Factory.",
@@ -159,7 +159,7 @@ Phân loại từng tác vụ vào công cụ phù hợp. Trên thiết bị di 
   ]}
 />
 
-Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTech, phương án nào phù hợp?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTECH, phương án nào phù hợp?
 
 <Quiz client:visible items={[
   { q: "Nhân sự mới thường cấu hình sai RDS. Yêu cầu: mọi database tuân thủ các thiết lập an toàn và có thể tái sử dụng trong toàn công ty. Phương án nào đáp ứng yêu cầu?",

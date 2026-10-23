@@ -1,7 +1,7 @@
 import PacketSim, { type PBox, type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// MFTech opens in Europe and the US. Writing an order from Germany shows why
+// MFTECH opens in Europe and the US. Writing an order from Germany shows why
 // DynamoDB global tables (every replica takes writes) differ from Aurora Global
 // Database (one Region takes writes). Reading a relational catalogue from the US
 // shows where Aurora Global Database fits. Losing Singapore shows failover.
@@ -109,5 +109,5 @@ const scenarios = (L: Lang): PScenario[] => [
 
 export default function MultiRegionSim() {
   const L = useLang();
-  return <PacketSim scenarios={scenarios(L)} hint={L({ vi: "Chọn một tình huống khi MFTech vận hành tại ba Region, gửi request, sau đó bật tuỳ chọn cấu hình để so sánh.", en: "Choose a scenario with MFTech running in three Regions, send the request, then turn on the configuration option to compare." })} />;
+  return <PacketSim scenarios={scenarios(L)} hint={L({ vi: "Chọn một tình huống khi MFTECH vận hành tại ba Region, gửi request, sau đó bật tuỳ chọn cấu hình để so sánh.", en: "Choose a scenario with MFTECH running in three Regions, send the request, then turn on the configuration option to compare." })} />;
 }

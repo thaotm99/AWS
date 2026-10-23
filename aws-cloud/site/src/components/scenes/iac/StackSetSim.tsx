@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./iac-sims.css";
 
-// MFTech now has several AWS accounts in AWS Organizations, in several Regions.
+// MFTECH now has several AWS accounts in AWS Organizations, in several Regions.
 // The same baseline template (allowed EC2 types, standard IAM roles for Lambda) must
 // land everywhere. A plain stack only reaches one account and one Region; a StackSet
 // deploys the template to every target, and with automatic deployment it also reaches

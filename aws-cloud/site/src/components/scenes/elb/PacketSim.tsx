@@ -5,7 +5,7 @@ import { useLang, type Bi } from "../../../lib/lang";
 import "./packet-sim.css";
 
 // Small engine shared by the ELB, Auto Scaling, container and Lambda simulations.
-// Each scenario is a real MFTech situation: pick it, flip its switch, press the
+// Each scenario is a real MFTECH situation: pick it, flip its switch, press the
 // action button and a packet walks node by node. Every node it reaches lights up
 // (pass / block / change / wait / skip) and adds a line to the log; the last line
 // says what the customer or the team actually sees.

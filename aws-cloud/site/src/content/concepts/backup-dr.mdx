@@ -1,6 +1,6 @@
 ---
 title: "Backup + Disaster Recovery: khôi phục khi Region gặp sự cố"
-lede: "Hệ thống MFTech đang vận hành ổn định tại Region Singapore. Bài học trình bày phương án chuẩn bị cho kịch bản sự cố nghiêm trọng nhất: lựa chọn một trong bốn chiến lược DR theo lượng dữ liệu được phép mất và thời gian gián đoạn được phép, đảm bảo database và cache duy trì qua sự cố, sử dụng AWS Backup cho file system dùng chung, và cấu hình một EC2 instance đơn lẻ tự động khôi phục."
+lede: "Hệ thống MFTECH đang vận hành ổn định tại Region Singapore. Bài học trình bày phương án chuẩn bị cho kịch bản sự cố nghiêm trọng nhất: lựa chọn một trong bốn chiến lược DR theo lượng dữ liệu được phép mất và thời gian gián đoạn được phép, đảm bảo database và cache duy trì qua sự cố, sử dụng AWS Backup cho file system dùng chung, và cấu hình một EC2 instance đơn lẻ tự động khôi phục."
 minutes: 24
 scenes: 5
 prerequisites: ["global-infra", "ec2", "rds", "storage"]
@@ -69,7 +69,7 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s5", label: "5 · AWS DRS, MGN và AWS Backup" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-Multi-AZ deployment giúp MFTech duy trì hoạt động khi một Availability Zone (AZ) gặp sự cố. Tuy nhiên, cần có phương án khi **toàn bộ Region Singapore** ngừng hoạt động. Ban lãnh đạo đặt ra hai câu hỏi: "Lượng đơn hàng tối đa được phép mất là bao nhiêu?" và "Sau bao lâu hệ thống phải hoạt động trở lại?". Hai chỉ số tương ứng là:
+Multi-AZ deployment giúp MFTECH duy trì hoạt động khi một Availability Zone (AZ) gặp sự cố. Tuy nhiên, cần có phương án khi **toàn bộ Region Singapore** ngừng hoạt động. Ban lãnh đạo đặt ra hai câu hỏi: "Lượng đơn hàng tối đa được phép mất là bao nhiêu?" và "Sau bao lâu hệ thống phải hoạt động trở lại?". Hai chỉ số tương ứng là:
 
 - **RPO** (recovery point objective): lượng dữ liệu tối đa được phép mất, tính bằng thời gian. RPO 15 phút nghĩa là mất tối đa dữ liệu đơn hàng của 15 phút.
 - **RTO** (recovery time objective): thời gian tối đa từ thời điểm xảy ra sự cố tới khi hệ thống hoạt động trở lại.
@@ -81,18 +81,18 @@ RPO và RTO càng nhỏ thì chi phí càng cao. Bài học hướng dẫn lựa
 
 <p class="scene-intro">Sự cố ở cấp toàn bộ Region hiếm khi xảy ra nhưng có tác động lớn; mức độ chuẩn bị trước tại Region dự phòng quyết định RTO, RPO và chi phí duy trì.</p>
 
-MFTech chọn Tokyo làm Region dự phòng. Vấn đề cần xác định là những thành phần nào được duy trì tại Tokyo trong điều kiện bình thường. Càng nhiều thành phần đang chạy thì thời gian khôi phục càng ngắn và chi phí càng cao. Có bốn mức:
+MFTECH chọn Tokyo làm Region dự phòng. Vấn đề cần xác định là những thành phần nào được duy trì tại Tokyo trong điều kiện bình thường. Càng nhiều thành phần đang chạy thì thời gian khôi phục càng ngắn và chi phí càng cao. Có bốn mức:
 
 1. **Backup and restore**: chỉ lưu giữ bản backup. Khi xảy ra sự cố, hệ thống được dựng lại từ đầu.
 2. **Pilot light**: phần lõi (database) luôn chạy và nhận dữ liệu. Các EC2 instance của web tier ở trạng thái tắt và chỉ được khởi động khi xảy ra sự cố.
 3. **Warm standby**: một phiên bản thu nhỏ nhưng đầy đủ chức năng luôn hoạt động. Khi xảy ra sự cố, hệ thống được scale lên.
 4. **Multi-site active/active**: Tokyo là một site đầy đủ, phục vụ người dùng đồng thời với Singapore.
 
-Chọn một mục tiêu của MFTech, chọn chiến lược, sau đó mô phỏng sự cố tại Singapore. Thử thêm tuỳ chọn AMI: ứng dụng web của MFTech mất hơn 45 phút để cài đặt trên instance trống.
+Chọn một mục tiêu của MFTECH, chọn chiến lược, sau đó mô phỏng sự cố tại Singapore. Thử thêm tuỳ chọn AMI: ứng dụng web của MFTECH mất hơn 45 phút để cài đặt trên instance trống.
 
 <DrStrategySim client:visible />
 
-AMI chỉ sử dụng được trong Region chứa AMI đó. Để launch nhanh tại Tokyo, cần **copy AMI sang Tokyo** từ trước (các bước copy đã được trình bày trong bài Global Infrastructure). Nếu MFTech hoạt động ở nhiều Region, AMI cần được copy sang từng Region tương ứng.
+AMI chỉ sử dụng được trong Region chứa AMI đó. Để launch nhanh tại Tokyo, cần **copy AMI sang Tokyo** từ trước (các bước copy đã được trình bày trong bài Global Infrastructure). Nếu MFTECH hoạt động ở nhiều Region, AMI cần được copy sang từng Region tương ứng.
 
 <Takeaway>Backup and restore → pilot light → warm standby → multi-site: RPO/RTO giảm dần, chi phí tăng dần. Lựa chọn mức có chi phí thấp nhất vẫn đáp ứng mục tiêu. "Phiên bản thu nhỏ đầy đủ chức năng luôn hoạt động" là warm standby. Để launch EC2 instance nhanh tại Region khác: tạo AMI đã cài sẵn ứng dụng và copy sang Region đó.</Takeaway>
 
@@ -102,7 +102,7 @@ AMI chỉ sử dụng được trong Region chứa AMI đó. Để launch nhanh 
 
 <p class="scene-intro">EC2 instance có thể được launch lại từ AMI trong vài phút, nhưng dữ liệu đã mất thì không khôi phục được; mỗi data store cần một cơ chế bảo vệ riêng.</p>
 
-EC2 instance của web tier có thể được launch lại trong vài phút, nhưng dữ liệu thì không: đơn hàng đã mất không thể khôi phục. MFTech có ba thành phần dữ liệu, mỗi thành phần cần một cơ chế bảo vệ riêng:
+EC2 instance của web tier có thể được launch lại trong vài phút, nhưng dữ liệu thì không: đơn hàng đã mất không thể khôi phục. MFTECH có ba thành phần dữ liệu, mỗi thành phần cần một cơ chế bảo vệ riêng:
 
 - **Aurora** lưu đơn hàng: mục tiêu RPO ≤ 5 phút, RTO ≤ 15 phút khi toàn bộ Region gặp sự cố, và đội vận hành không muốn tự phát triển script.
 - **RDS PostgreSQL** của ứng dụng kho hàng: đã bật Multi-AZ, nhưng chưa có thành phần nào tại Region khác.
@@ -120,7 +120,7 @@ EC2 instance của web tier có thể được launch lại trong vài phút, nh
 
 <p class="scene-intro">Backup cần chạy tự động, theo lịch và được lưu giữ đủ thời gian theo quy định; AWS Backup quản lý backup tập trung để không bỏ sót tài nguyên nào.</p>
 
-Các service của MFTech chạy trên ECS với Fargate, cùng đọc và ghi ảnh của người bán và hoá đơn trên một file system dùng chung. MFTech lựa chọn **Amazon EFS**: file system POSIX (NFS), hoạt động trên nhiều AZ, task Fargate có thể mount trực tiếp. Yêu cầu tuân thủ: backup tự động, có bản sao tại Region khác, mất tối đa 8 giờ dữ liệu.
+Các service của MFTECH chạy trên ECS với Fargate, cùng đọc và ghi ảnh của người bán và hoá đơn trên một file system dùng chung. MFTECH lựa chọn **Amazon EFS**: file system POSIX (NFS), hoạt động trên nhiều AZ, task Fargate có thể mount trực tiếp. Yêu cầu tuân thủ: backup tự động, có bản sao tại Region khác, mất tối đa 8 giờ dữ liệu.
 
 **AWS Backup** quản lý tập trung việc backup của nhiều service (EFS, EBS, RDS, DynamoDB…). Người vận hành định nghĩa một **backup plan**: tần suất backup, thời gian lưu giữ và đích copy. Recovery point được lưu trong **backup vault**. Điều chỉnh plan và kiểm tra với từng loại sự cố:
 
@@ -138,7 +138,7 @@ AWS Backup phục vụ bảo vệ dữ liệu và tuân thủ, không phải cô
 
 <p class="scene-intro">Không phải hệ thống nào cũng cần chiến lược DR phức tạp; với một EC2 instance đơn lẻ, CloudWatch alarm action recover thường là đủ.</p>
 
-Trang admin nội bộ của MFTech chạy trên duy nhất một EC2 instance. Số lượng người dùng ít, không cần tới Auto Scaling group hay chiến lược DR. Yêu cầu: khi instance gặp sự cố, hệ thống tự hoạt động trở lại trong khoảng 10 phút, với chi phí thấp và không cần can thiệp thủ công ngoài giờ làm việc.
+Trang admin nội bộ của MFTECH chạy trên duy nhất một EC2 instance. Số lượng người dùng ít, không cần tới Auto Scaling group hay chiến lược DR. Yêu cầu: khi instance gặp sự cố, hệ thống tự hoạt động trở lại trong khoảng 10 phút, với chi phí thấp và không cần can thiệp thủ công ngoài giờ làm việc.
 
 EC2 có hai loại status check. **System status check** phản ánh lỗi của hạ tầng AWS mà instance chạy trên đó (mất kết nối mạng, mất nguồn, lỗi phần cứng hoặc phần mềm trên host). **Instance status check** phản ánh lỗi bên trong instance (hệ điều hành bị treo, cạn bộ nhớ). Một **CloudWatch alarm** theo dõi status check có thể thực thi action: recover, reboot, stop hoặc terminate.
 
@@ -152,12 +152,12 @@ EC2 có hai loại status check. **System status check** phản ánh lỗi của
 
 <p class="scene-intro">Nhiều dịch vụ có cơ chế sao chép dữ liệu giống nhau nhưng phục vụ mục đích khác: khôi phục sau sự cố, di chuyển hệ thống hoặc nhân bản dữ liệu.</p>
 
-Một số dịch vụ có cơ chế gần giống nhau (sao chép liên tục, restore từ bản sao) nhưng phục vụ mục đích khác. Chọn từng dịch vụ để xem trường hợp sử dụng, lý do không phù hợp trong tình huống MFTech tương ứng, và phương án nên chọn:
+Một số dịch vụ có cơ chế gần giống nhau (sao chép liên tục, restore từ bản sao) nhưng phục vụ mục đích khác. Chọn từng dịch vụ để xem trường hợp sử dụng, lý do không phù hợp trong tình huống MFTECH tương ứng, và phương án nên chọn:
 
 <QuickCompare client:visible items={[
   { name: "AWS Elastic Disaster Recovery (AWS DRS)",
     use: "DR cho server on-premises hoặc trên cloud: sao chép liên tục vào một **staging area subnet** chi phí thấp (storage giá rẻ, compute tối thiểu) trong account AWS; launch recovery instance trong vài phút với trạng thái mới nhất hoặc một point in time trước đó; drill không gián đoạn và **failback** về site chính khi sự cố được khắc phục. AWS mô tả RPO tính bằng giây và RTO tính bằng phút. DRS thay thế CloudEndure Disaster Recovery (trang CloudEndure Disaster Recovery hiện chuyển hướng về trang AWS DRS).",
-    notHere: "MFTech chuyển hẳn các VM cũ tại kho lên EC2 theo hướng lift-and-shift, không cần duy trì site dự phòng hay failback. DRS có thể dùng để chuyển server lên AWS, nhưng AWS giới thiệu MGN là dịch vụ được khuyến nghị cho migration.",
+    notHere: "MFTECH chuyển hẳn các VM cũ tại kho lên EC2 theo hướng lift-and-shift, không cần duy trì site dự phòng hay failback. DRS có thể dùng để chuyển server lên AWS, nhưng AWS giới thiệu MGN là dịch vụ được khuyến nghị cho migration.",
     instead: "**Application Migration Service (MGN)**, hiện mang tên AWS Transform MGN: cài Replication Agent, replicate, launch test instance, sau đó cutover (bài Storage Gateway, Snow, DataSync, DMS, phần 3)." },
   { name: "AWS Backup (restore để nhân bản dữ liệu)",
     use: "Quản lý tập trung việc bảo vệ dữ liệu: backup plan (tần suất, thời gian lưu giữ), backup vault, cross-Region và cross-account copy, Vault Lock cho yêu cầu tuân thủ.",
@@ -192,7 +192,7 @@ Phân loại từng mô tả vào chiến lược DR tương ứng. Trên thiế
   ]}
 />
 
-Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTech, phương án nào phù hợp?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTECH, phương án nào phù hợp?
 
 <Quiz client:visible items={[
   { q: "Yêu cầu: tại Tokyo luôn có một phiên bản thu nhỏ của toàn bộ hệ thống đang chạy; khi xảy ra sự cố chỉ cần scale lên để rút ngắn thời gian gián đoạn. Đây là chiến lược nào?",
@@ -211,7 +211,7 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTech,
     opts: ["CloudWatch alarm theo dõi system status check với action recover", "Trusted Advisor giám sát và tự động khắc phục", "Triển khai warm standby tại Region khác"],
     a: 0,
     why: "Recover chuyển instance sang host mới, giữ nguyên instance ID, địa chỉ IP và EBS volume. Trusted Advisor kiểm tra môi trường và đưa ra khuyến nghị, không khôi phục instance. Warm standby có chi phí quá cao so với yêu cầu này." },
-  { q: "Ứng dụng cần hơn 45 phút để cài đặt, nhưng phải được dựng lại trong 5 phút tại mọi Region mà MFTech đang hoạt động. Phương án nào phù hợp?",
+  { q: "Ứng dụng cần hơn 45 phút để cài đặt, nhưng phải được dựng lại trong 5 phút tại mọi Region mà MFTECH đang hoạt động. Phương án nào phù hợp?",
     opts: ["Lưu bộ cài đặt trong S3", "Tạo AMI đã cài sẵn và copy sang từng Region", "Viết user data cài đặt tự động"],
     a: 1,
     why: "AMI đã cài sẵn cho phép instance hoạt động ngay sau khi launch. AMI thuộc về một Region nên phải được copy sang từng Region. User data vẫn cần 45 phút để cài đặt." },

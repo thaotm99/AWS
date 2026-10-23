@@ -1,6 +1,6 @@
 ---
 title: "ElastiCache và phân tích dữ liệu: Redshift, Athena, Glue"
-lede: "Bài học trình bày hai nhóm nhu cầu xử lý dữ liệu của MFTech: phản hồi người dùng với độ trễ thấp (cache, session, bảng xếp hạng, tìm shipper gần nhất) và phân tích dữ liệu (kiểm tra dữ liệu, data warehouse, dashboard, chuyển đổi ghi âm cuộc gọi). Nội dung bao gồm lựa chọn dịch vụ phù hợp cho từng tác vụ và kiểm soát chi phí lưu trữ của data lake theo thời gian."
+lede: "Bài học trình bày hai nhóm nhu cầu xử lý dữ liệu của MFTECH: phản hồi người dùng với độ trễ thấp (cache, session, bảng xếp hạng, tìm shipper gần nhất) và phân tích dữ liệu (kiểm tra dữ liệu, data warehouse, dashboard, chuyển đổi ghi âm cuộc gọi). Nội dung bao gồm lựa chọn dịch vụ phù hợp cho từng tác vụ và kiểm soát chi phí lưu trữ của data lake theo thời gian."
 minutes: 35
 scenes: 6
 prerequisites: ["rds", "dynamodb", "s3"]
@@ -103,18 +103,18 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s6", label: "6 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-Số lượng người dùng của MFTech tăng theo từng tháng. Aurora bắt đầu quá tải do các truy vấn lặp lại, trong khi bộ phận phân tích cần khai thác dữ liệu mà không ảnh hưởng hiệu năng của hệ thống bán hàng. **Amazon ElastiCache** lưu dữ liệu truy cập thường xuyên trong in-memory cache. **Amazon Athena**, **Amazon Redshift** và **AWS Glue** đảm nhận tác vụ phân tích trên data lake S3.
+Số lượng người dùng của MFTECH tăng theo từng tháng. Aurora bắt đầu quá tải do các truy vấn lặp lại, trong khi bộ phận phân tích cần khai thác dữ liệu mà không ảnh hưởng hiệu năng của hệ thống bán hàng. **Amazon ElastiCache** lưu dữ liệu truy cập thường xuyên trong in-memory cache. **Amazon Athena**, **Amazon Redshift** và **AWS Glue** đảm nhận tác vụ phân tích trên data lake S3.
 </Story>
 
 <Scene id="s1" label="Phần 1/6" title="Caching strategies với ElastiCache" questions={["exam4_q12", "exam3_q33", "exam5_q37", "exam4_q50", "exam4_q32", "exam6_q6", "exam1_q29", "exam1_q55"]}>
 
 <p class="scene-intro">Nhiều truy vấn lặp đi lặp lại cùng một kết quả; lưu kết quả vào bộ nhớ đệm (cache) in-memory giúp phản hồi nhanh hơn và giảm tải cho database.</p>
 
-**ElastiCache** là dịch vụ in-memory data store được quản lý hoàn toàn (fully managed), độ trễ dưới một mili giây. Mẫu sử dụng phổ biến nhất là **cache-aside** (AWS gọi là lazy loading): ứng dụng truy vấn cache trước; nếu không có dữ liệu (cache miss), ứng dụng đọc từ database rồi ghi kết quả vào cache kèm TTL. Mẫu **write-through** bổ sung: mỗi khi ghi vào database, ứng dụng cập nhật luôn cache. Trong cả hai mẫu, database vẫn là nơi lưu dữ liệu gốc. Thử sáu tình huống của MFTech:
+**ElastiCache** là dịch vụ in-memory data store được quản lý hoàn toàn (fully managed), độ trễ dưới một mili giây. Mẫu sử dụng phổ biến nhất là **cache-aside** (AWS gọi là lazy loading): ứng dụng truy vấn cache trước; nếu không có dữ liệu (cache miss), ứng dụng đọc từ database rồi ghi kết quả vào cache kèm TTL. Mẫu **write-through** bổ sung: mỗi khi ghi vào database, ứng dụng cập nhật luôn cache. Trong cả hai mẫu, database vẫn là nơi lưu dữ liệu gốc. Thử sáu tình huống của MFTECH:
 
 <CacheSim client:visible />
 
-ElastiCache phù hợp với hai loại tải: **tải đọc lớn** (cùng một dữ liệu được truy vấn lặp lại) và **tính toán tốn tài nguyên** (kết quả đòi hỏi nhiều tài nguyên để tính, ví dụ bảng xếp hạng). ElastiCache không giải quyết tải ghi lớn, không thực thi JOIN phức tạp và không thực hiện ETL. Cache node lưu dữ liệu trong bộ nhớ và sao chép sang replica bất đồng bộ, nên giao dịch như đơn mua hàng không được ghi vào cache **thay cho** database: khi đỉnh tải ghi làm database timeout, dùng Amazon SQS queue để hấp thụ đỉnh tải và RDS Proxy cho connection pooling. ElastiCache for Valkey có tuỳ chọn **durability** (transactional log Multi-AZ) dành cho trường hợp dùng ElastiCache làm kho dữ liệu chính; cấu hình cache thông thường của MFTech không bật tuỳ chọn này.
+ElastiCache phù hợp với hai loại tải: **tải đọc lớn** (cùng một dữ liệu được truy vấn lặp lại) và **tính toán tốn tài nguyên** (kết quả đòi hỏi nhiều tài nguyên để tính, ví dụ bảng xếp hạng). ElastiCache không giải quyết tải ghi lớn, không thực thi JOIN phức tạp và không thực hiện ETL. Cache node lưu dữ liệu trong bộ nhớ và sao chép sang replica bất đồng bộ, nên giao dịch như đơn mua hàng không được ghi vào cache **thay cho** database: khi đỉnh tải ghi làm database timeout, dùng Amazon SQS queue để hấp thụ đỉnh tải và RDS Proxy cho connection pooling. ElastiCache for Valkey có tuỳ chọn **durability** (transactional log Multi-AZ) dành cho trường hợp dùng ElastiCache làm kho dữ liệu chính; cấu hình cache thông thường của MFTECH không bật tuỳ chọn này.
 
 Với dữ liệu trên DynamoDB, có thêm lựa chọn **DAX** (bài DynamoDB). ElastiCache dùng được cho mọi nguồn dữ liệu: RDS, Aurora, DynamoDB, hoặc chính ElastiCache đóng vai trò session store.
 
@@ -126,7 +126,7 @@ Với dữ liệu trên DynamoDB, có thêm lựa chọn **DAX** (bài DynamoDB)
 
 <p class="scene-intro">ElastiCache hỗ trợ nhiều engine; các engine khác nhau về kiểu dữ liệu hỗ trợ, khả năng backup và khả năng chịu lỗi.</p>
 
-ElastiCache hỗ trợ ba engine: **Valkey**, **Redis OSS** và **Memcached**. Valkey và Redis OSS hỗ trợ nhiều cấu trúc dữ liệu và các tính năng high availability. **Memcached** đơn giản hơn nhưng hỗ trợ multithreading. Gửi cùng một chuỗi lệnh tới hai node có cấu hình giống nhau, sau đó chọn yêu cầu của MFTech:
+ElastiCache hỗ trợ ba engine: **Valkey**, **Redis OSS** và **Memcached**. Valkey và Redis OSS hỗ trợ nhiều cấu trúc dữ liệu và các tính năng high availability. **Memcached** đơn giản hơn nhưng hỗ trợ multithreading. Gửi cùng một chuỗi lệnh tới hai node có cấu hình giống nhau, sau đó chọn yêu cầu của MFTECH:
 
 <CacheEngineSim client:visible />
 
@@ -140,7 +140,7 @@ Ví dụ: cache kết quả các truy vấn JOIN chậm trên RDS và cần tậ
 
 <p class="scene-intro">Cache thường giữ dữ liệu quan trọng như giỏ hàng; khi một cache node gặp sự cố, cần giảm thiểu cả thời gian gián đoạn (downtime) lẫn lượng dữ liệu bị mất.</p>
 
-Cluster ElastiCache (Redis OSS, node-based) của MFTech giữ giỏ hàng và kết quả truy vấn cho RDS. Khi primary node gặp lỗi phần cứng, hai yêu cầu cần đạt là **thời gian gián đoạn ngắn nhất** và **lượng dữ liệu mất ít nhất**. Chọn từng phương án bảo vệ rồi mô phỏng sự cố:
+Cluster ElastiCache (Redis OSS, node-based) của MFTECH giữ giỏ hàng và kết quả truy vấn cho RDS. Khi primary node gặp lỗi phần cứng, hai yêu cầu cần đạt là **thời gian gián đoạn ngắn nhất** và **lượng dữ liệu mất ít nhất**. Chọn từng phương án bảo vệ rồi mô phỏng sự cố:
 
 <CacheRecoverySim client:visible />
 
@@ -159,7 +159,7 @@ Mỗi cơ chế giải quyết một vấn đề khác nhau:
 
 <p class="scene-intro">Dữ liệu phân tích thường được tập trung vào một data lake trên S3; mỗi tác vụ như truy vấn nhanh, biến đổi dữ liệu hay lập báo cáo có một dịch vụ phù hợp nhất.</p>
 
-Dữ liệu của MFTech được lưu trong data lake trên S3. Mỗi tác vụ có một dịch vụ phù hợp nhất:
+Dữ liệu của MFTECH được lưu trong data lake trên S3. Mỗi tác vụ có một dịch vụ phù hợp nhất:
 
 - **Athena**: truy vấn SQL trực tiếp trên tệp trong S3, serverless, tính phí theo số byte dữ liệu được quét. Phù hợp với truy vấn ad-hoc.
 - **Redshift**: kho dữ liệu (data warehouse) MPP cho báo cáo và dashboard chạy định kỳ. Có phiên bản **Serverless**. **Redshift Spectrum** cho phép cluster Redshift truy vấn thêm dữ liệu trên S3.
@@ -178,7 +178,7 @@ Chọn một tác vụ, chạy mô phỏng, sau đó chuyển sang công cụ ph
 
 <p class="scene-intro">Data lake lớn lên mỗi ngày; nếu không có S3 Lifecycle policy theo thời gian, chi phí sẽ tăng liên tục dù phần lớn dữ liệu cũ hiếm khi được dùng.</p>
 
-Data lake của MFTech được chia thành hai zone. **Raw zone** lưu dữ liệu gốc ở trạng thái như khi tiếp nhận. **Refined zone** lưu dữ liệu đã được Glue làm sạch để analyst truy vấn. Mỗi zone tăng thêm 1 TB mỗi ngày. Chọn phương án lưu trữ, sau đó mô phỏng một năm:
+Data lake của MFTECH được chia thành hai zone. **Raw zone** lưu dữ liệu gốc ở trạng thái như khi tiếp nhận. **Refined zone** lưu dữ liệu đã được Glue làm sạch để analyst truy vấn. Mỗi zone tăng thêm 1 TB mỗi ngày. Chọn phương án lưu trữ, sau đó mô phỏng một năm:
 
 <LakeCostSim client:visible />
 
@@ -196,12 +196,12 @@ Khi data lake cần thêm một bản sao tại Region khác phục vụ disaste
 
 <p class="scene-intro">Nhiều dịch vụ dữ liệu có tên hoặc tính năng gần giống nhau; phân biệt được chúng giúp chọn đúng dịch vụ cho từng nhu cầu.</p>
 
-Một số dịch vụ có tên hoặc tính năng gần với nhu cầu của MFTech nhưng giải quyết vấn đề khác. Chọn từng dịch vụ để xem trường hợp sử dụng, lý do không phù hợp trong tình huống tương ứng, và phương án nên chọn:
+Một số dịch vụ có tên hoặc tính năng gần với nhu cầu của MFTECH nhưng giải quyết vấn đề khác. Chọn từng dịch vụ để xem trường hợp sử dụng, lý do không phù hợp trong tình huống tương ứng, và phương án nên chọn:
 
 <QuickCompare client:visible items={[
   { name: "AWS Glue Studio",
     use: "Giao diện trực quan để **tạo, chạy và giám sát Glue ETL job** trên engine Apache Spark serverless; kéo thả các node nguồn, biến đổi, đích mà không cần viết Spark; tự sinh script PySpark có thể chỉnh sửa; có node Data Quality để kiểm tra dữ liệu theo rule.",
-    notHere: "Kỹ sư và analyst của MFTech cần cùng chuẩn bị dữ liệu Parquet trên S3, xem **profile từng cột** (phân bố, giá trị null, kiểu dữ liệu), lưu các bước thành công thức dùng chung và xem **data lineage**. Đó là bộ tính năng của công cụ chuẩn bị dữ liệu, còn Glue Studio là công cụ xây dựng ETL job.",
+    notHere: "Kỹ sư và analyst của MFTECH cần cùng chuẩn bị dữ liệu Parquet trên S3, xem **profile từng cột** (phân bố, giá trị null, kiểu dữ liệu), lưu các bước thành công thức dùng chung và xem **data lineage**. Đó là bộ tính năng của công cụ chuẩn bị dữ liệu, còn Glue Studio là công cụ xây dựng ETL job.",
     instead: "**AWS Glue DataBrew**: hơn 250 phép biến đổi có sẵn, **recipe** có phiên bản và tải về để dùng lại, **profile job**, sơ đồ data lineage (phần 4)." },
   { name: "Amazon AppFlow",
     use: "Trao đổi dữ liệu giữa **ứng dụng SaaS** (Salesforce, Zendesk…) và dịch vụ AWS (S3, Redshift) không cần code, chạy theo yêu cầu hoặc theo lịch; ví dụ đưa phiếu hỗ trợ từ Zendesk vào S3.",
@@ -209,19 +209,19 @@ Một số dịch vụ có tên hoặc tính năng gần với nhu cầu của M
     instead: "**Glue DataBrew** để chuẩn bị dữ liệu trên S3. AppFlow dùng khi nguồn là ứng dụng SaaS." },
   { name: "AWS Lake Formation",
     use: "Quản trị, bảo mật và chia sẻ data lake tập trung: **phân quyền chi tiết tới cột, hàng, ô** trên dữ liệu S3 và Glue Data Catalog, áp dụng thống nhất cho Athena, Redshift Spectrum, EMR, Glue; chia sẻ dữ liệu giữa các account.",
-    notHere: "Đội bảo mật của MFTech cần tập trung log và sự kiện bảo mật từ mọi account với ít công phát triển nhất. Với Lake Formation, MFTech vẫn phải tự xây dựng luồng thu thập log và job Glue chuẩn hoá định dạng.",
-    instead: "**Amazon Security Lake**: tự động thu thập dữ liệu bảo mật từ dịch vụ AWS, nguồn bên thứ ba, nhiều account và Region, chuyển sang Parquet theo schema chuẩn **OCSF**, lưu trong S3 thuộc account của MFTech (bài Security, phần 2)." },
+    notHere: "Đội bảo mật của MFTECH cần tập trung log và sự kiện bảo mật từ mọi account với ít công phát triển nhất. Với Lake Formation, MFTECH vẫn phải tự xây dựng luồng thu thập log và job Glue chuẩn hoá định dạng.",
+    instead: "**Amazon Security Lake**: tự động thu thập dữ liệu bảo mật từ dịch vụ AWS, nguồn bên thứ ba, nhiều account và Region, chuyển sang Parquet theo schema chuẩn **OCSF**, lưu trong S3 thuộc account của MFTECH (bài Security, phần 2)." },
   { name: "OpenSearch Service (dữ liệu toạ độ)",
     use: "Tìm kiếm full-text và phân tích log; OpenSearch Dashboards có dịch vụ bản đồ cho visualization theo toạ độ. Phù hợp với tìm kiếm và phân tích dữ liệu vị trí.",
     notHere: "Vị trí shipper được cập nhật hàng nghìn lần mỗi giây và phải đọc lại ngay. Index của OpenSearch có **eventual read consistency**: thay đổi chỉ tìm thấy được sau lần refresh (mặc định mỗi giây), và AWS khuyến nghị tăng refresh interval lên 30 giây trở lên để tối ưu hiệu năng ghi.",
     instead: "**ElastiCache (Redis OSS hoặc Valkey)** với lệnh geospatial và TTL, đặt trước PostgreSQL (phần 1, tình huống tìm shipper)." },
   { name: "Amazon Neptune",
     use: "Graph database cho dữ liệu **nhiều quan hệ đan xen**: gợi ý sản phẩm, phát hiện gian lận, knowledge graph. **Neptune global database**: một cluster primary ghi dữ liệu, tối đa 5 cluster chỉ đọc ở Region khác, độ trễ replication thường dưới một giây.",
-    notHere: "Đơn hàng toàn cầu của MFTech không phải dữ liệu đồ thị, và ứng dụng ở mỗi Region cần **ghi** cục bộ. Neptune global database chỉ ghi được tại Region primary; tự xây dựng replication bằng Lambda và SQS làm tăng độ phức tạp.",
+    notHere: "Đơn hàng toàn cầu của MFTECH không phải dữ liệu đồ thị, và ứng dụng ở mỗi Region cần **ghi** cục bộ. Neptune global database chỉ ghi được tại Region primary; tự xây dựng replication bằng Lambda và SQS làm tăng độ phức tạp.",
     instead: "**DynamoDB global tables**: mỗi Region có bảng replica đọc và ghi được (bài DynamoDB, phần 5)." },
   { name: "Amazon Athena ML",
     use: "Gọi **endpoint của mô hình SageMaker AI** ngay trong câu lệnh SQL: khai báo hàm bằng mệnh đề `USING EXTERNAL FUNCTION … RETURNS … SAGEMAKER '<endpoint>'`, sau đó câu `SELECT` truyền giá trị cho mô hình và nhận kết quả inference, ví dụ đánh dấu giao dịch bất thường ngay trên dữ liệu S3. Endpoint phải nhận và trả về `text/csv`; người chạy truy vấn cần quyền `sagemaker:InvokeEndpoint`.",
-    notHere: "Analyst của MFTech cần **xây dựng và huấn luyện** mô hình bằng SQL, trên một data warehouse MPP được nạp dữ liệu mỗi sáng. Athena ML chỉ chạy inference trên mô hình **đã được triển khai** sẵn thành endpoint SageMaker AI (vẫn cần người xây dựng và triển khai mô hình), và Athena truy vấn trực tiếp file trên S3 chứ không phải data warehouse.",
+    notHere: "Analyst của MFTECH cần **xây dựng và huấn luyện** mô hình bằng SQL, trên một data warehouse MPP được nạp dữ liệu mỗi sáng. Athena ML chỉ chạy inference trên mô hình **đã được triển khai** sẵn thành endpoint SageMaker AI (vẫn cần người xây dựng và triển khai mô hình), và Athena truy vấn trực tiếp file trên S3 chứ không phải data warehouse.",
     instead: "**Glue → Redshift Serverless → Redshift ML**: lệnh `CREATE MODEL` bằng SQL dùng dữ liệu trong Redshift để tạo mô hình trong SageMaker AI, sau đó dự đoán bằng hàm SQL (phần 4). Athena ML phù hợp khi đã có endpoint và chỉ cần gọi inference từ truy vấn ad-hoc trên S3." },
 ]} />
 
@@ -233,7 +233,7 @@ Chi tiết về Security Lake: [bài Security, phần 2](/concepts/security/secu
 
 <Scene id="challenge" label="Bài tập" title="Phân loại tác vụ theo nhóm dịch vụ" questions={["exam4_q12", "exam6_q47", "exam5_q12", "exam1_q53", "exam2_q34"]}>
 
-Phân loại từng tác vụ của MFTech vào nhóm dịch vụ phù hợp. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
+Phân loại từng tác vụ của MFTECH vào nhóm dịch vụ phù hợp. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
 <SortGame client:visible
   bins={[
@@ -248,14 +248,14 @@ Phân loại từng tác vụ của MFTech vào nhóm dịch vụ phù hợp. Tr
   ]}
 />
 
-Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTech, phương án nào phù hợp?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTECH, phương án nào phù hợp?
 
 <Quiz client:visible items={[
   { q: "Aurora đã có read replica nhưng vẫn quá tải do người dùng truy vấn trạng thái đơn hàng lặp lại nhiều lần. Giải pháp nào hiệu quả với chi phí thấp nhất?",
     opts: ["Thêm read replica nữa", "ElastiCache trước Aurora, cache kết quả với TTL", "Chuyển sang Aurora Serverless v2"],
     a: 1,
     why: "Phần lớn tải là đọc lặp lại; cache phản hồi từ bộ nhớ nên các truy vấn giống nhau không tới database." },
-  { q: "MFTech cần cache kết quả các truy vấn JOIN chậm trên RDS, chạy trên node nhiều core và tận dụng toàn bộ các core. Engine nào phù hợp?",
+  { q: "MFTECH cần cache kết quả các truy vấn JOIN chậm trên RDS, chạy trên node nhiều core và tận dụng toàn bộ các core. Engine nào phù hợp?",
     opts: ["Memcached", "Redis OSS", "DAX"],
     a: 0,
     why: "Memcached xử lý lệnh trên nhiều luồng. DAX chỉ dành cho DynamoDB." },

@@ -18,7 +18,7 @@ const STEPS: { name: Bi; mono: string; group: Bi; c: string; text: Bi; lesson?: 
     text: { vi: "định tuyến request tới một target healthy (EC2 instance đạt health check).", en: "routes the request to a healthy target (an EC2 instance that passes health checks)." },
     lesson: { id: "elb", vi: "Elastic Load Balancing", en: "Elastic Load Balancing" } },
   { name: { vi: "EC2", en: "EC2" }, mono: "EC2", group: { vi: "Tính toán", en: "Compute" }, c: C.cmp,
-    text: { vi: "chạy ứng dụng MFTech: kiểm tra tồn kho và tạo đơn.", en: "runs the MFTech application: checks stock and creates the order." },
+    text: { vi: "chạy ứng dụng MFTECH: kiểm tra tồn kho và tạo đơn.", en: "runs the MFTECH application: checks stock and creates the order." },
     lesson: { id: "ec2", vi: "EC2", en: "EC2" } },
   { name: { vi: "RDS", en: "RDS" }, mono: "DB", group: { vi: "Database", en: "Database" }, c: C.db,
     text: { vi: "lưu đơn hàng bền vững; AWS đảm nhận sao lưu và failover.", en: "stores the order durably; AWS handles backups and failover." },

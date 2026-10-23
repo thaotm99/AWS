@@ -1,7 +1,7 @@
 import PacketSim, { type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// Five jobs MFTech runs in containers. Each switch is the AWS feature that fixes the
+// Five jobs MFTECH runs in containers. Each switch is the AWS feature that fixes the
 // problem: shared storage with EFS, a cron job with EventBridge Scheduler + Fargate,
 // a 2-hour job on Fargate instead of Lambda, one IAM role per Pod (IRSA), and the
 // Cluster Autoscaler for Pods stuck in Pending.
@@ -168,5 +168,5 @@ const scenarios = (L: Lang): PScenario[] => [
 export default function ContainerJobSim() {
   const L = useLang();
   return <PacketSim scenarios={scenarios(L)}
-    hint={L({ vi: "Chọn một tác vụ MFTech chạy bằng container và nhấn nút để chạy. Bật tuỳ chọn và chạy lại để so sánh kết quả.", en: "Pick a MFTech container task and press the button to run it. Turn on the option and run again to compare the results." })} />;
+    hint={L({ vi: "Chọn một tác vụ MFTECH chạy bằng container và nhấn nút để chạy. Bật tuỳ chọn và chạy lại để so sánh kết quả.", en: "Pick a MFTECH container task and press the button to run it. Turn on the option and run again to compare the results." })} />;
 }

@@ -1,7 +1,7 @@
 import { useLang } from "../../../lib/lang";
 import CaseSim, { type CaseLink, type CaseNode, type CaseScenario } from "./CaseSim";
 
-// MFTech has customers far from Singapore. Each situation needs one of the three
+// MFTECH has customers far from Singapore. Each situation needs one of the three
 // services that use AWS edge locations: CloudFront (cache, HTTP), S3 Transfer
 // Acceleration (long-distance transfers to/from S3) or Global Accelerator (static IPs, TCP/UDP,
 // fast failover between Regions). Pick one and watch the traffic.
@@ -147,5 +147,5 @@ function scenarios(L: Lang): CaseScenario[] {
 
 export default function EdgeChoiceSim() {
   const L = useLang();
-  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Traffic của người dùng đi qua edge location tới S3 hoặc Region của MFTech", en: "User traffic goes through an edge location to S3 or a MFTech Region" })} action={L({ vi: "Gửi traffic", en: "Send traffic" })} />;
+  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Traffic của người dùng đi qua edge location tới S3 hoặc Region của MFTECH", en: "User traffic goes through an edge location to S3 or a MFTECH Region" })} action={L({ vi: "Gửi traffic", en: "Send traffic" })} />;
 }

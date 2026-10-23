@@ -3,7 +3,7 @@ import { useLang, type Bi } from "../../../lib/lang";
 import { rich } from "../diagram";
 import "./ec2-sims.css";
 
-// One MFTech transcoding instance and what survives each lifecycle action: reboot, stop/start,
+// One MFTECH transcoding instance and what survives each lifecycle action: reboot, stop/start,
 // hibernate, CloudWatch recovery, creating an EBS-backed AMI, terminating. Rows: instance ID,
 // private / public / Elastic IP, EBS root volume, instance store scratch data, RAM.
 // Also the requests EC2 rejects: adding or moving instance store after launch, undoing a terminate.

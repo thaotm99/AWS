@@ -1,7 +1,7 @@
 import HopSim, { type HopScenario } from "../security/HopSim";
 import { useLang } from "../../../lib/lang";
 
-// Network between MFTech servers: cluster placement group + EFA for tightly coupled jobs,
+// Network between MFTECH servers: cluster placement group + EFA for tightly coupled jobs,
 // private IP for replication traffic, EC2 Instance Connect (direct and through an EC2 Instance
 // Connect Endpoint), and a highly available bastion.
 // Practice-test sources (build-time only): exam1_q23, exam4_q20, exam4_q60, exam6_q36, exam6_q57, exam6_q59, exam5_q31.
@@ -11,8 +11,8 @@ type Lang = ReturnType<typeof useLang>;
 const scenarios = (L: Lang): HopScenario[] => [
   {
     name: L({ vi: "Tác vụ mô phỏng cần độ trễ thấp nhất", en: "Simulation job needs lowest latency" }),
-    story: L({ vi: "MFTech chạy mô phỏng dự báo tồn kho trên nhiều node. Các node trao đổi dữ liệu liên tục và yêu cầu **độ trễ thấp nhất** giữa chúng.",
-      en: "MFTech runs an inventory forecasting simulation on many nodes. The nodes exchange data constantly and need the **lowest latency** between them." }),
+    story: L({ vi: "MFTECH chạy mô phỏng dự báo tồn kho trên nhiều node. Các node trao đổi dữ liệu liên tục và yêu cầu **độ trễ thấp nhất** giữa chúng.",
+      en: "MFTECH runs an inventory forecasting simulation on many nodes. The nodes exchange data constantly and need the **lowest latency** between them." }),
     request: "Node 1 ↔ Node 2 ↔ Node 3",
     toggle: { label: "Cluster placement group + EFA", initial: false },
     start: "n1",
@@ -39,8 +39,8 @@ const scenarios = (L: Lang): HopScenario[] => [
   },
   {
     name: L({ vi: "Đồng bộ dữ liệu giữa hai instance", en: "Data sync between two instances" }),
-    story: L({ vi: "Hai EC2 instance chạy cache của MFTech trong cùng VPC đồng bộ dữ liệu với nhau mỗi phút. Chi phí data transfer cao bất thường.",
-      en: "Two MFTech EC2 instances running a cache in the same VPC sync data with each other every minute. Data transfer costs are unusually high." }),
+    story: L({ vi: "Hai EC2 instance chạy cache của MFTECH trong cùng VPC đồng bộ dữ liệu với nhau mỗi phút. Chi phí data transfer cao bất thường.",
+      en: "Two MFTECH EC2 instances running a cache in the same VPC sync data with each other every minute. Data transfer costs are unusually high." }),
     request: L({ vi: "Replicate 200 GB / ngày", en: "Replicate 200 GB / day" }),
     toggle: { label: L({ vi: "Sử dụng private IP", en: "Use private IPs" }), initial: false },
     start: "a",
@@ -61,8 +61,8 @@ const scenarios = (L: Lang): HopScenario[] => [
   },
   {
     name: L({ vi: "SSH vào instance từ Console", en: "SSH into an instance from the console" }),
-    story: L({ vi: "Kỹ sư mới cần SSH vào một instance để xem log. MFTech muốn chấm dứt việc chia sẻ file `.pem` dùng chung qua ứng dụng chat.",
-      en: "A new engineer needs to SSH into an instance to read logs. MFTech wants to stop sharing a common `.pem` file over the chat app." }),
+    story: L({ vi: "Kỹ sư mới cần SSH vào một instance để xem log. MFTECH muốn chấm dứt việc chia sẻ file `.pem` dùng chung qua ứng dụng chat.",
+      en: "A new engineer needs to SSH into an instance to read logs. MFTECH wants to stop sharing a common `.pem` file over the chat app." }),
     request: "ssh ec2-user@shop-web",
     toggle: { label: L({ vi: "Sử dụng EC2 Instance Connect", en: "Use EC2 Instance Connect" }), initial: false },
     start: "eng",
@@ -141,6 +141,6 @@ const scenarios = (L: Lang): HopScenario[] => [
 export default function Ec2NetSim() {
   const L = useLang();
   return <HopSim scenarios={scenarios(L)} action={L({ vi: "Gửi traffic", en: "Send traffic" })} height={250}
-    label={L({ vi: "Traffic giữa các instance của MFTech: placement group, private IP, Instance Connect và bastion",
-      en: "Traffic between MFTech instances: placement group, private IP, Instance Connect and bastion" })} />;
+    label={L({ vi: "Traffic giữa các instance của MFTECH: placement group, private IP, Instance Connect và bastion",
+      en: "Traffic between MFTECH instances: placement group, private IP, Instance Connect and bastion" })} />;
 }

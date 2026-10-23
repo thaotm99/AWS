@@ -2,7 +2,7 @@ import { useState } from "react";
 import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 
-// MFTech needs one record per situation. Pick a situation, then try record
+// MFTECH needs one record per situation. Pick a situation, then try record
 // types: the readout says what that type does and whether it fits. A, AAAA,
 // CNAME, MX, NS and PTR as defined in "Supported DNS record types"; Alias as the
 // Route 53 extension (only AWS resources or a record in the same hosted zone).

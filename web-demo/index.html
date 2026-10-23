@@ -353,11 +353,11 @@ details.deep .deep-body p:last-child { margin-bottom: 0; }
           <path d="M28 40 v6 a9 9 0 0 0 18 0 v-6 M46 40 v6 a9 9 0 0 0 18 0 v-6 M64 40 v6 a9 9 0 0 0 18 0 v-6 M82 40 v6 a9 9 0 0 0 18 0 v-6 M100 40 v6 a9 9 0 0 0 18 0 v-6" fill="var(--edge-soft)" stroke="var(--edge)" stroke-width="1.5"/>
           <rect x="30" y="64" width="40" height="46" rx="3" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
           <rect x="80" y="64" width="40" height="28" rx="3" fill="var(--bg)" stroke="var(--muted)" stroke-width="1.5"/>
-          <text x="75" y="31" text-anchor="middle" fill="#fff" font-family="var(--font-body)" font-size="12" font-weight="700">MFTech</text>
+          <text x="75" y="31" text-anchor="middle" fill="#fff" font-family="var(--font-body)" font-size="12" font-weight="700">MFTECH</text>
         </svg>
         <div>
           <div class="eyebrow">Ví dụ xuyên suốt bài</div>
-          <p>Bạn là kỹ sư của <b>MFTech</b>, một shop online bán hàng cho khách ở Việt Nam. Sếp giao việc: đưa MFTech lên AWS sao cho <b>nhanh</b>, <b>không sập</b> và <b>không tốn tiền vô lý</b>. Mỗi cảnh dưới đây là một quyết định bạn phải đưa ra.</p>
+          <p>Bạn là kỹ sư của <b>MFTECH</b>, một shop online bán hàng cho khách ở Việt Nam. Sếp giao việc: đưa MFTECH lên AWS sao cho <b>nhanh</b>, <b>không sập</b> và <b>không tốn tiền vô lý</b>. Mỗi cảnh dưới đây là một quyết định bạn phải đưa ra.</p>
           <nav class="toc" aria-label="Các cảnh">
             <a href="#s1">1 · Chọn Region</a><a href="#s2">2 · Bên trong Region</a><a href="#s3">3 · Khi một AZ sập</a><a href="#s4">4 · Edge location</a><a href="#s5">5 · Tiền data transfer</a><a href="#s6">Thử thách</a>
           </nav>
@@ -366,8 +366,8 @@ details.deep .deep-body p:last-child { margin-bottom: 0; }
 
       <!-- Scene 1 -->
       <section class="scene" id="s1">
-        <div class="scene-head"><span class="scene-no">Cảnh 1/5</span><h2>Đặt MFTech ở Region nào?</h2></div>
-        <p><b>Region</b> là một vùng địa lý có data center của AWS, ví dụ Singapore, Tokyo. Khách của MFTech ở Hà Nội. Bấm nút để gửi gói tin đồng thời tới 4 Region và xem gói nào về trước.</p>
+        <div class="scene-head"><span class="scene-no">Cảnh 1/5</span><h2>Đặt MFTECH ở Region nào?</h2></div>
+        <p><b>Region</b> là một vùng địa lý có data center của AWS, ví dụ Singapore, Tokyo. Khách của MFTECH ở Hà Nội. Bấm nút để gửi gói tin đồng thời tới 4 Region và xem gói nào về trước.</p>
         <div class="stage">
           <div class="stage-bar">
             <button class="btn primary" id="raceBtn">Gửi gói tin tới 4 Region</button>
@@ -392,8 +392,8 @@ details.deep .deep-body p:last-child { margin-bottom: 0; }
 
       <!-- Scene 2 -->
       <section class="scene" id="s2">
-        <div class="scene-head"><span class="scene-no">Cảnh 2/5</span><h2>Bên trong một Region: tài nguyên của MFTech nằm đâu?</h2></div>
-        <p>Region Singapore gồm nhiều <b>Availability Zone (AZ)</b>. Mỗi AZ là một hoặc nhiều data center độc lập về điện, mạng và làm mát. Các AZ cách nhau đủ xa để không cùng gặp một sự cố, nhưng nối với nhau bằng mạng riêng tốc độ cao. Chọn từng thành phần của MFTech để xem AWS đặt nó ở đâu.</p>
+        <div class="scene-head"><span class="scene-no">Cảnh 2/5</span><h2>Bên trong một Region: tài nguyên của MFTECH nằm đâu?</h2></div>
+        <p>Region Singapore gồm nhiều <b>Availability Zone (AZ)</b>. Mỗi AZ là một hoặc nhiều data center độc lập về điện, mạng và làm mát. Các AZ cách nhau đủ xa để không cùng gặp một sự cố, nhưng nối với nhau bằng mạng riêng tốc độ cao. Chọn từng thành phần của MFTECH để xem AWS đặt nó ở đâu.</p>
         <div class="stage">
           <div class="stage-bar" id="svcRow" role="group" aria-label="Chọn tài nguyên"></div>
           <div class="svg-wrap">
@@ -433,7 +433,7 @@ details.deep .deep-body p:last-child { margin-bottom: 0; }
       <!-- Scene 3 -->
       <section class="scene" id="s3">
         <div class="scene-head"><span class="scene-no">Cảnh 3/5</span><h2>Khi một AZ gặp sự cố</h2></div>
-        <p>MFTech có 2 web server (EC2) phía sau một Load Balancer. Mỗi chấm là một request của khách. Chọn cách bố trí server, rồi bấm gây sự cố để xem chuyện gì xảy ra.</p>
+        <p>MFTECH có 2 web server (EC2) phía sau một Load Balancer. Mỗi chấm là một request của khách. Chọn cách bố trí server, rồi bấm gây sự cố để xem chuyện gì xảy ra.</p>
         <div class="stage">
           <div class="stage-bar">
             <span class="label">Bố trí</span>
@@ -463,7 +463,7 @@ details.deep .deep-body p:last-child { margin-bottom: 0; }
             </svg>
           </div>
           <div class="readout">
-            <div class="status"><span id="haPill" class="pill ok"><i></i>MFTech đang chạy</span><span class="count" id="haCount"></span></div>
+            <div class="status"><span id="haPill" class="pill ok"><i></i>MFTECH đang chạy</span><span class="count" id="haCount"></span></div>
             <p id="haText" style="margin:8px 0 0"></p>
           </div>
         </div>
@@ -473,7 +473,7 @@ details.deep .deep-body p:last-child { margin-bottom: 0; }
       <!-- Scene 4 -->
       <section class="scene" id="s4">
         <div class="scene-head"><span class="scene-no">Cảnh 4/5</span><h2>Edge location: mang ảnh sản phẩm tới gần khách</h2></div>
-        <p><b>Edge location</b> là các điểm nhỏ của AWS đặt gần người dùng, số lượng nhiều hơn Region rất nhiều. CloudFront dùng chúng để cache nội dung. Ảnh sản phẩm của MFTech lưu ở S3 tại Singapore. Bấm mở ảnh hai lần và so sánh.</p>
+        <p><b>Edge location</b> là các điểm nhỏ của AWS đặt gần người dùng, số lượng nhiều hơn Region rất nhiều. CloudFront dùng chúng để cache nội dung. Ảnh sản phẩm của MFTECH lưu ở S3 tại Singapore. Bấm mở ảnh hai lần và so sánh.</p>
         <div class="stage">
           <div class="stage-bar">
             <button class="btn primary" id="cdnBtn">Khách mở ảnh sản phẩm</button>
@@ -984,13 +984,13 @@ function updateHaStatus() {
   const all = haInstances(), alive = all.filter(i => !haDown.has(i.az));
   const pill = document.getElementById("haPill");
   pill.className = "pill " + (alive.length ? "ok" : "bad");
-  pill.innerHTML = `<i></i>${alive.length ? "MFTech đang chạy" : "MFTech sập"}`;
+  pill.innerHTML = `<i></i>${alive.length ? "MFTECH đang chạy" : "MFTECH sập"}`;
   document.getElementById("haCount").textContent = `Server khỏe: ${alive.length}/${all.length} · request thành công ${haOk} · lỗi ${haErr}`;
   let t;
   if (!haDown.size) t = haMode === "1 AZ" ? "Mọi thứ chạy tốt. Nhưng cả hai server cùng nằm trong AZ a. Thử bấm \"Sập AZ a\"." : "Request được chia đều cho các server ở nhiều AZ. Thử gây sự cố một AZ.";
   else if (!alive.length) t = "Mọi server đều nằm trong AZ bị sự cố. Load Balancer không còn chỗ gửi request, khách nhận lỗi 503. Có 2 server cũng vô ích nếu chúng ở cùng một AZ.";
   else if (alive.length < all.length) t = "Load Balancer phát hiện server ở AZ sự cố không khỏe và chuyển toàn bộ request sang server còn lại. Khách vẫn mua hàng bình thường, chỉ là tổng sức chịu tải giảm.";
-  else t = "AZ bị sự cố không chứa server nào của MFTech nên không ảnh hưởng.";
+  else t = "AZ bị sự cố không chứa server nào của MFTECH nên không ảnh hưởng.";
   document.getElementById("haText").textContent = t;
 }
 function spawnHa() {
@@ -1164,7 +1164,7 @@ function drop(bin) {
 
 /* ---------- Quiz ---------- */
 const QUIZ = [
-  { q: "MFTech có 2 EC2 cùng ở ap-southeast-1a phía sau Load Balancer. AZ này gặp sự cố. Điều gì xảy ra?",
+  { q: "MFTECH có 2 EC2 cùng ở ap-southeast-1a phía sau Load Balancer. AZ này gặp sự cố. Điều gì xảy ra?",
     opts: ["Load Balancer chuyển request sang Region khác", "Web sập, vì cả 2 server đều ở AZ bị sự cố", "Web vẫn chạy vì có 2 server"],
     a: 1, why: "Hai server cùng một AZ thì cùng chịu sự cố. Muốn chịu được một AZ sập, server phải nằm ở ít nhất 2 AZ, như bạn đã thử ở Cảnh 3." },
   { q: "Bạn có EBS volume ở ap-southeast-1a. Có gắn trực tiếp nó vào EC2 ở ap-southeast-1b được không?",

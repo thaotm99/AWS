@@ -1,6 +1,6 @@
 ---
 title: "KMS and ACM: encryption and certificates"
-lede: "MFTech stores invoices, orders and customer data. This lesson covers real encryption requirements: giving auditors information about key usage, reducing KMS cost, rotating keys periodically, using one key in two Regions, sharing an encrypted DB snapshot with auditors, protecting data in transit, preventing SSL/TLS certificates for HTTPS from expiring unexpectedly, and telling apart easily confused encryption choices."
+lede: "MFTECH stores invoices, orders and customer data. This lesson covers real encryption requirements: giving auditors information about key usage, reducing KMS cost, rotating keys periodically, using one key in two Regions, sharing an encrypted DB snapshot with auditors, protecting data in transit, preventing SSL/TLS certificates for HTTPS from expiring unexpectedly, and telling apart easily confused encryption choices."
 minutes: 25
 scenes: 4
 prerequisites: ["iam"]
@@ -63,14 +63,14 @@ import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
   { href: "#en-s4", label: "4 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-MFTech's customer data must be encrypted, and the audit team requires information on **which principal used a key and when**. **AWS KMS** stores and manages encryption keys. **AWS Certificate Manager (ACM)** issues and renews SSL/TLS certificates for HTTPS.
+MFTECH's customer data must be encrypted, and the audit team requires information on **which principal used a key and when**. **AWS KMS** stores and manages encryption keys. **AWS Certificate Manager (ACM)** issues and renews SSL/TLS certificates for HTTPS.
 </Story>
 
 <Scene id="en-s1" label="Part 1/4" title="Server-side encryption for invoices on Amazon S3" questions={["exam1_q22", "exam2_q50", "exam4_q6", "exam5_q46", "exam5_q11", "exam2_q46", "exam3_q24"]}>
 
 <p class="scene-intro">Encrypted data cannot be read without the key, so the key questions are who holds the key and who may use it.</p>
 
-Every new object on S3 is encrypted. The decision to make is **who manages the key** and **who can track key usage**. Each scenario below is a real MFTech requirement. Choose a scenario, change the configuration and press Run to watch the object's path and the services that are called.
+Every new object on S3 is encrypted. The decision to make is **who manages the key** and **who can track key usage**. Each scenario below is a real MFTECH requirement. Choose a scenario, change the configuration and press Run to watch the object's path and the services that are called.
 
 <S3EncryptSim client:visible />
 
@@ -85,8 +85,8 @@ Every new object on S3 is encrypted. The decision to make is **who manages the k
 The auditors have their own AWS account and need a copy of an RDS DB instance encrypted with KMS. Perform each step in turn:
 
 <StepSim client:visible height={240}
-  intro="MFTech's RDS DB instance is encrypted with a customer managed key in KMS. The auditors in another account need a copy."
-  boxes={[{ x: 20, y: 20, w: 420, h: 200, label: "MFTech account" }, { x: 470, y: 20, w: 270, h: 200, label: "Audit account" }]}
+  intro="MFTECH's RDS DB instance is encrypted with a customer managed key in KMS. The auditors in another account need a copy."
+  boxes={[{ x: 20, y: 20, w: 420, h: 200, label: "MFTECH account" }, { x: 470, y: 20, w: 270, h: 200, label: "Audit account" }]}
   nodes={[
     { id: "db", x: 50, y: 70, label: "RDS", sub: "encrypted with KMS", kind: "db" },
     { id: "key", x: 50, y: 150, label: "KMS key", sub: "customer managed", kind: "net" },
@@ -114,7 +114,7 @@ The auditors have their own AWS account and need a copy of an RDS DB instance en
 
 <p class="scene-intro">Data needs protection in two states: at rest (stored) and in transit (moving over the network); each state uses a different encryption mechanism.</p>
 
-KMS protects data **at rest**. Data **in transit** between clients, applications and databases needs SSL/TLS, and HTTPS requires a valid SSL/TLS certificate. A simulation of six situations MFTech meets in operations:
+KMS protects data **at rest**. Data **in transit** between clients, applications and databases needs SSL/TLS, and HTTPS requires a valid SSL/TLS certificate. A simulation of six situations MFTECH meets in operations:
 
 <DataGuardSim client:visible />
 
@@ -126,7 +126,7 @@ KMS protects data **at rest**. Data **in transit** between clients, applications
 
 <p class="scene-intro">Many features sound like encryption but solve different problems; telling them apart avoids picking something more complex than needed.</p>
 
-Some features have names close to MFTech's encryption requirements but solve a different problem, or add operational work. Choose each feature to see when to use it, why it does not fit the matching MFTech situation, and what to choose instead:
+Some features have names close to MFTECH's encryption requirements but solve a different problem, or add operational work. Choose each feature to see when to use it, why it does not fit the matching MFTECH situation, and what to choose instead:
 
 <QuickCompare client:visible items={[
   { name: "Encryption context",
@@ -134,16 +134,16 @@ Some features have names close to MFTech's encryption requirements but solve a d
     notHere: "The legal team wants a separate key for every invoice in a single bucket. An encryption context does not create any key: it only binds the ciphertext to information that describes the data, and it must hold no sensitive data because it is not encrypted.",
     instead: "**SSE-S3**: S3 encrypts each object with a unique key, with no bucket split and no extra configuration." },
   { name: "KMS key with imported key material",
-    use: "Bring your own key (BYOK): create a KMS key without key material and import your own, when you must prove the entropy source, keep the original key material outside AWS, or set an expiration time on the key material. MFTech remains responsible for that key material.",
-    notHere: "The long-term invoice archive needs yearly key rotation with the least work. **Automatic key rotation is supported only** on symmetric KMS keys whose key material KMS generates (`AWS_KMS` origin). With imported key material (`EXTERNAL` origin), MFTech must import new key material itself and then run on-demand rotation.",
+    use: "Bring your own key (BYOK): create a KMS key without key material and import your own, when you must prove the entropy source, keep the original key material outside AWS, or set an expiration time on the key material. MFTECH remains responsible for that key material.",
+    notHere: "The long-term invoice archive needs yearly key rotation with the least work. **Automatic key rotation is supported only** on symmetric KMS keys whose key material KMS generates (`AWS_KMS` origin). With imported key material (`EXTERNAL` origin), MFTECH must import new key material itself and then run on-demand rotation.",
     instead: "A **customer managed key** with KMS-generated key material and **automatic rotation** turned on (365 days by default), set as the bucket's default encryption." },
   { name: "AWS CloudHSM",
-    use: "Single-tenant hardware security modules (HSMs) in the AWS Cloud, FIPS 140-2/140-3 level 3 validated in FIPS mode. MFTech has full control of keys and algorithms and manages HSM users itself; suits applications that use PKCS #11, JCE or CNG/KSP. It can back a KMS custom key store.",
-    notHere: "For the same yearly rotation and low-cost requirement, CloudHSM adds work MFTech must do itself: AWS states that the trade-off for this control is more responsibility than with a managed service. KMS keys in a custom key store do not support automatic rotation either, only manual rotation.",
+    use: "Single-tenant hardware security modules (HSMs) in the AWS Cloud, FIPS 140-2/140-3 level 3 validated in FIPS mode. MFTECH has full control of keys and algorithms and manages HSM users itself; suits applications that use PKCS #11, JCE or CNG/KSP. It can back a KMS custom key store.",
+    notHere: "For the same yearly rotation and low-cost requirement, CloudHSM adds work MFTECH must do itself: AWS states that the trade-off for this control is more responsibility than with a managed service. KMS keys in a custom key store do not support automatic rotation either, only manual rotation.",
     instead: "An **AWS KMS customer managed key** with automatic rotation, used through SSE-KMS." },
   { name: "Client-side encryption",
     use: "Encrypt data **before sending it to S3** with the Amazon S3 Encryption Client; each object gets a unique data key. S3 receives the object already encrypted, plays no role in encrypting or decrypting it, and does not recognize it as encrypted. AWS never sees the plaintext.",
-    notHere: "MFTech wants to lower its KMS bill while keeping SSE-KMS. Client-side encryption moves encryption and key management into the application; the S3 Encryption Client also does not use S3 Bucket Keys, even when the wrapping key is a KMS key. Storing the key in the object's metadata lets anyone who can read the object decrypt it.",
+    notHere: "MFTECH wants to lower its KMS bill while keeping SSE-KMS. Client-side encryption moves encryption and key management into the application; the S3 Encryption Client also does not use S3 Bucket Keys, even when the wrapping key is a KMS key. Storing the key in the object's metadata lets anyone who can read the object decrypt it.",
     instead: "Keep SSE-KMS and turn on **S3 Bucket Keys**." },
   { name: "Converting the current key to multi-Region",
     use: "There is no such operation: the multi-Region property is chosen **when the key is created** and cannot be changed afterwards. A KMS key cannot be shared with another Region either.",
@@ -172,18 +172,18 @@ Sort each feature into the matching encryption type. On a mobile device: select 
   ]}
 />
 
-Check your understanding: as the designer of the MFTech system, which option is right?
+Check your understanding: as the designer of the MFTECH system, which option is right?
 
 <Quiz client:visible items={[
-  { q: "MFTech does not want to supply its own keys, but the auditors need to know when a key was used and by which principal. How should the invoices on S3 be encrypted?",
+  { q: "MFTECH does not want to supply its own keys, but the auditors need to know when a key was used and by which principal. How should the invoices on S3 be encrypted?",
     opts: ["SSE-S3", "SSE-KMS", "SSE-C"],
     a: 1,
-    why: "SSE-KMS logs key usage to CloudTrail without MFTech having to keep the key material itself." },
+    why: "SSE-KMS logs key usage to CloudTrail without MFTECH having to keep the key material itself." },
   { q: "A new policy requires: encryption at rest, logging of key usage, yearly key rotation, and minimal manual work. Which option fits?",
     opts: ["SSE-C, rotating the keys yourself", "SSE-KMS with a customer managed key and automatic rotation turned on", "SSE-S3"],
     a: 1,
     why: "A customer managed key with automatic rotation is rotated automatically according to its rotation period, 365 days by default (configurable from 90 to 2560 days); CloudTrail logs key usage." },
-  { q: "Auditors in another AWS account need a copy of MFTech's encrypted RDS DB instance. Which option meets the requirement?",
+  { q: "Auditors in another AWS account need a copy of MFTECH's encrypted RDS DB instance. Which option meets the requirement?",
     opts: ["Share the encrypted snapshot and grant that account use of the KMS key", "Turn off encryption, then share", "Export the database to CSV and send it by email"],
     a: 0,
     why: "The receiving account needs both the snapshot and permission to decrypt with the KMS key." },
@@ -191,11 +191,11 @@ Check your understanding: as the designer of the MFTech system, which option is 
     opts: ["Two separate keys in the two Regions", "A KMS multi-Region key", "SSE-S3"],
     a: 1,
     why: "A multi-Region key has the same key ID and key material in multiple Regions." },
-  { q: "MFTech's KMS request costs rise sharply during the sales season. Which solution reduces cost while keeping SSE-KMS?",
+  { q: "MFTECH's KMS request costs rise sharply during the sales season. Which solution reduces cost while keeping SSE-KMS?",
     opts: ["Switch to SSE-S3", "Turn on S3 Bucket Keys", "Turn off CloudTrail"],
     a: 1,
     why: "S3 Bucket Keys reduce the number of requests to KMS while keeping SSE-KMS and the logs. Switching to SSE-S3 would lose the audit trail." },
-  { q: "Invoices in us-east-1 are encrypted with a single-Region key. MFTech needs the same key in us-west-1 for the replicas. Which option works?",
+  { q: "Invoices in us-east-1 are encrypted with a single-Region key. MFTECH needs the same key in us-west-1 for the replicas. Which option works?",
     opts: ["Convert the current key to a multi-Region key", "Create a new multi-Region key, have a bucket use it with replication turned on, and copy the existing data into it", "Share the current key with us-west-1"],
     a: 1,
     why: "A single-Region key cannot be converted to multi-Region and a KMS key cannot be shared with another Region. The data must be re-encrypted under a new multi-Region key." },

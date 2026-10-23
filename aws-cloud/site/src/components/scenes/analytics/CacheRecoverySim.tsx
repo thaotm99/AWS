@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./cache-recovery-sim.css";
 
-// MFTech's ElastiCache (Redis OSS, node-based) cluster in front of RDS. The learner picks one
+// MFTECH's ElastiCache (Redis OSS, node-based) cluster in front of RDS. The learner picks one
 // protection strategy, then the primary node fails at 14:00. The sim shows what ElastiCache does,
 // how long writes stop, how much cache data is lost and whether reads continue.
 // Facts (docs.aws.amazon.com/AmazonElastiCache/latest/dg/): disaster-recovery-resiliency.html
@@ -200,7 +200,7 @@ export default function CacheRecoverySim() {
         <button className="btn primary ml-auto" onClick={run} disabled={busy}>{L({ vi: "Primary gặp lỗi lúc 14:00", en: "Primary fails at 14:00" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 10 820 250" role="img" aria-label={L({ vi: "Ứng dụng MFTech, cluster ElastiCache gồm primary tại AZ a và replica tại AZ b, backup trên S3, và dòng thời gian 24 giờ của sự cố", en: "The MFTech application, an ElastiCache cluster with a primary in AZ a and a replica in AZ b, backups in S3, and a 24-hour timeline of the incident" })}>
+        <svg viewBox="0 10 820 250" role="img" aria-label={L({ vi: "Ứng dụng MFTECH, cluster ElastiCache gồm primary tại AZ a và replica tại AZ b, backup trên S3, và dòng thời gian 24 giờ của sự cố", en: "The MFTECH application, an ElastiCache cluster with a primary in AZ a and a replica in AZ b, backups in S3, and a 24-hour timeline of the incident" })}>
           <rect className="crx-region" x={200} y={22} width={360} height={146} rx={12} />
           <text className="crx-m" x={212} y={38}>ElastiCache · Region</text>
           <rect className="crx-az" x={215} y={46} width={160} height={112} rx={8} />
@@ -212,7 +212,7 @@ export default function CacheRecoverySim() {
           {strat === "backup" && <path className="crx-wire dash" d={`M${PRI[0]} ${PRI[1] + 22} V150 H${S3[0]} V${S3[1] + 26}`} />}
           <g className="crx-node">
             <rect x={APP[0] - 60} y={APP[1] - 22} width={120} height={44} rx={8} />
-            <text className="crx-t" x={APP[0]} y={APP[1] - 3} textAnchor="middle">{L({ vi: "App MFTech", en: "MFTech app" })}</text>
+            <text className="crx-t" x={APP[0]} y={APP[1] - 3} textAnchor="middle">{L({ vi: "App MFTECH", en: "MFTECH app" })}</text>
             <text className="crx-s" x={APP[0]} y={APP[1] + 12} textAnchor="middle">EC2</text>
           </g>
           <g className={`crx-node ${priCls}`}>

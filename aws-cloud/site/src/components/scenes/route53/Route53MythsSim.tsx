@@ -4,7 +4,7 @@ import CaseSim, { type CaseScenario } from "../global-infra/CaseSim";
 
 type Lang = ReturnType<typeof useLang>;
 
-// Four Route 53 settings that MFTech can easily get wrong: how an NLB splits
+// Four Route 53 settings that MFTECH can easily get wrong: how an NLB splits
 // traffic when cross-zone is off, failover vs weighted, geolocation vs
 // geoproximity bias, the two layers that can block content by country, and
 // why a multivalue answer record does not add capacity for a traffic spike.

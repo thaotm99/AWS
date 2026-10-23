@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./storage-sims.css";
 
-// Four MFTech teams each need a shared file system. Pick a team and a file system,
+// Four MFTECH teams each need a shared file system. Pick a team and a file system,
 // then "mount" it: the request passes the team's three must-haves one by one and either
 // reaches the file system or stops at the first requirement it cannot meet.
 // Source questions: exam2_q12, exam2_q56, exam1_q65, exam3_q5, exam3_q43, exam3_q56, exam1_q24, exam3_q61, exam3_q26, exam5_q47.
@@ -83,7 +83,7 @@ const TEAMS: Team[] = [
       ontap: { steps: [["pass", { vi: "ONTAP hỗ trợ **NFS**.", en: "ONTAP supports **NFS**." }], ["pass", { vi: "Có tuỳ chọn triển khai **Multi-AZ**.", en: "Offers a **Multi-AZ** deployment option." }], ["block", { vi: "Phải **cấp phát trước** dung lượng SSD và quản lý volume.", en: "You must **provision** SSD capacity in advance and manage volumes." }]],
         tone: "bad", result: { vi: "Sử dụng được nhưng đòi hỏi nhiều công sức quản lý hơn. Thư mục dùng chung đơn giản cho Linux: **EFS**.", en: "Usable, but it takes more management effort. A simple shared folder for Linux: **EFS**." } },
       zfs: { steps: [["pass", { vi: "Mount bằng **NFS** từ Linux, Windows và macOS.", en: "Mounts over **NFS** from Linux, Windows and macOS." }], ["pass", { vi: "Deployment type **Multi-AZ (HA)** giữ một bản dữ liệu tại mỗi AZ, failover thường hoàn tất trong 60 giây.", en: "The **Multi-AZ (HA)** deployment type keeps a copy of the data in each AZ; failover typically completes within 60 seconds." }], ["pass", { vi: "Storage class **Intelligent-Tiering** co giãn, tính phí theo dữ liệu lưu trữ (SSD storage class thì phải chọn trước dung lượng).", en: "The **Intelligent-Tiering** storage class is elastic and billed for the data stored (the SSD storage class needs a size up front)." }]],
-        tone: "warn", result: { vi: "Đáp ứng được khi chọn Multi-AZ và Intelligent-Tiering. FSx for OpenZFS hướng tới việc chuyển file server ZFS hoặc Linux on-premises lên AWS mà không sửa ứng dụng (snapshot, clone, nén dữ liệu). MFTech không có file server như vậy cần chuyển, nên **EFS** (serverless, không chọn deployment type) vẫn là lựa chọn đơn giản nhất.", en: "Meets the requirements with Multi-AZ and Intelligent-Tiering. FSx for OpenZFS targets moving on-premises ZFS or Linux file servers to AWS without changing applications (snapshots, clones, compression). MFTech has no such file server to move, so **EFS** (serverless, no deployment type to choose) is still the simplest choice." } },
+        tone: "warn", result: { vi: "Đáp ứng được khi chọn Multi-AZ và Intelligent-Tiering. FSx for OpenZFS hướng tới việc chuyển file server ZFS hoặc Linux on-premises lên AWS mà không sửa ứng dụng (snapshot, clone, nén dữ liệu). MFTECH không có file server như vậy cần chuyển, nên **EFS** (serverless, không chọn deployment type) vẫn là lựa chọn đơn giản nhất.", en: "Meets the requirements with Multi-AZ and Intelligent-Tiering. FSx for OpenZFS targets moving on-premises ZFS or Linux file servers to AWS without changing applications (snapshots, clones, compression). MFTECH has no such file server to move, so **EFS** (serverless, no deployment type to choose) is still the simplest choice." } },
     },
   },
 ];

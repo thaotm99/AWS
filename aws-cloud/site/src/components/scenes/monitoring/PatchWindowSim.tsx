@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./monitoring-sims.css";
 
-// MFTech patches its three web instances in a Systems Manager maintenance window,
+// MFTECH patches its three web instances in a Systems Manager maintenance window,
 // one instance at a time. Patched straight away, an instance reboots while the ALB is
 // still sending it customers, so requests fail. With the Automation runbook
 // AWSEC2-PatchLoadBalancerInstance it leaves the target group first, waits for open

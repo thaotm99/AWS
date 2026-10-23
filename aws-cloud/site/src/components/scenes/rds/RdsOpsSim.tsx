@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./rds-sims.css";
 
-// Five days in the life of MFTech's order database. Each scenario is a real incident;
+// Five days in the life of MFTECH's order database. Each scenario is a real incident;
 // the toggle turns on the RDS feature that prevents it (Read Replica, RDS Proxy, storage
 // auto scaling, cross-Region read replica, RDS Custom). Meters show CPU, connections, disk.
 // Source questions: exam2_q13, exam6_q19, exam6_q46, exam4_q19, exam1_q3, exam1_q55, exam2_q63, exam4_q47, exam5_q42, exam2_q62.

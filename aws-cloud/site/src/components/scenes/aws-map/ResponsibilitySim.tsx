@@ -17,23 +17,23 @@ const TASKS: Bi[] = [
 const LEVELS: { name: Bi; sub: Bi; aws: number; tag: string; text: Bi }[] = [
   {
     name: { vi: "Tự mua máy chủ", en: "Own servers" }, sub: { vi: "on-premises", en: "on premises" }, aws: 0, tag: "ON-PREMISES",
-    text: { vi: "MFTech tự đảm nhận mọi phần việc, từ nguồn điện của data center tới bản vá hệ điều hành.", en: "MFTech handles every task itself, from data center power to operating system patches." },
+    text: { vi: "MFTECH tự đảm nhận mọi phần việc, từ nguồn điện của data center tới bản vá hệ điều hành.", en: "MFTECH handles every task itself, from data center power to operating system patches." },
   },
   {
     name: { vi: "Amazon EC2", en: "Amazon EC2" }, sub: { vi: "máy chủ ảo", en: "virtual server" }, aws: 3, tag: "INFRASTRUCTURE",
-    text: { vi: "AWS vận hành data center và phần cứng. MFTech vẫn tự cài đặt, vá lỗi và sao lưu database trên EC2 instance.", en: "AWS runs the data center and hardware. MFTech still installs, patches and backs up the database on the EC2 instance." },
+    text: { vi: "AWS vận hành data center và phần cứng. MFTECH vẫn tự cài đặt, vá lỗi và sao lưu database trên EC2 instance.", en: "AWS runs the data center and hardware. MFTECH still installs, patches and backs up the database on the EC2 instance." },
   },
   {
     name: { vi: "Amazon RDS", en: "Amazon RDS" }, sub: { vi: "managed service", en: "managed service" }, aws: 6, tag: "MANAGED SERVICE",
-    text: { vi: "AWS vận hành cả database: cài đặt, vá lỗi, automated backup và failover. MFTech chọn cấu hình và quản lý dữ liệu.", en: "AWS also runs the database: installation, patching, automated backups and failover. MFTech picks the configuration and manages the data." },
+    text: { vi: "AWS vận hành cả database: cài đặt, vá lỗi, automated backup và failover. MFTECH chọn cấu hình và quản lý dữ liệu.", en: "AWS also runs the database: installation, patching, automated backups and failover. MFTECH picks the configuration and manages the data." },
   },
   {
     name: { vi: "Amazon DynamoDB", en: "Amazon DynamoDB" }, sub: { vi: "serverless", en: "serverless" }, aws: 7, tag: "SERVERLESS",
-    text: { vi: "Không có máy chủ nào để quản lý: AWS tự mở rộng theo tải và tính tiền theo lượng sử dụng. MFTech chỉ lo code và dữ liệu.", en: "There is no server to manage: AWS scales with load and bills for actual use. MFTech looks after only code and data." },
+    text: { vi: "Không có máy chủ nào để quản lý: AWS tự mở rộng theo tải và tính tiền theo lượng sử dụng. MFTECH chỉ lo code và dữ liệu.", en: "There is no server to manage: AWS scales with load and bills for actual use. MFTECH looks after only code and data." },
   },
 ];
 
-/** Lesson 0, part 1: who runs which layer as MFTech's order database moves from its own servers to serverless. */
+/** Lesson 0, part 1: who runs which layer as MFTECH's order database moves from its own servers to serverless. */
 export default function ResponsibilitySim() {
   const L = useLang();
   const [i, setI] = useState(2);
@@ -41,7 +41,7 @@ export default function ResponsibilitySim() {
   const own = TASKS.length - lv.aws;
   return (
     <div className="am-stage">
-      <p className="mb-3.5 mt-0 mx-0 text-[0.9rem] text-map-muted">{L({ vi: "Database đơn hàng của MFTech, bốn cách triển khai. Chọn một cách để xem phần việc nào chuyển sang AWS.", en: "MFTech's order database, four ways to run it. Pick one to see which tasks move to AWS." })}</p>
+      <p className="mb-3.5 mt-0 mx-0 text-[0.9rem] text-map-muted">{L({ vi: "Database đơn hàng của MFTECH, bốn cách triển khai. Chọn một cách để xem phần việc nào chuyển sang AWS.", en: "MFTECH's order database, four ways to run it. Pick one to see which tasks move to AWS." })}</p>
       <div className="relative mb-[18px] grid grid-cols-4 rounded-[24px] border border-map-line bg-map-panel p-[5px]" role="group" aria-label={L({ vi: "Cách triển khai", en: "Deployment model" })} style={{ ["--i" as string]: i }}>
         <span className="am-seg-thumb" aria-hidden="true" />
         {LEVELS.map((l, k) => (
@@ -68,7 +68,7 @@ export default function ResponsibilitySim() {
                 <span className="text-[0.7rem] text-map-muted">/ {TASKS.length}</span>
               </div>
             </div>
-            <span>{L({ vi: "phần việc MFTech tự thực hiện", en: "tasks MFTech does itself" })}</span>
+            <span>{L({ vi: "phần việc MFTECH tự thực hiện", en: "tasks MFTECH does itself" })}</span>
           </div>
           <div className="flex animate-[am-pop_.45s_ease_both] flex-col gap-1.5 rounded-[24px] border border-map-line bg-map-panel px-4 py-3.5 text-[0.9rem] leading-[1.55]" key={i} aria-live="polite">
             <small className="font-mono text-[0.68rem] tracking-[0.1em] text-map-cyan">{lv.tag}</small>
@@ -76,7 +76,7 @@ export default function ResponsibilitySim() {
           </div>
           <div className="flex gap-4 text-[0.75rem] text-map-muted">
             <span className="inline-flex items-center gap-1.5"><i className="size-3 rounded-[4px] bg-map-cyan" />AWS</span>
-            <span className="inline-flex items-center gap-1.5"><i className="size-3 rounded-[4px] border-[1.5px] border-map-amber" />MFTech</span>
+            <span className="inline-flex items-center gap-1.5"><i className="size-3 rounded-[4px] border-[1.5px] border-map-amber" />MFTECH</span>
           </div>
         </div>
       </div>

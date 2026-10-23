@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./migration-sims.css";
 
-// MFTech replaces its two self-managed SFTP servers on EC2 (Elastic IPs, Linux accounts,
+// MFTECH replaces its two self-managed SFTP servers on EC2 (Elastic IPs, Linux accounts,
 // shared file system) with AWS Transfer Family. Pick the endpoint type, how source IPs are
 // restricted and the storage behind the server, then let a supplier (allowed IP) and an
 // unknown address try to connect.
@@ -193,7 +193,7 @@ export default function SftpExchangeSim() {
               <li key={i}><span className={`tag ${e.cls}`}>{tr(e.tag)}</span><span>{rich(tr(e.msg))}</span></li>
             ))}
             <li className={`mgx-result ${res.ok ? "ok" : "bad"}`}>{rich(tr(res.ok
-              ? { vi: "Đáp ứng mọi yêu cầu: **Transfer Family SFTP** với endpoint **VPC internet-facing** (Elastic IP + security group) và **EFS** với POSIX profile cho từng user. AWS vận hành server SFTP; MFTech không còn quản lý EC2.", en: "Meets every requirement: **Transfer Family SFTP** with a **VPC hosted, internet-facing** endpoint (Elastic IPs + security group) and **EFS** with a POSIX profile per user. AWS runs the SFTP servers; MFTech no longer manages EC2." }
+              ? { vi: "Đáp ứng mọi yêu cầu: **Transfer Family SFTP** với endpoint **VPC internet-facing** (Elastic IP + security group) và **EFS** với POSIX profile cho từng user. AWS vận hành server SFTP; MFTECH không còn quản lý EC2.", en: "Meets every requirement: **Transfer Family SFTP** with a **VPC hosted, internet-facing** endpoint (Elastic IPs + security group) and **EFS** with a POSIX profile per user. AWS runs the SFTP servers; MFTECH no longer manages EC2." }
               : { vi: "Chưa đáp ứng đủ yêu cầu. Xem các dòng màu đỏ hoặc cam ở trên.", en: "Not all requirements are met. See the red or orange lines above." }))}</li>
           </ul>
         )}

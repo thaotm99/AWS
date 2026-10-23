@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { rich } from "../diagram";
 import { useLang } from "../../../lib/lang";
 
-// Blue/green release of the MFTech app two days before a sale, most users on
+// Blue/green release of the MFTECH app two days before a sale, most users on
 // phones. Route 53 weighted records only reach a device after its cached DNS
 // answer expires, and some devices and resolvers cache for long periods; Global
 // Accelerator endpoint weights change behind two fixed anycast IPs, so the shift

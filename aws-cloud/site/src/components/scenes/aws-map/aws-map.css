@@ -17,7 +17,7 @@
   }
   .am-btn.primary { @apply border-0 bg-map-cyan font-bold text-map-on; }
 
-  /* Hero orbit: MFTech core, a satellite and six group badges, each colored by --c. */
+  /* Hero orbit: MFTECH core, a satellite and six group badges, each colored by --c. */
   .am-core {
     @apply absolute top-1/2 left-1/2 grid aspect-square w-[30%] -translate-1/2 place-items-center rounded-[50%] bg-map-ink text-[length:clamp(0.7rem,1.6vw,0.9rem)] font-extrabold text-map-bg;
     box-shadow: 0 0 40px --alpha(var(--color-map-cyan) / 45%);

@@ -1,6 +1,6 @@
 ---
 title: "Container: Amazon ECS, Amazon EKS và AWS Fargate"
-lede: "MFTech đóng gói các service thành container. Bài học trình bày cách lựa chọn môi trường chạy (EC2 launch type hoặc Fargate, ECS hoặc EKS) và giải quyết năm yêu cầu thực tế: lưu trữ ảnh dùng chung giữa các task, job chạy theo lịch, job vượt quá giới hạn thời gian của Lambda, quyền riêng cho từng Pod, Pod ở trạng thái Pending do cluster hết tài nguyên; sau đó là cách mở rộng theo hai tầng (Pod/task và node) và lựa chọn nơi chạy Kubernetes khi dữ liệu phải ở lại data center."
+lede: "MFTECH đóng gói các service thành container. Bài học trình bày cách lựa chọn môi trường chạy (EC2 launch type hoặc Fargate, ECS hoặc EKS) và giải quyết năm yêu cầu thực tế: lưu trữ ảnh dùng chung giữa các task, job chạy theo lịch, job vượt quá giới hạn thời gian của Lambda, quyền riêng cho từng Pod, Pod ở trạng thái Pending do cluster hết tài nguyên; sau đó là cách mở rộng theo hai tầng (Pod/task và node) và lựa chọn nơi chạy Kubernetes khi dữ liệu phải ở lại data center."
 minutes: 27
 scenes: 5
 prerequisites: ["ec2", "asg"]
@@ -71,7 +71,7 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s5", label: "5 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-Đội ngũ MFTech đã đóng gói ứng dụng web, worker và các job báo cáo thành container. Quyết định đầu tiên: container chạy trên các EC2 instance do đội ngũ tự quản lý, hay trên AWS Fargate, nơi AWS quản lý hạ tầng tính toán. Tiếp theo là các yêu cầu vận hành hằng ngày: lưu trữ tệp, chạy theo lịch, phân quyền và mở rộng tài nguyên cho cluster.
+Đội ngũ MFTECH đã đóng gói ứng dụng web, worker và các job báo cáo thành container. Quyết định đầu tiên: container chạy trên các EC2 instance do đội ngũ tự quản lý, hay trên AWS Fargate, nơi AWS quản lý hạ tầng tính toán. Tiếp theo là các yêu cầu vận hành hằng ngày: lưu trữ tệp, chạy theo lịch, phân quyền và mở rộng tài nguyên cho cluster.
 </Story>
 
 <Scene id="s1" label="Phần 1/5" title="EC2 launch type và Fargate" questions={["exam1_q14", "exam4_q33", "exam3_q32", "exam2_q1"]}>
@@ -104,7 +104,7 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/5" title="Năm tác vụ của MFTech chạy bằng container" questions={["exam3_q32", "exam2_q27", "exam6_q35", "exam1_q5", "exam4_q56", "exam3_q15", "exam1_q27", "exam2_q1"]}>
+<Scene id="s2" label="Phần 2/5" title="Năm tác vụ của MFTECH chạy bằng container" questions={["exam3_q32", "exam2_q27", "exam6_q35", "exam1_q5", "exam4_q56", "exam3_q15", "exam1_q27", "exam2_q1"]}>
 
 <p class="scene-intro">Không phải tác vụ nào cũng phù hợp với một EC2 instance chạy liên tục; container phù hợp với nhiều kiểu tác vụ khác nhau, từ dịch vụ web tới job chạy theo lịch.</p>
 
@@ -112,7 +112,7 @@ Chọn một tác vụ, chạy thử với phương án đơn giản nhất, sau
 
 <ContainerJobSim client:visible />
 
-Một số tình huống khác của MFTech:
+Một số tình huống khác của MFTECH:
 
 - Worker hiện tại giao tiếp với message broker qua **AMQP** và đội ngũ không muốn quản lý node: chạy worker trên **EKS với Fargate**, chuyển broker sang **Amazon MQ** (managed broker, hỗ trợ AMQP).
 - Service trên ECS quá tải CPU: kích hoạt **Service Auto Scaling** (dựa trên Application Auto Scaling) để tăng số task theo metric CPU, bộ nhớ của service (phần 3).
@@ -127,7 +127,7 @@ Một số tình huống khác của MFTech:
 
 <p class="scene-intro">Khi tải tăng, cần thêm cả bản sao của ứng dụng (Pod hoặc task) lẫn node để chạy các bản sao đó; hai việc này diễn ra ở hai tầng riêng biệt.</p>
 
-Trong đợt khuyến mãi, lưu lượng vào service web của MFTech tăng gấp nhiều lần. Việc mở rộng diễn ra ở hai tầng tách biệt:
+Trong đợt khuyến mãi, lưu lượng vào service web của MFTECH tăng gấp nhiều lần. Việc mở rộng diễn ra ở hai tầng tách biệt:
 
 - **Tầng ứng dụng** (số Pod hoặc số task). Trên EKS, **Horizontal Pod Autoscaler** (HPA) thay đổi số Pod của Deployment để giữ CPU quanh target (ví dụ 50%). HPA là API resource có sẵn của Kubernetes, chỉ cần một nguồn metric như Kubernetes Metrics Server. Trên ECS, **Service Auto Scaling** thay đổi desired count của service (target tracking, step scaling, scheduled, predictive, hoặc theo backlog của hàng đợi SQS).
 - **Tầng hạ tầng** (số node). Trên EKS dùng node EC2, **Cluster Autoscaler** điều chỉnh desired capacity của Auto Scaling group khi có Pod không lập lịch được; **Karpenter** và **EKS Auto Mode** (xây dựng trên Karpenter) tạo node mới khi Pod không vừa với các node hiện có. Với Fargate, tầng này không tồn tại: mỗi task hoặc Pod được cấp tài nguyên riêng.
@@ -152,7 +152,7 @@ Amazon EKS có nhiều cách triển khai ngoài Region, khác nhau ở **vị t
 - **EKS Hybrid Nodes**: máy chủ sẵn có của doanh nghiệp làm node; control plane ở Region do AWS quản lý; cần kết nối ổn định tới Region.
 - **EKS Anywhere**: phần mềm quản lý Kubernetes do khách hàng vận hành, chạy toàn bộ cluster trên hạ tầng của doanh nghiệp, kể cả môi trường air-gapped.
 
-Chọn một tình huống của MFTech và tìm phương án đáp ứng mọi yêu cầu:
+Chọn một tình huống của MFTECH và tìm phương án đáp ứng mọi yêu cầu:
 
 <EksPlacementSim client:visible />
 
@@ -177,7 +177,7 @@ Một số dịch vụ và tính năng trông giống phương án đúng trong 
     instead: "S3 → SQS → **Lambda** cho xử lý ảnh ngắn; microservice HTTP không muốn quản lý hạ tầng: Lambda + API Gateway, hoặc ECS trên Fargate / ECS Express Mode khi đã đóng gói container." },
   { name: "Amazon EKS Anywhere",
     use: "Chạy Kubernetes trên hạ tầng của doanh nghiệp (vSphere, bare metal, Nutanix, CloudStack, AWS Snow), kể cả môi trường air-gapped.",
-    notHere: "Backend thanh toán của MFTech không có yêu cầu đặt tại chỗ và đội ngũ muốn giảm tối đa công sức vận hành; với EKS Anywhere, doanh nghiệp tự quản lý phần cứng, nâng cấp Kubernetes và mở rộng node.",
+    notHere: "Backend thanh toán của MFTECH không có yêu cầu đặt tại chỗ và đội ngũ muốn giảm tối đa công sức vận hành; với EKS Anywhere, doanh nghiệp tự quản lý phần cứng, nâng cấp Kubernetes và mở rộng node.",
     instead: "ECS (hoặc EKS) trên **Fargate** ở Region (phần 1, phần 4)." },
   { name: "CloudWatch alarm theo CPU của node",
     use: "Mở rộng Auto Scaling group của EC2 theo metric như CPU trung bình, phù hợp với ứng dụng chạy trực tiếp trên instance.",
@@ -202,22 +202,22 @@ Phân loại từng đặc tính vào mô hình chạy tương ứng. Trên thi�
   ]}
 />
 
-Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTech, phương án nào phù hợp?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTECH, phương án nào phù hợp?
 
 <Quiz client:visible items={[
   { q: "Bộ phận kế toán cần giải thích vì sao hoá đơn ECS tháng này khác tháng trước, sau khi đội ngũ chuyển từ EC2 launch type sang Fargate. Cơ sở tính phí đã thay đổi như thế nào?",
     opts: ["Cả hai đều tính theo vCPU và RAM của task", "Trước đây tính theo EC2 và EBS; hiện tại tính theo vCPU và RAM mà task yêu cầu", "Fargate miễn phí, chỉ tính phí EC2"],
     a: 1,
     why: "Với EC2 launch type, chi phí tính cho EC2 instance (và EBS volume) đang chạy; với Fargate, chi phí tính theo cấu hình vCPU và bộ nhớ của từng task." },
-  { q: "MFTech có service trên ECS và service trên EKS; đội ngũ không muốn tiếp tục quản lý EC2. Phương án nào phù hợp?",
+  { q: "MFTECH có service trên ECS và service trên EKS; đội ngũ không muốn tiếp tục quản lý EC2. Phương án nào phù hợp?",
     opts: ["Chạy cả hai trên Fargate", "Chạy cả hai trên EC2 launch type", "Chuyển toàn bộ sang Elastic Beanstalk"],
     a: 0,
     why: "Fargate áp dụng được cho cả ECS và EKS; không còn node nào cần vá lỗi." },
-  { q: "Mỗi job tổng hợp dữ liệu stream của MFTech chạy khoảng 2 giờ và yêu cầu không quản lý máy chủ. Phần xử lý nên chạy trên dịch vụ nào?",
+  { q: "Mỗi job tổng hợp dữ liệu stream của MFTECH chạy khoảng 2 giờ và yêu cầu không quản lý máy chủ. Phần xử lý nên chạy trên dịch vụ nào?",
     opts: ["AWS Lambda", "ECS trên Fargate", "EC2 Spot"],
     a: 1,
     why: "Lambda function tiêu chuẩn chạy tối đa 15 phút mỗi lần thực thi (Lambda Managed Instances: tối đa 90 phút với một số kiểu gọi), không đủ cho job 2 giờ. Task ECS trên Fargate chạy cho tới khi tiến trình kết thúc, không có máy chủ cần quản lý." },
-  { q: "Cluster EKS dùng node EC2 của MFTech đã có HPA theo CPU. Trong giờ cao điểm, nhiều Pod mới ở trạng thái Pending, số node không đổi dù mọi node đã hết CPU. Cần bổ sung gì với ít công sức vận hành nhất?",
+  { q: "Cluster EKS dùng node EC2 của MFTECH đã có HPA theo CPU. Trong giờ cao điểm, nhiều Pod mới ở trạng thái Pending, số node không đổi dù mọi node đã hết CPU. Cần bổ sung gì với ít công sức vận hành nhất?",
     opts: ["Tăng target CPU của HPA", "Cluster Autoscaler gắn với Auto Scaling group của node", "Lambda chạy định kỳ kiểm tra Pod Pending và gọi eksctl"],
     a: 1,
     why: "HPA chỉ thay đổi số Pod. Cluster Autoscaler phát hiện Pod không lập lịch được và tăng desired capacity của Auto Scaling group; Pod được lập lịch lên node mới." },
@@ -225,7 +225,7 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTech,
     opts: ["Đúng, RBAC giới hạn quyền gọi AWS API của từng Pod", "Sai: RBAC chỉ kiểm soát Kubernetes API; mỗi service cần service account và IAM role riêng (IRSA hoặc EKS Pod Identity)", "Sai: cần gắn policy trực tiếp vào từng Pod bằng annotation"],
     a: 1,
     why: "Mọi Pod trên node kế thừa quyền của IAM role của node. Annotation `eks.amazonaws.com/role-arn` đặt trên service account để trỏ tới IAM role, không gắn policy vào Pod." },
-  { q: "Workload Kubernetes và dữ liệu của MFTech Pay phải nằm trong data center; đội ngũ muốn AWS quản lý control plane và nâng cấp Kubernetes. Phương án nào phù hợp?",
+  { q: "Workload Kubernetes và dữ liệu của MFTECH Pay phải nằm trong data center; đội ngũ muốn AWS quản lý control plane và nâng cấp Kubernetes. Phương án nào phù hợp?",
     opts: ["Amazon EKS local cluster trên AWS Outposts", "Amazon EKS ở Region, kết nối qua Direct Connect", "ECS trên Fargate tại một Local Zone"],
     a: 0,
     why: "Local cluster đặt cả control plane và node trên Outpost trong data center, control plane vẫn do AWS quản lý; AWS khuyến nghị local cluster khi có yêu cầu lưu trú dữ liệu. Hai phương án còn lại đặt workload trên hạ tầng AWS bên ngoài data center." },

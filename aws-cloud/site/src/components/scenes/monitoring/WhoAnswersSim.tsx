@@ -1,15 +1,15 @@
 import PacketSim, { type PLayout, type PScenario, type PStep } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// Questions the MFTech team really asks after an incident, and which of the three
+// Questions the MFTECH team really asks after an incident, and which of the three
 // services can answer each one: CloudWatch (numbers over time), CloudTrail (who called
 // which API) or AWS Config (what a resource looked like, and does it follow the rules).
 
 const LAYOUT: PLayout = {
   viewBox: "0 30 820 240",
-  aria: "Câu hỏi của đội MFTech được gửi tới CloudWatch, CloudTrail hoặc AWS Config",
+  aria: "Câu hỏi của đội MFTECH được gửi tới CloudWatch, CloudTrail hoặc AWS Config",
   nodes: [
-    { id: "team", x: 80, y: 150, l1: "Đội MFTech", user: true },
+    { id: "team", x: 80, y: 150, l1: "Đội MFTECH", user: true },
     { id: "cw", x: 420, y: 70, w: 230, l1: "CloudWatch", l2: "metric, log, alarm: trạng thái hệ thống" },
     { id: "trail", x: 420, y: 150, w: 230, l1: "CloudTrail", l2: "API call: ai thao tác gì, khi nào" },
     { id: "config", x: 420, y: 230, w: 230, l1: "AWS Config", l2: "cấu hình và mức tuân thủ" },
@@ -53,9 +53,9 @@ const SCENARIOS: PScenario[] = [
 
 const LAYOUT_EN: PLayout = {
   viewBox: "0 30 820 240",
-  aria: "Questions from the MFTech team are sent to CloudWatch, CloudTrail or AWS Config",
+  aria: "Questions from the MFTECH team are sent to CloudWatch, CloudTrail or AWS Config",
   nodes: [
-    { id: "team", x: 80, y: 150, l1: "MFTech team", user: true },
+    { id: "team", x: 80, y: 150, l1: "MFTECH team", user: true },
     { id: "cw", x: 420, y: 70, w: 230, l1: "CloudWatch", l2: "metrics, logs, alarms: system state" },
     { id: "trail", x: 420, y: 150, w: 230, l1: "CloudTrail", l2: "API calls: who did what, when" },
     { id: "config", x: 420, y: 230, w: 230, l1: "AWS Config", l2: "configuration and compliance" },

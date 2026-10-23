@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./capacity-sim.css";
 
-// One day of reads on a MFTech DynamoDB table, hour by hour. Bars are the reads the
+// One day of reads on a MFTECH DynamoDB table, hour by hour. Bars are the reads the
 // app sends (RCU); the line is the capacity the table has under the chosen mode. The
 // right panel shows how those reads land on four partitions, each capped at 3,000 RCU.
 // Simplified model: Auto Scaling sets capacity from the previous hour at 70% target

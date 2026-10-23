@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./kinesis-sims.css";
 
-// Build a streaming pipeline for one MFTech need: pick a service for every stage,
+// Build a streaming pipeline for one MFTECH need: pick a service for every stage,
 // press run and a record walks through. The first stage that does not fit stops it
 // and says why. Covers Kinesis Data Streams, Data Firehose, Managed Service for Apache
 // Flink, OpenSearch + Amazon Quick Sight, DMS from S3, Lambda vs
@@ -20,7 +20,7 @@ const NEEDS: Need[] = [
   {
     name: "Gợi ý sản phẩm theo từng click",
     about: "Mỗi click trên web phải được phân tích ngay để gợi ý sản phẩm, không được mất click khi tải tăng đột biến, và kết quả được lưu vào S3.",
-    source: ["Web MFTech", "click"],
+    source: ["Web MFTECH", "click"],
     slots: [
       { name: "Thu thập", opts: [
         KDS("Tiếp nhận hàng nghìn click mỗi giây, lưu giữ dữ liệu để đọc lại khi bước tiếp theo gặp lỗi."),
@@ -93,7 +93,7 @@ const NEEDS: Need[] = [
   {
     name: "Ẩn thông tin thẻ trước khi lưu trữ",
     about: "Hệ thống phát sinh hàng trăm nghìn giao dịch mỗi giờ. Nhiều ứng dụng nội bộ cần đọc giao dịch gốc; bản đã loại bỏ thông tin nhạy cảm được lưu vào document database để truy vấn với độ trễ thấp.",
-    source: ["Web MFTech", "giao dịch"],
+    source: ["Web MFTECH", "giao dịch"],
     slots: [
       { name: "Thu thập", opts: [
         KDS("Nhiều ứng dụng nội bộ cùng đọc luồng giao dịch gốc."),
@@ -147,7 +147,7 @@ const NEEDS_EN: Need[] = [
   {
     name: "Product recommendations on every click",
     about: "Every click on the website must be analyzed immediately to recommend products, no click may be lost during traffic spikes, and the results are stored in S3.",
-    source: ["MFTech web", "clicks"],
+    source: ["MFTECH web", "clicks"],
     slots: [
       { name: "Ingest", opts: [
         KDS("Takes in thousands of clicks per second and retains the data so it can be reread if the next step fails."),
@@ -220,7 +220,7 @@ const NEEDS_EN: Need[] = [
   {
     name: "Mask card data before storage",
     about: "The system produces hundreds of thousands of transactions per hour. Several internal apps need to read the original transactions; a copy with sensitive data removed is stored in a document database for low-latency queries.",
-    source: ["MFTech web", "transactions"],
+    source: ["MFTECH web", "transactions"],
     slots: [
       { name: "Ingest", opts: [
         KDS("Several internal apps read the original transaction stream."),
@@ -357,7 +357,7 @@ export default function StreamPipelineSim() {
 
   return (
     <div className="stage">
-      <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Yêu cầu của MFTech", en: "MFTech requirements" })}>
+      <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Yêu cầu của MFTECH", en: "MFTECH requirements" })}>
         {L({ vi: NEEDS, en: NEEDS_EN }).map((n, i) => (
           <button key={i} className="chip" aria-pressed={i === ni} onClick={() => pickNeed(i)} disabled={busy && i !== ni}>{n.name}</button>
         ))}

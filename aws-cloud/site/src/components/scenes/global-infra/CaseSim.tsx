@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./case-sim.css";
 
-// A small engine for "try it on MFTech" simulations, in the style of
+// A small engine for "try it on MFTECH" simulations, in the style of
 // cloudfront/EdgePipelineSim: pick a situation, flip a switch or pick an option,
 // press the action button and watch one packet walk the diagram. Every station
 // it reaches lights up (pass / block / change) and writes one line in the log.

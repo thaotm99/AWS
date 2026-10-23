@@ -1,7 +1,7 @@
 import PacketSim, { type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// Data flowing into and out of MFTech's DynamoDB tables: feedback kept one year
+// Data flowing into and out of MFTECH's DynamoDB tables: feedback kept one year
 // with TTL, a welcome email from DynamoDB Streams + Lambda, card numbers removed
 // before they are written (Kinesis Data Streams + Lambda), and warehouse scanners
 // that need SQS + Lambda because Firehose cannot write to DynamoDB.
@@ -148,5 +148,5 @@ const scenarios = (L: Lang): PScenario[] => [
 
 export default function DataFlowSim() {
   const L = useLang();
-  return <PacketSim scenarios={scenarios(L)} hint={L({ vi: "Chọn một luồng dữ liệu của MFTech và chạy mô phỏng, sau đó bật tuỳ chọn cấu hình để khắc phục và chạy lại.", en: "Choose a MFTech data flow and run the simulation, then turn on the configuration option that fixes it and run again." })} />;
+  return <PacketSim scenarios={scenarios(L)} hint={L({ vi: "Chọn một luồng dữ liệu của MFTECH và chạy mô phỏng, sau đó bật tuỳ chọn cấu hình để khắc phục và chạy lại.", en: "Choose a MFTECH data flow and run the simulation, then turn on the configuration option that fixes it and run again." })} />;
 }

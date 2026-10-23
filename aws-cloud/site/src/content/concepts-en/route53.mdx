@@ -53,18 +53,18 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s4", label: "4 · Hybrid DNS" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-MFTech has deployed its VPC and ALB. The next requirements: users reach the system through the domain name **mftech.vn**, users in Europe are served from the nearest Region, and when the ALB fails, the system shows an error notice page instead of a blank page. All of these requirements are implemented with **Amazon Route 53**.
+MFTECH has deployed its VPC and ALB. The next requirements: users reach the system through the domain name **mftech.vn**, users in Europe are served from the nearest Region, and when the ALB fails, the system shows an error notice page instead of a blank page. All of these requirements are implemented with **Amazon Route 53**.
 </Story>
 
 <Scene id="en-s1" label="Part 1/4" title="Alias and CNAME records" questions={["exam2_q2", "exam3_q19", "exam3_q64"]}>
 
 <p class="scene-intro">People remember names such as mftech.vn, not IP addresses; DNS is the system that resolves names to addresses, and each such mapping is stored as a DNS record in a hosted zone.</p>
 
-MFTech needs four records: the main domain pointing to CloudFront, the main domain pointing to www, www pointing to the ALB, and blog pointing to an external WordPress site. Both **Alias** and **CNAME** records map a name to another target, but not every case can be created. Choose each record and record type, then press create to see Route 53's response.
+MFTECH needs four records: the main domain pointing to CloudFront, the main domain pointing to www, www pointing to the ALB, and blog pointing to an external WordPress site. Both **Alias** and **CNAME** records map a name to another target, but not every case can be created. Choose each record and record type, then press create to see Route 53's response.
 
 <AliasCnameSim client:visible />
 
-Alias and CNAME are only two of the record types in a hosted zone. Each record type answers a different kind of query: A and AAAA return IP addresses, MX specifies mail servers, NS identifies name servers, and PTR looks up a domain name from an IP address. Choose each MFTech requirement, then try the record types to find the one that fits and see why the others do not.
+Alias and CNAME are only two of the record types in a hosted zone. Each record type answers a different kind of query: A and AAAA return IP addresses, MX specifies mail servers, NS identifies name servers, and PTR looks up a domain name from an IP address. Choose each MFTECH requirement, then try the record types to find the one that fits and see why the others do not.
 
 <RecordTypeSim client:visible />
 
@@ -76,7 +76,7 @@ Alias and CNAME are only two of the record types in a hosted zone. Each record t
 
 <p class="scene-intro">To cut down on lookups, DNS responses are cached by resolvers and clients; that is why a record change does not reach every user at once.</p>
 
-MFTech moves to a new load balancer and updates the record in Route 53. Choose a TTL value, then change the record and watch when each client switches to the new target.
+MFTECH moves to a new load balancer and updates the record in Route 53. Choose a TTL value, then change the record and watch when each client switches to the new target.
 
 <TtlSim client:visible />
 
@@ -88,7 +88,7 @@ MFTech moves to a new load balancer and updates the record in Route 53. Choose a
 
 <p class="scene-intro">When a system runs in several places, DNS can return a different address to each user, such as the closest one or one that is still working.</p>
 
-MFTech runs ALBs in Singapore, Frankfurt and N. Virginia. Choose a routing policy, then simulate access by users in three geographic locations.
+MFTECH runs ALBs in Singapore, Frankfurt and N. Virginia. Choose a routing policy, then simulate access by users in three geographic locations.
 
 <RoutingPolicySim client:visible />
 
@@ -112,7 +112,7 @@ EC2 instances in the VPC need to resolve the domain name of the on-premises data
 
 <p class="scene-intro">DNS mistakes usually show up as “the website is unreachable” while the application and its targets are running fine, so the mechanism must be understood to find the cause.</p>
 
-Five situations that come up as MFTech operates its DNS. Try the option that is usually chosen first, then switch to another option to compare.
+Five situations that come up as MFTECH operates its DNS. Try the option that is usually chosen first, then switch to another option to compare.
 
 <Route53MythsSim client:visible />
 
@@ -136,26 +136,26 @@ Sort each situation into the right record type. On a mobile device: select a car
   ]}
 />
 
-Check your understanding: as the designer of the MFTech system, which option is right?
+Check your understanding: as the designer of the MFTECH system, which option is right?
 
 <Quiz client:visible items={[
-  { q: "MFTech runs in us-east-1, and users in Europe experience high latency. An additional web tier is deployed in eu-west-1. Which routing policy routes each user to the Region with the lowest latency?",
+  { q: "MFTECH runs in us-east-1, and users in Europe experience high latency. An additional web tier is deployed in eu-west-1. Which routing policy routes each user to the Region with the lowest latency?",
     opts: ["Weighted", "Latency", "Geoproximity"],
     a: 1,
     why: "Latency routing returns the Region with the lowest latency to the user. To reduce latency for database reads, add an Aurora read replica in eu-west-1." },
-  { q: "MFTech needs the Singapore Region to also serve users in neighboring countries, that is, to expand the geographic area that Route 53 routes to Singapore. Which mechanism fits?",
+  { q: "MFTECH needs the Singapore Region to also serve users in neighboring countries, that is, to expand the geographic area that Route 53 routes to Singapore. Which mechanism fits?",
     opts: ["Geolocation routing", "Geoproximity routing with bias", "Multivalue answer"],
     a: 1,
     why: "Geoproximity bias expands or shrinks the area that a resource serves." },
-  { q: "When MFTech's ALB fails, users must get a static error notice page on S3 instead of a blank page, with minimal configuration changes. Which configuration meets the requirement?",
+  { q: "When MFTECH's ALB fails, users must get a static error notice page on S3 instead of a blank page, with minimal configuration changes. Which configuration meets the requirement?",
     opts: ["Active-passive failover routing, with S3 as secondary", "Weighted routing, with a small weight for S3", "Latency routing pointing to S3"],
     a: 0,
     why: "When health checks mark the ALB as unhealthy, Route 53 returns the secondary record, which points to the error page on S3." },
-  { q: "MFTech has updated the record to point to the new load balancer, but after an hour many users still reach the old load balancer. What is the cause?",
+  { q: "MFTECH has updated the record to point to the new load balancer, but after an hour many users still reach the old load balancer. What is the cause?",
     opts: ["The new load balancer has no targets yet", "The old record's TTL is still in effect", "The hosted zone must be deleted and recreated"],
     a: 1,
     why: "Clients and resolvers keep the old response in their cache until the TTL expires." },
-  { q: "MFTech expects 10 times its usual traffic during a weekend flash sale, and the website content is dynamic. Which configuration lets the system handle the load?",
+  { q: "MFTECH expects 10 times its usual traffic during a weekend flash sale, and the website content is dynamic. Which configuration lets the system handle the load?",
     opts: ["A multivalue answer record pointing to the existing EC2 instances", "An ALB with an Auto Scaling group", "CloudFront caching every page"],
     a: 1,
     why: "The Auto Scaling group adds instances according to its scaling policy. Multivalue answer only returns up to 8 healthy IPs of the existing instances and adds no capacity; the content changes constantly, so CloudFront caching does not absorb the dynamic load." },

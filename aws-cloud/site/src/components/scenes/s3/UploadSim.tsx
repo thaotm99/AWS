@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./s3-sims.css";
 
-// Four real upload/download problems at MFTech and the S3 feature that fixes each:
+// Four real upload/download problems at MFTECH and the S3 feature that fixes each:
 // multipart upload, S3 Transfer Acceleration, spreading keys over prefixes, byte-range fetch,
 // and what an S3TA upload costs (data in is free; S3TA is charged only when it accelerates).
 // Source questions: exam4_q14, exam1_q64, exam1_q18, exam1_q40, exam1_q51, exam6_q20, exam5_q21.

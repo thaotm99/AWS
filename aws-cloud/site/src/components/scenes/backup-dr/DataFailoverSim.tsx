@@ -1,7 +1,7 @@
 import PacketSim, { type PLayout, type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// The data layer of MFTech when something breaks: the Aurora cluster when the whole
+// The data layer of MFTECH when something breaks: the Aurora cluster when the whole
 // Singapore Region goes down, the RDS PostgreSQL database of the warehouse app, and the
 // Redis cache that holds carts and sessions when its primary node dies. Each switch is
 // the setting that turns a long, lossy recovery into a short one.
@@ -49,7 +49,7 @@ function redis(multiAz: boolean): PLayout {
       { x: 470, y: 44, w: 330, h: 200, label: "AZ b" },
     ],
     nodes: [
-      { id: "app", x: 80, y: 150, w: 110, l1: "Web MFTech", l2: "giỏ hàng, phiên" },
+      { id: "app", x: 80, y: 150, w: 110, l1: "Web MFTECH", l2: "giỏ hàng, phiên" },
       { id: "pri", x: 310, y: 105, w: 170, l1: "Redis primary", l2: "ElastiCache" },
       { id: "bak", x: 310, y: 205, w: 170, l1: "Backup hằng ngày", l2: "snapshot lúc 2h sáng" },
       { id: "rep", x: 635, y: 105, w: 200, l1: multiAz ? "Redis replica" : "Không có replica", l2: multiAz ? "Multi-AZ, automatic failover" : "một node duy nhất" },
@@ -74,7 +74,7 @@ const SCENARIOS: PScenario[] = [
             { from: "app", at: "sec", state: "pass", flash: "OK", msg: "Ứng dụng ghi đơn hàng mới vào Tokyo." },
           ],
           ok: true,
-          result: "Đạt RPO tính bằng giây, RTO tính bằng phút, trong mục tiêu RPO ≤ 5 phút, RTO ≤ 15 phút. Aurora thực hiện việc sao chép và failover; đội MFTech không cần phát triển script.",
+          result: "Đạt RPO tính bằng giây, RTO tính bằng phút, trong mục tiêu RPO ≤ 5 phút, RTO ≤ 15 phút. Aurora thực hiện việc sao chép và failover; đội MFTECH không cần phát triển script.",
         }
       : {
           steps: [
@@ -83,7 +83,7 @@ const SCENARIOS: PScenario[] = [
             { from: "app", at: "sec", state: "block", flash: "chưa sẵn sàng", msg: "Ứng dụng không có đích ghi dữ liệu trong quá trình restore." },
           ],
           ok: false,
-          result: "Không đảm bảo được RTO 15 phút, và script copy snapshot phải do đội MFTech tự phát triển và bảo trì. Bật tuỳ chọn để so sánh.",
+          result: "Không đảm bảo được RTO 15 phút, và script copy snapshot phải do đội MFTECH tự phát triển và bảo trì. Bật tuỳ chọn để so sánh.",
         },
   },
   {
@@ -175,7 +175,7 @@ function redisEn(multiAz: boolean): PLayout {
       { x: 470, y: 44, w: 330, h: 200, label: "AZ b" },
     ],
     nodes: [
-      { id: "app", x: 80, y: 150, w: 110, l1: "MFTech web", l2: "carts, sessions" },
+      { id: "app", x: 80, y: 150, w: 110, l1: "MFTECH web", l2: "carts, sessions" },
       { id: "pri", x: 310, y: 105, w: 170, l1: "Redis primary", l2: "ElastiCache" },
       { id: "bak", x: 310, y: 205, w: 170, l1: "Daily backup", l2: "snapshot at 2:00 a.m." },
       { id: "rep", x: 635, y: 105, w: 200, l1: multiAz ? "Redis replica" : "No replica", l2: multiAz ? "Multi-AZ, automatic failover" : "a single node" },
@@ -200,7 +200,7 @@ const SCENARIOS_EN: PScenario[] = [
             { from: "app", at: "sec", state: "pass", flash: "OK", msg: "The application writes new orders to Tokyo." },
           ],
           ok: true,
-          result: "RPO in seconds and RTO in minutes, within the RPO ≤ 5 minutes, RTO ≤ 15 minutes objective. Aurora handles the replication and failover; the MFTech team does not need to develop scripts.",
+          result: "RPO in seconds and RTO in minutes, within the RPO ≤ 5 minutes, RTO ≤ 15 minutes objective. Aurora handles the replication and failover; the MFTECH team does not need to develop scripts.",
         }
       : {
           steps: [
@@ -209,7 +209,7 @@ const SCENARIOS_EN: PScenario[] = [
             { from: "app", at: "sec", state: "block", flash: "not ready", msg: "The application has nowhere to write data during the restore." },
           ],
           ok: false,
-          result: "An RTO of 15 minutes cannot be guaranteed, and the snapshot-copy script must be developed and maintained by the MFTech team. Turn on the option to compare.",
+          result: "An RTO of 15 minutes cannot be guaranteed, and the snapshot-copy script must be developed and maintained by the MFTECH team. Turn on the option to compare.",
         },
   },
   {

@@ -1,6 +1,6 @@
 ---
 title: "SQS, SNS, EventBridge, Step Functions: communication between components"
-lede: "This lesson shows how to connect MFTech's services (ordering, payment, inventory, email, analytics) through messaging: absorbing flash-sale traffic spikes without losing orders, isolating failed messages so they do not clog the system, guaranteeing ordering and uniqueness for e-wallet transactions, and routing each event to exactly the components that need it."
+lede: "This lesson shows how to connect MFTECH's services (ordering, payment, inventory, email, analytics) through messaging: absorbing flash-sale traffic spikes without losing orders, isolating failed messages so they do not clog the system, guaranteeing ordering and uniqueness for e-wallet transactions, and routing each event to exactly the components that need it."
 minutes: 30
 scenes: 5
 prerequisites: ["lambda", "asg"]
@@ -81,7 +81,7 @@ import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
   { href: "#en-s5", label: "5 · Comparing delivery guarantees" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-In its early days, MFTech's web application called every component synchronously: after creating an order, the application called the payment service, the inventory service and the email service in turn and waited for each response. The system now runs a weekly flash sale and consists of dozens of services; one slow component increases the latency of the whole chain, and one failed component makes the order fail. The solution is for components to **communicate asynchronously through messages** instead of calling synchronously and waiting for a response.
+In its early days, MFTECH's web application called every component synchronously: after creating an order, the application called the payment service, the inventory service and the email service in turn and waited for each response. The system now runs a weekly flash sale and consists of dozens of services; one slow component increases the latency of the whole chain, and one failed component makes the order fail. The solution is for components to **communicate asynchronously through messages** instead of calling synchronously and waiting for a response.
 </Story>
 
 <Scene id="en-s1" label="Part 1/5" title="Decoupling two application tiers with an Amazon SQS queue" questions={["exam2_q47", "exam3_q39", "exam1_q55", "exam5_q26", "exam3_q54", "exam6_q52", "exam5_q60", "exam1_q33", "exam2_q14", "exam5_q32", "exam3_q7"]}>
@@ -96,7 +96,7 @@ The flash sale starts at 20:00. The web tier takes orders at a high rate, while 
 
 To scale the workers' Auto Scaling group with the amount of work waiting in the queue, the Amazon EC2 Auto Scaling documentation recommends the **backlog per instance** metric: the number of messages available to retrieve from the queue (`ApproximateNumberOfMessages`, CloudWatch metric `ApproximateNumberOfMessagesVisible`) divided by the number of instances in the `InService` state, combined with **target tracking** to keep this metric near an acceptable value. A scaling policy based only on the number of messages in the queue does not account for the number of instances already running, so it can add more instances than needed while the queue is already shrinking.
 
-Some architectures that integrate a queue into the MFTech system:
+Some architectures that integrate a queue into the MFTECH system:
 
 <RequirementPicker client:visible label="Applied architecture" items={[
   { need: "Product images must be processed as soon as sellers upload them, at low cost, with a serverless architecture",
@@ -130,7 +130,7 @@ Some architectures that integrate a queue into the MFTech system:
 
 <p class="scene-intro">A message in an SQS queue is deleted only after the consumer has processed it successfully; this ensures no task is lost when a consumer fails during processing.</p>
 
-When a worker receives a message, the message is **not yet deleted** from the queue; it is only hidden for a period called the **visibility timeout**. After processing, the worker must call `DeleteMessage`. If the worker fails during processing, the message becomes visible again so that another worker can process it. SQS features all revolve around this life cycle. Choose each MFTech scenario and run the simulation:
+When a worker receives a message, the message is **not yet deleted** from the queue; it is only hidden for a period called the **visibility timeout**. After processing, the worker must call `DeleteMessage`. If the worker fails during processing, the message becomes visible again so that another worker can process it. SQS features all revolve around this life cycle. Choose each MFTECH scenario and run the simulation:
 
 <MessageLifeSim client:visible />
 
@@ -146,7 +146,7 @@ A delay queue applies to every message in the queue. When only some messages nee
 
 <p class="scene-intro">For financial transactions, ordering and exactly-once processing are mandatory; a standard queue does not guarantee either, so a FIFO queue is needed.</p>
 
-The default queue type is **standard**: very high throughput, but a message can be delivered **more than once** and **ordering is not guaranteed**. For orders, the worker can check for duplicates itself. For MFTech's e-wallet this is not acceptable: a top-up must be processed before a payment, and each command must be processed exactly once. The simulation below compares three options:
+The default queue type is **standard**: very high throughput, but a message can be delivered **more than once** and **ordering is not guaranteed**. For orders, the worker can check for duplicates itself. For MFTECH's e-wallet this is not acceptable: a top-up must be processed before a payment, and each command must be processed exactly once. The simulation below compares three options:
 
 <FifoSim client:visible />
 
@@ -166,11 +166,11 @@ Sending wallet commands through **EventBridge** does not meet the requirement ei
 
 <p class="scene-intro">Not every interaction follows a one-producer, one-consumer model: some events must reach many subscribers, some tasks run on a schedule, and some workflows have several steps in sequence.</p>
 
-A queue follows a model in which one consumer processes each message. MFTech has other needs too: one event must notify several components, events come from external software, jobs run on a schedule, workflows have several steps, or a legacy application uses its own protocol. Choose a scenario and change the setting to compare:
+A queue follows a model in which one consumer processes each message. MFTECH has other needs too: one event must notify several components, events come from external software, jobs run on a schedule, workflows have several steps, or a legacy application uses its own protocol. Choose a scenario and change the setting to compare:
 
 <EventRouterSim client:visible />
 
-Some problems MFTech ran into in real operation:
+Some problems MFTECH ran into in real operation:
 
 - **SNS invokes Lambda** to send notifications: during the sales season, when sending volume grew 50-fold, some notifications were not delivered. The cause was not SNS but Lambda reaching the account's **concurrency quota** in the Region. The solution is to request a quota increase (see the Lambda lesson).
 - Detecting mass unauthorized API calls: send CloudTrail logs to CloudWatch Logs, create a **metric filter** that counts the error codes, set an **alarm** on that metric, and configure the alarm to notify the security team's **SNS topic**.
@@ -185,7 +185,7 @@ Some problems MFTech ran into in real operation:
 
 <p class="scene-intro">Messaging services differ in delivery guarantees (at-least-once, exactly-once) and configuration settings; a wrong choice easily leads to lost data or unnecessary cost.</p>
 
-Three MFTech situations: seller registration forms must be processed **exactly once, with no data loss** by the back-end processing tier; SQS costs are high because workers receive too many empty responses; a real-time data stream from the warehouse barcode scanners needs a scalable ingestion channel that allows reprocessing when the analytics tier fails. Choose each item to see what it is for and what fits instead.
+Three MFTECH situations: seller registration forms must be processed **exactly once, with no data loss** by the back-end processing tier; SQS costs are high because workers receive too many empty responses; a real-time data stream from the warehouse barcode scanners needs a scalable ingestion channel that allows reprocessing when the analytics tier fails. Choose each item to see what it is for and what fits instead.
 
 <QuickCompare client:visible items={[
   { name: "Amazon EventBridge (classic event bus)",
@@ -233,7 +233,7 @@ Sort each feature into the service that provides it. On mobile devices: choose a
   ]}
 />
 
-Check your understanding: as the designer of the MFTech system, which option fits?
+Check your understanding: as the designer of the MFTECH system, which option fits?
 
 <Quiz client:visible items={[
   { q: "Some orders contain bad data; the worker fails on every attempt and the message keeps returning to the queue. Requirement: set these messages aside for later analysis. Which configuration meets the requirement?",
@@ -248,11 +248,11 @@ Check your understanding: as the designer of the MFTech system, which option fit
     opts: ["An EventBridge event bus (classic) with a rule to the processing tier", "An SQS standard queue", "An SQS FIFO queue"],
     a: 2,
     why: "A FIFO queue drops duplicate messages within the 5-minute deduplication interval and keeps messages until a worker deletes them. EventBridge (classic event bus) and standard queues both deliver at least once, so one form could be processed more than once." },
-  { q: "MFTech e-wallet: commands from the same user must be processed in order, while commands from different users should be processed in parallel. Which option fits?",
+  { q: "MFTECH e-wallet: commands from the same user must be processed in order, while commands from different users should be processed in parallel. Which option fits?",
     opts: ["Standard queue, multiple consumers", "FIFO queue, Message Group ID = user ID", "FIFO queue, one consumer"],
     a: 1,
     why: "Within one message group, a FIFO queue guarantees ordering; different groups are delivered in parallel." },
-  { q: "MFTech's CRM software (SaaS) must notify several internal services whenever a new customer signs up, with minimal code. Which service fits?",
+  { q: "MFTECH's CRM software (SaaS) must notify several internal services whenever a new customer signs up, with minimal code. Which service fits?",
     opts: ["Amazon EventBridge", "One SQS queue", "Elastic Load Balancing"],
     a: 0,
     why: "EventBridge receives events directly from SaaS partners and uses rules to route them to multiple targets." },

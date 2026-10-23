@@ -1,6 +1,6 @@
 ---
 title: "Cognito, IAM Identity Center và Directory Service"
-lede: "Khách hàng, nhân viên và đối tác của MFTech có yêu cầu xác thực khác nhau. Bài học trình bày xác thực cho ứng dụng web và mobile bằng Amazon Cognito (phân biệt user pool và identity pool), single sign-on cho nhân viên vào nhiều AWS account, tái sử dụng Active Directory on-premises, và tiếp nhận tệp của đối tác qua SFTP."
+lede: "Khách hàng, nhân viên và đối tác của MFTECH có yêu cầu xác thực khác nhau. Bài học trình bày xác thực cho ứng dụng web và mobile bằng Amazon Cognito (phân biệt user pool và identity pool), single sign-on cho nhân viên vào nhiều AWS account, tái sử dụng Active Directory on-premises, và tiếp nhận tệp của đối tác qua SFTP."
 minutes: 18
 scenes: 3
 prerequisites: ["iam"]
@@ -41,17 +41,17 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s3", label: "3 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-Hệ thống MFTech có hai nhóm danh tính cần xác thực: **khách hàng** sử dụng ứng dụng web và mobile, và **nhân viên** cần truy cập các AWS account cùng các hệ thống nội bộ đang sử dụng Active Directory. Mỗi nhóm sử dụng một bộ dịch vụ riêng.
+Hệ thống MFTECH có hai nhóm danh tính cần xác thực: **khách hàng** sử dụng ứng dụng web và mobile, và **nhân viên** cần truy cập các AWS account cùng các hệ thống nội bộ đang sử dụng Active Directory. Mỗi nhóm sử dụng một bộ dịch vụ riêng.
 </Story>
 
 <Scene id="s1" label="Phần 1/3" title="Xác thực khách hàng: Cognito user pool và identity pool" questions={["exam2_q17", "exam6_q50"]}>
 
 <p class="scene-intro">Ứng dụng cần biết khách hàng là ai trước khi cho họ xem đơn hàng hay tải ảnh lên; việc đăng ký, đăng nhập và cấp quyền tạm thời có thể giao cho một dịch vụ managed thay vì tự xây dựng.</p>
 
-**User pool** là thư mục người dùng: cung cấp chức năng đăng ký, đăng nhập và trả về token (JWT). **Identity pool** đổi danh tính đã xác thực thành **temporary AWS credentials** để gọi trực tiếp các dịch vụ AWS như S3. MFTech có cả hai yêu cầu này. Chọn tình huống và so sánh hai phương án:
+**User pool** là thư mục người dùng: cung cấp chức năng đăng ký, đăng nhập và trả về token (JWT). **Identity pool** đổi danh tính đã xác thực thành **temporary AWS credentials** để gọi trực tiếp các dịch vụ AWS như S3. MFTECH có cả hai yêu cầu này. Chọn tình huống và so sánh hai phương án:
 
 <ScenarioFlow client:visible height={230} scenarios={[
-  { name: "Người dùng đăng nhập web MFTech",
+  { name: "Người dùng đăng nhập web MFTECH",
     nodes: [
       { id: "user", x: 30, y: 90, label: "Người dùng", kind: "user" },
       { id: "alb", x: 230, y: 90, label: "ALB", sub: "listener HTTPS", kind: "net" },
@@ -65,7 +65,7 @@ Hệ thống MFTech có hai nhóm danh tính cần xác thực: **khách hàng**
         text: "Mỗi EC2 instance phải tự xử lý đăng nhập, quản lý session và mật khẩu, làm tăng chi phí phát triển và nguy cơ sai sót." },
       { name: "ALB + Cognito user pool", verdict: "good", hide: ["code"],
         flows: [{ path: ["user", "alb"], tone: "good" }, { path: ["alb", "pool"], tone: "good", label: "authenticate" }, { path: ["alb", "app"], tone: "good", label: "đã xác thực" }],
-        text: "Cấu hình action **authenticate-cognito** trong listener rule của listener HTTPS trên ALB. ALB đảm nhận việc xác thực; ứng dụng chỉ tiếp nhận request đã được xác thực. Đội phát triển của MFTech **không cần viết mã xác thực**." },
+        text: "Cấu hình action **authenticate-cognito** trong listener rule của listener HTTPS trên ALB. ALB đảm nhận việc xác thực; ứng dụng chỉ tiếp nhận request đã được xác thực. Đội phát triển của MFTECH **không cần viết mã xác thực**." },
     ] },
   { name: "Ứng dụng mobile tải ảnh đánh giá lên S3",
     nodes: [
@@ -104,7 +104,7 @@ Cognito phục vụ khách hàng của ứng dụng. Nhân viên và đối tác
 
 <p class="scene-intro">Nhiều dịch vụ thư mục người dùng có tên gần giống nhau; mỗi dịch vụ phục vụ một nhóm người dùng và một kiểu tích hợp khác nhau.</p>
 
-Ứng dụng kế toán MFTech chạy SQL Server trên AWS, cần một domain Active Directory trên AWS và **trust** với AD on-premises để nhân viên single sign-on vào tài nguyên ở cả hai domain. Phương án phù hợp là AWS Managed Microsoft AD (Phần 2). Các lựa chọn dưới đây cũng có chữ "directory" hoặc "AD" nhưng không đáp ứng yêu cầu này. Chọn từng mục để xem phạm vi sử dụng.
+Ứng dụng kế toán MFTECH chạy SQL Server trên AWS, cần một domain Active Directory trên AWS và **trust** với AD on-premises để nhân viên single sign-on vào tài nguyên ở cả hai domain. Phương án phù hợp là AWS Managed Microsoft AD (Phần 2). Các lựa chọn dưới đây cũng có chữ "directory" hoặc "AD" nhưng không đáp ứng yêu cầu này. Chọn từng mục để xem phạm vi sử dụng.
 
 <QuickCompare client:visible items={[
   { name: "AD Connector",
@@ -146,22 +146,22 @@ Phân loại từng yêu cầu vào dịch vụ tương ứng. Trên thiết b�
   ]}
 />
 
-Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTech, phương án nào phù hợp?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTECH, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "Đội phát triển MFTech muốn ALB đảm nhận xác thực để EC2 instance chỉ xử lý nghiệp vụ, với lượng mã cần viết ít nhất. Phương án nào phù hợp?",
+  { q: "Đội phát triển MFTECH muốn ALB đảm nhận xác thực để EC2 instance chỉ xử lý nghiệp vụ, với lượng mã cần viết ít nhất. Phương án nào phù hợp?",
     opts: ["Cognito user pool tích hợp với ALB", "Viết module đăng nhập trên từng EC2 instance", "IAM user cho từng khách hàng"],
     a: 0,
     why: "Listener rule của ALB (listener HTTPS) hỗ trợ action authenticate-cognito để xác thực bằng Cognito user pool." },
-  { q: "Ứng dụng kế toán của MFTech cần join domain trên AWS, và domain đó phải thiết lập trust với AD on-premises. Dịch vụ nào đáp ứng yêu cầu?",
+  { q: "Ứng dụng kế toán của MFTECH cần join domain trên AWS, và domain đó phải thiết lập trust với AD on-premises. Dịch vụ nào đáp ứng yêu cầu?",
     opts: ["AD Connector", "AWS Managed Microsoft AD", "Simple AD"],
     a: 1,
     why: "AWS Managed Microsoft AD là Active Directory do AWS vận hành, hỗ trợ thiết lập trust với AD on-premises. AD Connector chỉ là directory gateway chuyển tiếp yêu cầu tới AD on-premises, không tạo domain trên AWS và không hỗ trợ transitive trust. Simple AD không hỗ trợ trust relationship với domain khác." },
-  { q: "40 nhân viên MFTech cần single sign-on vào nhiều AWS account, mỗi nhóm chỉ được cấp các quyền cần thiết. Phương án nào có chi phí quản trị thấp nhất?",
+  { q: "40 nhân viên MFTECH cần single sign-on vào nhiều AWS account, mỗi nhóm chỉ được cấp các quyền cần thiết. Phương án nào có chi phí quản trị thấp nhất?",
     opts: ["IAM user riêng ở từng account", "IAM Identity Center với permission sets", "Cognito identity pool"],
     a: 1,
     why: "IAM Identity Center quản lý xác thực tập trung; permission set gán quyền theo nhóm và theo account." },
-  { q: "Ứng dụng mobile của MFTech cần cho phép người dùng đã đăng nhập tải ảnh đánh giá trực tiếp lên S3, không được nhúng access key trong ứng dụng. Giải pháp nào phù hợp?",
+  { q: "Ứng dụng mobile của MFTECH cần cho phép người dùng đã đăng nhập tải ảnh đánh giá trực tiếp lên S3, không được nhúng access key trong ứng dụng. Giải pháp nào phù hợp?",
     opts: ["Cognito identity pool cấp credentials tạm thời", "IAM user dùng chung cho mọi người dùng", "Cognito user pool trả JWT rồi gọi S3 bằng JWT"],
     a: 0,
     why: "Identity pool đổi danh tính đã xác thực thành temporary AWS credentials để gọi S3. Token (JWT) của user pool dùng để chứng minh đăng nhập; muốn truy cập dịch vụ AWS, ứng dụng đổi token đó lấy credentials qua identity pool." },

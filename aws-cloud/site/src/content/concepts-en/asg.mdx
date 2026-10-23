@@ -1,6 +1,6 @@
 ---
 title: "Amazon EC2 Auto Scaling: scaling, AZ fault tolerance and scale in"
-lede: "MFTech's traffic varies by the hour, by sale event and by the length of the order queue. This lesson covers how the number of instances is adjusted automatically: configuring the group (launch template, subnets, min/desired/max, On-Demand combined with Spot), choosing a scaling policy that fits each load pattern, keeping enough capacity when an AZ is lost, the order in which instances are terminated on scale in, maintaining instances without Auto Scaling replacing them, and the conditions under which the ASG replaces a failed instance."
+lede: "MFTECH's traffic varies by the hour, by sale event and by the length of the order queue. This lesson covers how the number of instances is adjusted automatically: configuring the group (launch template, subnets, min/desired/max, On-Demand combined with Spot), choosing a scaling policy that fits each load pattern, keeping enough capacity when an AZ is lost, the order in which instances are terminated on scale in, maintaining instances without Auto Scaling replacing them, and the conditions under which the ASG replaces a failed instance."
 minutes: 40
 scenes: 7
 prerequisites: ["ec2", "elb"]
@@ -86,20 +86,20 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-health", label: "7 · Health checks and instance replacement" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-At night MFTech needs only 2 instances; on Friday evening, during a sale, it needs 12. Running 12 instances all day wastes money, while running only 2 increases latency for users. An **Auto Scaling group** (ASG) automatically adjusts the number of EC2 instances to the load. The designer needs to configure when to scale out, the minimum capacity, and which instance is removed on scale in.
+At night MFTECH needs only 2 instances; on Friday evening, during a sale, it needs 12. Running 12 instances all day wastes money, while running only 2 increases latency for users. An **Auto Scaling group** (ASG) automatically adjusts the number of EC2 instances to the load. The designer needs to configure when to scale out, the minimum capacity, and which instance is removed on scale in.
 </Story>
 
 <Scene id="en-setup" label="Part 1/7" title="Auto Scaling group configuration: launch template, subnets and capacity" questions={["exam5_q36", "exam2_q33", "exam5_q61", "exam1_q45", "exam3_q45"]}>
 
 <p class="scene-intro">Instead of running a fixed number of EC2 instances, an Auto Scaling group launches instances as load rises and terminates them as it falls; to do that, the group needs a launch template that describes how to launch a new instance.</p>
 
-MFTech's reporting application used to run on a single On-Demand EC2 instance, and every load spike caused 5xx errors. To move it to an Auto Scaling group, the operations team creates an AMI from the current instance, declares that AMI in a **launch template**, then chooses the subnets and purchase options for the group. Try each choice below:
+MFTECH's reporting application used to run on a single On-Demand EC2 instance, and every load spike caused 5xx errors. To move it to an Auto Scaling group, the operations team creates an AMI from the current instance, declares that AMI in a **launch template**, then chooses the subnets and purchase options for the group. Try each choice below:
 
 <GroupSetupSim client:visible />
 
 Three points matter. First, a **launch template** describes how to launch an instance (AMI, instance type, key pair, security groups…) and has multiple versions; a launch configuration is the legacy mechanism, cannot be modified after creation and does not support combining On-Demand and Spot or multiple instance types. Second, an ASG is a regional construct: it can span Availability Zones but **cannot span AWS Regions**; a multi-Region architecture needs one ASG in each Region. Third, a **mixed instances policy** lets one ASG run both On-Demand and Spot: an On-Demand base for the steady load, and capacity above the base split by percentage. When the steady load stays at a known level all year, buy Reserved Instances (or a Savings Plan) for it; do not use Spot for the baseline, because EC2 can reclaim a Spot Instance when capacity is no longer available.
 
-A payment partner asks MFTech for fixed IP addresses to add to its firewall. **An Elastic IP address cannot be assigned to an Auto Scaling group**: an Elastic IP address is associated with an instance or a network interface, while an ASG is only a group that manages instances that are constantly launched and replaced. If each instance really must have an Elastic IP address, you associate it yourself at launch (for example a user data script or a launch lifecycle hook that calls the AssociateAddress API). The more common approach is a static IP in front: an internet-facing **NLB** lets you select one Elastic IP address per AZ, or **AWS Global Accelerator** provides static IP addresses across Regions ([ELB lesson, part 1](/concepts/elb/alb-or-nlb/)).
+A payment partner asks MFTECH for fixed IP addresses to add to its firewall. **An Elastic IP address cannot be assigned to an Auto Scaling group**: an Elastic IP address is associated with an instance or a network interface, while an ASG is only a group that manages instances that are constantly launched and replaced. If each instance really must have an Elastic IP address, you associate it yourself at launch (for example a user data script or a launch lifecycle hook that calls the AssociateAddress API). The more common approach is a static IP in front: an internet-facing **NLB** lets you select one Elastic IP address per AZ, or **AWS Global Accelerator** provides static IP addresses across Regions ([ELB lesson, part 1](/concepts/elb/alb-or-nlb/)).
 
 Three values decide the group's size. **Desired capacity** is the number of instances the ASG tries to maintain; **minimum** and **maximum** are limits that scaling policies and scheduled actions cannot cross. The accounting team needs exactly 10 instances during the month-end payroll hour:
 
@@ -113,7 +113,7 @@ Three values decide the group's size. **Desired capacity** is the number of inst
 
 <p class="scene-intro">Website load changes by hour, by day and with events; the scaling policy must match that load pattern so capacity is neither too low nor too high.</p>
 
-The MFTech website has dynamic content that changes constantly and a cache cannot absorb all the load, so instances must be added when traffic rises. However, when to scale out depends on the load pattern. Pick a day of MFTech operations, choose a scaling policy, then run the simulation for the whole day to find the hours when users have to wait:
+The MFTECH website has dynamic content that changes constantly and a cache cannot absorb all the load, so instances must be added when traffic rises. However, when to scale out depends on the load pattern. Pick a day of MFTECH operations, choose a scaling policy, then run the simulation for the whole day to find the hours when users have to wait:
 
 <ScalingPolicySim client:visible />
 
@@ -141,7 +141,7 @@ Two time settings are easy to confuse. The **cooldown** (300 seconds by default)
 
 <p class="scene-intro">To keep enough capacity when an AZ fails, the instance count must be planned so the remaining AZs can carry the whole load on their own.</p>
 
-MFTech must keep at least N instances running, even when one AZ fails. Adjust N, choose the number of AZs, then press "Simulate AZ 1 failure" to check.
+MFTECH must keep at least N instances running, even when one AZ fails. Adjust N, choose the number of AZs, then press "Simulate AZ 1 failure" to check.
 
 <AzCapacityCalc client:visible />
 
@@ -175,7 +175,7 @@ The ASG replaces every instance it determines to be unhealthy. That works when a
 
 <MaintenanceSim client:visible />
 
-On cost: MFTech always needs at least 2 instances, more at peak hours. Set minimum = 2 and buy **Reserved Instances** for the 2 instances that run continuously; the extra capacity is paid On-Demand.
+On cost: MFTECH always needs at least 2 instances, more at peak hours. Set minimum = 2 and buy **Reserved Instances** for the 2 instances that run continuously; the extra capacity is paid On-Demand.
 
 <Takeaway>Patching an instance: move it to Standby, or suspend ReplaceUnhealthy and then resume it. A new instance needs time to install the application: configure a health check grace period. The ASG replaces instances the load balancer marks as unhealthy: ELB health checks.</Takeaway>
 
@@ -185,7 +185,7 @@ On cost: MFTech always needs at least 2 instances, more at peak hours. Set minim
 
 <p class="scene-intro">Whether a failing instance is replaced, and when, depends on which health check detects the failure and which scaling activity the Auto Scaling group is performing.</p>
 
-A MFTech instance shows signs of failure but the ASG has not replaced it, or replaces it in a different order than expected. The outcome depends on which health check detects the failure and which kind of activity the ASG performs. Run each situation, then switch the option to compare:
+A MFTECH instance shows signs of failure but the ASG has not replaced it, or replaces it in a different order than expected. The outcome depends on which health check detects the failure and which kind of activity the ASG performs. Run each situation, then switch the option to compare:
 
 <HealthReplaceSim client:visible />
 
@@ -214,14 +214,14 @@ Sort each scenario into the scaling policy that fits it best. On a mobile device
   ]}
 />
 
-Check your understanding: as the designer of the MFTech system, which option fits?
+Check your understanding: as the designer of the MFTECH system, which option fits?
 
 <Quiz client:visible items={[
-  { q: "MFTech must keep at least 4 instances running even when one AZ fails, at the lowest cost. Which placement fits?",
+  { q: "MFTECH must keep at least 4 instances running even when one AZ fails, at the lowest cost. Which placement fits?",
     opts: ["2 AZs, 2 instances in each", "3 AZs, 2 instances in each", "2 AZs, 4 instances in each"],
     a: 1,
     why: "After losing one AZ, 4 instances remain. The 2×2 option leaves only 2; the 2×4 option meets the requirement but needs 8 instances." },
-  { q: "After a sale, MFTech's ASG has 3 instances in AZ-A and 4 instances in AZ-B and uses the default termination policy. Which instance is terminated first?",
+  { q: "After a sale, MFTECH's ASG has 3 instances in AZ-A and 4 instances in AZ-B and uses the default termination policy. Which instance is terminated first?",
     opts: ["A random instance in AZ-A", "The instance with the oldest launch template/configuration in AZ-B", "The newest instance in AZ-B"],
     a: 1,
     why: "The ASG picks the AZ with the most instances (AZ-B), then prefers instances with an outdated configuration: a launch configuration, a launch template other than the current one, or the oldest version of the current template." },
@@ -241,7 +241,7 @@ Check your understanding: as the designer of the MFTech system, which option fit
     opts: ["Ignores it, because the ASG relies only on EC2 status checks", "Terminates and replaces the instance (respecting the health check grace period by default)", "Moves the instance to Standby"],
     a: 1,
     why: "Custom health checks complement the built-in health checks. The ASG replaces an instance marked Unhealthy; by default set-instance-health respects the grace period." },
-  { q: "MFTech opens us-east-1 and wants instances in Singapore and Virginia in one Auto Scaling group with a minimum of 4. Which assessment is correct?",
+  { q: "MFTECH opens us-east-1 and wants instances in Singapore and Virginia in one Auto Scaling group with a minimum of 4. Which assessment is correct?",
     opts: ["Yes, the ASG balances across the two Regions", "No: an ASG spans only the AZs of one Region; create one ASG in each Region", "Yes, if it uses a launch template"],
     a: 1,
     why: "An Auto Scaling group is a regional construct: it can span Availability Zones, but not AWS Regions." },

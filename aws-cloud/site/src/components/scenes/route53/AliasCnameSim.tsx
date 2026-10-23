@@ -3,7 +3,7 @@ import CaseSim, { type CaseLink, type CaseNode, type CaseScenario } from "../glo
 
 type Lang = ReturnType<typeof useLang>;
 
-// MFTech creates the records for its domain. Pick Alias or CNAME for each one,
+// MFTECH creates the records for its domain. Pick Alias or CNAME for each one,
 // create it and send a DNS query: the zone apex refuses a CNAME, an Alias only
 // points to AWS resources or records in the same hosted zone.
 

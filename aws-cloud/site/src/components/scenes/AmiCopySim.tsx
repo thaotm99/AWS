@@ -17,8 +17,8 @@ function Res({ x, y, label, sub, kind }: { x: number; y: number; label: string; 
 }
 
 const NOTES: Record<Step, Bi<ReactNode>> = {
-  0: { vi: <>EC2 instance <code>web-1</code> của MFTech đang chạy tại Region Singapore. Yêu cầu: chuẩn bị sẵn phương án khôi phục tại Region Tokyo khi Singapore gặp sự cố. Thực hiện lần lượt các bước phía trên.</>,
-    en: <>MFTech's EC2 instance <code>web-1</code> is running in the Singapore Region. Requirement: have a recovery plan ready in the Tokyo Region in case Singapore fails. Perform the steps above in order.</> },
+  0: { vi: <>EC2 instance <code>web-1</code> của MFTECH đang chạy tại Region Singapore. Yêu cầu: chuẩn bị sẵn phương án khôi phục tại Region Tokyo khi Singapore gặp sự cố. Thực hiện lần lượt các bước phía trên.</>,
+    en: <>MFTECH's EC2 instance <code>web-1</code> is running in the Singapore Region. Requirement: have a recovery plan ready in the Tokyo Region in case Singapore fails. Perform the steps above in order.</> },
   1: { vi: <>Snapshot lưu lại trạng thái EBS volume của <code>web-1</code>. Snapshot là tài nguyên cấp Region: snapshot chỉ tồn tại tại Singapore.</>,
     en: <>The snapshot saves the state of <code>web-1</code>'s EBS volume. A snapshot is a Regional resource: the snapshot exists only in Singapore.</> },
   2: { vi: <>AMI là template dùng để launch EC2 instance; AMI tham chiếu tới snapshot bên dưới. AMI cũng là tài nguyên cấp Region.</>,

@@ -1,6 +1,6 @@
 ---
 title: "Elastic Load Balancing: ALB, NLB and how load is distributed"
-lede: "The MFTech system already runs many EC2 instances and needs a load balancer in front of them. This lesson covers: choosing an ALB or an NLB for each requirement, the share of traffic each target receives, routing requests with listener rules, health checks and why targets are marked unhealthy, HTTPS listeners for multiple domain names with SNI, and sending traffic through firewalls with a Gateway Load Balancer."
+lede: "The MFTECH system already runs many EC2 instances and needs a load balancer in front of them. This lesson covers: choosing an ALB or an NLB for each requirement, the share of traffic each target receives, routing requests with listener rules, health checks and why targets are marked unhealthy, HTTPS listeners for multiple domain names with SNI, and sending traffic through firewalls with a Gateway Load Balancer."
 minutes: 35
 scenes: 7
 prerequisites: ["vpc", "ec2"]
@@ -91,18 +91,18 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s7", label: "7 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-MFTech already runs many EC2 instances across two AZs. Users do not need to know which instance is serving them, so a **load balancer** is needed in front. The next design questions are: which type of load balancer to use, how much load each instance takes, how one load balancer serves many services and many domain names, why an instance that works normally is removed from the target group, and how to send all traffic entering the system through a third-party firewall.
+MFTECH already runs many EC2 instances across two AZs. Users do not need to know which instance is serving them, so a **load balancer** is needed in front. The next design questions are: which type of load balancer to use, how much load each instance takes, how one load balancer serves many services and many domain names, why an instance that works normally is removed from the target group, and how to send all traffic entering the system through a third-party firewall.
 </Story>
 
 <Scene id="en-s1" label="Part 1/7" title="Load balancer types: ALB and NLB" questions={["exam1_q2", "exam1_q48", "exam4_q9", "exam6_q43", "exam1_q39", "exam6_q56", "exam6_q7", "exam5_q4"]}>
 
 <p class="scene-intro">A load balancer is the shared entry point: it receives requests from clients and distributes them across multiple targets, such as EC2 instances. The two main types differ in whether they inspect the request content or only forward connections.</p>
 
-An **Application Load Balancer** (ALB) inspects the content of HTTP requests: path, domain name, headers. A **Network Load Balancer** (NLB) works at layer 4 (TCP, UDP, TLS and QUIC listeners) and does not inspect HTTP content; an NLB has one IP per AZ (which can be an Elastic IP) and can handle millions of requests per second. Besides EC2, a target group with the **ip** target type also accepts on-premises resources connected through Direct Connect or Site-to-Site VPN (private IPs only). Try each MFTech requirement, first with an ALB and then with an NLB:
+An **Application Load Balancer** (ALB) inspects the content of HTTP requests: path, domain name, headers. A **Network Load Balancer** (NLB) works at layer 4 (TCP, UDP, TLS and QUIC listeners) and does not inspect HTTP content; an NLB has one IP per AZ (which can be an Elastic IP) and can handle millions of requests per second. Besides EC2, a target group with the **ip** target type also accepts on-premises resources connected through Direct Connect or Site-to-Site VPN (private IPs only). Try each MFTECH requirement, first with an ALB and then with an NLB:
 
 <LbTypeSim client:visible />
 
-MFTech plans to expand to a Region in the United States. The question: can one load balancer distribute load across both Regions?
+MFTECH plans to expand to a Region in the United States. The question: can one load balancer distribute load across both Regions?
 
 <ScenarioFlow client:visible height={210} scenarios={[
   { name: "One load balancer for two Regions",
@@ -131,7 +131,7 @@ MFTech plans to expand to a Region in the United States. The question: can one l
 
 <p class="scene-intro">A load balancer has nodes in several AZs; how traffic is distributed between those AZs decides whether each target receives many requests or few.</p>
 
-During a sale, MFTech urgently adds EC2 instances in AZ B, while AZ A still has only 1 instance. The question: is the single target in AZ A overloaded? Adjust the sliders and turn cross-zone load balancing on or off. Try 1 target in AZ A and 4 targets in AZ B; then 4 and 6.
+During a sale, MFTECH urgently adds EC2 instances in AZ B, while AZ A still has only 1 instance. The question: is the single target in AZ A overloaded? Adjust the sliders and turn cross-zone load balancing on or off. Try 1 target in AZ A and 4 targets in AZ B; then 4 and 6.
 
 <CrossZoneCalc client:visible />
 
@@ -143,7 +143,7 @@ During a sale, MFTech urgently adds EC2 instances in AZ B, while AZ A still has 
 
 <p class="scene-intro">When a system splits into several services, one load balancer can still front them all and send each request to the right service by path or domain name.</p>
 
-MFTech splits its system into an orders service, a products service and promotional microsites, each with its own target group. They all still sit behind **one** ALB. Each request goes through the HTTPS listener: certificate selection (SNI), AWS WAF, then the listener rule whose conditions (path, host) match performs the rule's actions: authentication (if there is an authenticate action), then forward to a target group. Pick a scenario and send a request:
+MFTECH splits its system into an orders service, a products service and promotional microsites, each with its own target group. They all still sit behind **one** ALB. Each request goes through the HTTPS listener: certificate selection (SNI), AWS WAF, then the listener rule whose conditions (path, host) match performs the rule's actions: authentication (if there is an authenticate action), then forward to a target group. Pick a scenario and send a request:
 
 <AlbRuleSim client:visible />
 
@@ -171,7 +171,7 @@ The ALB marks i-2 as unhealthy, while an engineer who connects to the instance o
 
 <p class="scene-intro">Every HTTPS domain needs a certificate; when many domains share one load balancer, it needs a way to present the right certificate for each.</p>
 
-MFTech splits its system into microservices behind one ALB: `checkout.mftech.vn`, `www.mftech.vn`, plus `mftech.com.vn/profile` and `mftech.com.vn/search` for its second brand. Every URL must use HTTPS. The operations team considers four settings: one wildcard certificate, a list of certificates chosen by SNI, an HTTP to HTTPS redirect, and a different security policy. Each setting solves a different problem; change them one at a time and watch the result for every client:
+MFTECH splits its system into microservices behind one ALB: `checkout.mftech.vn`, `www.mftech.vn`, plus `mftech.com.vn/profile` and `mftech.com.vn/search` for its second brand. Every URL must use HTTPS. The operations team considers four settings: one wildcard certificate, a list of certificates chosen by SNI, an HTTP to HTTPS redirect, and a different security policy. Each setting solves a different problem; change them one at a time and watch the result for every client:
 
 <HttpsListenerSim client:visible />
 
@@ -185,7 +185,7 @@ An HTTPS listener always has one **default certificate**. When you add a certifi
 
 <p class="scene-intro">Some companies require all traffic to pass through security appliances such as firewalls; those appliances must also scale with load and be fault tolerant, just like the application tier.</p>
 
-MFTech's security team requires all internet traffic to the application to pass the firewall and IPS of a third-party vendor, running on EC2. The number of appliances must grow with the load and survive the failure of one appliance. A **Gateway Load Balancer** (GWLB) meets this requirement: it works at layer 3, accepts every IP packet on every port, exchanges traffic with the appliances using the **GENEVE protocol on port 6081**, keeps every packet of a flow on the same appliance (5-tuple by default), and sends traffic only to healthy appliances. The application in another VPC connects to the GWLB through a **Gateway Load Balancer endpoint** (a VPC endpoint powered by AWS PrivateLink), and route tables decide which traffic goes through that endpoint.
+MFTECH's security team requires all internet traffic to the application to pass the firewall and IPS of a third-party vendor, running on EC2. The number of appliances must grow with the load and survive the failure of one appliance. A **Gateway Load Balancer** (GWLB) meets this requirement: it works at layer 3, accepts every IP packet on every port, exchanges traffic with the appliances using the **GENEVE protocol on port 6081**, keeps every packet of a flow on the same appliance (5-tuple by default), and sends traffic only to healthy appliances. The application in another VPC connects to the GWLB through a **Gateway Load Balancer endpoint** (a VPC endpoint powered by AWS PrivateLink), and route tables decide which traffic goes through that endpoint.
 
 <GwlbSim client:visible />
 
@@ -197,7 +197,7 @@ MFTech's security team requires all internet traffic to the application to pass 
 
 <p class="scene-intro">Several services and features seem to share the job of spreading load; telling them apart helps you choose the right one for each requirement.</p>
 
-Some services and features are often considered together with a load balancer but solve a different problem. Pick each item to see what it is for and what fits MFTech's situation.
+Some services and features are often considered together with a load balancer but solve a different problem. Pick each item to see what it is for and what fits MFTECH's situation.
 
 <QuickCompare client:visible items={[
   { name: "AWS WAF rate-based rule",
@@ -207,7 +207,7 @@ Some services and features are often considered together with a load balancer bu
   { name: "API Gateway usage plan + API key",
     use: "Each client gets an API key; a usage plan sets throttling (requests per second, burst) and a quota (total requests per period, for example per month) for each key. Clients over the limit get 429 Too Many Requests errors. AWS notes that usage plan throttling and quotas are applied on a best-effort basis, not as hard limits.",
     notHere: "It applies only to APIs published through API Gateway; ALB, NLB and GWLB have no API keys, usage plans or per-client quotas.",
-    instead: "Partners' mobile apps call the MFTech API with a different limit for each partner: an API Gateway usage plan." },
+    instead: "Partners' mobile apps call the MFTECH API with a different limit for each partner: an API Gateway usage plan." },
   { name: "AWS Shield Advanced",
     use: "A paid subscription that extends DDoS protection for the resources you choose; it can automatically mitigate application layer attacks by adding a rule group to an AWS WAF web ACL.",
     notHere: "A rate-based rule is an AWS WAF rule; Shield Advanced customers also add their own rate-based rules to the web ACL. Blocking a group of IPs that send too many requests does not require a Shield Advanced subscription.",
@@ -254,14 +254,14 @@ Sort each feature into the matching load balancer type. On a mobile device: tap 
   ]}
 />
 
-Check your understanding: as the designer of the MFTech system, which option fits?
+Check your understanding: as the designer of the MFTECH system, which option fits?
 
 <Quiz client:visible items={[
-  { q: "MFTech has 1 target in AZ A and 4 targets in AZ B, with cross-zone load balancing turned off. What percentage of traffic does the target in AZ A receive?",
+  { q: "MFTECH has 1 target in AZ A and 4 targets in AZ B, with cross-zone load balancing turned off. What percentage of traffic does the target in AZ A receive?",
     opts: ["20%", "50%", "12.5%"],
     a: 1,
     why: "Each AZ gets 50%; AZ A has only 1 target, so that target receives the whole 50%. With cross-zone load balancing on, each target gets 20%." },
-  { q: "A partner bank opens its firewall only to one fixed MFTech IP. The service must still be fault tolerant and scale to 10 instances. Which architecture fits?",
+  { q: "A partner bank opens its firewall only to one fixed MFTECH IP. The service must still be fault tolerant and scale to 10 instances. Which architecture fits?",
     opts: ["ALB + Auto Scaling group", "NLB + Auto Scaling group", "Auto Scaling group with dynamically attached Elastic IPs"],
     a: 1,
     why: "An internet-facing NLB lets you choose one Elastic IP per AZ, giving static IPs. ALB IPs are managed by the ALB service; you cannot assign Elastic IPs of your choice." },
@@ -269,7 +269,7 @@ Check your understanding: as the designer of the MFTech system, which option fit
     opts: ["The ASG is using EC2 health checks", "The ALB does not have cross-zone on", "The instance has no IAM role"],
     a: 0,
     why: "EC2 health checks (the default) check that the instance is running and for underlying hardware and software problems; they do not use the load balancer's results. Turn on ELB health checks so the ASG uses the ALB's health check results." },
-  { q: "MFTech has mftech.vn, blog.mftech.vn and mftech.com.vn, all using HTTPS. Minimal configuration is required. Which option fits?",
+  { q: "MFTECH has mftech.vn, blog.mftech.vn and mftech.com.vn, all using HTTPS. Minimal configuration is required. Which option fits?",
     opts: ["One ALB per domain name", "Multiple certificates on one HTTPS listener, with the ALB choosing by SNI", "Switch to an NLB"],
     a: 1,
     why: "SNI lets one HTTPS listener select the certificate that matches the domain name the client requests." },
@@ -277,7 +277,7 @@ Check your understanding: as the designer of the MFTech system, which option fit
     opts: ["Turn on sticky sessions on the target group", "Associate AWS WAF with the ALB and add a rate-based rule", "Add a listener rule that limits requests"],
     a: 1,
     why: "The ALB has no built-in rate limiting; listener rules have only conditions and the forward, redirect, fixed-response and authenticate actions. An AWS WAF rate-based rule counts requests per IP and blocks IPs over the limit. Sticky sessions only bind a session to one target." },
-  { q: "MFTech uses a wildcard certificate *.mftech.vn on the ALB. Which URL gets a certificate error?",
+  { q: "MFTECH uses a wildcard certificate *.mftech.vn on the ALB. Which URL gets a certificate error?",
     opts: ["https://checkout.mftech.vn", "https://mftech.com.vn/profile", "https://www.mftech.vn"],
     a: 1,
     why: "A wildcard protects only one subdomain level of mftech.vn. mftech.com.vn is a different domain; add its certificate to the certificate list so the ALB can choose it by SNI." },

@@ -1,7 +1,7 @@
 import PacketSim, { type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// Two MFTech stories about logs. First: the Auto Scaling group already terminated
+// Two MFTECH stories about logs. First: the Auto Scaling group already terminated
 // the instance that had the bug, so the log is gone unless the CloudWatch agent sent
 // it out. Second: someone keeps calling AWS APIs they are not allowed to; CloudTrail
 // records it, and a metric filter plus an alarm turns it into a warning within minutes.

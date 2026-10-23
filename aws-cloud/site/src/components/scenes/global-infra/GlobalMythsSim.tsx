@@ -1,7 +1,7 @@
 import { useLang } from "../../../lib/lang";
 import CaseSim, { type CaseScenario } from "./CaseSim";
 
-// Four things that are easy to get wrong when MFTech spreads across Regions and
+// Four things that are easy to get wrong when MFTECH spreads across Regions and
 // AZs: EFS across Regions, where a NAT gateway lives, AZ names vs AZ IDs, and
 // using CloudFront (edge cache for repeated views) together with S3 Transfer Acceleration (transfers to and from the bucket).
 
@@ -45,7 +45,7 @@ function scenarios(L: Lang): CaseScenario[] {
       request: "GET https://updates.example.com (IPv4)",
       from: L({ vi: "từ worker EC2 instance", en: "from the worker EC2 instance" }),
       boxes: [
-        { x: 20, y: 6, w: 560, h: 228, label: "VPC MFTech · AZ a" },
+        { x: 20, y: 6, w: 560, h: 228, label: "VPC MFTECH · AZ a" },
         { x: 40, y: 28, w: 520, h: 84, label: "public subnet · route 0.0.0.0/0 → IGW" },
         { x: 40, y: 126, w: 520, h: 96, label: "private subnet" },
       ],
@@ -89,13 +89,13 @@ function scenarios(L: Lang): CaseScenario[] {
     {
       name: L({ vi: "Đặt EC2 instance cùng AZ với instance của đối tác", en: "Place an EC2 instance in the same AZ as a partner's instance" }),
       request: "ping 10.20.0.15",
-      from: L({ vi: "từ account MFTech tới account đối tác", en: "from the MFTech account to the partner account" }),
+      from: L({ vi: "từ account MFTECH tới account đối tác", en: "from the MFTECH account to the partner account" }),
       boxes: [
         { x: 20, y: 16, w: 370, h: 206, label: L({ vi: "AZ vật lý use1-az2", en: "Physical AZ use1-az2" }) },
         { x: 430, y: 16, w: 370, h: 206, label: L({ vi: "AZ vật lý use1-az4", en: "Physical AZ use1-az4" }) },
       ],
       nodes: [
-        { id: "shop", x: 40, y: 96, w: 160, l1: L({ vi: "Server MFTech", en: "MFTech server" }), l2: "account A: us-east-1a" },
+        { id: "shop", x: 40, y: 96, w: 160, l1: L({ vi: "Server MFTECH", en: "MFTECH server" }), l2: "account A: us-east-1a" },
         { id: "near", x: 215, y: 96, w: 160, l1: L({ vi: "Instance đối tác", en: "Partner instance" }), l2: "account B: use1-az2" },
         { id: "far", x: 560, y: 96, w: 180, l1: L({ vi: "Instance đối tác", en: "Partner instance" }), l2: "account B: us-east-1a" },
       ],
@@ -155,5 +155,5 @@ function scenarios(L: Lang): CaseScenario[] {
 
 export default function GlobalMythsSim() {
   const L = useLang();
-  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Bốn lỗi cấu hình thường gặp khi triển khai MFTech trên nhiều Region", en: "Four common configuration mistakes when deploying MFTech across Regions" })} action={L({ vi: "Chạy mô phỏng", en: "Run simulation" })} />;
+  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Bốn lỗi cấu hình thường gặp khi triển khai MFTECH trên nhiều Region", en: "Four common configuration mistakes when deploying MFTECH across Regions" })} action={L({ vi: "Chạy mô phỏng", en: "Run simulation" })} />;
 }

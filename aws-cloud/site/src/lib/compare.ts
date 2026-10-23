@@ -31,7 +31,7 @@ export const COMPARE: CompareSet[] = [
   {
     id: "messaging",
     title: t("SQS, SNS hay EventBridge?", "SQS, SNS or EventBridge?"),
-    lede: t("Ba dịch vụ cùng chuyển message giữa các thành phần của MFTech nhưng khác cách giao message và cách giữ message.", "All three move messages between MFTech's components, but they deliver and keep messages differently."),
+    lede: t("Ba dịch vụ cùng chuyển message giữa các thành phần của MFTECH nhưng khác cách giao message và cách giữ message.", "All three move messages between MFTECH's components, but they deliver and keep messages differently."),
     services: [
       { id: "sqs", name: "Amazon SQS" },
       { id: "sns", name: "Amazon SNS" },

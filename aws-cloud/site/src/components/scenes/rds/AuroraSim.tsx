@@ -3,7 +3,7 @@ import { flashText, travel, type Pt } from "../../../lib/animate";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./rds-sims.css";
 
-// MFTech's Aurora cluster: one shared cluster volume (6 copies over 3 AZs), a writer and
+// MFTECH's Aurora cluster: one shared cluster volume (6 copies over 3 AZs), a writer and
 // readers behind the cluster and reader endpoints. Try writes, spread reads, Auto Scaling,
 // writer failover, then Aurora Global Database and a Region outage.
 // Cross-Region read replica for Aurora MySQL: AuroraMySQL.Replication.CrossRegion.html (exam2_q6).

@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./s3-sims.css";
 
-// MFTech keeps invoices in S3 for years. Pick how the bucket is protected and who
+// MFTECH keeps invoices in S3 for years. Pick how the bucket is protected and who
 // tries to delete an invoice, then watch which layer stops the request:
 // versioning (delete marker), MFA Delete, Object Lock governance/compliance, legal hold.
 // Source questions: exam1_q20, exam5_q50, exam1_q56, exam4_q64, exam5_q39.

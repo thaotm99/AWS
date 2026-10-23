@@ -1,7 +1,7 @@
 import PacketSim, { type PLayout, type PScenario, type PStep } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// A request to MFTech's public API passes the checks API Gateway runs before any
+// A request to MFTECH's public API passes the checks API Gateway runs before any
 // code on a REST API: resource policy (IP ranges), Cognito user pool authorizer, usage plan + API key, cache. Then
 // it reaches Lambda, or goes straight into SQS for slow work, or into Kinesis Data Streams for
 // courier locations (apigateway/latest/developerguide/integrating-api-with-aws-services-kinesis.html).
@@ -66,7 +66,7 @@ const scenarios = (L: Lang): PScenario[] => {
       ? { steps: [{ at: "ip", state: "pass", msg: L({ vi: "IP thuộc dải được phép trong **resource policy**.", en: "The IP is in a range allowed by the **resource policy**." }) }, NO_JWT, NO_PLAN, NO_CACHE,
             { at: "fn", state: "pass", msg: L({ vi: "Yêu cầu hoàn tiền được xử lý.", en: "The refund request is processed." }) }],
           ok: true, result: L({ vi: "200 OK: chỉ mạng văn phòng gọi được API quản trị.", en: "200 OK: only the office network can call the admin API." }) }
-      : { steps: [{ at: "ip", state: "block", flash: "403", msg: L({ vi: "Resource policy từ chối mọi IP ngoài dải `203.0.113.0/24` (điều kiện `aws:SourceIp`). API Gateway là dịch vụ được quản lý, API không nằm trong subnet nào của MFTech nên không có security group để gắn; giới hạn theo IP thực hiện bằng resource policy.", en: "The resource policy denies every IP outside `203.0.113.0/24` (the `aws:SourceIp` condition). API Gateway is a managed service: the API does not sit in any MFTech subnet, so there is no security group to attach; IP restrictions are done with the resource policy." }) }],
+      : { steps: [{ at: "ip", state: "block", flash: "403", msg: L({ vi: "Resource policy từ chối mọi IP ngoài dải `203.0.113.0/24` (điều kiện `aws:SourceIp`). API Gateway là dịch vụ được quản lý, API không nằm trong subnet nào của MFTECH nên không có security group để gắn; giới hạn theo IP thực hiện bằng resource policy.", en: "The resource policy denies every IP outside `203.0.113.0/24` (the `aws:SourceIp` condition). API Gateway is a managed service: the API does not sit in any MFTECH subnet, so there is no security group to attach; IP restrictions are done with the resource policy." }) }],
           ok: true, result: L({ vi: "403 Forbidden: request bị chặn trước khi bất kỳ dòng mã nào được thực thi.", en: "403 Forbidden: the request is blocked before any code runs." }) },
   },
   {

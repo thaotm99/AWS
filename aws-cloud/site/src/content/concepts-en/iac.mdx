@@ -1,6 +1,6 @@
 ---
 title: "CloudFormation and Elastic Beanstalk: Infrastructure as Code"
-lede: "MFTech's headcount and number of accounts have grown, and manual actions in the console have started to cause incidents. This lesson covers three topics: describing infrastructure with CloudFormation templates and managing creation, updates and rollback through stacks; applying one standard to every account and Region with StackSets; and cutting the startup time of new Elastic Beanstalk instances down to 2 minutes."
+lede: "MFTECH's headcount and number of accounts have grown, and manual actions in the console have started to cause incidents. This lesson covers three topics: describing infrastructure with CloudFormation templates and managing creation, updates and rollback through stacks; applying one standard to every account and Region with StackSets; and cutting the startup time of new Elastic Beanstalk instances down to 2 minutes."
 minutes: 19
 scenes: 4
 prerequisites: ["ec2", "vpc", "rds"]
@@ -66,18 +66,18 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s4", label: "4 · AWS Service Catalog" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-Last week, a new MFTech employee created a database in the console without enabling Multi-AZ or backups. When the database failed, half a day of order data was lost. After this incident, infrastructure needs to be **defined as code**, reviewed like code and reproducible exactly any number of times. **CloudFormation** meets this requirement for every type of resource; **Elastic Beanstalk** handles running web applications for teams that do not want to assemble each infrastructure component themselves.
+Last week, a new MFTECH employee created a database in the console without enabling Multi-AZ or backups. When the database failed, half a day of order data was lost. After this incident, infrastructure needs to be **defined as code**, reviewed like code and reproducible exactly any number of times. **CloudFormation** meets this requirement for every type of resource; **Elastic Beanstalk** handles running web applications for teams that do not want to assemble each infrastructure component themselves.
 </Story>
 
 <Scene id="en-s1" label="Part 1/4" title="CloudFormation templates, stacks and change sets" questions={["exam4_q47", "exam4_q15", "exam4_q17"]}>
 
 <p class="scene-intro">Building infrastructure manually in the AWS Management Console is hard to repeat exactly; describing it in a template lets environments be created, updated and rebuilt automatically.</p>
 
-A **template** is a YAML or JSON file that describes the resources to create. CloudFormation reads the template and creates a **stack**: a group of resources that are created, updated and deleted together. To change the infrastructure, update the template and perform an **update stack**; a **change set** lets you preview the changes CloudFormation will apply. Run three MFTech scenarios:
+A **template** is a YAML or JSON file that describes the resources to create. CloudFormation reads the template and creates a **stack**: a group of resources that are created, updated and deleted together. To change the infrastructure, update the template and perform an **update stack**; a **change set** lets you preview the changes CloudFormation will apply. Run three MFTECH scenarios:
 
 <StackSim client:visible />
 
-Being able to read a template matters as much as being able to write one. Below is the web tier's security group in MFTech's template. Send each test connection to see the effect of each rule:
+Being able to read a template matters as much as being able to write one. Below is the web tier's security group in MFTECH's template. Send each test connection to see the effect of each rule:
 
 <SgRuleSim client:visible />
 
@@ -89,7 +89,7 @@ Being able to read a template matters as much as being able to write one. Below 
 
 <p class="scene-intro">When a company has many AWS accounts across many Regions, the same standard must apply to every account and Region without deploying it manually in each one.</p>
 
-MFTech now has several accounts in **AWS Organizations**: production, dev, data, and soon a branch in Japan. Each account operates in several Regions. Every environment must use the approved EC2 instance types and the standard IAM role for Lambda. Deploy the baseline template with three approaches, then add a new account:
+MFTECH now has several accounts in **AWS Organizations**: production, dev, data, and soon a branch in Japan. Each account operates in several Regions. Every environment must use the approved EC2 instance types and the standard IAM role for Lambda. Deploy the baseline template with three approaches, then add a new account:
 
 <StackSetSim client:visible />
 
@@ -101,7 +101,7 @@ MFTech now has several accounts in **AWS Organizations**: production, dev, data,
 
 <p class="scene-intro">Developers want to deploy applications quickly without provisioning EC2 instances, load balancers and Auto Scaling groups themselves; Elastic Beanstalk takes over that infrastructure.</p>
 
-MFTech's main website runs on **Elastic Beanstalk**: the development team only uploads the code, and Beanstalk automatically creates the EC2 instances, load balancer and Auto Scaling group and monitors health. The team can still view and adjust the underlying resources. The problem is that installing the application takes 45 minutes: when traffic grows, Beanstalk adds instances, but new instances can only serve requests almost an hour later. Compare the timing of four startup approaches:
+MFTECH's main website runs on **Elastic Beanstalk**: the development team only uploads the code, and Beanstalk automatically creates the EC2 instances, load balancer and Auto Scaling group and monitors health. The team can still view and adjust the underlying resources. The problem is that installing the application takes 45 minutes: when traffic grows, Beanstalk adds instances, but new instances can only serve requests almost an hour later. Compare the timing of four startup approaches:
 
 <BootTimeSim client:visible />
 
@@ -115,20 +115,20 @@ MFTech's main website runs on **Elastic Beanstalk**: the development team only u
 
 Part 1 puts the standards into a template, but people who use the template still need CloudFormation permissions and permissions on every service the template creates. **AWS Service Catalog** solves self-service: administrators import a CloudFormation template as a **product**, group products into a **portfolio**, and grant access to IAM users, groups or roles. A **template constraint** narrows the allowed values of the template's parameters (for example, only some EC2 instance types); a **launch constraint** specifies the IAM role Service Catalog assumes when it launches the product, so end users need no direct permissions on CloudFormation or the underlying services. Each launch produces a **provisioned product**, which is a CloudFormation stack.
 
-Service Catalog, CodeDeploy and Control Tower often appear next to CloudFormation but solve different problems. Select each item to see what it is for and what fits the MFTech situation.
+Service Catalog, CodeDeploy and Control Tower often appear next to CloudFormation but solve different problems. Select each item to see what it is for and what fits the MFTECH situation.
 
 <QuickCompare client:visible items={[
   { name: "Service Catalog: cost control",
     use: "Lets staff launch approved resources on their own (products built from CloudFormation templates), with parameters narrowed by template constraints and launch permissions provided by a launch constraint.",
-    notHere: "Each MFTech developer has a dedicated dev account and spending can spike. Service Catalog only governs what is launched through the catalog; it does not track spending, alert or respond automatically when a budget is exceeded. A scheduled Lambda function in every account that stops resources adds more operational work.",
+    notHere: "Each MFTECH developer has a dedicated dev account and spending can spike. Service Catalog only governs what is launched through the catalog; it does not track spending, alert or respond automatically when a budget is exceeded. A scheduled Lambda function in every account that stops resources adds more operational work.",
     instead: "**AWS Budgets** with a threshold per account and a **budget action** that automatically applies an IAM policy or SCP blocking new resources when the threshold is crossed (see the IAM lesson, part 4)." },
   { name: "Service Catalog: a VPC per account",
     use: "Publishes an approved VPC template so each account creates its own VPC to the same standard.",
-    notHere: "MFTech wants centrally managed networking without repeating configuration in every account. Each account would still own its VPC, NAT gateways and internet gateway; Service Catalog also does not create new accounts or enforce mandatory logging for them.",
+    notHere: "MFTECH wants centrally managed networking without repeating configuration in every account. Each account would still own its VPC, NAT gateways and internet gateway; Service Catalog also does not create new accounts or enforce mandatory logging for them.",
     instead: "**AWS Control Tower** creates and governs accounts (landing zone, controls, Account Factory); a networking account owns a central VPC and shares its subnets with workload accounts through **AWS RAM** (VPC sharing)." },
   { name: "AWS CodeDeploy",
     use: "Automates deployments of new application versions to EC2, on-premises servers, Lambda or ECS, as in-place or blue/green deployments. On EC2, a blue/green deployment installs the new version on replacement instances, registers them with the deployment group's load balancer and reroutes traffic.",
-    notHere: "MFTech needs to test a blue/green release of its global application on as many users as possible within 48 hours, while phones cache DNS. CodeDeploy installs the application; it is not a global entry point and does not split traffic between Regions by percentage.",
+    notHere: "MFTECH needs to test a blue/green release of its global application on as many users as possible within 48 hours, while phones cache DNS. CodeDeploy installs the application; it is not a global entry point and does not split traffic between Regions by percentage.",
     instead: "**AWS Global Accelerator**: a traffic dial sets the percentage of traffic to each Region and endpoint weights set the split between endpoints; changes apply to new connections without depending on DNS caching (see the global infrastructure lesson, part 5)." },
   { name: "AWS Control Tower",
     use: "Sets up and governs a multi-account environment following best practices: orchestrates AWS Organizations, Service Catalog and IAM Identity Center to build a landing zone, applies controls (guardrails) and provisions new accounts with Account Factory.",
@@ -159,7 +159,7 @@ Sort each task into the right tool. On mobile devices: choose a card, then choos
   ]}
 />
 
-Check your understanding: as the designer of the MFTech system, which option fits?
+Check your understanding: as the designer of the MFTECH system, which option fits?
 
 <Quiz client:visible items={[
   { q: "New employees often misconfigure RDS. Requirement: every database follows the safe settings, reusable across the whole company. Which option meets the requirement?",

@@ -105,14 +105,14 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s7", label: "7 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-Ảnh sản phẩm, hoá đơn, video quảng cáo, log và dữ liệu phân tích của MFTech đều được lưu trên **Amazon S3**. Mỗi loại dữ liệu có tần suất truy cập, thời hạn lưu giữ và nhóm người sử dụng khác nhau. Bài học phân tích từng loại dữ liệu để xác định cấu hình S3 phù hợp.
+Ảnh sản phẩm, hoá đơn, video quảng cáo, log và dữ liệu phân tích của MFTECH đều được lưu trên **Amazon S3**. Mỗi loại dữ liệu có tần suất truy cập, thời hạn lưu giữ và nhóm người sử dụng khác nhau. Bài học phân tích từng loại dữ liệu để xác định cấu hình S3 phù hợp.
 </Story>
 
 <Scene id="s1" label="Phần 1/7" title="Lựa chọn storage class theo loại dữ liệu" questions={["exam1_q8", "exam1_q15", "exam1_q28", "exam5_q49", "exam6_q9", "exam5_q51", "exam6_q28", "exam2_q34", "exam4_q43", "exam1_q19"]}>
 
 <p class="scene-intro">Dữ liệu được truy cập với tần suất khác nhau: ảnh sản phẩm được xem liên tục, hoá đơn cũ hầu như không ai mở; S3 cho phép lưu mỗi loại ở một mức giá phù hợp với tần suất đó.</p>
 
-Chi phí S3 gồm hai thành phần chính: phí lưu trữ tính theo GB và phí truy xuất dữ liệu. Storage class có phí lưu trữ càng thấp thì phí truy xuất càng cao hoặc thời gian truy xuất càng dài. Chọn từng loại dữ liệu của MFTech để xem storage class phù hợp:
+Chi phí S3 gồm hai thành phần chính: phí lưu trữ tính theo GB và phí truy xuất dữ liệu. Storage class có phí lưu trữ càng thấp thì phí truy xuất càng cao hoặc thời gian truy xuất càng dài. Chọn từng loại dữ liệu của MFTECH để xem storage class phù hợp:
 
 <RequirementPicker client:visible items={[
   { need: "Thumbnail có thể tạo lại từ ảnh gốc; truy cập nhiều trong tuần đầu, sau đó giảm nhưng vẫn phải truy xuất được ngay", answer: "Lifecycle sang One Zone-IA sau 7 ngày",
@@ -135,7 +135,7 @@ Lifecycle chuyển object theo mô hình thác nước (waterfall): chỉ theo m
 
 **Thời điểm transition sang storage class IA.** Từ ngày 16/7/2026, lifecycle rule chuyển được object sang Standard-IA hoặc One Zone-IA ngay từ 0 ngày sau khi tạo. Trước thời điểm đó, S3 yêu cầu object nằm ít nhất 30 ngày trong Standard rồi mới được chuyển sang hai lớp này; tài liệu ôn tập soạn trước tháng 7/2026 dựa trên quy định cũ nên loại các phương án "chuyển sau 7 ngày". Thời gian lưu trữ tối thiểu 30 ngày của Standard-IA và One Zone-IA vẫn giữ nguyên: đây là quy tắc tính phí khi object rời lớp IA sớm, không phải điều kiện để được transition. Ngoài ra, mặc định lifecycle không chuyển object nhỏ hơn 128 KB sang bất kỳ storage class nào.
 
-Một lifecycle rule không nhất thiết áp dụng cho toàn bucket. Phần tử **filter** của rule xác định nhóm object chịu tác động: theo **prefix** của key, theo một hoặc nhiều **object tag** (khớp chính xác cả key và value), hoặc theo kích thước object; khi kết hợp nhiều điều kiện, S3 áp dụng logic AND. Mỗi filter chỉ có một prefix, nên muốn áp dụng hành động cho nhiều prefix khác nhau thì tạo nhiều rule. Filter rỗng áp dụng cho mọi object trong bucket. Bucket ảnh sản phẩm của MFTech lưu ảnh gốc trong `images/` và thumbnail trong `thumbnails/`; hai nhóm này có mẫu truy cập khác nhau:
+Một lifecycle rule không nhất thiết áp dụng cho toàn bucket. Phần tử **filter** của rule xác định nhóm object chịu tác động: theo **prefix** của key, theo một hoặc nhiều **object tag** (khớp chính xác cả key và value), hoặc theo kích thước object; khi kết hợp nhiều điều kiện, S3 áp dụng logic AND. Mỗi filter chỉ có một prefix, nên muốn áp dụng hành động cho nhiều prefix khác nhau thì tạo nhiều rule. Filter rỗng áp dụng cho mọi object trong bucket. Bucket ảnh sản phẩm của MFTECH lưu ảnh gốc trong `images/` và thumbnail trong `thumbnails/`; hai nhóm này có mẫu truy cập khác nhau:
 
 <LifecycleFilterSim client:visible />
 
@@ -151,7 +151,7 @@ Lượng dữ liệu được đọc lại quyết định storage class nào r�
 
 <p class="scene-intro">Một số dữ liệu phải được giữ nguyên trong nhiều năm theo quy định; cần cơ chế ngăn việc xoá hoặc ghi đè, kể cả do nhầm lẫn hay do chính quản trị viên.</p>
 
-Quy định pháp lý yêu cầu MFTech lưu giữ hoá đơn trong nhiều năm. Rủi ro mất dữ liệu đến từ thao tác xoá nhầm của nhân viên, script dọn dẹp bị lỗi, hoặc chính quản trị viên chủ động xoá. Chọn cơ chế bảo vệ bucket và chủ thể thực hiện xoá, sau đó quan sát lớp bảo vệ nào giữ lại hoá đơn:
+Quy định pháp lý yêu cầu MFTECH lưu giữ hoá đơn trong nhiều năm. Rủi ro mất dữ liệu đến từ thao tác xoá nhầm của nhân viên, script dọn dẹp bị lỗi, hoặc chính quản trị viên chủ động xoá. Chọn cơ chế bảo vệ bucket và chủ thể thực hiện xoá, sau đó quan sát lớp bảo vệ nào giữ lại hoá đơn:
 
 <DeleteGuardSim client:visible />
 
@@ -172,7 +172,7 @@ Retention period gắn với từng phiên bản object, do đó các phiên b�
 Khi số lượng team và đối tác sử dụng dữ liệu tăng lên, việc cấp quyền cần được tổ chức gọn và rõ ràng. Chọn từng tình huống:
 
 <RequirementPicker client:visible items={[
-  { need: "Bộ phận kế toán của MFTech và công ty kiểm toán (AWS account khác) cùng đọc bucket hoá đơn", answer: "Bucket policy",
+  { need: "Bộ phận kế toán của MFTECH và công ty kiểm toán (AWS account khác) cùng đọc bucket hoá đơn", answer: "Bucket policy",
     why: "Bucket policy là resource-based policy, cho phép cấp quyền cho principal thuộc account khác." },
   { need: "200 nhân viên có IAM user và đang đọc được bucket báo cáo; 50 người trong số đó cần thêm quyền ghi", answer: "IAM group + identity-based policy",
     why: "Gắn policy đọc/ghi cho một IAM group rồi thêm 50 user vào group; nhân viên mới chỉ cần được thêm vào group. Liệt kê từng user trong bucket policy khó bảo trì, và bucket policy bị giới hạn kích thước 20 KB." },
@@ -182,7 +182,7 @@ Khi số lượng team và đối tác sử dụng dữ liệu tăng lên, việ
     why: "Access point chỉ là điểm truy cập có policy riêng, không thay đổi đường đi của traffic. Access point có network origin Internet dùng được từ bất kỳ đâu, request vẫn tới endpoint công khai của S3. Access point có network origin VPC (chỉ chọn được khi tạo) từ chối mọi request không xuất phát từ VPC chỉ định, và request từ VPC vẫn phải đi qua VPC endpoint có endpoint policy cho phép cả access point lẫn bucket. Gateway endpoint cho S3 cho phép VPC truy cập S3 không cần internet gateway hay NAT, không tính thêm phí." },
   { need: "Bucket policy có IpAddress 54.240.143.0/24 và NotIpAddress 54.240.143.188/32. Địa chỉ nào được phép truy cập?", answer: "Toàn bộ dải /24, trừ địa chỉ .188",
     why: "Hai điều kiện phải được thoả mãn đồng thời: thuộc dải /24 và không phải địa chỉ .188." },
-  { need: "Redshift của team dữ liệu (account khác) UNLOAD tệp vào bucket, nhưng MFTech không đọc được các tệp đó", answer: "Object thuộc account đã tải lên, không mặc nhiên thuộc chủ sở hữu bucket",
+  { need: "Redshift của team dữ liệu (account khác) UNLOAD tệp vào bucket, nhưng MFTECH không đọc được các tệp đó", answer: "Object thuộc account đã tải lên, không mặc nhiên thuộc chủ sở hữu bucket",
     why: "Đây là cơ chế của ACL kiểu cũ. Bucket mới mặc định Object Ownership = bucket owner enforced: ACL bị vô hiệu hoá và chủ sở hữu bucket sở hữu mọi object." },
   { need: "Cần xác định các bucket chưa bật versioning trong toàn công ty, trên mọi Region và account", answer: "S3 Storage Lens",
     why: "Cung cấp dashboard tổng hợp cho toàn bộ Organization. Metric Versioning-enabled bucket count thuộc nhóm metric miễn phí, không cần advanced metrics." },
@@ -201,7 +201,7 @@ Khi số lượng team và đối tác sử dụng dữ liệu tăng lên, việ
 
 <p class="scene-intro">Dữ liệu trên S3 luôn được mã hoá; điều cần quyết định là ai giữ key mã hoá và có cần ghi lại mỗi lần key được sử dụng hay không.</p>
 
-Mọi phương thức mã hoá đều khiến dữ liệu lưu trên đĩa không thể sử dụng nếu không có key. Điểm khác biệt nằm ở thành phần thực hiện mã hoá, nơi lưu trữ key, và việc mỗi lần sử dụng key có được ghi log hay không. Chọn yêu cầu của MFTech, tải lên ba hoá đơn và quan sát vị trí dữ liệu chuyển sang trạng thái mã hoá:
+Mọi phương thức mã hoá đều khiến dữ liệu lưu trên đĩa không thể sử dụng nếu không có key. Điểm khác biệt nằm ở thành phần thực hiện mã hoá, nơi lưu trữ key, và việc mỗi lần sử dụng key có được ghi log hay không. Chọn yêu cầu của MFTECH, tải lên ba hoá đơn và quan sát vị trí dữ liệu chuyển sang trạng thái mã hoá:
 
 <EncryptionSim client:visible />
 
@@ -215,11 +215,11 @@ Khi chuyển dữ liệu hoá đơn từ data center lên S3, bộ phận bảo 
 
 <p class="scene-intro">Khi khối lượng dữ liệu và số người dùng tăng, tốc độ tải lên và khả năng chịu tải cao điểm trở thành vấn đề; S3 có các tính năng riêng cho từng tình huống.</p>
 
-Phần này trình bày bốn sự cố MFTech gặp phải khi khối lượng dữ liệu và số lượng người dùng tăng lên, cùng chi phí của một lần tải lên qua Transfer Acceleration. Chạy từng tình huống, sau đó bật tính năng S3 tương ứng để so sánh kết quả:
+Phần này trình bày bốn sự cố MFTECH gặp phải khi khối lượng dữ liệu và số lượng người dùng tăng lên, cùng chi phí của một lần tải lên qua Transfer Acceleration. Chạy từng tình huống, sau đó bật tính năng S3 tương ứng để so sánh kết quả:
 
 <UploadSim client:visible />
 
-**Transfer Acceleration tăng tốc cả hai chiều.** Theo S3 FAQ, Transfer Acceleration tăng tốc truyền dữ liệu đường dài **tới và từ** một bucket (request tải lên và tải xuống cùng gửi tới endpoint `<bucket>.s3-accelerate.amazonaws.com`) và phát huy rõ nhất với object lớn. Khi MFTech mở cổng cho các studio ở nhiều châu lục vừa tải lên vừa tải xuống video thô tới 10 GB, bật Transfer Acceleration trên bucket là cải thiện được cả hai chiều; không bắt buộc ghép thêm CloudFront. AWS khuyến nghị cân nhắc PUT/POST qua CloudFront khi object hoặc tập dữ liệu nhỏ hơn 1 GB; với tệp lớn hơn, Transfer Acceleration cho throughput cao hơn. CloudFront phù hợp khi cùng một nội dung được rất nhiều người xem lặp lại (ảnh, video quảng cáo), vì edge location cache nội dung đó.
+**Transfer Acceleration tăng tốc cả hai chiều.** Theo S3 FAQ, Transfer Acceleration tăng tốc truyền dữ liệu đường dài **tới và từ** một bucket (request tải lên và tải xuống cùng gửi tới endpoint `<bucket>.s3-accelerate.amazonaws.com`) và phát huy rõ nhất với object lớn. Khi MFTECH mở cổng cho các studio ở nhiều châu lục vừa tải lên vừa tải xuống video thô tới 10 GB, bật Transfer Acceleration trên bucket là cải thiện được cả hai chiều; không bắt buộc ghép thêm CloudFront. AWS khuyến nghị cân nhắc PUT/POST qua CloudFront khi object hoặc tập dữ liệu nhỏ hơn 1 GB; với tệp lớn hơn, Transfer Acceleration cho throughput cao hơn. CloudFront phù hợp khi cùng một nội dung được rất nhiều người xem lặp lại (ảnh, video quảng cáo), vì edge location cache nội dung đó.
 
 <Takeaway>Tệp dung lượng lớn: multipart upload (bắt buộc với object trên 5 GB). Truyền tệp lớn (từ khoảng 1 GB) qua khoảng cách xa tới hoặc từ một bucket: Transfer Acceleration, tăng tốc cả tải lên lẫn tải xuống (đi qua edge location của CloudFront; có thể phát sinh phí truyền dữ liệu bổ sung); tệp nhỏ hơn 1 GB: cân nhắc PUT/POST qua CloudFront. Số lượng request quá lớn: phân bổ key ra nhiều prefix. Chỉ cần một phần của tệp: byte-range fetch (header `Range` trong request GET). Chi phí: data transfer in từ Internet vào S3 miễn phí; phí Transfer Acceleration cộng thêm vào phí data transfer và chỉ tính cho lần truyền được tăng tốc. S3 Select (truy vấn SQL trên nội dung một object CSV, JSON hoặc Parquet) không còn nhận khách hàng mới.</Takeaway>
 
@@ -229,7 +229,7 @@ Phần này trình bày bốn sự cố MFTech gặp phải khi khối lượng 
 
 <p class="scene-intro">Một website chỉ gồm HTML, CSS và ảnh không cần tầng ứng dụng như EC2 instance; các object được phục vụ trực tiếp từ bucket S3.</p>
 
-Trang khuyến mãi theo mùa của MFTech chỉ gồm HTML, CSS, ảnh và client-side script, nên có thể được phục vụ trực tiếp từ bucket `mftech-promo`. Khi bật **static website hosting**, bucket có thêm một **website endpoint** theo Region (`http://<bucket>.s3-website-<region>.amazonaws.com` hoặc `…s3-website.<region>…` tuỳ Region), tách biệt với **REST API endpoint** mà ứng dụng dùng để gửi request API. Hai endpoint xử lý cùng một request theo cách rất khác nhau. Gửi từng request qua mỗi endpoint để so sánh:
+Trang khuyến mãi theo mùa của MFTECH chỉ gồm HTML, CSS, ảnh và client-side script, nên có thể được phục vụ trực tiếp từ bucket `mftech-promo`. Khi bật **static website hosting**, bucket có thêm một **website endpoint** theo Region (`http://<bucket>.s3-website-<region>.amazonaws.com` hoặc `…s3-website.<region>…` tuỳ Region), tách biệt với **REST API endpoint** mà ứng dụng dùng để gửi request API. Hai endpoint xử lý cùng một request theo cách rất khác nhau. Gửi từng request qua mỗi endpoint để so sánh:
 
 <WebsiteEndpointSim client:visible />
 
@@ -265,7 +265,7 @@ Website tĩnh trên S3 thường được dùng làm **trang dự phòng**: khi 
 
 <p class="scene-intro">Nhiều tính năng của S3 có tên hoặc mô tả gần giống nhau; phân biệt được chúng giúp chọn đúng tính năng cho từng nhu cầu.</p>
 
-Một số tính năng S3 có tên hoặc mô tả gần với nhu cầu thực tế nhưng giải quyết một vấn đề khác. Chọn từng tính năng để xem trường hợp sử dụng, lý do không phù hợp trong tình huống MFTech tương ứng, và phương án nên chọn:
+Một số tính năng S3 có tên hoặc mô tả gần với nhu cầu thực tế nhưng giải quyết một vấn đề khác. Chọn từng tính năng để xem trường hợp sử dụng, lý do không phù hợp trong tình huống MFTECH tương ứng, và phương án nên chọn:
 
 <QuickCompare client:visible items={[
   { name: "S3 Batch Operations",
@@ -323,7 +323,7 @@ Phân loại từng đặc tính vào cơ chế khoá tương ứng. Trên thi�
   ]}
 />
 
-Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTech, phương án nào phù hợp?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTECH, phương án nào phù hợp?
 
 <Quiz client:visible items={[
   { q: "Khi cấu hình lifecycle rule cho bucket ảnh, transition nào S3 KHÔNG hỗ trợ?",
