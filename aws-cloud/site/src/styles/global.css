@@ -1363,3 +1363,45 @@ main.article:focus { outline: none; }
   .drill { grid-template-columns: minmax(0, 1fr); }
   .drill-play { position: static; order: -1; }
 }
+
+/* ---------- Cost estimator (in lessons) ---------- */
+.ce { margin: 18px 0; padding: 16px 18px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; gap: 14px; }
+.ce-title { font-weight: 700; font-size: 0.95rem; }
+.ce-inputs { display: flex; flex-direction: column; gap: 12px; }
+.ce-range { display: flex; flex-direction: column; gap: 6px; font-size: 0.8125rem; color: var(--muted); }
+.ce-range span { display: flex; justify-content: space-between; gap: 12px; }
+.ce-range b { font-family: var(--font-mono); color: var(--ink); }
+.ce-range input { width: 100%; accent-color: var(--accent); min-height: 28px; }
+.ce-choice { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 0.8125rem; color: var(--muted); }
+.ce-choice > span { margin-right: 4px; }
+.ce-choice button { min-height: 36px; min-width: 40px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; cursor: pointer; }
+.ce-choice button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+.ce-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.ce-option { padding: 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); display: flex; flex-direction: column; gap: 10px; }
+.ce-option[data-tone="cost"] { border-color: var(--edge); }
+.ce-option[data-tone="save"] { border-color: var(--ok); }
+.ce-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.ce-total { font-family: var(--font-mono); font-size: 1.35rem; font-weight: 600; }
+[data-tone="cost"] .ce-total { color: var(--edge); }
+[data-tone="save"] .ce-total { color: var(--ok); }
+.ce-bar, .ce-cell-bar { display: block; height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.ce-bar i, .ce-cell-bar i { display: block; height: 100%; background: var(--edge); transition: width .25s; }
+.ce dl { margin: 0; display: flex; flex-direction: column; gap: 4px; font-size: 0.8125rem; }
+.ce dl div { display: flex; justify-content: space-between; gap: 10px; }
+.ce dt { color: var(--muted); }
+.ce dd { margin: 0; font-family: var(--font-mono); }
+.ce-result { margin: 0; padding: 10px 12px; border-radius: 10px; background: var(--accent-soft); font-size: 0.875rem; line-height: 1.6; }
+.ce-note { margin: 0; font-size: 0.75rem; color: var(--muted); }
+.ce-table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+.ce-table th, .ce-table td { padding: 8px 6px; border-top: 1px solid var(--line); text-align: right; font-family: var(--font-mono); vertical-align: top; }
+.ce-table thead th { border-top: 0; color: var(--muted); font-weight: 500; font-family: var(--font-body); }
+.ce-table th[scope="row"], .ce-table thead th:first-child { text-align: left; font-family: var(--font-body); }
+.ce-table th[scope="row"] small { display: block; color: var(--muted); font-weight: 400; font-size: 0.75rem; }
+.ce-table tr[data-best] th, .ce-table tr[data-best] td { color: var(--ok); font-weight: 600; }
+.ce-cell-bar { width: 60px; display: inline-block; vertical-align: middle; margin-right: 8px; }
+.ce-cell-bar i { background: var(--accent); }
+@media (max-width: 560px) {
+  .ce-options { grid-template-columns: minmax(0, 1fr); }
+  .ce-cell-bar { display: none; }
+  .ce-table { font-size: 0.75rem; }
+}

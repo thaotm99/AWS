@@ -88,6 +88,7 @@ import UploadSim from "../../components/scenes/s3/UploadSim.tsx";
 import LifecycleFilterSim from "../../components/scenes/s3/LifecycleFilterSim.tsx";
 import RetentionSim from "../../components/scenes/s3/RetentionSim.tsx";
 import WebsiteEndpointSim from "../../components/scenes/s3/WebsiteEndpointSim.tsx";
+import CostEstimator from "../../components/scenes/CostEstimator.tsx";
 import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import StepSim from "../../components/scenes/StepSim.tsx";
 import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
@@ -137,6 +138,10 @@ Lifecycle chuyển object theo mô hình thác nước (waterfall): chỉ theo m
 Một lifecycle rule không nhất thiết áp dụng cho toàn bucket. Phần tử **filter** của rule xác định nhóm object chịu tác động: theo **prefix** của key, theo một hoặc nhiều **object tag** (khớp chính xác cả key và value), hoặc theo kích thước object; khi kết hợp nhiều điều kiện, S3 áp dụng logic AND. Mỗi filter chỉ có một prefix, nên muốn áp dụng hành động cho nhiều prefix khác nhau thì tạo nhiều rule. Filter rỗng áp dụng cho mọi object trong bucket. Bucket ảnh sản phẩm của ShopViet lưu ảnh gốc trong `images/` và thumbnail trong `thumbnails/`; hai nhóm này có mẫu truy cập khác nhau:
 
 <LifecycleFilterSim client:visible />
+
+Lượng dữ liệu được đọc lại quyết định storage class nào rẻ nhất. Thay đổi dung lượng và tỉ lệ đọc lại để so sánh chi phí mỗi tháng:
+
+<CostEstimator client:visible preset="s3-classes" />
 
 <Takeaway>Truy cập thường xuyên: Standard. Mẫu truy cập không dự đoán được: Intelligent-Tiering. Truy cập ít nhưng cần truy xuất ngay: Standard-IA (One Zone-IA nếu dữ liệu tạo lại được và chấp nhận mất dữ liệu khi một AZ gặp sự cố). Lưu trữ dài hạn: các lớp Glacier. Lifecycle không chuyển ngược lên. Chỉ một phần dữ liệu đổi mẫu truy cập: lifecycle rule có filter theo prefix hoặc tag. Standard-IA và One Zone-IA có thời gian lưu trữ tối thiểu 30 ngày: object bị xoá, ghi đè hoặc chuyển đi sớm hơn vẫn bị tính phí đủ 30 ngày. Từ 16/7/2026, rule chuyển sang Standard-IA hoặc One Zone-IA được ngay từ ngày 0 (trước đó object phải ở Standard tối thiểu 30 ngày).</Takeaway>
 

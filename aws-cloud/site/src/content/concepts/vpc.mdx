@@ -130,6 +130,7 @@ import PacketPath from "../../components/scenes/vpc/PacketPath.tsx";
 import SgChain from "../../components/scenes/vpc/SgChain.tsx";
 import NatHaSim from "../../components/scenes/vpc/NatHaSim.tsx";
 import EndpointSim from "../../components/scenes/vpc/EndpointSim.tsx";
+import CostEstimator from "../../components/scenes/CostEstimator.tsx";
 import VpcConnectSim from "../../components/scenes/vpc/VpcConnectSim.tsx";
 import HybridLinkSim from "../../components/scenes/vpc/HybridLinkSim.tsx";
 import VpcMythsSim from "../../components/scenes/vpc/VpcMythsSim.tsx";
@@ -217,6 +218,10 @@ Database và worker của ShopViet nằm trong **private subnet**, không có pu
 EC2 trong private subnet của ShopViet ghi ảnh vào S3 và gửi job vào SQS. Theo mặc định, traffic này đi qua NAT gateway tới public endpoint của dịch vụ. Chọn từng phương án, gửi request và quan sát thay đổi trong route table.
 
 <EndpointSim client:visible />
+
+Chi phí là lý do chính để chuyển lưu lượng tới S3 sang gateway endpoint. Thay đổi lượng dữ liệu, Region và số NAT gateway để xem chi phí mỗi tháng của hai phương án:
+
+<CostEstimator client:visible preset="nat-endpoint" />
 
 <RequirementPicker client:visible items={[
   { need: "Worker trong private subnet ghi ảnh vào S3 cùng Region, yêu cầu chi phí thấp và không qua internet", answer: "Gateway endpoint cho S3",

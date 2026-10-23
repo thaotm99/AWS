@@ -88,6 +88,7 @@ import UploadSim from "../../components/scenes/s3/UploadSim.tsx";
 import LifecycleFilterSim from "../../components/scenes/s3/LifecycleFilterSim.tsx";
 import RetentionSim from "../../components/scenes/s3/RetentionSim.tsx";
 import WebsiteEndpointSim from "../../components/scenes/s3/WebsiteEndpointSim.tsx";
+import CostEstimator from "../../components/scenes/CostEstimator.tsx";
 import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 import StepSim from "../../components/scenes/StepSim.tsx";
 import RequirementPicker from "../../components/scenes/RequirementPicker.tsx";
@@ -137,6 +138,10 @@ Lifecycle transitions objects in a waterfall model: one way only, down to lower-
 A lifecycle rule does not have to apply to the whole bucket. The rule's **filter** element selects the objects it acts on: by key **prefix**, by one or more **object tags** (each matching both key and value exactly), or by object size; when several conditions are combined, S3 applies a logical AND. A filter has only one prefix, so to apply an action to several different prefixes you create several rules. An empty filter applies to every object in the bucket. ShopViet's product image bucket keeps originals under `images/` and thumbnails under `thumbnails/`; the two groups have different access patterns:
 
 <LifecycleFilterSim client:visible />
+
+How much data is read back decides which storage class is cheapest. Change the volume and the read-back share to compare the monthly cost:
+
+<CostEstimator client:visible preset="s3-classes" />
 
 <Takeaway>Frequent access: Standard. Unpredictable access patterns: Intelligent-Tiering. Infrequent access that needs immediate retrieval: Standard-IA (One Zone-IA if the data can be regenerated and losing it with an AZ is acceptable). Long-term archive: the Glacier classes. Lifecycle does not transition objects back up. Only part of the data changes its access pattern: a lifecycle rule with a prefix or tag filter. Standard-IA and One Zone-IA have a 30-day minimum storage duration: an object deleted, overwritten or transitioned earlier is still charged for the full 30 days. Since July 16, 2026, a rule can transition to Standard-IA or One Zone-IA from day 0 (before that, objects had to stay in Standard for at least 30 days).</Takeaway>
 
