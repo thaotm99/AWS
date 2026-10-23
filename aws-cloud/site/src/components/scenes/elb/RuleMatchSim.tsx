@@ -145,22 +145,24 @@ export default function RuleMatchSim() {
     }
   }
 
+  // Condition chip of a rule; turns green or red once evaluated.
+  const COND = "rounded-[10px] border border-line bg-bg px-1.5 py-px text-[0.75rem] wrap-anywhere";
   const table = (title: string, rules: Rule[], key: string, active: boolean) => (
-    <div className={"elbx-lst" + (active ? "" : " dim")}>
-      <div className="elbx-lst-h"><span>{title}</span><span>{L({ vi: "priority · điều kiện · action", en: "priority · conditions · action" })}</span></div>
+    <div className={"grid gap-1 px-3.5 pt-2.5 pb-0" + (active ? "" : " opacity-70")}>
+      <div className="flex justify-between gap-2 text-[0.75rem] font-semibold text-muted"><span>{title}</span><span>{L({ vi: "priority · điều kiện · action", en: "priority · conditions · action" })}</span></div>
       {rules.map((rule) => {
         const m = marks[key + rule.pri];
         return (
           <div key={rule.pri} className={"elbx-rule " + (m?.row ?? "")}>
-            <span className="elbx-pri">{rule.pri}</span>
-            <span className="elbx-cond">
+            <span className="font-mono text-[0.75rem] text-muted">{rule.pri}</span>
+            <span className="flex min-w-0 flex-wrap gap-1">
               {rule.conds.length === 0
-                ? <code>{L({ vi: "(mọi request còn lại)", en: "(every remaining request)" })}</code>
+                ? <code className={COND}>{L({ vi: "(mọi request còn lại)", en: "(every remaining request)" })}</code>
                 : rule.conds.map((c, i) => (
-                  <code key={i} className={m && m.conds.length ? (m.conds[i] ? "hit" : "miss") : ""}>{c.kind}: {c.value}</code>
+                  <code key={i} className={`${COND} ${m && m.conds.length ? (m.conds[i] ? "border-ok text-ok" : "border-bad text-bad") : ""}`}>{c.kind}: {c.value}</code>
                 ))}
             </span>
-            <span className="elbx-act">{L(rule.action)}</span>
+            <span className="wrap-anywhere max-sm:col-start-2 max-sm:col-end-3 max-sm:row-start-2 max-sm:text-muted">{L(rule.action)}</span>
             <span className="elbx-st" aria-hidden="true">{m?.row === "match" ? "✓" : m?.row === "miss" ? "✗" : m?.row === "check" ? "…" : ""}</span>
           </div>
         );
@@ -169,28 +171,28 @@ export default function RuleMatchSim() {
   );
 
   return (
-    <div className="stage elbx">
-      <div className="elbx-row" role="group" aria-label={L({ vi: "Request", en: "Request" })}>
-        <span className="elbx-lbl">Request</span>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-3" role="group" aria-label={L({ vi: "Request", en: "Request" })}>
+        <span className="mr-1 text-[0.72rem] font-semibold tracking-[0.08em] text-muted uppercase">Request</span>
         {PRESETS.map((p, i) => (
           <button key={i} className="chip" aria-pressed={i === pick} onClick={() => choose(i)}>{L(p.name)}</button>
         ))}
       </div>
-      <div className="stage-bar">
-        <span className="elbx-req">
-          <code>{r.method} {url}</code>
-          <span>
+      <div className="stage-bar mt-3 border-t border-line">
+        <span className="grid min-w-0 gap-0.5">
+          <code className="text-[0.8125rem] wrap-anywhere">{r.method} {url}</code>
+          <span className="text-[0.75rem] wrap-anywhere text-muted">
             {L({ vi: "IP nguồn", en: "Source IP" })}: {r.ip}{r.ip.startsWith("203.0.113.") ? L({ vi: " (văn phòng)", en: " (office)" }) : ""}
             {r.header ? ` · ${r.header[0]}: ${r.header[1]}` : ""}
           </span>
         </span>
-        <button className="btn primary" onClick={run} disabled={busy}>{L({ vi: "Đánh giá rule", en: "Evaluate rules" })}</button>
+        <button className="btn primary ml-auto" onClick={run} disabled={busy}>{L({ vi: "Đánh giá rule", en: "Evaluate rules" })}</button>
       </div>
       {table("Listener HTTP :80", HTTP_RULES, "h", preset.req.scheme === "http")}
       {table("Listener HTTPS :443", HTTPS_RULES, "s", true)}
-      <div className="readout">
+      <div className="readout mt-3">
         {log.length === 0 ? (
-          <p className="elbx-hint">{L({ vi: "Chọn một request, sau đó nhấn Đánh giá rule. ALB xét các rule theo priority từ giá trị nhỏ tới lớn và dừng ở rule đầu tiên khớp mọi điều kiện.", en: "Pick a request, then press Evaluate rules. The ALB checks rules from the lowest priority value to the highest and stops at the first rule whose conditions all match." })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: "Chọn một request, sau đó nhấn Đánh giá rule. ALB xét các rule theo priority từ giá trị nhỏ tới lớn và dừng ở rule đầu tiên khớp mọi điều kiện.", en: "Pick a request, then press Evaluate rules. The ALB checks rules from the lowest priority value to the highest and stops at the first rule whose conditions all match." })}</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((m, i) => (

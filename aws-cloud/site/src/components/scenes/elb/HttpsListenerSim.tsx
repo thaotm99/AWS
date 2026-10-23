@@ -86,34 +86,34 @@ export default function HttpsListenerSim() {
   const good = browsers.filter((x) => x.r.v === "ok").length;
 
   return (
-    <div className="stage elbx">
-      <p className="elbx-goal">{rich(L({ vi: "Yêu cầu: mọi URL của MFTech chạy HTTPS trên **một** ALB, với cấu hình tối thiểu.", en: "Requirement: every MFTech URL runs over HTTPS on **one** ALB, with minimal configuration." }))}</p>
-      <div className="elbx-row" role="group" aria-label={L({ vi: "Chứng chỉ trên listener HTTPS", en: "Certificates on the HTTPS listener" })}>
-        <span className="elbx-lbl">{L({ vi: "Chứng chỉ", en: "Certificates" })}</span>
+    <div className="stage">
+      <p className="m-0 px-3.5 pt-2.5 pb-0 text-step--1">{rich(L({ vi: "Yêu cầu: mọi URL của MFTech chạy HTTPS trên **một** ALB, với cấu hình tối thiểu.", en: "Requirement: every MFTech URL runs over HTTPS on **one** ALB, with minimal configuration." }))}</p>
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-3" role="group" aria-label={L({ vi: "Chứng chỉ trên listener HTTPS", en: "Certificates on the HTTPS listener" })}>
+        <span className="mr-1 text-[0.72rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Chứng chỉ", en: "Certificates" })}</span>
         <button className="chip" aria-pressed={cert === "one"} onClick={() => setCert("one")}>www.mftech.vn</button>
         <button className="chip" aria-pressed={cert === "wild"} onClick={() => setCert("wild")}>{L({ vi: "Wildcard *.mftech.vn", en: "Wildcard *.mftech.vn" })}</button>
         <button className="chip" aria-pressed={cert === "sni"} onClick={() => setCert("sni")}>{L({ vi: "Certificate list + SNI", en: "Certificate list + SNI" })}</button>
       </div>
-      <div className="elbx-row" role="group" aria-label={L({ vi: "Listener HTTP", en: "HTTP listener" })}>
-        <span className="elbx-lbl">Listener :80</span>
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-2" role="group" aria-label={L({ vi: "Listener HTTP", en: "HTTP listener" })}>
+        <span className="mr-1 text-[0.72rem] font-semibold tracking-[0.08em] text-muted uppercase">Listener :80</span>
         <button className="chip" aria-pressed={!redirect} onClick={() => setRedirect(false)}>{L({ vi: "Forward tới target group", en: "Forward to target group" })}</button>
         <button className="chip" aria-pressed={redirect} onClick={() => setRedirect(true)}>{L({ vi: "Redirect HTTP → HTTPS", en: "Redirect HTTP → HTTPS" })}</button>
       </div>
-      <div className="elbx-row" role="group" aria-label="Security policy">
-        <span className="elbx-lbl">Security policy</span>
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-2" role="group" aria-label="Security policy">
+        <span className="mr-1 text-[0.72rem] font-semibold tracking-[0.08em] text-muted uppercase">Security policy</span>
         <button className="chip" aria-pressed={policy === "res"} onClick={() => setPolicy("res")}>TLS13-1-2-Res-PQ-2025-09</button>
         <button className="chip" aria-pressed={policy === "old"} onClick={() => setPolicy("old")}>2016-08</button>
       </div>
-      <ul className="elbx-res" aria-live="polite">
+      <ul className="m-0 grid list-none gap-1.5 px-3.5 py-3" aria-live="polite">
         {rows.map(({ c, r }, i) => (
-          <li key={i} className={r.v}>
-            <span className="elbx-who"><code>{c.url}</code><span>{L(c.who)}</span></span>
+          <li key={i} className={`elbx-result ${r.v}`}>
+            <span className="grid min-w-0 gap-0.5"><code className="text-[0.75rem] wrap-anywhere">{c.url}</code><span className="text-[0.75rem] text-muted">{L(c.who)}</span></span>
             <span className="elbx-verdict">{L(r.label)}</span>
-            <span className="elbx-why">{rich(L(r.why))}</span>
+            <span className="min-w-0 wrap-anywhere max-sm:col-span-full">{rich(L(r.why))}</span>
           </li>
         ))}
       </ul>
-      <p className="elbx-score">
+      <p className="px-3.5 pt-0 pb-3 text-step--1 font-semibold">
         {L({ vi: `Trình duyệt truy cập được qua HTTPS hợp lệ: ${good}/${browsers.length} URL.`, en: `Browsers reach over valid HTTPS: ${good}/${browsers.length} URLs.` })}
         {good === browsers.length ? L({ vi: " Đạt yêu cầu.", en: " Requirement met." }) : ""}
       </p>

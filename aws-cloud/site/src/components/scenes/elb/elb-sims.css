@@ -1,57 +1,30 @@
-/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
-@layer legacy {
-/* ELB lesson simulations (elb/RuleMatchSim, HttpsListenerSim). Theme tokens only. */
-.elbx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
-.elbx-row + .elbx-row { padding-top: 8px; }
-.elbx-lbl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
-.elbx .stage-bar { margin-top: 12px; border-top: 1px solid var(--line); }
-.elbx .stage-bar .btn.primary { margin-left: auto; }
-.elbx-req { display: grid; gap: 2px; min-width: 0; }
-.elbx-req code { font-size: 0.8125rem; overflow-wrap: anywhere; }
-.elbx-req span { font-size: 0.75rem; color: var(--muted); overflow-wrap: anywhere; }
-.elbx-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
+@reference "../../../styles/app.css";
 
-/* RuleMatchSim: listener rule tables */
-.elbx-lst { padding: 10px 14px 0; display: grid; gap: 4px; }
-.elbx-lst-h { font-size: 0.75rem; font-weight: 600; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
-.elbx-lst.dim { opacity: .7; }
-.elbx-rule { display: grid; grid-template-columns: 3.2rem minmax(0, 1.5fr) minmax(0, 1fr) 1.6rem; gap: 8px; align-items: center; padding: 6px 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font-size: 0.8125rem; transition: background .25s, border-color .25s; }
-.elbx-pri { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }
-.elbx-cond { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; }
-.elbx-cond code { font-size: 0.75rem; padding: 1px 6px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); overflow-wrap: anywhere; }
-.elbx-cond code.miss { border-color: var(--bad); color: var(--bad); }
-.elbx-cond code.hit { border-color: var(--ok); color: var(--ok); }
-.elbx-act { overflow-wrap: anywhere; }
-.elbx-st { text-align: center; font-weight: 700; }
-.elbx-rule.check { border-color: var(--accent); background: var(--accent-soft); }
-.elbx-rule.miss { opacity: .7; }
-.elbx-rule.miss .elbx-st { color: var(--bad); }
-.elbx-rule.match { border-color: var(--ok); background: var(--ok-soft); }
-.elbx-rule.match .elbx-st { color: var(--ok); }
-.elbx-lst + .readout { margin-top: 12px; }
-@media (max-width: 560px) {
-  .elbx-rule { grid-template-columns: 2.6rem minmax(0, 1fr) 1.4rem; }
-  .elbx-act { grid-column: 2 / 3; grid-row: 2; color: var(--muted); }
-}
+/* ELB lesson simulations (RuleMatchSim, HttpsListenerSim): rows whose look follows the evaluation result. */
+@layer components {
+  /* RuleMatchSim: one listener rule; .check while evaluated, then .miss or .match. */
+  .elbx-rule {
+    @apply grid grid-cols-[3.2rem_minmax(0,1.5fr)_minmax(0,1fr)_1.6rem] items-center gap-2 rounded-[12px] border border-line bg-surface px-2 py-1.5 text-[0.8125rem];
+    @apply max-sm:grid-cols-[2.6rem_minmax(0,1fr)_1.4rem];
+    transition: background .25s, border-color .25s;
+  }
+  .elbx-rule.check { @apply border-accent bg-accent-soft; }
+  .elbx-rule.miss { @apply opacity-70; }
+  .elbx-rule.match { @apply border-ok bg-ok-soft; }
+  .elbx-st { @apply text-center font-bold; }
+  .elbx-rule.miss .elbx-st { @apply text-bad; }
+  .elbx-rule.match .elbx-st { @apply text-ok; }
 
-/* HttpsListenerSim: result table */
-.elbx-goal { margin: 0; padding: 10px 14px 0; font-size: var(--step--1); }
-.elbx-res { list-style: none; margin: 0; padding: 12px 14px; display: grid; gap: 6px; }
-.elbx-res li { display: grid; grid-template-columns: minmax(0, 1.2fr) 6.5rem minmax(0, 2fr); gap: 8px; align-items: start; padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font-size: 0.8125rem; }
-.elbx-res li.ok { border-color: var(--ok); }
-.elbx-res li.bad { border-color: var(--bad); background: var(--bad-soft); }
-.elbx-res li.warn { border-color: var(--edge); background: var(--edge-soft); }
-.elbx-who { display: grid; gap: 2px; min-width: 0; }
-.elbx-who code { font-size: 0.75rem; overflow-wrap: anywhere; }
-.elbx-who span { font-size: 0.75rem; color: var(--muted); }
-.elbx-verdict { font-weight: 600; font-size: 0.75rem; }
-.elbx-res li.ok .elbx-verdict { color: var(--ok); }
-.elbx-res li.bad .elbx-verdict { color: var(--bad); }
-.elbx-res li.warn .elbx-verdict { color: var(--edge); }
-.elbx-why { min-width: 0; overflow-wrap: anywhere; }
-.elbx-score { padding: 0 14px 12px; font-size: var(--step--1); font-weight: 600; }
-@media (max-width: 560px) {
-  .elbx-res li { grid-template-columns: minmax(0, 1fr) auto; }
-  .elbx-why { grid-column: 1 / -1; }
-}
+  /* HttpsListenerSim: one URL's result; .ok, .bad or .warn. */
+  .elbx-result {
+    @apply grid grid-cols-[minmax(0,1.2fr)_6.5rem_minmax(0,2fr)] items-start gap-2 rounded-[12px] border border-line bg-surface p-2 text-[0.8125rem];
+    @apply max-sm:grid-cols-[minmax(0,1fr)_auto];
+  }
+  .elbx-result.ok { @apply border-ok; }
+  .elbx-result.bad { @apply border-bad bg-bad-soft; }
+  .elbx-result.warn { @apply border-edge bg-edge-soft; }
+  .elbx-verdict { @apply text-[0.75rem] font-semibold; }
+  .elbx-result.ok .elbx-verdict { @apply text-ok; }
+  .elbx-result.bad .elbx-verdict { @apply text-bad; }
+  .elbx-result.warn .elbx-verdict { @apply text-edge; }
 }
