@@ -12,6 +12,7 @@ export const vi = {
     closeMenu: "Đóng menu",
     language: "Ngôn ngữ",
     soon: "Mục {page} đang được phát triển.",
+    skip: "Bỏ qua tới nội dung",
   },
   glossary: {
     pageTitle: "Thuật ngữ · AWS Thực Chiến",

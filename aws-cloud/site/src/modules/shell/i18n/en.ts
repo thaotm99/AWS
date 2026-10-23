@@ -14,6 +14,7 @@ export const en: Messages<typeof vi> = {
     closeMenu: "Close menu",
     language: "Language",
     soon: "{page} is coming soon.",
+    skip: "Skip to content",
   },
   glossary: {
     pageTitle: "Glossary · AWS Thực Chiến",

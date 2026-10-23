@@ -146,7 +146,7 @@ button { font: inherit; color: inherit; }
   font-size: 0.8125rem; color: var(--muted); text-decoration: none; }
 .concept-quiz:hover { color: var(--ink); background: var(--surface); }
 .concept-quiz[aria-current="page"] { color: var(--accent); background: var(--accent-soft); font-weight: 600; }
-.concept-quiz-n { margin-left: auto; font-family: var(--font-mono); font-size: 0.75rem; opacity: 0.8; }
+.concept-quiz-n { margin-left: auto; font-family: var(--font-mono); font-size: 0.75rem; }
 .course-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; }
 .course-progress-text { margin: 4px 0 8px; font-weight: 600; font-size: 0.875rem; }
 .course-progress { display: flex; align-items: center; gap: 10px; }
@@ -1034,3 +1034,8 @@ input[type="checkbox"]:disabled, input[type="range"]:disabled { opacity: .5; cur
   /* Keep focused or scrolled-to controls clear of the pager pinned to the bottom of the screen. */
   html:has(.part-pager) { scroll-padding-bottom: 96px; }
 }
+
+/* Skip link: the first stop for keyboard users, shown only while focused. */
+.skip-link { position: fixed; z-index: 100; top: 8px; left: 8px; padding: 10px 16px; border-radius: 10px; background: var(--accent); color: var(--on-accent); font-weight: 700; text-decoration: none; transform: translateY(-160%); transition: transform .15s; }
+.skip-link:focus { transform: none; }
+main.article:focus { outline: none; }

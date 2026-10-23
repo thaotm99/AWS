@@ -80,6 +80,7 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
   </head>
   <body>
+    <a class="skip-link" href="#content"><T k="shell.nav.skip" /></a>
     <header class="topbar">
       <div class="topbar-inner">
         <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Mở menu" data-i18n-attr="aria-label:shell.nav.openMenu">
@@ -115,7 +116,7 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
         {sidebar && <Roadmap client:load layers={layers} current={current} currentQuiz={currentQuiz} ready={ready} />}
       </aside>
       <div class="scrim" id="scrim" hidden></div>
-      <main class="article">
+      <main class="article" id="content" tabindex="-1">
         <slot />
       </main>
       {toc && <aside class="toc-col"><slot name="toc" /></aside>}
