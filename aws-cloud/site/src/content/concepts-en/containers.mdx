@@ -1,6 +1,6 @@
 ---
 title: "Containers: Amazon ECS, Amazon EKS and AWS Fargate"
-lede: "ShopViet packages its services as containers. This lesson covers how to choose a runtime environment (EC2 launch type or Fargate, ECS or EKS) and solves five practical requirements: image storage shared between tasks, scheduled jobs, jobs that exceed Lambda's time limit, separate permissions for each Pod, Pods left pending because the cluster is out of resources; then scaling in two layers (Pods/tasks and nodes) and where to run Kubernetes when data must stay in the data center."
+lede: "ShopViet packages its services as containers. This lesson covers how to choose a runtime environment (EC2 launch type or Fargate, ECS or EKS) and solves five practical requirements: image storage shared between tasks, scheduled jobs, jobs that exceed Lambda's time limit, separate permissions for each Pod, Pods left in the Pending state because the cluster is out of resources; then scaling in two layers (Pods/tasks and nodes) and where to run Kubernetes when data must stay in the data center."
 minutes: 27
 scenes: 5
 prerequisites: ["ec2", "asg"]
@@ -67,20 +67,20 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s1", label: "1 · EC2 launch type and Fargate" },
   { href: "#en-s2", label: "2 · Five tasks that run in containers" },
   { href: "#en-s3", label: "3 · Scaling in two layers" },
-  { href: "#en-s4", label: "4 · Kubernetes in the data center" },
+  { href: "#en-s4", label: "4 · Amazon EKS on premises" },
   { href: "#en-s5", label: "5 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-The ShopViet team has packaged the web application, the workers and the reporting jobs as containers. The first decision: do containers run on servers the team manages itself, or does AWS manage the server layer? Next come the day-to-day operational requirements: file storage, scheduled runs, permissions, and scaling resources for the cluster.
+The ShopViet team has packaged the web application, the workers and the reporting jobs as containers. The first decision: do containers run on EC2 instances the team manages itself, or on AWS Fargate, where AWS manages the compute infrastructure? Next come the day-to-day operational requirements: file storage, scheduled runs, permissions, and scaling resources for the cluster.
 </Story>
 
 <Scene id="en-s1" label="Part 1/5" title="EC2 launch type and Fargate" questions={["exam1_q14", "exam4_q33", "exam3_q32", "exam2_q1"]}>
 
-<p class="scene-intro">A container packages an application with everything it needs to run the same way anywhere; containers still need servers to run on, which you can manage yourself or leave to AWS.</p>
+<p class="scene-intro">A container packages an application with all its dependencies so it runs consistently in any environment; containers still need compute infrastructure, either EC2 instances the team manages or AWS Fargate, which AWS manages.</p>
 
 **Amazon ECS** and **Amazon EKS** both need compute infrastructure to run containers. There are two options: manage a group of EC2 instances yourself, or use **AWS Fargate** and declare only the vCPU and memory a task needs. Compare the scope of management responsibility and the billing basis:
 
-<ScenarioFlow client:visible height={240} legend={["Low operational cost", "Self-managed servers"]} scenarios={[
+<ScenarioFlow client:visible height={240} legend={["Low operational cost", "Self-managed EC2 instances"]} scenarios={[
   { name: "Management responsibility and billing basis",
     boxes: [{ x: 20, y: 20, w: 720, h: 200, label: "ECS cluster" }],
     nodes: [
@@ -106,7 +106,7 @@ The ShopViet team has packaged the web application, the workers and the reportin
 
 <Scene id="en-s2" label="Part 2/5" title="Five ShopViet tasks that run in containers" questions={["exam3_q32", "exam2_q27", "exam6_q35", "exam1_q5", "exam4_q56", "exam3_q15", "exam1_q27", "exam2_q1"]}>
 
-<p class="scene-intro">Not every task suits a server that runs all the time; containers fit many kinds of work, from web services to scheduled jobs.</p>
+<p class="scene-intro">Not every task suits an EC2 instance that runs all the time; containers fit many kinds of work, from web services to scheduled jobs.</p>
 
 Pick a task, try it with the simplest option, then turn on the option to apply the matching AWS feature:
 
@@ -119,13 +119,13 @@ Some other ShopViet scenarios:
 
 **IRSA and Kubernetes RBAC solve two different problems.** Kubernetes RBAC (granted through EKS access entries or Kubernetes groups) controls who can work with **Kubernetes objects** in the cluster, for example permission to use `kubectl` to view or change a Deployment. RBAC neither grants nor limits permission to call **AWS APIs** such as S3 or DynamoDB. If both the S3 and DynamoDB policies are attached to the node IAM role (instance profile), every Pod on the node has both permissions, whatever RBAC says. To let the UI Pods reach only DynamoDB and the data-processing Pods reach only S3, give each service **its own service account**, mapped to **its own IAM role** through IRSA (the `eks.amazonaws.com/role-arn` annotation goes on the service account; no policy is attached directly to a Pod) or through **EKS Pod Identity**. Sharing one service account across all Pods removes the permission boundary.
 
-<Takeaway>Durable storage shared between tasks: EFS. Scheduled runs: EventBridge Scheduler starts a Fargate task. Jobs longer than Lambda's time limit (15 minutes for standard functions): containers on Fargate. Separate AWS permissions for each Pod: one service account per service, mapped to its own IAM role (IRSA or EKS Pod Identity); Kubernetes RBAC controls only the Kubernetes API. Pods pending because the cluster is out of resources: Cluster Autoscaler.</Takeaway>
+<Takeaway>Durable storage shared between tasks: EFS. Scheduled runs: EventBridge Scheduler starts a Fargate task. Jobs longer than Lambda's time limit (15 minutes for standard functions): containers on Fargate. Separate AWS permissions for each Pod: one service account per service, mapped to its own IAM role (IRSA or EKS Pod Identity); Kubernetes RBAC controls only the Kubernetes API. Pods in the Pending state because the cluster is out of resources: Cluster Autoscaler.</Takeaway>
 
 </Scene>
 
 <Scene id="en-s3" label="Part 3/5" title="Scaling in two layers: Pods/tasks and nodes" questions={["exam4_q56", "exam5_q36", "exam3_q20"]}>
 
-<p class="scene-intro">When load rises, you need more copies of the application and more servers to hold those copies; the two happen at separate layers.</p>
+<p class="scene-intro">When load rises, you need more copies of the application (Pods or tasks) and more nodes to run those copies; the two happen at separate layers.</p>
 
 During a sale, traffic to ShopViet's web service grows several times over. Scaling happens in two separate layers:
 
@@ -142,7 +142,7 @@ Two lessons from the simulation. First, the HPA only adds Pods; when nodes run o
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/5" title="Kubernetes in the company's data center" questions={["exam1_q27", "exam1_q11"]}>
+<Scene id="en-s4" label="Part 4/5" title="Amazon EKS on premises: Outposts, Hybrid Nodes and EKS Anywhere" questions={["exam1_q27", "exam1_q11"]}>
 
 <p class="scene-intro">Some companies must run applications in their own data centers yet still want the same container management tools they use on AWS.</p>
 
@@ -193,7 +193,7 @@ Sort each feature into the matching runtime model. On a mobile device: tap a car
 
 <SortGame client:visible
   bins={[
-    { id: "ec2", title: "EC2 launch type", sub: "Self-managed instances", hint: "Hint: this feature requires managing servers yourself." },
+    { id: "ec2", title: "EC2 launch type", sub: "Self-managed instances", hint: "Hint: this feature requires managing EC2 instances yourself." },
     { id: "far", title: "Fargate", sub: "Serverless", hint: "Hint: this feature belongs to the model with no servers to manage." },
   ]}
   cards={[

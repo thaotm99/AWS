@@ -160,7 +160,7 @@ const scenarios = (L: Lang): PScenario[] => [
       ],
       ok: ca,
       back: false,
-      result: ca ? L({ vi: "Pod được khởi chạy. Cluster tự động mở rộng theo số Pod.", en: "The Pod starts. The cluster scales out automatically with the number of Pods." }) : L({ vi: "Pod ở trạng thái chờ cho tới khi có node được bổ sung thủ công.", en: "The Pod waits until a node is added manually." }),
+      result: ca ? L({ vi: "Pod được khởi chạy. Cluster tự động mở rộng theo số Pod.", en: "The Pod starts. The cluster scales out automatically with the number of Pods." }) : L({ vi: "Pod ở trạng thái Pending cho tới khi có node được bổ sung thủ công.", en: "The Pod stays in the Pending state until a node is added manually." }),
     }),
   },
 ];

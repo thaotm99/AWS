@@ -1,6 +1,6 @@
 ---
 title: "Container: Amazon ECS, Amazon EKS và AWS Fargate"
-lede: "ShopViet đóng gói các service thành container. Bài học trình bày cách lựa chọn môi trường chạy (EC2 launch type hoặc Fargate, ECS hoặc EKS) và giải quyết năm yêu cầu thực tế: lưu trữ ảnh dùng chung giữa các task, job chạy theo lịch, job vượt quá giới hạn thời gian của Lambda, quyền riêng cho từng Pod, Pod ở trạng thái chờ do cluster hết tài nguyên; sau đó là cách mở rộng theo hai tầng (Pod/task và node) và lựa chọn nơi chạy Kubernetes khi dữ liệu phải ở lại data center."
+lede: "ShopViet đóng gói các service thành container. Bài học trình bày cách lựa chọn môi trường chạy (EC2 launch type hoặc Fargate, ECS hoặc EKS) và giải quyết năm yêu cầu thực tế: lưu trữ ảnh dùng chung giữa các task, job chạy theo lịch, job vượt quá giới hạn thời gian của Lambda, quyền riêng cho từng Pod, Pod ở trạng thái Pending do cluster hết tài nguyên; sau đó là cách mở rộng theo hai tầng (Pod/task và node) và lựa chọn nơi chạy Kubernetes khi dữ liệu phải ở lại data center."
 minutes: 27
 scenes: 5
 prerequisites: ["ec2", "asg"]
@@ -67,20 +67,20 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s1", label: "1 · EC2 launch type và Fargate" },
   { href: "#s2", label: "2 · Năm tác vụ chạy bằng container" },
   { href: "#s3", label: "3 · Mở rộng theo hai tầng" },
-  { href: "#s4", label: "4 · Kubernetes tại data center" },
+  { href: "#s4", label: "4 · Amazon EKS on-premises" },
   { href: "#s5", label: "5 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-Đội ngũ ShopViet đã đóng gói ứng dụng web, worker và các job báo cáo thành container. Quyết định đầu tiên: container chạy trên máy chủ do đội ngũ tự quản lý, hay để AWS quản lý tầng máy chủ. Tiếp theo là các yêu cầu vận hành hằng ngày: lưu trữ tệp, chạy theo lịch, phân quyền và mở rộng tài nguyên cho cluster.
+Đội ngũ ShopViet đã đóng gói ứng dụng web, worker và các job báo cáo thành container. Quyết định đầu tiên: container chạy trên các EC2 instance do đội ngũ tự quản lý, hay trên AWS Fargate, nơi AWS quản lý hạ tầng tính toán. Tiếp theo là các yêu cầu vận hành hằng ngày: lưu trữ tệp, chạy theo lịch, phân quyền và mở rộng tài nguyên cho cluster.
 </Story>
 
 <Scene id="s1" label="Phần 1/5" title="EC2 launch type và Fargate" questions={["exam1_q14", "exam4_q33", "exam3_q32", "exam2_q1"]}>
 
-<p class="scene-intro">Container gói ứng dụng cùng mọi thứ nó cần để chạy giống nhau ở mọi nơi; container vẫn cần máy chủ để chạy, và có thể tự quản lý máy chủ đó hoặc để AWS lo.</p>
+<p class="scene-intro">Container đóng gói ứng dụng cùng mọi thành phần phụ thuộc để chạy nhất quán trên mọi môi trường; container vẫn cần hạ tầng tính toán, có thể là EC2 instance do đội ngũ tự quản lý hoặc AWS Fargate do AWS quản lý.</p>
 
 **Amazon ECS** và **Amazon EKS** đều cần hạ tầng tính toán để chạy container. Có hai lựa chọn: tự quản lý một nhóm EC2 instance, hoặc sử dụng **AWS Fargate** và chỉ khai báo lượng vCPU, RAM mà task yêu cầu. So sánh phạm vi trách nhiệm quản lý và cơ sở tính phí:
 
-<ScenarioFlow client:visible height={240} legend={["Chi phí vận hành thấp", "Tự quản lý máy chủ"]} scenarios={[
+<ScenarioFlow client:visible height={240} legend={["Chi phí vận hành thấp", "Tự quản lý EC2 instance"]} scenarios={[
   { name: "Trách nhiệm quản lý và cơ sở tính phí",
     boxes: [{ x: 20, y: 20, w: 720, h: 200, label: "Cluster ECS" }],
     nodes: [
@@ -106,7 +106,7 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Scene id="s2" label="Phần 2/5" title="Năm tác vụ của ShopViet chạy bằng container" questions={["exam3_q32", "exam2_q27", "exam6_q35", "exam1_q5", "exam4_q56", "exam3_q15", "exam1_q27", "exam2_q1"]}>
 
-<p class="scene-intro">Không phải tác vụ nào cũng phù hợp với một máy chủ chạy liên tục; container phù hợp với nhiều kiểu tác vụ khác nhau, từ dịch vụ web tới job chạy theo lịch.</p>
+<p class="scene-intro">Không phải tác vụ nào cũng phù hợp với một EC2 instance chạy liên tục; container phù hợp với nhiều kiểu tác vụ khác nhau, từ dịch vụ web tới job chạy theo lịch.</p>
 
 Chọn một tác vụ, chạy thử với phương án đơn giản nhất, sau đó bật tuỳ chọn để áp dụng tính năng AWS phù hợp:
 
@@ -119,13 +119,13 @@ Một số tình huống khác của ShopViet:
 
 **IRSA và Kubernetes RBAC giải quyết hai bài toán khác nhau.** Kubernetes RBAC (gán qua EKS access entries hoặc Kubernetes group) quy định ai được thao tác **đối tượng Kubernetes** trong cluster, ví dụ quyền dùng `kubectl` để xem hoặc sửa Deployment. RBAC không cấp và không giới hạn quyền gọi **AWS API** như S3 hay DynamoDB. Nếu gắn cả policy S3 và DynamoDB vào IAM role của node (instance profile), mọi Pod trên node đều có cả hai quyền, bất kể RBAC cấu hình thế nào. Để Pod giao diện chỉ truy cập DynamoDB và Pod xử lý dữ liệu chỉ truy cập S3, mỗi service dùng **một service account riêng**, ánh xạ tới **một IAM role riêng** qua IRSA (annotation `eks.amazonaws.com/role-arn` đặt trên service account, không gắn policy trực tiếp vào Pod) hoặc qua **EKS Pod Identity**. Dùng chung một service account cho mọi Pod thì ranh giới quyền không còn.
 
-<Takeaway>Lưu trữ bền vững, dùng chung giữa các task: EFS. Chạy theo lịch: EventBridge Scheduler khởi chạy task Fargate. Job dài hơn giới hạn thời gian của Lambda (15 phút với function tiêu chuẩn): container trên Fargate. Quyền AWS riêng cho từng Pod: mỗi service một service account, ánh xạ tới IAM role riêng (IRSA hoặc EKS Pod Identity); Kubernetes RBAC chỉ kiểm soát quyền trên Kubernetes API. Pod chờ do cluster hết tài nguyên: Cluster Autoscaler.</Takeaway>
+<Takeaway>Lưu trữ bền vững, dùng chung giữa các task: EFS. Chạy theo lịch: EventBridge Scheduler khởi chạy task Fargate. Job dài hơn giới hạn thời gian của Lambda (15 phút với function tiêu chuẩn): container trên Fargate. Quyền AWS riêng cho từng Pod: mỗi service một service account, ánh xạ tới IAM role riêng (IRSA hoặc EKS Pod Identity); Kubernetes RBAC chỉ kiểm soát quyền trên Kubernetes API. Pod ở trạng thái Pending do cluster hết tài nguyên: Cluster Autoscaler.</Takeaway>
 
 </Scene>
 
 <Scene id="s3" label="Phần 3/5" title="Mở rộng theo hai tầng: Pod/task và node" questions={["exam4_q56", "exam5_q36", "exam3_q20"]}>
 
-<p class="scene-intro">Khi tải tăng, cần thêm cả bản sao của ứng dụng lẫn máy chủ để chứa các bản sao đó; hai việc này diễn ra ở hai tầng riêng biệt.</p>
+<p class="scene-intro">Khi tải tăng, cần thêm cả bản sao của ứng dụng (Pod hoặc task) lẫn node để chạy các bản sao đó; hai việc này diễn ra ở hai tầng riêng biệt.</p>
 
 Trong đợt khuyến mãi, lưu lượng vào service web của ShopViet tăng gấp nhiều lần. Việc mở rộng diễn ra ở hai tầng tách biệt:
 
@@ -142,7 +142,7 @@ Hai điểm rút ra từ mô phỏng. Thứ nhất, HPA chỉ tăng số Pod; kh
 
 </Scene>
 
-<Scene id="s4" label="Phần 4/5" title="Kubernetes tại data center của doanh nghiệp" questions={["exam1_q27", "exam1_q11"]}>
+<Scene id="s4" label="Phần 4/5" title="Amazon EKS on-premises: Outposts, Hybrid Nodes và EKS Anywhere" questions={["exam1_q27", "exam1_q11"]}>
 
 <p class="scene-intro">Một số doanh nghiệp phải chạy ứng dụng trong data center của mình nhưng vẫn muốn dùng cùng công cụ quản lý container như trên AWS.</p>
 
@@ -193,7 +193,7 @@ Phân loại từng đặc tính vào mô hình chạy tương ứng. Trên thi�
 
 <SortGame client:visible
   bins={[
-    { id: "ec2", title: "EC2 launch type", sub: "Tự quản lý instance", hint: "Gợi ý: đặc tính này yêu cầu tự quản lý máy chủ." },
+    { id: "ec2", title: "EC2 launch type", sub: "Tự quản lý instance", hint: "Gợi ý: đặc tính này yêu cầu tự quản lý EC2 instance." },
     { id: "far", title: "Fargate", sub: "Serverless", hint: "Gợi ý: đặc tính này thuộc mô hình không có máy chủ cần quản lý." },
   ]}
   cards={[
