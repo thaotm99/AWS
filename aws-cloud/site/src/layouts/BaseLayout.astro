@@ -97,6 +97,9 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
           <a href="/practice/" aria-current={section === "practice" ? "page" : undefined}><T k="shell.nav.practice" /></a>
           <a href="/glossary/" aria-current={section === "glossary" ? "page" : undefined}><T k="shell.nav.glossary" /></a>
         </nav>
+        <button class="search-btn" id="searchBtn" type="button" aria-label="Tìm kiếm" data-i18n-attr="aria-label:shell.search.open;title:shell.search.shortcut" title="Tìm kiếm (/)" aria-haspopup="dialog" aria-controls="search">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
+        </button>
         <LanguageSwitch />
         <ThemeToggle />
       </div>
@@ -120,14 +123,28 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
       {toc && <aside class="toc-col"><slot name="toc" /></aside>}
     </div>
     <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+    <dialog class="search" id="search" aria-label="Tìm kiếm" data-i18n-attr="aria-label:shell.search.open">
+      <div class="search-panel">
+        <div class="search-field">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
+          <input type="search" role="combobox" aria-expanded="true" aria-controls="search-results" aria-autocomplete="list" autocomplete="off" spellcheck="false"
+            placeholder="Tìm bài học, phần học, thuật ngữ…" aria-label="Tìm kiếm trên toàn site" data-i18n-attr="placeholder:shell.search.placeholder;aria-label:shell.search.label" />
+          <button type="button" class="search-close" data-search-close aria-label="Đóng" data-i18n-attr="aria-label:shell.search.close"><span class="key-only">Esc</span><span class="touch-only"><T k="shell.search.closeShort" /></span></button>
+        </div>
+        <ul class="search-results" id="search-results" role="listbox" aria-label="Kết quả" data-i18n-attr="aria-label:shell.search.results" data-search-results hidden></ul>
+        <p class="search-status" data-search-status role="status" aria-live="polite"></p>
+      </div>
+    </dialog>
 
     <script>
       import { i18n } from "../app/i18n";
       import { theme } from "../app/theme";
       import { ShellController } from "../modules/shell/ui/ShellController";
+      import { SiteSearch } from "../modules/shell/ui/SiteSearch";
       import { diagramZoom } from "../app/zoom";
 
       new ShellController(i18n, theme).start();
+      new SiteSearch(i18n, document.getElementById("search") as HTMLDialogElement, document.getElementById("searchBtn")!).start();
       diagramZoom.start();
     </script>
   </body>

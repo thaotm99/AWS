@@ -1,5 +1,20 @@
 // Source dictionary of the site shell (top bar, study path).
 export const vi = {
+  search: {
+    open: "Tìm kiếm",
+    shortcut: "Tìm kiếm (/ hoặc Ctrl+K)",
+    label: "Tìm kiếm trên toàn site",
+    placeholder: "Tìm bài học, phần học, thuật ngữ…",
+    close: "Đóng tìm kiếm",
+    closeShort: "Đóng",
+    results: "Kết quả tìm kiếm",
+    hint: "Gõ tên dịch vụ, khái niệm hoặc tình huống, ví dụ: NAT gateway, độ trễ, khôi phục. ↑↓ để chọn, Enter để mở.",
+    loading: "Đang tải dữ liệu tìm kiếm…",
+    error: "Không tải được dữ liệu tìm kiếm. Kiểm tra kết nối rồi thử lại.",
+    count: "{n} kết quả",
+    empty: "Không có kết quả cho “{q}”.",
+    kind: { lesson: "Bài học", part: "Phần học", term: "Thuật ngữ" },
+  },
   nav: {
     main: "Chính",
     theory: "Lý thuyết",
