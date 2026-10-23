@@ -2,7 +2,6 @@
 import BaseLayout from "../../../../../layouts/BaseLayout.astro";
 import MockExamPage from "../../../../../modules/practice/ui/MockExamPage.tsx";
 import { practiceCatalog } from "../../../../../modules/practice/content/PracticeCatalog";
-import "../../../../../styles/practice.css";
 
 export function getStaticPaths() {
   return practiceCatalog.examPaths().map(({ cert, exam }) => ({

@@ -3,7 +3,6 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
 import T from "../../../app/T.astro";
 import CatalogPage from "../../../modules/practice/ui/CatalogPage.tsx";
 import { practiceCatalog } from "../../../modules/practice/content/PracticeCatalog";
-import "../../../styles/practice.css";
 
 export function getStaticPaths() {
   return practiceCatalog.listCertifications().map((cert) => ({ params: { cert: cert.id }, props: { cert } }));
