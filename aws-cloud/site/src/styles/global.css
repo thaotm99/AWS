@@ -1617,3 +1617,57 @@ mark.hl.flash { box-shadow: 0 0 0 3px var(--edge); }
 .lp-card { border-width: 2px; box-shadow: 0 4px 0 var(--line); }
 .lp-card[data-state="current"] { box-shadow: 0 4px 0 var(--accent); }
 details.deep { border-width: 2px; border-radius: var(--r-md); }
+
+/* UI refresh: home. */
+.hero { padding: 48px 0 24px; }
+.hero-split { gap: 48px; }
+.hero h1 { font-size: clamp(2.25rem, 5vw, 3.5rem); line-height: 1.14; font-weight: 800; letter-spacing: -0.02em; max-width: 16ch; margin: 16px 0 18px; }
+.hero-hl { background: var(--sun); color: #1e1b4b; border-radius: 12px; padding: 0 .18em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.hero .lede { font-size: var(--step-1); max-width: 34em; }
+.hero-badge { display: inline-flex; align-items: center; padding: 6px 14px; border-radius: 999px; background: var(--ok-soft); color: var(--ok); font-weight: 600; font-size: 0.875rem; }
+.hero-actions { gap: 16px; margin: 24px 0 28px; }
+.hero-stats { display: flex; flex-wrap: wrap; gap: 32px; margin: 0; }
+.hero-stats div { display: flex; flex-direction: column; }
+.hero-stats dd { order: -1; margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 1.75rem; line-height: 1.25; font-variant-numeric: tabular-nums; }
+.hero-stats dt { font-size: 0.875rem; color: var(--muted); }
+.hero-art { border: 0; border-radius: 28px; padding: 20px; background: var(--surface); box-shadow: var(--shadow); }
+.home-features { margin-top: var(--space-section); }
+.home-features > h2, .home-map > h2 { font-size: clamp(1.75rem, 3.2vw, 2.5rem); line-height: 1.2; margin-bottom: 12px; }
+.home-sub { font-size: var(--step-0); margin-bottom: 32px; }
+.showcase { gap: 24px; margin-bottom: 32px; }
+.showcase-row { gap: 40px; padding: 24px; border: 2px solid var(--line); border-radius: 28px; box-shadow: 0 6px 0 var(--line); }
+.showcase-art { border-radius: 20px; padding: 18px; }
+.showcase-row[data-feature="lessons"] .showcase-art { background: var(--accent-soft); }
+.showcase-row[data-feature="practice"] .showcase-art { background: var(--edge-soft); }
+.showcase-row[data-feature="lab"] .showcase-art { background: var(--ok-soft); }
+.showcase-row[data-feature="skills"] .showcase-art { background: var(--sun-soft); }
+.showcase-text h3 { font-size: clamp(1.375rem, 2.2vw, 1.75rem); line-height: 1.3; margin-bottom: 12px; }
+.showcase-text p { font-size: var(--step-0); line-height: 1.65; margin-bottom: 16px; }
+.showcase-text .feature-meta { font-size: 0.875rem; }
+.feature-grid { gap: 24px; }
+.feature { gap: 12px; padding: 20px; border: 2px solid var(--line); border-radius: var(--r-lg); box-shadow: 0 6px 0 var(--line); }
+.feature:hover { transform: translateY(-2px); box-shadow: 0 8px 0 var(--line); }
+.feature h3 { font-size: 1.25rem; line-height: 1.35; }
+.feature p { font-size: 0.9375rem; line-height: 1.6; }
+.feature-art { margin: 0 0 4px; padding: 12px; border-radius: 18px; }
+.feature[data-feature="compare"] .feature-art { background: var(--accent-soft); }
+.feature[data-feature="flashcards"] .feature-art { background: color-mix(in srgb, var(--blue) 14%, var(--surface)); }
+.feature[data-feature="notes"] .feature-art { background: var(--sun-soft); }
+.feature[data-feature="progress"] .feature-art { background: var(--ok-soft); }
+.feature-cta { font-family: var(--font-display); font-size: 0.9375rem; }
+.home-extras li { padding: 6px 14px; font-size: 0.875rem; }
+.home-cta { margin-top: var(--space-section); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; padding: 48px; border-radius: 32px; background: var(--accent-strong); color: #ffffff; }
+:root[data-theme="dark"] .home-cta { background: #2a2660; }
+.home-cta h2 { color: #ffffff; margin: 0 0 8px; font-size: clamp(1.5rem, 3vw, 2.25rem); }
+.home-cta p { color: #e0e1ff; margin: 0; font-size: var(--step-1); }
+.btn.sun { background: var(--sun); border-color: var(--sun); color: #1e1b4b; box-shadow: 0 5px 0 var(--sun-strong); }
+.btn.sun:hover:not(:disabled) { border-color: var(--sun); filter: brightness(1.04); }
+.home-map { margin-top: var(--space-section); }
+@media (max-width: 760px) {
+  .hero { padding-top: 24px; }
+  .hero-actions .btn { flex: 1 1 100%; }
+  .hero-stats { gap: 20px; }
+  .showcase-row { padding: 16px; gap: 16px; }
+  .home-cta { padding: 28px 20px; border-radius: 24px; }
+  .home-cta .btn { flex: 1 1 100%; }
+}

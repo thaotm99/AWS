@@ -44,9 +44,9 @@ const order = concepts.filter((c) => ready.has(c.id)).map((c) => ({ id: c.id, vi
 <BaseLayout title="CloudLab" sidebar={false} wide>
   <section class="hero hero-split">
     <div class="hero-copy">
-    <p class="hero-eyebrow"><T k="shell.home.eyebrow" /></p>
-    <h1><T k="shell.home.title" /></h1>
-    <p class="lede"><T k="shell.home.lede" /></p>
+    <span class="hero-badge"><T k="shell.home.badge" /></span>
+    <h1><T k="shell.home.titleA" /> <mark class="hero-hl"><T k="shell.home.titleHl" /></mark> <T k="shell.home.titleB" /></h1>
+    <p class="lede"><T k="shell.home.lede2" /></p>
     <div class="hero-actions">
       {first && (
         <a class="btn primary cta home-start" href={`/concepts/${first.id}/`} data-lessons={JSON.stringify(order)}>
@@ -56,6 +56,11 @@ const order = concepts.filter((c) => ready.has(c.id)).map((c) => ({ id: c.id, vi
       )}
       <a class="btn cta" href="/practice/"><T k="shell.home.practice" /></a>
     </div>
+    <dl class="hero-stats">
+      <div><dd>{lessons}</dd><dt><T k="shell.home.statLessons" /></dt></div>
+      <div><dd>{questions}</dd><dt><T k="shell.home.statQuestions" /></dt></div>
+      <div><dd>{LABS.length + DRILLS.length}</dd><dt><T k="shell.home.statLabs" /></dt></div>
+    </dl>
     </div>
     <div class="hero-art"><FeatureArt kind="hero" /></div>
   </section>
@@ -97,6 +102,14 @@ const order = concepts.filter((c) => ready.has(c.id)).map((c) => ({ id: c.id, vi
         {extras.map((x) => <li><T k={`shell.home.extra.${x}`} /></li>)}
       </ul>
     </div>
+  </section>
+
+  <section class="home-cta" aria-labelledby="cta-title">
+    <div>
+      <h2 id="cta-title"><T k="shell.home.ctaTitle" /></h2>
+      <p><T k="shell.home.ctaBody" params={{ n: cert.questionCount, min: cert.minutes }} /></p>
+    </div>
+    <a class="btn cta sun" href={`/practice/${cert.id}/1/mock/`}><T k="shell.home.ctaButton" /></a>
   </section>
 
   <section class="home-map" aria-labelledby="map-title">
