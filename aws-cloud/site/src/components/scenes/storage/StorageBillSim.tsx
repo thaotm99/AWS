@@ -1,6 +1,5 @@
 import { useId, useState } from "react";
 import { useLang, type Bi } from "../../../lib/lang";
-import "./storage-sims.css";
 
 // Monthly storage charge for the same data on S3, EFS and EBS, us-east-1 list prices from the
 // AWS Price List API (AmazonS3, AmazonEFS, AmazonEC2 offer files, October 2026):
@@ -29,21 +28,21 @@ export default function StorageBillSim() {
   const order = sorted.map((c, i) => (i ? (Math.abs(c.usd - sorted[i - 1].usd) < 1e-9 ? " = " : " < ") : "") + tr(c.name)).join("");
 
   return (
-    <div className="stage stx">
-      <div className="stage-bar">
+    <div className="stage">
+      <div className="stage-bar mt-3 border-t border-line">
         <label className="label" htmlFor={`${uid}-data`}>{tr({ vi: "Dữ liệu thực tế lưu trữ: ", en: "Data actually stored: " })}{data} GB</label>
         <input id={`${uid}-data`} type="range" min={1} max={500} step={1} value={data} onChange={(e) => setData(Number(e.target.value))} />
       </div>
-      <div className="stage-bar">
+      <div className="stage-bar mt-3 border-t border-line">
         <label className="label" htmlFor={`${uid}-vol`}>{tr({ vi: "Dung lượng EBS volume cấp phát: ", en: "Provisioned EBS volume size: " })}{size} GB</label>
         <input id={`${uid}-vol`} type="range" min={10} max={1000} step={10} value={vol} onChange={(e) => setVol(Number(e.target.value))} />
       </div>
-      <div className="stx-bars" aria-live="polite">
+      <div className="grid gap-2 px-3.5 py-3" aria-live="polite">
         {cost.map((c) => (
-          <div key={c.id} className="stx-bar">
-            <span>{tr(c.name)}</span>
-            <span className="stx-bar-track"><span className={`stx-bar-fill ${c.ebs ? "ebs" : ""}`} style={{ display: "block", width: `${Math.max(1, (c.usd / max) * 100)}%` }} /></span>
-            <b>{money(c.usd)}</b>
+          <div key={c.id} className="grid grid-cols-[minmax(0,12rem)_minmax(0,1fr)_6rem] items-center gap-2 text-step--1 max-sm:grid-cols-[minmax(0,1fr)_5.5rem]">
+            <span className="wrap-anywhere">{tr(c.name)}</span>
+            <span className="h-3.5 overflow-hidden rounded-[4px] border border-line bg-bg max-sm:col-span-full max-sm:row-start-2"><span className={`h-full transition-[width] duration-300 ease-[ease] ${c.ebs ? "bg-edge" : "bg-accent"}`} style={{ display: "block", width: `${Math.max(1, (c.usd / max) * 100)}%` }} /></span>
+            <b className="text-right font-mono text-[0.8rem]">{money(c.usd)}</b>
           </div>
         ))}
       </div>

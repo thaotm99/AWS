@@ -152,22 +152,22 @@ export default function FsxSim() {
   }
 
   return (
-    <div className="stage stx">
-      <div className="stx-row" role="group" aria-label={tr({ vi: "Nhóm người dùng", en: "User group" })}>
-        <span className="stx-lbl">{tr({ vi: "Nhóm", en: "Group" })}</span>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-3" role="group" aria-label={tr({ vi: "Nhóm người dùng", en: "User group" })}>
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{tr({ vi: "Nhóm", en: "Group" })}</span>
         {TEAMS.map((t, i) => (
           <button key={t.name.vi} className="chip" aria-pressed={i === teamIx} disabled={busy} onClick={() => { setTeamIx(i); reset(); }}>{tr(t.name)}</button>
         ))}
       </div>
-      <div className="stx-row" role="group" aria-label="File system">
-        <span className="stx-lbl">File system</span>
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-2" role="group" aria-label="File system">
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">File system</span>
         {FS.map((f) => (
           <button key={f.id} className="chip" aria-pressed={f.id === fs} disabled={busy} onClick={() => { setFs(f.id); reset(); }}>{f.l1}</button>
         ))}
       </div>
-      <div className="stage-bar">
-        <span className="stx-hint">{tr({ vi: "Ba yêu cầu bắt buộc: ", en: "Three must-haves: " })}{team.gates.map((g) => tr(g[0])).join(" · ")}</span>
-        <button className="btn primary" onClick={mount} disabled={busy}>{tr({ vi: "Mount thử", en: "Try mount" })}</button>
+      <div className="stage-bar mt-3 border-t border-line">
+        <span className="m-0 text-step--1 text-muted">{tr({ vi: "Ba yêu cầu bắt buộc: ", en: "Three must-haves: " })}{team.gates.map((g) => tr(g[0])).join(" · ")}</span>
+        <button className="btn primary ml-auto" onClick={mount} disabled={busy}>{tr({ vi: "Mount thử", en: "Try mount" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 10 820 250" role="img" aria-label={tr({ vi: "Request mount đi từ máy của nhóm qua ba yêu cầu bắt buộc rồi tới file system được chọn", en: "The mount request goes from the group’s machines through three must-have requirements to the chosen file system" })}>
@@ -197,7 +197,7 @@ export default function FsxSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="stx-hint">{tr({ vi: <>Chọn một nhóm và một file system, sau đó nhấn <b>Mount thử</b>. Thử lần lượt cả năm file system để xác định lý do mỗi nhóm phù hợp với một loại.</>, en: <>Choose a group and a file system, then press <b>Try mount</b>. Try all five file systems in turn to see why each group fits one type.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{tr({ vi: <>Chọn một nhóm và một file system, sau đó nhấn <b>Mount thử</b>. Thử lần lượt cả năm file system để xác định lý do mỗi nhóm phù hợp với một loại.</>, en: <>Choose a group and a file system, then press <b>Try mount</b>. Try all five file systems in turn to see why each group fits one type.</> })}</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) => (

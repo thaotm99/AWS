@@ -113,13 +113,13 @@ export default function MountpointSim() {
   );
 
   return (
-    <div className="stage stx">
-      <div className="stx-row" role="group" aria-label={tr({ vi: "Nơi lưu dữ liệu", en: "Where the data lives" })}>
-        <span className="stx-lbl">{tr({ vi: "Mount", en: "Mount" })}</span>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-3" role="group" aria-label={tr({ vi: "Nơi lưu dữ liệu", en: "Where the data lives" })}>
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{tr({ vi: "Mount", en: "Mount" })}</span>
         <button className="chip" aria-pressed={mp} disabled={busy} onClick={() => pickTarget("mp")}>Mountpoint for Amazon S3</button>
         <button className="chip" aria-pressed={!mp} disabled={busy} onClick={() => pickTarget("efs")}>Amazon EFS</button>
       </div>
-      <div className="stx-ops" role="group" aria-label={tr({ vi: "Thao tác tệp", en: "File operations" })}>
+      <div className="flex flex-wrap gap-1.5 px-3.5 pt-2.5 pb-0" role="group" aria-label={tr({ vi: "Thao tác tệp", en: "File operations" })}>
         {OPS.map((o) => (
           <button key={o.id} className="chip" disabled={busy} onClick={() => runOp(o.id)}>{tr(o.label)}</button>
         ))}
@@ -135,7 +135,7 @@ export default function MountpointSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="stx-hint">{tr({ vi: <>Chọn nơi mount, sau đó chạy lần lượt từng thao tác. Lặp lại với <b>Amazon EFS</b> để so sánh.</>, en: <>Choose what to mount, then run each operation in turn. Repeat with <b>Amazon EFS</b> to compare.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{tr({ vi: <>Chọn nơi mount, sau đó chạy lần lượt từng thao tác. Lặp lại với <b>Amazon EFS</b> để so sánh.</>, en: <>Choose what to mount, then run each operation in turn. Repeat with <b>Amazon EFS</b> to compare.</> })}</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) => (

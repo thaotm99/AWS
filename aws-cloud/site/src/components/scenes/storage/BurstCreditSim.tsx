@@ -165,29 +165,29 @@ export default function BurstCreditSim({ kind }: { kind: "ebs" | "efs" }) {
     : tr({ vi: "Dung lượng file system: ", en: "File system size: " });
 
   return (
-    <div className="stage stx">
-      <div className="stx-row" role="group" aria-label={kind === "ebs" ? tr({ vi: "Loại volume", en: "Volume type" }) : "Throughput mode"}>
-        <span className="stx-lbl">{kind === "ebs" ? tr({ vi: "Volume", en: "Volume" }) : "Throughput"}</span>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-3" role="group" aria-label={kind === "ebs" ? tr({ vi: "Loại volume", en: "Volume type" }) : "Throughput mode"}>
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{kind === "ebs" ? tr({ vi: "Volume", en: "Volume" }) : "Throughput"}</span>
         {MODES[kind].map((m) => (
           <button key={m.id} className="chip" aria-pressed={m.id === mode} disabled={busy} onClick={() => change(() => setMode(m.id))}>{tr(m.label)}</button>
         ))}
       </div>
-      <div className="stage-bar">
+      <div className="stage-bar mt-3 border-t border-line">
         <label className="label" htmlFor={`${uid}-size`}>{sizeLabel}{num(size)} GiB</label>
         <input id={`${uid}-size`} type="range" min={kind === "ebs" ? 20 : 50} max={sizeMax} step={10} value={size} disabled={busy || mode === "gp3"} onChange={(e) => change(() => setSize(Number(e.target.value)))} />
       </div>
-      <div className="stage-bar">
+      <div className="stage-bar mt-3 border-t border-line">
         <label className="label" htmlFor={`${uid}-spike`}>{tr({ vi: "Đợt cao điểm kéo dài: ", en: "Peak lasts: " })}{spike} {tr({ vi: "phút", en: "min" })} · {kind === "ebs" ? `${num(3000)} IOPS` : tr({ vi: "ghi 100 MiBps", en: "100 MiBps writes" })}</label>
         <input id={`${uid}-spike`} type="range" min={15} max={240} step={15} value={spike} disabled={busy} onChange={(e) => change(() => setSpike(Number(e.target.value)))} />
       </div>
-      <div className="stage-bar">
+      <div className="stage-bar mt-3 border-t border-line">
         {kind === "efs" && (
-          <label className="stx-toggle">
+          <label className="inline-flex cursor-pointer items-center gap-1.5 text-step--1">
             <input type="checkbox" checked={ia} disabled={busy || mode !== "bursting"} onChange={(e) => change(() => setIa(e.target.checked))} />
             {tr({ vi: "Lifecycle: 80% dữ liệu đã chuyển sang IA", en: "Lifecycle: 80% of the data moved to IA" })}
           </label>
         )}
-        <button className="btn primary" onClick={play} disabled={busy}>{tr({ vi: "Chạy 6 giờ", en: "Run 6 hours" })}</button>
+        <button className="btn primary ml-auto" onClick={play} disabled={busy}>{tr({ vi: "Chạy 6 giờ", en: "Run 6 hours" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 0 820 214" role="img" aria-label={tr({ vi: `Biểu đồ 6 giờ: nhu cầu, hiệu năng thực tế (${unit}) và số dư burst credit`, en: `Six-hour chart: demand, delivered performance (${unit}) and burst credit balance` })}>
@@ -203,7 +203,7 @@ export default function BurstCreditSim({ kind }: { kind: "ebs" | "efs" }) {
           {shown > 0 && <path className="stx-demand" d={line(run.demand, y)} />}
           {shown > 0 && <path className="stx-deliver" d={line(run.delivered, y)} />}
           {shown > 0 && shown < WINDOW && <path className="stx-cursor" d={`M${x(shown)} ${PY0} V${PY1}`} />}
-          <g className="stx-legend">
+          <g>
             <path className="stx-demand" d="M60 200 h22" /><text className="stx-s" x={88} y={204}>{tr({ vi: "nhu cầu", en: "demand" })}</text>
             <path className="stx-deliver" d="M170 200 h22" /><text className="stx-s" x={198} y={204}>{tr({ vi: "thực tế", en: "delivered" })}</text>
             <rect className="stx-credit" x={280} y={194} width={22} height={12} /><text className="stx-s" x={308} y={204}>{kind === "ebs" && mode === "gp3" || kind === "efs" && mode !== "bursting" ? tr({ vi: "không dùng burst credit", en: "no burst credits" }) : tr({ vi: `số dư credit (trần ${tr(run.capLabel)})`, en: `credit balance (cap ${tr(run.capLabel)})` })}</text>
@@ -214,7 +214,7 @@ export default function BurstCreditSim({ kind }: { kind: "ebs" | "efs" }) {
         {verdict ? (
           <p className={`stx-result ${verdict.tone}`}>{rich(tr(verdict.msg))}</p>
         ) : (
-          <p className="stx-hint">{tr({ vi: <>Chọn cấu hình, kéo thanh trượt, sau đó nhấn <b>Chạy 6 giờ</b>. Đợt cao điểm bắt đầu ở phút thứ 30; ngoài đợt cao điểm hệ thống gần như không có tải.</>, en: <>Pick a configuration, move the sliders, then press <b>Run 6 hours</b>. The peak starts at minute 30; outside the peak the system is almost idle.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{tr({ vi: <>Chọn cấu hình, kéo thanh trượt, sau đó nhấn <b>Chạy 6 giờ</b>. Đợt cao điểm bắt đầu ở phút thứ 30; ngoài đợt cao điểm hệ thống gần như không có tải.</>, en: <>Pick a configuration, move the sliders, then press <b>Run 6 hours</b>. The peak starts at minute 30; outside the peak the system is almost idle.</> })}</p>
         )}
       </div>
     </div>

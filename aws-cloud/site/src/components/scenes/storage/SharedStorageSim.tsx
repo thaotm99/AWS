@@ -127,19 +127,19 @@ export default function SharedStorageSim() {
   };
 
   return (
-    <div className="stage stx">
-      <div className="stx-row" role="group" aria-label={tr({ vi: "Vị trí lưu video", en: "Where to store the video" })}>
-        <span className="stx-lbl">{tr({ vi: "Lưu video tại", en: "Store video on" })}</span>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-3" role="group" aria-label={tr({ vi: "Vị trí lưu video", en: "Where to store the video" })}>
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{tr({ vi: "Lưu video tại", en: "Store video on" })}</span>
         {STORES.map((s) => (
           <button key={s.id} className="chip" aria-pressed={s.id === store} disabled={busy} onClick={() => { setStore(s.id); reset(); }}>{tr(s.name)}</button>
         ))}
       </div>
-      <div className="stage-bar">
-        <label className="stx-toggle">
+      <div className="stage-bar mt-3 border-t border-line">
+        <label className="inline-flex cursor-pointer items-center gap-1.5 text-step--1">
           <input type="checkbox" checked={azDown} disabled={busy} onChange={(e) => { setAzDown(e.target.checked); reset(); }} />
           {tr({ vi: "AZ a mất nguồn điện", en: "AZ a loses power" })}
         </label>
-        <button className="btn primary" onClick={run} disabled={busy}>{tr({ vi: "Người dùng tải lên video", en: "User uploads a video" })}</button>
+        <button className="btn primary ml-auto" onClick={run} disabled={busy}>{tr({ vi: "Người dùng tải lên video", en: "User uploads a video" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 10 820 250" role="img" aria-label={tr({ vi: "Ba EC2 instance chạy web server tại hai AZ cùng cần đọc một video; video được lưu trên EBS, EFS hoặc S3", en: "Three EC2 web server instances in two AZs all need to read one video; the video is stored on EBS, EFS or S3" })}>
@@ -174,7 +174,7 @@ export default function SharedStorageSim() {
       </div>
       <div className="readout">
         {log.length === 0 && !result ? (
-          <p className="stx-hint">{tr({ vi: <>Chọn vị trí lưu video, sau đó nhấn <b>Người dùng tải lên video</b>: video được ghi qua một instance, sau đó cả ba instance cùng truy cập. Bật <b>AZ a mất nguồn điện</b> để mô phỏng sự cố một AZ.</>, en: <>Choose where to store the video, then press <b>User uploads a video</b>: the video is written through one instance, then all three instances access it. Turn on <b>AZ a loses power</b> to simulate an AZ failure.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{tr({ vi: <>Chọn vị trí lưu video, sau đó nhấn <b>Người dùng tải lên video</b>: video được ghi qua một instance, sau đó cả ba instance cùng truy cập. Bật <b>AZ a mất nguồn điện</b> để mô phỏng sự cố một AZ.</>, en: <>Choose where to store the video, then press <b>User uploads a video</b>: the video is written through one instance, then all three instances access it. Turn on <b>AZ a loses power</b> to simulate an AZ failure.</> })}</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) => (
