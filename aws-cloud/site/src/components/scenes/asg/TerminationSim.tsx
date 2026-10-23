@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLang, type Bi } from "../../../lib/lang";
+import "./asg-sims.css";
 
 // Default termination policy, step by step (exam4_q16, exam2_q65):
 // 1. AZ with the most instances; 2. outdated configurations. For groups that use a launch
@@ -114,18 +115,18 @@ export default function TerminationSim() {
           <button className="btn" aria-pressed={group === "LC"} onClick={() => { setGroup("LC"); setShown(0); }}>{L({ vi: "launch configuration (cơ chế cũ)", en: "launch configuration (legacy)" })}</button>
         </div>
       )}
-      <div className="term-grid">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-3 p-3.5">
         {azs.map((az) => (
-          <div key={az} className="term-az">
+          <div key={az} className="grid content-start gap-2 rounded-[14px] border border-line bg-bg p-2.5">
             <b>{az}</b>
-            <div className="term-list">
+            <div className="grid gap-1.5">
               {sc.instances.filter((i) => i.az === az).map((i) => {
-                const cls = ["term-inst", guess === i.id ? "guess" : "", keep.includes(i.id) ? "" : "out", done && i.id === victim ? "victim" : ""].filter(Boolean).join(" ");
+                const cls = ["asg-inst", guess === i.id ? "guess" : "", keep.includes(i.id) ? "" : "out", done && i.id === victim ? "victim" : ""].filter(Boolean).join(" ");
                 return (
                   <button key={i.id} className={cls} onClick={() => !shown && setGuess(i.id)} disabled={shown > 0}>
-                    <span className="term-id">{i.id}</span>
+                    <span className="font-mono font-medium text-accent">{i.id}</span>
                     <span>{typeof i.label === "string" ? i.label : L(i.label)}{i.prot && <b className="term-prot"> · scale-in protection</b>}</span>
-                    <span className="term-meta">{i.kind === "LC" ? "launch configuration" : "launch template"} · {L({ vi: `còn ${i.billing} phút tới giờ tính phí`, en: `${i.billing} min to billing hour` })}</span>
+                    <span className="text-[0.75rem] text-muted">{i.kind === "LC" ? "launch configuration" : "launch template"} · {L({ vi: `còn ${i.billing} phút tới giờ tính phí`, en: `${i.billing} min to billing hour` })}</span>
                   </button>
                 );
               })}
@@ -136,7 +137,7 @@ export default function TerminationSim() {
       <div className="readout" aria-live="polite">
         {!guess && <p style={{ margin: 0 }}>{L({ vi: "ASG chuẩn bị scale in 1 instance. Chọn instance dự đoán sẽ bị terminate, sau đó quan sát từng bước đánh giá của ASG.", en: "The ASG is about to scale in by 1 instance. Pick the instance you predict will be terminated, then follow each step of the ASG evaluation." })}</p>}
         {guess && (
-          <ol className="term-steps">
+          <ol className="mx-0 mt-0 mb-2 grid gap-1 pl-5">
             {steps.slice(0, shown).map((s, i) => <li key={i}>{s.text}</li>)}
           </ol>
         )}

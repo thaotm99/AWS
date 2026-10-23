@@ -1,5 +1,6 @@
 import { useId, useState } from "react";
 import { useLang } from "../../../lib/lang";
+import "./asg-sims.css";
 
 // How many instances, in how many AZs, keep the required minimum running after one AZ
 // fails (exam2_q31, exam5_q61).
@@ -28,12 +29,12 @@ export default function AzCapacityCalc() {
         <span className="sep" />
         <button className="btn danger" aria-pressed={down} onClick={() => setDown(!down)}>{down ? L({ vi: "Khôi phục AZ 1", en: "Restore AZ 1" }) : L({ vi: "Mô phỏng sự cố AZ 1", en: "Simulate AZ 1 failure" })}</button>
       </div>
-      <div className="cap-grid">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-2.5 p-3.5">
         {Array.from({ length: azs }, (_, i) => (
-          <div key={i} className={"cap-az" + (down && i === 0 ? " down" : "")}>
+          <div key={i} className={"asg-zone" + (down && i === 0 ? " down" : "")}>
             <b>AZ {i + 1}</b>
-            <div className="cap-insts">
-              {Array.from({ length: perAz }, (_, j) => <span key={j} className="cap-inst" aria-hidden="true" />)}
+            <div className="flex min-h-6 flex-wrap gap-1.5">
+              {Array.from({ length: perAz }, (_, j) => <span key={j} className="asg-unit" aria-hidden="true" />)}
             </div>
             <span className="count">{L({ vi: `${perAz} instance`, en: `${perAz} instances` })}</span>
           </div>

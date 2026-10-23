@@ -1,72 +1,58 @@
-/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
-@layer legacy {
-/* One day of scaling (asg/ScalingPolicySim) */
-.sps-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
-.sps .stage-bar .sps-play { margin-left: auto; }
-.sps-about { margin: 10px 16px 0; font-size: var(--step--1); color: var(--muted); }
-.sps-grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
-.sps-bar { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1; transition: fill .2s, stroke .2s, opacity .2s; }
-.sps-bar.over { fill: var(--bad-soft); stroke: var(--bad); }
-.sps-bar.ghost { opacity: .25; }
-.sps-cap { fill: none; stroke: var(--ok); stroke-width: 3; stroke-linejoin: round; }
-.sps-now { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 2 3; }
-.sps-flash { fill: var(--muted); font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-anchor: middle; }
-.sps-flash.up { fill: var(--ok); }
-.sps-flash.bad { fill: var(--bad); }
-.sps-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
-.sps-idle { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
-.sps-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 12px; font-size: var(--step--1); }
-.sps-result.ok { background: var(--ok-soft); }
-.sps-result.bad { background: var(--bad-soft); }
+@reference "../../../styles/app.css";
 
-/* Simple vs step vs target tracking (asg/DynamicPolicySim) */
-.dps .stage-bar .dps-play, .hrs .stage-bar .hrs-play { margin-left: auto; }
-.dps-about { margin: 10px 16px 0; font-size: var(--step--1); color: var(--muted); }
-.dps-rule { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
-.dps-axis { font-weight: 600; }
-.dps-thr { stroke: var(--bad); stroke-width: 1.5; stroke-dasharray: 6 4; }
-.dps-thr-t { fill: var(--bad); }
-.dps-desired { fill: none; stroke: var(--accent); stroke-width: 2; stroke-dasharray: 5 4; }
-.dps-cool { fill: var(--violet); opacity: .12; }
-.dps-log { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 4px; font-size: var(--step--1); }
-.dps-log .count { margin-right: 4px; }
+/* Auto Scaling lesson simulations: SVG chart parts and the instance cards and markers whose look follows the
+   simulation state. Layout lives in the markup. */
+@layer components {
+  /* ScalingPolicySim and DynamicPolicySim charts: demand bars (.over when short, .ghost not played yet), capacity
+     line, "now" cursor, alarm threshold, desired capacity and cooldown band. */
+  .sps-grid { @apply stroke-line stroke-1; stroke-dasharray: 3 4; }
+  .sps-bar { @apply fill-accent-soft stroke-accent stroke-1; transition: fill .2s, stroke .2s, opacity .2s; }
+  .sps-bar.over { @apply fill-bad-soft stroke-bad; }
+  .sps-bar.ghost { @apply opacity-25; }
+  .sps-cap { @apply fill-none stroke-ok stroke-3; stroke-linejoin: round; }
+  .sps-now { @apply stroke-muted stroke-1; stroke-dasharray: 2 3; }
+  .dps-axis { @apply font-semibold; }
+  .dps-thr { @apply stroke-bad stroke-[1.5]; stroke-dasharray: 6 4; }
+  .dps-thr-t { @apply fill-bad; }
+  .dps-desired { @apply fill-none stroke-accent stroke-2; stroke-dasharray: 5 4; }
+  .dps-cool { @apply fill-violet opacity-12; }
+  /* Capacity change that flashText() pops on the chart: .up when scaling out, .bad when short. */
+  .sps-flash { @apply fill-muted font-mono text-[12px] font-bold; text-anchor: middle; }
+  .sps-flash.up { @apply fill-ok; }
+  .sps-flash.bad { @apply fill-bad; }
 
-/* Health check replacement (asg/HealthReplaceSim) */
-.hrs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; padding: 14px; }
-.hrs-inst { display: grid; gap: 2px; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 8px 10px; font-size: 0.85rem; transition: background .25s, border-color .25s; }
-.hrs-inst.ok { border-color: var(--ok); }
-.hrs-inst.impaired, .hrs-inst.oos { border-color: var(--violet); background: color-mix(in srgb, var(--violet) 10%, var(--surface)); }
-.hrs-inst.unhealthy, .hrs-inst.terminating { border-color: var(--bad); background: var(--bad-soft); }
-.hrs-inst.terminating { opacity: .6; }
-.hrs-inst.pending { border-style: dashed; border-color: var(--accent); background: var(--accent-soft); }
+  /* HealthReplaceSim: an instance in its health state. */
+  .hrs-inst { @apply grid gap-0.5 rounded-[12px] border border-line bg-surface px-2.5 py-2 text-[0.85rem]; transition: background .25s, border-color .25s; }
+  .hrs-inst.ok { @apply border-ok; }
+  .hrs-inst.impaired, .hrs-inst.oos { @apply border-violet; background: color-mix(in srgb, var(--color-violet) 10%, var(--color-surface)); }
+  .hrs-inst.unhealthy, .hrs-inst.terminating { @apply border-bad bg-bad-soft; }
+  .hrs-inst.terminating { @apply opacity-60; }
+  .hrs-inst.pending { @apply border-dashed border-accent bg-accent-soft; }
 
-/* Group setup (asg/GroupSetupSim) */
-.gss-field { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: var(--step--1); }
-.gss-field input { max-width: 140px; }
-.gss-chips { display: inline-flex; flex-wrap: wrap; gap: 4px; }
-.gss-insts { display: flex; flex-wrap: wrap; gap: 5px; min-height: 18px; }
-.gss-inst { display: inline-block; width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--accent); background: var(--accent); }
-.gss-inst.od { background: var(--accent-soft); }
-.gss-inst.spot { border-color: var(--ok); background: var(--ok-soft); border-style: dashed; }
-.gss-key { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); }
-.gss-issues { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 4px; font-size: var(--step--1); }
-.gss-issues li.bad::marker { color: var(--bad); }
-.gss-issues li.ok::marker { color: var(--ok); }
+  /* TerminationSim: an instance the visitor can pick; .guess is the pick, .out is kept out of the running,
+     .victim is the instance the policy terminates. */
+  .asg-inst { @apply grid cursor-pointer gap-0.5 rounded-[12px] border border-line bg-surface px-2.5 py-2 text-left text-[0.875rem] disabled:cursor-default; transition: opacity .25s; }
+  .asg-inst.guess { @apply border-accent shadow-[0_0_0_2px_var(--color-accent-soft)]; }
+  .asg-inst.out { @apply opacity-35; }
+  .asg-inst.victim { @apply border-bad bg-bad-soft opacity-100; }
+  .term-prot { @apply font-semibold text-violet; }
 
-/* Min / desired / max (asg/CapacityRangeSim) */
-.crs-actions { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
-.crs-actions .btn { text-align: left; }
-.crs-track { position: relative; height: 70px; margin: 14px 28px 0; border-bottom: 2px solid var(--line); }
-.crs-band { position: absolute; bottom: -2px; height: 10px; background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 4px; transition: left .3s, width .3s; }
-.crs-mark { position: absolute; bottom: 0; width: 2px; height: 26px; background: var(--muted); transition: left .3s; }
-.crs-mark span { position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
-.crs-mark.desired { height: 46px; background: var(--accent); }
-.crs-mark.desired span { bottom: 48px; color: var(--accent); font-weight: 700; }
-.crs-mark.min span { transform: translateX(-80%); }
-.crs-mark.max span { transform: translateX(-20%); }
-.crs-insts { display: flex; flex-wrap: wrap; gap: 5px; padding: 12px 14px; min-height: 40px; }
-.crs-old { opacity: .6; }
+  /* AzCapacityCalc and CapacityRangeSim: an instance square, and an AZ that can go .down. */
+  .asg-unit { @apply inline-block size-5 rounded-[4px] bg-ok; }
+  .asg-zone { @apply grid gap-2 rounded-[14px] border border-line bg-bg p-2.5; }
+  .asg-zone.down { @apply border-bad bg-bad-soft; }
+  .asg-zone.down .asg-unit { @apply bg-bad opacity-35; }
 
-/* Scale-in protection badge (asg/TerminationSim) */
-.term-prot { color: var(--violet); font-weight: 600; }
+  /* GroupSetupSim: an instance square by purchase option (base, od, spot). */
+  .gss-inst { @apply inline-block size-4 rounded-[4px] border-[1.5px] border-accent bg-accent; }
+  .gss-inst.od { @apply bg-accent-soft; }
+  .gss-inst.spot { @apply border-dashed border-ok bg-ok-soft; }
+
+  /* CapacityRangeSim: min, max and desired markers on the capacity track, labelled above. */
+  .crs-mark { @apply absolute bottom-0 h-[26px] w-0.5 bg-muted; transition: left .3s; }
+  .crs-mark span { @apply absolute bottom-7 left-1/2 -translate-x-1/2 font-mono text-[0.72rem] whitespace-nowrap text-muted; }
+  .crs-mark.desired { @apply h-[46px] bg-accent; }
+  .crs-mark.desired span { @apply bottom-12 font-bold text-accent; }
+  .crs-mark.min span { @apply -translate-x-[80%]; }
+  .crs-mark.max span { @apply -translate-x-[20%]; }
 }
