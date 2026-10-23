@@ -1,4 +1,4 @@
-# Quy tắc cho `aws-cloud/` (site AWS Thực Chiến)
+# Quy tắc cho `aws-cloud/` (site CloudLab)
 
 Các quy tắc này do chủ repo đặt ra, áp dụng cho mọi phiên làm việc trên site.
 

@@ -80,6 +80,11 @@ export function setPartRead(lesson: string, slug: string, all: string[]) {
   else window.dispatchEvent(new Event(PROGRESS_EVENT));
 }
 
+/** Every part read, as "lesson/slug". */
+export function getAllPartsRead(): string[] {
+  return Object.entries(readParts()).flatMap(([lesson, slugs]) => (Array.isArray(slugs) ? slugs.map((s) => `${lesson}/${s}`) : []));
+}
+
 /** The part the reader opened last, for the "Continue" link on the home page. */
 const LAST_KEY = "last-part";
 
@@ -87,6 +92,8 @@ export interface LastPart {
   lesson: string;
   slug: string;
   title: { vi: string; en: string };
+  /** Where "Next" leads from it: the next part, the quiz or the overview. */
+  next?: { href: string; title: { vi: string; en: string } };
 }
 
 export function getLastPart(): LastPart | null {

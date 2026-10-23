@@ -1,0 +1,12 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import T from "../app/T.astro";
+import PomodoroStats from "../components/PomodoroStats.tsx";
+---
+<BaseLayout title="Thời gian học · CloudLab" titleKey="shell.pomodoro.pageTitle" sidebar={false} section="pomodoro">
+  <header class="gl-head">
+    <p class="gl-eyebrow"><T k="shell.pomodoro.eyebrow" /></p>
+    <h1><T k="shell.pomodoro.heading" /></h1>
+  </header>
+  <PomodoroStats client:load />
+</BaseLayout>

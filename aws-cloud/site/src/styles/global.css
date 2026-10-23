@@ -1118,3 +1118,128 @@ main.article:focus { outline: none; }
 .lp-save-status { font-size: 0.8125rem; color: var(--muted); }
 .offline-h { margin-top: 24px; font-size: 1.1rem; }
 .offline-list { display: grid; gap: 6px; padding-left: 20px; }
+
+/* ---------- Pomodoro (top bar timer, end-of-session dialog, /pomodoro/) ---------- */
+.pomo { position: relative; flex: none; }
+.pomo-chip { height: 32px; min-width: 32px; padding: 0 7px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--line); border-radius: 16px;
+  background: var(--surface); color: var(--muted); font: inherit; cursor: pointer; }
+.pomo-chip:hover { color: var(--ink); border-color: var(--accent); }
+.pomo-chip[data-state="running"], .pomo-chip[data-state="paused"] { padding: 0 10px 0 8px; color: var(--ink); border-color: var(--accent); background: var(--accent-soft); }
+.pomo-chip[data-mode="break"]:not([data-state="idle"]) { border-color: var(--edge); background: var(--edge-soft); }
+.pomo-chip[data-state="paused"] .pomo-chip-time { opacity: .7; }
+.pomo-chip-time { font-family: var(--font-mono); font-weight: 600; font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
+.pomo-ring-track { stroke: var(--line); }
+.pomo-ring-fill { stroke: var(--accent); transition: stroke-dashoffset .4s linear; }
+[data-mode="break"] .pomo-ring-fill { stroke: var(--edge); }
+.pomo-scrim { display: none; }
+
+.pomo-panel { position: absolute; top: calc(100% + 10px); right: -60px; z-index: 30; width: 340px; box-sizing: border-box; padding: 18px; display: flex; flex-direction: column; gap: 16px;
+  border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--ink); box-shadow: 0 18px 50px rgb(0 0 0 / .28); }
+.pomo-grip { display: none; }
+.pomo-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 10px; background: var(--bg); }
+.pomo-tabs button { min-height: 36px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font: inherit; font-size: 0.8125rem; cursor: pointer; }
+.pomo-tabs button:hover { color: var(--ink); }
+.pomo-tabs button[aria-selected="true"] { background: var(--accent-soft); color: var(--ink); font-weight: 600; }
+.pomo-tabs button[aria-selected="true"][data-mode="break"] { background: var(--edge-soft); }
+.pomo-main { display: flex; align-items: center; gap: 18px; }
+.pomo-dial { position: relative; width: 132px; height: 132px; flex: none; }
+.pomo-dial > div { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.pomo-dial b { font-family: var(--font-mono); font-size: 1.85rem; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.pomo-dial small { font-size: 0.75rem; color: var(--muted); }
+.pomo-info { min-width: 0; display: flex; flex-direction: column; gap: 8px; font-size: 0.8125rem; color: var(--muted); line-height: 1.45; }
+.pomo-info b { color: var(--ink); font-size: 0.875rem; }
+.pomo-info a { color: var(--ink); font-weight: 600; }
+.pomo-dots { display: flex; gap: 5px; }
+.pomo-dots i { width: 16px; height: 6px; border-radius: 3px; background: var(--line); }
+.pomo-dots i[data-on="done"] { background: var(--accent); }
+.pomo-dots i[data-on="now"] { background: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.pomo-controls { display: flex; gap: 8px; }
+.pomo-go { flex: 1; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 10px; background: var(--accent); color: var(--on-accent);
+  font: inherit; font-size: 0.875rem; font-weight: 700; cursor: pointer; }
+.pomo-panel[data-mode="break"] .pomo-go { background: var(--edge); color: var(--surface); }
+.pomo-icon { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); cursor: pointer; }
+.pomo-icon:hover:not(:disabled) { border-color: var(--accent); }
+.pomo-icon:disabled { opacity: .45; cursor: default; }
+.pomo-options { border-top: 1px solid var(--line); padding-top: 12px; display: flex; flex-direction: column; gap: 4px; font-size: 0.8125rem; }
+.pomo-options label { min-height: 34px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; }
+.pomo-options input { width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
+.pomo-note { margin: 0; font-size: 0.75rem; color: var(--bad); }
+.pomo-links { display: flex; justify-content: space-between; gap: 12px; padding-top: 6px; }
+.pomo-links a { padding: 4px 0; }
+
+.pomo-dialog { width: min(440px, calc(100vw - 24px)); padding: 0; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); color: var(--ink); box-shadow: 0 30px 80px rgb(0 0 0 / .45); }
+.pomo-dialog::backdrop { background: rgb(5 10 14 / .55); }
+.pomo-end { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.pomo-end h2 { margin: 0; font-size: 1.25rem; }
+.pomo-end p { margin: 0; font-size: 0.9rem; color: var(--muted); line-height: 1.6; }
+.pomo-choices { display: flex; flex-direction: column; gap: 8px; }
+.pomo-choice { min-height: 64px; box-sizing: border-box; padding: 12px 14px; display: flex; align-items: center; gap: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg);
+  color: var(--ink); font: inherit; text-align: left; text-decoration: none; cursor: pointer; }
+.pomo-choice:hover { border-color: var(--accent); }
+.pomo-choice.cards { border-color: var(--edge); background: var(--edge-soft); }
+.pomo-choice > span:last-child { display: flex; flex-direction: column; gap: 2px; }
+.pomo-choice b { font-size: 0.95rem; }
+.pomo-choice small { font-size: 0.8125rem; color: var(--muted); }
+.pomo-choice-icon { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 9px; background: var(--line); color: var(--ink); }
+.pomo-choice.cards .pomo-choice-icon { background: var(--edge); color: var(--surface); }
+.pomo-next { padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; border-radius: 12px; border: 1px solid var(--accent); background: var(--accent-soft); color: var(--ink); text-decoration: none; }
+.pomo-next small { font-size: 0.75rem; color: var(--muted); }
+.pomo-next b { font-size: 1rem; }
+.pomo-end-foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
+.pomo-end-foot .btn { min-height: 44px; }
+.pomo-end-foot .btn.primary { flex: 1; }
+.pomo-text { min-height: 44px; padding: 0 8px; border: 0; background: none; color: var(--muted); font: inherit; font-size: 0.8125rem; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.pomo-text:hover { color: var(--ink); }
+
+@media (max-width: 560px) {
+  .pomo-chip { min-width: 30px; padding: 0 6px; }
+  .pomo-chip[data-state="running"], .pomo-chip[data-state="paused"] { padding: 0 8px 0 6px; gap: 5px; }
+  .pomo-scrim { display: block; position: fixed; inset: 0; z-index: 29; background: rgb(5 10 14 / .5); }
+  .pomo-panel { position: fixed; top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 88dvh; overflow-y: auto; border-radius: 20px 20px 0 0; border-width: 1px 0 0;
+    padding: 10px 18px calc(22px + env(safe-area-inset-bottom, 0px)); }
+  .pomo-grip { display: block; align-self: center; width: 40px; height: 4px; border-radius: 2px; background: var(--line); }
+  .pomo-main { flex-direction: column; gap: 10px; }
+  .pomo-info { align-items: center; text-align: center; }
+  .pomo-tabs button { min-height: 40px; }
+}
+@media (prefers-reduced-motion: reduce) { .pomo-ring-fill { transition: none; } }
+
+.pomo-stats { display: flex; flex-direction: column; gap: 20px; margin-bottom: 40px; }
+.pomo-stats > .lede { margin: 0; }
+.ps-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.ps-tile, .ps-card { padding: 16px 18px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+.ps-tile { display: flex; flex-direction: column; gap: 4px; font-size: 0.8125rem; color: var(--muted); }
+.ps-tile b { font-family: var(--font-mono); font-size: 1.75rem; font-weight: 600; color: var(--ink); line-height: 1.2; }
+.ps-tile b small { font-family: var(--font-body); font-size: 0.875rem; font-weight: 500; color: var(--muted); }
+.ps-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.ps-card h2, .ps-chart figcaption { margin: 0 0 12px; font-size: 0.9375rem; font-weight: 600; }
+.ps-chart { margin: 0; display: flex; flex-direction: column; }
+.ps-bars { flex: 1; min-height: 180px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+.ps-bar { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; font-size: 0.75rem; color: var(--muted); min-width: 0; }
+.ps-bar i { width: 100%; max-width: 44px; min-height: 3px; border-radius: 6px 6px 2px 2px; background: color-mix(in srgb, var(--accent) 55%, var(--line)); }
+.ps-bar i[data-empty] { height: 3px; background: var(--line); }
+.ps-bar[data-today] { color: var(--ink); font-weight: 600; }
+.ps-bar[data-today] i:not([data-empty]) { background: var(--accent); }
+.ps-bar > span:last-child { white-space: nowrap; }
+.ps-log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; font-size: 0.875rem; }
+.ps-log li { display: flex; gap: 12px; align-items: baseline; }
+.ps-time { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--muted); flex: none; width: 46px; }
+.ps-log small { color: var(--muted); }
+.ps-log small[data-done] { color: var(--ok); }
+.ps-empty { margin: 0; font-size: 0.875rem; color: var(--muted); }
+.ps-fields { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.ps-fields label { display: flex; flex-direction: column; gap: 6px; font-size: 0.8125rem; color: var(--muted); }
+.ps-fields input { min-height: 40px; box-sizing: border-box; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: inherit; font-family: var(--font-mono); }
+.ps-actions { margin-top: 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.ps-actions .btn { min-height: 40px; }
+.ps-actions .btn:last-child { margin-left: auto; }
+.ps-saved { font-size: 0.8125rem; color: var(--ok); }
+@media (max-width: 760px) {
+  .ps-tiles, .ps-row { grid-template-columns: minmax(0, 1fr); }
+  .ps-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+/* Narrow phones: the countdown alone, so the brand still fits next to it. */
+@media (max-width: 420px) {
+  .pomo-chip:not([data-state="idle"]) .pomo-ring { display: none; }
+  .pomo-chip[data-state="running"], .pomo-chip[data-state="paused"] { padding: 0 8px; }
+}

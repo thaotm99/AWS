@@ -1,4 +1,4 @@
-# AWS Thực Chiến
+# CloudLab
 
 Web ôn thi AWS Solutions Architect Associate (SAA-C03): mỗi bài có ví dụ xuyên suốt, các cảnh mô
 phỏng tương tác và thử thách cuối bài, và chỉ dạy những gì 6 đề luyện thi thực sự hỏi. Đây là giai đoạn 1: web tĩnh trên S3 + CloudFront.

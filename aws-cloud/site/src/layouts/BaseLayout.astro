@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import Roadmap from "../components/Roadmap.tsx";
+import Pomodoro from "../components/Pomodoro.tsx";
 import { getCollection } from "astro:content";
 import { getCurriculum } from "../data/exam";
 import T from "../app/T.astro";
@@ -24,7 +25,7 @@ interface Props {
   /** The page is the current lesson's question set, not the lesson itself. */
   currentQuiz?: boolean;
   /** Top-nav section this page belongs to. */
-  section?: "theory" | "practice" | "glossary" | "flashcards";
+  section?: "theory" | "practice" | "glossary" | "flashcards" | "pomodoro";
   /** Practice pages have no lesson roadmap. */
   sidebar?: boolean;
   /** Full-width content (home page map); only used without the sidebar. */
@@ -93,7 +94,7 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
           <span class="brand-mark" aria-hidden="true">
             <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="9" width="14" height="5" rx="1" fill="currentColor"/><rect x="3" y="4" width="10" height="4" rx="1" fill="currentColor" opacity=".75"/><rect x="5" y="1" width="6" height="2" rx="1" fill="currentColor" opacity=".5"/></svg>
           </span>
-          <span class="brand-text">AWS Thực Chiến</span>
+          <span class="brand-text">CloudLab</span>
         </a>
         <nav class="topnav" aria-label="Chính" data-i18n-attr="aria-label:shell.nav.main">
           <a href="/" aria-current={section === "theory" ? "page" : undefined}><T k="shell.nav.theory" /></a>
@@ -104,6 +105,7 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
         <button class="search-btn" id="searchBtn" type="button" aria-label="Tìm kiếm" data-i18n-attr="aria-label:shell.search.open;title:shell.search.shortcut" title="Tìm kiếm (/)" aria-haspopup="dialog" aria-controls="search">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
         </button>
+        <Pomodoro client:idle />
         <LanguageSwitch />
         <ThemeToggle />
       </div>

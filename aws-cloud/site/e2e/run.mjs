@@ -110,7 +110,7 @@ async function checkPage(context, path, width) {
       const button = page.locator(`[data-e2e="${i}"]`);
       if (!(await button.count()) || !(await button.isVisible()) || (await button.isDisabled().catch(() => true))) continue;
       await button.scrollIntoViewIfNeeded().catch(() => {});
-      const info = await button.evaluate((el) => {
+      const where = () => button.evaluate((el) => {
         const r = el.getBoundingClientRect();
         const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
         return {
@@ -118,6 +118,12 @@ async function checkPage(context, path, width) {
           covered: top && !el.contains(top) && !top.contains(el) ? `${top.tagName.toLowerCase()}.${[...top.classList].join(".")}` : null,
         };
       });
+      let info = await where();
+      // A popover an earlier button opened (the Pomodoro panel) closes on Esc, as a reader would close it.
+      if (info.covered) {
+        await page.keyboard.press("Escape");
+        info = await where();
+      }
       if (info.covered) {
         fail(`${path} @${width}`, "button covered", `"${info.label}" by ${info.covered}`);
         continue;
