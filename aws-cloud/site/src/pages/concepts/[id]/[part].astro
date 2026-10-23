@@ -95,7 +95,7 @@ const after = next
         <b><L vi={concept.title} en={concept.titleEn} /></b>
       </a>
     )}
-    <a class="part-next" href={after.href} data-part-next>
+    <a class="part-next" href={after.href} data-part-next data-title={JSON.stringify({ vi: after.vi, en: after.en })}>
       <small><T k={next ? "lesson.parts.next" : "lesson.parts.finish"} /></small>
       <b><L vi={after.vi} en={after.en} /> →</b>
     </a>
@@ -111,7 +111,8 @@ const after = next
     const part = body.dataset.part!;
     const all: string[] = JSON.parse(body.dataset.parts!);
     const pager = document.querySelector<HTMLElement>(".part-pager")!;
-    setLastPart({ lesson, slug: part, title: JSON.parse(body.dataset.title!) });
+    const nextLink = pager.querySelector<HTMLAnchorElement>("[data-part-next]")!;
+    setLastPart({ lesson, slug: part, title: JSON.parse(body.dataset.title!), next: { href: nextLink.getAttribute("href")!, title: JSON.parse(nextLink.dataset.title!) } });
 
     // Read state on the part list (desktop column) and the step bar.
     const sync = () => {
@@ -130,7 +131,7 @@ const after = next
         io.disconnect();
       }
     }).observe(document.querySelector(".part-end")!);
-    pager.querySelector("[data-part-next]")!.addEventListener("click", done);
+    nextLink.addEventListener("click", done);
 
     // Reading progress within the part, for the thin bar under the top bar.
     const progress = () => {

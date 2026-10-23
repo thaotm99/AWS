@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useI18n } from "../app/i18n";
 import { BOX_DAYS, boxCounts, grade, readDeck, sessionCards, today, writeDeck, type Deck } from "../lib/flashcards";
+import { noteCard, readSettings, readTimer, writeTimer } from "../lib/pomodoro";
 
 interface Card {
   id: string;
@@ -47,7 +48,10 @@ export default function Flashcards({ layers }: { layers: Layer[] }) {
   // A new session whenever the cards load or the layer filter changes.
   useEffect(() => {
     if (!cards) return;
-    setQueue(sessionCards(ids, readDeck(), day));
+    // A Pomodoro break links here with a few cards to review (?limit=5).
+    const limit = Number(new URLSearchParams(location.search).get("limit"));
+    const session = sessionCards(ids, readDeck(), day);
+    setQueue(Number.isInteger(limit) && limit > 0 ? session.slice(0, limit) : session);
     setShown(false);
     setDone(0);
   }, [cards, ids]);
@@ -59,6 +63,10 @@ export default function Flashcards({ layers }: { layers: Layer[] }) {
     const next = { ...deck, [current.id]: grade(deck[current.id], remembered, day) };
     setDeck(next);
     writeDeck(next);
+    // Cards answered during a Pomodoro break show up in its summary.
+    const timer = readTimer(readSettings());
+    const noted = noteCard(timer, remembered);
+    if (noted !== timer) writeTimer(noted);
     // A forgotten card comes back at the end of this session.
     setQueue((q) => (remembered ? q.slice(1) : [...q.slice(1), q[0]]));
     if (remembered) setDone((d) => d + 1);
