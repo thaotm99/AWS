@@ -1,31 +1,26 @@
-/* CaseSim engine (scenes/global-infra/CaseSim.tsx), used by the global-infra,
-   vpc, route53 and iam simulations. Theme tokens only. */
-.cs-scenarios { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
-.cs-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; overflow-wrap: anywhere; }
-.cs-from { font-size: var(--step--1); color: var(--muted); }
-.cs-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
-.cs .stage-bar .cs-go { margin-left: auto; }
-.cs .cs-choices { padding-top: 10px; }
-.cs-box { fill: var(--bg); stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 5 4; }
-.cs-box.edge { fill: var(--edge-soft); fill-opacity: .35; stroke: var(--edge); stroke-dasharray: 6 5; }
-.cs-link { fill: none; stroke: var(--line); stroke-width: 2; transition: stroke .2s; }
-.cs-link.dashed { stroke-dasharray: 6 5; }
-.cs-link.down, .cs-link.bad { stroke: var(--bad); stroke-dasharray: 3 5; }
-.cs-link.ok { stroke: var(--ok); }
-.cs-link.chg { stroke: var(--edge); }
-.cs-ll { fill: var(--muted); font-family: var(--font-mono); font-size: 10px; }
-.cs-node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill .2s, stroke .2s, opacity .2s; }
-.cs-t { fill: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
-.cs-s { fill: var(--muted); font-family: var(--font-body); font-size: 10px; }
-.cs-node.ok rect { fill: var(--ok-soft); stroke: var(--ok); }
-.cs-node.bad rect { fill: var(--bad-soft); stroke: var(--bad); }
-.cs-node.down rect { fill: var(--bad-soft); stroke: var(--bad); stroke-dasharray: 4 3; }
-.cs-node.chg rect { fill: var(--edge-soft); stroke: var(--edge); }
-.cs-node.dim, .cs-user.dim { opacity: .45; }
-.cs-user.bad .user, .cs-user.down .user { fill: var(--bad); }
-.cs-user.ok .user { fill: var(--ok); }
-.cs-flash { fill: var(--bad); font-family: var(--font-mono); font-size: 14px; font-weight: 700; text-anchor: middle; }
-.cs-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
-.cs-result { margin-top: 6px; padding: 8px 10px; border-radius: 8px; display: block !important; }
-.cs-result.ok { background: var(--ok-soft); }
-.cs-result.bad { background: var(--bad-soft); }
+@reference "../../../styles/app.css";
+
+/* CaseSim engine (scenes/global-infra/CaseSim.tsx), used by the global-infra, vpc, route53 and iam simulations:
+   SVG parts. Links, nodes and users take the state of the step that reached them (.ok, .bad, .down, .chg, .dim). */
+@layer components {
+  .cs-box { @apply fill-bg stroke-muted stroke-[1.2]; stroke-dasharray: 5 4; }
+  .cs-box.edge { @apply fill-edge-soft/35 stroke-edge; stroke-dasharray: 6 5; }
+  .cs-link { @apply fill-none stroke-line stroke-2; transition: stroke .2s; }
+  .cs-link.dashed { stroke-dasharray: 6 5; }
+  .cs-link.down, .cs-link.bad { @apply stroke-bad; stroke-dasharray: 3 5; }
+  .cs-link.ok { @apply stroke-ok; }
+  .cs-link.chg { @apply stroke-edge; }
+  .cs-ll { @apply fill-muted font-mono text-[10px]; }
+  .cs-node rect { @apply fill-surface stroke-line stroke-[1.5]; transition: fill .2s, stroke .2s, opacity .2s; }
+  .cs-t { @apply fill-ink font-body text-[12px] font-semibold; }
+  .cs-s { @apply fill-muted font-body text-[10px]; }
+  .cs-node.ok rect { @apply fill-ok-soft stroke-ok; }
+  .cs-node.bad rect { @apply fill-bad-soft stroke-bad; }
+  .cs-node.down rect { @apply fill-bad-soft stroke-bad; stroke-dasharray: 4 3; }
+  .cs-node.chg rect { @apply fill-edge-soft stroke-edge; }
+  .cs-node.dim, .cs-user.dim { @apply opacity-45; }
+  .cs-user.bad .user, .cs-user.down .user { @apply fill-bad; }
+  .cs-user.ok .user { @apply fill-ok; }
+  /* Mark that flashText() pops on a node that fails. */
+  .cs-flash { @apply fill-bad font-mono text-[14px] font-bold; text-anchor: middle; }
+}

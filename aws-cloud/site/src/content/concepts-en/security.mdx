@@ -1,6 +1,6 @@
 ---
 title: "WAF, Shield, GuardDuty, Macie: protection and detection"
-lede: "The ShopViet system is starting to become a target for attacks. This lesson covers the protection layer in front of the application with AWS WAF, then simulates six real incidents (DDoS, a server infected with cryptocurrency mining software, software vulnerabilities, customer data files stored in the wrong place, a new account missing rules, scattered logs) to identify the service that prevents or detects each incident."
+lede: "The MFTECH system is starting to become a target for attacks. This lesson covers the protection layer in front of the application with AWS WAF, then simulates six real incidents (DDoS, an EC2 instance infected with cryptocurrency mining software, software vulnerabilities, customer data files stored in the wrong place, a new account missing rules, scattered logs) to identify the service that prevents or detects each incident."
 minutes: 18
 scenes: 3
 prerequisites: ["cloudfront", "vpc"]
@@ -55,16 +55,16 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s3", label: "3 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-The ShopViet system records attack activity: bots probing for SQL injection, one IP scanning continuously and DDoS traffic. This lesson covers the protection layer in front of the application (**AWS WAF**, **Shield**) and the services that **detect** unusual activity inside the account.
+The MFTECH system records attack activity: bots probing for SQL injection, one IP scanning continuously and DDoS traffic. This lesson covers the protection layer in front of the application (**AWS WAF**, **AWS Shield**) and the services that **detect** unusual activity inside the account.
 </Story>
 
 <Scene id="en-s1" label="Part 1/3" title="AWS WAF: filtering malicious requests before they reach the application" questions={["exam5_q13", "exam1_q6", "exam5_q45", "exam2_q30", "exam6_q60", "exam5_q57", "exam2_q32"]}>
 
-<p class="scene-intro">Part of the traffic reaching a website is malicious; a filter placed in front of the application can block those requests before they reach the servers.</p>
+<p class="scene-intro">Part of the traffic reaching a website is malicious; a web application firewall placed in front of the application can block those requests before they reach the application.</p>
 
-Six kinds of requests are being sent to ShopViet, including a legitimate shipping partner calling from abroad with a fixed IP address. Turn on each rule, choose the resource associated with AWS WAF, then send the requests.
+Six kinds of requests are being sent to MFTECH, including a legitimate shipping partner calling from abroad with a fixed IP address. Turn on each rule, choose the resource associated with AWS WAF, then send the requests.
 
-AWS WAF evaluates the rules in a web ACL by **priority**, from the lowest numeric setting up, until it finds a matching rule with a terminating action (Allow or Block) or exhausts all rules. So when ShopViet blocks countries with a geo match rule but must still allow some partner IP addresses, it places an IP set rule with those addresses and the Allow action at a lower priority number than the geo match rule: the partner's request is allowed immediately and is never evaluated by the geo match rule.
+AWS WAF evaluates the rules in a web ACL by **priority**, from the lowest numeric setting up, until it finds a matching rule with a terminating action (Allow or Block) or exhausts all rules. So when MFTECH blocks countries with a geo match rule but must still allow some partner IP addresses, it places an IP set rule with those addresses and the Allow action at a lower priority number than the geo match rule: the partner's request is allowed immediately and is never evaluated by the geo match rule.
 
 <WafSim client:visible />
 
@@ -74,13 +74,13 @@ AWS WAF evaluates the rules in a web ACL by **priority**, from the lowest numeri
 
 <Scene id="en-s2" label="Part 2/3" title="Six security incidents and the matching services" questions={["exam3_q58", "exam6_q4", "exam1_q36", "exam3_q1", "exam6_q14", "exam2_q44"]}>
 
-<p class="scene-intro">Not every security incident comes from web requests; many happen inside the account, and each kind has a service built to detect or prevent it.</p>
+<p class="scene-intro">Not every security incident comes from web requests; many happen inside the AWS account, and each kind has a service built to detect or prevent it.</p>
 
-AWS WAF filters only web requests. Many other incidents happen **inside** the account: a compromised server, a sensitive file stored in the wrong place, a new account missing its configuration. Choose an incident, turn the matching service on or off, then simulate the incident.
+AWS WAF filters only web requests. Many other incidents happen **inside** the account: a compromised EC2 instance, a sensitive file stored in the wrong place, a new account missing its configuration. Choose an incident, turn the matching service on or off, then simulate the incident.
 
 <IncidentSim client:visible />
 
-<Takeaway>Large-scale DDoS, with support from the AWS team and reports: Shield Advanced. A compromised server mining cryptocurrency: GuardDuty. Software vulnerabilities on EC2: Inspector. Personal data in S3: Macie. Applying consistent rules across many accounts: Firewall Manager. Centralizing security logs: Security Lake.</Takeaway>
+<Takeaway>Large-scale DDoS, with support from the Shield Response Team (SRT) and reports: AWS Shield Advanced. A compromised EC2 instance mining cryptocurrency: Amazon GuardDuty. Software vulnerabilities on EC2 instances: Amazon Inspector. Personal data in S3: Amazon Macie. Applying consistent rules across many accounts: AWS Firewall Manager. Centralizing security logs: Amazon Security Lake.</Takeaway>
 
 </Scene>
 
@@ -88,25 +88,25 @@ AWS WAF filters only web requests. Many other incidents happen **inside** the ac
 
 <p class="scene-intro">Many security services have similar names or scopes; matching each problem to the right one avoids overlap and needless cost.</p>
 
-Some services are often considered alongside AWS WAF but solve a different problem: aggregating alerts, managing rules across accounts, resolving domain names, or filtering non-HTTP traffic. Select each item to see what it is for and what fits the ShopViet situation.
+Some services are often considered alongside AWS WAF but solve a different problem: aggregating alerts, managing rules across accounts, resolving domain names, or filtering non-HTTP traffic. Select each item to see what it is for and what fits the MFTECH situation.
 
 <QuickCompare client:visible items={[
   { name: "AWS Security Hub",
     use: "Aggregates and prioritizes security issues across accounts: receives findings from GuardDuty, Inspector, Macie and third-party products, correlates the signals, and offers automated response workflows. Its **Security Hub CSPM** component runs configuration checks against standards such as AWS Foundational Security Best Practices, CIS, PCI DSS and NIST and generates control findings.",
-    notHere: "ShopViet's web application behind CloudFront is under SQL injection and cross-site scripting attacks. Security Hub only reports security posture and alerts; it is not in the request path, so it cannot block any request.",
+    notHere: "MFTECH's web application behind CloudFront is under SQL injection and cross-site scripting attacks. Security Hub only reports security posture and alerts; it is not in the request path, so it cannot block any request.",
     instead: "Associate an **AWS WAF** web ACL (managed rules for SQLi and XSS) with the CloudFront distribution (Part 1). Use Security Hub afterwards to track the findings centrally." },
   { name: "AWS Firewall Manager",
     use: "Set up protections once (AWS WAF, Shield Advanced, security groups, network ACLs, Network Firewall, Route 53 Resolver DNS Firewall) and apply them automatically across accounts and resources, including accounts and resources added later.",
     notHere: "Firewall Manager does not inspect requests itself; it centrally manages the rules of other services. For one distribution under attack in one account, the AWS WAF web ACL is the layer that blocks requests.",
-    instead: "An **AWS WAF** web ACL on CloudFront. When ShopViet has many accounts that need the same rule set, use Firewall Manager to deploy that web ACL across the organization." },
+    instead: "An **AWS WAF** web ACL on CloudFront. When MFTECH has many accounts that need the same rule set, use Firewall Manager to deploy that web ACL across the organization." },
   { name: "Amazon Route 53",
     use: "A highly available DNS service: domain registration, DNS routing and health checking.",
     notHere: "Route 53 only answers DNS queries; HTTP requests carrying SQL injection go straight to CloudFront and never pass through Route 53 for content inspection.",
-    instead: "**AWS WAF** on CloudFront. Route 53 still points `shopviet.vn` at the distribution as usual." },
+    instead: "**AWS WAF** on CloudFront. Route 53 still points `mftech.vn` at the distribution as usual." },
   { name: "AWS WAF for SFTP",
     use: "AWS WAF monitors **HTTP and HTTPS** requests to protected resources: CloudFront, API Gateway REST APIs, ALB, AppSync, Cognito user pools, App Runner, Verified Access, Amplify.",
-    notHere: "ShopViet's partners upload files over SFTP to AWS Transfer Family. SFTP runs over SSH, not HTTP, and a Transfer Family endpoint is not a resource type AWS WAF protects, so a WAF IP set cannot restrict the source IPs.",
-    instead: "A **VPC hosted, Internet Facing** endpoint with an Elastic IP address per subnet; the endpoint's **security group** allows SSH (port 22 by default) only from the partners' IP ranges. Storage backend choices for Transfer Family are covered in the data migration lesson, part 2." },
+    notHere: "MFTECH's partners upload files over SFTP to AWS Transfer Family. SFTP runs over SSH, not HTTP, and a Transfer Family endpoint is not a resource type AWS WAF protects, so a WAF IP set cannot restrict the source IPs.",
+    instead: "A **VPC hosted endpoint** with **Internet Facing** access and an Elastic IP address per subnet; the endpoint's **security group** allows SSH (port 22 by default) only from the partners' IP ranges. Storage backend choices for Transfer Family are covered in the data migration lesson, part 2." },
 ]} />
 
 AWS Transfer Family and its storage backend choices (Amazon S3 or Amazon EFS) are covered in the [data migration lesson, part 2](/concepts/storage-migration/data-transfer/).
@@ -130,10 +130,10 @@ Sort the services that stop traffic and the services that detect problems. On a 
   ]}
 />
 
-Check your understanding: as the designer of the ShopViet system, which option is right?
+Check your understanding: as the designer of the MFTECH system, which option is right?
 
 <Quiz client:visible items={[
-  { q: "ShopViet's web application runs on EC2 and is being probed for SQL injection and cross-site scripting. What is the most effective way to stop it?",
+  { q: "MFTECH's web application runs on EC2 instances and is being probed for SQL injection and cross-site scripting. What is the most effective way to stop it?",
     opts: ["AWS WAF on CloudFront in front of the application", "A security group blocking port 80", "Amazon Inspector"],
     a: 0,
     why: "AWS WAF has managed rules for SQLi/XSS. A security group does not inspect request content; Inspector only scans for vulnerabilities." },
@@ -141,15 +141,15 @@ Check your understanding: as the designer of the ShopViet system, which option i
     opts: ["WAF rate-based rule", "Add more EC2 instances", "Shield Standard"],
     a: 0,
     why: "A rate-based rule blocks IPs that exceed a request-count threshold within a set time window." },
-  { q: "ShopViet needs alerts on malicious activity in S3 and also needs to know which buckets contain personal data. Which pair of services meets the requirement?",
+  { q: "MFTECH needs alerts on malicious activity in S3 and also needs to know which buckets contain personal data. Which pair of services meets the requirement?",
     opts: ["GuardDuty and Macie", "Inspector and Shield", "WAF and Firewall Manager"],
     a: 0,
     why: "GuardDuty detects threats; Macie discovers sensitive data." },
-  { q: "EC2 costs rise unusually, and a server is suspected of running cryptocurrency mining software. Which service can detect this behavior?",
+  { q: "EC2 costs rise unusually, and an EC2 instance is suspected of running cryptocurrency mining software. Which service can detect this behavior?",
     opts: ["Amazon GuardDuty", "AWS Config", "Amazon Macie"],
     a: 0,
     why: "GuardDuty has a dedicated finding type for cryptocurrency mining activity on EC2." },
-  { q: "ShopViet's partners upload data over SFTP to AWS Transfer Family; only the partners' IP ranges may connect. Which mechanism restricts the source IPs?",
+  { q: "MFTECH's partners upload data over SFTP to AWS Transfer Family; only the partners' IP ranges may connect. Which mechanism restricts the source IPs?",
     opts: ["A VPC hosted endpoint with Elastic IP addresses and a security group that allows only the partners' IP ranges", "An AWS WAF IP set attached to the SFTP endpoint", "AWS Security Hub"],
     a: 0,
     why: "AWS WAF inspects only HTTP and HTTPS requests; SFTP runs over SSH. The security group of a VPC hosted endpoint filters by source IP, protocol and port." },

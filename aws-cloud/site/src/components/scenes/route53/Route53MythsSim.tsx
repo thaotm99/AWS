@@ -4,7 +4,7 @@ import CaseSim, { type CaseScenario } from "../global-infra/CaseSim";
 
 type Lang = ReturnType<typeof useLang>;
 
-// Four Route 53 settings that ShopViet can easily get wrong: how an NLB splits
+// Four Route 53 settings that MFTECH can easily get wrong: how an NLB splits
 // traffic when cross-zone is off, failover vs weighted, geolocation vs
 // geoproximity bias, the two layers that can block content by country, and
 // why a multivalue answer record does not add capacity for a traffic spike.
@@ -49,7 +49,7 @@ return [
   },
   {
     name: L({ vi: "Hiển thị trang thông báo lỗi khi ALB gặp sự cố", en: "Show an error notice page when the ALB fails" }),
-    request: "dig shopviet.vn",
+    request: "dig mftech.vn",
     from: L({ vi: "từ người dùng", en: "from users" }),
     nodes: [
       { id: "user", x: 20, y: 97, w: 60, l1: L({ vi: "Người dùng", en: "Users" }), user: true },
@@ -83,7 +83,7 @@ return [
   },
   {
     name: L({ vi: "Mở rộng khu vực phục vụ của Singapore", en: "Expand Singapore's service area" }),
-    request: "dig shopviet.vn",
+    request: "dig mftech.vn",
     from: L({ vi: "từ người dùng tại Ấn Độ", en: "from users in India" }),
     nodes: [
       { id: "user", x: 20, y: 97, w: 60, l1: L({ vi: "Người dùng Ấn Độ", en: "Users in India" }), user: true },
@@ -108,7 +108,7 @@ return [
   },
   {
     name: L({ vi: "Giới hạn video tại quốc gia ngoài phạm vi bản quyền", en: "Restrict video in countries outside the licensed territory" }),
-    request: "GET https://shopviet.vn/videos/1.mp4",
+    request: "GET https://mftech.vn/videos/1.mp4",
     from: L({ vi: "từ quốc gia ngoài phạm vi bản quyền", en: "from a country outside the licensed territory" }),
     nodes: [
       { id: "user", x: 20, y: 97, w: 60, l1: L({ vi: "Người dùng", en: "Users" }), user: true },
@@ -130,7 +130,7 @@ return [
   },
   {
     name: L({ vi: "Flash sale: lưu lượng tăng 10 lần, nội dung động", en: "Flash sale: 10x traffic, dynamic content" }),
-    request: "GET https://shopviet.vn/flash-sale",
+    request: "GET https://mftech.vn/flash-sale",
     from: L({ vi: "lưu lượng gấp 10 lần ngày thường", en: "10 times the usual traffic" }),
     nodes: [
       { id: "user", x: 20, y: 97, w: 60, l1: L({ vi: "Người dùng", en: "Users" }), user: true },
@@ -147,11 +147,11 @@ return [
       ...[["w1", 29], ["w2", 87], ["w3", 145]].map(([w, y]) => ({ id: `m-${w}`, a: "r53", b: w as string, via: [[320, 120], [320, 40], [580, 40], [580, y as number]] as Pt[] })),
     ],
     start: "user",
-    choices: { label: L({ vi: "Cấu hình", en: "Configuration" }), options: [L({ vi: "Multivalue answer, 3 web server", en: "Multivalue answer, 3 web servers" }), "ALB + Auto Scaling group"], initial: 0 },
+    choices: { label: L({ vi: "Cấu hình", en: "Configuration" }), options: [L({ vi: "Multivalue answer, 3 EC2 instance", en: "Multivalue answer, 3 EC2 instances" }), "ALB + Auto Scaling group"], initial: 0 },
     run: (v) => v === 0
       ? { hide: ["alb", "w4", "r53-alb", "alb-w1", "alb-w2", "alb-w3", "alb-w4"], back: false, steps: [
-            { at: "r53", state: "pass", tag: "MULTIVALUE", msg: L({ vi: "Multivalue answer trả về tối đa **8 record healthy**, mỗi DNS resolver nhận một tập trả lời khác nhau: tải được chia xấp xỉ ngẫu nhiên cho 3 server.", en: "Multivalue answer returns up to **8 healthy records**, giving different answers to different DNS resolvers: load is shared roughly at random across 3 servers." }) },
-            { at: "w1", via: [[320, 120], [320, 40], [580, 40], [580, 29]], state: "block", flash: "CPU 100%", msg: L({ vi: "Lưu lượng gấp 10 lần vẫn đổ vào đúng 3 server: DNS **không bổ sung năng lực xử lý**. AWS ghi rõ multivalue answer không thay thế được load balancer.", en: "Ten times the traffic still lands on the same 3 servers: DNS **adds no capacity**. AWS states that multivalue answer is not a substitute for a load balancer." }) },
+            { at: "r53", state: "pass", tag: "MULTIVALUE", msg: L({ vi: "Multivalue answer trả về tối đa **8 record healthy**, mỗi DNS resolver nhận một tập trả lời khác nhau: tải được chia xấp xỉ ngẫu nhiên cho 3 instance.", en: "Multivalue answer returns up to **8 healthy records**, giving different answers to different DNS resolvers: load is shared roughly at random across 3 instances." }) },
+            { at: "w1", via: [[320, 120], [320, 40], [580, 40], [580, 29]], state: "block", flash: "CPU 100%", msg: L({ vi: "Lưu lượng gấp 10 lần vẫn đổ vào đúng 3 instance: DNS **không bổ sung năng lực xử lý**. AWS ghi rõ multivalue answer không thay thế được load balancer.", en: "Ten times the traffic still lands on the same 3 instances: DNS **adds no capacity**. AWS states that multivalue answer is not a substitute for a load balancer." }) },
           ],
           ok: false, result: L({ vi: "Hệ thống quá tải. Multivalue answer chỉ cải thiện tính sẵn sàng và chia sẻ tải ở tầng DNS; cần cơ chế tăng số instance.", en: "The system is overloaded. Multivalue answer only improves uptime and load sharing at the DNS layer; a way to add instances is needed." }) }
       : { hide: ["m-w1", "m-w2", "m-w3"], steps: [

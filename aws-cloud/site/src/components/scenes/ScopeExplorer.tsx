@@ -25,17 +25,17 @@ const replicas = AZS.map((az) => <Token key={az.n} x={az.x + 20} y={200} w={100}
 
 const SERVICES: { name: string; scope: Scope; label: string; text: Bi<ReactNode>; draw: ReactNode }[] = [
   { name: "IAM", scope: "global", label: "Global",
-    text: { vi: <>Role <code>shopviet-app</code> được tạo một lần và sử dụng được tại mọi Region. IAM không có phiên bản riêng cho từng Region như Singapore hay Tokyo.</>,
-      en: <>The role <code>shopviet-app</code> is created once and can be used in every Region. IAM has no separate copy per Region such as Singapore or Tokyo.</> },
-    draw: <Token x={250} y={18} w={190} label="IAM role: shopviet-app" /> },
+    text: { vi: <>Role <code>mftech-app</code> được tạo một lần và sử dụng được tại mọi Region. IAM không có phiên bản riêng cho từng Region như Singapore hay Tokyo.</>,
+      en: <>The role <code>mftech-app</code> is created once and can be used in every Region. IAM has no separate copy per Region such as Singapore or Tokyo.</> },
+    draw: <Token x={250} y={18} w={190} label="IAM role: mftech-app" /> },
   { name: "Route 53", scope: "global", label: "Global",
-    text: { vi: <>Tên miền <code>shopviet.vn</code> được phân giải bởi Route 53 Public DNS, có data plane phân bố tại các point of presence (edge location) trên toàn cầu; control plane đặt tại us-east-1.</>,
-      en: <>The domain <code>shopviet.vn</code> is resolved by Route 53 Public DNS, whose data plane is distributed across points of presence (edge locations) worldwide; the control plane is in us-east-1.</> },
-    draw: <Token x={560} y={46} w={180} label="Route 53: shopviet.vn" /> },
+    text: { vi: <>Tên miền <code>mftech.vn</code> được phân giải bởi Route 53 Public DNS, có data plane phân bố tại các point of presence (edge location) trên toàn cầu; control plane đặt tại us-east-1.</>,
+      en: <>The domain <code>mftech.vn</code> is resolved by Route 53 Public DNS, whose data plane is distributed across points of presence (edge locations) worldwide; the control plane is in us-east-1.</> },
+    draw: <Token x={560} y={46} w={180} label="Route 53: mftech.vn" /> },
   { name: "S3", scope: "region", label: "Region",
-    text: { vi: <>Bucket <code>shopviet-images</code> thuộc Region Singapore. AWS tự động lưu dữ liệu trên nhiều AZ (với các storage class thông thường), không yêu cầu cấu hình bổ sung.</>,
-      en: <>The bucket <code>shopviet-images</code> belongs to the Singapore Region. AWS automatically stores data across multiple AZs (for the standard storage classes), with no additional configuration required.</> },
-    draw: <><Token x={296} y={70} w={220} label="S3: shopviet-images" />{replicas}</> },
+    text: { vi: <>Bucket <code>mftech-images</code> thuộc Region Singapore. AWS tự động lưu dữ liệu trên nhiều AZ (với các storage class thông thường), không yêu cầu cấu hình bổ sung.</>,
+      en: <>The bucket <code>mftech-images</code> belongs to the Singapore Region. AWS automatically stores data across multiple AZs (for the standard storage classes), with no additional configuration required.</> },
+    draw: <><Token x={296} y={70} w={220} label="S3: mftech-images" />{replicas}</> },
   { name: "VPC", scope: "region", label: "Region",
     text: { vi: <>VPC <code>10.0.0.0/16</code> trải trên mọi AZ của Region. Bên trong VPC, dải địa chỉ được chia thành các subnet, và mỗi subnet chỉ nằm trong một AZ.</>,
       en: <>The VPC <code>10.0.0.0/16</code> spans every AZ of the Region. Inside the VPC, the address range is divided into subnets, and each subnet resides in only one AZ.</> },
@@ -44,13 +44,13 @@ const SERVICES: { name: string; scope: Scope; label: string; text: Bi<ReactNode>
       <text className="zone-t" x={516} y={128} textAnchor="end">VPC 10.0.0.0/16</text>
     </> },
   { name: "EFS", scope: "region", label: "Region",
-    text: { vi: <>EFS file system là tài nguyên cấp Region, có mount target tại từng AZ nên server ở bất kỳ AZ nào cũng mount được. Server tại Region khác vẫn truy cập được thông qua inter-region VPC peering, không cần copy dữ liệu.</>,
-      en: <>An EFS file system is a Regional resource with a mount target in each AZ, so servers in any AZ can mount it. Servers in another Region can still access it through inter-Region VPC peering, without copying data.</> },
-    draw: <><Token x={296} y={70} w={220} label="EFS: shopviet-shared" />{AZS.map((az) => <Token key={az.n} x={az.x + 20} y={200} w={100} label="mount target" ghost />)}</> },
+    text: { vi: <>EFS file system là tài nguyên cấp Region, có mount target tại từng AZ nên EC2 instance ở bất kỳ AZ nào cũng mount được. EC2 instance tại Region khác vẫn truy cập được thông qua inter-region VPC peering, không cần copy dữ liệu.</>,
+      en: <>An EFS file system is a Regional resource with a mount target in each AZ, so EC2 instances in any AZ can mount it. Instances in another Region can still access it through inter-Region VPC peering, without copying data.</> },
+    draw: <><Token x={296} y={70} w={220} label="EFS: mftech-shared" />{AZS.map((az) => <Token key={az.n} x={az.x + 20} y={200} w={100} label="mount target" ghost />)}</> },
   { name: "AMI", scope: "region", label: "Region",
-    text: { vi: <>AMI <code>shopviet-web</code> chỉ sử dụng được trong Region nơi AMI được tạo, nhưng sử dụng được tại mọi AZ của Region đó. Để launch tại Region khác, AMI phải được copy sang Region đích (Phần 1).</>,
-      en: <>The AMI <code>shopviet-web</code> can be used only in the Region where it was created, but in every AZ of that Region. To launch in another Region, the AMI must be copied to the destination Region (Part 1).</> },
-    draw: <Token x={296} y={70} w={220} label="AMI: shopviet-web" /> },
+    text: { vi: <>AMI <code>mftech-web</code> chỉ sử dụng được trong Region nơi AMI được tạo, nhưng sử dụng được tại mọi AZ của Region đó. Để launch tại Region khác, AMI phải được copy sang Region đích (Phần 1).</>,
+      en: <>The AMI <code>mftech-web</code> can be used only in the Region where it was created, but in every AZ of that Region. To launch in another Region, the AMI must be copied to the destination Region (Part 1).</> },
+    draw: <Token x={296} y={70} w={220} label="AMI: mftech-web" /> },
   { name: "Subnet", scope: "az", label: "AZ",
     text: { vi: <>Subnet <code>10.0.1.0/24</code> chỉ nằm trong AZ a. Để chịu được sự cố của một AZ, subnet phải được tạo tại ít nhất hai AZ.</>,
       en: <>The subnet <code>10.0.1.0/24</code> resides only in AZ a. To tolerate the failure of one AZ, subnets must be created in at least two AZs.</> },
@@ -63,15 +63,15 @@ const SERVICES: { name: string; scope: Scope; label: string; text: Bi<ReactNode>
       en: <>A public NAT gateway in zonal mode is created in the public subnet of a specific AZ. If all 3 AZs share one NAT gateway, a failure in the AZ that contains the NAT gateway cuts internet access for the other AZs. Correct configuration: one NAT gateway and a separate route table per AZ, or a NAT gateway in regional mode (automatically expands to the AZs that have workloads).</> },
     draw: <>{AZS.map((az) => <Token key={az.n} x={az.x + 20} y={200} w={100} label="NAT gateway" ghost={az.n !== "a"} />)}</> },
   { name: "EC2", scope: "az", label: "AZ",
-    text: { vi: <>Server <code>web-1</code> chạy trong một subnet nên nằm trong đúng một AZ. Khi AZ đó gặp sự cố, server cũng ngừng hoạt động. Phần 3 minh hoạ trường hợp này.</>,
-      en: <>The server <code>web-1</code> runs in a subnet, so it resides in exactly one AZ. When that AZ fails, the server also stops working. Part 3 illustrates this case.</> },
+    text: { vi: <>EC2 instance <code>web-1</code> chạy trong một subnet nên nằm trong đúng một AZ. Khi AZ đó gặp sự cố, instance cũng ngừng hoạt động. Phần 3 minh hoạ trường hợp này.</>,
+      en: <>The EC2 instance <code>web-1</code> runs in a subnet, so it resides in exactly one AZ. When that AZ fails, the instance also stops working. Part 3 illustrates this case.</> },
     draw: <Token x={70} y={200} w={100} label="EC2: web-1" /> },
   { name: "EBS", scope: "az", label: "AZ",
-    text: { vi: <>EBS volume chỉ attach được vào server trong cùng AZ. Để chuyển sang AZ khác: tạo snapshot, sau đó tạo volume mới từ snapshot.</>,
-      en: <>An EBS volume can be attached only to a server in the same AZ. To move it to another AZ: create a snapshot, then create a new volume from the snapshot.</> },
+    text: { vi: <>EBS volume chỉ attach được vào EC2 instance trong cùng AZ. Để chuyển sang AZ khác: tạo snapshot, sau đó tạo volume mới từ snapshot.</>,
+      en: <>An EBS volume can be attached only to an EC2 instance in the same AZ. To move it to another AZ: create a snapshot, then create a new volume from the snapshot.</> },
     draw: <>
       <Token x={70} y={196} w={100} label="EC2: web-1" />
-      <line x1={120} y1={220} x2={120} y2={238} stroke="var(--accent)" strokeWidth={2} />
+      <line className="stroke-accent stroke-2" x1={120} y1={220} x2={120} y2={238} />
       <Token x={70} y={238} w={100} label="EBS: 20 GiB" ghost />
     </> },
 ];
@@ -126,9 +126,9 @@ export default function ScopeExplorer() {
             ))}
           </g>
           <g className={hl("edge")}>
-            <path d="M540 200 C 580 200, 590 130, 628 128" fill="none" stroke="var(--edge)" strokeWidth={1.5} strokeDasharray="4 4" />
-            <path d="M540 240 C 590 240, 600 220, 628 220" fill="none" stroke="var(--edge)" strokeWidth={1.5} strokeDasharray="4 4" />
-            <path d="M540 280 C 580 280, 590 312, 628 312" fill="none" stroke="var(--edge)" strokeWidth={1.5} strokeDasharray="4 4" />
+            <path d="M540 200 C 580 200, 590 130, 628 128" className="fill-none stroke-edge stroke-[1.5]" strokeDasharray="4 4" />
+            <path d="M540 240 C 590 240, 600 220, 628 220" className="fill-none stroke-edge stroke-[1.5]" strokeDasharray="4 4" />
+            <path d="M540 280 C 580 280, 590 312, 628 312" className="fill-none stroke-edge stroke-[1.5]" strokeDasharray="4 4" />
             {EDGE_Y.map((y) => <circle key={y} className="edge-dot" cx={640} cy={y} r={11} />)}
             <text className="edge-t" x={606} y={104}>Edge location</text>
           </g>

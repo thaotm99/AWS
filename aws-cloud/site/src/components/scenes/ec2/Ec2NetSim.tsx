@@ -1,7 +1,7 @@
 import HopSim, { type HopScenario } from "../security/HopSim";
 import { useLang } from "../../../lib/lang";
 
-// Network between ShopViet servers: cluster placement group + EFA for tightly coupled jobs,
+// Network between MFTECH servers: cluster placement group + EFA for tightly coupled jobs,
 // private IP for replication traffic, EC2 Instance Connect (direct and through an EC2 Instance
 // Connect Endpoint), and a highly available bastion.
 // Practice-test sources (build-time only): exam1_q23, exam4_q20, exam4_q60, exam6_q36, exam6_q57, exam6_q59, exam5_q31.
@@ -11,8 +11,8 @@ type Lang = ReturnType<typeof useLang>;
 const scenarios = (L: Lang): HopScenario[] => [
   {
     name: L({ vi: "Tác vụ mô phỏng cần độ trễ thấp nhất", en: "Simulation job needs lowest latency" }),
-    story: L({ vi: "ShopViet chạy mô phỏng dự báo tồn kho trên nhiều node. Các node trao đổi dữ liệu liên tục và yêu cầu **độ trễ thấp nhất** giữa chúng.",
-      en: "ShopViet runs an inventory forecasting simulation on many nodes. The nodes exchange data constantly and need the **lowest latency** between them." }),
+    story: L({ vi: "MFTECH chạy mô phỏng dự báo tồn kho trên nhiều node. Các node trao đổi dữ liệu liên tục và yêu cầu **độ trễ thấp nhất** giữa chúng.",
+      en: "MFTECH runs an inventory forecasting simulation on many nodes. The nodes exchange data constantly and need the **lowest latency** between them." }),
     request: "Node 1 ↔ Node 2 ↔ Node 3",
     toggle: { label: "Cluster placement group + EFA", initial: false },
     start: "n1",
@@ -39,8 +39,8 @@ const scenarios = (L: Lang): HopScenario[] => [
   },
   {
     name: L({ vi: "Đồng bộ dữ liệu giữa hai instance", en: "Data sync between two instances" }),
-    story: L({ vi: "Hai máy chủ cache của ShopViet trong cùng VPC đồng bộ dữ liệu với nhau mỗi phút. Chi phí data transfer cao bất thường.",
-      en: "Two ShopViet cache servers in the same VPC sync data with each other every minute. Data transfer costs are unusually high." }),
+    story: L({ vi: "Hai EC2 instance chạy cache của MFTECH trong cùng VPC đồng bộ dữ liệu với nhau mỗi phút. Chi phí data transfer cao bất thường.",
+      en: "Two MFTECH EC2 instances running a cache in the same VPC sync data with each other every minute. Data transfer costs are unusually high." }),
     request: L({ vi: "Replicate 200 GB / ngày", en: "Replicate 200 GB / day" }),
     toggle: { label: L({ vi: "Sử dụng private IP", en: "Use private IPs" }), initial: false },
     start: "a",
@@ -61,8 +61,8 @@ const scenarios = (L: Lang): HopScenario[] => [
   },
   {
     name: L({ vi: "SSH vào instance từ Console", en: "SSH into an instance from the console" }),
-    story: L({ vi: "Kỹ sư mới cần SSH vào một instance để xem log. ShopViet muốn chấm dứt việc chia sẻ file `.pem` dùng chung qua ứng dụng chat.",
-      en: "A new engineer needs to SSH into an instance to read logs. ShopViet wants to stop sharing a common `.pem` file over the chat app." }),
+    story: L({ vi: "Kỹ sư mới cần SSH vào một instance để xem log. MFTECH muốn chấm dứt việc chia sẻ file `.pem` dùng chung qua ứng dụng chat.",
+      en: "A new engineer needs to SSH into an instance to read logs. MFTECH wants to stop sharing a common `.pem` file over the chat app." }),
     request: "ssh ec2-user@shop-web",
     toggle: { label: L({ vi: "Sử dụng EC2 Instance Connect", en: "Use EC2 Instance Connect" }), initial: false },
     start: "eng",
@@ -86,8 +86,8 @@ const scenarios = (L: Lang): HopScenario[] => [
   },
   {
     name: L({ vi: "SSH vào instance trong private subnet", en: "SSH into an instance in a private subnet" }),
-    story: L({ vi: "Máy chủ cơ sở dữ liệu báo cáo nằm trong private subnet, **không có public IP** và VPC không có internet gateway. Kỹ sư cần SSH vào để kiểm tra, không muốn duy trì bastion host.",
-      en: "The reporting database server is in a private subnet, has **no public IP**, and the VPC has no internet gateway. An engineer needs to SSH in to check it without maintaining a bastion host." }),
+    story: L({ vi: "EC2 instance chạy cơ sở dữ liệu báo cáo nằm trong private subnet, **không có public IP** và VPC không có internet gateway. Kỹ sư cần SSH vào để kiểm tra, không muốn duy trì bastion host.",
+      en: "The EC2 instance that runs the reporting database is in a private subnet, has **no public IP**, and the VPC has no internet gateway. An engineer needs to SSH in to check it without maintaining a bastion host." }),
     request: "ssh ec2-user@10.0.3.40",
     toggle: { label: L({ vi: "Tạo EC2 Instance Connect Endpoint trong subnet", en: "Create an EC2 Instance Connect Endpoint in the subnet" }), initial: false },
     start: "eng",
@@ -119,28 +119,28 @@ const scenarios = (L: Lang): HopScenario[] => [
       { id: "ops", x: 100, y: 130, label: L({ vi: "Đội vận hành", en: "Ops team" }), kind: "user" },
       { id: "nlb", x: 330, y: 130, label: "NLB public", sub: "TCP 22", kind: "svc" },
       { id: "b1", x: 560, y: 60, label: "Bastion 1", sub: L({ vi: "hỏng", en: "failed" }), kind: "bad" },
-      { id: "b2", x: 560, y: 200, label: "Bastion 2", sub: L({ vi: "ASG vừa thay thế", en: "just replaced by ASG" }), kind: "app" },
-      { id: "priv", x: 740, y: 130, w: 110, label: L({ vi: "Máy chủ private", en: "Private server" }), kind: "store" },
+      { id: "b2", x: 560, y: 200, label: "Bastion 2", sub: L({ vi: "Auto Scaling group vừa thay thế", en: "just replaced by the Auto Scaling group" }), kind: "app" },
+      { id: "priv", x: 740, y: 130, w: 110, label: L({ vi: "Instance private", en: "Private instance" }), kind: "store" },
     ],
     hidden: (on) => (on ? [] : ["nlb", "b2"]),
     run: (on) => on
       ? { hops: [
           { to: "nlb", state: "pass", tag: "TCP", msg: L({ vi: "NLB chuyển tiếp kết nối SSH.", en: "The NLB forwards the SSH connection." }) },
           { to: "b1", state: "skip", tag: L({ vi: "BỎ QUA", en: "SKIPPED" }), msg: L({ vi: "Health check phát hiện bastion 1 lỗi.", en: "The health check detects that bastion 1 has failed." }) },
-          { from: "nlb", to: "b2", state: "pass", tag: "HEALTHY", msg: L({ vi: "Kết nối được chuyển tới bastion healthy do ASG vừa khởi tạo.", en: "The connection goes to the healthy bastion that the ASG just launched." }) },
-          { to: "priv", state: "pass", tag: L({ vi: "TRUY CẬP", en: "ACCESS" }), msg: L({ vi: "Truy cập được máy chủ trong private subnet.", en: "Reaches the server in the private subnet." }) },
+          { from: "nlb", to: "b2", state: "pass", tag: "HEALTHY", msg: L({ vi: "Kết nối được chuyển tới bastion healthy do Auto Scaling group vừa launch.", en: "The connection goes to the healthy bastion that the Auto Scaling group just launched." }) },
+          { to: "priv", state: "pass", tag: L({ vi: "TRUY CẬP", en: "ACCESS" }), msg: L({ vi: "Truy cập được instance trong private subnet.", en: "Reaches the instance in the private subnet." }) },
         ], ok: true, result: L({ vi: "NLB public đặt phía trước; bastion nằm trong Auto Scaling group phân bổ trên nhiều AZ.",
           en: "A public NLB sits in front; the bastions are in an Auto Scaling group spread across multiple AZs." }) }
       : { hops: [
           { to: "b1", state: "block", tag: L({ vi: "MẤT KẾT NỐI", en: "DISCONNECTED" }), flash: "✕", msg: L({ vi: "Bastion duy nhất gặp sự cố.", en: "The only bastion fails." }) },
-        ], ok: false, result: L({ vi: "Một bastion duy nhất là single point of failure. Cần đặt NLB phía trước và dùng ASG để duy trì bastion luôn hoạt động.",
-          en: "A single bastion is a single point of failure. Put an NLB in front and use an ASG to keep a bastion running at all times." }) },
+        ], ok: false, result: L({ vi: "Một bastion duy nhất là single point of failure. Cần đặt NLB phía trước và dùng Auto Scaling group để duy trì bastion luôn hoạt động.",
+          en: "A single bastion is a single point of failure. Put an NLB in front and use an Auto Scaling group to keep a bastion running at all times." }) },
   },
 ];
 
 export default function Ec2NetSim() {
   const L = useLang();
   return <HopSim scenarios={scenarios(L)} action={L({ vi: "Gửi traffic", en: "Send traffic" })} height={250}
-    label={L({ vi: "Traffic giữa các instance của ShopViet: placement group, private IP, Instance Connect và bastion",
-      en: "Traffic between ShopViet instances: placement group, private IP, Instance Connect and bastion" })} />;
+    label={L({ vi: "Traffic giữa các instance của MFTECH: placement group, private IP, Instance Connect và bastion",
+      en: "Traffic between MFTECH instances: placement group, private IP, Instance Connect and bastion" })} />;
 }

@@ -1,0 +1,61 @@
+/* App shell pieces whose look depends on state set by scripts, or on pseudo-elements, so utilities in the markup
+   cannot express them well. Everything else in the shell is utilities in BaseLayout and its components. */
+
+/* Lesson sidebar. From lg up it is a sticky column; below lg it is the ☰ drawer that ShellController opens by
+   toggling html.drawer-open (it slides in, and stays out of the tab order while closed). */
+.sidebar {
+  @apply sticky top-[calc(env(safe-area-inset-top,0px)+76px)] max-h-[calc(100vh-96px)] self-start overflow-y-auto pr-1;
+  @apply max-lg:fixed max-lg:top-[calc(env(safe-area-inset-top,0px)+57px)] max-lg:bottom-0 max-lg:left-0 max-lg:z-8 max-lg:block;
+  /* align-self: stretch, or the fixed drawer grows to its content, runs past the screen and never scrolls. */
+  @apply max-lg:max-h-none max-lg:w-[min(86vw,340px)] max-lg:self-stretch max-lg:overscroll-contain;
+  @apply max-lg:border-r max-lg:border-line max-lg:bg-surface;
+  @apply max-lg:pt-3.5 max-lg:pr-3.5 max-lg:pb-[calc(14px+env(safe-area-inset-bottom,0px))] max-lg:pl-[max(14px,env(safe-area-inset-left,0px))];
+  @apply max-lg:drawer-open:shadow-soft;
+}
+@variant max-lg {
+  .sidebar {
+    transform: translateX(-102%);
+    visibility: hidden;
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s linear 0.28s;
+  }
+  html.drawer-open .sidebar {
+    transform: none;
+    visibility: visible;
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+}
+
+/* A part in the lesson's contents column; the current part is marked, and a read part gets a check. */
+.toc-link {
+  @apply -ml-px grid gap-px border-l-2 border-transparent py-1.5 pr-2.5 pl-3 text-[0.8125rem] leading-[1.4] text-muted no-underline;
+  @apply hover:text-ink aria-[current=true]:border-accent aria-[current=true]:font-semibold aria-[current=true]:text-accent;
+  transition: color 0.15s, border-color 0.15s;
+
+  & small {
+    @apply font-mono text-[0.75rem] opacity-80;
+  }
+  &[data-read="true"]:not([aria-current]) small::after {
+    content: " ✓";
+    @apply text-ok;
+  }
+}
+
+/* Site search dialog (#search, opened by SiteSearch); full screen on phones. */
+.search {
+  @apply mx-auto mt-[10vh] mb-auto max-h-[min(78vh,680px)] w-[min(680px,calc(100vw-24px))] overflow-hidden rounded-[18px] border border-line bg-surface p-0 text-ink;
+  @apply max-sm:m-0 max-sm:h-dvh max-sm:max-h-none max-sm:w-screen max-sm:max-w-none max-sm:rounded-none max-sm:border-0;
+  box-shadow: 0 30px 80px --alpha(var(--color-black) / 45%);
+
+  &[open] {
+    display: flex;
+    animation: search-in 0.18s ease-out;
+    @apply motion-reduce:animate-none;
+  }
+  &::backdrop {
+    @apply bg-black/55;
+    backdrop-filter: blur(3px);
+  }
+}
+@keyframes search-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+}

@@ -1,0 +1,107 @@
+@reference "../../styles/app.css";
+
+/* Home illustrations (FeatureArt.astro): SVG part classes and their looping keyframes. Colors are theme tokens;
+   motion stops under prefers-reduced-motion. */
+@layer components {
+  .fa { @apply block h-auto w-full overflow-visible font-mono; }
+  .fa text { @apply fill-ink text-[11px]; }
+  .fa .fa-cap { @apply fill-muted text-[9px] tracking-[.08em]; }
+
+  /* Shared parts: regions, AZs, wires, service boxes, the user. */
+  .fa-region { @apply fill-none stroke-line stroke-[1.5] [stroke-dasharray:6_5]; }
+  .fa-az { @apply fill-accent-soft stroke-line opacity-70; }
+  .fa-wire, .fa-axis { @apply fill-none stroke-line stroke-2; }
+  .fa-node rect { @apply fill-surface stroke-accent stroke-[1.5]; }
+  .fa-node.net rect { @apply stroke-edge; }
+  .fa-node.cmp rect { @apply stroke-accent; }
+  .fa-node.dat rect { @apply stroke-ok; }
+  .fa-user circle, .fa-user path { @apply fill-none stroke-muted stroke-2; }
+
+  /* hero: packets travel the wires, the active instance pulses, the standby syncs */
+  .fa-dot { @apply fill-accent animate-[fa-move_3s_linear_infinite] [offset-rotate:0deg] [filter:drop-shadow(0_0_4px_var(--color-accent))]; }
+  .fa-dot.d2 { @apply fill-edge [animation-delay:1.5s] [filter:drop-shadow(0_0_4px_var(--color-edge))]; }
+  .fa-dot.d3 { @apply fill-ok [animation-duration:1.6s] [filter:none]; }
+  .fa-pulse { @apply fill-none stroke-accent stroke-2 transform-fill origin-center animate-[fa-pulse_3s_ease-out_infinite]; }
+  .fa-sync { @apply fill-none stroke-ok stroke-2 [stroke-dasharray:4_4] animate-[fa-dash_1s_linear_infinite]; }
+
+  /* lessons: AZ b fails, traffic stays on AZ a */
+  .fa-fail { @apply animate-[fa-fail_4s_ease-in-out_infinite]; }
+  .fa-down rect { @apply animate-[fa-down_4s_ease-in-out_infinite]; }
+  .fa-x { @apply fill-bad! text-[18px]! opacity-0 animate-[fa-x_4s_ease-in-out_infinite]; }
+
+  /* practice: options, the right one turns green, timer runs */
+  .fa-card { @apply fill-surface stroke-line stroke-[1.5]; }
+  .fa-card.accent { @apply fill-accent-soft stroke-accent; }
+  .fa-card.back2 { @apply opacity-55; }
+  .fa-line { @apply fill-line; }
+  .fa-line.dark { @apply fill-edge/45; }
+  .fa-opt rect { @apply fill-bg stroke-line animate-[fa-opt_5s_ease-in-out_infinite] [animation-delay:calc(var(--i)*.35s)]; }
+  .fa-opt circle { @apply fill-none stroke-muted; }
+  .fa-opt.right rect { @apply [animation-name:fa-right]; }
+  .fa-check { @apply fill-ok! text-[14px]! opacity-0 animate-[fa-x_5s_ease-in-out_infinite]; }
+  .fa-timer-track { @apply fill-none stroke-line stroke-6; }
+  .fa-timer, .fa-ring { @apply fill-none stroke-accent stroke-6 [stroke-linecap:round] -rotate-90 transform-fill origin-center; }
+  .fa-timer { @apply [stroke-dasharray:163.4] animate-[fa-timer_10s_linear_infinite]; }
+  .fa-score { @apply fill-accent-soft stroke-accent; }
+  .fa .fa-score-n { @apply fill-accent text-[16px] font-bold; }
+
+  /* lab: blocks drop in, then PASS */
+  .fa-drop { @apply animate-[fa-drop_6s_ease-out_infinite] [animation-delay:calc(var(--i)*.25s)]; }
+  .fa-pass rect { @apply fill-ok-soft stroke-ok; }
+  .fa-pass text { @apply fill-ok! font-bold; }
+  .fa-pass { @apply opacity-0 animate-[fa-pass_6s_ease-out_infinite]; }
+
+  /* skills: bars grow */
+  .fa-bar-bg { @apply fill-bg stroke-line; }
+  .fa-bar { @apply fill-accent transform-fill origin-bottom animate-[fa-grow_5s_ease-out_infinite] [animation-delay:calc(var(--i)*.2s)]; }
+  .fa-bar.weak { @apply fill-edge; }
+
+  /* compare: marks appear row by row */
+  .fa .fa-mark { @apply text-[16px] font-bold opacity-0 animate-[fa-mark_6s_ease-out_infinite] [animation-delay:calc(var(--i)*.4s)]; }
+  .fa .fa-mark.ok { @apply fill-ok; }
+  .fa .fa-mark.bad { @apply fill-bad; }
+
+  /* flashcards: flip */
+  .fa-flip, .fa-face { @apply transform-fill origin-center; }
+  .fa-face.front { @apply animate-[fa-front_6s_ease-in-out_infinite]; }
+  .fa-face.backface { @apply animate-[fa-back_6s_ease-in-out_infinite]; }
+  .fa .fa-term { @apply font-body text-[14px] font-bold; }
+
+  /* notes: highlighter sweep, sticky note */
+  .fa-hl { @apply fill-edge/35 transform-fill origin-left animate-[fa-hl_5s_ease-in-out_infinite]; }
+  .fa-sticky rect:first-child { @apply fill-edge-soft stroke-edge; }
+  .fa-sticky { @apply opacity-0 animate-[fa-pass_5s_ease-out_infinite] [animation-delay:.8s]; }
+
+  /* progress: ring fills, calendar lights up */
+  .fa-ring { @apply stroke-ok [stroke-dasharray:289] animate-[fa-ring_6s_ease-out_infinite]; }
+  .fa-cell { @apply fill-bg stroke-line animate-[fa-cell_6s_ease-out_infinite] [animation-delay:calc(var(--i)*.12s)]; }
+  .fa-cell:nth-child(5n) { @apply [animation-name:fa-cell-half]; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fa *, .fa { @apply animate-none!; }
+    .fa-dot, .fa-pulse, .fa-x { @apply hidden; }
+    .fa-check, .fa-pass, .fa-sticky, .fa .fa-mark { @apply opacity-100; }
+    .fa-face.backface { @apply scale-x-0; }
+    .fa-bar { @apply scale-y-(--v); }
+  }
+}
+
+@keyframes fa-move { from { offset-distance: 0%; opacity: 0; } 8% { opacity: 1; } 92% { opacity: 1; } to { offset-distance: 100%; opacity: 0; } }
+@keyframes fa-pulse { from { transform: scale(.6); opacity: .8; } to { transform: scale(1.6); opacity: 0; } }
+@keyframes fa-dash { to { stroke-dashoffset: -16; } }
+@keyframes fa-fail { 0%, 40% { fill: var(--color-accent-soft); } 50%, 90% { fill: var(--color-bad-soft); } 100% { fill: var(--color-accent-soft); } }
+@keyframes fa-down { 0%, 40% { stroke: var(--color-accent); opacity: 1; } 50%, 90% { stroke: var(--color-bad); opacity: .45; } 100% { stroke: var(--color-accent); opacity: 1; } }
+@keyframes fa-x { 0%, 45% { opacity: 0; } 55%, 88% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes fa-opt { 0%, 8% { stroke: var(--color-line); } 12% { stroke: var(--color-accent); } 18%, 100% { stroke: var(--color-line); } }
+@keyframes fa-right { 0%, 40% { fill: var(--color-bg); stroke: var(--color-line); } 50%, 92% { fill: var(--color-ok-soft); stroke: var(--color-ok); } 100% { fill: var(--color-bg); stroke: var(--color-line); } }
+@keyframes fa-timer { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 163.4; } }
+@keyframes fa-drop { 0% { transform: translateY(-14px); opacity: 0; } 8%, 85% { transform: none; opacity: 1; } 95%, 100% { opacity: 0; } }
+@keyframes fa-pass { 0%, 30% { opacity: 0; transform: translateY(6px); } 38%, 85% { opacity: 1; transform: none; } 95%, 100% { opacity: 0; } }
+@keyframes fa-grow { 0% { transform: scaleY(0); } 30%, 85% { transform: scaleY(var(--v)); } 100% { transform: scaleY(0); } }
+@keyframes fa-mark { 0%, 5% { opacity: 0; } 12%, 85% { opacity: 1; } 95%, 100% { opacity: 0; } }
+@keyframes fa-front { 0%, 35% { transform: scaleX(1); } 45%, 85% { transform: scaleX(0); } 95%, 100% { transform: scaleX(1); } }
+@keyframes fa-back { 0%, 45% { transform: scaleX(0); } 55%, 80% { transform: scaleX(1); } 90%, 100% { transform: scaleX(0); } }
+@keyframes fa-hl { 0%, 10% { transform: scaleX(0); } 40%, 88% { transform: scaleX(1); } 100% { transform: scaleX(0); } }
+@keyframes fa-ring { 0% { stroke-dashoffset: 289; } 40%, 85% { stroke-dashoffset: 60; } 100% { stroke-dashoffset: 289; } }
+@keyframes fa-cell { 0%, 10% { fill: var(--color-bg); } 20%, 85% { fill: var(--color-ok); } 100% { fill: var(--color-bg); } }
+@keyframes fa-cell-half { 0%, 10% { fill: var(--color-bg); } 20%, 85% { fill: var(--color-ok-soft); } 100% { fill: var(--color-bg); } }

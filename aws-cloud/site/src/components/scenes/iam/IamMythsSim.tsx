@@ -3,7 +3,7 @@ import CaseSim, { type CaseScenario } from "../global-infra/CaseSim";
 
 type Lang = ReturnType<typeof useLang>;
 
-// Five habits that decide whether ShopViet's account stays safe: no root access
+// Five habits that decide whether MFTECH's account stays safe: no root access
 // keys, groups instead of per-user policies, MFA + CloudTrail, permissions
 // boundaries against privilege escalation, and contacts that reach a team.
 
@@ -11,7 +11,7 @@ function scenarios(L: Lang): CaseScenario[] {
 return [
   {
     name: L({ vi: "Account mới: bảo vệ root user", en: "New account: protecting the root user" }),
-    request: "aws s3 rb s3://shopviet-orders --force",
+    request: "aws s3 rb s3://mftech-orders --force",
     from: L({ vi: "từ bên thứ ba có được thông tin root", en: "from a third party holding the root credentials" }),
     nodes: [
       { id: "bad", x: 20, y: 97, w: 80, l1: L({ vi: "Bên thứ ba", en: "Third party" }), user: true },
@@ -23,7 +23,7 @@ return [
     choices: { label: "Root user", options: [L({ vi: "Có access key để dùng CLI", en: "Has an access key for the CLI" }), L({ vi: "Không có access key, có MFA", en: "No access key, MFA enabled" })], initial: 0 },
     run: (v) => v === 0
       ? { back: false, steps: [
-            { at: "root", state: "change", tag: L({ vi: "LỘ KEY", en: "KEY LEAKED" }), msg: L({ vi: "Access key của root user bị lộ trong một file cấu hình.", en: "The root user's access key leaks in a configuration file." }) },
+            { at: "root", state: "change", tag: L({ vi: "LỘ ACCESS KEY", en: "ACCESS KEY LEAKED" }), msg: L({ vi: "Access key của root user bị lộ trong một file cấu hình.", en: "The root user's access key leaks in a configuration file." }) },
             { at: "acct", state: "change", tag: L({ vi: "ĐÃ XÓA", en: "DELETED" }), msg: L({ vi: "Root user thực hiện được mọi thao tác trong account.", en: "The root user can perform every action in the account." }) },
           ],
           ok: false, result: L({ vi: "Dữ liệu bị mất. Root user không bao giờ cần access key.", en: "The data is lost. The root user never needs an access key." }) }
@@ -61,7 +61,7 @@ return [
       { id: "who", x: 20, y: 97, w: 80, l1: L({ vi: "Người thực hiện", en: "Actor" }), user: true },
       { id: "mfa", x: 170, y: 97, w: 140, l1: L({ vi: "Đăng nhập", en: "Sign-in" }), l2: L({ vi: "mật khẩu + MFA", en: "password + MFA" }) },
       { id: "iam", x: 380, y: 97, w: 160, l1: "IAM", l2: L({ vi: "xóa user kho-07", en: "deletes user kho-07" }) },
-      { id: "trail", x: 620, y: 97, w: 170, l1: "CloudTrail", l2: L({ vi: "nhật ký API", en: "API log" }) },
+      { id: "trail", x: 620, y: 97, w: 170, l1: "CloudTrail", l2: L({ vi: "ghi lại API call", en: "records API calls" }) },
     ],
     links: [{ a: "who", b: "mfa" }, { a: "mfa", b: "iam" }, { a: "iam", b: "trail" }],
     start: "who",
@@ -142,5 +142,5 @@ return [
 
 export default function IamMythsSim() {
   const L = useLang();
-  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Năm nguyên tắc bảo vệ account ShopViet", en: "Five principles that protect ShopViet's account" })} action={L({ vi: "Chạy mô phỏng", en: "Run simulation" })} />;
+  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Security best practices cho AWS account MFTECH", en: "Security best practices for MFTECH's AWS account" })} action={L({ vi: "Chạy mô phỏng", en: "Run simulation" })} />;
 }

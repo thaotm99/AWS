@@ -1,4 +1,4 @@
-// Cloud City: ShopViet as a city. Each AWS service is a building, request traffic is the city's
+// Cloud City: MFTECH as a city. Each AWS service is a building, request traffic is the city's
 // population, and every day brings an event (a storm, a sale, an attack) that the city survives or not
 // depending on what was built. Buildings unlock as the learner studies the lessons. Pure rules here;
 // the island (components/city/CityGame.tsx) draws them. Kept in this browser.
@@ -159,7 +159,7 @@ export const EVENTS: CityEvent[] = [
     id: "rush",
     level: 1,
     title: t("Giờ cao điểm khuyến mãi", "A sale at rush hour"),
-    story: t("ShopViet giảm giá 50%. Dân cư đổ về gấp 3 lần trong 10 phút.", "ShopViet takes 50% off. Three times the usual residents arrive within 10 minutes."),
+    story: t("MFTECH giảm giá 50%. Dân cư đổ về gấp 3 lần trong 10 phút.", "MFTECH takes 50% off. Three times the usual residents arrive within 10 minutes."),
     conditions: (base) => ({ demand: base * 3 }),
     choices: [
       { text: t("Thuê nhà máy tạm cho hôm nay", "Hire temporary factories for the day"), cost: 120, change: { extra: 1600 }, verdict: "good", outcome: t("Thêm sức chứa trước khi dân đông nhất. Lần sau, Đội xây nhanh (Auto Scaling) làm việc này tự động.", "Capacity arrives before the peak. Next time a rapid build crew (Auto Scaling) does this on its own.") },

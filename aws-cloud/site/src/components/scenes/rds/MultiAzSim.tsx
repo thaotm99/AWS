@@ -1,6 +1,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import { flashText, travel, type Pt } from "../../../lib/animate";
 import { useLang, type Bi } from "../../../lib/lang";
+import "./rds-sims.css";
 
 // RDS Multi-AZ (synchronous standby, automatic failover by flipping the endpoint's
 // CNAME) vs Read Replicas (asynchronous, readable) and how maintenance behaves
@@ -112,11 +113,11 @@ export default function MultiAzSim() {
         <svg viewBox="0 0 760 300" role="img" aria-label={L({ vi: "Ứng dụng kết nối RDS qua endpoint; primary và standby tại hai AZ; một read replica", en: "The application connects to RDS through an endpoint; primary and standby in two AZs; one read replica" })}>
           <rect className="dbox dbox-region" x={380} y={30} width={190} height={250} rx={12} />
           <text className="ts" x={392} y={48}>Multi-AZ DB instance</text>
-          <path className="conn-line" d={`M145 150 H190`} />
-          <path className="conn-line" d={`M330 150 L${primaryPos[0] - 85} ${primaryPos[1]}`} />
-          {!down && <path className="sync-line" d={`M470 114 V206`} />}
+          <path className="maz-conn" d={`M145 150 H190`} />
+          <path className="maz-conn" d={`M330 150 L${primaryPos[0] - 85} ${primaryPos[1]}`} />
+          {!down && <path className="maz-sync" d={`M470 114 V206`} />}
           {!down && <text className="ts" x={480} y={164}>{L({ vi: "đồng bộ", en: "sync" })}</text>}
-          <path className="async-line" d={`M${primaryPos[0] + 85} ${primaryPos[1]} L610 150`} />
+          <path className="maz-async" d={`M${primaryPos[0] + 85} ${primaryPos[1]} L610 150`} />
           <text className="ts" x={614} y={primaryAz === "a" ? 100 : 222} textAnchor="middle">{L({ vi: "bất đồng bộ", en: "async" })}</text>
           <g className="res res-ec2"><rect x={APP[0] - 55} y={APP[1] - 22} width={110} height={44} rx={8} /><text className="res-t" x={APP[0]} y={APP[1] + 5} textAnchor="middle">{L({ vi: "Ứng dụng", en: "Application" })}</text></g>
           <g className="res res-net"><rect x={ENDPOINT[0] - 70} y={ENDPOINT[1] - 24} width={140} height={48} rx={8} /><text className="res-t" x={ENDPOINT[0]} y={ENDPOINT[1] - 4} textAnchor="middle">Endpoint (CNAME)</text><text className="res-s" x={ENDPOINT[0]} y={ENDPOINT[1] + 12} textAnchor="middle">→ AZ {primaryAz}</text></g>

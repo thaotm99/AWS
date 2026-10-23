@@ -37,45 +37,51 @@ const head = (s: string) => s.split(": ")[0];
 const after = next
   ? { href: href(next), vi: head(next.title.vi), en: head(next.title.en) }
   : quiz
-    ? { href: `/concepts/${id}/quiz/`, vi: "Câu hỏi kiểm tra", en: "Quiz" }
-    : { href: `/concepts/${id}/`, vi: "Tổng quan bài", en: "Lesson overview" };
+    ? { href: `/concepts/${id}/quiz/`, vi: "Bài kiểm tra", en: "Quiz" }
+    : { href: `/concepts/${id}/`, vi: "Tổng quan bài học", en: "Lesson overview" };
+
+// The pager: back (a bare arrow on phones, where the pager is pinned to the bottom of the screen) and next.
+const pagerLink = "flex min-h-12 flex-col justify-center gap-[3px] rounded-md px-[18px] py-3.5 no-underline max-sm:px-3 max-sm:py-2";
+const prevLink = `${pagerLink} border-2 border-line bg-surface font-display text-ink shadow-press-line hover:border-accent max-sm:items-center max-sm:before:text-[1.1rem] max-sm:before:content-['←']`;
+const prevSmall = "text-[0.8125rem] text-muted max-sm:hidden";
+const prevTitle = "text-[0.98rem] leading-[1.35] max-sm:hidden";
 ---
 <BaseLayout title={`${head(part.title.vi)} · ${concept.title} · CloudLab`} description={entry.data.lede} current={id}>
-  <nav slot="toc" class="ltoc pnav" aria-label="Các phần của bài học" data-i18n-attr="aria-label:lesson.parts.label">
-    <a class="pnav-back" href={`/concepts/${id}/`}>← <T k="lesson.parts.overview" /></a>
-    <p class="toc-lesson"><L vi={title} en={titleEn} /></p>
-    <ol>
+  <nav slot="toc" class="pnav flex max-h-[calc(100vh-100px)] flex-col" aria-label="Các phần của bài học" data-i18n-attr="aria-label:lesson.parts.label">
+    <a class="mb-2 text-[0.8125rem] text-muted no-underline hover:text-ink" href={`/concepts/${id}/`}>← <T k="lesson.parts.overview" /></a>
+    <p class="mt-1.5 mb-3.5 text-[0.875rem] leading-[1.4] font-semibold"><L vi={title} en={titleEn} /></p>
+    <ol class="m-0 list-none overflow-y-auto border-l border-line p-0">
       {parts.map((p) => (
         <li>
-          <a href={href(p)} aria-current={p.slug === part.slug ? "true" : undefined} data-slug={p.slug} data-kind={p.kind}>
+          <a class="toc-link" href={href(p)} aria-current={p.slug === part.slug ? "true" : undefined} data-slug={p.slug} data-kind={p.kind}>
             <small><L vi={p.label.vi} en={p.label.en} /></small>
             <L vi={head(p.title.vi)} en={head(p.title.en)} />
           </a>
         </li>
       ))}
       {quiz > 0 && (
-        <li><a href={`/concepts/${id}/quiz/`} data-kind="quiz"><small><T k="lesson.parts.quiz" /></small><T k="lesson.parts.quizCount" params={{ n: quiz }} /></a></li>
+        <li><a class="toc-link" href={`/concepts/${id}/quiz/`} data-kind="quiz"><small><T k="lesson.parts.quiz" /></small><T k="lesson.parts.quizCount" params={{ n: quiz }} /></a></li>
       )}
     </ol>
   </nav>
 
-  <div class="part-top">
-    <div class="crumbs">
+  <div class="mb-1 flex flex-col gap-2.5">
+    <div class="flex flex-wrap items-center gap-2 text-step--1 text-muted">
       <span><T k="lesson.frame.layer" params={{ n: concept.layer.n }} /> · <L vi={concept.layer.name} en={concept.layer.nameEn} /></span>
-      <span aria-hidden="true">/</span><a href={`/concepts/${id}/`}><L vi={concept.title} en={concept.titleEn} /></a>
+      <span aria-hidden="true">/</span><a class="inline-flex min-h-7 items-center" href={`/concepts/${id}/`}><L vi={concept.title} en={concept.titleEn} /></a>
     </div>
-    <ol class="part-steps" aria-label="Các phần của bài học" data-i18n-attr="aria-label:lesson.parts.label">
+    <ol class="part-steps -my-2 flex list-none gap-[3px] p-0" aria-label="Các phần của bài học" data-i18n-attr="aria-label:lesson.parts.label">
       {parts.map((p) => (
-        <li><a href={href(p)} aria-current={p.slug === part.slug ? "step" : undefined} data-slug={p.slug} data-kind={p.kind} title={p.title.vi}><span class="sr-only"><L vi={p.title.vi} en={p.title.en} /></span></a></li>
+        <li class="flex flex-1"><a class="flex min-h-8 flex-1 items-center before:h-2 before:flex-1 before:rounded-full before:bg-line before:transition-[background] before:duration-300 before:content-[''] hover:before:bg-[color-mix(in_srgb,var(--color-accent)_60%,var(--color-line))] data-[read=true]:not-aria-[current]:before:bg-ok aria-[current]:before:h-2.5 aria-[current]:before:bg-accent" href={href(p)} aria-current={p.slug === part.slug ? "step" : undefined} data-slug={p.slug} data-kind={p.kind} title={p.title.vi}><span class="sr-only"><L vi={p.title.vi} en={p.title.en} /></span></a></li>
       ))}
     </ol>
   </div>
 
-  <article class="part-body" data-lesson={id} data-part={part.slug} data-parts={JSON.stringify(parts.map((p) => p.slug))} data-title={JSON.stringify({ vi: head(part.title.vi), en: head(part.title.en) })}>
+  <article class="part-body [&>.scene:first-child]:mt-2 [&>div>.scene:first-child]:mt-2" data-lesson={id} data-part={part.slug} data-parts={JSON.stringify(parts.map((p) => p.slug))} data-title={JSON.stringify({ vi: head(part.title.vi), en: head(part.title.en) })}>
     {ContentEn ? (
       <>
-        <div data-lang="vi"><Content /></div>
-        <div data-lang="en"><ContentEn /></div>
+        <div class="prose" data-lang="vi"><Content /></div>
+        <div class="prose" data-lang="en"><ContentEn /></div>
       </>
     ) : (
       <Content />
@@ -84,21 +90,21 @@ const after = next
   <div class="part-end" aria-hidden="true"></div>
   <section class="notes-panel" data-notes aria-label="Ghi chú" data-i18n-attr="aria-label:shell.notes.panelLabel"></section>
 
-  <nav class="part-pager" aria-label="Chuyển phần" data-i18n-attr="aria-label:lesson.parts.label">
+  <nav class="part-pager mt-7 mb-2 grid grid-cols-2 gap-3 max-sm:fixed max-sm:inset-x-0 max-sm:bottom-0 max-sm:z-30 max-sm:m-0 max-sm:grid-cols-[52px_minmax(0,1fr)] max-sm:gap-2 max-sm:border-t max-sm:border-line max-sm:bg-[color-mix(in_srgb,var(--color-bg)_92%,transparent)] max-sm:px-3 max-sm:pt-2 max-sm:pb-[calc(10px+env(safe-area-inset-bottom,0px))] max-sm:backdrop-blur-[10px]" aria-label="Chuyển phần" data-i18n-attr="aria-label:lesson.parts.label">
     {prev ? (
-      <a class="part-prev" href={href(prev)}>
-        <small><T k="lesson.parts.prev" /></small>
-        <b><L vi={head(prev.title.vi)} en={head(prev.title.en)} /></b>
+      <a class={prevLink} href={href(prev)}>
+        <small class={prevSmall}><T k="lesson.parts.prev" /></small>
+        <b class={prevTitle}><L vi={head(prev.title.vi)} en={head(prev.title.en)} /></b>
       </a>
     ) : (
-      <a class="part-prev" href={`/concepts/${id}/`}>
-        <small><T k="lesson.parts.overview" /></small>
-        <b><L vi={concept.title} en={concept.titleEn} /></b>
+      <a class={prevLink} href={`/concepts/${id}/`}>
+        <small class={prevSmall}><T k="lesson.parts.overview" /></small>
+        <b class={prevTitle}><L vi={concept.title} en={concept.titleEn} /></b>
       </a>
     )}
-    <a class="part-next" href={after.href} data-part-next data-title={JSON.stringify({ vi: after.vi, en: after.en })}>
-      <small><T k={next ? "lesson.parts.next" : "lesson.parts.finish"} /></small>
-      <b><L vi={after.vi} en={after.en} /> →</b>
+    <a class={`${pagerLink} bg-accent text-right font-display text-on-accent shadow-press hover:brightness-106 max-sm:items-center max-sm:text-center`} href={after.href} data-part-next data-title={JSON.stringify({ vi: after.vi, en: after.en })}>
+      <small class="text-[0.8125rem] font-semibold max-sm:text-[0.75rem]"><T k={next ? "lesson.parts.next" : "lesson.parts.finish"} /></small>
+      <b class="text-[0.98rem] leading-[1.35] max-sm:text-[0.9rem]"><L vi={after.vi} en={after.en} /> →</b>
     </a>
   </nav>
 </BaseLayout>

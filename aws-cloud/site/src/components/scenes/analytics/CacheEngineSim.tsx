@@ -6,7 +6,7 @@ import "./cache-engine-sim.css";
 // Redis OSS (or Valkey) and Memcached side by side on a node with four vCPUs.
 // "Gửi 8 lệnh" sends the same eight commands to both: Memcached spreads them over
 // all cores (multi-threaded), Redis runs them one after another on its main thread.
-// Below, ShopViet ticks the needs it has and sees which engine covers them all.
+// Below, MFTECH ticks the needs it has and sees which engine covers them all.
 
 type Engine = "redis" | "mem";
 
@@ -92,10 +92,10 @@ export default function CacheEngineSim() {
   else { verdict = L({ vi: "Không engine nào đáp ứng đầy đủ. Tách thành hai cluster cho hai tác vụ khác nhau, hoặc rà soát lại các yêu cầu thực sự cần thiết.", en: "No engine meets every requirement. Split into two clusters for the two different jobs, or review which requirements are really needed." }); good = false; }
 
   return (
-    <div className="stage cen">
+    <div className="stage">
       <div className="stage-bar">
         <span className="label">{L({ vi: "Hai node cùng cấu hình 4 vCPU", en: "Two identical 4-vCPU nodes" })}</span>
-        <button className="btn primary cen-play" onClick={play} disabled={busy}>{L({ vi: `Gửi ${CMDS} lệnh`, en: `Send ${CMDS} commands` })}</button>
+        <button className="btn primary ml-auto" onClick={play} disabled={busy}>{L({ vi: `Gửi ${CMDS} lệnh`, en: `Send ${CMDS} commands` })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 0 820 196" role="img" aria-label={L({ vi: "Hai node cache 4 vCPU: Redis OSS xử lý lệnh trên một thread chính, Memcached xử lý trên nhiều thread", en: "Two 4-vCPU cache nodes: Redis OSS runs commands on one main thread, Memcached on multiple threads" })}>
@@ -133,8 +133,8 @@ export default function CacheEngineSim() {
         </svg>
       </div>
       <div className="readout">
-        <p className="cen-hint">{L({ vi: "Chọn các yêu cầu của ShopViet:", en: "Choose ShopViet’s requirements:" })}</p>
-        <div className="cen-needs" role="group" aria-label={L({ vi: "Yêu cầu của ShopViet", en: "ShopViet requirements" })}>
+        <p className="mx-0 mt-0 mb-2 text-step--1 text-muted">{L({ vi: "Chọn các yêu cầu của MFTECH:", en: "Choose MFTECH’s requirements:" })}</p>
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label={L({ vi: "Yêu cầu của MFTECH", en: "MFTECH requirements" })}>
           {NEEDS.map((n) => (
             <button key={n.id} className="chip" aria-pressed={picked.includes(n.id)} onClick={() => toggle(n.id)}>{L(n.name)}</button>
           ))}
@@ -151,7 +151,7 @@ export default function CacheEngineSim() {
             ))}
           </tbody>
         </table>
-        <p className={"cen-result " + (good ? "ok" : "bad")} aria-live="polite">{verdict}</p>
+        <p className={"mx-0 mt-2.5 mb-0 rounded-[12px] px-2.5 py-2 text-step--1 " + (good ? "bg-ok-soft" : "bg-bad-soft")} aria-live="polite">{verdict}</p>
       </div>
     </div>
   );

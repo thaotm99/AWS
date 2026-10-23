@@ -102,10 +102,10 @@ export default function RoutingPolicySim() {
             {unhealthy ? L({ vi: "Khôi phục ALB", en: "Restore ALB" }) : "ALB unhealthy"}
           </button>
         )}
-        <button className="btn primary" onClick={resolve} disabled={busy}>{L({ vi: "Người dùng truy cập shopviet.vn", en: "Users visit shopviet.vn" })}</button>
+        <button className="btn primary" onClick={resolve} disabled={busy}>{L({ vi: "Người dùng truy cập mftech.vn", en: "Users visit mftech.vn" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 0 760 370" role="img" aria-label={L({ vi: `Route 53 ${POLICIES[policy].label} routing phản hồi người dùng tại ba khu vực`, en: `Route 53 ${POLICIES[policy].label} routing answers users in three regions` })}>
+        <svg viewBox="0 0 760 370" role="img" aria-label={L({ vi: `Route 53 ${POLICIES[policy].label} routing trả lời truy vấn của người dùng tại ba vị trí địa lý`, en: `Route 53 ${POLICIES[policy].label} routing answers users in three geographic locations` })}>
           <rect className="r53" x={290} y={30} width={80} height={290} rx={12} />
           <text className="tw" x={330} y={170} textAnchor="middle">Route 53</text>
           {USERS.map((u) => {
@@ -116,7 +116,7 @@ export default function RoutingPolicySim() {
                   <circle className="user" cy={-9} r={7} /><path className="user" d="M-13 13 a13 13 0 0 1 26 0 z" />
                 </g>
                 <text className="ts" x={u.at[0]} y={u.at[1] + 32} textAnchor="middle">{L(u.label)}</text>
-                <text className="ts ans-t" x={200} y={u.at[1] - 8} textAnchor="middle">
+                <text className="ts fill-accent font-medium" x={200} y={u.at[1] - 8} textAnchor="middle">
                   {a === null ? L({ vi: "→ không có phản hồi", en: "→ no answer" }) : a === "error" ? L({ vi: "→ trang lỗi S3", en: "→ S3 error page" }) : `→ ${REGIONS[a].label.replace("ALB ", "")}`}
                 </text>
               </g>

@@ -1,6 +1,7 @@
 import { defineConfig } from "astro/config";
 import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
+import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   // Pages are emitted as /concepts/<id>/index.html; a CloudFront Function maps
@@ -8,4 +9,5 @@ export default defineConfig({
   build: { format: "directory" },
   trailingSlash: "ignore",
   integrations: [mdx(), react()],
+  vite: { plugins: [tailwindcss()] },
 });

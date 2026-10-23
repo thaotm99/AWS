@@ -82,16 +82,19 @@ export default function SortGame({ bins, cards }: Props) {
   };
 
   return (
-    <div className="game">
-      <div className="pool" aria-label={t("lesson.sort.pool")}>
+    <div className="mt-3 rounded-[18px] border border-line bg-surface p-3.5">
+      <div className="flex min-h-10 flex-wrap gap-2 border-b border-dashed border-line pb-3" aria-label={t("lesson.sort.pool")}>
         {order.filter((n) => !placed[n]).map(card)}
-        {placedCount === cards.length && <span className="hint ok" style={{ margin: 0 }}>{t("lesson.sort.finished")}</span>}
+        {placedCount === cards.length && <span className="hint ok m-0">{t("lesson.sort.finished")}</span>}
       </div>
-      <div className="bins">
+      <div className="mt-3 grid grid-cols-3 gap-2.5 max-sm:grid-cols-1">
         {bins.map((b) => (
           <div
             key={b.id}
-            className={"bin" + (picked ? " ready" : "") + (over === b.id ? " over" : "")}
+            className={
+              "flex min-h-[120px] cursor-pointer flex-col items-start gap-2 rounded-[14px] border-[1.5px] border-dashed p-2.5 text-left max-sm:min-h-[70px] " +
+              (picked || over === b.id ? "border-accent bg-accent-soft" : "border-line")
+            }
             role="button"
             tabIndex={0}
             onClick={() => drop(b.id)}
@@ -112,8 +115,8 @@ export default function SortGame({ bins, cards }: Props) {
               drop(b.id, e.dataTransfer.getData("text/plain"));
             }}
           >
-            <div className="bin-title">{b.title}<small>{b.sub}</small></div>
-            <div className="bin-items">{order.filter((n) => placed[n] === b.id).map(card)}</div>
+            <div className="text-[0.9375rem] font-bold">{b.title}<small className="block text-[0.75rem] font-normal text-muted">{b.sub}</small></div>
+            <div className="flex flex-wrap gap-1.5">{order.filter((n) => placed[n] === b.id).map(card)}</div>
           </div>
         ))}
       </div>

@@ -1,7 +1,7 @@
 import PacketSim, { type PLayout, type PNode, type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// ShopViet has no machine learning team, but it has text, recordings and scanned paper
+// MFTECH has no machine learning team, but it has text, recordings and scanned paper
 // to understand. Each scenario is one pipeline built from managed AI services: the packet
 // is one document going through it, and each node says what it turns the document into.
 
@@ -21,7 +21,7 @@ const SCENARIOS: PScenario[] = [
     layout: (sqs) => chain("Ứng dụng gửi đánh giá qua API Gateway, SQS, Lambda, Comprehend rồi lưu vào DynamoDB", [
       { id: "app", x: 60, y: 135, w: 96, l1: "Ứng dụng", l2: "form đánh giá" },
       { id: "api", x: 190, y: 135, w: 112, l1: "API Gateway", l2: "REST API" },
-      { id: "sqs", x: 320, y: 135, w: 104, l1: sqs ? "SQS" : "(không có)", l2: sqs ? "hàng đợi" : "gọi trực tiếp" },
+      { id: "sqs", x: 320, y: 135, w: 104, l1: sqs ? "SQS" : "(không có)", l2: sqs ? "queue" : "gọi trực tiếp" },
       { id: "fn", x: 450, y: 135, w: 104, l1: "Lambda", l2: "đọc theo batch" },
       { id: "cmp", x: 590, y: 135, w: 124, l1: "Comprehend", l2: "DetectSentiment" },
       { id: "ddb", x: 740, y: 135, w: 116, l1: "DynamoDB", l2: "TTL 365 ngày" },
@@ -30,8 +30,8 @@ const SCENARIOS: PScenario[] = [
       ? {
           steps: [
             { at: "api", state: "pass", msg: "Tiếp nhận đánh giá và phản hồi ứng dụng ngay lập tức." },
-            { at: "sqs", state: "wait", tag: "ĐỆM", flash: "3.000", msg: "Đánh giá được lưu trong hàng đợi SQS; không có đánh giá nào bị mất dù lưu lượng tăng đột biến." },
-            { at: "fn", state: "pass", msg: "Lambda đọc hàng đợi theo batch và tự động tăng số lần thực thi song song." },
+            { at: "sqs", state: "wait", tag: "ĐỆM", flash: "3.000", msg: "Đánh giá được lưu trong SQS queue; không có đánh giá nào bị mất dù lưu lượng tăng đột biến." },
+            { at: "fn", state: "pass", msg: "Lambda đọc queue theo batch và tự động tăng số lần thực thi đồng thời (concurrency)." },
             { at: "cmp", state: "change", tag: "PHÂN TÍCH", flash: "NEGATIVE", msg: "\"Delivered 5 days late, box was dented\" → **NEGATIVE**. Không cần huấn luyện model." },
             { at: "ddb", state: "pass", msg: "Lưu kết quả kèm thuộc tính **TTL** bằng thời điểm ghi cộng 365 ngày. Sau thời điểm đó, DynamoDB tự động xoá item hết hạn, thường trong vòng vài ngày, không tiêu tốn write throughput." },
           ],
@@ -64,7 +64,7 @@ const SCENARIOS: PScenario[] = [
       steps: [
         { at: "fn", state: "pass", msg: "**S3 Event Notification** kích hoạt Lambda ngay khi người bán tải lên." },
         custom
-          ? { at: "cmp", state: "change", tag: "TRÍCH", flash: "4 thành phần", msg: "Custom entity recognizer được huấn luyện từ **entity list** (danh sách tên thành phần sẵn có của ShopViet, nhãn INGREDIENT) kèm một tập tài liệu chưa gán nhãn. Kết quả trả về: wheat flour, sugar, palm oil, butter." }
+          ? { at: "cmp", state: "change", tag: "TRÍCH", flash: "4 thành phần", msg: "Custom entity recognizer được huấn luyện từ **entity list** (danh sách tên thành phần sẵn có của MFTECH, nhãn INGREDIENT) kèm một tập tài liệu chưa gán nhãn. Kết quả trả về: wheat flour, sugar, palm oil, butter." }
           : { at: "cmp", state: "block", tag: "KHÔNG NHẬN DIỆN", msg: "Entity có sẵn gồm các loại chung như COMMERCIAL_ITEM, DATE, LOCATION, ORGANIZATION, PERSON, QUANTITY; không có loại \"thành phần\"." },
         ...(custom ? [{ at: "ddb", state: "pass" as const, msg: "Truy vấn điểm an toàn của từng thành phần và hiển thị trên trang sản phẩm." }] : []),
       ],
@@ -95,7 +95,7 @@ const SCENARIOS: PScenario[] = [
           ],
           ok: true,
           back: false,
-          result: "Không cần quản lý máy chủ. Đội chăm sóc khách hàng tự viết SQL để xác định nguyên nhân khách hàng không hài lòng.",
+          result: "Kiến trúc serverless, không cần quản lý EC2 instance. Đội chăm sóc khách hàng tự viết SQL để xác định nguyên nhân khách hàng không hài lòng.",
         }
       : {
           steps: [
@@ -109,7 +109,7 @@ const SCENARIOS: PScenario[] = [
   {
     name: "Bài báo dạng scan",
     action: "Phân tích bài báo",
-    request: "500 bài báo tiếng Anh dạng PDF scan đề cập tới ShopViet",
+    request: "500 bài báo tiếng Anh dạng PDF scan đề cập tới MFTECH",
     toggle: { label: "Xử lý qua Textract trước", initial: false },
     layout: (tx) => chain("PDF scan được xử lý qua Textract, Comprehend phân tích cảm xúc và thực thể, kết quả lưu vào S3", [
       { id: "pdf", x: 70, y: 135, w: 120, l1: "S3", l2: "PDF scan" },
@@ -121,7 +121,7 @@ const SCENARIOS: PScenario[] = [
       ? {
           steps: [
             { at: "tx", state: "change", tag: "ĐỌC", flash: "text", msg: "Trích xuất văn bản từ trang scan (Textract nhận dạng tiếng Anh, Pháp, Đức, Ý, Bồ Đào Nha, Tây Ban Nha)." },
-            { at: "cmp", state: "change", tag: "PHÂN TÍCH", flash: "POSITIVE", msg: "Bài 2023: **POSITIVE**; entity: ShopViet (ORGANIZATION), Hanoi (LOCATION)." },
+            { at: "cmp", state: "change", tag: "PHÂN TÍCH", flash: "POSITIVE", msg: "Bài 2023: **POSITIVE**; entity: MFTECH (ORGANIZATION), Hanoi (LOCATION)." },
             { at: "out", state: "pass", msg: "Lưu kết quả vào S3 để xây dựng biểu đồ xu hướng sắc thái báo chí theo năm." },
           ],
           ok: true,
@@ -191,7 +191,7 @@ const SCENARIOS_EN: PScenario[] = [
       steps: [
         { at: "fn", state: "pass", msg: "An **S3 Event Notification** invokes Lambda as soon as the seller uploads." },
         custom
-          ? { at: "cmp", state: "change", tag: "EXTRACT", flash: "4 ingredients", msg: "The custom entity recognizer is trained from an **entity list** (ShopViet's existing list of ingredient names, labeled INGREDIENT) plus a set of unlabeled documents. Result: wheat flour, sugar, palm oil, butter." }
+          ? { at: "cmp", state: "change", tag: "EXTRACT", flash: "4 ingredients", msg: "The custom entity recognizer is trained from an **entity list** (MFTECH's existing list of ingredient names, labeled INGREDIENT) plus a set of unlabeled documents. Result: wheat flour, sugar, palm oil, butter." }
           : { at: "cmp", state: "block", tag: "NOT RECOGNIZED", msg: "The built-in entities are general types such as COMMERCIAL_ITEM, DATE, LOCATION, ORGANIZATION, PERSON, QUANTITY; there is no \"ingredient\" type." },
         ...(custom ? [{ at: "ddb", state: "pass" as const, msg: "Looks up the safety score of each ingredient and shows it on the product page." }] : []),
       ],
@@ -222,7 +222,7 @@ const SCENARIOS_EN: PScenario[] = [
           ],
           ok: true,
           back: false,
-          result: "No servers to manage. The customer care team writes its own SQL to find out why customers are unhappy.",
+          result: "A serverless architecture with no EC2 instances to manage. The customer care team writes its own SQL to find out why customers are unhappy.",
         }
       : {
           steps: [
@@ -236,7 +236,7 @@ const SCENARIOS_EN: PScenario[] = [
   {
     name: "Scanned news articles",
     action: "Analyze articles",
-    request: "500 scanned PDF articles in English that mention ShopViet",
+    request: "500 scanned PDF articles in English that mention MFTECH",
     toggle: { label: "Process with Textract first", initial: false },
     layout: (tx) => chain("Scanned PDFs are processed by Textract, Comprehend analyzes sentiment and entities, and the results are stored in S3", [
       { id: "pdf", x: 70, y: 135, w: 120, l1: "S3", l2: "scanned PDFs" },
@@ -248,7 +248,7 @@ const SCENARIOS_EN: PScenario[] = [
       ? {
           steps: [
             { at: "tx", state: "change", tag: "READ", flash: "text", msg: "Extracts text from the scanned pages (Textract recognizes English, French, German, Italian, Portuguese and Spanish)." },
-            { at: "cmp", state: "change", tag: "ANALYZE", flash: "POSITIVE", msg: "2023 article: **POSITIVE**; entities: ShopViet (ORGANIZATION), Hanoi (LOCATION)." },
+            { at: "cmp", state: "change", tag: "ANALYZE", flash: "POSITIVE", msg: "2023 article: **POSITIVE**; entities: MFTECH (ORGANIZATION), Hanoi (LOCATION)." },
             { at: "out", state: "pass", msg: "Stores the results in S3 to build a chart of press sentiment trends by year." },
           ],
           ok: true,

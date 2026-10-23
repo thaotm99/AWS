@@ -16,15 +16,15 @@ if (!part) throw new Error(`compare ${set.id}: no part ${set.learn.lesson}/${set
 const head = (s: string) => s.split(": ")[0];
 const learn = { href: `/concepts/${set.learn.lesson}/${set.learn.part}/`, vi: head(part.title.vi), en: head(part.title.en) };
 ---
-<BaseLayout title={`${set.title.vi} · So sánh · CloudLab`} description={set.lede.vi} section="lab" sidebar={false}>
-  <header class="gl-head lab-head">
-    <span class="gl-eyebrow"><a href="/lab/"><T k="shell.lab.eyebrow" /></a> · <T k="shell.compare.eyebrow" /></span>
+<BaseLayout title={`${set.title.vi} · So sánh dịch vụ · CloudLab`} description={set.lede.vi} section="lab" sidebar={false}>
+  <header class="gl-head">
+    <span class="gl-eyebrow"><a class="text-inherit" href="/lab/"><T k="shell.lab.eyebrow" /></a> · <T k="shell.compare.eyebrow" /></span>
     <h1><L vi={set.title.vi} en={set.title.en} /></h1>
     <p class="lede"><L vi={set.lede.vi} en={set.lede.en} /></p>
   </header>
-  <nav class="cmp-tabs" aria-label="So sánh khác" data-i18n-attr="aria-label:shell.compare.others">
+  <nav class="mb-[18px] flex flex-wrap gap-2" aria-label="So sánh khác" data-i18n-attr="aria-label:shell.compare.others">
     {COMPARE.map((c) => (
-      <a href={`/compare/${c.id}/`} aria-current={c.id === set.id ? "page" : undefined}><L vi={c.title.vi} en={c.title.en} /></a>
+      <a class="inline-flex min-h-[38px] items-center rounded-full border border-line bg-surface px-3.5 text-step--1 text-ink no-underline aria-[current=page]:border-ink aria-[current=page]:bg-ink aria-[current=page]:text-bg" href={`/compare/${c.id}/`} aria-current={c.id === set.id ? "page" : undefined}><L vi={c.title.vi} en={c.title.en} /></a>
     ))}
   </nav>
   <ServiceCompare client:load id={set.id} learn={learn} />

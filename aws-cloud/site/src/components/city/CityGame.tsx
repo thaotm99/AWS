@@ -44,7 +44,7 @@ function studiedLessons(): Set<string> {
 }
 
 /**
- * Cloud City: ShopViet as a city of AWS buildings. Build between days; each day brings an event
+ * Cloud City: MFTECH as a city of AWS buildings. Build between days; each day brings an event
  * with a choice, played out on the city's numbers. Buildings unlock with the lessons.
  */
 export default function CityGame({ layers, titles }: Props) {

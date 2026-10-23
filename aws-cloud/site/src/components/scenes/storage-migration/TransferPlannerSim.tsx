@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./migration-sims.css";
 
-// ShopViet moves the old warehouse NAS to AWS. Pick how much data, which link and which
+// MFTECH moves the old warehouse NAS to AWS. Pick how much data, which link and which
 // destination, then race the two ways in: online with AWS DataSync, or shipping Snowball
 // Edge devices. Days are illustrative assumptions (80% link utilisation, ~10 days per Snowball
 // round), not AWS figures. Capacity: Storage Optimized 210 TB (snowball/device-differences.html).
@@ -117,38 +117,38 @@ export default function TransferPlannerSim() {
   }
 
   return (
-    <div className="stage mgx">
-      <div className="mgx-row">
-        <span className="mgx-lbl">{tr({ vi: "Dữ liệu", en: "Data" })}</span>
-        <label className="mgx-size">
-          <input type="range" min={0} max={SIZES.length - 1} value={sizeIx} disabled={busy} aria-label={tr({ vi: "Dung lượng cần di chuyển", en: "Amount of data to migrate" })}
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-3">
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{tr({ vi: "Dữ liệu", en: "Data" })}</span>
+        <label className="inline-flex items-center gap-2 text-step--1">
+          <input className="w-[180px] max-w-[45vw]" type="range" min={0} max={SIZES.length - 1} value={sizeIx} disabled={busy} aria-label={tr({ vi: "Dung lượng cần di chuyển", en: "Amount of data to migrate" })}
             onChange={(e) => { setSizeIx(Number(e.target.value)); reset(); }} />
-          <b>{fmtSize(tb)}</b>
+          <b className="min-w-[5.5em] font-mono">{fmtSize(tb)}</b>
         </label>
       </div>
-      <div className="mgx-row" role="group" aria-label={tr({ vi: "Đường truyền", en: "Network link" })}>
-        <span className="mgx-lbl">{tr({ vi: "Đường truyền", en: "Link" })}</span>
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-2" role="group" aria-label={tr({ vi: "Đường truyền", en: "Network link" })}>
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{tr({ vi: "Đường truyền", en: "Link" })}</span>
         {LINKS.map((l, i) => (
           <button key={l.id} className="chip" aria-pressed={i === linkIx} disabled={busy} onClick={() => { setLinkIx(i); reset(); }}>{l.name}</button>
         ))}
       </div>
-      <div className="mgx-row" role="group" aria-label={tr({ vi: "Đích nhận", en: "Destination" })}>
-        <span className="mgx-lbl">{tr({ vi: "Đích nhận", en: "Destination" })}</span>
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-2" role="group" aria-label={tr({ vi: "Đích nhận", en: "Destination" })}>
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{tr({ vi: "Đích nhận", en: "Destination" })}</span>
         {TARGETS.map((t) => (
           <button key={t.id} className="chip" aria-pressed={t.id === target} disabled={busy} onClick={() => { setTarget(t.id); reset(); }}>{t.name}</button>
         ))}
       </div>
-      <div className="stage-bar">
-        <span className="mgx-hint">{tr({ vi: "So sánh hai phương án: truyền qua mạng và vận chuyển thiết bị.", en: "Compare two options: transfer over the network or ship devices." })}</span>
-        <button className="btn primary" onClick={start} disabled={busy}>{tr({ vi: "Bắt đầu di chuyển", en: "Start migration" })}</button>
+      <div className="stage-bar mt-3 border-t border-line">
+        <span className="m-0 text-step--1 text-muted">{tr({ vi: "So sánh hai phương án: online data transfer qua mạng và offline data transfer bằng thiết bị Snowball.", en: "Compare two options: online data transfer over the network or offline data transfer on Snowball devices." })}</span>
+        <button className="btn primary ml-auto" onClick={start} disabled={busy}>{tr({ vi: "Bắt đầu di chuyển", en: "Start migration" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 20 820 220" role="img" aria-label={tr({ vi: "Dữ liệu từ kho được chuyển lên AWS theo hai phương án: truyền qua mạng bằng DataSync và vận chuyển thiết bị Snowball", en: "Warehouse data moves to AWS in two ways: over the network with DataSync, and by shipping Snowball devices" })}>
+        <svg viewBox="0 20 820 220" role="img" aria-label={tr({ vi: "Dữ liệu từ kho được chuyển lên AWS theo hai phương án: online data transfer bằng DataSync và offline data transfer bằng thiết bị Snowball", en: "Warehouse data moves to AWS in two ways: over the network with DataSync, and by shipping Snowball devices" })}>
           <path className="mgx-wire" d={`M${SRC_X} ${L1} H${AGENT[0] - 60} M${AGENT[0] + 60} ${L1} H${AWS_X}`} />
           <path className="mgx-road" d={`M${SRC_X} ${L2} H${AWS_X}`} />
           <g className="mgx-node on">
             <rect x={20} y={50} width={140} height={170} rx={10} />
-            <text className="mgx-t" x={90} y={128} textAnchor="middle">{tr({ vi: "Kho ShopViet", en: "ShopViet warehouse" })}</text>
+            <text className="mgx-t" x={90} y={128} textAnchor="middle">{tr({ vi: "Kho MFTECH", en: "MFTECH warehouse" })}</text>
             <text className="mgx-s" x={90} y={146} textAnchor="middle">{tr({ vi: "NAS hiện có · ", en: "existing NAS · " })}{fmtSize(tb)}</text>
           </g>
           <g className={`mgx-node ${lit.net ?? ""}`}>
@@ -175,7 +175,7 @@ export default function TransferPlannerSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="mgx-hint">{tr({ vi: <>Điều chỉnh dung lượng, chọn đường truyền và đích nhận, sau đó nhấn <b>Bắt đầu di chuyển</b>. Thử 10 TB với 1 Gbps, sau đó 2 PB với 100 Mbps.</>, en: <>Adjust the data size, choose a link and a destination, then press <b>Start migration</b>. Try 10 TB at 1 Gbps, then 2 PB at 100 Mbps.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{tr({ vi: <>Điều chỉnh dung lượng, chọn đường truyền và đích nhận, sau đó nhấn <b>Bắt đầu di chuyển</b>. Thử 10 TB với 1 Gbps, sau đó 2 PB với 100 Mbps.</>, en: <>Adjust the data size, choose a link and a destination, then press <b>Start migration</b>. Try 10 TB at 1 Gbps, then 2 PB at 100 Mbps.</> })}</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) => (

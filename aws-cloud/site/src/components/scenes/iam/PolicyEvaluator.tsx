@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLang } from "../../../lib/lang";
+import "./iam-sims.css";
 
 type Lang = ReturnType<typeof useLang>;
 
@@ -45,9 +46,9 @@ function evaluate(L: Lang, mode: Mode, who: Principal, scp: Tri, boundary: Tri |
 
 function Choice<T extends string>({ label, value, options, onChange, disabled }: { label: string; value: T; options: [T, string][]; onChange: (v: T) => void; disabled?: boolean }) {
   return (
-    <div className="eval-row">
-      <span className="label">{label}</span>
-      <div className="eval-opts">
+    <div className="grid gap-1.5">
+      <span className="label text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{label}</span>
+      <div className="flex flex-wrap gap-1.5">
         {options.map(([v, t]) => (
           <button key={v} className="btn" aria-pressed={v === value} onClick={() => onChange(v)} disabled={disabled}>{t}</button>
         ))}
@@ -75,8 +76,8 @@ export default function PolicyEvaluator() {
         <button className="btn" aria-pressed={mode === "same"} onClick={() => setMode("same")}>{L({ vi: "Cùng account", en: "Same account" })}</button>
         <button className="btn" aria-pressed={mode === "cross"} onClick={() => { setMode("cross"); setWho("user"); }}>{L({ vi: "Lambda tại account A đọc S3 tại account B", en: "Lambda in account A reads S3 in account B" })}</button>
       </div>
-      <div className="eval-grid">
-        <div className="eval-inputs">
+      <div className="grid grid-cols-2 max-md:grid-cols-1">
+        <div className="grid content-start gap-3 border-r border-line p-3.5 max-md:border-r-0 max-md:border-b">
           <Choice label="Principal" value={who} onChange={setWho} disabled={mode === "cross"}
             options={[["user", "IAM user / role"], ["root", L({ vi: "Root user của member account", en: "Root user of a member account" })], ["slr", "Service-linked role"]]} />
           <Choice label="SCP (Organizations)" value={scp} onChange={setScp} options={tri} />
@@ -84,10 +85,10 @@ export default function PolicyEvaluator() {
           <Choice label="Identity policy" value={identity} onChange={setIdentity} options={tri} />
           {mode === "cross" && <Choice label={L({ vi: "Bucket policy tại account B", en: "Bucket policy in account B" })} value={resource} onChange={setResource} options={tri} />}
         </div>
-        <ol className="eval-gates" aria-live="polite">
+        <ol className="m-0 grid list-none content-start gap-2 p-3.5" aria-live="polite">
           {gates.map((g) => (
-            <li key={g.name} className={`gate-${g.state}`}>
-              <span className="gate-mark" aria-hidden="true">{g.state === "pass" ? "✓" : g.state === "fail" ? "✕" : "–"}</span>
+            <li key={g.name} className={`iam-gate ${g.state}`}>
+              <span className="iam-gate-mark" aria-hidden="true">{g.state === "pass" ? "✓" : g.state === "fail" ? "✕" : "–"}</span>
               <div><b>{g.name}</b><span>{g.why}</span></div>
             </li>
           ))}
@@ -95,7 +96,7 @@ export default function PolicyEvaluator() {
       </div>
       <div className="readout">
         <span className={"pill " + (allowed ? "ok" : "bad")}><i />{allowed ? L({ vi: "Được phép", en: "Allowed" }) : L({ vi: "Bị từ chối", en: "Denied" })}</span>
-        <p style={{ margin: "8px 0 0" }}>
+        <p className="mx-0 mt-2 mb-0">
           {L({
             vi: "Quy tắc: một explicit deny tại bất kỳ lớp nào luôn được ưu tiên. Ngoài ra, mọi lớp áp dụng đều phải cho phép; lớp không đề cập tới action được xem là từ chối ngầm định.",
             en: "Rule: an explicit deny at any layer always takes precedence. Beyond that, every applicable layer must allow the action; a layer that does not mention the action counts as an implicit deny.",

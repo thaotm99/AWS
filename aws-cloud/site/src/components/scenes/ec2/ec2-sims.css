@@ -1,48 +1,43 @@
-/* EC2 lesson simulations: PlacementSim and Ec2LifecycleSim (lesson-local styles) */
-.ec2-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
-.ec2-story { margin: 0; padding: 10px 14px 0; font-size: var(--step--1); }
+@reference "../../../styles/app.css";
 
-/* PlacementSim: one Availability Zone drawn as a row of racks */
-.pg-az { margin: 12px 14px 0; border: 1.5px dashed var(--accent); border-radius: 10px; padding: 22px 8px 8px; position: relative; }
-.pg-az-t { position: absolute; top: 4px; left: 10px; font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent); }
-.pg-racks { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; }
-.pg-rack { border: 1px solid var(--line); border-radius: 7px; background: var(--bg); padding: 4px 3px 6px; display: grid; gap: 4px; justify-items: center; align-content: start; min-height: 132px; cursor: pointer; font: inherit; color: inherit; }
-.pg-rack:hover:not(:disabled) { border-color: var(--bad); }
-.pg-rack:disabled { cursor: default; }
-.pg-rack.down { background: var(--bad-soft); border-color: var(--bad); }
-.pg-rack-t { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); }
-.pg-part { font-family: var(--font-mono); font-size: 0.58rem; line-height: 1.1; padding: 1px 4px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); }
-.pg-inst { width: 20px; height: 14px; border-radius: 3px; background: var(--ok); }
-.pg-inst.lost { background: var(--bad); }
-.pg-fail-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 4px 14px 0; }
-.pg-over { margin: 8px 14px 0; font-size: var(--step--1); color: var(--bad); }
-.pg-hint { margin: 8px 14px 0; font-size: 0.78rem; color: var(--muted); }
-.pg-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
-.pg-metric { border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 0.8rem; }
-.pg-metric span { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
-.pg-metric b.good { color: var(--ok); }
-.pg-metric b.bad { color: var(--bad); }
-@media (max-width: 560px) {
-  .pg-racks { gap: 3px; }
-  .pg-rack { min-height: 118px; padding: 3px 1px 5px; }
-  .pg-inst { width: 16px; height: 12px; }
-  .pg-metrics { grid-template-columns: minmax(0, 1fr); }
-}
+/* EC2 lesson simulations: the state-driven parts of PlacementSim, Ec2LifecycleSim and PurchaseMixSim. */
+@layer components {
+  /* PlacementSim: a rack is a button; .down marks the failed rack, .lost the instances it took down. */
+  .pg-rack {
+    @apply grid min-h-[132px] cursor-pointer content-start justify-items-center gap-1 rounded-[7px] border border-line bg-bg px-[3px] pt-1 pb-1.5 text-[inherit];
+    @apply enabled:hover:border-bad disabled:cursor-default max-sm:min-h-[118px] max-sm:px-px max-sm:pt-[3px] max-sm:pb-[5px];
+  }
+  .pg-rack.down { @apply border-bad bg-bad-soft; }
+  .pg-inst { @apply h-3.5 w-5 rounded-[3px] bg-ok max-sm:h-3 max-sm:w-4; }
+  .pg-inst.lost { @apply bg-bad; }
 
-/* Ec2LifecycleSim: attribute table of one instance */
-.lc-actions { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
-.lc-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
-.lc-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-.lc-table th, .lc-table td { text-align: left; padding: 7px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
-.lc-table th { font-weight: 600; width: 38%; }
-.lc-table td code { font-size: 0.8rem; overflow-wrap: anywhere; }
-.lc-badge { display: inline-block; font-family: var(--font-mono); font-size: 0.66rem; font-weight: 600; padding: 1px 6px; border-radius: 999px; margin-right: 6px; white-space: nowrap; }
-.lc-badge.kept { background: var(--ok-soft); color: var(--ok); }
-.lc-badge.lost { background: var(--bad-soft); color: var(--bad); }
-.lc-badge.changed { background: var(--edge-soft); color: var(--edge); }
-.lc-badge.none { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
-.lc-state { font-family: var(--font-mono); font-size: 0.78rem; }
-@media (max-width: 560px) {
-  .lc-table th, .lc-table td { padding: 6px 10px; display: block; width: auto; border-bottom: 0; }
-  .lc-table tr { display: block; border-bottom: 1px solid var(--line); padding: 4px 0; }
+  /* PlacementSim: one readout metric; the value turns .good or .bad. */
+  .pg-metric { @apply rounded-[12px] border border-line px-2 py-1.5 text-[0.8rem]; }
+  .pg-metric span { @apply block text-[0.68rem] font-semibold tracking-[0.06em] text-muted uppercase; }
+  .pg-metric b.good { @apply text-ok; }
+  .pg-metric b.bad { @apply text-bad; }
+
+  /* Ec2LifecycleSim: attribute table; rows stack on phones. */
+  .lc-table { @apply w-full border-collapse text-[0.85rem]; }
+  .lc-table th, .lc-table td {
+    @apply border-b border-line px-3.5 py-[7px] text-left align-top;
+    @apply max-sm:block max-sm:w-auto max-sm:border-b-0 max-sm:px-2.5 max-sm:py-1.5;
+  }
+  .lc-table th { @apply w-[38%] font-semibold max-sm:w-auto; }
+  .lc-table td code { @apply text-[0.8rem] wrap-anywhere; }
+  .lc-table tr { @apply max-sm:block max-sm:border-b max-sm:border-line max-sm:py-1; }
+  /* What happened to an attribute: kept, lost, changed, or none before any action. */
+  .lc-badge { @apply mr-1.5 inline-block rounded-[999px] px-1.5 py-px font-mono text-[0.66rem] font-semibold whitespace-nowrap; }
+  .lc-badge.kept { @apply bg-ok-soft text-ok; }
+  .lc-badge.lost { @apply bg-bad-soft text-bad; }
+  .lc-badge.changed { @apply bg-edge-soft text-edge; }
+  .lc-badge.none { @apply border border-line bg-bg text-muted; }
+
+  /* PurchaseMixSim: purchasing options, as SVG bars and as legend swatches. */
+  .buy-ri { @apply fill-accent bg-accent; }
+  .buy-od { @apply fill-muted bg-muted; }
+  .buy-spot { @apply fill-edge bg-edge; }
+  .buy-spot.risky { @apply fill-bad; }
+  .demand-base { @apply stroke-ink stroke-[1.5]; stroke-dasharray: 5 4; }
+  .demand-base-t { @apply stroke-surface stroke-4; paint-order: stroke; }
 }

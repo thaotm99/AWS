@@ -1,6 +1,6 @@
 ---
 title: "AWS Lambda và Amazon API Gateway: kiến trúc serverless hướng sự kiện"
-lede: "Nhiều tác vụ của ShopViet chỉ cần chạy khi phát sinh sự kiện. Bài học trình bày các luồng xử lý hướng sự kiện (ảnh mới, dữ liệu stream, tác vụ định kỳ), các lỗi thường gặp khi vận hành Lambda trong môi trường production (VPC, cold start, quota, phân quyền), và cách cung cấp API cho ứng dụng và đối tác bằng API Gateway."
+lede: "Nhiều tác vụ của MFTECH chỉ cần chạy khi phát sinh sự kiện. Bài học trình bày các luồng xử lý hướng sự kiện (ảnh mới, dữ liệu stream, tác vụ định kỳ), các lỗi thường gặp khi vận hành Lambda trong môi trường production (VPC, cold start, quota, phân quyền), và cách cung cấp API cho ứng dụng và đối tác bằng API Gateway."
 minutes: 27
 scenes: 4
 prerequisites: ["iam", "vpc"]
@@ -80,14 +80,14 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s3", label: "4 · Cung cấp API bằng API Gateway" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-Nhiều tác vụ của ShopViet chỉ chạy khi phát sinh sự kiện: ảnh mới, đơn hàng mới, đến lịch dọn dữ liệu. Thay vì duy trì EC2 chạy chờ cả ngày, **Lambda** thực thi đúng thời điểm có sự kiện, và **API Gateway** cung cấp API cho ứng dụng gọi tới.
+Nhiều tác vụ của MFTECH chỉ chạy khi phát sinh sự kiện: ảnh mới, đơn hàng mới, đến lịch dọn dữ liệu. Thay vì duy trì EC2 instance chạy liên tục cả ngày, **Lambda** thực thi đúng thời điểm có sự kiện, và **API Gateway** cung cấp API cho ứng dụng gọi tới.
 </Story>
 
-<Scene id="s1" label="Phần 1/4" title="Thực thi mã khi phát sinh sự kiện" questions={["exam5_q23", "exam2_q14", "exam1_q60", "exam5_q35", "exam6_q31", "exam3_q30", "exam1_q33"]}>
+<Scene id="s1" label="Phần 1/4" title="Kiến trúc hướng sự kiện với AWS Lambda" questions={["exam5_q23", "exam2_q14", "exam1_q60", "exam5_q35", "exam6_q31", "exam3_q30", "exam1_q33"]}>
 
-<p class="scene-intro">Nhiều tác vụ chỉ cần chạy khi có việc xảy ra, ví dụ có ảnh mới hoặc đơn hàng mới; duy trì máy chủ chạy chờ cả ngày cho những tác vụ này là lãng phí.</p>
+<p class="scene-intro">Nhiều tác vụ chỉ cần chạy khi phát sinh sự kiện, ví dụ có ảnh mới hoặc đơn hàng mới; duy trì EC2 instance chạy liên tục cả ngày cho những tác vụ này gây lãng phí chi phí.</p>
 
-Ba tác vụ của ShopViet: tạo thumbnail khi người bán tải ảnh lên, cập nhật bảng xếp hạng từ lượt xem, và dọn dữ liệu cũ hằng tuần. So sánh phương án "duy trì máy chủ chờ sẵn" với phương án để sự kiện kích hoạt Lambda:
+Ba tác vụ của MFTECH: tạo thumbnail khi người bán tải ảnh lên, cập nhật bảng xếp hạng từ lượt xem, và dọn dữ liệu cũ hằng tuần. So sánh phương án "duy trì EC2 instance chạy liên tục" với phương án để sự kiện kích hoạt Lambda:
 
 <ScenarioFlow client:visible height={220} legend={["Khuyến nghị", "Chi phí hoặc công vận hành cao"]} scenarios={[
   { name: "Xử lý ảnh khi tải lên",
@@ -131,10 +131,10 @@ Ba tác vụ của ShopViet: tạo thumbnail khi người bán tải ảnh lên,
     options: [
       { name: "EC2 + crontab", verdict: "bad", hide: ["eb", "fn"],
         flows: [{ path: ["ec2", "db"], tone: "bad", label: "trả phí cả tuần cho vài phút" }],
-        text: "Máy chủ chạy suốt tuần chỉ để thực hiện một tác vụ kéo dài vài phút." },
+        text: "EC2 instance chạy suốt tuần chỉ để thực hiện một tác vụ kéo dài vài phút." },
       { name: "EventBridge cron → Lambda", verdict: "good", hide: ["ec2"],
         flows: [{ path: ["eb", "fn"], tone: "good", label: "schedule" }, { path: ["fn", "db"], tone: "good" }],
-        text: "**EventBridge** (rule hoặc Scheduler) với biểu thức cron kích hoạt Lambda đúng lịch. Không có máy chủ chạy chờ; chi phí Lambda chỉ phát sinh trong vài phút thực thi mỗi tuần." },
+        text: "**EventBridge** (rule hoặc Scheduler) với biểu thức cron kích hoạt Lambda đúng lịch. Không có EC2 instance chạy liên tục; chi phí Lambda chỉ phát sinh trong vài phút thực thi mỗi tuần." },
     ] },
 ]} />
 
@@ -142,11 +142,11 @@ Ba tác vụ của ShopViet: tạo thumbnail khi người bán tải ảnh lên,
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/4" title="Vận hành Lambda trong môi trường production" questions={["exam4_q25", "exam1_q50", "exam3_q20", "exam6_q35", "exam4_q39", "exam2_q16"]}>
+<Scene id="s2" label="Phần 2/4" title="Vận hành Lambda function trong môi trường production" questions={["exam4_q25", "exam1_q50", "exam3_q20", "exam6_q35", "exam4_q39", "exam2_q16"]}>
 
-<p class="scene-intro">Một function chạy tốt khi thử nghiệm vẫn có thể gặp vấn đề trên môi trường thật: kết nối mạng, thời gian khởi động, giới hạn số lần chạy đồng thời và cách lưu mật khẩu.</p>
+<p class="scene-intro">Một function chạy tốt khi thử nghiệm vẫn có thể gặp vấn đề trong môi trường production: kết nối mạng khi gắn VPC, cold start, concurrency quota và cách lưu thông tin xác thực (credentials).</p>
 
-Một số vấn đề chỉ xuất hiện khi triển khai lên production: function gắn vào VPC không truy cập được Internet, người dùng chờ lâu vào giờ cao điểm, thông báo bị throttle khi vượt concurrency quota, mật khẩu database lưu trong cấu hình. Chọn từng tình huống, chạy thử, sau đó bật tuỳ chọn để khắc phục:
+Một số vấn đề chỉ xuất hiện khi triển khai lên production: function gắn vào VPC không truy cập được Internet, độ trễ tăng cao vào giờ cao điểm do cold start, thông báo bị throttle khi vượt concurrency quota, mật khẩu database lưu trong cấu hình. Chọn từng tình huống, chạy thử, sau đó bật tuỳ chọn để khắc phục:
 
 <LambdaRunSim client:visible />
 
@@ -156,20 +156,20 @@ Hai lưu ý bổ sung. Mỗi lần thực thi Lambda function tiêu chuẩn tố
 
 </Scene>
 
-<Scene id="sizing" label="Phần 3/4" title="Cấu hình tài nguyên và đóng gói function" questions={["exam4_q25", "exam3_q32", "exam1_q9"]}>
+<Scene id="sizing" label="Phần 3/4" title="Cấu hình memory, ephemeral storage, timeout và đóng gói function" questions={["exam4_q25", "exam3_q32", "exam1_q9"]}>
 
-<p class="scene-intro">Mỗi function được cấp một lượng tài nguyên cố định cho mỗi lần chạy; chọn đúng lượng tài nguyên ảnh hưởng trực tiếp tới tốc độ và chi phí.</p>
+<p class="scene-intro">Mỗi function được cấp một lượng tài nguyên cố định cho mỗi lần thực thi; cấu hình tài nguyên phù hợp ảnh hưởng trực tiếp tới hiệu năng và chi phí.</p>
 
 Mỗi Lambda function có một số thiết lập quyết định tài nguyên của execution environment:
 
 - **Memory** từ 128 MB (mặc định) tới 10.240 MB. Lambda không có thiết lập CPU riêng: CPU được cấp **tỷ lệ với memory**, tại 1.769 MB function có tương đương một vCPU. Tác vụ nặng về CPU chạy chậm thì tăng memory. Chi phí duration tính theo GB-giây nên phụ thuộc memory đã cấp.
-- **Ephemeral storage** (`/tmp`) từ 512 MB (mặc định) tới 10.240 MB, mã hoá khi lưu trữ bằng key do AWS quản lý. Dữ liệu trong `/tmp` **riêng cho từng execution environment** và chỉ là bộ nhớ đệm tạm: có thể còn lại khi môi trường được tái sử dụng, nhưng Lambda thu hồi môi trường sau vài giờ. Dữ liệu cần giữ lâu dài hoặc dùng chung giữa các function đặt trên Amazon S3 hoặc Amazon EFS.
+- **Ephemeral storage** (`/tmp`) từ 512 MB (mặc định) tới 10.240 MB, mã hoá khi lưu trữ bằng key do AWS quản lý. Dữ liệu trong `/tmp` **riêng cho từng execution environment** và chỉ dùng làm cache tạm thời: có thể còn lại khi môi trường được tái sử dụng, nhưng Lambda thu hồi môi trường sau vài giờ. Dữ liệu cần giữ lâu dài hoặc dùng chung giữa các function đặt trên Amazon S3 hoặc Amazon EFS.
 - **Timeout** mặc định 3 giây, tối đa 900 giây. Timeout quá sát thời gian chạy dễ gây lỗi khi dữ liệu lớn hơn bình thường; timeout quá cao làm lời gọi bị treo giữ môi trường thực thi lâu hơn cần thiết. Giá trị phù hợp được xác định bằng load test.
 - **Kiểu đóng gói**: tệp .zip (tối đa 250 MB khi giải nén, **kể cả layer**) hoặc **container image** lưu trong Amazon ECR cùng Region (tối đa 10 GB). **Lambda layer** chứa thư viện, custom runtime hoặc tệp cấu hình dùng chung cho nhiều function; mỗi function dùng tối đa 5 layer, mỗi layer version là bản chụp bất biến, và layer chỉ áp dụng cho function dạng .zip.
 
 Thời gian khởi tạo (cold start) phụ thuộc kích thước package, gồm cả thư viện, dependency và layer. Đưa thư viện vào layer giúp package gọn và dùng chung được, nhưng không loại bỏ thời gian khởi tạo thư viện đó; cách giảm cold start là chỉ import những gì function cần, hoặc dùng provisioned concurrency (phần 2).
 
-Chọn từng tác vụ của ShopViet, điều chỉnh cấu hình rồi triển khai thử:
+Chọn từng tác vụ của MFTECH, điều chỉnh cấu hình rồi triển khai thử:
 
 <FunctionConfigSim client:visible />
 
@@ -179,21 +179,21 @@ Layer không thay thế được nơi lưu dữ liệu. Khi team gợi ý sản 
 
 </Scene>
 
-<Scene id="s3" label="Phần 4/4" title="Cung cấp API cho ứng dụng và đối tác" questions={["exam1_q49", "exam3_q52", "exam3_q53", "exam2_q58", "exam4_q44", "exam5_q32", "exam1_q57", "exam1_q11"]}>
+<Scene id="s3" label="Phần 4/4" title="Amazon API Gateway cho ứng dụng và đối tác" questions={["exam1_q49", "exam3_q52", "exam3_q53", "exam2_q58", "exam4_q44", "exam5_q32", "exam1_q57", "exam1_q11"]}>
 
-<p class="scene-intro">Ứng dụng di động và đối tác cần một địa chỉ chung để gọi vào hệ thống; điểm vào đó cũng là nơi kiểm tra quyền và giới hạn lượng request trước khi chạy code.</p>
+<p class="scene-intro">Ứng dụng di động và đối tác cần một endpoint chung để gọi vào hệ thống; endpoint đó cũng là nơi xác thực, phân quyền và throttle request trước khi request tới backend integration.</p>
 
-Ứng dụng mobile, đối tác bán hàng và trang quản trị đều gọi tới `api.shopviet.vn`. **API Gateway** thực hiện một chuỗi bước kiểm tra trước khi request tới mã ứng dụng. Chọn tình huống và gửi request:
+Ứng dụng mobile, đối tác bán hàng và trang quản trị đều gọi tới `api.mftech.vn`. **API Gateway** thực hiện một chuỗi bước kiểm tra trước khi request tới mã ứng dụng. Chọn tình huống và gửi request:
 
 <ApiGatewaySim client:visible />
 
 Một số yêu cầu khác:
 
-- Chat giữa người mua và người bán cần kết nối hai chiều, máy chủ chủ động đẩy tin nhắn tới client: **WebSocket API**. Với REST API, mỗi request độc lập và không duy trì kết nối.
+- Chat giữa người mua và người bán cần kết nối hai chiều, backend chủ động đẩy tin nhắn tới client: **WebSocket API**. Với REST API, mỗi request độc lập và không duy trì kết nối.
 - Shipper gửi vị trí liên tục để theo dõi đơn hàng (tình huống "Shipper gửi vị trí liên tục" trong mô phỏng): REST API dùng **AWS service integration** gọi thẳng `PutRecord` của Kinesis Data Streams, không cần Lambda trung gian, để **Amazon Managed Service for Apache Flink** (tên cũ: Amazon Kinesis Data Analytics) phân tích stream. Lambda chỉ xử lý từng request, không phải nơi lưu trữ hay phân tích dữ liệu.
 - Tiếp nhận giao dịch từ ứng dụng, kiểm tra dữ liệu đơn giản rồi xử lý, với chi phí vận hành thấp nhất: **REST API + Lambda** kiểm tra dữ liệu, backend serverless phía sau. Không có máy chủ hay container nào cần vá lỗi.
 
-Xác thực người dùng ở API Gateway có nhiều cơ chế. Ứng dụng mobile mới của ShopViet đăng nhập qua một identity provider bên ngoài tuân thủ OIDC; backend cần kiểm tra JWT và scope với độ trễ, chi phí thấp, không viết mã xác thực. **HTTP API với JWT authorizer** đáp ứng yêu cầu này: API Gateway kiểm tra chữ ký token bằng public key lấy từ `jwks_uri` của issuer, kiểm tra các claim `iss`, `aud`, `exp` và yêu cầu token có ít nhất một scope của route; các claim hợp lệ được chuyển tới backend. So sánh với các cơ chế còn lại:
+Xác thực người dùng ở API Gateway có nhiều cơ chế. Ứng dụng mobile mới của MFTECH đăng nhập qua một identity provider bên ngoài tuân thủ OIDC; backend cần kiểm tra JWT và scope với độ trễ, chi phí thấp, không viết mã xác thực. **HTTP API với JWT authorizer** đáp ứng yêu cầu này: API Gateway kiểm tra chữ ký token bằng public key lấy từ `jwks_uri` của issuer, kiểm tra các claim `iss`, `aud`, `exp` và yêu cầu token có ít nhất một scope của route; các claim hợp lệ được chuyển tới backend. So sánh với các cơ chế còn lại:
 
 <QuickCompare client:visible items={[
   { name: "REST API + Lambda authorizer",
@@ -235,7 +235,7 @@ Phân loại từng tính năng vào nơi cấu hình tương ứng. Trên thi�
   ]}
 />
 
-Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTECH, phương án nào phù hợp?
 
 <Quiz client:visible items={[
   { q: "Người bán tải ảnh sản phẩm lên S3. Yêu cầu: tạo thumbnail ngay lập tức, chi phí thấp, không quản lý máy chủ. Kiến trúc nào phù hợp?",
@@ -243,14 +243,14 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     a: 1,
     why: "S3 event kích hoạt Lambda ngay khi có object mới; chi phí chỉ phát sinh khi thực thi." },
   { q: "Sau khi gắn Lambda vào VPC để đọc database, function không còn gọi được API giao hàng trên Internet. Nguyên nhân là gì?",
-    opts: ["Lambda trong VPC cần NAT gateway để truy cập Internet", "Lambda không hỗ trợ HTTPS", "Thiếu Lambda Layer"],
+    opts: ["Lambda trong VPC cần NAT gateway để truy cập Internet", "Lambda không hỗ trợ HTTPS", "Thiếu Lambda layer"],
     a: 0,
-    why: "ENI của Lambda trong private subnet chỉ có private IP; truy cập Internet phải đi qua NAT." },
-  { q: "Mỗi đối tác của ShopViet được phép gọi API với số lần khác nhau mỗi ngày tuỳ theo gói dịch vụ. Cấu hình nào phù hợp?",
+    why: "ENI của Lambda trong private subnet chỉ có private IP; truy cập Internet phải đi qua NAT gateway." },
+  { q: "Mỗi đối tác của MFTECH được phép gọi API với số lần khác nhau mỗi ngày tuỳ theo gói dịch vụ. Cấu hình nào phù hợp?",
     opts: ["Usage plans với API keys", "WAF rate-based rule", "Lambda reserved concurrency"],
     a: 0,
     why: "Usage plan thiết lập throttle và quota theo từng API key." },
-  { q: "ShopViet cần dọn dữ liệu cũ mỗi tuần một lần, tác vụ kéo dài vài phút. Yêu cầu: không duy trì máy chủ chạy chờ và chi phí chỉ phát sinh khi tác vụ chạy. Phương án nào phù hợp?",
+  { q: "MFTECH cần dọn dữ liệu cũ mỗi tuần một lần, tác vụ kéo dài vài phút. Yêu cầu: không duy trì EC2 instance chạy liên tục và chi phí chỉ phát sinh khi tác vụ chạy. Phương án nào phù hợp?",
     opts: ["EC2 chạy crontab", "EventBridge cron gọi Lambda", "Lambda chạy liên tục và sleep"],
     a: 1,
     why: "Lịch cron của EventBridge kích hoạt Lambda đúng thời điểm; chi phí Lambda chỉ phát sinh cho vài phút thực thi mỗi tuần. EC2 chạy crontab phải chạy suốt tuần; Lambda function tiêu chuẩn không chạy liên tục được vì mỗi lần thực thi tối đa 15 phút." },

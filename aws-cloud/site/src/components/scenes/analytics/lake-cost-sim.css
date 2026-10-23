@@ -1,14 +1,14 @@
-/* Twelve months of S3 data lake storage (analytics/LakeCostSim) */
-.lkc .stage-bar .lkc-play { margin-left: auto; }
-.lkc-about { margin: 10px 16px 0; font-size: var(--step--1); color: var(--muted); }
-.lkc-grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
-.lkc-raw { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1; transition: y .2s, height .2s; }
-.lkc-ref { fill: var(--edge-soft); stroke: var(--edge); stroke-width: 1; transition: y .2s, height .2s; }
-.lkc-ref.bad { fill: var(--bad-soft); stroke: var(--bad); }
-.lkc-ghost { opacity: .2; }
-.lkc-flash { fill: var(--ink); font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-anchor: middle; }
-.lkc-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
-.lkc-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 8px; font-size: var(--step--1); }
-.lkc-result.ok { background: var(--ok-soft); }
-.lkc-result.bad { background: var(--bad-soft); }
-@media (prefers-reduced-motion: reduce) { .lkc-raw, .lkc-ref { transition: none; } }
+@reference "../../../styles/app.css";
+
+/* Twelve months of S3 data lake storage (analytics/LakeCostSim): SVG parts of the monthly cost chart. */
+@layer components {
+  .lkc-grid { @apply stroke-line stroke-1; stroke-dasharray: 3 4; }
+  /* Raw and refined zone cost; refined turns .bad when Athena cannot read it. */
+  .lkc-raw { @apply fill-accent-soft stroke-accent stroke-1; transition: y .2s, height .2s; }
+  .lkc-ref { @apply fill-edge-soft stroke-edge stroke-1; transition: y .2s, height .2s; }
+  .lkc-ref.bad { @apply fill-bad-soft stroke-bad; }
+  /* Total that flashText() pops over the last month. */
+  .lkc-flash { @apply fill-ink font-mono text-[12px] font-bold; text-anchor: middle; }
+
+  @media (prefers-reduced-motion: reduce) { .lkc-raw, .lkc-ref { transition: none; } }
+}

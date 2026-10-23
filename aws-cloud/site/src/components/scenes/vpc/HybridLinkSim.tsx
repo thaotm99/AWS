@@ -3,7 +3,7 @@ import CaseSim, { type CaseLink, type CaseNode, type CaseScenario } from "../glo
 
 type Lang = ReturnType<typeof useLang>;
 
-// ShopViet's office talks to its VPCs. Each situation is a real need: connect this
+// MFTECH's office talks to its VPCs. Each situation is a real need: connect this
 // week, encrypt a private line, survive a Direct Connect cut, reach two Regions,
 // read S3, let branches talk, get more VPN bandwidth.
 
@@ -14,7 +14,7 @@ const VPN_GW: P[] = [[540, 51]];
 const DX_GW: P[] = [[540, 189]];
 
 function scenarios(L: Lang): CaseScenario[] {
-const OFFICE: CaseNode = { id: "office", x: 20, y: 97, w: 150, l1: L({ vi: "Văn phòng ShopViet", en: "ShopViet office" }), l2: "customer gateway" };
+const OFFICE: CaseNode = { id: "office", x: 20, y: 97, w: 150, l1: L({ vi: "Văn phòng MFTECH", en: "MFTECH office" }), l2: "customer gateway" };
 const VPN: CaseNode = { id: "vpn", x: 240, y: 28, w: 160, l1: "Site-to-Site VPN", l2: L({ vi: "IPsec qua internet", en: "IPsec over the internet" }) };
 const DX: CaseNode = { id: "dx", x: 240, y: 166, w: 160, l1: "Direct Connect", l2: L({ vi: "kết nối chuyên dụng", en: "dedicated connection" }) };
 const VGW: CaseNode = { id: "gw", x: 460, y: 97, w: 160, l1: "VGW", l2: "virtual private gateway" };
@@ -42,9 +42,9 @@ return [
           ],
           ok: false, result: L({ vi: "Không sẵn sàng trong tuần này. Yêu cầu triển khai nhanh, chi phí thấp: Site-to-Site VPN.", en: "Not ready this week. For fast deployment at low cost: Site-to-Site VPN." }) }
       : { steps: [
-            { at: "vpn", via: UP, state: "pass", msg: L({ vi: "Phía văn phòng: **customer gateway device** (thiết bị vật lý hoặc phần mềm do ShopViet quản lý) thiết lập hai tunnel **IPsec** qua internet. Trong AWS, tạo tài nguyên **customer gateway** mô tả thiết bị này (ví dụ public IP); tài nguyên này không tự cấu hình thiết bị.", en: "Office side: a **customer gateway device** (a physical or software appliance that ShopViet manages) brings up two **IPsec** tunnels over the internet. In AWS you create a **customer gateway** resource that describes the device (for example its public IP); the resource does not configure the device." }) },
+            { at: "vpn", via: UP, state: "pass", msg: L({ vi: "Phía văn phòng: **customer gateway device** (thiết bị vật lý hoặc phần mềm do MFTECH quản lý) thiết lập hai tunnel **IPsec** qua internet. Trong AWS, tạo tài nguyên **customer gateway** mô tả thiết bị này (ví dụ public IP); tài nguyên này không tự cấu hình thiết bị.", en: "Office side: a **customer gateway device** (a physical or software appliance that MFTECH manages) brings up two **IPsec** tunnels over the internet. In AWS you create a **customer gateway** resource that describes the device (for example its public IP); the resource does not configure the device." }) },
             { at: "gw", via: VPN_GW, state: "pass", msg: L({ vi: "Phía AWS: **virtual private gateway** gắn với VPC (hoặc một transit gateway). Hai tunnel kết thúc tại đây; một tunnel gặp sự cố thì traffic chuyển sang tunnel còn lại.", en: "AWS side: a **virtual private gateway** attached to the VPC (or a transit gateway). Both tunnels terminate here; if one tunnel fails, traffic moves to the other." }) },
-            { at: "vpc", state: "pass", msg: L({ vi: "Traffic tới server trong VPC.", en: "Traffic reaches the server in the VPC." }) },
+            { at: "vpc", state: "pass", msg: L({ vi: "Traffic tới EC2 instance trong VPC.", en: "Traffic reaches the EC2 instance in the VPC." }) },
           ],
           ok: true, result: L({ vi: "Kết nối sẵn sàng nhanh, có mã hóa, chi phí thấp.", en: "The connection is ready quickly, encrypted, at low cost." }) },
   },
@@ -52,7 +52,7 @@ return [
     ...base,
     name: L({ vi: "Dữ liệu nhạy cảm, yêu cầu kết nối ổn định", en: "Sensitive data, stable connection required" }),
     request: "sync payroll.csv",
-    from: L({ vi: "từ máy chủ nhân sự", en: "from the HR server" }),
+    from: L({ vi: "từ server nhân sự", en: "from the HR server" }),
     choices: { label: L({ vi: "Phương thức kết nối", en: "Connection method" }), options: [L({ vi: "Chỉ Direct Connect", en: "Direct Connect only" }), "Direct Connect + VPN"], initial: 0 },
     run: (v) => v === 0
       ? { steps: [
@@ -82,7 +82,7 @@ return [
           steps: [
             { at: "vpn", via: UP, state: "pass", msg: L({ vi: "Định tuyến tự động chuyển sang VPN qua internet.", en: "Routing automatically fails over to the VPN over the internet." }) },
             { at: "gw", via: VPN_GW, state: "pass", msg: L({ vi: "VGW tiếp nhận traffic từ tunnel VPN.", en: "The VGW receives traffic from the VPN tunnel." }) },
-            { at: "vpc", state: "pass", msg: L({ vi: "Traffic vẫn tới được server.", en: "Traffic still reaches the server." }) },
+            { at: "vpc", state: "pass", msg: L({ vi: "Traffic vẫn tới được EC2 instance.", en: "Traffic still reaches the EC2 instance." }) },
           ],
           ok: true, result: L({ vi: "Độ trễ cao hơn nhưng không mất kết nối. VPN là phương án dự phòng chi phí thấp cho Direct Connect.", en: "Latency is higher, but connectivity is not lost. A VPN is a low-cost backup for Direct Connect." }) },
   },
@@ -118,7 +118,7 @@ return [
   {
     ...base,
     name: L({ vi: "Truy cập S3 qua Direct Connect", en: "Access S3 over Direct Connect" }),
-    request: "GET s3://shopviet-reports/may.csv",
+    request: "GET s3://mftech-reports/may.csv",
     from: L({ vi: "từ văn phòng", en: "from the office" }),
     nodes: [OFFICE, VPN, DX, VGW, VPC, { id: "s3", x: 660, y: 20, w: 140, h: 40, l1: "Amazon S3", l2: "public endpoint" }],
     links: [...BASE_LINKS, { id: "pub", a: "dx", b: "s3", via: [[440, 189], [440, 40]], dashed: true, label: "public VIF", lx: 470, ly: 34 }],
@@ -191,5 +191,5 @@ return [
 
 export default function HybridLinkSim() {
   const L = useLang();
-  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Văn phòng ShopViet kết nối vào VPC qua Site-to-Site VPN hoặc Direct Connect", en: "ShopViet's office connects to the VPC through Site-to-Site VPN or Direct Connect" })} />;
+  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Văn phòng MFTECH kết nối vào VPC qua Site-to-Site VPN hoặc Direct Connect", en: "MFTECH's office connects to the VPC through Site-to-Site VPN or Direct Connect" })} />;
 }

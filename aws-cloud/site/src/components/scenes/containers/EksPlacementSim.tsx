@@ -3,7 +3,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./containers-sims.css";
 
-// Where a ShopViet Kubernetes workload runs, checked against the requirements of each situation.
+// Where a MFTECH Kubernetes workload runs, checked against the requirements of each situation.
 // Facts: eks/latest/userguide/eks-deployment-options.html (EKS in Regions, Outposts, Hybrid Nodes,
 // EKS Anywhere customer-managed and air-gapped), eks-outposts.html (extended vs local clusters,
 // control plane fully managed by AWS for both, local clusters for disconnects and data residency),
@@ -46,8 +46,8 @@ const OPTS: { id: Opt; name: string; has: Record<Req, boolean>; note: Bi }[] = [
 ];
 
 const CASES: { name: Bi; story: Bi; needs: Req[]; fit: Opt }[] = [
-  { name: { vi: "ShopViet Pay: dữ liệu phải ở lại", en: "ShopViet Pay: data must stay" },
-    story: { vi: "Quy định ngành tài chính yêu cầu mọi workload và dữ liệu của ShopViet Pay nằm trong data center. Đội ngũ muốn AWS quản lý control plane, nâng cấp Kubernetes tự động và dùng CloudWatch, IAM.", en: "Financial regulation requires every ShopViet Pay workload and its data to stay in the data center. The team wants AWS to manage the control plane, automate Kubernetes upgrades, and use CloudWatch and IAM." },
+  { name: { vi: "MFTECH Pay: dữ liệu phải ở lại", en: "MFTECH Pay: data must stay" },
+    story: { vi: "Quy định ngành tài chính yêu cầu mọi workload và dữ liệu của MFTECH Pay nằm trong data center. Đội ngũ muốn AWS quản lý control plane, nâng cấp Kubernetes tự động và dùng CloudWatch, IAM.", en: "Financial regulation requires every MFTECH Pay workload and its data to stay in the data center. The team wants AWS to manage the control plane, automate Kubernetes upgrades, and use CloudWatch and IAM." },
     needs: ["onprem", "awscp"], fit: "outLocal" },
   { name: { vi: "Kho hàng không có internet", en: "Warehouse with no internet" },
     story: { vi: "Kho hàng tại khu công nghiệp có mạng nội bộ cách ly hoàn toàn (air-gapped) và sẵn cụm máy chủ VMware vSphere. Cần chạy Kubernetes ngay trên cụm này.", en: "A warehouse in an industrial park has a fully isolated (air-gapped) network and an existing VMware vSphere cluster. Kubernetes must run on that cluster." },
@@ -69,42 +69,42 @@ export default function EksPlacementSim() {
   const meets = (o: (typeof OPTS)[number]) => c.needs.every((r) => o.has[r]);
 
   return (
-    <div className="stage ctx">
-      <div className="ctx-row" role="group" aria-label={L({ vi: "Tình huống", en: "Situation" })}>
-        <span className="ctx-lbl">{L({ vi: "Tình huống", en: "Situation" })}</span>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-3" role="group" aria-label={L({ vi: "Tình huống", en: "Situation" })}>
+        <span className="mr-1 text-[0.72rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Tình huống", en: "Situation" })}</span>
         {CASES.map((x, i) => (
           <button key={x.name.en} className="chip" aria-pressed={i === ci} onClick={() => { setCi(i); setSel(null); }}>{L(x.name)}</button>
         ))}
       </div>
-      <div className="ctx-row">
-        <p className="ctx-hint" style={{ color: "var(--ink)" }}>{L(c.story)}</p>
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-2">
+        <p className="m-0 text-step--1 text-ink">{L(c.story)}</p>
       </div>
-      <div className="ctx-row">
-        <span className="ctx-lbl">{L({ vi: "Yêu cầu", en: "Requirements" })}</span>
-        {c.needs.map((r) => <span key={r} className="ctx-need">{L(REQ[r])}</span>)}
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-2">
+        <span className="mr-1 text-[0.72rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Yêu cầu", en: "Requirements" })}</span>
+        {c.needs.map((r) => <span key={r} className="rounded-[10px] border border-line bg-bg px-2 py-[3px] text-[0.8125rem] wrap-anywhere">{L(REQ[r])}</span>)}
       </div>
-      <div className="ctx-opts" role="group" aria-label={L({ vi: "Phương án triển khai", en: "Deployment options" })}>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,15rem),1fr))] gap-2 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Phương án triển khai", en: "Deployment options" })}>
         {OPTS.map((o) => (
           <button key={o.id} className={`ctx-opt ${sel !== null && o.id === c.fit ? "fit" : ""}`} aria-pressed={sel === o.id} onClick={() => setSel(o.id)}>
-            <span className="ctx-opt-name">{o.name}</span>
-            <ul className="ctx-checks">
+            <span className="text-step--1 font-semibold wrap-anywhere">{o.name}</span>
+            <ul className="m-0 grid list-none gap-0.5 p-0 text-[0.78rem]">
               {c.needs.map((r) => (
-                <li key={r}>
-                  <span className={`ctx-mark ${o.has[r] ? "y" : "n"}`} aria-hidden="true">{o.has[r] ? "✓" : "✗"}</span>
-                  <span>{L(REQ[r])}{o.has[r] ? "" : L({ vi: " (không đáp ứng)", en: " (not met)" })}</span>
+                <li key={r} className="flex items-baseline gap-1.5">
+                  <span className={`w-[1em] flex-none font-mono font-bold ${o.has[r] ? "text-ok" : "text-bad"}`} aria-hidden="true">{o.has[r] ? "✓" : "✗"}</span>
+                  <span className="min-w-0 wrap-anywhere">{L(REQ[r])}{o.has[r] ? "" : L({ vi: " (không đáp ứng)", en: " (not met)" })}</span>
                 </li>
               ))}
             </ul>
           </button>
         ))}
       </div>
-      <div className="readout ctx-detail" aria-live="polite">
+      <div className="readout" aria-live="polite">
         {sel === null ? (
-          <p className="ctx-hint">{L({ vi: "Đọc yêu cầu của tình huống, sau đó chọn phương án đáp ứng mọi yêu cầu. Mỗi thẻ cho biết phương án đáp ứng yêu cầu nào.", en: "Read the situation's requirements, then pick the option that meets all of them. Each card shows which requirements the option meets." })}</p>
+          <p className="mx-0 mt-1 mb-0 text-step--1 text-muted">{L({ vi: "Đọc yêu cầu của tình huống, sau đó chọn phương án đáp ứng mọi yêu cầu. Mỗi thẻ cho biết phương án đáp ứng yêu cầu nào.", en: "Read the situation's requirements, then pick the option that meets all of them. Each card shows which requirements the option meets." })}</p>
         ) : (
           <>
-            <strong>{opt.name}<span className={`ctx-verdict ${meets(opt) ? "y" : "n"}`}>{meets(opt) ? L({ vi: "PHÙ HỢP", en: "FITS" }) : L({ vi: "CHƯA PHÙ HỢP", en: "DOES NOT FIT" })}</span></strong>
-            <p>{rich(L(opt.note))}</p>
+            <strong>{opt.name}<span className={`ml-1.5 inline-block rounded-[4px] px-1.5 py-0 align-middle font-mono text-[0.7rem] font-semibold ${meets(opt) ? "bg-ok-soft text-ok" : "bg-bad-soft text-bad"}`}>{meets(opt) ? L({ vi: "PHÙ HỢP", en: "FITS" }) : L({ vi: "CHƯA PHÙ HỢP", en: "DOES NOT FIT" })}</span></strong>
+            <p className="mx-0 mt-1 mb-0">{rich(L(opt.note))}</p>
           </>
         )}
       </div>

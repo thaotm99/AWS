@@ -1,15 +1,15 @@
 import PacketSim, { type PLayout, type PScenario, type PStep } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// Questions the ShopViet team really asks after an incident, and which of the three
+// Questions the MFTECH team really asks after an incident, and which of the three
 // services can answer each one: CloudWatch (numbers over time), CloudTrail (who called
 // which API) or AWS Config (what a resource looked like, and does it follow the rules).
 
 const LAYOUT: PLayout = {
   viewBox: "0 30 820 240",
-  aria: "Câu hỏi của đội ShopViet được gửi tới CloudWatch, CloudTrail hoặc AWS Config",
+  aria: "Câu hỏi của đội MFTECH được gửi tới CloudWatch, CloudTrail hoặc AWS Config",
   nodes: [
-    { id: "team", x: 80, y: 150, l1: "Đội ShopViet", user: true },
+    { id: "team", x: 80, y: 150, l1: "Đội MFTECH", user: true },
     { id: "cw", x: 420, y: 70, w: 230, l1: "CloudWatch", l2: "metric, log, alarm: trạng thái hệ thống" },
     { id: "trail", x: 420, y: 150, w: 230, l1: "CloudTrail", l2: "API call: ai thao tác gì, khi nào" },
     { id: "config", x: 420, y: 230, w: 230, l1: "AWS Config", l2: "cấu hình và mức tuân thủ" },
@@ -40,7 +40,7 @@ const SCENARIOS: PScenario[] = [
   ask("Admin mới thao tác gì trên IAM?", "Ghi lại mọi thao tác IAM của tài khoản admin mới", "trail", "IAM",
     "Trail ghi `CreateUser`, `AttachUserPolicy`, `CreateAccessKey`… của từng người dùng.",
     "Thao tác IAM là **management event**, được **CloudTrail** trail ghi theo mặc định. Nên tạo trail ngay từ đầu, cùng với **MFA** cho người dùng có đặc quyền cao."),
-  ask("Tuần trước sg-web mở cổng nào?", "Vào thứ Hai tuần trước, sg-web có những inbound rule nào?", "config", "lịch sử",
+  ask("Tuần trước sg-web mở port nào?", "Vào thứ Hai tuần trước, sg-web có những inbound rule nào?", "config", "lịch sử",
     "**Configuration history** của sg-web: bản ghi cấu hình tại mỗi lần thay đổi, có thể xem lại tại từng thời điểm.",
     "**AWS Config** ghi lại cấu hình mỗi khi tài nguyên thay đổi, kèm quan hệ với tài nguyên khác (instance nào đang sử dụng sg-web)."),
   ask("Có bucket nào đang public?", "Toàn bộ S3 bucket có tuân thủ tiêu chuẩn \"không public\" không?", "config", "3 vi phạm",
@@ -53,9 +53,9 @@ const SCENARIOS: PScenario[] = [
 
 const LAYOUT_EN: PLayout = {
   viewBox: "0 30 820 240",
-  aria: "Questions from the ShopViet team are sent to CloudWatch, CloudTrail or AWS Config",
+  aria: "Questions from the MFTECH team are sent to CloudWatch, CloudTrail or AWS Config",
   nodes: [
-    { id: "team", x: 80, y: 150, l1: "ShopViet team", user: true },
+    { id: "team", x: 80, y: 150, l1: "MFTECH team", user: true },
     { id: "cw", x: 420, y: 70, w: 230, l1: "CloudWatch", l2: "metrics, logs, alarms: system state" },
     { id: "trail", x: 420, y: 150, w: 230, l1: "CloudTrail", l2: "API calls: who did what, when" },
     { id: "config", x: 420, y: 230, w: 230, l1: "AWS Config", l2: "configuration and compliance" },

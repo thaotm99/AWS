@@ -162,13 +162,13 @@ export default function DynamicPolicySim() {
   const events = run.events.filter((e) => e.t <= shown);
 
   return (
-    <div className="stage dps">
+    <div className="stage">
       <div className="stage-bar">
         <span className="label">{L({ vi: "Policy", en: "Policy" })}</span>
         {POLICIES.map((p) => (
           <button key={p.id} className="btn" aria-pressed={p.id === policy} disabled={busy && p.id !== policy} onClick={() => change(() => setPolicy(p.id))}>{p.name}</button>
         ))}
-        <button className="btn primary dps-play" onClick={play} disabled={busy}>{L({ vi: "Chạy 25 phút", en: "Run 25 minutes" })}</button>
+        <button className="btn primary ml-auto" onClick={play} disabled={busy}>{L({ vi: "Chạy 25 phút", en: "Run 25 minutes" })}</button>
       </div>
       <div className="stage-bar">
         {policy === "simple" ? (
@@ -179,15 +179,15 @@ export default function DynamicPolicySim() {
                 {m === 5 ? L({ vi: "300 giây (mặc định)", en: "300 seconds (default)" }) : L({ vi: "60 giây", en: "60 seconds" })}
               </button>
             ))}
-            <span className="dps-rule">{L({ vi: `Alarm CPU > ${ALARM}% → thêm 2 instance`, en: `Alarm CPU > ${ALARM}% → add 2 instances` })}</span>
+            <span className="font-mono text-[0.78rem] text-muted">{L({ vi: `Alarm CPU > ${ALARM}% → thêm 2 instance`, en: `Alarm CPU > ${ALARM}% → add 2 instances` })}</span>
           </>
         ) : policy === "step" ? (
-          <span className="dps-rule">{L({ vi: "Alarm CPU ≥ 60%: bước 60–75% +2 · 75–90% +4 · ≥ 90% +6 instance", en: "Alarm CPU ≥ 60%: step 60–75% +2 · 75–90% +4 · ≥ 90% +6 instances" })}</span>
+          <span className="font-mono text-[0.78rem] text-muted">{L({ vi: "Alarm CPU ≥ 60%: bước 60–75% +2 · 75–90% +4 · ≥ 90% +6 instance", en: "Alarm CPU ≥ 60%: step 60–75% +2 · 75–90% +4 · ≥ 90% +6 instances" })}</span>
         ) : (
-          <span className="dps-rule">{L({ vi: "Metric: CPU trung bình của nhóm · giá trị mục tiêu 50%", en: "Metric: group average CPU · target value 50%" })}</span>
+          <span className="font-mono text-[0.78rem] text-muted">{L({ vi: "Metric: CPU trung bình của nhóm · giá trị mục tiêu 50%", en: "Metric: group average CPU · target value 50%" })}</span>
         )}
       </div>
-      <p className="dps-about">{L({ vi: "Lúc phút 4, ShopViet mở bán một sản phẩm được quảng bá rộng rãi: tải tăng gấp bốn và giữ nguyên. Nhóm đang chạy 4 instance, tối đa 20. Trong mô phỏng, instance mới sẵn sàng sau 2 phút.", en: "At minute 4, ShopViet opens sales of a heavily promoted product: load quadruples and stays there. The group runs 4 instances, maximum 20. In the simulation, a new instance is ready 2 minutes after launch." })}</p>
+      <p className="mx-4 mt-2.5 mb-0 text-step--1 text-muted">{L({ vi: "Lúc phút 4, MFTECH mở bán một sản phẩm được quảng bá rộng rãi: tải tăng gấp bốn và giữ nguyên. Nhóm đang chạy 4 instance, tối đa 20. Trong mô phỏng, instance mới sẵn sàng sau 2 phút.", en: "At minute 4, MFTECH opens sales of a heavily promoted product: load quadruples and stays there. The group runs 4 instances, maximum 20. In the simulation, a new instance is ready 2 minutes after launch." })}</p>
       <div className="svg-wrap">
         <svg viewBox="0 0 820 286" role="img" aria-label={L({ vi: "Biểu đồ 25 phút: CPU trung bình phía trên, số instance phía dưới", en: "25-minute chart: average CPU on top, number of instances below" })}>
           <text className="ts dps-axis" x={X0} y={CPU_Y0 - 10}>{L({ vi: "CPU trung bình (%)", en: "Average CPU (%)" })}</text>
@@ -230,17 +230,17 @@ export default function DynamicPolicySim() {
       </div>
       <div className="readout" aria-live="polite">
         {shown < 0 ? (
-          <p className="sps-hint">{L({ vi: <>Chọn policy, sau đó nhấn <b>Chạy 25 phút</b>. Với simple scaling, thử cả hai giá trị cooldown.</>, en: <>Choose a policy, then press <b>Run 25 minutes</b>. With simple scaling, try both cooldown values.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn policy, sau đó nhấn <b>Chạy 25 phút</b>. Với simple scaling, thử cả hai giá trị cooldown.</>, en: <>Choose a policy, then press <b>Run 25 minutes</b>. With simple scaling, try both cooldown values.</> })}</p>
         ) : (
           <>
             <div className="status">
               <span className="count">{L({ vi: `Phút ${shown} · ${run.ready[shown]} instance sẵn sàng · desired ${run.desired[shown]}`, en: `Minute ${shown} · ${run.ready[shown]} ready instances · desired ${run.desired[shown]}` })}</span>
               <span className={"pill " + (hot > 8 ? "bad" : "ok")}><i />{L({ vi: `${hot} phút CPU > 60%`, en: `${hot} minutes with CPU > 60%` })}</span>
             </div>
-            <ol className="dps-log">
+            <ol className="list-decimal mx-0 mt-2 mb-0 grid gap-1 pl-5 text-step--1 [&_.count]:mr-1">
               {events.map((e, i) => <li key={i}><span className="count">{L({ vi: `phút ${e.t}`, en: `min ${e.t}` })}</span> {L(e.text)}</li>)}
             </ol>
-            {done && <p className={`sps-result ${policy === "simple" ? "bad" : "ok"}`}>{rich(L(NOTE[policy]))}</p>}
+            {done && <p className={`mx-0 mt-2.5 mb-0 rounded-[12px] px-2.5 py-2 text-step--1 ${policy === "simple" ? "bg-bad-soft" : "bg-ok-soft"}`}>{rich(L(NOTE[policy]))}</p>}
           </>
         )}
       </div>

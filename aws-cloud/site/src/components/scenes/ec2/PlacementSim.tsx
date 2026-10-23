@@ -56,16 +56,16 @@ const WORKS: Record<WorkId, Work> = {
     },
   },
   crit: {
-    name: { vi: "3 máy chủ điều phối quan trọng", en: "3 critical coordinator servers" },
-    story: { vi: "3 máy chủ điều phối thanh toán phải luôn có ít nhất 2 máy hoạt động. Mục tiêu: **không có hai máy nào chịu chung một sự cố phần cứng**.",
-      en: "3 payment coordinator servers must always have at least 2 running. The goal: **no two servers share a single hardware failure**." },
+    name: { vi: "3 instance điều phối quan trọng", en: "3 critical coordinator instances" },
+    story: { vi: "3 instance điều phối thanh toán phải luôn có ít nhất 2 instance hoạt động. Mục tiêu: **không có hai instance nào chịu chung một sự cố phần cứng**.",
+      en: "3 payment coordinator instances must always have at least 2 running. The goal: **no two instances share a single hardware failure**." },
     count: 3,
     best: "spread",
     verdict: {
-      cluster: { ok: false, text: { vi: "Cluster đặt các máy chủ sát nhau: một rack hỏng có thể làm ngừng 2 trong 3 máy chủ, vi phạm yêu cầu.",
-        en: "Cluster places the servers close together: one failed rack can stop 2 of the 3 servers, breaking the requirement." } },
-      partition: { ok: true, text: { vi: "Với 3 partition và 3 instance, mỗi máy chủ nằm trên rack riêng nên vẫn đáp ứng. Tuy nhiên AWS khuyến nghị **spread placement group** cho số ít instance quan trọng cần tách biệt từng instance; partition hướng tới các nhóm instance lớn.",
-        en: "With 3 partitions and 3 instances, each server is on its own racks, so this still works. However, AWS recommends a **spread placement group** for a small number of critical instances that must each be kept apart; partition targets large groups of instances." } },
+      cluster: { ok: false, text: { vi: "Cluster đặt các instance sát nhau: một rack hỏng có thể làm ngừng 2 trong 3 instance, vi phạm yêu cầu.",
+        en: "Cluster places the instances close together: one failed rack can stop 2 of the 3 instances, breaking the requirement." } },
+      partition: { ok: true, text: { vi: "Với 3 partition và 3 instance, mỗi instance nằm trên rack riêng nên vẫn đáp ứng. Tuy nhiên AWS khuyến nghị **spread placement group** cho số ít instance quan trọng cần tách biệt từng instance; partition hướng tới các nhóm instance lớn.",
+        en: "With 3 partitions and 3 instances, each instance is on its own racks, so this still works. However, AWS recommends a **spread placement group** for a small number of critical instances that must each be kept apart; partition targets large groups of instances." } },
       spread: { ok: true, text: { vi: "**Spread placement group**: mỗi instance trên một rack riêng biệt có nguồn điện và mạng riêng, giảm rủi ro sự cố đồng thời. Giới hạn: 7 instance đang chạy mỗi AZ mỗi group; group có thể trải trên nhiều AZ của Region.",
         en: "**Spread placement group**: each instance is on a distinct rack with its own power and network, reducing the risk of simultaneous failures. Limit: 7 running instances per AZ per group; the group can span multiple AZs in the Region." } },
     },
@@ -117,21 +117,21 @@ export default function PlacementSim() {
 
   return (
     <div className="stage">
-      <div className="ec2-chips" role="group" aria-label={L({ vi: "Workload", en: "Workload" })}>
+      <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Workload", en: "Workload" })}>
         {(Object.keys(WORKS) as WorkId[]).map((id) => (
           <button key={id} className="chip" aria-pressed={id === work} onClick={() => pickWork(id)}>{L(WORKS[id].name)}</button>
         ))}
       </div>
-      <p className="ec2-story">{rich(L(w.story))}</p>
+      <p className="m-0 px-3.5 pt-2.5 pb-0 text-step--1">{rich(L(w.story))}</p>
       <div className="stage-bar">
         <span className="label">{L({ vi: "Placement strategy", en: "Placement strategy" })}</span>
         {(Object.keys(STRATS) as Strategy[]).map((s) => (
           <button key={s} className="btn" aria-pressed={s === strat} onClick={() => pickStrat(s)}>{L(STRATS[s])}</button>
         ))}
       </div>
-      <div className="pg-az">
-        <span className="pg-az-t">{L({ vi: "AZ ap-southeast-1a · 8 rack", en: "AZ ap-southeast-1a · 8 racks" })}</span>
-        <div className="pg-racks">
+      <div className="relative mx-3.5 mt-3 mb-0 rounded-[14px] border-[1.5px] border-dashed border-accent px-2 pt-[22px] pb-2">
+        <span className="absolute top-1 left-2.5 font-mono text-[0.7rem] text-accent">{L({ vi: "AZ ap-southeast-1a · 8 rack", en: "AZ ap-southeast-1a · 8 racks" })}</span>
+        <div className="grid grid-cols-8 gap-1.5 max-sm:gap-[3px]">
           {Array.from({ length: RACKS }, (_, r) => {
             const here = racks.map((x, i) => [x, i] as const).filter(([x]) => x === r);
             const p = strat === "partition" ? partOf(r) : null;
@@ -139,8 +139,8 @@ export default function PlacementSim() {
               <button key={r} className={"pg-rack" + (down === r ? " down" : "")} onClick={() => setDown(down === r ? null : r)}
                 aria-pressed={down === r}
                 aria-label={L({ vi: `Rack ${r + 1}: ${here.length} instance. Nhấn để mô phỏng rack hỏng`, en: `Rack ${r + 1}: ${here.length} instances. Press to simulate a rack failure` })}>
-                <span className="pg-rack-t">R{r + 1}</span>
-                {p !== null && <span className="pg-part">P{p}</span>}
+                <span className="font-mono text-[0.7rem] text-muted">R{r + 1}</span>
+                {p !== null && <span className="rounded-[4px] bg-accent-soft px-1 py-px font-mono text-[0.58rem] leading-[1.1] text-accent">P{p}</span>}
                 {here.map(([, i]) => <span key={i} className={"pg-inst" + (down === r ? " lost" : "")} />)}
               </button>
             );
@@ -148,10 +148,10 @@ export default function PlacementSim() {
         </div>
       </div>
       {notLaunched > 0 && (
-        <p className="pg-over">{L({ vi: `${notLaunched} instance không launch được: spread placement group đã đủ 7 instance đang chạy trong AZ này.`,
+        <p className="mx-3.5 mt-2 mb-0 text-step--1 text-bad">{L({ vi: `${notLaunched} instance không launch được: spread placement group đã đủ 7 instance đang chạy trong AZ này.`,
           en: `${notLaunched} instances cannot launch: the spread placement group already has 7 running instances in this AZ.` })}</p>
       )}
-      <p className="pg-hint">{L({ vi: "Nhấn vào một rack để mô phỏng sự cố phần cứng (nguồn điện hoặc mạng của rack); nhấn lại để khôi phục.",
+      <p className="mx-3.5 mt-2 mb-0 text-[0.78rem] text-muted">{L({ vi: "Nhấn vào một rack để mô phỏng sự cố phần cứng (nguồn điện hoặc mạng của rack); nhấn lại để khôi phục.",
         en: "Press a rack to simulate a hardware failure (the rack's power or network); press it again to restore it." })}</p>
       <div className="readout" aria-live="polite">
         <div className="status">
@@ -162,14 +162,14 @@ export default function PlacementSim() {
             ? L({ vi: `${launched}/${w.count} instance đang chạy`, en: `${launched}/${w.count} instances running` })
             : L({ vi: `Rack R${down + 1} hỏng: mất ${lost}/${w.count} instance`, en: `Rack R${down + 1} failed: ${lost}/${w.count} instances lost` })}</span>
         </div>
-        <div className="pg-metrics">
+        <div className="mt-2 grid grid-cols-3 gap-2 max-sm:grid-cols-1">
           <div className="pg-metric"><span>{L({ vi: "Mạng giữa các instance", en: "Inter-instance network" })}</span><b className={network.good ? "good" : ""}>{network.text}</b></div>
           <div className="pg-metric"><span>{L({ vi: "Phạm vi", en: "Scope" })}</span><b>{scope}</b></div>
           <div className="pg-metric"><span>{L({ vi: "Ảnh hưởng khi 1 rack hỏng", en: "Impact of one failed rack" })}</span><b className={down === null ? "" : lost > 1 ? "bad" : "good"}>{down === null
             ? L({ vi: "Chọn một rack để thử", en: "Pick a rack to test" })
             : L({ vi: `${lost} instance`, en: `${lost} instance${lost === 1 ? "" : "s"}` })}</b></div>
         </div>
-        <p style={{ margin: "8px 0 0" }}>{rich(L(v.text))}</p>
+        <p className="mx-0 mt-2 mb-0">{rich(L(v.text))}</p>
         <p className="note-small">{L({ vi: "Số rack và vị trí instance trong hình là minh hoạ. Theo tài liệu AWS, mức single-flow 10 Gbps (trong cluster) và 5 Gbps (ngoài cluster) áp dụng cho instance bật enhanced networking. Tạo placement group không tính phí.",
           en: "The rack count and instance positions are illustrative. According to the AWS documentation, the 10 Gbps (inside a cluster) and 5 Gbps (outside a cluster) single-flow limits apply to instances with enhanced networking. There is no charge for creating a placement group." })}</p>
       </div>

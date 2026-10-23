@@ -138,8 +138,8 @@ export default function QueueBufferSim() {
   const line = ticks.slice(0, shown + 1).map((t, i) => `${i ? "L" : "M"}${X0 + i * bw + bw / 2} ${y(t.backlog)}`).join(" ");
 
   return (
-    <div className="stage qbs">
-      <div className="qbs-row" role="group" aria-label={L({ vi: "Phương án kết nối web tier với tầng xử lý", en: "How to connect the web tier to the processing tier" })}>
+    <div className="stage">
+      <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Phương án kết nối web tier với tầng xử lý", en: "How to connect the web tier to the processing tier" })}>
         {MODES.map((m) => (
           <button key={m.id} className="chip" aria-pressed={m.id === mode} disabled={busy && m.id !== mode} onClick={() => pick(m.id)}>
             {L(m.name)}
@@ -147,11 +147,11 @@ export default function QueueBufferSim() {
         ))}
       </div>
       <div className="stage-bar">
-        <span className="qbs-about">{L({ vi: "Flash sale lúc 20h: số đơn hàng mỗi phút tăng gấp 6 lần trong vài phút.", en: "Flash sale at 20:00: orders per minute grow 6-fold within a few minutes." })}</span>
-        <button className="btn primary" onClick={run} disabled={busy}>{L({ vi: "Chạy mô phỏng flash sale", en: "Run flash sale simulation" })}</button>
+        <span className="text-step--1 text-muted">{L({ vi: "Flash sale lúc 20h: số đơn hàng mỗi phút tăng gấp 6 lần trong vài phút.", en: "Flash sale at 20:00: orders per minute grow 6-fold within a few minutes." })}</span>
+        <button className="btn primary ml-auto" onClick={run} disabled={busy}>{L({ vi: "Chạy mô phỏng flash sale", en: "Run flash sale simulation" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 20 820 262" role="img" aria-label={L({ vi: "Đơn hàng được chuyển từ web tier qua hàng đợi SQS tới các worker xử lý; biểu đồ bên dưới thể hiện số đơn hàng chờ theo từng phút", en: "Orders move from the web tier through an SQS queue to the processing workers; the chart below shows the orders waiting each minute" })}>
+        <svg viewBox="0 20 820 262" role="img" aria-label={L({ vi: "Đơn hàng được chuyển từ web tier qua SQS queue tới các worker xử lý; biểu đồ bên dưới thể hiện số đơn hàng chờ theo từng phút", en: "Orders move from the web tier through an SQS queue to the processing workers; the chart below shows the orders waiting each minute" })}>
           <path className="qbs-link" d={`M${WEB[0]} ${LANE} H${Q_IN[0]} M${Q_OUT[0]} ${LANE} H560`} />
           <path className="qbs-link" d={`M560 ${wpos(0)[1]} V${wpos(MAX_W - 1)[1]}`} />
           {Array.from({ length: MAX_W / 2 }, (_, r) => (
@@ -165,7 +165,7 @@ export default function QueueBufferSim() {
           <g className={"qbs-queue" + (mode === "direct" ? " off" : "")}>
             <rect x={Q_IN[0]} y={LANE - 30} width={Q_OUT[0] - Q_IN[0]} height={60} rx={10} />
             <text className="qbs-l2" x={Q_IN[0] + 8} y={LANE - 36}>
-              {mode === "direct" ? L({ vi: "không sử dụng hàng đợi", en: "no queue" }) : L({ vi: `Amazon SQS · ${backlog} đơn đang chờ`, en: `Amazon SQS · ${backlog} orders waiting` })}
+              {mode === "direct" ? L({ vi: "không sử dụng SQS queue", en: "no queue" }) : L({ vi: `Amazon SQS · ${backlog} đơn đang chờ`, en: `Amazon SQS · ${backlog} orders waiting` })}
             </text>
             {Array.from({ length: cells }, (_, i) => (
               <rect key={i} className="qbs-msg" x={Q_OUT[0] - 16 - (i % 20) * 14.5} y={LANE - 23 + Math.floor(i / 20) * 16} width={11} height={12} rx={2} />
@@ -198,15 +198,15 @@ export default function QueueBufferSim() {
       </div>
       <div className="readout" aria-live="polite">
         {!cur ? (
-          <p className="qbs-hint">{L({ vi: <>Chọn phương án kết nối, sau đó chọn <b>Chạy mô phỏng flash sale</b>. So sánh kết quả của cả ba phương án.</>, en: <>Choose a connection option, then choose <b>Run flash sale simulation</b>. Compare the results of all three options.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn phương án kết nối, sau đó chọn <b>Chạy mô phỏng flash sale</b>. So sánh kết quả của cả ba phương án.</>, en: <>Choose a connection option, then choose <b>Run flash sale simulation</b>. Compare the results of all three options.</> })}</p>
         ) : (
           <>
             <div className="status">
               <span className="count">20:{String(shown).padStart(2, "0")} · {L({ vi: "tiếp nhận", en: "received" })} {sum("arrive")} · {L({ vi: "hoàn tất", en: "completed" })} {sum("done")}</span>
               <span className={"pill " + (sum("lost") ? "bad" : "ok")}><i />{sum("lost")} {L({ vi: "đơn mất", en: "lost" })}</span>
-              {mode !== "direct" && <span className="pill qbs-wait"><i />{backlog} {L({ vi: "đơn chờ", en: "waiting" })}</span>}
+              {mode !== "direct" && <span className="pill bg-accent-soft text-ink"><i />{backlog} {L({ vi: "đơn chờ", en: "waiting" })}</span>}
             </div>
-            {done && <p className={`qbs-result ${res.ok ? "ok" : "bad"}`}>{rich(L(res.text))}</p>}
+            {done && <p className={`mx-0 mt-2.5 mb-0 rounded-[12px] px-2.5 py-2 text-step--1 ${res.ok ? "bg-ok-soft" : "bg-bad-soft"}`}>{rich(L(res.text))}</p>}
           </>
         )}
       </div>

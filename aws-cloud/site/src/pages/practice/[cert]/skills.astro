@@ -3,7 +3,6 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
 import T from "../../../app/T.astro";
 import SkillMap from "../../../modules/practice/ui/SkillMap.tsx";
 import { practiceCatalog } from "../../../modules/practice/content/PracticeCatalog";
-import "../../../styles/practice.css";
 
 export function getStaticPaths() {
   return practiceCatalog.listCertifications().map((c) => ({ params: { cert: c.id }, props: { code: c.code, passingScore: c.passingScore } }));
@@ -12,7 +11,7 @@ export function getStaticPaths() {
 const { cert } = Astro.params;
 const { code, passingScore } = Astro.props;
 ---
-<BaseLayout title={`Năng lực · ${code} · CloudLab`} titleKey="practice.skills.pageTitle" titleParams={{ code }} section="practice" sidebar={false}>
+<BaseLayout title={`Bản đồ kỹ năng · ${code} · CloudLab`} titleKey="practice.skills.pageTitle" titleParams={{ code }} section="practice" sidebar={false}>
   <header class="gl-head">
     <span class="gl-eyebrow"><a href={`/practice/${cert}/`} style="color: inherit">{code}</a></span>
     <h1><T k="practice.skills.title" /></h1>

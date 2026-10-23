@@ -52,7 +52,7 @@ const ITEMS: Item[] = [
     usedBy: "i-web1, i-web2",
     compliant: true,
     event: "RevokeSecurityGroupIngress\nuser: an (console)",
-    note: { vi: "Buổi sáng, An gỡ rule; tài nguyên trở lại trạng thái COMPLIANT. Lịch sử vẫn lưu lại toàn bộ 7 giờ cổng 22 bị mở.", en: "In the morning, An removes the rule; the resource is COMPLIANT again. The history still keeps all 7 hours during which port 22 was open." },
+    note: { vi: "Buổi sáng, An gỡ rule; tài nguyên trở lại trạng thái COMPLIANT. Lịch sử vẫn lưu lại toàn bộ 7 giờ port 22 bị mở.", en: "In the morning, An removes the rule; the resource is COMPLIANT again. The history still keeps all 7 hours during which port 22 was open." },
   },
   {
     day: { vi: "Thứ Sáu", en: "Friday" }, time: "16:40",
@@ -95,13 +95,13 @@ export default function ConfigTimelineSim() {
   }
 
   return (
-    <div className="stage cts">
+    <div className="stage">
       <div className="stage-bar">
         <span className="label">Resource</span>
         <code>sg-web</code>
         <span className="label">Rule</span>
         <code>restricted-ssh</code>
-        <button className="btn primary cts-play" onClick={play} disabled={busy}>{L({ vi: "Xem toàn bộ tuần", en: "Play the whole week" })}</button>
+        <button className="btn primary ml-auto" onClick={play} disabled={busy}>{L({ vi: "Xem toàn bộ tuần", en: "Play the whole week" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 0 820 120" role="group" aria-label={L({ vi: "Dòng thời gian cấu hình của sg-web trong một tuần", en: "Configuration timeline of sg-web over one week" })}>
@@ -125,24 +125,24 @@ export default function ConfigTimelineSim() {
         </svg>
       </div>
       <div className="readout" aria-live="polite">
-        <div className="cts-row">
+        <div className="mb-2.5 flex flex-wrap items-center gap-x-3.5 gap-y-1.5">
           <span className="count">Configuration item {at + 1}/{ITEMS.length} · {L(it.day)} {it.time}</span>
           <span className={"pill " + (it.compliant ? "ok" : "bad")}><i />{it.compliant ? "COMPLIANT" : "NON_COMPLIANT"}</span>
         </div>
-        <div className="cts-panels">
-          <div className="cts-panel">
-            <h2>{L({ vi: "AWS Config: trạng thái cấu hình", en: "AWS Config: configuration state" })}</h2>
-            <ul className="cts-rules">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-3">
+          <div className="min-w-0 rounded-[14px] border border-line bg-bg px-3 py-2.5">
+            <h2 className="mx-0 mt-0 mb-1.5 text-[0.75rem] tracking-[0.08em] text-muted uppercase">{L({ vi: "AWS Config: trạng thái cấu hình", en: "AWS Config: configuration state" })}</h2>
+            <ul className="cts-rules m-0 grid list-none gap-1 p-0 font-mono text-[0.8125rem]">
               {it.rules.map((r) => <li key={r.text} className={r.mark}>{r.mark === "add" ? "+ " : r.mark === "gone" ? "− " : r.mark === "risk" ? "! " : "  "}{r.text}</li>)}
             </ul>
-            <p className="cts-note">{L({ vi: "Đang được gắn vào", en: "Attached to" })}: <code>{it.usedBy}</code></p>
+            <p className="mx-0 mt-2 mb-0 text-step--1">{L({ vi: "Đang được gắn vào", en: "Attached to" })}: <code>{it.usedBy}</code></p>
           </div>
-          <div className="cts-panel">
-            <h2>{L({ vi: "CloudTrail: người thực hiện thay đổi", en: "CloudTrail: who made the change" })}</h2>
-            <p className="cts-event">{it.event}</p>
+          <div className="min-w-0 rounded-[14px] border border-line bg-bg px-3 py-2.5">
+            <h2 className="mx-0 mt-0 mb-1.5 text-[0.75rem] tracking-[0.08em] text-muted uppercase">{L({ vi: "CloudTrail: người thực hiện thay đổi", en: "CloudTrail: who made the change" })}</h2>
+            <p className="m-0 font-mono text-[0.8125rem] wrap-anywhere whitespace-pre-wrap">{it.event}</p>
           </div>
         </div>
-        <p className="cts-note">{rich(L(it.note))}</p>
+        <p className="mx-0 mt-2.5 mb-0 text-step--1">{rich(L(it.note))}</p>
       </div>
     </div>
   );

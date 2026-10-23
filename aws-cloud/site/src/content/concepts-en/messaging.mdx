@@ -1,6 +1,6 @@
 ---
 title: "SQS, SNS, EventBridge, Step Functions: communication between components"
-lede: "This lesson shows how to connect ShopViet's services (ordering, payment, inventory, email, analytics) through messaging: absorbing flash-sale traffic spikes without losing orders, isolating failed messages so they do not clog the system, guaranteeing ordering and uniqueness for e-wallet transactions, and routing each event to exactly the components that need it."
+lede: "This lesson shows how to connect MFTECH's services (ordering, payment, inventory, email, analytics) through messaging: absorbing flash-sale traffic spikes without losing orders, isolating failed messages so they do not clog the system, guaranteeing ordering and uniqueness for e-wallet transactions, and routing each event to exactly the components that need it."
 minutes: 30
 scenes: 5
 prerequisites: ["lambda", "asg"]
@@ -74,19 +74,19 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 
 <Story toc={[
-  { href: "#en-s1", label: "1 · A queue absorbs traffic spikes" },
-  { href: "#en-s2", label: "2 · The life of a message" },
-  { href: "#en-s3", label: "3 · Guaranteed ordering: FIFO queues" },
-  { href: "#en-s4", label: "4 · Event distribution and workflow orchestration" },
-  { href: "#en-s5", label: "5 · Quick comparison" },
+  { href: "#en-s1", label: "1 · Decoupling with an Amazon SQS queue" },
+  { href: "#en-s2", label: "2 · Message lifecycle in an SQS queue" },
+  { href: "#en-s3", label: "3 · Amazon SQS FIFO queues" },
+  { href: "#en-s4", label: "4 · Fan-out, event routing and workflow orchestration" },
+  { href: "#en-s5", label: "5 · Comparing delivery guarantees" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-In its early days, ShopViet's web application called every component synchronously: after creating an order, the application called the payment service, the inventory service and the email service in turn and waited for each response. The system now runs a weekly flash sale and consists of dozens of services; one slow component increases the latency of the whole chain, and one failed component makes the order fail. The solution is for components to **communicate asynchronously through messages** instead of calling synchronously and waiting for a response.
+In its early days, MFTECH's web application called every component synchronously: after creating an order, the application called the payment service, the inventory service and the email service in turn and waited for each response. The system now runs a weekly flash sale and consists of dozens of services; one slow component increases the latency of the whole chain, and one failed component makes the order fail. The solution is for components to **communicate asynchronously through messages** instead of calling synchronously and waiting for a response.
 </Story>
 
-<Scene id="en-s1" label="Part 1/5" title="Placing a queue between two processing tiers" questions={["exam2_q47", "exam3_q39", "exam1_q55", "exam5_q26", "exam3_q54", "exam6_q52", "exam5_q60", "exam1_q33", "exam2_q14", "exam5_q32", "exam3_q7"]}>
+<Scene id="en-s1" label="Part 1/5" title="Decoupling two application tiers with an Amazon SQS queue" questions={["exam2_q47", "exam3_q39", "exam1_q55", "exam5_q26", "exam3_q54", "exam6_q52", "exam5_q60", "exam1_q33", "exam2_q14", "exam5_q32", "exam3_q7"]}>
 
-<p class="scene-intro">When the part that takes orders is faster than the part that processes them, a queue in between lets the first stop waiting while the second works through the backlog at its own pace.</p>
+<p class="scene-intro">When the order intake tier has higher throughput than the processing tier, an SQS queue between the two tiers lets the producer stop waiting while the consumer processes messages at its own capacity.</p>
 
 The flash sale starts at 20:00. The web tier takes orders at a high rate, while the processing tier (payment, stock deduction) has much lower throughput. The simulation below compares three ways to connect these two tiers:
 
@@ -94,12 +94,12 @@ The flash sale starts at 20:00. The web tier takes orders at a high rate, while 
 
 **Amazon SQS** is a queue service managed by AWS. The sender (producer) puts a message in the queue and continues with other work; the receiver (consumer) polls the queue to get messages and processes them at its own capacity. The high-throughput tier does not have to wait for the low-throughput tier; this model is called **decoupling**.
 
-To scale a group of workers with the amount of work waiting in the queue, the Amazon EC2 Auto Scaling documentation recommends the **backlog per instance** metric: the number of messages available to retrieve from the queue (`ApproximateNumberOfMessages`, CloudWatch metric `ApproximateNumberOfMessagesVisible`) divided by the number of instances in the `InService` state, combined with **target tracking** to keep this metric near an acceptable value. A policy based only on the number of messages in the queue does not account for the number of instances already running, so it can add more instances than needed while the queue is already shrinking.
+To scale the workers' Auto Scaling group with the amount of work waiting in the queue, the Amazon EC2 Auto Scaling documentation recommends the **backlog per instance** metric: the number of messages available to retrieve from the queue (`ApproximateNumberOfMessages`, CloudWatch metric `ApproximateNumberOfMessagesVisible`) divided by the number of instances in the `InService` state, combined with **target tracking** to keep this metric near an acceptable value. A scaling policy based only on the number of messages in the queue does not account for the number of instances already running, so it can add more instances than needed while the queue is already shrinking.
 
-Some architectures that integrate a queue into the ShopViet system:
+Some architectures that integrate a queue into the MFTECH system:
 
 <RequirementPicker client:visible label="Applied architecture" items={[
-  { need: "Product images must be processed as soon as sellers upload them, at low cost, with no servers to manage",
+  { need: "Product images must be processed as soon as sellers upload them, at low cost, with a serverless architecture",
     answer: "S3 event → SQS → Lambda",
     why: "S3 Event Notifications send one message to the queue for each new image. Lambda reads the queue in batches and is charged only for execution time. The queue holds the tasks when image uploads spike." },
   { need: "User feedback submitted through a feedback form sometimes spikes to thousands of submissions per hour",
@@ -108,15 +108,15 @@ Some architectures that integrate a queue into the ShopViet system:
   { need: "Sensor data from warehouses, without provisioning capacity yourself",
     answer: "SQS standard → Lambda → DynamoDB",
     why: "All three services scale automatically with data volume; there are no EC2 instances or shards to adjust manually." },
-  { need: "Two processing steps: very fast order intake and very slow packing, running on two separate EC2 groups",
+  { need: "Two processing steps: very fast order intake and very slow packing, running on two separate Auto Scaling groups",
     answer: "Two queues, each group scales on its own queue",
     why: "One queue sits between the web tier and the intake step, and one queue sits between the intake step and the packing step. Each Auto Scaling group tracks the number of messages in its own queue. Instances terminated during scale-in do not lose orders." },
   { need: "Workers read the queue continuously throughout the day, with an uneven workload",
     answer: "Reserved Instances for the baseline + Spot for the extra load",
-    why: "The steady load uses Reserved Instances. The spiky load uses Spot Instances in the Auto Scaling group: when a Spot Instance is interrupted, the message automatically becomes visible in the queue again (Part 2)." },
-  { need: "Servers in a private subnet call SQS without going through the internet",
+    why: "The steady load uses Reserved Instances. The spiky load uses Spot Instances in the Auto Scaling group: when a Spot Instance is interrupted (Spot Instance interruption), the message automatically becomes visible in the queue again (Part 2)." },
+  { need: "EC2 instances in a private subnet call the SQS API without going through the internet",
     answer: "Interface VPC endpoint for SQS",
-    why: "The endpoint is powered by AWS PrivateLink and has a private IP address in the subnet; no internet gateway, NAT or VPN is required." },
+    why: "An interface VPC endpoint is powered by AWS PrivateLink; its endpoint network interface has a private IP address in the subnet. No internet gateway, NAT device or VPN connection is required." },
   { need: "The database times out at peak hours, and the database should not be changed",
     answer: "SQS + Auto Scaling workers, RDS Proxy in front of Aurora",
     why: "Orders are put into a queue to be processed gradually instead of being sent directly to the database. RDS Proxy pools and reuses connections, so Aurora is not overloaded by the number of connections." },
@@ -126,11 +126,11 @@ Some architectures that integrate a queue into the ShopViet system:
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/5" title="The life of a message" questions={["exam4_q46", "exam5_q44", "exam3_q34", "exam6_q37", "exam6_q32", "exam6_q16"]}>
+<Scene id="en-s2" label="Part 2/5" title="Message lifecycle in an Amazon SQS queue" questions={["exam4_q46", "exam5_q44", "exam3_q34", "exam6_q37", "exam6_q32", "exam6_q16"]}>
 
-<p class="scene-intro">A message in a queue is deleted only after it has been processed successfully; this ensures no work is lost when a worker fails midway.</p>
+<p class="scene-intro">A message in an SQS queue is deleted only after the consumer has processed it successfully; this ensures no task is lost when a consumer fails during processing.</p>
 
-When a worker receives a message, the message is **not yet deleted** from the queue; it is only hidden for a period called the **visibility timeout**. After processing, the worker must call `DeleteMessage`. If the worker fails during processing, the message becomes visible again so that another worker can process it. SQS features all revolve around this life cycle. Choose each ShopViet scenario and run the simulation:
+When a worker receives a message, the message is **not yet deleted** from the queue; it is only hidden for a period called the **visibility timeout**. After processing, the worker must call `DeleteMessage`. If the worker fails during processing, the message becomes visible again so that another worker can process it. SQS features all revolve around this life cycle. Choose each MFTECH scenario and run the simulation:
 
 <MessageLifeSim client:visible />
 
@@ -142,11 +142,11 @@ A delay queue applies to every message in the queue. When only some messages nee
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/5" title="Guaranteed ordering and exactly-once processing: FIFO queues" questions={["exam1_q13", "exam1_q34", "exam3_q2", "exam2_q42"]}>
+<Scene id="en-s3" label="Part 3/5" title="Amazon SQS FIFO queues: message ordering and exactly-once processing" questions={["exam1_q13", "exam1_q34", "exam3_q2", "exam2_q42"]}>
 
-<p class="scene-intro">For money transactions, order and exactly-once processing are mandatory; the default queue does not guarantee them, so another queue type is needed.</p>
+<p class="scene-intro">For financial transactions, ordering and exactly-once processing are mandatory; a standard queue does not guarantee either, so a FIFO queue is needed.</p>
 
-The default queue type is **standard**: very high throughput, but a message can be delivered **more than once** and **ordering is not guaranteed**. For orders, the worker can check for duplicates itself. For ShopViet's e-wallet this is not acceptable: a top-up must be processed before a payment, and each command must be processed exactly once. The simulation below compares three options:
+The default queue type is **standard**: very high throughput, but a message can be delivered **more than once** and **ordering is not guaranteed**. For orders, the worker can check for duplicates itself. For MFTECH's e-wallet this is not acceptable: a top-up must be processed before a payment, and each command must be processed exactly once. The simulation below compares three options:
 
 <FifoSim client:visible />
 
@@ -154,7 +154,7 @@ A **FIFO queue** guarantees ordering and removes duplicate messages (by deduplic
 
 <FifoBatchCalc client:visible />
 
-An existing standard queue cannot be converted to FIFO. You must **create a new FIFO queue** whose name ends in `.fifo`, then move the producers and consumers to the new queue.
+An existing standard queue cannot be converted to a FIFO queue. You must **create a new FIFO queue** whose name ends in `.fifo`, then move the producers and consumers to the new queue.
 
 Sending wallet commands through **EventBridge** does not meet the requirement either. On an event bus (the classic type), EventBridge delivers to targets **at least once**: the EventBridge documentation notes that in rare cases the same rule can run more than once for a single event, or the same target can be invoked more than once; events are delivered to targets in an arbitrary order. When delivery fails, EventBridge by default retries for 24 hours and up to 185 times, then drops the event unless a dead-letter queue is configured. EventBridge also does not keep events for the processing tier to pull at its own pace the way a queue does. Since September 2026, the **enhanced custom event bus** adds ordered delivery for events that share an `EventGroupId` and optional content-based deduplication that drops publisher retries within five minutes; these are features of the new bus type and do not change the at-least-once behavior of the classic event bus.
 
@@ -162,15 +162,15 @@ Sending wallet commands through **EventBridge** does not meet the requirement ei
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/5" title="Distributing events to multiple targets and orchestrating multi-step workflows" questions={["exam4_q35", "exam3_q30", "exam2_q27", "exam6_q55", "exam1_q15", "exam4_q51", "exam6_q61", "exam2_q1", "exam2_q9", "exam1_q61", "exam1_q50", "exam5_q17"]}>
+<Scene id="en-s4" label="Part 4/5" title="Fan-out (SNS), event routing (EventBridge) and workflow orchestration (Step Functions)" questions={["exam4_q35", "exam3_q30", "exam2_q27", "exam6_q55", "exam1_q15", "exam4_q51", "exam6_q61", "exam2_q1", "exam2_q9", "exam1_q61", "exam1_q50", "exam5_q17"]}>
 
-<p class="scene-intro">Not all communication is one sender and one receiver; some events must reach many places, some tasks run on a schedule, and some processes have several steps in sequence.</p>
+<p class="scene-intro">Not every interaction follows a one-producer, one-consumer model: some events must reach many subscribers, some tasks run on a schedule, and some workflows have several steps in sequence.</p>
 
-A queue follows a one-sender, one-receiver model. ShopViet has other needs too: one event must notify several components, events come from external software, jobs run on a schedule, workflows have several steps, or a legacy application uses its own protocol. Choose a scenario and change the setting to compare:
+A queue follows a model in which one consumer processes each message. MFTECH has other needs too: one event must notify several components, events come from external software, jobs run on a schedule, workflows have several steps, or a legacy application uses its own protocol. Choose a scenario and change the setting to compare:
 
 <EventRouterSim client:visible />
 
-Some problems ShopViet ran into in real operation:
+Some problems MFTECH ran into in real operation:
 
 - **SNS invokes Lambda** to send notifications: during the sales season, when sending volume grew 50-fold, some notifications were not delivered. The cause was not SNS but Lambda reaching the account's **concurrency quota** in the Region. The solution is to request a quota increase (see the Lambda lesson).
 - Detecting mass unauthorized API calls: send CloudTrail logs to CloudWatch Logs, create a **metric filter** that counts the error codes, set an **alarm** on that metric, and configure the alarm to notify the security team's **SNS topic**.
@@ -181,11 +181,11 @@ Some problems ShopViet ran into in real operation:
 
 </Scene>
 
-<Scene id="en-s5" label="Part 5/5" title="Quick comparison: delivery guarantees and look-alike settings" questions={["exam1_q13", "exam3_q34", "exam3_q46"]}>
+<Scene id="en-s5" label="Part 5/5" title="Comparing delivery guarantees and easily confused configuration settings" questions={["exam1_q13", "exam3_q34", "exam3_q46"]}>
 
-<p class="scene-intro">Messaging services differ in delivery guarantees and operating settings; a wrong choice easily leads to lost data or unnecessary cost.</p>
+<p class="scene-intro">Messaging services differ in delivery guarantees (at-least-once, exactly-once) and configuration settings; a wrong choice easily leads to lost data or unnecessary cost.</p>
 
-Three ShopViet situations: seller registration forms must be processed **exactly once, with no data loss** by the back-end processing tier; SQS costs are high because workers receive too many empty responses; a real-time data stream from the warehouse barcode scanners needs a scalable ingestion channel that allows reprocessing when the analytics tier fails. Choose each item to see what it is for and what fits instead.
+Three MFTECH situations: seller registration forms must be processed **exactly once, with no data loss** by the back-end processing tier; SQS costs are high because workers receive too many empty responses; a real-time data stream from the warehouse barcode scanners needs a scalable ingestion channel that allows reprocessing when the analytics tier fails. Choose each item to see what it is for and what fits instead.
 
 <QuickCompare client:visible items={[
   { name: "Amazon EventBridge (classic event bus)",
@@ -193,7 +193,7 @@ Three ShopViet situations: seller registration forms must be processed **exactly
     notHere: "Seller registration forms must be processed exactly once. EventBridge delivers **at least once**: the same target can be invoked more than once for one event, ordering is not guaranteed, and events are not kept for the processing tier to pull at its own pace. The enhanced custom event bus (September 2026) offers ordered delivery and content-based deduplication, but it is still an event router, not a buffer queue between two tiers.",
     instead: "An SQS FIFO queue between the web tier and the processing tier: deduplication within a 5-minute interval, ordering within each message group, and messages kept until a worker processes and deletes them (Part 3)." },
   { name: "SQS standard queue",
-    use: "The default queue type, supporting a nearly unlimited number of API calls per second. Messages are stored redundantly across multiple AZs before the send is acknowledged. Fits when the application can handle messages that arrive more than once or out of order.",
+    use: "The default queue type, supporting a nearly unlimited number of API calls per second. Messages are stored redundantly across multiple Availability Zones (AZs) before SQS acknowledges the send. Fits when the application can handle messages that arrive more than once or out of order.",
     notHere: "A standard queue ensures **at-least-once** delivery: more than one copy of a message might be delivered, and messages may occasionally arrive out of order (best-effort ordering only).",
     instead: "A FIFO queue when duplicates are not acceptable; or keep the standard queue and make the worker idempotent." },
   { name: "SQS message timer",
@@ -222,18 +222,18 @@ Sort each feature into the service that provides it. On mobile devices: choose a
 
 <SortGame client:visible
   bins={[
-    { id: "sqs", title: "Amazon SQS", sub: "Queue", hint: "Hint: features about how messages are kept in and taken out of a queue." },
+    { id: "sqs", title: "Amazon SQS", sub: "Message queuing", hint: "Hint: features about how messages are kept in and taken out of a queue." },
     { id: "sns", title: "Amazon SNS", sub: "Pub/sub", hint: "Hint: features that deliver one message to many targets at once." },
     { id: "eb", title: "Amazon EventBridge", sub: "Event bus", hint: "Hint: features about events, event patterns or execution schedules." },
   ]}
   cards={[
     ["Visibility timeout", "sqs"], ["Dead-letter queue", "sqs"], ["Long polling", "sqs"], ["Delay queue", "sqs"], ["Message timer on an individual message", "sqs"], ["Message Group ID", "sqs"],
     ["Topic with multiple subscriptions", "sns"], ["Fan-out to multiple queues", "sns"], ["Receive notifications from a CloudWatch alarm", "sns"], ["Delivery policy per protocol", "sns"],
-    ["Partner event source (SaaS)", "eb"], ["Rule filtering on a JSON event pattern", "eb"], ["Scheduler running on a cron expression", "eb"], ["Retries to a target for 24 hours, up to 185 times", "eb"],
+    ["Partner event source (SaaS)", "eb"], ["Rule filtering on a JSON event pattern", "eb"], ["EventBridge Scheduler with a cron expression", "eb"], ["Retries to a target for 24 hours, up to 185 times", "eb"],
   ]}
 />
 
-Check your understanding: as the designer of the ShopViet system, which option fits?
+Check your understanding: as the designer of the MFTECH system, which option fits?
 
 <Quiz client:visible items={[
   { q: "Some orders contain bad data; the worker fails on every attempt and the message keeps returning to the queue. Requirement: set these messages aside for later analysis. Which configuration meets the requirement?",
@@ -248,11 +248,11 @@ Check your understanding: as the designer of the ShopViet system, which option f
     opts: ["An EventBridge event bus (classic) with a rule to the processing tier", "An SQS standard queue", "An SQS FIFO queue"],
     a: 2,
     why: "A FIFO queue drops duplicate messages within the 5-minute deduplication interval and keeps messages until a worker deletes them. EventBridge (classic event bus) and standard queues both deliver at least once, so one form could be processed more than once." },
-  { q: "ShopViet e-wallet: commands from the same user must be processed in order, while commands from different users should be processed in parallel. Which option fits?",
+  { q: "MFTECH e-wallet: commands from the same user must be processed in order, while commands from different users should be processed in parallel. Which option fits?",
     opts: ["Standard queue, multiple consumers", "FIFO queue, Message Group ID = user ID", "FIFO queue, one consumer"],
     a: 1,
     why: "Within one message group, a FIFO queue guarantees ordering; different groups are delivered in parallel." },
-  { q: "ShopViet's CRM software (SaaS) must notify several internal services whenever a new customer signs up, with minimal code. Which service fits?",
+  { q: "MFTECH's CRM software (SaaS) must notify several internal services whenever a new customer signs up, with minimal code. Which service fits?",
     opts: ["Amazon EventBridge", "One SQS queue", "Elastic Load Balancing"],
     a: 0,
     why: "EventBridge receives events directly from SaaS partners and uses rules to route them to multiple targets." },

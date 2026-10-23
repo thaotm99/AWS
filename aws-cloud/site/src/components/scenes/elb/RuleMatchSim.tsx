@@ -3,7 +3,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./elb-sims.css";
 
-// ShopViet's ALB has two listeners. HTTP :80 has only a default rule that redirects to HTTPS
+// MFTECH's ALB has two listeners. HTTP :80 has only a default rule that redirects to HTTPS
 // (redirect action, HTTP 301; HTTPS to HTTP is not allowed). HTTPS :443 has rules with the six
 // condition types (host-header, http-header, http-request-method, path-pattern, query-string,
 // source-ip), evaluated from the lowest priority value to the highest, the default rule last.
@@ -43,7 +43,7 @@ const HTTPS_RULES: Rule[] = [
     result: { vi: "Request tới `/admin/*` xuất phát từ dải IP văn phòng (**source-ip**, dạng CIDR): chuyển tới target group admin.", en: "A request to `/admin/*` from the office IP range (**source-ip**, in CIDR form): forwarded to the admin target group." } },
   { pri: "20", conds: [path("/admin/*")],
     action: { vi: "fixed-response 403", en: "fixed-response 403" },
-    result: { vi: "IP nguồn không thuộc văn phòng nên rule 10 không khớp; rule 20 trả về **fixed-response** 403 ngay tại ALB, request không tới máy chủ nào.", en: "The source IP is not in the office range, so rule 10 does not match; rule 20 returns a **fixed-response** 403 at the ALB and the request reaches no server." } },
+    result: { vi: "IP nguồn không thuộc văn phòng nên rule 10 không khớp; rule 20 trả về **fixed-response** 403 ngay tại ALB, request không tới target nào.", en: "The source IP is not in the office range, so rule 10 does not match; rule 20 returns a **fixed-response** 403 at the ALB and the request reaches no target." } },
   { pri: "30", conds: [{ kind: "http-header", value: "X-App-Platform: mobile", test: (r) => r.header?.[0] === "X-App-Platform" && r.header[1].toLowerCase() === "mobile" }],
     action: { vi: "forward → TG mobile-api", en: "forward → TG mobile-api" },
     result: { vi: "Ứng dụng di động gửi header tuỳ chỉnh `X-App-Platform: mobile`; rule **http-header** chuyển request tới backend dành cho ứng dụng di động, dù path giống trang web.", en: "The mobile app sends the custom header `X-App-Platform: mobile`; the **http-header** rule sends the request to the mobile backend even though the path is the same as on the website." } },
@@ -52,7 +52,7 @@ const HTTPS_RULES: Rule[] = [
     result: { vi: "Rule **query-string** khớp cặp key/value `version=beta`: người dùng thử nghiệm được chuyển tới phiên bản beta. Rule path `/products/*` (70) cũng khớp nhưng có priority thấp hơn nên không được xét tới.", en: "The **query-string** rule matches the key/value pair `version=beta`: test users go to the beta version. The path rule `/products/*` (70) also matches but comes later in priority order, so it is never reached." } },
   { pri: "50", conds: [{ kind: "http-request-method", value: "POST", test: (r) => r.method === "POST" }, path("/orders/*")],
     action: { vi: "forward → TG orders-write", en: "forward → TG orders-write" },
-    result: { vi: "Rule **http-request-method** (`POST`, so khớp chính xác, phân biệt hoa thường) kết hợp path: thao tác tạo đơn hàng được tách sang nhóm máy chủ ghi.", en: "The **http-request-method** rule (`POST`, exact and case-sensitive match) combined with a path: order creation goes to a separate group of write servers." } },
+    result: { vi: "Rule **http-request-method** (`POST`, so khớp chính xác, phân biệt hoa thường) kết hợp path: thao tác tạo đơn hàng được chuyển tới target group orders-write.", en: "The **http-request-method** rule (`POST`, exact and case-sensitive match) combined with a path: order creation goes to the orders-write target group." } },
   { pri: "60", conds: [path("/orders/*")],
     action: { vi: "forward → TG orders", en: "forward → TG orders" },
     result: { vi: "Request đọc đơn hàng khớp rule **path-pattern** `/orders/*`.", en: "The order read request matches the **path-pattern** rule `/orders/*`." } },
@@ -93,7 +93,7 @@ export default function RuleMatchSim() {
 
   const preset = PRESETS[pick];
   const r = { ...preset.req, scheme };
-  const url = `${r.scheme}://shopviet.vn${r.path}${r.query ? "?" + r.query : ""}`;
+  const url = `${r.scheme}://mftech.vn${r.path}${r.query ? "?" + r.query : ""}`;
 
   function choose(i: number) {
     gen.current++;
@@ -145,22 +145,24 @@ export default function RuleMatchSim() {
     }
   }
 
+  // Condition chip of a rule; turns green or red once evaluated.
+  const COND = "rounded-[10px] border border-line bg-bg px-1.5 py-px text-[0.75rem] wrap-anywhere";
   const table = (title: string, rules: Rule[], key: string, active: boolean) => (
-    <div className={"elbx-lst" + (active ? "" : " dim")}>
-      <div className="elbx-lst-h"><span>{title}</span><span>{L({ vi: "priority · điều kiện · action", en: "priority · conditions · action" })}</span></div>
+    <div className={"grid gap-1 px-3.5 pt-2.5 pb-0" + (active ? "" : " opacity-70")}>
+      <div className="flex justify-between gap-2 text-[0.75rem] font-semibold text-muted"><span>{title}</span><span>{L({ vi: "priority · điều kiện · action", en: "priority · conditions · action" })}</span></div>
       {rules.map((rule) => {
         const m = marks[key + rule.pri];
         return (
           <div key={rule.pri} className={"elbx-rule " + (m?.row ?? "")}>
-            <span className="elbx-pri">{rule.pri}</span>
-            <span className="elbx-cond">
+            <span className="font-mono text-[0.75rem] text-muted">{rule.pri}</span>
+            <span className="flex min-w-0 flex-wrap gap-1">
               {rule.conds.length === 0
-                ? <code>{L({ vi: "(mọi request còn lại)", en: "(every remaining request)" })}</code>
+                ? <code className={COND}>{L({ vi: "(mọi request còn lại)", en: "(every remaining request)" })}</code>
                 : rule.conds.map((c, i) => (
-                  <code key={i} className={m && m.conds.length ? (m.conds[i] ? "hit" : "miss") : ""}>{c.kind}: {c.value}</code>
+                  <code key={i} className={`${COND} ${m && m.conds.length ? (m.conds[i] ? "border-ok text-ok" : "border-bad text-bad") : ""}`}>{c.kind}: {c.value}</code>
                 ))}
             </span>
-            <span className="elbx-act">{L(rule.action)}</span>
+            <span className="wrap-anywhere max-sm:col-start-2 max-sm:col-end-3 max-sm:row-start-2 max-sm:text-muted">{L(rule.action)}</span>
             <span className="elbx-st" aria-hidden="true">{m?.row === "match" ? "✓" : m?.row === "miss" ? "✗" : m?.row === "check" ? "…" : ""}</span>
           </div>
         );
@@ -169,28 +171,28 @@ export default function RuleMatchSim() {
   );
 
   return (
-    <div className="stage elbx">
-      <div className="elbx-row" role="group" aria-label={L({ vi: "Request", en: "Request" })}>
-        <span className="elbx-lbl">Request</span>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-3" role="group" aria-label={L({ vi: "Request", en: "Request" })}>
+        <span className="mr-1 text-[0.72rem] font-semibold tracking-[0.08em] text-muted uppercase">Request</span>
         {PRESETS.map((p, i) => (
           <button key={i} className="chip" aria-pressed={i === pick} onClick={() => choose(i)}>{L(p.name)}</button>
         ))}
       </div>
-      <div className="stage-bar">
-        <span className="elbx-req">
-          <code>{r.method} {url}</code>
-          <span>
+      <div className="stage-bar mt-3 border-t border-line">
+        <span className="grid min-w-0 gap-0.5">
+          <code className="text-[0.8125rem] wrap-anywhere">{r.method} {url}</code>
+          <span className="text-[0.75rem] wrap-anywhere text-muted">
             {L({ vi: "IP nguồn", en: "Source IP" })}: {r.ip}{r.ip.startsWith("203.0.113.") ? L({ vi: " (văn phòng)", en: " (office)" }) : ""}
             {r.header ? ` · ${r.header[0]}: ${r.header[1]}` : ""}
           </span>
         </span>
-        <button className="btn primary" onClick={run} disabled={busy}>{L({ vi: "Đánh giá rule", en: "Evaluate rules" })}</button>
+        <button className="btn primary ml-auto" onClick={run} disabled={busy}>{L({ vi: "Đánh giá rule", en: "Evaluate rules" })}</button>
       </div>
       {table("Listener HTTP :80", HTTP_RULES, "h", preset.req.scheme === "http")}
       {table("Listener HTTPS :443", HTTPS_RULES, "s", true)}
-      <div className="readout">
+      <div className="readout mt-3">
         {log.length === 0 ? (
-          <p className="elbx-hint">{L({ vi: "Chọn một request, sau đó nhấn Đánh giá rule. ALB xét các rule theo priority từ giá trị nhỏ tới lớn và dừng ở rule đầu tiên khớp mọi điều kiện.", en: "Pick a request, then press Evaluate rules. The ALB checks rules from the lowest priority value to the highest and stops at the first rule whose conditions all match." })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: "Chọn một request, sau đó nhấn Đánh giá rule. ALB xét các rule theo priority từ giá trị nhỏ tới lớn và dừng ở rule đầu tiên khớp mọi điều kiện.", en: "Pick a request, then press Evaluate rules. The ALB checks rules from the lowest priority value to the highest and stops at the first rule whose conditions all match." })}</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((m, i) => (

@@ -3,7 +3,6 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
 import T from "../../../app/T.astro";
 import CatalogPage from "../../../modules/practice/ui/CatalogPage.tsx";
 import { practiceCatalog } from "../../../modules/practice/content/PracticeCatalog";
-import "../../../styles/practice.css";
 
 export function getStaticPaths() {
   return practiceCatalog.listCertifications().map((cert) => ({ params: { cert: cert.id }, props: { cert } }));
@@ -12,10 +11,10 @@ export function getStaticPaths() {
 const { cert } = Astro.props;
 ---
 <BaseLayout
-  title={`Luyện đề ${cert.code} · CloudLab`}
+  title={`Đề luyện tập ${cert.code} · CloudLab`}
   titleKey="practice.catalog.certPageTitle"
   titleParams={{ code: cert.code }}
-  description={`Luyện đề ${cert.code} ${cert.name} từng câu.`}
+  description={`Đề luyện tập ${cert.code} ${cert.name}, làm lần lượt từng câu.`}
   section="practice"
   sidebar={false}
 >

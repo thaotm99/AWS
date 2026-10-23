@@ -49,14 +49,14 @@ export default function TtlSim() {
         <span className="sep" />
         <button className="btn primary" onClick={change}>{L({ vi: "Cập nhật record sang ALB mới", en: "Update record to the new ALB" })}</button>
       </div>
-      <div className="ttl-list">
+      <div className="grid gap-2.5 p-4">
         {CLIENTS.map((c) => {
           const on = switched(c.left);
           return (
-            <div className="ttl-row" key={c.name.vi}>
-              <span className="ttl-name">{L(c.name)}</span>
-              <div className="bar"><i style={{ width: `${elapsed === null ? 0 : Math.min(100, (elapsed / (c.left * ttl)) * 100)}%` }} /></div>
-              <span className={"ttl-target " + (on ? "new" : "old")}>{on ? L({ vi: "ALB mới", en: "New ALB" }) : L({ vi: "ALB cũ", en: "Old ALB" })}</span>
+            <div className="grid grid-cols-[170px_minmax(0,1fr)_90px] items-center gap-3 text-step--1 max-sm:grid-cols-[minmax(0,1fr)_80px]" key={c.name.vi}>
+              <span className="font-semibold">{L(c.name)}</span>
+              <div className="bar max-sm:col-span-full max-sm:row-start-2"><i style={{ width: `${elapsed === null ? 0 : Math.min(100, (elapsed / (c.left * ttl)) * 100)}%` }} /></div>
+              <span className={"rounded-[4px] px-1.5 py-0.5 text-center font-mono text-[0.75rem] font-medium " + (on ? "bg-ok-soft text-ok" : "bg-edge-soft text-edge")}>{on ? L({ vi: "ALB mới", en: "New ALB" }) : L({ vi: "ALB cũ", en: "Old ALB" })}</span>
             </div>
           );
         })}
@@ -67,7 +67,7 @@ export default function TtlSim() {
             {elapsed === null ? L({ vi: "Record chưa được cập nhật", en: "Record not updated yet" }) : L({ vi: `Thời gian từ khi cập nhật: ${fmt(elapsed, L)} · ${moved}/${CLIENTS.length} client đã chuyển sang ALB mới`, en: `Time since update: ${fmt(elapsed, L)} · ${moved}/${CLIENTS.length} clients switched to the new ALB` })}
           </span>
         </div>
-        <p style={{ margin: "8px 0 0" }}>
+        <p className="mx-0 mt-2 mb-0">
           {L({
             vi: <>
           Record được cập nhật ngay trên Route 53, nhưng mỗi client vẫn sử dụng phản hồi cũ trong cache cho tới khi hết TTL.

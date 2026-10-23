@@ -1,13 +1,13 @@
 {
   "name": "CloudLab",
   "short_name": "CloudLab",
-  "description": "Học kiến trúc AWS qua hệ thống ShopViet: bài học, mô phỏng và luyện đề song ngữ.",
+  "description": "Học kiến trúc AWS qua hệ thống MFTECH: bài học, mô phỏng và luyện đề song ngữ.",
   "lang": "vi",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#0b1218",
-  "theme_color": "#0b1218",
+  "background_color": "#f6f5ff",
+  "theme_color": "#4f46e5",
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },

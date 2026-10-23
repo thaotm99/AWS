@@ -1,25 +1,23 @@
-/* Recovery timeline of a DynamoDB table (dynamodb/RecoverySim) */
-.rcv-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
-.rcv .stage-bar .rcv-play { margin-left: auto; }
-.rcv-about { margin: 10px 16px 0; font-size: var(--step--1); color: var(--muted); }
-.rcv-grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
-.rcv-lane-t { fill: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
-.rcv-track { fill: var(--bg); stroke: var(--line); stroke-width: 1; }
-.rcv-seg { stroke-width: 1.2; }
-.rcv-seg.good { fill: var(--ok-soft); stroke: var(--ok); }
-.rcv-seg.bad { fill: var(--bad); stroke: var(--bad); }
-.rcv-seg.lost { fill: var(--bad-soft); stroke: var(--bad); stroke-dasharray: 5 3; }
-.rcv-seg.gone { fill: var(--bad-soft); stroke: var(--bad); stroke-dasharray: 2 3; }
-.rcv-seg.down { fill: var(--accent-soft); stroke: var(--accent); stroke-dasharray: 5 3; }
-.rcv-mark path { fill: var(--edge); }
-.rcv-event line { stroke: var(--bad); stroke-width: 1.5; }
-.rcv-event-t { fill: var(--bad); font-family: var(--font-mono); font-size: 11px; font-weight: 600; }
-.rcv-pin line { stroke: var(--edge); stroke-width: 3; }
-.rcv-pin-t { fill: var(--edge); font-family: var(--font-mono); font-size: 11px; font-weight: 600; }
-.rcv-flash { fill: var(--bad); font-family: var(--font-mono); font-size: 13px; font-weight: 700; text-anchor: middle; }
-.rcv-flash.ok { fill: var(--ok); }
-.rcv-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
-.rcv-muted { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
-.rcv-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 8px; font-size: var(--step--1); }
-.rcv-result.ok { background: var(--ok-soft); }
-.rcv-result.bad { background: var(--bad-soft); }
+@reference "../../../styles/app.css";
+
+/* Recovery timeline of a DynamoDB table (dynamodb/RecoverySim): SVG parts of the timeline. */
+@layer components {
+  .rcv-grid { @apply stroke-line stroke-1; stroke-dasharray: 3 4; }
+  .rcv-lane-t { @apply fill-ink font-body text-[12px] font-semibold; }
+  .rcv-track { @apply fill-bg stroke-line stroke-1; }
+  /* Timeline segment: good data, bad writes, lost or deleted data, or a restore in progress (down). */
+  .rcv-seg { @apply stroke-[1.2]; }
+  .rcv-seg.good { @apply fill-ok-soft stroke-ok; }
+  .rcv-seg.bad { @apply fill-bad stroke-bad; }
+  .rcv-seg.lost { @apply fill-bad-soft stroke-bad; stroke-dasharray: 5 3; }
+  .rcv-seg.gone { @apply fill-bad-soft stroke-bad; stroke-dasharray: 2 3; }
+  .rcv-seg.down { @apply fill-accent-soft stroke-accent; stroke-dasharray: 5 3; }
+  .rcv-mark path { @apply fill-edge; }
+  .rcv-event line { @apply stroke-bad stroke-[1.5]; }
+  .rcv-event-t { @apply fill-bad font-mono text-[11px] font-semibold; }
+  .rcv-pin line { @apply stroke-edge stroke-3; }
+  .rcv-pin-t { @apply fill-edge font-mono text-[11px] font-semibold; }
+  /* Result label that flashText() pops over the timeline. */
+  .rcv-flash { @apply fill-bad font-mono text-[13px] font-bold; text-anchor: middle; }
+  .rcv-flash.ok { @apply fill-ok; }
+}

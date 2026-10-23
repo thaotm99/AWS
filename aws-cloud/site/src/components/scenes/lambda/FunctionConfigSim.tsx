@@ -3,7 +3,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./lambda-sims.css";
 
-// ShopViet sizes a Lambda function for five workloads: memory (CPU is proportional, 1,769 MB = one vCPU),
+// MFTECH sizes a Lambda function for five workloads: memory (CPU is proportional, 1,769 MB = one vCPU),
 // /tmp ephemeral storage (512–10,240 MB, per execution environment, not persistent), timeout (default 3 s,
 // max 900 s), package type (.zip ≤ 250 MB unzipped including layers; container image ≤ 10 GB in Amazon ECR),
 // layers (.zip only, up to 5, immutable versions) and where data that must outlive an invocation lives (EFS).
@@ -118,7 +118,7 @@ function evaluate(w: Workload, c: { mem: number; tmp: number; timeout: number; p
       msg: { vi: `Tác vụ cần khoảng ${f(w.dur)} giây nhưng timeout là ${f(c.timeout)} giây (mặc định 3 giây): Lambda dừng lần gọi với lỗi timeout.`, en: `The task needs about ${f(w.dur)} seconds but the timeout is ${f(c.timeout)} seconds (default 3 seconds): Lambda stops the invocation with a timeout error.` } });
   } else if (c.timeout > w.dur * 5) {
     out.push({ level: "warn", label: "Timeout",
-      msg: { vi: `Timeout ${f(c.timeout)} giây quá cao so với thời gian chạy đo được (${f(w.dur)} giây). Khi một dependency bị treo, mỗi lần gọi giữ môi trường thực thi tới hết timeout: thời gian tính phí và concurrency tăng. Đặt timeout theo kết quả load test.`, en: `A ${f(c.timeout)}-second timeout is far above the measured run time (${f(w.dur)} seconds). When a dependency hangs, each invocation holds its execution environment until the timeout: billed duration and concurrency go up. Set the timeout from load-test results.` } });
+      msg: { vi: `Timeout ${f(c.timeout)} giây quá cao so với thời gian chạy đo được (${f(w.dur)} giây). Khi một dependency bị treo, mỗi lần gọi giữ execution environment tới hết timeout: thời gian tính phí và concurrency tăng. Đặt timeout theo kết quả load test.`, en: `A ${f(c.timeout)}-second timeout is far above the measured run time (${f(w.dur)} seconds). When a dependency hangs, each invocation holds its execution environment until the timeout: billed duration and concurrency go up. Set the timeout from load-test results.` } });
   } else {
     out.push({ level: "ok", label: "Timeout",
       msg: { vi: `${f(c.timeout)} giây, có khoảng dự phòng so với thời gian chạy đo được (${f(w.dur)} giây).`, en: `${f(c.timeout)} seconds, with headroom over the measured run time (${f(w.dur)} seconds).` } });
@@ -159,19 +159,19 @@ export default function FunctionConfigSim() {
   const level: Level | null = checks ? (checks.some((c) => c.level === "bad") ? "bad" : checks.some((c) => c.level === "warn") ? "warn" : "ok") : null;
 
   const meter = (label: string, value: string, pct: number, cls: string, mark?: number) => (
-    <div className="lfx-meter">
+    <div className="grid grid-cols-[4.6rem_minmax(0,1fr)_auto] items-center gap-2 text-step--1">
       <span>{label}</span>
-      <span className="lfx-track">
+      <span className="relative h-3 overflow-hidden rounded-[4px] border border-line bg-bg">
         <span className={`lfx-fill ${cls}`} style={{ width: `${Math.min(100, Math.max(2, pct))}%` }} />
-        {mark !== undefined && <span className="lfx-mark" style={{ left: `${Math.min(100, mark)}%` }} />}
+        {mark !== undefined && <span className="absolute -top-px -bottom-px -ml-px w-0.5 bg-ink" style={{ left: `${Math.min(100, mark)}%` }} />}
       </span>
-      <b>{value}</b>
+      <b className="text-right font-mono text-[0.75rem] whitespace-nowrap">{value}</b>
     </div>
   );
 
   const chips = <T extends string | number>(label: string, opts: readonly T[], cur: T, set: (v: T) => void, show: (v: T) => string) => (
-    <div className="lfx-row" role="group" aria-label={label}>
-      <span className="lfx-lbl">{label}</span>
+    <div className="flex flex-wrap items-center gap-1.5 px-3.5 pt-2.5 pb-0" role="group" aria-label={label}>
+      <span className="mr-1 text-[0.72rem] font-semibold tracking-[0.08em] text-muted uppercase">{label}</span>
       {opts.map((o) => (
         <button key={String(o)} className="chip" aria-pressed={o === cur} onClick={() => set(o)}>{show(o)}</button>
       ))}
@@ -179,23 +179,23 @@ export default function FunctionConfigSim() {
   );
 
   return (
-    <div className="stage lfx">
-      <div className="lfx-row" role="group" aria-label={L({ vi: "Tác vụ", en: "Workload" })}>
-        <span className="lfx-lbl">{L({ vi: "Tác vụ", en: "Workload" })}</span>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pt-2.5 pb-0" role="group" aria-label={L({ vi: "Tác vụ", en: "Workload" })}>
+        <span className="mr-1 text-[0.72rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Tác vụ", en: "Workload" })}</span>
         {WORK.map((x, i) => (
           <button key={x.id} className="chip" aria-pressed={i === wi} onClick={() => { setWi(i); setChecks(null); }}>{L(x.name)}</button>
         ))}
       </div>
-      <p className="lfx-desc">{L(w.desc)}</p>
+      <p className="mx-3.5 mt-2 mb-0 rounded-[12px] border border-line bg-bg px-2.5 py-2 text-step--1">{L(w.desc)}</p>
 
-      <div className="lfx-grid">
-        <div className="lfx-controls">
+      <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] gap-x-3 gap-y-1 pb-3 max-md:grid-cols-1">
+        <div className="min-w-0">
           {chips("Memory", MEMS, mem, change(setMem), (v) => `${f(v)} MB`)}
           {chips(L({ vi: "Ephemeral storage (/tmp)", en: "Ephemeral storage (/tmp)" }), TMPS, tmp, change(setTmp), (v) => `${f(v)} MB`)}
           {chips("Timeout", TIMEOUTS, timeout, change(setTimeoutS), (v) => (v === 3 ? L({ vi: "3 s (mặc định)", en: "3 s (default)" }) : `${f(v)} s`))}
           {chips(L({ vi: "Kiểu đóng gói", en: "Package type" }), ["zip", "image"] as Pkg[], pkg, change(setPkg), (v) => (v === "zip" ? L({ vi: "Tệp .zip", en: ".zip file archive" }) : "Container image"))}
-          <div className="lfx-row">
-            <label className="lfx-toggle">
+          <div className="flex flex-wrap items-center gap-1.5 px-3.5 pt-2.5 pb-0">
+            <label className="inline-flex cursor-pointer items-center gap-1.5 text-step--1 has-[input:disabled]:cursor-default has-[input:disabled]:text-muted [&_input:disabled]:cursor-default">
               <input type="checkbox" checked={layer && pkg === "zip"} disabled={pkg === "image"} onChange={(e) => { setLayer(e.target.checked); setChecks(null); }} />
               {pkg === "image"
                 ? L({ vi: "Lambda layer (không dùng được với container image)", en: "Lambda layer (not available for container images)" })
@@ -205,18 +205,18 @@ export default function FunctionConfigSim() {
           {w.state && chips(L({ vi: "Lưu báo cáo tại", en: "Store reports in" }), ["tmp", "layer", "efs"] as Store[], store, change(setStore), (v) => (v === "tmp" ? "/tmp" : v === "layer" ? "Lambda layer" : "Amazon EFS"))}
         </div>
 
-        <div className="lfx-env" aria-label={L({ vi: "Môi trường thực thi của function", en: "The function's execution environment" })}>
-          <span className="lfx-lbl">{L({ vi: "Môi trường thực thi", en: "Execution environment" })}</span>
+        <div className="mt-2.5 mr-3.5 mb-0 ml-0 grid min-w-0 content-start gap-[7px] rounded-[14px] border border-dashed border-muted px-3 py-2.5 max-md:ml-3.5" aria-label={L({ vi: "Execution environment của function", en: "The function's execution environment" })}>
+          <span className="mr-1 text-[0.72rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Execution environment", en: "Execution environment" })}</span>
           {meter("Memory", `${f(mem)} MB`, (mem / 10240) * 100, "", w.minMem ? (w.minMem / 10240) * 100 : undefined)}
           {meter("CPU", `${vcpuLabel(mem, vi)} vCPU`, (mem / 10240) * 100, "cpu")}
           {meter("/tmp", `${f(tmp)} MB`, (tmp / 10240) * 100, w.tmp && tmp < w.tmp ? "bad" : "", w.tmp ? (w.tmp / 10240) * 100 : undefined)}
           {meter(L({ vi: "Gói mã", en: "Package" }), `${f(w.pkg)} / ${f(limit)} MB`, (w.pkg / limit) * 100, over ? "bad" : "pkg")}
           {meter("Timeout", `${f(timeout)} s`, (timeout / 900) * 100, timeout < w.dur ? "bad" : "", (w.dur / 900) * 100)}
-          <p className="lfx-note">{L({ vi: "Vạch dọc: mức tác vụ cần. Thang đo theo giới hạn tối đa của Lambda.", en: "Vertical tick: what the workload needs. Scales follow Lambda's maximums." })}</p>
+          <p className="m-0 text-[0.75rem] text-muted">{L({ vi: "Vạch dọc: mức tác vụ cần. Thang đo theo giới hạn tối đa của Lambda.", en: "Vertical tick: what the workload needs. Scales follow Lambda's maximums." })}</p>
         </div>
       </div>
 
-      <div className="stage-bar lfx-bar">
+      <div className="stage-bar border-t border-b-0 border-line">
         <button className="btn primary" onClick={() => setChecks(evaluate(w, { mem, tmp, timeout, pkg, layer: layer && pkg === "zip", store }, vi))}>
           {L({ vi: "Triển khai và chạy thử", en: "Deploy and test" })}
         </button>
@@ -224,18 +224,18 @@ export default function FunctionConfigSim() {
 
       <div className="readout">
         {!checks ? (
-          <p className="lfx-hint">{L({ vi: "Chọn tác vụ, điều chỉnh cấu hình function, sau đó triển khai và chạy thử. Cấu hình ban đầu là mặc định của Lambda: 128 MB memory, 512 MB /tmp, timeout 3 giây.", en: "Pick a workload, adjust the function configuration, then deploy and test. The starting values are Lambda's defaults: 128 MB memory, 512 MB /tmp, 3-second timeout." })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: "Chọn tác vụ, điều chỉnh cấu hình function, sau đó triển khai và chạy thử. Cấu hình ban đầu là mặc định của Lambda: 128 MB memory, 512 MB /tmp, timeout 3 giây.", en: "Pick a workload, adjust the function configuration, then deploy and test. The starting values are Lambda's defaults: 128 MB memory, 512 MB /tmp, 3-second timeout." })}</p>
         ) : (
           <>
             <ul className="log" aria-live="polite">
               {checks.map((c, i) => (
                 <li key={i}>
-                  <span className={`tag ${c.level === "ok" ? "hit" : c.level}`}>{c.level === "ok" ? "OK" : c.level === "warn" ? L({ vi: "LƯU Ý", en: "WARN" }) : L({ vi: "LỖI", en: "FAIL" })}</span>
+                  <span className={`tag ${c.level === "ok" ? "hit" : c.level === "warn" ? "bg-edge-soft text-edge" : "bad"}`}>{c.level === "ok" ? "OK" : c.level === "warn" ? L({ vi: "LƯU Ý", en: "WARN" }) : L({ vi: "LỖI", en: "FAIL" })}</span>
                   <span><b>{typeof c.label === "string" ? c.label : L(c.label)}:</b> {rich(L(c.msg))}</span>
                 </li>
               ))}
             </ul>
-            <p className={`lfx-result ${level}`}>
+            <p className={`mx-0 mt-2 mb-0 rounded-[12px] px-2.5 py-2 text-step--1 ${level === "ok" ? "bg-ok-soft" : level === "warn" ? "bg-edge-soft" : "bg-bad-soft"}`}>
               {level === "ok"
                 ? L({ vi: "Cấu hình đáp ứng tác vụ.", en: "The configuration fits the workload." })
                 : level === "warn"

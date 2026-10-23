@@ -1,7 +1,7 @@
 import PacketSim, { type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// ShopViet's data jobs, each with the AWS service that fits it: Athena for SQL straight
+// MFTECH's data jobs, each with the AWS service that fits it: Athena for SQL straight
 // on S3, Glue + Redshift Serverless (+ Redshift ML) for a daily warehouse load, Glue
 // DataBrew for code-free cleaning, Transcribe + Athena for call recordings, Kinesis +
 // OpenSearch + QuickSight for live search, Neptune for friend graphs, cold warehouse
@@ -39,13 +39,13 @@ const scenarios = (L: Lang): PScenario[] => [
           ], ok: false, result: L({ vi: "Giải pháp hoạt động nhưng phát sinh chi phí cluster cả ngày và tốn công vận hành cho một tác vụ kiểm tra nhỏ.", en: "It works, but it costs a cluster running all day and operational effort for a small check." }) },
   },
   {
-    name: L({ vi: "Nạp kho dữ liệu mỗi sáng, analyst xây dựng ML bằng SQL", en: "Load the warehouse each morning; analysts build ML in SQL" }),
-    request: L({ vi: "06:00  S3 data lake → kho dữ liệu → dashboard và mô hình dự báo", en: "06:00  S3 data lake → data warehouse → dashboards and forecast models" }),
+    name: L({ vi: "Nạp data warehouse mỗi sáng, analyst xây dựng ML bằng SQL", en: "Load the warehouse each morning; analysts build ML in SQL" }),
+    request: L({ vi: "06:00  S3 data lake → data warehouse → dashboard và mô hình dự báo", en: "06:00  S3 data lake → data warehouse → dashboards and forecast models" }),
     toggle: { label: L({ vi: "Sử dụng dịch vụ serverless", en: "Use serverless services" }), initial: false },
     action: L({ vi: "Chạy job sáng", en: "Run morning job" }),
     layout: (sl) => ({
       viewBox: VB,
-      aria: L({ vi: "Dữ liệu từ S3 được biến đổi rồi nạp vào kho dữ liệu; analyst tạo mô hình bằng SQL", en: "Data from S3 is transformed and loaded into the data warehouse; analysts create models in SQL" }),
+      aria: L({ vi: "Dữ liệu từ S3 được biến đổi rồi nạp vào data warehouse; analyst tạo mô hình bằng SQL", en: "Data from S3 is transformed and loaded into the data warehouse; analysts create models in SQL" }),
       nodes: [
         { id: "s3", x: 80, y: Y, w: 130, l1: "S3 data lake", l2: L({ vi: "log giao dịch", en: "transaction logs" }) },
         { id: "etl", x: 280, y: Y, w: 170, l1: sl ? "AWS Glue job" : "EMR cluster (Spark)", l2: sl ? L({ vi: "ETL serverless", en: "serverless ETL" }) : L({ vi: "tự quản lý node", en: "self-managed nodes" }) },
@@ -57,7 +57,7 @@ const scenarios = (L: Lang): PScenario[] => [
     run: (sl) => sl
       ? { steps: [
             { at: "etl", state: "pass", msg: L({ vi: "Glue đọc, làm sạch và biến đổi dữ liệu. Glue là dịch vụ serverless, không có hạ tầng cần quản lý.", en: "Glue reads, cleans and transforms the data. Glue is serverless, with no infrastructure to manage." }) },
-            { at: "dw", state: "pass", msg: L({ vi: "Nạp vào **Redshift Serverless**: kho dữ liệu MPP, tự động co giãn, không cần quản lý node.", en: "Loads into **Redshift Serverless**: an MPP data warehouse that scales automatically, with no nodes to manage." }) },
+            { at: "dw", state: "pass", msg: L({ vi: "Nạp vào **Redshift Serverless**: data warehouse MPP, tự động co giãn, không cần quản lý node.", en: "Loads into **Redshift Serverless**: an MPP data warehouse that scales automatically, with no nodes to manage." }) },
             { at: "ml", state: "pass", msg: L({ vi: "Analyst viết `CREATE MODEL` bằng SQL, không cần code Python.", en: "Analysts write `CREATE MODEL` in SQL, with no Python code." }) },
           ], ok: true, back: false, result: L({ vi: "Toàn bộ pipeline là serverless: không có cluster nào cần chọn kích thước, vá lỗi hay bật tắt.", en: "The whole pipeline is serverless: no cluster to size, patch, or start and stop." }) }
       : { steps: [
@@ -153,7 +153,7 @@ const scenarios = (L: Lang): PScenario[] => [
       aria: L({ vi: "Ứng dụng truy vấn database quan hệ hoặc graph database về bạn bè và lượt thích", en: "The application queries a relational database or a graph database about friends and likes" }),
       nodes: [
         { id: "user", x: 70, y: Y, l1: L({ vi: "Người dùng", en: "User" }), user: true },
-        { id: "app", x: 280, y: Y, w: 140, l1: L({ vi: "App ShopViet", en: "ShopViet app" }) },
+        { id: "app", x: 280, y: Y, w: 140, l1: L({ vi: "App MFTECH", en: "MFTECH app" }) },
         { id: "db", x: 580, y: Y, w: 230, l1: neptune ? "Amazon Neptune" : "Aurora", l2: neptune ? L({ vi: "graph: người dùng → bạn → thích", en: "graph: user → friend → likes" }) : L({ vi: "JOIN bảng bạn bè nhiều tầng", en: "multi-level JOINs on friends table" }) },
       ],
       links: [["user", "app"], ["app", "db"]],
@@ -191,7 +191,7 @@ const scenarios = (L: Lang): PScenario[] => [
       : { steps: [
             { at: "engine", state: "pass", msg: L({ vi: "Truy vấn được thực thi.", en: "The query runs." }) },
             { at: "data", state: "change", tag: L({ vi: "TỐN", en: "COST" }), msg: L({ vi: "Cluster phải đủ lớn để chứa cả dữ liệu hầu như không được truy cập.", en: "The cluster must be large enough to also hold data that is almost never accessed." }) },
-          ], ok: false, result: L({ vi: "Giải pháp hoạt động, nhưng dữ liệu ít truy cập phải chịu chi phí của kho dữ liệu hiệu năng cao.", en: "It works, but infrequently accessed data bears the cost of a high-performance data warehouse." }) },
+          ], ok: false, result: L({ vi: "Giải pháp hoạt động, nhưng dữ liệu ít truy cập phải chịu chi phí của data warehouse hiệu năng cao.", en: "It works, but infrequently accessed data bears the cost of a high-performance data warehouse." }) },
   },
   {
     name: L({ vi: "Đồng bộ liên tục Oracle tại văn phòng sang RDS", en: "Continuously sync on-premises Oracle to RDS" }),
@@ -225,8 +225,8 @@ const scenarios = (L: Lang): PScenario[] => [
     action: L({ vi: "UNLOAD, sau đó đối tác đọc", en: "UNLOAD, then partner reads" }),
     layout: () => ({
       viewBox: VB,
-      aria: L({ vi: "Redshift tại account ShopViet ghi tệp vào bucket tại account đối tác, đối tác đọc tệp", en: "Redshift in the ShopViet account writes files to a bucket in the partner account, and the partner reads them" }),
-      boxes: [{ x: 20, y: 52, w: 300, h: 196, label: L({ vi: "Account ShopViet", en: "ShopViet account" }) }, { x: 360, y: 52, w: 440, h: 196, label: L({ vi: "Account đối tác", en: "Partner account" }) }],
+      aria: L({ vi: "Redshift tại account MFTECH ghi tệp vào bucket tại account đối tác, đối tác đọc tệp", en: "Redshift in the MFTECH account writes files to a bucket in the partner account, and the partner reads them" }),
+      boxes: [{ x: 20, y: 52, w: 300, h: 196, label: L({ vi: "Account MFTECH", en: "MFTECH account" }) }, { x: 360, y: 52, w: 440, h: 196, label: L({ vi: "Account đối tác", en: "Partner account" }) }],
       nodes: [
         { id: "rs", x: 170, y: Y, w: 170, l1: "Redshift", l2: "UNLOAD" },
         { id: "s3", x: 500, y: Y, w: 170, l1: "S3 bucket", l2: "doi-tac-bao-cao" },
@@ -240,7 +240,7 @@ const scenarios = (L: Lang): PScenario[] => [
             { at: "partner", from: "s3", state: "pass", msg: L({ vi: "Đối tác sở hữu mọi object nên đọc được bằng quyền IAM của mình.", en: "The partner owns every object, so it can read them with its own IAM permissions." }) },
           ], ok: true, back: false, result: L({ vi: "Đọc thành công. Bucket mới mặc định sử dụng Bucket owner enforced.", en: "The read succeeds. New buckets use Bucket owner enforced by default." }) }
       : { steps: [
-            { at: "s3", state: "change", tag: L({ vi: "GHI", en: "WRITE" }), msg: L({ vi: "Tệp được ghi vào bucket, nhưng bucket vẫn bật ACL (Object writer): object thuộc về **account đã ghi**, tức ShopViet.", en: "The files are written to the bucket, but the bucket still has ACLs enabled (Object writer): the objects belong to **the account that wrote them**, which is ShopViet." }) },
+            { at: "s3", state: "change", tag: L({ vi: "GHI", en: "WRITE" }), msg: L({ vi: "Tệp được ghi vào bucket, nhưng bucket vẫn bật ACL (Object writer): object thuộc về **account đã ghi**, tức MFTECH.", en: "The files are written to the bucket, but the bucket still has ACLs enabled (Object writer): the objects belong to **the account that wrote them**, which is MFTECH." }) },
             { at: "partner", from: "s3", state: "block", tag: "403", flash: "403", msg: L({ vi: "Chủ sở hữu bucket không mặc nhiên có quyền trên object do account khác ghi vào.", en: "The bucket owner does not automatically have permissions on objects written by another account." }) },
           ], ok: false, back: false, result: L({ vi: "AccessDenied dù là bucket của chính đối tác. Cấu hình Object Ownership = Bucket owner enforced để chủ sở hữu bucket sở hữu mọi object.", en: "AccessDenied, even though it is the partner’s own bucket. Set Object Ownership = Bucket owner enforced so the bucket owner owns every object." }) },
   },
@@ -248,5 +248,5 @@ const scenarios = (L: Lang): PScenario[] => [
 
 export default function DataJobSim() {
   const L = useLang();
-  return <PacketSim scenarios={scenarios(L)} hint={L({ vi: "Chọn một tác vụ dữ liệu của ShopViet và chạy mô phỏng, sau đó bật tuỳ chọn để chuyển sang công cụ phù hợp hơn.", en: "Choose a ShopViet data job and run the simulation, then turn on the option to switch to a better-suited tool." })} />;
+  return <PacketSim scenarios={scenarios(L)} hint={L({ vi: "Chọn một tác vụ dữ liệu của MFTECH và chạy mô phỏng, sau đó bật tuỳ chọn để chuyển sang công cụ phù hợp hơn.", en: "Choose a MFTECH data job and run the simulation, then turn on the option to switch to a better-suited tool." })} />;
 }

@@ -1,6 +1,6 @@
 ---
 title: "Cost management, AI services and other services"
-lede: "ShopViet has grown: AWS costs need tight control, and the volume of user data exceeds what can be processed manually. This lesson shows how to control costs with AWS Budgets, Cost Optimization Hub, Compute Optimizer and Savings Plans; how to use Comprehend, Transcribe and Textract without an ML team; and introduces AWS Batch and AWS Outposts."
+lede: "MFTECH has grown: AWS costs need tight control, and the volume of user data exceeds what can be processed manually. This lesson shows how to control costs with AWS Budgets, Cost Optimization Hub, Compute Optimizer and Savings Plans; how to use Comprehend, Transcribe and Textract without an ML team; and introduces AWS Batch and AWS Outposts."
 minutes: 25
 scenes: 5
 prerequisites: ["iam", "ec2", "lambda", "containers"]
@@ -88,17 +88,17 @@ import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
-  { href: "#en-s1", label: "1 · Cost control" },
+  { href: "#en-s1", label: "1 · AWS Cost Management" },
   { href: "#en-s2", label: "2 · Savings Plans" },
-  { href: "#en-s3", label: "3 · Pre-trained AI services" },
+  { href: "#en-s3", label: "3 · AWS AI services" },
   { href: "#en-s4", label: "4 · AWS Batch and Outposts" },
-  { href: "#en-s5", label: "5 · Quick comparison" },
+  { href: "#en-s5", label: "5 · Comparing easily confused services" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-ShopViet now has many AWS accounts and many engineering teams, and its monthly costs keep rising. At the same time, thousands of reviews, call-center calls and scanned documents arrive every day, more than can be processed manually, while ShopViet has no machine learning experts. This lesson brings together the services that meet these needs: cost management tools, pre-trained AI services, and two services for special requirements.
+MFTECH now has many AWS accounts and many engineering teams, and its monthly costs keep rising. At the same time, thousands of reviews, call-center calls and scanned documents arrive every day, more than can be processed manually, while MFTECH has no machine learning experts. This lesson brings together the services that meet these needs: cost management tools, pre-trained AI services, and two services for special requirements.
 </Story>
 
-<Scene id="en-s1" label="Part 1/5" title="Controlling AWS costs" questions={["exam6_q22", "exam6_q1", "exam4_q30"]}>
+<Scene id="en-s1" label="Part 1/5" title="AWS Cost Management: Cost Explorer, AWS Budgets, Cost Optimization Hub" questions={["exam6_q22", "exam6_q1", "exam4_q30"]}>
 
 <p class="scene-intro">AWS costs grow with usage, so they need regular tracking; each cost tool answers a different question.</p>
 
@@ -109,7 +109,7 @@ Each cost management tool answers a different question:
 - **Cost Optimization Hub**: where should costs be cut? Consolidates savings recommendations (rightsizing, deleting idle resources, Savings Plans, Reserved Instances) across accounts and Regions in one place.
 - **Compute Optimizer**: which resource size is right? Recommends suitable configurations for EC2 instances, Auto Scaling groups, EBS volumes, Lambda functions, ECS services on Fargate and other resources.
 
-Choose a ShopViet problem, choose a tool, then run the simulation for one month:
+Choose a MFTECH problem, choose a tool, then run the simulation for one month:
 
 <CostWatchSim client:visible />
 
@@ -117,18 +117,18 @@ Choose a ShopViet problem, choose a tool, then run the simulation for one month:
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/5" title="Choosing the type of long-term usage commitment" questions={["exam6_q38"]}>
+<Scene id="en-s2" label="Part 2/5" title="Savings Plans: Compute, EC2 Instance, Database and SageMaker AI" questions={["exam6_q38"]}>
 
-<p class="scene-intro">Once usage is stable, committing to one or three years cuts costs substantially compared with paying by the hour.</p>
+<p class="scene-intro">Once usage is stable, committing to one or three years cuts costs substantially compared with On-Demand pricing.</p>
 
-After the launch, ShopViet's load has stabilized. Committing to a fixed amount of spend per hour for 1 or 3 years in exchange for prices lower than on-demand: that is **Savings Plans**. AWS currently offers four types:
+After the launch, MFTECH's load has stabilized. Committing to a fixed amount of spend per hour for 1 or 3 years in exchange for prices lower than On-Demand: that is **Savings Plans**. AWS currently offers four types:
 
-- **Compute Savings Plans**: the most flexible, up to 66% off on-demand. Apply to EC2 (any instance family, size, OS, tenancy, Region), Fargate and Lambda.
+- **Compute Savings Plans**: the most flexible, up to 66% off On-Demand. Apply to EC2 (any instance family, instance size, OS, tenancy, Region), Fargate and Lambda.
 - **EC2 Instance Savings Plans**: up to 72% off, but only for one instance family in one Region.
 - **Database Savings Plans**: up to 35% off database services such as Aurora, RDS, DynamoDB, ElastiCache, DocumentDB, Neptune, Keyspaces, Timestream, DMS and OpenSearch Service.
 - **SageMaker AI Savings Plans**: up to 64% off, exclusively for SageMaker AI instances.
 
-ShopViet's requirement: every workload gets a discount, with the fewest plans possible for easy management:
+MFTECH's requirement: every workload gets a discount, with the fewest plans possible for easy management:
 
 <SavingsPlanSim client:visible />
 
@@ -136,9 +136,9 @@ ShopViet's requirement: every workload gets a discount, with the fewest plans po
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/5" title="Processing text and speech without an ML team" questions={["exam1_q4", "exam2_q26", "exam5_q32", "exam5_q58"]}>
+<Scene id="en-s3" label="Part 3/5" title="AWS AI services: Comprehend, Transcribe, Textract, Rekognition, Translate, Polly" questions={["exam1_q4", "exam2_q26", "exam5_q32", "exam5_q58"]}>
 
-<p class="scene-intro">Many tasks such as speech recognition, translation or text analysis need no home-built machine learning model; AWS offers ready services called through an API.</p>
+<p class="scene-intro">Many tasks such as speech recognition, translation or text analysis need no self-built machine learning model; AWS AI services provide pre-trained models through an API.</p>
 
 AWS provides pre-trained AI services that you use through API calls, with no machine learning knowledge required:
 
@@ -149,7 +149,7 @@ AWS provides pre-trained AI services that you use through API calls, with no mac
 - **Amazon Translate**: **translates** text between languages (Vietnamese is supported). Translate does not detect sentiment; to analyze Vietnamese reviews, you can translate them to English with Translate and then pass them to Comprehend.
 - **Amazon Polly**: the reverse of Transcribe, converts **text to speech**. Transcribe accepts only audio as input.
 
-Each scenario below is a ShopViet processing pipeline; the text sent to Comprehend and Textract is in English (ShopViet's international storefront), because of the language limits above. Send a document and watch the output at each processing step:
+Each scenario below is a MFTECH processing pipeline; the text sent to Comprehend and Textract is in English (MFTECH's international storefront), because of the language limits above. Send a document and watch the output at each processing step:
 
 <AiPipelineSim client:visible />
 
@@ -159,20 +159,20 @@ Each scenario below is a ShopViet processing pipeline; the text sent to Comprehe
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/5" title="Batch processing and AWS services in the company's data center" questions={["exam6_q55", "exam1_q27"]}>
+<Scene id="en-s4" label="Part 4/5" title="AWS Batch and AWS Outposts for on-premises data centers" questions={["exam6_q55", "exam1_q27"]}>
 
-<p class="scene-intro">Some needs do not fit the services covered so far, such as very long processing jobs or systems that must stay in the company's data center; AWS has a service for each case.</p>
+<p class="scene-intro">Some needs do not fit the services covered so far, such as very long processing jobs or systems that must stay in the company's on-premises data center; AWS has a service for each case.</p>
 
-ShopViet's last two requirements do not fit the services covered so far. The content team needs to process tens of thousands of images every night (resizing, watermarking), and each job runs longer than the Lambda limit. At the same time, ShopViet has just acquired an e-wallet company: regulations require its data and applications to stay in that company's data center, but the engineering team needs to use EKS, CloudWatch and IAM consistently with the rest of ShopViet.
+MFTECH's last two requirements do not fit the services covered so far. The content team needs to process tens of thousands of images every night (resizing, watermarking), and each job runs longer than the maximum Lambda timeout (15 minutes). At the same time, MFTECH has just acquired an e-wallet company: regulations require its data and applications to stay in that company's on-premises data center, but the engineering team needs to use EKS, CloudWatch and IAM consistently with the rest of MFTECH.
 
 <ScenarioFlow client:visible height={250} legend={["Recommended option", "Workable but not a good fit"]} scenarios={[
   { name: "Batch image processing",
     nodes: [
       { id: "in", x: 20, y: 60, label: "S3: source images", kind: "store" },
       { id: "sf", x: 190, y: 60, label: "Step Functions", sub: "orchestrates the steps", kind: "net" },
-      { id: "batch", x: 390, y: 60, label: "AWS Batch", sub: "scales automatically", kind: "edge" },
+      { id: "batch", x: 390, y: 60, label: "AWS Batch", sub: "scales compute automatically", kind: "edge" },
       { id: "out", x: 610, y: 60, label: "S3: processed images", kind: "store" },
-      { id: "eks", x: 190, y: 165, label: "EKS, self-managed EC2 nodes", kind: "warn" },
+      { id: "eks", x: 190, y: 165, label: "EKS, self-managed nodes (EC2)", kind: "warn" },
       { id: "ebs", x: 520, y: 165, label: "EBS", sub: "attached to each node", kind: "store" },
     ],
     options: [
@@ -183,15 +183,15 @@ ShopViet's last two requirements do not fit the services covered so far. The con
         flows: [{ path: ["in", "sf"], tone: "good" }, { path: ["sf", "batch"], tone: "good", label: "submit job" }, { path: ["batch", "out"], tone: "good" }],
         text: "**AWS Batch** accepts jobs, automatically provisions enough compute resources (Spot or Fargate can be used) and releases them when done. **Step Functions** manages the order of the steps and the state of each job, and retries automatically on errors. Large output is stored on **S3**." },
     ] },
-  { name: "Data must stay in the data center",
+  { name: "Data must stay in the on-premises data center",
     boxes: [
-      { x: 10, y: 10, w: 410, h: 230, label: "E-wallet company's data center", tone: "onprem" },
+      { x: 10, y: 10, w: 410, h: 230, label: "E-wallet company's on-premises data center", tone: "onprem" },
       { x: 470, y: 10, w: 280, h: 230, label: "AWS Region", tone: "region" },
     ],
     nodes: [
       { id: "data", x: 30, y: 50, label: "Customer data", kind: "db" },
       { id: "op", x: 200, y: 115, label: "AWS Outposts rack", sub: "EKS, EC2, EBS on premises", kind: "edge" },
-      { id: "snow", x: 30, y: 175, label: "Snowball Edge", sub: "transport device", kind: "warn" },
+      { id: "snow", x: 30, y: 175, label: "Snowball Edge", sub: "data transfer device", kind: "warn" },
       { id: "aws", x: 500, y: 50, label: "AWS APIs", sub: "CloudWatch, IAM", kind: "net" },
       { id: "eksr", x: 500, y: 165, label: "EKS in the Region", kind: "ec2" },
     ],
@@ -208,15 +208,15 @@ ShopViet's last two requirements do not fit the services covered so far. The con
     ] },
 ]} />
 
-<Takeaway>Batch processing jobs that scale automatically with no servers to manage: AWS Batch, orchestrated with Step Functions, with output stored on S3. AWS services needed while data and workloads must stay in the company's data center: AWS Outposts.</Takeaway>
+<Takeaway>Batch processing jobs that scale automatically, with AWS Batch managing the compute environment: AWS Batch, orchestrated with Step Functions, with output stored on S3. AWS services needed while data and workloads must stay in the company's on-premises data center: AWS Outposts.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s5" label="Part 5/5" title="Quick comparison: services that are easy to pick by mistake" questions={["exam1_q4", "exam2_q26", "exam5_q32", "exam4_q33", "exam1_q11", "exam2_q4", "exam2_q40", "exam2_q47"]}>
+<Scene id="en-s5" label="Part 5/5" title="Comparing services with easily confused scopes" questions={["exam1_q4", "exam2_q26", "exam5_q32", "exam4_q33", "exam1_q11", "exam2_q4", "exam2_q40", "exam2_q47"]}>
 
 <p class="scene-intro">Many services have names or scopes close to a requirement yet solve a different problem; telling them apart avoids picking the wrong one.</p>
 
-When designing ShopViet's processing pipelines, some services have a name or scope close to the requirement but solve a different problem. Pick each service to see what it is for, why it does not fit ShopViet's situation, and what fits instead.
+When designing MFTECH's processing pipelines, some services have a name or scope close to the requirement but solve a different problem. Pick each service to see what it is for, why it does not fit MFTECH's situation, and what fits instead.
 
 <QuickCompare client:visible items={[
   { name: "Amazon Rekognition",
@@ -237,15 +237,15 @@ When designing ShopViet's processing pipelines, some services have a name or sco
     instead: "A description file in S3 triggers Lambda, and Lambda calls **Comprehend custom entity recognition**." },
   { name: "Amazon SageMaker AI",
     use: "Builds, trains and deploys ML models on managed infrastructure; fits when a custom model is needed and an ML team is available.",
-    notHere: "ShopViet's API team needs a place to run Docker containers without managing servers. SageMaker AI is not a container orchestration service for applications; for common text analysis, training your own model takes more effort than using a pre-trained AI service.",
+    notHere: "MFTECH's API team needs a place to run Docker containers without managing EC2 instances. SageMaker AI is not a container orchestration service for applications; for common text analysis, training your own model takes more effort than using a pre-trained AI service.",
     instead: "Container APIs: **ECS or EKS with Fargate**. Text analysis without an ML team: **Comprehend**." },
   { name: "Amazon Lightsail",
     use: "The easiest way to get started with AWS for websites and web applications: instances (virtual private servers), container services, managed databases, load balancers and CDN for a low, predictable monthly price.",
-    notHere: "The e-wallet's transaction backend is compute- and memory-intensive, runs for long periods and scales with traffic, while the team does not want to provision or patch virtual machines. Running it on Lightsail instances still means managing a fleet of virtual servers.",
+    notHere: "The e-wallet's transaction backend is compute- and memory-intensive, runs for long periods and scales with traffic, while the team does not want to provision or patch instances. Running it on Lightsail instances (virtual private servers) still means managing a fleet of instances.",
     instead: "API Gateway + Lambda for validation, with the long-running backend on **ECS with Fargate**." },
   { name: "Amazon AppFlow",
     use: "Exchanges data between SaaS applications (Salesforce, Zendesk, Slack, ServiceNow…) and AWS services such as S3 and Redshift; flows run on a schedule, on an event or on demand. A Custom Connector SDK connects private APIs or on-premises systems.",
-    notHere: "ShopViet's vendors push files with their existing SFTP software and will not change their workflow. AppFlow pulls data through the source application's API; SFTP is not in the list of supported applications.",
+    notHere: "MFTECH's vendors push files with their existing SFTP software and will not change their workflow. AppFlow pulls data through the source application's API; SFTP is not in the list of supported applications.",
     instead: "**AWS Transfer Family** (a managed SFTP endpoint that stores files directly in S3, with an IAM role per vendor)." },
   { name: "Amazon Timestream",
     use: "A serverless time series database for measurement data such as telemetry and metrics. Timestream for LiveAnalytics closed to new customers on June 20, 2025; AWS recommends Timestream for InfluxDB.",
@@ -259,13 +259,13 @@ When designing ShopViet's processing pipelines, some services have a name or sco
 
 Details of the alternatives: [ECS and EKS with Fargate](/concepts/containers/ec2-or-fargate/), [AWS Transfer Family](/concepts/storage-migration/data-transfer/), [RDS Multi-AZ](/concepts/rds/multi-az-read-replicas/), [SQS as a buffer](/concepts/messaging/queues/).
 
-<Takeaway>Text: Comprehend. Images, video: Rekognition. Translation: Translate. Speech ↔ text: Transcribe (audio in), Polly (audio out). Containers without managing servers: ECS/EKS with Fargate, not SageMaker AI or Lightsail. Vendors sending files over SFTP: Transfer Family, not AppFlow. Relational database: RDS, not Timestream. A buffer so no data is lost: SQS, not SNS.</Takeaway>
+<Takeaway>Text: Comprehend. Images, video: Rekognition. Translation: Translate. Speech ↔ text: Transcribe (audio in), Polly (audio out). Containers without managing EC2 instances: ECS/EKS with Fargate, not SageMaker AI or Lightsail. Vendors sending files over SFTP: Transfer Family, not AppFlow. Relational database: RDS, not Timestream. A buffer so no data is lost: SQS, not SNS.</Takeaway>
 
 </Scene>
 
 <Scene id="en-challenge" label="Exercise" title="Sort the tasks by service" questions={["exam6_q22", "exam4_q30", "exam6_q38", "exam5_q58", "exam1_q27", "exam2_q26"]}>
 
-Sort each ShopViet task into the matching service. On mobile devices: choose a card, then choose the target box.
+Sort each MFTECH task into the matching service. On mobile devices: choose a card, then choose the target box.
 
 <SortGame client:visible
   bins={[
@@ -284,14 +284,14 @@ Sort each ShopViet task into the matching service. On mobile devices: choose a c
   ]}
 />
 
-Check your understanding: as the designer of the ShopViet system, which option fits?
+Check your understanding: as the designer of the MFTECH system, which option fits?
 
 <Quiz client:visible items={[
   { q: "Each developer has their own AWS account. Requirement: when an account exceeds its budget, creating more resources is blocked automatically, with no code to write and no manual monitoring. Which option meets the requirement?",
     opts: ["A Lambda function that runs daily, reads the Cost Explorer API and takes action itself", "AWS Budgets with an alert and a budget action that applies a DenyAll IAM policy", "Send each person a Cost Explorer report every day"],
     a: 1,
     why: "Budget actions are built into Budgets: when the threshold is exceeded, the action that applies the IAM policy runs automatically (or after approval, depending on the configuration). A self-developed Lambda function must be maintained; a report depends on whether the recipient reads it." },
-  { q: "ShopViet runs EC2, Fargate, Lambda and a SageMaker endpoint with steady load. Requirement: long-term discounts for everything with the fewest plans. Which option fits?",
+  { q: "MFTECH runs EC2, Fargate, Lambda and a SageMaker endpoint with steady load. Requirement: long-term discounts for everything with the fewest plans. Which option fits?",
     opts: ["Compute Savings Plans + SageMaker AI Savings Plans", "EC2 Instance Savings Plans + Compute Savings Plans", "A Reserved Instance for each EC2 instance"],
     a: 0,
     why: "Compute Savings Plans apply to EC2, Fargate and Lambda. SageMaker needs SageMaker AI Savings Plans. EC2 Reserved Instances do not apply to Fargate or Lambda, and changing the instance family of a Convertible RI requires a manual exchange." },
@@ -302,11 +302,11 @@ Check your understanding: as the designer of the ShopViet system, which option f
   { q: "The call center stores recordings of every call in S3. The customer care team needs to write its own SQL to identify customer complaints. Which option fits?",
     opts: ["Transcribe converts to text, Athena runs SQL queries", "Kinesis Data Streams reads the audio files", "Amazon Quick Sight reads the audio files directly"],
     a: 0,
-    why: "First, the audio must be converted to text: Transcribe. Athena runs SQL directly on data in S3, with no servers to manage." },
-  { q: "Regulations require e-wallet data to be stored in the data center, but the engineering team needs to use EKS and CloudWatch as on AWS. Which option fits?",
+    why: "First, the audio must be converted to text: Transcribe. Athena runs SQL directly on data in S3 and is a serverless service." },
+  { q: "Regulations require e-wallet data to be stored in the on-premises data center, but the engineering team needs to use EKS and CloudWatch as on AWS. Which option fits?",
     opts: ["Snowball Edge", "EKS in the Region over Direct Connect", "AWS Outposts"],
     a: 2,
-    why: "Outposts extends AWS infrastructure and services to the company's data center; data is stored and processed on premises. With Direct Connect, the workloads still run in the Region." },
+    why: "Outposts extends AWS infrastructure and services to the company's on-premises data center; data is stored and processed on premises. With Direct Connect, the workloads still run in the Region." },
   { q: "The content team has used Textract to extract text from thousands of PDF articles and needs the tone and topics of each article without building a model. Which option fits?",
     opts: ["Rekognition analyzes the page layout to determine tone", "Comprehend detects sentiment and entities, with results stored in S3", "Translate converts the text to English and stores it in DynamoDB"],
     a: 1,

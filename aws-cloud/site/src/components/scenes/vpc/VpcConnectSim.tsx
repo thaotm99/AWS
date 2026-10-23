@@ -2,6 +2,7 @@ import { useId, useRef, useState } from "react";
 import { flashText, travel, type Pt } from "../../../lib/animate";
 import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
+import "./vpc-sims.css";
 
 // Connecting many VPCs: peering is 1:1 and not transitive; Transit VPC is a customer-managed hub of
 // EC2 VPN appliances (whitepaper "Building a Scalable and Secure Multi-VPC AWS Network
@@ -53,7 +54,7 @@ export default function VpcConnectSim() {
       setMsg({ vi: "Transit Gateway hỗ trợ transitive routing: traffic từ A tới C đi qua hub, không cần kết nối trực tiếp A–C. Route `CIDR của C → attachment C` có trong route table của Transit Gateway nhờ route propagation; route table của subnet trong VPC A vẫn cần route trỏ tới Transit Gateway.", en: "Transit Gateway supports transitive routing: traffic from A to C goes through the hub, without a direct A–C connection. The route `C's CIDR → attachment C` is in the transit gateway route table thanks to route propagation; the subnet route table in VPC A still needs a route that points to the transit gateway." });
     } else if (mode === "tvpc") {
       await travel(layer, [pts[0], CENTER, pts[2]], 1300, "pkt", 6);
-      setMsg({ vi: "Transit VPC: mỗi VPC lập VPN connection (BGP over IPsec) tới các EC2 chạy phần mềm router trong VPC trung tâm. Transitive routing hoạt động, nhưng tổ chức tự vận hành EC2 (vá lỗi, HA, license phần mềm), mỗi tunnel VPN tối đa 1,25 Gbps và mã hoá VPN làm tăng độ trễ. Transit Gateway thay thế mô hình này bằng hub do AWS quản lý.", en: "Transit VPC: each VPC builds a VPN connection (BGP over IPsec) to EC2 instances running router software in a central VPC. Transitive routing works, but the organization runs the EC2 instances itself (patching, HA, software licenses), each VPN tunnel is limited to 1.25 Gbps, and VPN encryption adds latency. Transit Gateway replaces this pattern with an AWS-managed hub." });
+      setMsg({ vi: "Transit VPC: mỗi VPC lập VPN connection (BGP over IPsec) tới các EC2 instance chạy phần mềm router trong VPC trung tâm. Transitive routing hoạt động, nhưng tổ chức tự vận hành các EC2 instance (vá lỗi, HA, license phần mềm), mỗi tunnel VPN tối đa 1,25 Gbps và mã hoá VPN làm tăng độ trễ. Transit Gateway thay thế mô hình này bằng hub do AWS quản lý.", en: "Transit VPC: each VPC builds a VPN connection (BGP over IPsec) to EC2 instances running router software in a central VPC. Transitive routing works, but the organization runs the EC2 instances itself (patching, HA, software licenses), each VPN tunnel is limited to 1.25 Gbps, and VPN encryption adds latency. Transit Gateway replaces this pattern with an AWS-managed hub." });
     } else if (chain) {
       await travel(layer, [pts[0], pts[1]], 600, "pkt", 6);
       await travel(layer, [pts[1], [(pts[1][0] + pts[2][0]) / 2, (pts[1][1] + pts[2][1]) / 2]], 400, "pkt-bad", 6);
@@ -89,25 +90,25 @@ export default function VpcConnectSim() {
       <div className="svg-wrap">
         <svg viewBox="0 0 760 300" role="img" aria-label={L({ vi: `${n} VPC kết nối bằng ${mode === "tgw" ? "Transit Gateway" : "VPC peering"}`, en: `${n} VPCs connected with ${mode === "tgw" ? "Transit Gateway" : "VPC peering"}` })}>
           {links.map(([i, j]) => (
-            <line key={`${i}-${j}`} className="peer-line" x1={pts[i][0]} y1={pts[i][1]} x2={pts[j][0]} y2={pts[j][1]} />
+            <line key={`${i}-${j}`} className="vpc-peer" x1={pts[i][0]} y1={pts[i][1]} x2={pts[j][0]} y2={pts[j][1]} />
           ))}
-          {mode !== "peering" && pts.map((p, i) => <line key={i} className="tgw-line" strokeDasharray={mode === "tvpc" ? "5 4" : undefined} x1={CENTER[0]} y1={CENTER[1]} x2={p[0]} y2={p[1]} />)}
+          {mode !== "peering" && pts.map((p, i) => <line key={i} className="vpc-tgw" strokeDasharray={mode === "tvpc" ? "5 4" : undefined} x1={CENTER[0]} y1={CENTER[1]} x2={p[0]} y2={p[1]} />)}
           {mode === "tvpc" && (
             <g className="pop">
-              <rect className="vpc-node" x={CENTER[0] - 52} y={CENTER[1] - 30} width={104} height={60} rx={10} />
+              <rect className="vpc-box" x={CENTER[0] - 52} y={CENTER[1] - 30} width={104} height={60} rx={10} />
               <text className="t" x={CENTER[0]} y={CENTER[1] - 6} textAnchor="middle">Transit VPC</text>
               <text className="ts" x={CENTER[0]} y={CENTER[1] + 12} textAnchor="middle">{L({ vi: "EC2 router + VPN", en: "EC2 router + VPN" })}</text>
             </g>
           )}
           {mode === "tgw" && (
             <g className="pop">
-              <circle className="tgw-hub" cx={CENTER[0]} cy={CENTER[1]} r={30} />
+              <circle className="vpc-tgw-hub" cx={CENTER[0]} cy={CENTER[1]} r={30} />
               <text className="tw" x={CENTER[0]} y={CENTER[1] + 4} textAnchor="middle">TGW</text>
             </g>
           )}
           {pts.map((p, i) => (
             <g key={i}>
-              <rect className="vpc-node" x={p[0] - 26} y={p[1] - 16} width={52} height={32} rx={8} />
+              <rect className="vpc-box" x={p[0] - 26} y={p[1] - 16} width={52} height={32} rx={8} />
               <text className="t" x={p[0]} y={p[1] + 5} textAnchor="middle">{NAMES[i]}</text>
             </g>
           ))}
@@ -120,13 +121,13 @@ export default function VpcConnectSim() {
             {mode === "tgw"
               ? L({ vi: `${n} attachment vào Transit Gateway${prop ? ", CIDR tự động propagate" : ", chưa có route"}`, en: `${n} Transit Gateway attachments${prop ? ", CIDRs propagated automatically" : ", no routes yet"}` })
               : mode === "tvpc"
-              ? L({ vi: `${n} VPN connection tới EC2 trong Transit VPC`, en: `${n} VPN connections to EC2 in the transit VPC` })
+              ? L({ vi: `${n} VPN connection tới EC2 instance trong Transit VPC`, en: `${n} VPN connections to EC2 in the transit VPC` })
               : L({ vi: `${peeringCount} peering connection${chain ? " (chuỗi A–B–C)" : ` cho full mesh ${n} VPC`}`, en: `${peeringCount} peering connections${chain ? " (chain A–B–C)" : ` for a full mesh of ${n} VPCs`}` })}
           </span>
         </div>
-        <p style={{ margin: "8px 0 0" }}>
+        <p className="mx-0 mt-2 mb-0">
           {rich(L(msg ?? (mode === "tvpc"
-            ? { vi: "Mô hình hub-and-spoke dựa trên VPN: các VPC kết nối tới EC2 chạy phần mềm router của bên thứ ba trong một VPC trung tâm. Gửi traffic để quan sát chi phí vận hành của mô hình này.", en: "A VPN-based hub-and-spoke design: the VPCs connect to EC2 instances running third-party router software in a central VPC. Send traffic to see what this design costs to operate." }
+            ? { vi: "Mô hình hub-and-spoke dựa trên VPN: các VPC kết nối tới EC2 instance chạy phần mềm router của bên thứ ba trong một VPC trung tâm. Gửi traffic để quan sát chi phí vận hành của mô hình này.", en: "A VPN-based hub-and-spoke design: the VPCs connect to EC2 instances running third-party router software in a central VPC. Send traffic to see what this design costs to operate." }
             : mode === "tgw"
             ? { vi: "Mỗi VPC chỉ cần một attachment vào Transit Gateway. Bổ sung VPC thứ 11 chỉ phát sinh thêm 1 kết nối; Transit Gateway cũng kết nối được VPN và Direct Connect.", en: "Each VPC needs only one Transit Gateway attachment. Adding an 11th VPC adds only 1 connection; Transit Gateway also connects VPN and Direct Connect." }
             : { vi: "Kéo thanh trượt để quan sát tốc độ tăng của số peering connection. VPC peering có chi phí thấp và đơn giản khi số lượng VPC nhỏ.", en: "Drag the slider to see how fast the number of peering connections grows. VPC peering is low-cost and simple when the number of VPCs is small." })))}

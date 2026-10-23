@@ -6,7 +6,7 @@ import "./messaging-sims.css";
 
 // The life of one SQS message, played as a short script. Messages are small cards that
 // slide between the producer, one or two queue lanes, the workers and the "deleted"
-// column. Each scenario is one ShopViet problem and the queue setting that solves it:
+// column. Each scenario is one MFTECH problem and the queue setting that solves it:
 // visibility timeout with Spot workers, a dead-letter queue, long polling, a delay
 // queue, and two queues for two priorities.
 
@@ -79,7 +79,7 @@ function attempt(n: number, t: number): Frame[] {
 
 const SCENARIOS: MScenario[] = [
   {
-    name: { vi: "Spot Instance bị thu hồi khi đang xử lý", en: "Spot Instance interrupted during processing" },
+    name: { vi: "Spot Instance interruption khi đang xử lý", en: "Spot Instance interrupted during processing" },
     request: { vi: "3 message trong queue · visibility timeout 60 s", en: "3 messages in the queue · visibility timeout 60 s" },
     run: () => ({
       q: { vi: "Queue đơn hàng · visibility timeout 60 s", en: "Order queue · visibility timeout 60 s" },
@@ -91,8 +91,8 @@ const SCENARIOS: MScenario[] = [
             en: "Receives **#1**. SQS does not delete the message yet; it only hides it for the **visibility timeout** so that other workers do not receive it too." } },
         { t: 1, who: same("Worker 2"), tag: NHAN, tone: "info", set: { "#2": { place: "w2", note: HIDE60 } }, w: { w2: "busy" },
           msg: { vi: "Nhận #2; message cũng bị ẩn trong 60 s.", en: "Receives #2; this message is also hidden for 60 s." } },
-        { t: 20, who: same("Worker 1"), tag: { vi: "THU HỒI", en: "INTERRUPTED" }, tone: "bad", w: { w1: "dead" },
-          msg: { vi: "AWS thu hồi Spot Instance khi #1 đang được xử lý. Worker chưa gọi `DeleteMessage`.",
+        { t: 20, who: same("Worker 1"), tag: { vi: "INTERRUPTION", en: "INTERRUPTION" }, tone: "bad", w: { w1: "dead" },
+          msg: { vi: "AWS interrupt Spot Instance (Spot Instance interruption) khi #1 đang được xử lý. Worker chưa gọi `DeleteMessage`.",
             en: "AWS interrupts the Spot Instance while #1 is being processed. The worker has not called `DeleteMessage`." } },
         { t: 35, who: same("Worker 2"), tag: XOA, tone: "ok", set: { "#2": { place: "done", note: undefined } }, w: { w2: "idle" },
           msg: { vi: "Worker hoàn tất #2 và gọi `DeleteMessage`. Chỉ tại thời điểm này #2 mới bị xoá khỏi queue.",
@@ -104,11 +104,11 @@ const SCENARIOS: MScenario[] = [
         { t: 70, who: same("Worker 2"), tag: XOA, tone: "ok", set: { "#3": { place: "done", note: undefined }, "#1": { place: "w2", note: { vi: "lần 2", en: "try 2" } } },
           msg: { vi: "Hoàn tất #3, tiếp tục nhận #1 (lần nhận thứ 2).", en: "Finishes #3, then receives #1 (second receive)." } },
         { t: 105, who: same("Worker 2"), tag: XOA, tone: "ok", set: { "#1": { place: "done", note: undefined } }, w: { w1: "idle", w2: "idle" },
-          msg: { vi: "Hoàn tất #1. Trong thời gian này, Auto Scaling group đã thay thế Spot Instance bị thu hồi.",
+          msg: { vi: "Hoàn tất #1. Trong thời gian này, Auto Scaling group đã thay thế Spot Instance bị interrupt.",
             en: "#1 done. Meanwhile, the Auto Scaling group has replaced the interrupted Spot Instance." } },
       ],
       ok: true,
-      result: { vi: "Cả ba message đều được xử lý dù một instance bị thu hồi giữa chừng. Message chỉ bị xoá khi worker gọi lệnh xoá, do đó chạy worker đọc SQS trên **Spot Instances** vừa an toàn vừa tiết kiệm chi phí: tác vụ chưa hoàn tất được tự động xử lý lại.",
+      result: { vi: "Cả ba message đều được xử lý dù một instance bị interrupt trong quá trình xử lý. Message chỉ bị xoá khi worker gọi lệnh xoá, do đó chạy worker đọc SQS trên **Spot Instances** vừa an toàn vừa tiết kiệm chi phí: tác vụ chưa hoàn tất được tự động xử lý lại.",
         en: "All three messages are processed even though one instance was interrupted midway. A message is deleted only when the worker calls delete, so running SQS workers on **Spot Instances** is both safe and cost-effective: unfinished tasks are processed again automatically." },
     }),
   },
@@ -284,7 +284,7 @@ function positions(toks: Tok[]): Record<string, { x: number; y: number }> {
 const W_TEXT: Record<WState, Bi> = {
   idle: { vi: "sẵn sàng", en: "ready" },
   busy: { vi: "đang xử lý", en: "processing" },
-  dead: { vi: "bị thu hồi", en: "interrupted" },
+  dead: { vi: "bị interrupt", en: "interrupted" },
   wait: { vi: "đang chờ message", en: "waiting for messages" },
 };
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -358,8 +358,8 @@ export default function MessageLifeSim() {
   const q2 = setup.q2;
 
   return (
-    <div className="stage mls">
-      <div className="mls-scenarios" role="group" aria-label={L({ vi: "Tình huống", en: "Scenarios" })}>
+    <div className="stage">
+      <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Tình huống", en: "Scenarios" })}>
         {SCENARIOS.map((s, i) => (
           <button key={i} className="chip" aria-pressed={i === index} onClick={() => pick(i)} disabled={busy && i !== index}>
             {L(s.name)}
@@ -367,17 +367,17 @@ export default function MessageLifeSim() {
         ))}
       </div>
       <div className="stage-bar">
-        <code className="mls-req">{L(sc.request)}</code>
+        <code className="rounded-[10px] border border-line bg-bg px-2 py-[3px] text-[0.8125rem] wrap-anywhere">{L(sc.request)}</code>
         {sc.toggle && (
-          <label className="mls-toggle">
+          <label className="inline-flex cursor-pointer items-center gap-1.5 text-step--1">
             <input type="checkbox" checked={on} disabled={busy} onChange={(e) => { setOn(e.target.checked); reset(sc.run(e.target.checked)); }} />
             {L(sc.toggle.label)}
           </label>
         )}
-        <button className="btn primary" onClick={play} disabled={busy}>{L({ vi: "Chạy mô phỏng", en: "Run simulation" })}</button>
+        <button className="btn primary ml-auto" onClick={play} disabled={busy}>{L({ vi: "Chạy mô phỏng", en: "Run simulation" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 30 820 220" role="img" aria-label={L({ vi: "Message được gửi từ web vào queue SQS, chuyển tới worker, sau đó bị xoá hoặc chuyển sang queue khác", en: "Messages are sent from the web tier to an SQS queue, passed to workers, then deleted or moved to another queue" })}>
+        <svg viewBox="0 30 820 220" role="img" aria-label={L({ vi: "Message được gửi từ web tier vào SQS queue, chuyển tới worker, sau đó bị xoá hoặc chuyển sang queue khác", en: "Messages are sent from the web tier to an SQS queue, passed to workers, then deleted or moved to another queue" })}>
           <text className="mls-clock" x={14} y={50}>t = {clock} s</text>
           {setup.counter && (
             <text className="mls-counter" x={14} y={240}>ReceiveMessage: {calls[0]} {L({ vi: "lệnh gọi", en: "calls" })} · {calls[1]} {L({ vi: "lệnh rỗng", en: "empty" })}</text>
@@ -424,12 +424,12 @@ export default function MessageLifeSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="mls-hint">{L({ vi: <>Chọn <b>Chạy mô phỏng</b> để xem từng bước.{sc.toggle ? " Thay đổi cấu hình và chạy lại để so sánh." : ""}</>, en: <>Choose <b>Run simulation</b> to see each step.{sc.toggle ? " Change the setting and run again to compare." : ""}</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn <b>Chạy mô phỏng</b> để xem từng bước.{sc.toggle ? " Thay đổi cấu hình và chạy lại để so sánh." : ""}</>, en: <>Choose <b>Run simulation</b> to see each step.{sc.toggle ? " Change the setting and run again to compare." : ""}</> })}</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) =>
               e.tag === undefined ? (
-                <li key={i} className={`mls-result ${e.ok ? "ok" : "bad"}`}>{L(e.msg)}</li>
+                <li key={i} className={`mt-1.5 block rounded-[12px] px-2.5 py-2 ${e.ok ? "bg-ok-soft" : "bg-bad-soft"}`}>{L(e.msg)}</li>
               ) : (
                 <li key={i}>
                   <span className={`tag mls-tag ${e.tone}`}>{L(e.tag)}</span>

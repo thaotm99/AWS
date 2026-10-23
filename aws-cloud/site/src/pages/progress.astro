@@ -1,0 +1,30 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import T from "../app/T.astro";
+import DailyGoals from "../components/home/DailyGoals.tsx";
+import { practiceCatalog } from "../modules/practice/content/PracticeCatalog";
+
+const cert = practiceCatalog.listCertifications()[0];
+const links = [
+  { href: `/practice/${cert.id}/skills/`, k: "shell.progress.skills" },
+  { href: `/practice/${cert.id}/review/`, k: "shell.progress.review" },
+  { href: "/pomodoro/", k: "shell.progress.pomodoro" },
+  { href: "/notes/", k: "shell.progress.notes" },
+] as const;
+---
+<BaseLayout title="Tiến độ học tập · CloudLab" titleKey="shell.progress.pageTitle" sidebar={false} section="progress">
+  <header class="gl-head">
+    <span class="gl-eyebrow"><T k="shell.progress.eyebrow" /></span>
+    <h1><T k="shell.progress.heading" /></h1>
+    <p class="lede"><T k="shell.progress.lede" /></p>
+  </header>
+
+  <DailyGoals client:load />
+
+  <section class="mt-7" aria-labelledby="progress-more">
+    <h2 id="progress-more" class="m-0 mb-2.5 text-[1.125rem]"><T k="shell.progress.more" /></h2>
+    <ul class="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2.5 p-0">
+      {links.map((l) => <li><a class="flex min-h-11 items-center rounded-[14px] border-2 border-line bg-surface px-3.5 py-2.5 font-semibold no-underline shadow-[0_4px_0] shadow-line hover:border-accent" href={l.href}><T k={l.k} />{" →"}</a></li>)}
+    </ul>
+  </section>
+</BaseLayout>

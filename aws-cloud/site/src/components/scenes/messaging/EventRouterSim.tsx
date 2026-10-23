@@ -1,7 +1,7 @@
 import PacketSim, { type PLayout, type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// Six ShopViet events and the service that should carry each one: SNS fan-out to
+// Six MFTECH events and the service that should carry each one: SNS fan-out to
 // several SQS queues, an EventBridge partner event bus for a SaaS CRM, EventBridge
 // Scheduler starting a long Fargate job, Step Functions retrying an AWS Batch step,
 // Amazon MQ for an app that speaks AMQP, and AWS Config + SNS for an expiring cert.
@@ -66,7 +66,7 @@ const SCENARIOS: PScenario[] = [
     toggle: { label: "Sử dụng EventBridge (partner event source)", initial: false },
     layout: (eb): PLayout => ({
       viewBox: VB,
-      aria: "Sự kiện từ phần mềm CRM được chuyển tới ShopViet qua EventBridge hoặc qua script tự phát triển",
+      aria: "Sự kiện từ phần mềm CRM được chuyển tới MFTECH qua EventBridge hoặc qua script tự phát triển",
       nodes: [
         { id: "crm", x: 80, y: Y, w: 120, l1: "CRM (SaaS)", l2: "đối tác" },
         { id: "mid", x: 280, y: Y, w: 170, l1: eb ? "EventBridge" : "Script trên EC2", l2: eb ? "partner event bus" : "poll API CRM mỗi 5 phút" },
@@ -89,7 +89,7 @@ const SCENARIOS: PScenario[] = [
             { at: "rule", state: "change", tag: "TỰ VIẾT", msg: "Logic định tuyến cho từng loại sự kiện phải tự phát triển." },
             { at: "fn", state: "pass", msg: "Voucher được cấp với độ trễ vài phút." },
           ], ok: false,
-          result: "Giải pháp hoạt động nhưng có độ trễ cao, đồng thời phát sinh thêm một máy chủ và một lượng lớn mã nguồn phải tự vận hành." },
+          result: "Giải pháp hoạt động nhưng có độ trễ cao, đồng thời phát sinh thêm một EC2 instance và một lượng lớn mã nguồn phải tự vận hành." },
   },
   {
     name: "Tác vụ đối soát 30 phút mỗi đêm",
@@ -108,7 +108,7 @@ const SCENARIOS: PScenario[] = [
     }),
     run: (fg) => fg
       ? { steps: [
-            { at: "job", state: "pass", msg: "Scheduler khởi chạy ECS task trên **Fargate**: sử dụng nguyên container của script, không bị giới hạn 15 phút, không cần quản lý máy chủ." },
+            { at: "job", state: "pass", msg: "Scheduler khởi chạy ECS task trên **Fargate**: sử dụng nguyên container của script, không bị giới hạn 15 phút, không cần quản lý EC2 instance." },
             { at: "db", state: "pass", flash: "30 phút", msg: "Đối soát hoàn tất." },
           ], ok: true,
           result: "Tác vụ định kỳ ngắn (vài phút): EventBridge kích hoạt Lambda. Tác vụ dài hơn 15 phút: EventBridge Scheduler khởi chạy Fargate task." }
@@ -120,7 +120,7 @@ const SCENARIOS: PScenario[] = [
   {
     name: "Xử lý video sản phẩm nhiều bước",
     action: "Tải video lên",
-    request: "s3://shopviet-video/ao-khoac.mov",
+    request: "s3://mftech-video/ao-khoac.mov",
     toggle: { label: "Cấu hình Retry cho bước chuyển mã trong state machine", initial: false },
     layout: {
       viewBox: VB,
@@ -138,7 +138,7 @@ const SCENARIOS: PScenario[] = [
     run: (retry) => retry
       ? { back: false, steps: [
             { at: "check", state: "pass", msg: "Video hợp lệ." },
-            { at: "batch", state: "change", tag: "THỬ LẠI", flash: "lỗi", msg: "Lần thực thi 1 thất bại: Spot Instance của Batch bị thu hồi. Bước này được cấu hình **Retry** (2 lần, backoff tăng dần) nên được thực thi lại." },
+            { at: "batch", state: "change", tag: "THỬ LẠI", flash: "lỗi", msg: "Lần thực thi 1 thất bại: Spot Instance của AWS Batch compute environment bị interrupt (Spot Instance interruption). Bước này được cấu hình **Retry** (2 lần, backoff tăng dần) nên được thực thi lại." },
             { at: "batch", state: "pass", jump: true, msg: "Lần thực thi 2 thành công. Step Functions chờ Batch job kết thúc trước khi chuyển sang bước tiếp theo." },
             { at: "save", state: "pass", msg: "Video đã chuyển mã được lưu trữ." },
             { at: "notify", state: "pass", msg: "Người bán nhận thông báo video đã sẵn sàng." },
@@ -146,7 +146,7 @@ const SCENARIOS: PScenario[] = [
           result: "**Step Functions** lưu trạng thái từng bước, tự động retry, gọi AWS Batch và chờ job hoàn tất. Không cần tự phát triển logic điều phối hay quản lý máy chủ." }
       : { back: false, steps: [
             { at: "check", state: "pass", msg: "Video hợp lệ." },
-            { at: "batch", state: "block", flash: "Failed", msg: "Spot Instance của Batch bị thu hồi. Do không cấu hình Retry, toàn bộ execution kết thúc ở trạng thái **Failed**." },
+            { at: "batch", state: "block", flash: "Failed", msg: "Spot Instance của AWS Batch compute environment bị interrupt. Do không cấu hình Retry, toàn bộ execution kết thúc ở trạng thái **Failed**." },
           ], ok: false,
           result: "Một lỗi tạm thời làm toàn bộ quy trình thất bại. Cần bổ sung Retry (và Catch cho lỗi không thể phục hồi) vào state machine." },
   },
@@ -179,7 +179,7 @@ const SCENARIOS: PScenario[] = [
   {
     name: "Chứng chỉ import sắp hết hạn",
     action: "Chạy đánh giá",
-    request: "Chứng chỉ của shopviet.vn còn hiệu lực 29 ngày",
+    request: "Chứng chỉ của mftech.vn còn hiệu lực 29 ngày",
     toggle: { label: "Kích hoạt AWS Config managed rule (daysToExpiration = 30) + SNS", initial: false },
     layout: {
       viewBox: VB,
@@ -194,7 +194,7 @@ const SCENARIOS: PScenario[] = [
     },
     run: (on) => on
       ? { back: false, steps: [
-            { at: "cfg", state: "change", tag: "KHÔNG ĐẠT", msg: "Managed rule đánh giá chứng chỉ là NON_COMPLIANT vì còn hiệu lực dưới 30 ngày. Tham số `daysToExpiration` có giá trị mặc định 14; ShopViet đã cấu hình thành 30." },
+            { at: "cfg", state: "change", tag: "NON_COMPLIANT", msg: "Managed rule đánh giá chứng chỉ là NON_COMPLIANT vì còn hiệu lực dưới 30 ngày. Tham số `daysToExpiration` có giá trị mặc định 14; MFTECH đã cấu hình thành 30." },
             { at: "sns", state: "pass", msg: "Kết quả đánh giá được gửi tới SNS topic." },
             { at: "team", state: "pass", msg: "Đội bảo mật nhận email thông báo, còn khoảng một tháng để thay thế chứng chỉ." },
           ], ok: true,
@@ -264,7 +264,7 @@ const SCENARIOS_EN: PScenario[] = [
     toggle: { label: "Use EventBridge (partner event source)", initial: false },
     layout: (eb): PLayout => ({
       viewBox: VB,
-      aria: "Events from the CRM software reach ShopViet through EventBridge or through a self-developed script",
+      aria: "Events from the CRM software reach MFTECH through EventBridge or through a self-developed script",
       nodes: [
         { id: "crm", x: 80, y: Y, w: 120, l1: "CRM (SaaS)", l2: "partner" },
         { id: "mid", x: 280, y: Y, w: 170, l1: eb ? "EventBridge" : "Script on EC2", l2: eb ? "partner event bus" : "polls CRM API every 5 min" },
@@ -287,7 +287,7 @@ const SCENARIOS_EN: PScenario[] = [
             { at: "rule", state: "change", tag: "CUSTOM", msg: "Routing logic for each event type has to be developed in-house." },
             { at: "fn", state: "pass", msg: "The voucher is issued with a delay of several minutes." },
           ], ok: false,
-          result: "The solution works but has high latency, and it adds a server and a large amount of code to operate yourself." },
+          result: "The solution works but has high latency, and it adds an EC2 instance and a large amount of code to operate yourself." },
   },
   {
     name: "30-minute reconciliation job every night",
@@ -306,7 +306,7 @@ const SCENARIOS_EN: PScenario[] = [
     }),
     run: (fg) => fg
       ? { steps: [
-            { at: "job", state: "pass", msg: "Scheduler starts an ECS task on **Fargate**: it uses the script's existing container, is not limited to 15 minutes, and needs no server management." },
+            { at: "job", state: "pass", msg: "Scheduler starts an ECS task on **Fargate**: it uses the script's existing container, is not limited to 15 minutes, and has no EC2 instances to manage." },
             { at: "db", state: "pass", flash: "30 min", msg: "Reconciliation completes." },
           ], ok: true,
           result: "Short scheduled jobs (a few minutes): EventBridge triggers Lambda. Jobs longer than 15 minutes: EventBridge Scheduler starts a Fargate task." }
@@ -318,7 +318,7 @@ const SCENARIOS_EN: PScenario[] = [
   {
     name: "Multi-step product video processing",
     action: "Upload video",
-    request: "s3://shopviet-video/ao-khoac.mov",
+    request: "s3://mftech-video/ao-khoac.mov",
     toggle: { label: "Configure Retry for the transcoding step in the state machine", initial: false },
     layout: {
       viewBox: VB,
@@ -336,7 +336,7 @@ const SCENARIOS_EN: PScenario[] = [
     run: (retry) => retry
       ? { back: false, steps: [
             { at: "check", state: "pass", msg: "The video is valid." },
-            { at: "batch", state: "change", tag: "RETRY", flash: "error", msg: "Attempt 1 fails: the Batch Spot Instance is interrupted. This step is configured with **Retry** (2 attempts, increasing backoff), so it runs again." },
+            { at: "batch", state: "change", tag: "RETRY", flash: "error", msg: "Attempt 1 fails: a Spot Instance in the AWS Batch compute environment is interrupted (Spot Instance interruption). This step is configured with **Retry** (2 attempts, increasing backoff), so it runs again." },
             { at: "batch", state: "pass", jump: true, msg: "Attempt 2 succeeds. Step Functions waits for the Batch job to finish before moving to the next step." },
             { at: "save", state: "pass", msg: "The transcoded video is stored." },
             { at: "notify", state: "pass", msg: "The seller is notified that the video is ready." },
@@ -344,7 +344,7 @@ const SCENARIOS_EN: PScenario[] = [
           result: "**Step Functions** keeps the state of each step, retries automatically, calls AWS Batch and waits for the job to complete. No orchestration logic to develop and no servers to manage." }
       : { back: false, steps: [
             { at: "check", state: "pass", msg: "The video is valid." },
-            { at: "batch", state: "block", flash: "Failed", msg: "The Batch Spot Instance is interrupted. Because no Retry is configured, the whole execution ends in the **Failed** state." },
+            { at: "batch", state: "block", flash: "Failed", msg: "A Spot Instance in the AWS Batch compute environment is interrupted. Because no Retry is configured, the whole execution ends in the **Failed** state." },
           ], ok: false,
           result: "One transient error makes the whole workflow fail. Add Retry (and Catch for unrecoverable errors) to the state machine." },
   },
@@ -377,7 +377,7 @@ const SCENARIOS_EN: PScenario[] = [
   {
     name: "Imported certificate about to expire",
     action: "Run evaluation",
-    request: "The shopviet.vn certificate is valid for 29 more days",
+    request: "The mftech.vn certificate is valid for 29 more days",
     toggle: { label: "Enable an AWS Config managed rule (daysToExpiration = 30) + SNS", initial: false },
     layout: {
       viewBox: VB,
@@ -392,7 +392,7 @@ const SCENARIOS_EN: PScenario[] = [
     },
     run: (on) => on
       ? { back: false, steps: [
-            { at: "cfg", state: "change", tag: "NON_COMPLIANT", msg: "The managed rule evaluates the certificate as NON_COMPLIANT because it is valid for fewer than 30 days. The `daysToExpiration` parameter defaults to 14; ShopViet has set it to 30." },
+            { at: "cfg", state: "change", tag: "NON_COMPLIANT", msg: "The managed rule evaluates the certificate as NON_COMPLIANT because it is valid for fewer than 30 days. The `daysToExpiration` parameter defaults to 14; MFTECH has set it to 30." },
             { at: "sns", state: "pass", msg: "The evaluation result is sent to the SNS topic." },
             { at: "team", state: "pass", msg: "The security team receives an email notification and has about a month to replace the certificate." },
           ], ok: true,

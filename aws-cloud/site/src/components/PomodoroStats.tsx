@@ -5,6 +5,13 @@ import { DEFAULTS, LIMITS, POMODORO_EVENT, POMODORO_KEYS, dayOf, readLog, readSe
 const FIELDS = ["focus", "short", "long", "every"] as const;
 const LABEL = { focus: "focusLen", short: "shortLen", long: "longLen", every: "every" } as const;
 
+/** A stat tile and a content card share the same frame. */
+const FRAME = "rounded-[20px] border-2 border-line bg-surface px-[18px] py-4 shadow-[0_4px_0] shadow-line";
+const TILE = `${FRAME} flex flex-col gap-1 text-[0.8125rem] text-muted`;
+const TILE_N = "font-mono text-[1.75rem] leading-[1.2] font-semibold text-ink";
+const TILE_UNIT = "font-body text-[0.875rem] font-medium text-muted";
+const CARD_H = "mx-0 mt-0 mb-3 text-[0.9375rem] font-semibold";
+
 /** The /pomodoro/ page: focus sessions today and over 7 days, and the session lengths. */
 export default function PomodoroStats() {
   const { t, locale } = useI18n();
@@ -62,80 +69,80 @@ export default function PomodoroStats() {
   }
 
   return (
-    <div className="pomo-stats">
-      <p className="lede">{t("shell.pomodoro.lede", { focus: settings.focus, every: settings.every })}</p>
+    <div className="mb-10 flex flex-col gap-5">
+      <p className="lede m-0">{t("shell.pomodoro.lede", { focus: settings.focus, every: settings.every })}</p>
 
-      <div className="ps-tiles">
-        <div className="ps-tile">
+      <div className="grid grid-cols-3 gap-3.5 max-md:grid-cols-1">
+        <div className={TILE}>
           <span>{t("shell.pomodoro.today")}</span>
-          <b>{st.today.sessions} <small>{t("shell.pomodoro.unitSessions")}</small></b>
+          <b className={TILE_N}>{st.today.sessions} <small className={TILE_UNIT}>{t("shell.pomodoro.unitSessions")}</small></b>
           <span>{t("shell.pomodoro.minutes", { time: duration(st.today.minutes) })}</span>
         </div>
-        <div className="ps-tile">
+        <div className={TILE}>
           <span>{t("shell.pomodoro.week")}</span>
-          <b>{st.week.sessions} <small>{t("shell.pomodoro.unitSessions")}</small></b>
+          <b className={TILE_N}>{st.week.sessions} <small className={TILE_UNIT}>{t("shell.pomodoro.unitSessions")}</small></b>
           <span>{t("shell.pomodoro.weekDetail", { time: duration(st.week.minutes), days: st.week.days })}</span>
         </div>
-        <div className="ps-tile">
+        <div className={TILE}>
           <span>{t("shell.pomodoro.partsWeek")}</span>
-          <b>{st.week.parts} <small>{t("shell.pomodoro.unitParts")}</small></b>
+          <b className={TILE_N}>{st.week.parts} <small className={TILE_UNIT}>{t("shell.pomodoro.unitParts")}</small></b>
           <span>{t("shell.pomodoro.perPart", { n: perPart })}</span>
         </div>
       </div>
 
-      <div className="ps-row">
-        <figure className="ps-card ps-chart" role="img"
+      <div className="grid grid-cols-2 gap-3.5 max-md:grid-cols-1">
+        <figure className={`${FRAME} m-0 flex flex-col`} role="img"
           aria-label={t("shell.pomodoro.chartLabel", { list: st.days.map((d) => `${dayName(d.day)} ${d.sessions}`).join(", ") })}>
-          <figcaption>{t("shell.pomodoro.perDay")}</figcaption>
-          <div className="ps-bars" aria-hidden="true">
+          <figcaption className={CARD_H}>{t("shell.pomodoro.perDay")}</figcaption>
+          <div className="grid min-h-[180px] flex-1 grid-cols-7 gap-2" aria-hidden="true">
             {st.days.map((d) => (
-              <div key={d.day} className="ps-bar" data-today={d.day === today || undefined}>
+              <div key={d.day} className="group flex min-w-0 flex-col items-center justify-end gap-1.5 text-[0.75rem] text-muted data-today:font-semibold data-today:text-ink" data-today={d.day === today || undefined}>
                 <span>{d.sessions}</span>
-                <i style={{ height: d.sessions ? `${(d.sessions / max) * 100}%` : undefined }} data-empty={!d.sessions || undefined} />
-                <span>{dayName(d.day)}</span>
+                <i className="min-h-[3px] w-full max-w-[44px] rounded-t-[10px] rounded-b-[2px] bg-[color-mix(in_srgb,var(--color-accent)_55%,var(--color-line))] data-empty:h-[3px] data-empty:bg-line group-data-today:not-data-empty:bg-accent" style={{ height: d.sessions ? `${(d.sessions / max) * 100}%` : undefined }} data-empty={!d.sessions || undefined} />
+                <span className="whitespace-nowrap">{dayName(d.day)}</span>
               </div>
             ))}
           </div>
         </figure>
 
-        <section className="ps-card" aria-labelledby="ps-today">
-          <h2 id="ps-today">{t("shell.pomodoro.todayLog")}</h2>
+        <section className={FRAME} aria-labelledby="ps-today">
+          <h2 id="ps-today" className={CARD_H}>{t("shell.pomodoro.todayLog")}</h2>
           {st.todayLog.length ? (
-            <ol className="ps-log">
+            <ol className="flex flex-col gap-2.5 text-[0.875rem]">
               {st.todayLog.map((x) => (
-                <li key={x.start}>
-                  <span className="ps-time">{time(x.start)}</span>
+                <li key={x.start} className="flex items-baseline gap-3">
+                  <span className="w-[46px] flex-none font-mono text-[0.8125rem] text-muted">{time(x.start)}</span>
                   <span>
                     {x.part ? <a href={x.part.href}>{x.part.title[locale] || x.part.title.vi}</a> : t("shell.pomodoro.mode.focus")}
                     {x.part && (
-                      <small data-done={x.read.includes(x.part.key) || undefined}> · {x.read.includes(x.part.key) ? t("shell.pomodoro.done") : t("shell.pomodoro.reading2")}</small>
+                      <small className="text-muted data-done:text-ok" data-done={x.read.includes(x.part.key) || undefined}> · {x.read.includes(x.part.key) ? t("shell.pomodoro.done") : t("shell.pomodoro.reading2")}</small>
                     )}
-                    {x.extra && <small> · {t("shell.pomodoro.extra", { min: x.minutes })}</small>}
+                    {x.extra && <small className="text-muted"> · {t("shell.pomodoro.extra", { min: x.minutes })}</small>}
                   </span>
                 </li>
               ))}
             </ol>
           ) : (
-            <p className="ps-empty">{t("shell.pomodoro.noneToday")}</p>
+            <p className="m-0 text-[0.875rem] text-muted">{t("shell.pomodoro.noneToday")}</p>
           )}
         </section>
       </div>
 
-      <form className="ps-card ps-settings" id="settings" onSubmit={save}>
-        <h2>{t("shell.pomodoro.settings")}</h2>
-        <div className="ps-fields">
+      <form className={FRAME} id="settings" onSubmit={save}>
+        <h2 className={CARD_H}>{t("shell.pomodoro.settings")}</h2>
+        <div className="grid grid-cols-4 gap-3 max-md:grid-cols-2">
           {FIELDS.map((k) => (
-            <label key={k}>
+            <label key={k} className="flex flex-col gap-1.5 text-[0.8125rem] text-muted">
               <span>{t(`shell.pomodoro.${LABEL[k]}`)}</span>
-              <input type="number" inputMode="numeric" min={LIMITS[k][0]} max={LIMITS[k][1]} step={1} required value={draft[k]}
+              <input className="min-h-10 rounded-sm border border-line bg-bg px-2.5 font-mono text-ink" type="number" inputMode="numeric" min={LIMITS[k][0]} max={LIMITS[k][1]} step={1} required value={draft[k]}
                 onChange={(e) => setDraft({ ...draft, [k]: e.target.value })} />
             </label>
           ))}
         </div>
-        <div className="ps-actions">
-          <button type="submit" className="btn primary" disabled={!valid}>{t("shell.pomodoro.save")}</button>
-          <span role="status" className="ps-saved">{saved ? t("shell.pomodoro.saved") : ""}</span>
-          <button type="button" className="btn" onClick={clear} disabled={!log.length}>{t("shell.pomodoro.clear")}</button>
+        <div className="mt-3.5 flex flex-wrap items-center gap-3">
+          <button type="submit" className="btn primary min-h-10" disabled={!valid}>{t("shell.pomodoro.save")}</button>
+          <span role="status" className="text-[0.8125rem] text-ok">{saved ? t("shell.pomodoro.saved") : ""}</span>
+          <button type="button" className="btn ml-auto min-h-10" onClick={clear} disabled={!log.length}>{t("shell.pomodoro.clear")}</button>
         </div>
       </form>
     </div>

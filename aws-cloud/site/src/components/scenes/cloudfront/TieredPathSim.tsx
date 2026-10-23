@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./cloudfront-sims.css";
 
-// Path of a ShopViet request through CloudFront: POP (edge location) → regional edge cache → origin.
+// Path of a MFTECH request through CloudFront: POP (edge location) → regional edge cache → origin.
 // Facts (AmazonCloudFront/latest/DeveloperGuide):
 // - HowCloudFrontWorks.html: a POP miss typically goes to the nearest regional edge cache (REC), which has a
 //   larger cache; an origin response is cached at both. PUT/POST/PATCH/OPTIONS/DELETE go directly from the POP
@@ -88,7 +88,7 @@ function scenarios(L: Lang): Scenario[] {
           reqs: [{ line: IMG, ok: true, hops: [
             popMiss(),
             { at: "rec", state: "miss", msg: L({ vi: "Regional edge cache cũng không có object; request được chuyển tới origin.", en: "The regional edge cache does not have it either; the request goes to the origin." }) },
-            { at: "origin", state: "ok", msg: L({ vi: "S3 trả object. CloudFront lưu object tại **cả regional edge cache và POP**; các POP trong khu vực dùng chung cache vùng nên giảm số request lặp lại tới origin.", en: "S3 returns the object. CloudFront caches it at **both the regional edge cache and the POP**; the POPs of an area share the regional cache, which removes repeated requests to the origin." }) },
+            { at: "origin", state: "ok", msg: L({ vi: "S3 trả object. CloudFront lưu object tại **cả regional edge cache và POP**; các POP trong cùng khu vực địa lý dùng chung regional edge cache nên giảm số request lặp lại tới origin.", en: "S3 returns the object. CloudFront caches it at **both the regional edge cache and the POP**; the POPs in a geographic area share the regional edge cache, which removes repeated requests to the origin." }) },
           ] }],
           ok: true,
           result: L({ vi: "200 OK. Lần truy cập tiếp theo từ bất kỳ POP nào trong khu vực có thể được phục vụ từ regional edge cache.", en: "200 OK. The next request from any POP in the area can be served from the regional edge cache." }),
@@ -144,7 +144,7 @@ function scenarios(L: Lang): Scenario[] {
           reqs: [{ line: PUT, ok: false, hops: [putPop, SKIP_PROXY,
             { at: "origin", direct: true, state: "bad", msg: L({ vi: "Website endpoint chỉ hỗ trợ **GET và HEAD** trên object, chỉ phục vụ nội dung public và không hỗ trợ HTTPS. CloudFront xem endpoint này là custom origin nên **không dùng được OAC**.", en: "A website endpoint supports only **GET and HEAD** on objects, serves only public content and does not support HTTPS. CloudFront treats it as a custom origin, so **OAC cannot be used**." }) }] }],
           ok: false,
-          result: L({ vi: "Tải lên thất bại. Origin cho luồng tải lên phải là **REST endpoint** của bucket (ví dụ `shopviet-uploads.s3.ap-southeast-1.amazonaws.com`) kèm OAC.", en: "The upload fails. The origin for uploads must be the bucket's **REST endpoint** (for example `shopviet-uploads.s3.ap-southeast-1.amazonaws.com`) with OAC." }),
+          result: L({ vi: "Tải lên thất bại. Origin cho luồng tải lên phải là **REST endpoint** của bucket (ví dụ `mftech-uploads.s3.ap-southeast-1.amazonaws.com`) kèm OAC.", en: "The upload fails. The origin for uploads must be the bucket's **REST endpoint** (for example `mftech-uploads.s3.ap-southeast-1.amazonaws.com`) with OAC." }),
         },
       ],
     },
@@ -307,22 +307,22 @@ export default function TieredPathSim() {
   );
 
   return (
-    <div className="stage cft">
-      <div className="cft-row" role="group" aria-label={L({ vi: "Tình huống", en: "Scenario" })}>
-        <span className="cft-lbl">{L({ vi: "Tình huống", en: "Scenario" })}</span>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Tình huống", en: "Scenario" })}>
+        <span className="mr-1 text-[0.72rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Tình huống", en: "Scenario" })}</span>
         {SC.map((s, i) => (
-          <button key={s.name} className="chip" aria-pressed={i === si} disabled={busy} onClick={() => pickScenario(i)}>{s.name}</button>
+          <button key={s.name} className="chip disabled:cursor-default disabled:opacity-60" aria-pressed={i === si} disabled={busy} onClick={() => pickScenario(i)}>{s.name}</button>
         ))}
       </div>
-      <div className="cft-opts" role="group" aria-label={L({ vi: "Cấu hình", en: "Configuration" })}>
-        <span className="cft-lbl">{L({ vi: "Cấu hình", en: "Configuration" })}</span>
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pt-2 pb-0" role="group" aria-label={L({ vi: "Cấu hình", en: "Configuration" })}>
+        <span className="mr-1 text-[0.72rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Cấu hình", en: "Configuration" })}</span>
         {sc.options.map((o, i) => (
-          <button key={o.label} className="cft-opt" aria-pressed={i === oi} disabled={busy} onClick={() => pickOption(i)}>{o.label}</button>
+          <button key={o.label} className="max-w-full cursor-pointer rounded-[12px] border border-line bg-surface px-2.5 py-1 text-left text-step--1 wrap-anywhere text-ink disabled:cursor-default disabled:opacity-60 aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-bg aria-pressed:disabled:opacity-100" aria-pressed={i === oi} disabled={busy} onClick={() => pickOption(i)}>{o.label}</button>
         ))}
       </div>
-      <div className="stage-bar">
-        <code className="cft-req">{opt.reqs.map((r) => r.line).join("  →  ")}</code>
-        <button className="btn primary" onClick={send} disabled={busy}>{L({ vi: "Gửi request", en: "Send request" })}</button>
+      <div className="stage-bar mt-3 flex-wrap border-t border-line">
+        <code className="min-w-0 rounded-[10px] border border-line bg-bg px-2 py-[3px] text-[0.8125rem] wrap-anywhere">{opt.reqs.map((r) => r.line).join("  →  ")}</code>
+        <button className="btn primary ml-auto" onClick={send} disabled={busy}>{L({ vi: "Gửi request", en: "Send request" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 36 820 168" role="img" aria-label={L({ vi: "Request đi từ người dùng tới POP, regional edge cache và origin", en: "The request goes from the user to the POP, the regional edge cache and the origin" })}>
@@ -342,7 +342,7 @@ export default function TieredPathSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="cft-hint">{L({
+          <p className="m-0 text-step--1 text-muted">{L({
             vi: <>Chọn tình huống và cấu hình, sau đó nhấn <b>Gửi request</b>. Thử lần lượt từng cấu hình để so sánh đường đi và kết quả.</>,
             en: <>Choose a scenario and a configuration, then press <b>Send request</b>. Try each configuration in turn to compare the path and the result.</>,
           })}</p>
@@ -350,9 +350,9 @@ export default function TieredPathSim() {
           <ul className="log" aria-live="polite">
             {log.map((e, i) =>
               e.kind === "req" ? (
-                <li key={i} className="cft-reqline"><code>{e.text}</code></li>
+                <li key={i} className="mt-1.5 block! first:mt-0"><code>{e.text}</code></li>
               ) : e.kind === "result" ? (
-                <li key={i} className={`cft-result ${e.ok ? "ok" : "bad"}`}>{rich(e.msg)}</li>
+                <li key={i} className={`mt-1.5 block! rounded-[12px] px-2.5 py-2 ${e.ok ? "bg-ok-soft" : "bg-bad-soft"}`}>{rich(e.msg)}</li>
               ) : (
                 <li key={i}>
                   <span className={`tag ${TAG[e.state].cls}`}>{L(TAG[e.state].text)}</span>

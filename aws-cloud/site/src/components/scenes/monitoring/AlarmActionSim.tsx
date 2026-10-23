@@ -1,7 +1,7 @@
 import PacketSim, { type PLayout, type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// What a CloudWatch alarm can do by itself when one ShopViet EC2 instance gets sick:
+// What a CloudWatch alarm can do by itself when one MFTECH EC2 instance gets sick:
 // reboot it (the problem is inside the instance), recover it onto new hardware (the
 // problem is the host), and what recovery keeps or loses. Last: an alarm that makes
 // an Auto Scaling group scale in, and which instance the default policy removes.
@@ -14,7 +14,7 @@ const EC2: PLayout = {
     { id: "cw", x: 95, y: 160, w: 150, l1: "CloudWatch alarm", l2: "status check" },
     { id: "sns", x: 300, y: 70, w: 150, l1: "SNS", l2: "thông báo đội trực" },
     { id: "ec2", x: 300, y: 160, w: 150, l1: "i-shop01", l2: "EC2, web thương mại" },
-    { id: "old", x: 635, y: 110, w: 180, l1: "Host hiện tại", l2: "máy chủ vật lý" },
+    { id: "old", x: 635, y: 110, w: 180, l1: "Host hiện tại", l2: "physical host" },
     { id: "new", x: 635, y: 210, w: 180, l1: "Host khác", l2: "còn capacity" },
   ],
   links: [["cw", "sns"], ["cw", "ec2"], ["ec2", "old"], ["ec2", "new"]],
@@ -119,7 +119,7 @@ const EC2_EN: PLayout = {
     { id: "cw", x: 95, y: 160, w: 150, l1: "CloudWatch alarm", l2: "status check" },
     { id: "sns", x: 300, y: 70, w: 150, l1: "SNS", l2: "notifies on-call team" },
     { id: "ec2", x: 300, y: 160, w: 150, l1: "i-shop01", l2: "EC2, storefront" },
-    { id: "old", x: 635, y: 110, w: 180, l1: "Current host", l2: "physical server" },
+    { id: "old", x: 635, y: 110, w: 180, l1: "Current host", l2: "physical host" },
     { id: "new", x: 635, y: 210, w: 180, l1: "Another host", l2: "has capacity" },
   ],
   links: [["cw", "sns"], ["cw", "ec2"], ["ec2", "old"], ["ec2", "new"]],

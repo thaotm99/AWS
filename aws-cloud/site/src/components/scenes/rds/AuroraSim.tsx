@@ -3,7 +3,7 @@ import { flashText, travel, type Pt } from "../../../lib/animate";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./rds-sims.css";
 
-// ShopViet's Aurora cluster: one shared cluster volume (6 copies over 3 AZs), a writer and
+// MFTECH's Aurora cluster: one shared cluster volume (6 copies over 3 AZs), a writer and
 // readers behind the cluster and reader endpoints. Try writes, spread reads, Auto Scaling,
 // writer failover, then Aurora Global Database and a Region outage.
 // Cross-Region read replica for Aurora MySQL: AuroraMySQL.Replication.CrossRegion.html (exam2_q6).
@@ -164,7 +164,7 @@ export default function AuroraSim() {
   };
 
   return (
-    <div className="stage rdx">
+    <div className="stage">
       <div className="stage-bar">
         <button className="btn primary" onClick={write} disabled={busy}>{tr({ vi: "Ghi đơn hàng", en: "Write order" })}</button>
         <button className="btn" onClick={read} disabled={busy}>{tr({ vi: "6 lượt đọc", en: "6 reads" })}</button>

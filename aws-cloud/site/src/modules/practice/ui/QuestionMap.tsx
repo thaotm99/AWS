@@ -2,6 +2,9 @@ import type { Dispatch } from "../app/events";
 import type { Attempt, Exam } from "../domain/types";
 import { useT } from "./useT";
 
+/** Color of a question in the progress bar: answered right, wrong, or not yet. */
+const barColor = { r: "bg-ok", w: "bg-bad", "": "bg-line" };
+
 interface Props {
   exam: Exam;
   attempt: Attempt;
@@ -20,12 +23,12 @@ export default function QuestionMap({ exam, attempt, index, frontier, dispatch }
   };
 
   return (
-    <div className="pr-map">
-      <div className="pr-bar" aria-hidden="true">
-        {exam.questions.map((q, i) => <span key={q.id} className={`${state(i)}${i === index ? " cur" : ""}`} />)}
+    <div className="mt-1 mb-4.5">
+      <div className="flex h-1.5 gap-0.5" aria-hidden="true">
+        {exam.questions.map((q, i) => <span key={q.id} className={`flex-1 rounded-[2px] ${i === index ? "bg-accent" : barColor[state(i)]}`} />)}
       </div>
       <details>
-        <summary>{t("exam.questionList", { done: answered, total: exam.questions.length })}</summary>
+        <summary className="mt-2 w-fit cursor-pointer text-step--1 text-muted">{t("exam.questionList", { done: answered, total: exam.questions.length })}</summary>
         <div className="pr-grid">
           {exam.questions.map((q, i) => (
             <button

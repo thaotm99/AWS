@@ -91,7 +91,7 @@ const CASES: Case[] = [
   {
     id: "custom",
     name: { vi: "Custom health check", en: "Custom health check" },
-    intro: { vi: "Worker i-4 đọc đơn hàng từ SQS, không nhận request từ ALB. Script giám sát của ShopViet phát hiện worker ngừng xử lý message và gọi `SetInstanceHealth` với trạng thái Unhealthy.", en: "Worker i-4 reads orders from SQS and receives no ALB requests. ShopViet's monitoring script detects that the worker stopped processing messages and calls `SetInstanceHealth` with status Unhealthy." },
+    intro: { vi: "Worker i-4 đọc đơn hàng từ SQS, không nhận request từ ALB. Script giám sát của MFTECH phát hiện worker ngừng xử lý message và gọi `SetInstanceHealth` với trạng thái Unhealthy.", en: "Worker i-4 reads orders from SQS and receives no ALB requests. MFTECH's monitoring script detects that the worker stopped processing messages and calls `SetInstanceHealth` with status Unhealthy." },
     toggle: [{ vi: "i-4 vừa launch, còn trong health check grace period", en: "i-4 just launched and is within the health check grace period" }, { vi: "i-4 đã qua health check grace period", en: "i-4 is past the health check grace period" }],
     steps: (grace) => {
       const s1 = set(base(), "i-4", { state: grace ? "pending" : "ok", note: { vi: "set-instance-health: Unhealthy", en: "set-instance-health: Unhealthy" } });
@@ -213,8 +213,8 @@ export default function HealthReplaceSim() {
   }
 
   return (
-    <div className="stage hrs">
-      <div className="sps-row" role="group" aria-label={L({ vi: "Tình huống", en: "Situation" })}>
+    <div className="stage">
+      <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Tình huống", en: "Situation" })}>
         {CASES.map((x, i) => (
           <button key={x.id} className="chip" aria-pressed={i === ci} disabled={busy && i !== ci} onClick={() => pick(() => { setCi(i); setOn(false); })}>{L(x.name)}</button>
         ))}
@@ -225,22 +225,22 @@ export default function HealthReplaceSim() {
             <span className="box">{on ? "✓" : ""}</span>{L(on ? c.toggle[0] : c.toggle[1])}
           </button>
         )}
-        <button className="btn primary hrs-play" onClick={play} disabled={busy}>{L({ vi: "Chạy tình huống", en: "Run the situation" })}</button>
+        <button className="btn primary ml-auto" onClick={play} disabled={busy}>{L({ vi: "Chạy tình huống", en: "Run the situation" })}</button>
       </div>
-      <p className="sps-about">{rich(L(c.intro))}</p>
-      <div className="hrs-grid">
+      <p className="mx-4 mt-2.5 mb-0 text-step--1 text-muted">{rich(L(c.intro))}</p>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3 p-3.5">
         {(["AZ-A", "AZ-B"] as const).map((az) => (
-          <div key={az} className="term-az">
+          <div key={az} className="grid content-start gap-2 rounded-[14px] border border-line bg-bg p-2.5">
             <b>{az}</b>
-            <div className="term-list">
+            <div className="grid gap-1.5">
               {inst.filter((i) => i.az === az).map((i) => (
                 <div key={i.id} className={`hrs-inst ${i.state}`}>
-                  <span className="term-id">{i.id}</span>
+                  <span className="font-mono font-medium text-accent">{i.id}</span>
                   <span>{L(STATE_LABEL[i.state])}</span>
-                  {i.note && <span className="term-meta">{L(i.note)}</span>}
+                  {i.note && <span className="text-[0.75rem] text-muted">{L(i.note)}</span>}
                 </div>
               ))}
-              {!inst.some((i) => i.az === az) && <span className="term-meta">{L({ vi: "không có instance", en: "no instances" })}</span>}
+              {!inst.some((i) => i.az === az) && <span className="text-[0.75rem] text-muted">{L({ vi: "không có instance", en: "no instances" })}</span>}
             </div>
           </div>
         ))}
@@ -251,13 +251,13 @@ export default function HealthReplaceSim() {
           {shown > 0 && <span className="count">{L({ vi: `Bước ${shown}/${steps.length}`, en: `Step ${shown}/${steps.length}` })}</span>}
         </div>
         {shown === 0 ? (
-          <p className="sps-hint">{L({ vi: "Chọn tình huống và tuỳ chọn, sau đó nhấn Chạy tình huống. Chạy lại với tuỳ chọn còn lại để so sánh.", en: "Choose a situation and an option, then press Run the situation. Run it again with the other option to compare." })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: "Chọn tình huống và tuỳ chọn, sau đó nhấn Chạy tình huống. Chạy lại với tuỳ chọn còn lại để so sánh.", en: "Choose a situation and an option, then press Run the situation. Run it again with the other option to compare." })}</p>
         ) : (
-          <ol className="dps-log">
+          <ol className="list-decimal mx-0 mt-2 mb-0 grid gap-1 pl-5 text-step--1 [&_.count]:mr-1">
             {steps.slice(0, shown).map((s, i) => <li key={i}>{rich(L(s.msg))}</li>)}
           </ol>
         )}
-        {done && <p className={`sps-result ${res.ok ? "ok" : "bad"}`}>{rich(L(res.text))}</p>}
+        {done && <p className={`mx-0 mt-2.5 mb-0 rounded-[12px] px-2.5 py-2 text-step--1 ${res.ok ? "bg-ok-soft" : "bg-bad-soft"}`}>{rich(L(res.text))}</p>}
       </div>
     </div>
   );

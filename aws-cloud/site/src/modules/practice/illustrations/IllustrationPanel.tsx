@@ -95,8 +95,8 @@ export default function IllustrationPanel({ questionId, correct, chosen }: Props
   return (
     <section ref={root} className="pr-illus" aria-label={t("illus.title")} data-illus={questionId} data-option={tab} data-done={done || undefined}>
       <div className="pr-illus-head">
-        <b className="pr-illus-title">{t("illus.title")}</b>
-        <div className="pr-illus-tabs" role="tablist" aria-label={t("illus.options")}>
+        <b className="font-semibold">{t("illus.title")}</b>
+        <div className="flex flex-wrap gap-1.5" role="tablist" aria-label={t("illus.options")}>
           {tabs.map((k) => {
             const right = correct.includes(k);
             const mine = chosen.includes(k);
@@ -118,7 +118,7 @@ export default function IllustrationPanel({ questionId, correct, chosen }: Props
             );
           })}
         </div>
-        <button type="button" className="zoom-btn" data-icon={DiagramZoom.phone ? "rotate" : "expand"} onClick={() => root.current && diagramZoom.open(root.current)}>
+        <button type="button" className="zoom-btn ml-auto in-[.zoomed]:hidden" data-icon={DiagramZoom.phone ? "rotate" : "expand"} onClick={() => root.current && diagramZoom.open(root.current)}>
           {t(DiagramZoom.phone ? "illus.rotate" : "illus.enlarge")}
         </button>
       </div>
@@ -187,14 +187,14 @@ export default function IllustrationPanel({ questionId, correct, chosen }: Props
           <button type="button" className="btn" onClick={play} disabled={playing}>
             {playing ? t("illus.playing") : applied === 0 ? t("illus.play") : t("illus.replay")}
           </button>
-          <ol className="pr-illus-steps">
+          <ol className="m-0 flex list-none flex-wrap gap-1 p-0">
             {scenario.steps.map((_, i) => (
               <li key={i}>
                 <button
                   type="button"
                   aria-label={t("illus.step", { n: i + 1 })}
                   aria-current={i === current ? "step" : undefined}
-                  className={i < applied ? "seen" : ""}
+                  className={`size-6.5 cursor-pointer rounded-full border p-0 font-mono text-[0.75rem] aria-[current=step]:border-accent aria-[current=step]:bg-accent aria-[current=step]:text-on-accent ${i < applied ? "border-accent bg-accent-soft text-accent" : "border-line bg-surface text-muted"}`}
                   onClick={() => show(i)}
                 >
                   {i + 1}
@@ -203,10 +203,10 @@ export default function IllustrationPanel({ questionId, correct, chosen }: Props
             ))}
           </ol>
         </div>
-        <p className="pr-illus-caption" aria-live="polite">{step.caption[locale]}</p>
+        <p className="mx-0 mt-2.5 mb-0 min-h-[3.3em] text-[0.9375rem]" aria-live="polite">{step.caption[locale]}</p>
         {done && (
-          <p className={`pr-illus-verdict ${scenario.verdict.works ? "ok" : "bad"}`}>
-            <b>{scenario.verdict.works ? t("illus.works") : t("illus.fails")}</b> {scenario.verdict.caption[locale]}
+          <p className={`mx-0 mt-2 mb-0 rounded-sm px-2.5 py-2 text-[0.9375rem] ${scenario.verdict.works ? "bg-ok-soft" : "bg-bad-soft"}`}>
+            <b className={scenario.verdict.works ? "text-ok" : "text-bad"}>{scenario.verdict.works ? t("illus.works") : t("illus.fails")}</b> {scenario.verdict.caption[locale]}
           </p>
         )}
       </div>

@@ -2,7 +2,6 @@
 import BaseLayout from "../../../../layouts/BaseLayout.astro";
 import ExamPage from "../../../../modules/practice/ui/ExamPage.tsx";
 import { practiceCatalog } from "../../../../modules/practice/content/PracticeCatalog";
-import "../../../../styles/practice.css";
 
 export function getStaticPaths() {
   return practiceCatalog.examPaths().map(({ cert, exam }) => ({
@@ -15,7 +14,7 @@ const { cert, exam } = Astro.params;
 const { code, number } = Astro.props;
 ---
 <BaseLayout
-  title={`${code} · Đề ${number} · Luyện đề`}
+  title={`Đề ${number} · ${code} · CloudLab`}
   titleKey="practice.catalog.examPageTitle"
   titleParams={{ code, n: number }}
   section="practice"

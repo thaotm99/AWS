@@ -66,8 +66,8 @@ export default function WafSim() {
       return;
     }
     setResult(where === "ec2"
-      ? { vi: "AWS WAF không gắn trực tiếp vào EC2. AWS WAF được liên kết với CloudFront, ALB, API Gateway REST API, AppSync, Cognito user pool, App Runner, Verified Access và Amplify. Để bảo vệ ứng dụng chạy trên EC2, đặt CloudFront hoặc ALB phía trước và liên kết AWS WAF với tài nguyên đó.",
-          en: "AWS WAF is not attached directly to EC2. AWS WAF is associated with CloudFront, ALB, API Gateway REST APIs, AppSync, Cognito user pools, App Runner, Verified Access and Amplify. To protect an application running on EC2, put CloudFront or an ALB in front of it and associate AWS WAF with that resource." }
+      ? { vi: "AWS WAF không gắn trực tiếp vào EC2 instance. AWS WAF được liên kết với CloudFront, ALB, API Gateway REST API, AppSync, Cognito user pool, App Runner, Verified Access và Amplify. Để bảo vệ ứng dụng chạy trên EC2 instance, đặt CloudFront hoặc ALB phía trước và liên kết AWS WAF với tài nguyên đó.",
+          en: "AWS WAF is not attached directly to EC2 instances. AWS WAF is associated with CloudFront, ALB, API Gateway REST APIs, AppSync, Cognito user pools, App Runner, Verified Access and Amplify. To protect an application running on EC2 instances, put CloudFront or an ALB in front of it and associate AWS WAF with that resource." }
       : passed ? { vi: `Còn ${passed} loại request độc hại tới được ứng dụng. Cần kích hoạt thêm rule phù hợp.`, en: `${passed} kinds of malicious requests still reach the application. Turn on more matching rules.` }
         : { vi: "Mọi request độc hại đều bị chặn tại AWS WAF; request hợp lệ của người dùng vẫn được chuyển tới ứng dụng.", en: "Every malicious request is blocked at AWS WAF; legitimate user requests still reach the application." });
   }
@@ -85,7 +85,7 @@ export default function WafSim() {
         <span className="label">{L({ vi: "Tài nguyên liên kết WAF", en: "Resource associated with WAF" })}</span>
         <button className="btn" aria-pressed={where === "alb"} onClick={() => setWhere("alb")} disabled={busy}>ALB</button>
         <button className="btn" aria-pressed={where === "cf"} onClick={() => setWhere("cf")} disabled={busy}>CloudFront</button>
-        <button className="btn" aria-pressed={where === "ec2"} onClick={() => setWhere("ec2")} disabled={busy}>{L({ vi: "Trực tiếp EC2", en: "Directly on EC2" })}</button>
+        <button className="btn" aria-pressed={where === "ec2"} onClick={() => setWhere("ec2")} disabled={busy}>{L({ vi: "Trực tiếp EC2 instance", en: "Directly on the EC2 instance" })}</button>
         <span className="sep" />
         <button className="btn primary" onClick={send} disabled={busy}>{L({ vi: "Gửi 6 loại request", en: "Send 6 kinds of requests" })}</button>
       </div>
@@ -97,14 +97,14 @@ export default function WafSim() {
               <text className="ts" x={20} y={r.y + 13}>{typeof r.detail === "string" ? r.detail : L(r.detail)}</text>
             </g>
           ))}
-          <rect className={where === "ec2" ? "waf-gate off" : "waf-gate"} x={WAF_X - 14} y={20} width={28} height={290} rx={8} />
+          <rect className={where === "ec2" ? "fill-bg stroke-muted stroke-2 [stroke-dasharray:5_4]" : "fill-edge-soft stroke-edge stroke-2"} x={WAF_X - 14} y={20} width={28} height={290} rx={8} />
           <text className="edge-t" x={WAF_X} y={14} textAnchor="middle">{where === "ec2" ? L({ vi: "WAF (không gắn được)", en: "WAF (cannot attach)" }) : L({ vi: `AWS WAF trên ${where === "alb" ? "ALB" : "CloudFront"}`, en: `AWS WAF on ${where === "alb" ? "ALB" : "CloudFront"}` })}</text>
-          <g className="res res-ec2"><rect x={APP[0] - 60} y={APP[1] - 24} width={120} height={48} rx={8} /><text className="res-t" x={APP[0]} y={APP[1] - 3} textAnchor="middle">ShopViet</text><text className="res-s" x={APP[0]} y={APP[1] + 13} textAnchor="middle">EC2</text></g>
+          <g className="res res-ec2"><rect x={APP[0] - 60} y={APP[1] - 24} width={120} height={48} rx={8} /><text className="res-t" x={APP[0]} y={APP[1] - 3} textAnchor="middle">MFTECH</text><text className="res-s" x={APP[0]} y={APP[1] + 13} textAnchor="middle">EC2</text></g>
           <g ref={pk} />
         </svg>
       </div>
       <div className="readout" aria-live="polite">
-        {L(result ?? { vi: "Kích hoạt các rule cần thiết, chọn tài nguyên liên kết với AWS WAF, sau đó gửi request. Quan sát request của đối tác vận chuyển khi bật geo match, và thử cả trường hợp gắn trực tiếp vào EC2.", en: "Turn on the rules you need, choose the resource associated with AWS WAF, then send the requests. Watch the shipping partner's request when geo match is on, and also try attaching it directly to EC2." })}
+        {L(result ?? { vi: "Kích hoạt các rule cần thiết, chọn tài nguyên liên kết với AWS WAF, sau đó gửi request. Quan sát request của đối tác vận chuyển khi bật geo match, và thử cả trường hợp gắn trực tiếp vào EC2 instance.", en: "Turn on the rules you need, choose the resource associated with AWS WAF, then send the requests. Watch the shipping partner's request when geo match is on, and also try attaching it directly to the EC2 instance." })}
       </div>
     </div>
   );

@@ -66,28 +66,28 @@ export default function CapacityRangeSim() {
   const pct = (v: number) => `${(v / SCALE) * 100}%`;
 
   return (
-    <div className="stage crs">
-      <div className="crs-actions" role="group" aria-label={L({ vi: "Thao tác", en: "Actions" })}>
-        {ACTIONS.map((a) => <button key={a.id} className="btn" onClick={() => run(a)}>{L(a.name)}</button>)}
-        <button className="btn crs-reset" onClick={() => { setCap(START); setLog([]); }}>{L({ vi: "Đặt lại: min 2 · desired 2 · max 12", en: "Reset: min 2 · desired 2 · max 12" })}</button>
+    <div className="stage">
+      <div className="flex flex-wrap gap-1.5 border-b border-line px-3.5 py-3" role="group" aria-label={L({ vi: "Thao tác", en: "Actions" })}>
+        {ACTIONS.map((a) => <button key={a.id} className="btn text-left" onClick={() => run(a)}>{L(a.name)}</button>)}
+        <button className="btn text-left" onClick={() => { setCap(START); setLog([]); }}>{L({ vi: "Đặt lại: min 2 · desired 2 · max 12", en: "Reset: min 2 · desired 2 · max 12" })}</button>
       </div>
-      <div className="crs-track" aria-hidden="true">
-        <div className="crs-band" style={{ left: pct(cap.min), width: `calc(${pct(cap.max - cap.min)} + 2px)` }} />
+      <div className="relative mx-7 mt-3.5 mb-0 h-[70px] border-b-2 border-line" aria-hidden="true">
+        <div className="absolute -bottom-0.5 h-2.5 rounded-[4px] border border-accent bg-accent-soft transition-[left,width] duration-300 ease-[ease]" style={{ left: pct(cap.min), width: `calc(${pct(cap.max - cap.min)} + 2px)` }} />
         <div className="crs-mark min" style={{ left: pct(cap.min) }}><span>min {cap.min}</span></div>
         <div className="crs-mark max" style={{ left: pct(cap.max) }}><span>max {cap.max}</span></div>
         <div className="crs-mark desired" style={{ left: pct(cap.desired) }}><span>desired {cap.desired}</span></div>
       </div>
-      <div className="crs-insts" role="img" aria-label={L({ vi: `${cap.desired} instance đang chạy`, en: `${cap.desired} instances running` })}>
-        {Array.from({ length: cap.desired }, (_, i) => <span key={i} className="cap-inst" />)}
+      <div className="flex min-h-10 flex-wrap gap-[5px] px-3.5 py-3" role="img" aria-label={L({ vi: `${cap.desired} instance đang chạy`, en: `${cap.desired} instances running` })}>
+        {Array.from({ length: cap.desired }, (_, i) => <span key={i} className="asg-unit" />)}
       </div>
       <div className="readout" aria-live="polite">
         <span className="count">min {cap.min} · desired {cap.desired} · max {cap.max}</span>
         {log.length === 0
-          ? <p className="sps-hint">{L({ vi: "Phòng kế toán của ShopViet chạy bảng lương lúc 9:00 ngày cuối tháng, cần 10 instance; ngày thường 2 instance là đủ. Thử từng thao tác và quan sát desired capacity.", en: "ShopViet's accounting team runs payroll at 9:00 on the last day of the month and needs 10 instances; 2 are enough on normal days. Try each action and watch desired capacity." })}</p>
+          ? <p className="m-0 text-step--1 text-muted">{L({ vi: "Phòng kế toán của MFTECH chạy bảng lương lúc 9:00 ngày cuối tháng, cần 10 instance; ngày thường 2 instance là đủ. Thử từng thao tác và quan sát desired capacity.", en: "MFTECH's accounting team runs payroll at 9:00 on the last day of the month and needs 10 instances; 2 are enough on normal days. Try each action and watch desired capacity." })}</p>
           : (
-            <ol className="dps-log">
+            <ol className="list-decimal mx-0 mt-2 mb-0 grid gap-1 pl-5 text-step--1 [&_.count]:mr-1">
               {log.map((x, i) => (
-                <li key={log.length - i} className={i === 0 ? "" : "crs-old"}>
+                <li key={log.length - i} className={i === 0 ? "" : "opacity-60"}>
                   <span className={"pill " + (x.ok ? "ok" : "bad")}><i />{L(x.name)}</span> {rich(L(x.msg))}
                 </li>
               ))}
