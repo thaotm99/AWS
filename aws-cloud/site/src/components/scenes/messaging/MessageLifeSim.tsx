@@ -79,7 +79,7 @@ function attempt(n: number, t: number): Frame[] {
 
 const SCENARIOS: MScenario[] = [
   {
-    name: { vi: "Spot Instance bị thu hồi khi đang xử lý", en: "Spot Instance interrupted during processing" },
+    name: { vi: "Spot Instance interruption khi đang xử lý", en: "Spot Instance interrupted during processing" },
     request: { vi: "3 message trong queue · visibility timeout 60 s", en: "3 messages in the queue · visibility timeout 60 s" },
     run: () => ({
       q: { vi: "Queue đơn hàng · visibility timeout 60 s", en: "Order queue · visibility timeout 60 s" },
@@ -91,8 +91,8 @@ const SCENARIOS: MScenario[] = [
             en: "Receives **#1**. SQS does not delete the message yet; it only hides it for the **visibility timeout** so that other workers do not receive it too." } },
         { t: 1, who: same("Worker 2"), tag: NHAN, tone: "info", set: { "#2": { place: "w2", note: HIDE60 } }, w: { w2: "busy" },
           msg: { vi: "Nhận #2; message cũng bị ẩn trong 60 s.", en: "Receives #2; this message is also hidden for 60 s." } },
-        { t: 20, who: same("Worker 1"), tag: { vi: "THU HỒI", en: "INTERRUPTED" }, tone: "bad", w: { w1: "dead" },
-          msg: { vi: "AWS thu hồi Spot Instance khi #1 đang được xử lý. Worker chưa gọi `DeleteMessage`.",
+        { t: 20, who: same("Worker 1"), tag: { vi: "INTERRUPTION", en: "INTERRUPTION" }, tone: "bad", w: { w1: "dead" },
+          msg: { vi: "AWS interrupt Spot Instance (Spot Instance interruption) khi #1 đang được xử lý. Worker chưa gọi `DeleteMessage`.",
             en: "AWS interrupts the Spot Instance while #1 is being processed. The worker has not called `DeleteMessage`." } },
         { t: 35, who: same("Worker 2"), tag: XOA, tone: "ok", set: { "#2": { place: "done", note: undefined } }, w: { w2: "idle" },
           msg: { vi: "Worker hoàn tất #2 và gọi `DeleteMessage`. Chỉ tại thời điểm này #2 mới bị xoá khỏi queue.",
@@ -104,11 +104,11 @@ const SCENARIOS: MScenario[] = [
         { t: 70, who: same("Worker 2"), tag: XOA, tone: "ok", set: { "#3": { place: "done", note: undefined }, "#1": { place: "w2", note: { vi: "lần 2", en: "try 2" } } },
           msg: { vi: "Hoàn tất #3, tiếp tục nhận #1 (lần nhận thứ 2).", en: "Finishes #3, then receives #1 (second receive)." } },
         { t: 105, who: same("Worker 2"), tag: XOA, tone: "ok", set: { "#1": { place: "done", note: undefined } }, w: { w1: "idle", w2: "idle" },
-          msg: { vi: "Hoàn tất #1. Trong thời gian này, Auto Scaling group đã thay thế Spot Instance bị thu hồi.",
+          msg: { vi: "Hoàn tất #1. Trong thời gian này, Auto Scaling group đã thay thế Spot Instance bị interrupt.",
             en: "#1 done. Meanwhile, the Auto Scaling group has replaced the interrupted Spot Instance." } },
       ],
       ok: true,
-      result: { vi: "Cả ba message đều được xử lý dù một instance bị thu hồi giữa chừng. Message chỉ bị xoá khi worker gọi lệnh xoá, do đó chạy worker đọc SQS trên **Spot Instances** vừa an toàn vừa tiết kiệm chi phí: tác vụ chưa hoàn tất được tự động xử lý lại.",
+      result: { vi: "Cả ba message đều được xử lý dù một instance bị interrupt trong quá trình xử lý. Message chỉ bị xoá khi worker gọi lệnh xoá, do đó chạy worker đọc SQS trên **Spot Instances** vừa an toàn vừa tiết kiệm chi phí: tác vụ chưa hoàn tất được tự động xử lý lại.",
         en: "All three messages are processed even though one instance was interrupted midway. A message is deleted only when the worker calls delete, so running SQS workers on **Spot Instances** is both safe and cost-effective: unfinished tasks are processed again automatically." },
     }),
   },
@@ -284,7 +284,7 @@ function positions(toks: Tok[]): Record<string, { x: number; y: number }> {
 const W_TEXT: Record<WState, Bi> = {
   idle: { vi: "sẵn sàng", en: "ready" },
   busy: { vi: "đang xử lý", en: "processing" },
-  dead: { vi: "bị thu hồi", en: "interrupted" },
+  dead: { vi: "bị interrupt", en: "interrupted" },
   wait: { vi: "đang chờ message", en: "waiting for messages" },
 };
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -377,7 +377,7 @@ export default function MessageLifeSim() {
         <button className="btn primary" onClick={play} disabled={busy}>{L({ vi: "Chạy mô phỏng", en: "Run simulation" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 30 820 220" role="img" aria-label={L({ vi: "Message được gửi từ web vào queue SQS, chuyển tới worker, sau đó bị xoá hoặc chuyển sang queue khác", en: "Messages are sent from the web tier to an SQS queue, passed to workers, then deleted or moved to another queue" })}>
+        <svg viewBox="0 30 820 220" role="img" aria-label={L({ vi: "Message được gửi từ web tier vào SQS queue, chuyển tới worker, sau đó bị xoá hoặc chuyển sang queue khác", en: "Messages are sent from the web tier to an SQS queue, passed to workers, then deleted or moved to another queue" })}>
           <text className="mls-clock" x={14} y={50}>t = {clock} s</text>
           {setup.counter && (
             <text className="mls-counter" x={14} y={240}>ReceiveMessage: {calls[0]} {L({ vi: "lệnh gọi", en: "calls" })} · {calls[1]} {L({ vi: "lệnh rỗng", en: "empty" })}</text>
