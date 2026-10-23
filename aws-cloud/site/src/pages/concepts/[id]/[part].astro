@@ -80,8 +80,8 @@ const prevTitle = "text-[0.98rem] leading-[1.35] max-sm:hidden";
   <article class="part-body [&>.scene:first-child]:mt-2 [&>div>.scene:first-child]:mt-2" data-lesson={id} data-part={part.slug} data-parts={JSON.stringify(parts.map((p) => p.slug))} data-title={JSON.stringify({ vi: head(part.title.vi), en: head(part.title.en) })}>
     {ContentEn ? (
       <>
-        <div data-lang="vi"><Content /></div>
-        <div data-lang="en"><ContentEn /></div>
+        <div class="prose" data-lang="vi"><Content /></div>
+        <div class="prose" data-lang="en"><ContentEn /></div>
       </>
     ) : (
       <Content />

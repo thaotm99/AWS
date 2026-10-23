@@ -54,7 +54,7 @@ const earlyPreferences = `(function(){var h=document.documentElement,t=${JSON.st
 const toc = Astro.slots.has("toc");
 // Shell columns: sidebar | content (| lesson contents from xl up), or one centred column without the sidebar.
 const shellColumns = toc
-  ? "gap-9 grid-cols-[260px_minmax(0,1fr)_236px] max-xl:max-w-[1240px] max-xl:gap-10 max-xl:grid-cols-[270px_minmax(0,1fr)] max-lg:grid-cols-[minmax(0,1fr)]"
+  ? "gap-9 grid-cols-[260px_minmax(0,1fr)_236px] no-toc:max-w-[1240px] no-toc:gap-10 lg:no-toc:grid-cols-[270px_minmax(0,1fr)] max-lg:grid-cols-[minmax(0,1fr)]"
   : !sidebar
     ? ["gap-10 justify-center", wide ? "grid-cols-[minmax(0,1208px)]" : "grid-cols-[minmax(0,860px)]"].join(" ")
     : "gap-10 grid-cols-[270px_minmax(0,1fr)] max-lg:grid-cols-[minmax(0,1fr)]";
@@ -120,7 +120,7 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
         <LanguageSwitch />
         <ThemeToggle />
       </div>
-      {toc && <div class="read-bar absolute inset-x-0 -bottom-px hidden h-0.75 overflow-hidden max-xl:block" aria-hidden="true"><i class="block h-full w-[var(--read,0%)] bg-accent transition-[width] duration-120 ease-linear" /></div>}
+      {toc && <div class="read-bar absolute inset-x-0 -bottom-px hidden h-0.75 overflow-hidden no-toc:block" aria-hidden="true"><i class="block h-full w-[var(--read,0%)] bg-accent transition-[width] duration-120 ease-linear" /></div>}
     </header>
 
     <div class:list={["mx-auto grid max-w-[1520px] pt-7 pr-[max(16px,env(safe-area-inset-right,0px))] pb-16 pl-[max(16px,env(safe-area-inset-left,0px))] max-lg:gap-5 max-lg:pt-4 max-lg:pb-12", shellColumns]}>
@@ -140,7 +140,7 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
       <main class:list={["article min-w-0 focus:outline-none", !sidebar && wide ? "max-w-none" : "max-w-[860px]"]} id="content" tabindex="-1">
         <slot />
       </main>
-      {toc && <aside class="toc-col sticky top-[calc(env(safe-area-inset-top,0px)+76px)] min-w-0 self-start max-xl:hidden"><slot name="toc" /></aside>}
+      {toc && <aside class="toc-col sticky top-[calc(env(safe-area-inset-top,0px)+76px)] min-w-0 self-start no-toc:hidden"><slot name="toc" /></aside>}
     </div>
     <div class="fixed bottom-[calc(20px+env(safe-area-inset-bottom,0px))] left-1/2 z-20 max-w-[calc(100%-32px)] -translate-x-1/2 rounded-sm bg-ink px-4 py-2.5 text-step--1 text-bg" id="toast" role="status" aria-live="polite" hidden></div>
     <dialog class="search" id="search" aria-label="Tìm kiếm" data-i18n-attr="aria-label:shell.search.open">

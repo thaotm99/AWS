@@ -172,3 +172,15 @@ input[type="checkbox"] {
   &:checked::after { transform: rotate(-45deg) translate(1px, -1px) scale(1); }
 }
 input[type="checkbox"]:disabled, input[type="range"]:disabled { @apply cursor-default opacity-50; }
+
+/* ---------- Page header ---------- */
+/* Breadcrumb trail above a page title. */
+.crumbs {
+  @apply flex flex-wrap items-center gap-2 text-step--1 text-muted;
+  & b { @apply font-medium text-ink; }
+  & a { @apply inline-flex min-h-7 items-center; }
+}
+/* Introductory paragraph under a page title. */
+.lede {
+  @apply mb-[18px] text-step-1 leading-[1.6] text-muted max-sm:text-[1.0625rem];
+}

@@ -16,6 +16,9 @@
   --breakpoint-xl: 80rem;
 }
 
+/* Up to and including 1280px the lesson contents column is hidden and a reading bar shows instead. */
+@custom-variant no-toc (@media (max-width: 80rem));
+
 /* The phone drawer is open (ShellController toggles html.drawer-open). */
 @custom-variant drawer-open (&:where(html.drawer-open, html.drawer-open *));
 

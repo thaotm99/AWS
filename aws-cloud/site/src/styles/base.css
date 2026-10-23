@@ -58,3 +58,39 @@ p {
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
 }
+
+/* Keyboard focus ring for every focusable element. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* ThemeToggle adds .theme-switching for one frame so the colour change fades instead of flashing. */
+html.theme-switching,
+html.theme-switching *,
+html.theme-switching *::before {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, fill 0.25s ease, stroke 0.25s ease !important;
+}
+/* Learning-path layer colours (layer 0–6), shared by the roadmap, glossary and lesson badges. */
+:root {
+  --l0: var(--muted);
+  --l1: var(--accent);
+  --l2: var(--violet);
+  --l3: var(--edge);
+  --l4: var(--ok);
+  --l5: var(--blue);
+  --l6: var(--pink);
+}
+
+/* Bilingual text. Static pages ship both languages; the <html lang> set before first paint hides one.
+   Strings that are translated on the client stay hidden until the dictionary has loaded. */
+[data-lang="en"] { display: none; }
+:root[lang="en"] [data-lang="vi"] { display: none; }
+:root[lang="en"] [data-lang="en"] { display: revert; }
+.i18n-pending [data-i18n] { visibility: hidden; }
+/* Simulations are client:visible islands whose server HTML is the default language (Vietnamese).
+   In English, keep each one invisible until it hydrates: Astro removes [ssr] once the component
+   has rendered on the client. visibility keeps the layout box, so nothing moves when it appears.
+   Only client:visible islands in the content; client:load islands hydrate at once, and a component
+   without a client directive is plain HTML (no island). The VI page is never affected. */
+:root[lang="en"] main astro-island[ssr][client="visible"] { visibility: hidden; }

@@ -8,6 +8,14 @@
   & > ul {
     @apply max-w-[68ch];
   }
+  /* Markdown lists keep the browser's default bullets and indent, which preflight removes. */
+  & > ul,
+  & > ol {
+    @apply my-[1em] pl-10;
+  }
+  & > ul { @apply list-disc; }
+  & > ol { @apply list-decimal; }
+  & li > ul { @apply list-[circle] pl-10; }
   /* Plain-language opening sentence of a scene: what problem the section solves, before the terms. */
   & > .scene-intro {
     @apply mt-0.5 mb-3.5 text-[1.06rem] leading-[1.7] font-medium text-pretty text-ink;
@@ -311,3 +319,8 @@ html.zoom-rotate {
     @apply scroll-pb-24;
   }
 }
+
+/* Saved highlight in a notes list: the quote's left border takes the highlight colour. */
+[data-color="yellow"] > blockquote { border-color: var(--hl-yellow-line); }
+[data-color="blue"] > blockquote { border-color: var(--accent); }
+[data-color="violet"] > blockquote { border-color: var(--violet); }
