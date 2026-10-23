@@ -28,17 +28,17 @@ import SiteTour from "../../components/scenes/aws-map/SiteTour.tsx";
 <MapHero />
 
 <Story toc={[
-  { href: "#s1", label: "1 · Ai vận hành phần nào" },
-  { href: "#s2", label: "2 · Hành trình một đơn hàng" },
-  { href: "#s3", label: "3 · Sáu nhóm dịch vụ" },
+  { href: "#s1", label: "1 · Shared responsibility model" },
+  { href: "#s2", label: "2 · Luồng request qua các dịch vụ" },
+  { href: "#s3", label: "3 · Các nhóm dịch vụ AWS" },
   { href: "#s4", label: "4 · Cách học trên site" },
 ]}>
 **ShopViet** là cửa hàng trực tuyến đồng hành qua toàn bộ lộ trình. Bài này đi qua hệ thống một lượt ở mức tổng quan: mỗi dịch vụ được nhắc tới chỉ giới thiệu trong một câu, và đều có bài riêng phân tích chi tiết ở các lớp sau.
 </Story>
 
-<Scene id="s1" label="Phần 1/4" title="Ai vận hành phần nào: máy chủ tự quản lý, managed service và serverless">
+<Scene id="s1" label="Phần 1/4" title="Shared responsibility model: on-premises, managed service và serverless">
 
-<p class="scene-intro">Với máy chủ tự mua, doanh nghiệp tự đảm nhận mọi việc từ nguồn điện tới bản vá phần mềm; trên AWS, càng chọn dịch vụ ở mức cao thì AWS càng đảm nhận nhiều phần việc vận hành.</p>
+<p class="scene-intro">Với hạ tầng on-premises, doanh nghiệp tự đảm nhận mọi việc từ nguồn điện tới bản vá phần mềm; trên AWS, càng chọn dịch vụ ở mức cao thì AWS càng đảm nhận nhiều phần việc vận hành.</p>
 
 AWS gọi sự phân chia này là **shared responsibility model**: AWS chịu trách nhiệm về hạ tầng cloud, khách hàng chịu trách nhiệm về những gì đặt trên đó. Chọn từng cách triển khai database đơn hàng và quan sát các phần việc chuyển sang AWS.
 
@@ -48,7 +48,7 @@ AWS gọi sự phân chia này là **shared responsibility model**: AWS chịu t
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/4" title="Hành trình một đơn hàng qua các dịch vụ AWS">
+<Scene id="s2" label="Phần 2/4" title="Luồng xử lý một request đặt hàng qua các dịch vụ AWS">
 
 <p class="scene-intro">Một thao tác đơn giản của khách hàng đi qua nhiều dịch vụ, mỗi dịch vụ đảm nhận một việc riêng; nắm được đường đi này giúp hiểu vì sao lộ trình chia thành các lớp mạng, tính toán, database và tích hợp.</p>
 
@@ -56,11 +56,11 @@ Mô phỏng tự chạy qua tám bước; có thể tạm dừng và đi từng 
 
 <OrderJourney client:visible />
 
-<Takeaway>Mạng (Route 53, CloudFront) đưa request tới hệ thống, tính toán (load balancer, EC2, Lambda) xử lý, database (RDS) lưu dữ liệu, và tích hợp (SQS) tách các bước để hệ thống không phải chờ nhau.</Takeaway>
+<Takeaway>Mạng (Route 53, CloudFront) đưa request tới hệ thống, tính toán (load balancer, EC2, Lambda) xử lý, database (RDS) lưu dữ liệu, và tích hợp (SQS) decouple các bước để các thành phần không phải chờ nhau.</Takeaway>
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/4" title="Sáu nhóm dịch vụ và các lớp của lộ trình">
+<Scene id="s3" label="Phần 3/4" title="Các nhóm dịch vụ AWS và các lớp của lộ trình">
 
 <p class="scene-intro">AWS có hơn hai trăm dịch vụ, nhưng phần lớn thuộc một vài nhóm chức năng; xác định được nhóm của một dịch vụ là bước đầu để biết nó giải quyết vấn đề gì.</p>
 

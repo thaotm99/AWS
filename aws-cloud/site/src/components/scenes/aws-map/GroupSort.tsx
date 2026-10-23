@@ -15,14 +15,14 @@ const CARDS: { name: string; group: string; hint: Bi }[] = [
   { name: "VPC", group: "net", hint: { vi: "mạng riêng của bạn trên AWS", en: "your private network on AWS" } },
   { name: "CloudFront", group: "net", hint: { vi: "phân phối nội dung từ edge location", en: "delivers content from edge locations" } },
   { name: "IAM", group: "sec", hint: { vi: "ai được làm gì trên tài nguyên nào", en: "who may do what on which resource" } },
-  { name: "KMS", group: "sec", hint: { vi: "quản lý key mã hoá", en: "manages encryption keys" } },
+  { name: "KMS", group: "sec", hint: { vi: "tạo và quản lý KMS key dùng để mã hoá", en: "creates and manages KMS keys for encryption" } },
   { name: "EC2", group: "cmp", hint: { vi: "máy chủ ảo", en: "virtual servers" } },
   { name: "Lambda", group: "cmp", hint: { vi: "chạy code khi có sự kiện", en: "runs code on events" } },
-  { name: "S3", group: "sto", hint: { vi: "lưu file dạng object", en: "stores files as objects" } },
-  { name: "EBS", group: "sto", hint: { vi: "ổ đĩa gắn vào EC2", en: "disks for EC2" } },
+  { name: "S3", group: "sto", hint: { vi: "object storage, lưu object trong bucket", en: "object storage in buckets" } },
+  { name: "EBS", group: "sto", hint: { vi: "block storage volume gắn vào EC2 instance", en: "block storage volumes for EC2 instances" } },
   { name: "RDS", group: "db", hint: { vi: "database quan hệ managed", en: "managed relational database" } },
   { name: "DynamoDB", group: "db", hint: { vi: "database NoSQL serverless", en: "serverless NoSQL database" } },
-  { name: "SQS", group: "ops", hint: { vi: "hàng đợi message", en: "message queue" } },
+  { name: "SQS", group: "ops", hint: { vi: "message queue", en: "message queue" } },
   { name: "CloudWatch", group: "ops", hint: { vi: "giám sát metric và log", en: "monitors metrics and logs" } },
 ];
 

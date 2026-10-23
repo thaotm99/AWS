@@ -9,8 +9,8 @@ const TASKS: Bi[] = [
   { vi: "Mạng vật lý", en: "Physical network" },
   { vi: "Hệ điều hành, bản vá", en: "Operating system, patches" },
   { vi: "Cài đặt database", en: "Database installation" },
-  { vi: "Sao lưu, failover", en: "Backups, failover" },
-  { vi: "Mở rộng theo tải", en: "Scaling with load" },
+  { vi: "Backup, failover", en: "Backups, failover" },
+  { vi: "Scaling theo tải", en: "Scaling with load" },
   { vi: "Code và dữ liệu", en: "Code and data" },
 ];
 
@@ -21,11 +21,11 @@ const LEVELS: { name: Bi; sub: Bi; aws: number; tag: string; text: Bi }[] = [
   },
   {
     name: { vi: "Amazon EC2", en: "Amazon EC2" }, sub: { vi: "máy chủ ảo", en: "virtual server" }, aws: 3, tag: "INFRASTRUCTURE",
-    text: { vi: "AWS vận hành data center và phần cứng. ShopViet vẫn tự cài đặt, vá lỗi và sao lưu database trên máy chủ ảo.", en: "AWS runs the data center and hardware. ShopViet still installs, patches and backs up the database on the virtual server." },
+    text: { vi: "AWS vận hành data center và phần cứng. ShopViet vẫn tự cài đặt, vá lỗi và sao lưu database trên EC2 instance.", en: "AWS runs the data center and hardware. ShopViet still installs, patches and backs up the database on the EC2 instance." },
   },
   {
     name: { vi: "Amazon RDS", en: "Amazon RDS" }, sub: { vi: "managed service", en: "managed service" }, aws: 6, tag: "MANAGED SERVICE",
-    text: { vi: "AWS vận hành cả database: cài đặt, vá lỗi, sao lưu tự động và failover. ShopViet chọn cấu hình và quản lý dữ liệu.", en: "AWS also runs the database: installation, patching, automated backups and failover. ShopViet picks the configuration and manages the data." },
+    text: { vi: "AWS vận hành cả database: cài đặt, vá lỗi, automated backup và failover. ShopViet chọn cấu hình và quản lý dữ liệu.", en: "AWS also runs the database: installation, patching, automated backups and failover. ShopViet picks the configuration and manages the data." },
   },
   {
     name: { vi: "Amazon DynamoDB", en: "Amazon DynamoDB" }, sub: { vi: "serverless", en: "serverless" }, aws: 7, tag: "SERVERLESS",

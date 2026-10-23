@@ -7,15 +7,15 @@ const C = { user: "#e4ecf0", net: "#4cc2df", cmp: "#f0a95a", db: "#7fb0ff", int:
 
 const STEPS: { name: Bi; mono: string; group: Bi; c: string; text: Bi; lesson?: { id: string } & Bi }[] = [
   { name: { vi: "Khách hàng", en: "Customer" }, mono: "◉", group: { vi: "Người dùng", en: "User" }, c: C.user,
-    text: { vi: "gửi yêu cầu đặt hàng tới shopviet.vn.", en: "sends an order request to shopviet.vn." } },
+    text: { vi: "gửi request đặt hàng tới shopviet.vn.", en: "sends an order request to shopviet.vn." } },
   { name: { vi: "Route 53", en: "Route 53" }, mono: "53", group: { vi: "Mạng", en: "Networking" }, c: C.net,
     text: { vi: "phân giải tên miền shopviet.vn thành địa chỉ của hệ thống.", en: "resolves shopviet.vn to the system's address." },
     lesson: { id: "route53", vi: "Route 53", en: "Route 53" } },
   { name: { vi: "CloudFront", en: "CloudFront" }, mono: "CF", group: { vi: "Mạng", en: "Networking" }, c: C.net,
-    text: { vi: "trả ảnh và trang tĩnh từ edge location gần khách, chuyển yêu cầu đặt hàng vào hệ thống.", en: "serves images and static pages from an edge location near the customer and passes the order request on." },
+    text: { vi: "trả ảnh và trang tĩnh từ edge location gần khách, chuyển request đặt hàng tới origin.", en: "serves images and static pages from an edge location near the customer and forwards the order request to the origin." },
     lesson: { id: "cloudfront", vi: "CloudFront", en: "CloudFront" } },
   { name: { vi: "Load balancer", en: "Load balancer" }, mono: "LB", group: { vi: "Tính toán", en: "Compute" }, c: C.cmp,
-    text: { vi: "chọn một máy chủ còn hoạt động tốt để xử lý yêu cầu.", en: "picks a healthy server to handle the request." },
+    text: { vi: "định tuyến request tới một target healthy (EC2 instance đạt health check).", en: "routes the request to a healthy target (an EC2 instance that passes health checks)." },
     lesson: { id: "elb", vi: "Elastic Load Balancing", en: "Elastic Load Balancing" } },
   { name: { vi: "EC2", en: "EC2" }, mono: "EC2", group: { vi: "Tính toán", en: "Compute" }, c: C.cmp,
     text: { vi: "chạy ứng dụng ShopViet: kiểm tra tồn kho và tạo đơn.", en: "runs the ShopViet application: checks stock and creates the order." },
@@ -24,10 +24,10 @@ const STEPS: { name: Bi; mono: string; group: Bi; c: string; text: Bi; lesson?: 
     text: { vi: "lưu đơn hàng bền vững; AWS đảm nhận sao lưu và failover.", en: "stores the order durably; AWS handles backups and failover." },
     lesson: { id: "rds", vi: "RDS + Aurora", en: "RDS + Aurora" } },
   { name: { vi: "SQS", en: "SQS" }, mono: "Q", group: { vi: "Tích hợp", en: "Integration" }, c: C.int,
-    text: { vi: "giữ thông điệp “có đơn mới” để các bước sau xử lý riêng, khách không phải chờ.", en: "holds a “new order” message so later steps run separately and the customer does not wait." },
+    text: { vi: "giữ message “có đơn mới” để các bước sau xử lý riêng, khách không phải chờ.", en: "holds a “new order” message so later steps run separately and the customer does not wait." },
     lesson: { id: "messaging", vi: "SQS + SNS", en: "SQS + SNS" } },
   { name: { vi: "Lambda", en: "Lambda" }, mono: "λ", group: { vi: "Tính toán", en: "Compute" }, c: C.cmp,
-    text: { vi: "chạy khi có thông điệp mới và gửi email xác nhận; không có máy chủ nào chạy chờ.", en: "runs when the message arrives and sends the confirmation email; no server sits waiting." },
+    text: { vi: "được kích hoạt khi có message mới và gửi email xác nhận; không có server nào chạy chờ.", en: "is invoked when the message arrives and sends the confirmation email; no server sits waiting." },
     lesson: { id: "lambda", vi: "Lambda", en: "Lambda" } },
 ];
 
