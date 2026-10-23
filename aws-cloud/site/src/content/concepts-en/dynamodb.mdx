@@ -48,46 +48,46 @@ import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
-  { href: "#en-s1", label: "1 · Retrieving data by key" },
+  { href: "#en-s1", label: "1 · Tables, items and primary keys" },
   { href: "#en-s2", label: "2 · Capacity modes and DAX" },
-  { href: "#en-s3", label: "3 · Data flowing in and out" },
-  { href: "#en-s4", label: "4 · Recovering from bad writes and accidental deletes" },
+  { href: "#en-s3", label: "3 · Data ingestion, TTL and Streams" },
+  { href: "#en-s4", label: "4 · Backup, PITR and deletion protection" },
   { href: "#en-s5", label: "5 · Multi-Region deployment" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-ShopViet's order and reporting data is already stored on Aurora. Shopping carts, login sessions and shipper locations are different: a simple data structure, constant reads and writes, and highly variable traffic. **Amazon DynamoDB** is a serverless NoSQL database: there are no servers to manage, it scales out automatically, and it responds in milliseconds at any scale.
+MFTECH's order and reporting data is already stored on Aurora. Shopping carts, login sessions and shipper locations are different: a simple data structure, constant reads and writes, and highly variable traffic. **Amazon DynamoDB** is a serverless NoSQL database: there are no servers to manage, it scales out automatically, and it delivers single-digit millisecond latency at any scale.
 </Story>
 
-<Scene id="en-s1" label="Part 1/5" title="Retrieving data by key" questions={["exam4_q10", "exam2_q29", "exam3_q11", "exam6_q17", "exam4_q23", "exam6_q65"]}>
+<Scene id="en-s1" label="Part 1/5" title="Tables, items and primary keys" questions={["exam4_q10", "exam2_q29", "exam3_q11", "exam6_q17", "exam4_q23", "exam6_q65"]}>
 
-<p class="scene-intro">Not all data needs relational tables and complex SQL; for data always looked up by one key, such as a cart ID, a key-value database is faster and easier to scale.</p>
+<p class="scene-intro">Not all data needs relational tables and complex SQL; for data always looked up by one key, such as a cart ID, a key-value database delivers lower latency and is easier to scale.</p>
 
 A **table** contains **items**; each item is a set of **attributes**, and items do not have to share the same structure. Each item has a **primary key**:
 
 - **Partition key**: DynamoDB hashes this value to determine the partition that holds the item.
 - **Sort key** (optional): orders the items that share a partition key, for example by order date.
 
-Data is stored on SSDs and automatically replicated across multiple AZs in the Region. AWS describes DynamoDB as delivering single-digit millisecond performance at any scale, so queries by key do not slow down as the table grows. Try five ShopViet tasks:
+Data is stored on SSDs and automatically replicated across multiple AZs in the Region. AWS describes DynamoDB as delivering single-digit millisecond performance at any scale, so queries by key do not slow down as the table grows. Try five MFTECH tasks:
 
 <KeyAccessSim client:visible />
 
 Some conclusions:
 
 - To query by an attribute that is not a key: create a **GSI** (global secondary index) with any attribute as the new key; a GSI can be created at any time. An **LSI** shares the table's partition key, differs only in the sort key, and can be created only when the table is created.
-- Large files (videos, images, a job's 20 MB output) are not stored in DynamoDB. The files are stored on S3 or EFS; DynamoDB stores only their path.
+- Large files (videos, images, a job's 20 MB output) are not stored in DynamoDB. The files are stored on S3 or EFS; DynamoDB stores only the S3 object key or the file path.
 - Relational data that needs JOINs and has fluctuating load: Aurora Serverless v2 (RDS lesson), not DynamoDB.
 
-<Takeaway>Retrieval by key, millisecond latency, serverless, automatic scaling: DynamoDB. Queries on other attributes: GSI. Items are at most 400 KB; large files go on S3. Access from a private subnet: a gateway endpoint (only S3 and DynamoDB support them).</Takeaway>
+<Takeaway>Retrieval by key, millisecond latency, serverless, automatic scaling: DynamoDB. Queries on other attributes: GSI. Items are at most 400 KB; large files go on S3. Access from a private subnet: a gateway VPC endpoint (only S3 and DynamoDB support them).</Takeaway>
 
 </Scene>
 
 <Scene id="en-s2" label="Part 2/5" title="Capacity modes, hot partitions and DAX" questions={["exam4_q62", "exam4_q54", "exam1_q1", "exam6_q6", "exam1_q29", "exam6_q47", "exam5_q65", "exam5_q37"]}>
 
-<p class="scene-intro">DynamoDB measures capacity in reads and writes; the capacity mode you choose and how data is spread decide whether the system chokes when load rises.</p>
+<p class="scene-intro">DynamoDB measures throughput capacity in reads and writes; the capacity mode and how data is spread across partition keys decide whether the table is throttled when load rises.</p>
 
-DynamoDB measures read and write capacity in **RCUs** and **WCUs**. 1 RCU is one strongly consistent read per second (or two eventually consistent reads) for an item up to 4 KB. 1 WCU is one write per second for an item up to 1 KB. DynamoDB has two billing models:
+DynamoDB measures throughput capacity in **read capacity units (RCUs)** and **write capacity units (WCUs)**. 1 RCU is one strongly consistent read per second (or two eventually consistent reads) for an item up to 4 KB. 1 WCU is one write per second for an item up to 1 KB. DynamoDB has two capacity modes, billed differently:
 
-- **Provisioned**: you provision RCUs/WCUs in advance and pay by the hour regardless of actual usage. Enable **Auto Scaling** so capacity follows the load, though Auto Scaling needs a few minutes to react.
+- **Provisioned**: you provision RCUs/WCUs in advance and pay by the hour regardless of actual usage. Enable **DynamoDB auto scaling** so capacity follows the load, though auto scaling needs a few minutes to react.
 - **On-Demand**: billed per request, with no forecasting needed. There are no read or write charges when there are no requests.
 
 Each partition has its own limits: **3,000 RCUs** and **1,000 WCUs**. Choose a load pattern and a capacity mode, then simulate one day of operation:
@@ -105,11 +105,11 @@ DynamoDB itself stores data on SSDs; it is **not** an in-memory database. When y
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/5" title="Data flowing in and out" questions={["exam1_q33", "exam5_q32", "exam5_q35"]}>
+<Scene id="en-s3" label="Part 3/5" title="Data ingestion, TTL and DynamoDB Streams" questions={["exam1_q33", "exam5_q32", "exam5_q35"]}>
 
-<p class="scene-intro">A database does not stand alone: data has to come in, old data has to be cleaned out, and other components need to know when data changes.</p>
+<p class="scene-intro">A database does not operate in isolation: data must be ingested, expired data must be deleted, and other components must be notified when data changes.</p>
 
-When integrating DynamoDB with other components, ShopViet must answer three questions: how data gets in, how old data is deleted, and which component is notified when data changes.
+When integrating DynamoDB with other components, MFTECH must answer three questions: how data gets in, how old data is deleted, and which component is notified when data changes.
 
 <DataFlowSim client:visible />
 
@@ -120,37 +120,37 @@ When integrating DynamoDB with other components, ShopViet must answer three ques
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/5" title="Recovering from bad writes and accidental deletes" questions={["exam3_q49", "exam4_q42"]}>
+<Scene id="en-s4" label="Part 4/5" title="Backup, point-in-time recovery and deletion protection" questions={["exam3_q49", "exam4_q42"]}>
 
 <p class="scene-intro">The most common data incidents come from human actions such as bad writes or accidental deletes; a way to restore to a point before the incident must be ready in advance.</p>
 
-The two most common data incidents come not from hardware but from human actions: a deploy that writes bad data, and an accidental delete. Choose the measure ShopViet put in place, then run the simulation:
+The two most common data incidents come not from hardware but from human actions: a deployment that writes bad data, and an accidental delete. Choose the measure MFTECH put in place, then run the simulation:
 
 <RecoverySim client:visible />
 
 | Recovery option | Use case | Restore point |
 |---|---|---|
-| **PITR** | Restore to the exact moment before an incident | Any second within 1–35 days, to a new table |
+| **PITR** (point-in-time recovery) | Restore to the exact moment before an incident | Any second within 1–35 days, to a new table |
 | **On-demand backup** | Long-term retention, compliance requirements | The exact moment the backup was created |
 | **Deletion protection** | Prevent accidental deletes | Nothing to restore: the delete request is denied |
 | **Export to S3** | Analytics with Athena, Glue, EMR; moving data to a bucket in another account or Region | Any point in time within the PITR window, written as DynamoDB JSON or Amazon Ion files in S3 |
 
-**Export to S3** is a fully managed feature: it exports the whole table (full export) or the data changed during a time period (incremental export) from any point in time within the PITR window, so **the table must have PITR enabled**. Exports are asynchronous, **do not consume RCUs** and have no impact on table performance or availability; AWS does not guarantee completion times. It is a copy of the data for analytics, not a protection mechanism for the table: an export does not stop a table from being deleted, and reusing the data requires **import from S3**, which always creates a **new table**. If ShopViet only exported manually every week, a deleted table could lose up to a week of data, plus the time to import and switch the application to the new table.
+**Export to S3** is a fully managed feature: it exports the whole table (full export) or the data changed during a time period (incremental export) from any point in time within the PITR window, so **the table must have PITR enabled**. Exports are asynchronous, **do not consume RCUs** and have no impact on table performance or availability; AWS does not guarantee completion times. It is a copy of the data for analytics, not a protection mechanism for the table: an export does not stop a table from being deleted, and reusing the data requires **import from S3**, which always creates a **new table**. If MFTECH only exported manually every week, a deleted table could lose up to a week of data, plus the time to import and switch the application to the new table.
 
 <Takeaway>Restore to an exact point in time, down to the second: PITR. Prevent accidental deletes with the least operational overhead: deletion protection. Analyze table data with Athena without consuming RCUs: export to S3 (requires PITR). Streams, global tables and export to S3 do not replace deletion protection and PITR.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s5" label="Part 5/5" title="Expanding to multiple Regions" questions={["exam5_q59", "exam5_q27", "exam2_q5", "exam1_q7"]}>
+<Scene id="en-s5" label="Part 5/5" title="Global tables and multi-Region deployment" questions={["exam5_q59", "exam5_q27", "exam2_q5", "exam1_q7"]}>
 
 <p class="scene-intro">When an application serves customers on several continents, the data must also sit close to them and stay in sync across Regions.</p>
 
-ShopViet expands into the European and US markets. The application is deployed in each Region; the problem to solve is how to organize the data.
+MFTECH expands into the European and US markets. The application is deployed in each Region; the problem to solve is how to organize the data.
 
 <MultiRegionSim client:visible />
 
 - **Global tables**: each Region has a replica, and every replica supports reads and writes. In the default mode (multi-Region eventual consistency, MREC), DynamoDB replicates asynchronously and automatically, usually within one second; multi-Region strong consistency (MRSC) mode is also available when you need strongly consistent reads across Regions. The application uses the DynamoDB API as before. For steady load, use Provisioned + Auto Scaling to optimize cost; note that writes to a global table are billed as replicated write units (rWCU/rWRU) in every Region that has a replica.
-- **Aurora Global Database**: one Region accepts writes, with up to 10 read-only secondary Regions. Suits applications that already use SQL and JOINs and only need low-latency reads in other Regions. When only one table needs global reach and the other tables are needed only within the Region: split that table out; there is no need to move the whole database.
+- **Aurora Global Database**: one primary Region accepts writes, with up to 10 read-only secondary Regions. Suits applications that already use SQL and JOINs and only need low-latency reads in other Regions. When only one table needs global reach and the other tables are needed only within the Region: split that table out; there is no need to move the whole database.
 
 <Takeaway>Low-latency writes in multiple Regions: DynamoDB global tables. Keep a relational schema and only need reads in the Region near users: Aurora Global Database.</Takeaway>
 
@@ -158,7 +158,7 @@ ShopViet expands into the European and US markets. The application is deployed i
 
 <Scene id="en-challenge" label="Exercise" title="Sort the requirements by DynamoDB feature" questions={["exam4_q62", "exam4_q54", "exam3_q49", "exam4_q42", "exam5_q59", "exam5_q32"]}>
 
-Sort each ShopViet requirement into the feature that meets it. On a mobile device: tap a card, then tap the target box.
+Sort each MFTECH requirement into the feature that meets it. On a mobile device: tap a card, then tap the target box.
 
 <SortGame client:visible
   bins={[
@@ -173,7 +173,7 @@ Sort each ShopViet requirement into the feature that meets it. On a mobile devic
   ]}
 />
 
-Check question: as the designer of the ShopViet system, which option fits?
+Check question: as the designer of the MFTECH system, which option fits?
 
 <Quiz client:visible items={[
   { q: "The shipper app runs only during the day; load spikes within minutes without warning. Which capacity mode should the DynamoDB table use?",
@@ -184,11 +184,11 @@ Check question: as the designer of the ShopViet system, which option fits?
     opts: ["Increase RCUs again", "Add DAX in front of the table", "Enable DynamoDB Streams"],
     a: 1,
     why: "The 3,000 RCU limit applies per partition. DAX serves repeated reads from its cache, so those requests do not reach the hot partition." },
-  { q: "A faulty deploy has been writing wrong prices since 14:32. The table must be restored to the exact moment before that. Which feature fits?",
+  { q: "A faulty deployment has been writing wrong prices since 14:32. The table must be restored to the exact moment before that. Which feature fits?",
     opts: ["Last night's on-demand backup", "Point-in-time recovery", "A global table replica in another Region"],
     a: 1,
     why: "PITR restores to any second within up to 35 days. Last night's backup loses a whole day of valid data; the replica has already received the bad data." },
-  { q: "An engineer nearly deleted a production table. ShopViet must prevent this completely with the least operational overhead. Which feature must be enabled?",
+  { q: "An engineer nearly deleted a production table. MFTECH must prevent this completely with the least operational overhead. Which feature must be enabled?",
     opts: ["Deletion protection", "PITR", "EventBridge catches DeleteTable and recreates the table"],
     a: 0,
     why: "Deletion protection blocks the delete request up front: while it is on, no one can delete the table. PITR can only restore after the table has been deleted and the application has gone down." },

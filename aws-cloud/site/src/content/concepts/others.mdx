@@ -1,6 +1,6 @@
 ---
 title: "Quản lý chi phí, AI services và các dịch vụ khác"
-lede: "Quy mô ShopViet tăng lên: chi phí AWS cần được kiểm soát chặt chẽ, và lượng dữ liệu từ người dùng vượt quá khả năng xử lý thủ công. Bài học trình bày cách kiểm soát chi phí bằng AWS Budgets, Cost Optimization Hub, Compute Optimizer và Savings Plans; sử dụng Comprehend, Transcribe, Textract khi không có đội ngũ ML; và giới thiệu AWS Batch cùng AWS Outposts."
+lede: "Quy mô MFTECH tăng lên: chi phí AWS cần được kiểm soát chặt chẽ, và lượng dữ liệu từ người dùng vượt quá khả năng xử lý thủ công. Bài học trình bày cách kiểm soát chi phí bằng AWS Budgets, Cost Optimization Hub, Compute Optimizer và Savings Plans; sử dụng Comprehend, Transcribe, Textract khi không có đội ngũ ML; và giới thiệu AWS Batch cùng AWS Outposts."
 minutes: 25
 scenes: 5
 prerequisites: ["iam", "ec2", "lambda", "containers"]
@@ -88,17 +88,17 @@ import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
-  { href: "#s1", label: "1 · Kiểm soát chi phí" },
+  { href: "#s1", label: "1 · AWS Cost Management" },
   { href: "#s2", label: "2 · Savings Plans" },
-  { href: "#s3", label: "3 · AI services dựng sẵn" },
+  { href: "#s3", label: "3 · AWS AI services" },
   { href: "#s4", label: "4 · AWS Batch và Outposts" },
-  { href: "#s5", label: "5 · Phân biệt nhanh" },
+  { href: "#s5", label: "5 · So sánh các dịch vụ dễ nhầm lẫn" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-ShopViet hiện có nhiều AWS account, nhiều đội kỹ thuật, và chi phí hằng tháng liên tục tăng. Đồng thời, mỗi ngày phát sinh hàng nghìn đánh giá, cuộc gọi tổng đài và tài liệu scan vượt quá khả năng xử lý thủ công, trong khi ShopViet không có chuyên gia machine learning. Bài học tổng hợp các dịch vụ đáp ứng những nhu cầu này: công cụ quản lý chi phí, AI services dựng sẵn, và hai dịch vụ cho các yêu cầu đặc thù.
+MFTECH hiện có nhiều AWS account, nhiều đội kỹ thuật, và chi phí hằng tháng liên tục tăng. Đồng thời, mỗi ngày phát sinh hàng nghìn đánh giá, cuộc gọi tổng đài và tài liệu scan vượt quá khả năng xử lý thủ công, trong khi MFTECH không có chuyên gia machine learning. Bài học tổng hợp các dịch vụ đáp ứng những nhu cầu này: công cụ quản lý chi phí, AI services dựng sẵn, và hai dịch vụ cho các yêu cầu đặc thù.
 </Story>
 
-<Scene id="s1" label="Phần 1/5" title="Kiểm soát chi phí AWS" questions={["exam6_q22", "exam6_q1", "exam4_q30"]}>
+<Scene id="s1" label="Phần 1/5" title="AWS Cost Management: Cost Explorer, AWS Budgets, Cost Optimization Hub" questions={["exam6_q22", "exam6_q1", "exam4_q30"]}>
 
 <p class="scene-intro">Chi phí AWS tăng theo mức sử dụng nên cần được theo dõi thường xuyên; mỗi công cụ quản lý chi phí trả lời một câu hỏi khác nhau.</p>
 
@@ -109,7 +109,7 @@ Mỗi công cụ quản lý chi phí trả lời một câu hỏi khác nhau:
 - **Cost Optimization Hub**: cần cắt giảm ở đâu? Tổng hợp khuyến nghị tiết kiệm (rightsizing, xoá tài nguyên idle, Savings Plans, Reserved Instances) của các account và Region tại một nơi.
 - **Compute Optimizer**: kích thước tài nguyên nào là phù hợp? Đề xuất cấu hình phù hợp cho EC2 instance, Auto Scaling group, EBS volume, Lambda function, ECS service trên Fargate và các tài nguyên khác.
 
-Chọn một vấn đề của ShopViet, chọn công cụ, sau đó chạy mô phỏng trong một tháng:
+Chọn một vấn đề của MFTECH, chọn công cụ, sau đó chạy mô phỏng trong một tháng:
 
 <CostWatchSim client:visible />
 
@@ -117,18 +117,18 @@ Chọn một vấn đề của ShopViet, chọn công cụ, sau đó chạy mô 
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/5" title="Lựa chọn loại cam kết sử dụng dài hạn" questions={["exam6_q38"]}>
+<Scene id="s2" label="Phần 2/5" title="Savings Plans: Compute, EC2 Instance, Database và SageMaker AI" questions={["exam6_q38"]}>
 
-<p class="scene-intro">Khi mức sử dụng đã ổn định, cam kết dùng trong một hoặc ba năm giúp giảm đáng kể chi phí so với trả theo giờ.</p>
+<p class="scene-intro">Khi mức sử dụng đã ổn định, cam kết sử dụng trong một hoặc ba năm giúp giảm đáng kể chi phí so với On-Demand pricing.</p>
 
-Sau đợt ra mắt, tải của ShopViet đã ổn định. Cam kết sử dụng một mức chi phí mỗi giờ trong 1 hoặc 3 năm để nhận mức giá thấp hơn on-demand: đó là **Savings Plans**. AWS hiện có bốn loại:
+Sau đợt ra mắt, tải của MFTECH đã ổn định. Cam kết sử dụng một mức chi phí mỗi giờ trong 1 hoặc 3 năm để nhận mức giá thấp hơn On-Demand: đó là **Savings Plans**. AWS hiện có bốn loại:
 
-- **Compute Savings Plans**: linh hoạt nhất, giảm tới 66% so với on-demand. Áp dụng cho EC2 (mọi instance family, kích thước, OS, tenancy, Region), Fargate và Lambda.
+- **Compute Savings Plans**: linh hoạt nhất, giảm tới 66% so với On-Demand. Áp dụng cho EC2 (mọi instance family, instance size, OS, tenancy, Region), Fargate và Lambda.
 - **EC2 Instance Savings Plans**: giảm tới 72% nhưng chỉ áp dụng cho một instance family trong một Region.
 - **Database Savings Plans**: giảm tới 35% cho các dịch vụ database như Aurora, RDS, DynamoDB, ElastiCache, DocumentDB, Neptune, Keyspaces, Timestream, DMS và OpenSearch Service.
 - **SageMaker AI Savings Plans**: giảm tới 64%, dành riêng cho instance của SageMaker AI.
 
-Yêu cầu của ShopViet: mọi workload đều được giảm giá, với số lượng plan tối thiểu để thuận tiện quản lý:
+Yêu cầu của MFTECH: mọi workload đều được giảm giá, với số lượng plan tối thiểu để thuận tiện quản lý:
 
 <SavingsPlanSim client:visible />
 
@@ -136,9 +136,9 @@ Yêu cầu của ShopViet: mọi workload đều được giảm giá, với s�
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/5" title="Xử lý văn bản và giọng nói không cần đội ngũ ML" questions={["exam1_q4", "exam2_q26", "exam5_q32", "exam5_q58"]}>
+<Scene id="s3" label="Phần 3/5" title="AWS AI services: Comprehend, Transcribe, Textract, Rekognition, Translate, Polly" questions={["exam1_q4", "exam2_q26", "exam5_q32", "exam5_q58"]}>
 
-<p class="scene-intro">Nhiều bài toán như nhận dạng giọng nói, dịch thuật hay phân tích văn bản không cần tự xây dựng mô hình machine learning; AWS có sẵn dịch vụ gọi qua API.</p>
+<p class="scene-intro">Nhiều bài toán như nhận dạng giọng nói, dịch thuật hay phân tích văn bản không cần tự xây dựng model machine learning; AWS AI services cung cấp model đã được huấn luyện sẵn (pre-trained) qua API.</p>
 
 AWS cung cấp các AI service đã được huấn luyện sẵn, sử dụng thông qua lệnh gọi API mà không cần kiến thức machine learning:
 
@@ -149,30 +149,30 @@ AWS cung cấp các AI service đã được huấn luyện sẵn, sử dụng t
 - **Amazon Translate**: **dịch** văn bản giữa các ngôn ngữ (có hỗ trợ tiếng Việt). Translate không xác định cảm xúc; khi cần phân tích đánh giá tiếng Việt, có thể dịch sang tiếng Anh bằng Translate rồi chuyển sang Comprehend.
 - **Amazon Polly**: chiều ngược lại của Transcribe, chuyển **văn bản thành giọng nói**. Transcribe chỉ nhận âm thanh làm đầu vào.
 
-Mỗi tình huống dưới đây là một luồng xử lý của ShopViet; văn bản đưa vào Comprehend và Textract là tiếng Anh (gian hàng quốc tế của ShopViet), do giới hạn ngôn ngữ nêu trên. Gửi một tài liệu và quan sát kết quả đầu ra tại từng bước xử lý:
+Mỗi tình huống dưới đây là một pipeline xử lý của MFTECH; văn bản đưa vào Comprehend và Textract là tiếng Anh (gian hàng quốc tế của MFTECH), do giới hạn ngôn ngữ nêu trên. Gửi một tài liệu và quan sát kết quả đầu ra tại từng bước xử lý:
 
 <AiPipelineSim client:visible />
 
-**Amazon SageMaker AI** là dịch vụ ML được quản lý toàn phần để xây dựng, huấn luyện và triển khai model ML. Tự huấn luyện model trên SageMaker AI cũng đáp ứng được các yêu cầu trên, nhưng cần nhân sự có chuyên môn ML và chi phí vận hành cao hơn. Khi đã có service dựng sẵn phù hợp, nên ưu tiên sử dụng service đó. SageMaker AI cũng không phải nơi chạy API container của ứng dụng: việc đó thuộc về [ECS hoặc EKS trên Fargate](/concepts/containers/ec2-or-fargate/).
+**Amazon SageMaker AI** là dịch vụ ML được quản lý toàn phần để xây dựng, huấn luyện và triển khai model ML. Tự huấn luyện model trên SageMaker AI cũng đáp ứng được các yêu cầu trên, nhưng cần nhân sự có chuyên môn ML và chi phí vận hành cao hơn. Khi đã có AI service pre-trained phù hợp, nên ưu tiên sử dụng service đó. SageMaker AI cũng không phải nơi chạy API container của ứng dụng: việc đó thuộc về [ECS hoặc EKS trên Fargate](/concepts/containers/ec2-or-fargate/).
 
 <Takeaway>Văn bản → cảm xúc, thực thể: Comprehend (loại thực thể riêng: custom entity recognition). Ảnh, video: Rekognition. Dịch ngôn ngữ: Translate. Văn bản → giọng nói: Polly. Giọng nói → văn bản: Transcribe, sau đó truy vấn SQL bằng Athena. Ảnh scan, PDF → văn bản: Textract, sau đó chuyển sang Comprehend. Lưu lượng dữ liệu tăng đột biến: đặt SQS giữa API Gateway và Lambda; tự động xoá dữ liệu sau một năm: TTL của DynamoDB (item hết hạn thường bị xoá trong vòng vài ngày).</Takeaway>
 
 </Scene>
 
-<Scene id="s4" label="Phần 4/5" title="Xử lý batch và dịch vụ AWS trong data center của doanh nghiệp" questions={["exam6_q55", "exam1_q27"]}>
+<Scene id="s4" label="Phần 4/5" title="AWS Batch và AWS Outposts cho on-premises data center" questions={["exam6_q55", "exam1_q27"]}>
 
-<p class="scene-intro">Một số nhu cầu không phù hợp với các dịch vụ đã học, như job xử lý chạy rất lâu hoặc hệ thống bắt buộc nằm trong data center của doanh nghiệp; AWS có dịch vụ riêng cho từng trường hợp.</p>
+<p class="scene-intro">Một số nhu cầu không phù hợp với các dịch vụ đã học, như job xử lý chạy rất lâu hoặc hệ thống bắt buộc nằm trong on-premises data center của doanh nghiệp; AWS có dịch vụ riêng cho từng trường hợp.</p>
 
-Hai yêu cầu cuối của ShopViet không phù hợp với các dịch vụ đã trình bày. Đội nội dung cần xử lý hàng chục nghìn ảnh mỗi đêm (thay đổi kích thước, gắn watermark), mỗi job chạy lâu hơn giới hạn của Lambda. Đồng thời, ShopViet vừa mua lại một công ty ví điện tử: quy định bắt buộc dữ liệu và ứng dụng phải nằm trong data center của công ty này, nhưng đội kỹ thuật cần sử dụng EKS, CloudWatch, IAM thống nhất với phần còn lại của ShopViet.
+Hai yêu cầu cuối của MFTECH không phù hợp với các dịch vụ đã trình bày. Đội nội dung cần xử lý hàng chục nghìn ảnh mỗi đêm (thay đổi kích thước, gắn watermark), mỗi job chạy lâu hơn timeout tối đa của Lambda (15 phút). Đồng thời, MFTECH vừa mua lại một công ty ví điện tử: quy định bắt buộc dữ liệu và ứng dụng phải nằm trong on-premises data center của công ty này, nhưng đội kỹ thuật cần sử dụng EKS, CloudWatch, IAM thống nhất với phần còn lại của MFTECH.
 
 <ScenarioFlow client:visible height={250} legend={["Phương án khuyến nghị", "Khả thi nhưng chưa phù hợp"]} scenarios={[
   { name: "Xử lý ảnh theo batch",
     nodes: [
       { id: "in", x: 20, y: 60, label: "S3: ảnh gốc", kind: "store" },
       { id: "sf", x: 190, y: 60, label: "Step Functions", sub: "điều phối các bước", kind: "net" },
-      { id: "batch", x: 390, y: 60, label: "AWS Batch", sub: "tự động co giãn", kind: "edge" },
+      { id: "batch", x: 390, y: 60, label: "AWS Batch", sub: "tự động scale compute", kind: "edge" },
       { id: "out", x: 610, y: 60, label: "S3: ảnh đã xử lý", kind: "store" },
-      { id: "eks", x: 190, y: 165, label: "EKS, node EC2 tự quản lý", kind: "warn" },
+      { id: "eks", x: 190, y: 165, label: "EKS, self-managed node (EC2)", kind: "warn" },
       { id: "ebs", x: 520, y: 165, label: "EBS", sub: "gắn vào từng node", kind: "store" },
     ],
     options: [
@@ -183,40 +183,40 @@ Hai yêu cầu cuối của ShopViet không phù hợp với các dịch vụ đ
         flows: [{ path: ["in", "sf"], tone: "good" }, { path: ["sf", "batch"], tone: "good", label: "gửi job" }, { path: ["batch", "out"], tone: "good" }],
         text: "**AWS Batch** tiếp nhận job, tự động cấp phát đủ tài nguyên compute (có thể dùng Spot hoặc Fargate) và giải phóng khi hoàn tất. **Step Functions** quản lý thứ tự các bước, trạng thái từng job và tự động retry khi gặp lỗi. Kết quả dung lượng lớn được lưu trên **S3**." },
     ] },
-  { name: "Dữ liệu bắt buộc lưu tại data center",
+  { name: "Dữ liệu bắt buộc lưu tại on-premises data center",
     boxes: [
-      { x: 10, y: 10, w: 410, h: 230, label: "Data center của công ty ví", tone: "onprem" },
+      { x: 10, y: 10, w: 410, h: 230, label: "On-premises data center của công ty ví", tone: "onprem" },
       { x: 470, y: 10, w: 280, h: 230, label: "AWS Region", tone: "region" },
     ],
     nodes: [
       { id: "data", x: 30, y: 50, label: "Dữ liệu khách hàng", kind: "db" },
       { id: "op", x: 200, y: 115, label: "AWS Outposts rack", sub: "EKS, EC2, EBS tại chỗ", kind: "edge" },
-      { id: "snow", x: 30, y: 175, label: "Snowball Edge", sub: "thiết bị vận chuyển", kind: "warn" },
+      { id: "snow", x: 30, y: 175, label: "Snowball Edge", sub: "thiết bị chuyển dữ liệu", kind: "warn" },
       { id: "aws", x: 500, y: 50, label: "API của AWS", sub: "CloudWatch, IAM", kind: "net" },
       { id: "eksr", x: 500, y: 165, label: "EKS trong Region", kind: "ec2" },
     ],
     options: [
-      { name: "EKS tại Region + Direct Connect", verdict: "bad", hide: ["op", "snow"],
+      { name: "EKS trong Region + Direct Connect", verdict: "bad", hide: ["op", "snow"],
         flows: [{ path: ["data", "eksr"], tone: "bad", label: "dữ liệu rời data center" }],
         text: "Kết nối riêng có độ trễ thấp và an toàn, nhưng workload và dữ liệu vẫn nằm trong Region, vi phạm quy định." },
       { name: "Snowball Edge", verdict: "bad", hide: ["op", "eksr"],
         flows: [{ path: ["data", "snow"], tone: "neutral" }, { path: ["snow", "aws"], tone: "bad", dashed: true, label: "chuyển dữ liệu đi" }],
-        text: "Snowball Edge là thiết bị có bộ nhớ và năng lực tính toán để chuyển dữ liệu hoặc xử lý tại biên, không phải nền tảng vận hành Kubernetes lâu dài do AWS quản lý. Snowball Edge hiện không còn cung cấp cho khách hàng mới; với edge computing, AWS hướng tới AWS Outposts." },
+        text: "Snowball Edge là thiết bị có storage và compute để chuyển dữ liệu hoặc xử lý tại biên, không phải nền tảng vận hành Kubernetes lâu dài do AWS quản lý. Snowball Edge hiện không còn cung cấp cho khách hàng mới; với edge computing, AWS hướng tới AWS Outposts." },
       { name: "AWS Outposts", verdict: "good", hide: ["snow", "eksr"],
         flows: [{ path: ["data", "op"], tone: "good", label: "lưu tại chỗ" }, { path: ["op", "aws"], tone: "good", dashed: true, label: "quản lý" }],
         text: "**AWS Outposts** mở rộng hạ tầng, dịch vụ, API và công cụ của AWS tới site của doanh nghiệp: AWS lắp đặt Outpost tại data center, vận hành và giám sát capacity này như một phần của Region. EKS, EC2, EBS chạy ngay tại chỗ, sử dụng cùng API như trong Region. Dữ liệu được lưu và xử lý tại chỗ." },
     ] },
 ]} />
 
-<Takeaway>Job xử lý batch, tự động scale, không quản lý máy chủ: AWS Batch, điều phối bằng Step Functions, kết quả lưu trên S3. Cần dịch vụ AWS trong khi dữ liệu và workload bắt buộc nằm tại data center của doanh nghiệp: AWS Outposts.</Takeaway>
+<Takeaway>Job xử lý batch, tự động scale, AWS Batch quản lý compute environment: AWS Batch, điều phối bằng Step Functions, kết quả lưu trên S3. Cần dịch vụ AWS trong khi dữ liệu và workload bắt buộc nằm tại on-premises data center của doanh nghiệp: AWS Outposts.</Takeaway>
 
 </Scene>
 
-<Scene id="s5" label="Phần 5/5" title="Phân biệt nhanh: các dịch vụ dễ bị chọn nhầm" questions={["exam1_q4", "exam2_q26", "exam5_q32", "exam4_q33", "exam1_q11", "exam2_q4", "exam2_q40", "exam2_q47"]}>
+<Scene id="s5" label="Phần 5/5" title="So sánh các dịch vụ có phạm vi dễ nhầm lẫn" questions={["exam1_q4", "exam2_q26", "exam5_q32", "exam4_q33", "exam1_q11", "exam2_q4", "exam2_q40", "exam2_q47"]}>
 
 <p class="scene-intro">Nhiều dịch vụ có tên hoặc phạm vi gần với yêu cầu nhưng giải quyết vấn đề khác; phân biệt được chúng giúp tránh chọn nhầm.</p>
 
-Khi thiết kế các luồng xử lý của ShopViet, một số dịch vụ có tên hoặc phạm vi gần với yêu cầu nhưng giải quyết vấn đề khác. Chọn từng dịch vụ để xem phạm vi sử dụng, lý do không phù hợp với tình huống của ShopViet và phương án thay thế.
+Khi thiết kế các luồng xử lý của MFTECH, một số dịch vụ có tên hoặc phạm vi gần với yêu cầu nhưng giải quyết vấn đề khác. Chọn từng dịch vụ để xem phạm vi sử dụng, lý do không phù hợp với tình huống của MFTECH và phương án thay thế.
 
 <QuickCompare client:visible items={[
   { name: "Amazon Rekognition",
@@ -237,15 +237,15 @@ Khi thiết kế các luồng xử lý của ShopViet, một số dịch vụ c�
     instead: "File mô tả trên S3 kích hoạt Lambda, Lambda gọi **Comprehend custom entity recognition**." },
   { name: "Amazon SageMaker AI",
     use: "Xây dựng, huấn luyện và triển khai model ML với hạ tầng được quản lý; phù hợp khi cần model riêng và có đội ngũ ML.",
-    notHere: "Đội API của ShopViet cần nơi chạy container Docker mà không quản lý máy chủ. SageMaker AI không phải dịch vụ điều phối container cho ứng dụng; với bài toán phân tích văn bản phổ biến, tự huấn luyện model tốn công hơn dùng AI service dựng sẵn.",
+    notHere: "Đội API của MFTECH cần nơi chạy container Docker mà không quản lý EC2 instance. SageMaker AI không phải dịch vụ điều phối container cho ứng dụng; với bài toán phân tích văn bản phổ biến, tự huấn luyện model tốn công hơn dùng AI service dựng sẵn.",
     instead: "Container API: **ECS hoặc EKS với Fargate**. Phân tích văn bản không có đội ML: **Comprehend**." },
   { name: "Amazon Lightsail",
     use: "Cách đơn giản nhất để bắt đầu với AWS cho website và ứng dụng web: instance (virtual private server), container service, managed database, load balancer, CDN với mức giá cố định hằng tháng.",
-    notHere: "Backend xử lý giao dịch của ví điện tử cần nhiều compute và bộ nhớ, chạy dài và co giãn theo lưu lượng, trong khi đội kỹ thuật không muốn cấp phát hay vá máy chủ ảo. Chạy trên Lightsail instance nghĩa là vẫn quản lý một nhóm máy chủ ảo.",
+    notHere: "Backend xử lý giao dịch của ví điện tử cần nhiều compute và bộ nhớ, chạy dài và co giãn theo lưu lượng, trong khi đội kỹ thuật không muốn cấp phát hay vá instance. Chạy trên Lightsail instance (virtual private server) nghĩa là vẫn quản lý một nhóm instance.",
     instead: "API Gateway + Lambda để kiểm tra hợp lệ, backend chạy dài hạn trên **ECS với Fargate**." },
   { name: "Amazon AppFlow",
     use: "Trao đổi dữ liệu giữa ứng dụng SaaS (Salesforce, Zendesk, Slack, ServiceNow…) và dịch vụ AWS như S3, Redshift; flow chạy theo lịch, theo sự kiện hoặc theo yêu cầu. Có Custom Connector SDK để kết nối API riêng hoặc hệ thống on-premises.",
-    notHere: "Các nhà cung cấp của ShopViet chủ động đẩy file bằng phần mềm SFTP sẵn có và không thay đổi quy trình. AppFlow chủ động lấy dữ liệu qua API của ứng dụng nguồn; SFTP không có trong danh sách ứng dụng được hỗ trợ.",
+    notHere: "Các nhà cung cấp của MFTECH chủ động đẩy file bằng phần mềm SFTP sẵn có và không thay đổi quy trình. AppFlow chủ động lấy dữ liệu qua API của ứng dụng nguồn; SFTP không có trong danh sách ứng dụng được hỗ trợ.",
     instead: "**AWS Transfer Family** (SFTP endpoint được quản lý, lưu thẳng vào S3, IAM role theo từng nhà cung cấp)." },
   { name: "Amazon Timestream",
     use: "Database chuỗi thời gian (time series) serverless cho dữ liệu đo lường như telemetry, metric. Timestream for LiveAnalytics đã đóng với khách hàng mới từ 20/6/2025; AWS khuyến nghị Timestream for InfluxDB.",
@@ -253,19 +253,19 @@ Khi thiết kế các luồng xử lý của ShopViet, một số dịch vụ c�
     instead: "**Amazon RDS for SQL Server** Multi-AZ, mã hoá khi lưu trữ bằng KMS key." },
   { name: "AWS IoT Core rule → Amazon SNS",
     use: "IoT rule đọc message MQTT của thiết bị và thực hiện action: ghi DynamoDB, lưu S3, gửi Kinesis, gọi Lambda, gửi SQS, publish SNS… SNS **đẩy** message tới subscriber (SQS, Lambda, HTTP(S), email…).",
-    notHere: "Ứng dụng trên EC2 bị quá tải và mất dữ liệu vị trí. Ứng dụng không chủ động đọc (poll) message từ SNS topic mà nhận message do SNS đẩy tới; SNS không phải hàng đợi để ứng dụng lấy message theo tốc độ xử lý của mình.",
-    instead: "**Amazon SQS** làm lớp đệm, ứng dụng poll hàng đợi theo tốc độ của mình. Khi thiết bị đi qua IoT Core, có thể dùng action SQS của IoT rule." },
+    notHere: "Ứng dụng trên EC2 bị quá tải và mất dữ liệu vị trí. Ứng dụng không chủ động đọc (poll) message từ SNS topic mà nhận message do SNS đẩy tới; SNS không phải queue để ứng dụng lấy message theo tốc độ xử lý của mình.",
+    instead: "**Amazon SQS** làm lớp đệm, ứng dụng poll queue theo tốc độ của mình. Khi thiết bị đi qua IoT Core, có thể dùng action SQS của IoT rule." },
 ]} />
 
 Chi tiết các phương án thay thế: [ECS và EKS với Fargate](/concepts/containers/ec2-or-fargate/), [AWS Transfer Family](/concepts/storage-migration/data-transfer/), [RDS Multi-AZ](/concepts/rds/multi-az-read-replicas/), [SQS làm lớp đệm](/concepts/messaging/queues/).
 
-<Takeaway>Văn bản: Comprehend. Ảnh, video: Rekognition. Dịch: Translate. Giọng nói ↔ văn bản: Transcribe (vào là âm thanh), Polly (ra là âm thanh). Container không quản lý máy chủ: ECS/EKS với Fargate, không phải SageMaker AI hay Lightsail. Nhà cung cấp gửi file qua SFTP: Transfer Family, không phải AppFlow. Database quan hệ: RDS, không phải Timestream. Cần lớp đệm để không mất dữ liệu: SQS, không phải SNS.</Takeaway>
+<Takeaway>Văn bản: Comprehend. Ảnh, video: Rekognition. Dịch: Translate. Giọng nói ↔ văn bản: Transcribe (vào là âm thanh), Polly (ra là âm thanh). Container không quản lý EC2 instance: ECS/EKS với Fargate, không phải SageMaker AI hay Lightsail. Nhà cung cấp gửi file qua SFTP: Transfer Family, không phải AppFlow. Database quan hệ: RDS, không phải Timestream. Cần lớp đệm để không mất dữ liệu: SQS, không phải SNS.</Takeaway>
 
 </Scene>
 
 <Scene id="challenge" label="Bài tập" title="Phân loại tác vụ theo dịch vụ" questions={["exam6_q22", "exam4_q30", "exam6_q38", "exam5_q58", "exam1_q27", "exam2_q26"]}>
 
-Phân loại từng tác vụ của ShopViet vào service tương ứng. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
+Phân loại từng tác vụ của MFTECH vào service tương ứng. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
 <SortGame client:visible
   bins={[
@@ -284,15 +284,15 @@ Phân loại từng tác vụ của ShopViet vào service tương ứng. Trên t
   ]}
 />
 
-Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTECH, phương án nào phù hợp?
 
 <Quiz client:visible items={[
   { q: "Mỗi lập trình viên có một AWS account riêng. Yêu cầu: khi một account vượt ngân sách, việc tạo thêm tài nguyên bị chặn tự động, không cần viết mã hay giám sát thủ công. Phương án nào đáp ứng yêu cầu?",
     opts: ["Lambda chạy hằng ngày đọc Cost Explorer API và tự xử lý", "AWS Budgets với alert và budget action gắn IAM policy DenyAll", "Gửi báo cáo Cost Explorer cho từng người hằng ngày"],
     a: 1,
     why: "Budget action có sẵn trong Budgets: khi vượt ngưỡng, action gắn IAM policy được chạy tự động (hoặc sau khi phê duyệt, tuỳ cấu hình). Lambda tự phát triển phải tự bảo trì; báo cáo phụ thuộc vào việc người nhận có đọc hay không." },
-  { q: "ShopViet chạy EC2, Fargate, Lambda và một endpoint SageMaker với tải ổn định. Yêu cầu: giảm giá dài hạn cho toàn bộ với số plan tối thiểu. Phương án nào phù hợp?",
-    opts: ["Compute Savings Plans + SageMaker AI Savings Plans", "EC2 Instance Savings Plans + Compute Savings Plans", "Reserved Instance cho từng EC2"],
+  { q: "MFTECH chạy EC2, Fargate, Lambda và một endpoint SageMaker với tải ổn định. Yêu cầu: giảm giá dài hạn cho toàn bộ với số plan tối thiểu. Phương án nào phù hợp?",
+    opts: ["Compute Savings Plans + SageMaker AI Savings Plans", "EC2 Instance Savings Plans + Compute Savings Plans", "Reserved Instance cho từng EC2 instance"],
     a: 0,
     why: "Compute Savings Plans áp dụng cho EC2, Fargate, Lambda. SageMaker cần SageMaker AI Savings Plans. EC2 Reserved Instance không áp dụng cho Fargate hay Lambda, và Convertible RI muốn đổi instance family phải thực hiện exchange thủ công." },
   { q: "Chi phí EC2 và RDS cao hơn nhu cầu thực tế. Yêu cầu: xác định tài nguyên không được sử dụng và tài nguyên có kích thước quá lớn. Công cụ nào phù hợp?",
@@ -302,11 +302,11 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
   { q: "Tổng đài lưu ghi âm mọi cuộc gọi vào S3. Đội chăm sóc khách hàng cần tự viết SQL để xác định nội dung phàn nàn của khách hàng. Phương án nào phù hợp?",
     opts: ["Transcribe chuyển thành văn bản, Athena truy vấn SQL", "Kinesis Data Streams đọc file âm thanh", "Amazon Quick Sight đọc trực tiếp file âm thanh"],
     a: 0,
-    why: "Trước tiên cần chuyển âm thanh thành văn bản: Transcribe. Athena thực thi SQL trực tiếp trên dữ liệu trong S3, không cần quản lý máy chủ." },
-  { q: "Quy định bắt buộc dữ liệu ví điện tử lưu tại data center, nhưng đội kỹ thuật cần sử dụng EKS và CloudWatch như trên AWS. Phương án nào phù hợp?",
+    why: "Trước tiên cần chuyển âm thanh thành văn bản: Transcribe. Athena thực thi SQL trực tiếp trên dữ liệu trong S3 và là dịch vụ serverless." },
+  { q: "Quy định bắt buộc dữ liệu ví điện tử lưu tại on-premises data center, nhưng đội kỹ thuật cần sử dụng EKS và CloudWatch như trên AWS. Phương án nào phù hợp?",
     opts: ["Snowball Edge", "EKS trong Region qua Direct Connect", "AWS Outposts"],
     a: 2,
-    why: "Outposts mở rộng hạ tầng và dịch vụ AWS tới data center của doanh nghiệp; dữ liệu được lưu và xử lý tại chỗ. Với Direct Connect, workload vẫn chạy trong Region." },
+    why: "Outposts mở rộng hạ tầng và dịch vụ AWS tới on-premises data center của doanh nghiệp; dữ liệu được lưu và xử lý tại chỗ. Với Direct Connect, workload vẫn chạy trong Region." },
   { q: "Đội nội dung đã dùng Textract trích xuất văn bản từ hàng nghìn bài báo PDF và cần biết sắc thái, chủ đề của từng bài mà không xây dựng model. Phương án nào phù hợp?",
     opts: ["Rekognition phân tích bố cục trang để xác định sắc thái", "Comprehend phân tích sentiment và entity, kết quả lưu trên S3", "Translate chuyển văn bản sang tiếng Anh rồi lưu vào DynamoDB"],
     a: 1,

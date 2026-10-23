@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./kinesis-sims.css";
 
-// Build a streaming pipeline for one ShopViet need: pick a service for every stage,
+// Build a streaming pipeline for one MFTECH need: pick a service for every stage,
 // press run and a record walks through. The first stage that does not fit stops it
 // and says why. Covers Kinesis Data Streams, Data Firehose, Managed Service for Apache
 // Flink, OpenSearch + Amazon Quick Sight, DMS from S3, Lambda vs
@@ -20,11 +20,11 @@ const NEEDS: Need[] = [
   {
     name: "Gợi ý sản phẩm theo từng click",
     about: "Mỗi click trên web phải được phân tích ngay để gợi ý sản phẩm, không được mất click khi tải tăng đột biến, và kết quả được lưu vào S3.",
-    source: ["Web ShopViet", "click"],
+    source: ["Web MFTECH", "click"],
     slots: [
       { name: "Thu thập", opts: [
         KDS("Tiếp nhận hàng nghìn click mỗi giây, lưu giữ dữ liệu để đọc lại khi bước tiếp theo gặp lỗi."),
-        { l1: "EC2 ghi vào Aurora", l2: "kiến trúc hiện tại", ok: false, why: "Máy chủ và database là điểm nghẽn; khi tải tăng đột biến, click bị mất." },
+        { l1: "EC2 ghi vào Aurora", l2: "kiến trúc hiện tại", ok: false, why: "Các EC2 instance và database là điểm nghẽn; khi tải tăng đột biến, click bị mất." },
         { l1: "SQS + EC2", l2: "thư viện tự phát triển", ok: false, why: "Phần phân tích trên EC2 phải tự phát triển; SQS không cung cấp công cụ phân tích stream." },
       ] },
       { name: "Phân tích", opts: [
@@ -37,7 +37,7 @@ const NEEDS: Need[] = [
         { l1: "Lambda tự ghi file", ok: false, why: "Phương án hoạt động được nhưng phải tự xử lý gộp dữ liệu, retry và đặt tên file." },
       ] },
     ],
-    result: "Kinesis Data Streams tiếp nhận, Managed Service for Apache Flink phân tích (có thể bằng SQL), Firehose lưu vào S3. Không có máy chủ cần quản lý.",
+    result: "Kinesis Data Streams tiếp nhận, Managed Service for Apache Flink phân tích (có thể bằng SQL), Firehose lưu vào S3. Kiến trúc serverless, không có EC2 instance cần quản lý.",
   },
   {
     name: "Thu thập vị trí shipper qua REST API",
@@ -93,7 +93,7 @@ const NEEDS: Need[] = [
   {
     name: "Ẩn thông tin thẻ trước khi lưu trữ",
     about: "Hệ thống phát sinh hàng trăm nghìn giao dịch mỗi giờ. Nhiều ứng dụng nội bộ cần đọc giao dịch gốc; bản đã loại bỏ thông tin nhạy cảm được lưu vào document database để truy vấn với độ trễ thấp.",
-    source: ["Web ShopViet", "giao dịch"],
+    source: ["Web MFTECH", "giao dịch"],
     slots: [
       { name: "Thu thập", opts: [
         KDS("Nhiều ứng dụng nội bộ cùng đọc luồng giao dịch gốc."),
@@ -123,10 +123,10 @@ const NEEDS: Need[] = [
       { name: "Xử lý", opts: [
         { l1: "ECS trên Fargate", ok: true, why: "Container serverless, không bị giới hạn 15 phút như Lambda, scale theo số task." },
         { l1: "Lambda + Step Functions", ok: false, why: "Timeout tối đa của một Lambda function tiêu chuẩn là 900 giây (15 phút); tác vụ 30 phút vượt quá giới hạn." },
-        { l1: "EC2 Auto Scaling", ok: false, why: "Phương án hoạt động được nhưng phải quản lý máy chủ, không đáp ứng yêu cầu serverless." },
+        { l1: "EC2 Auto Scaling", ok: false, why: "Phương án hoạt động được nhưng phải quản lý EC2 instance, không đáp ứng yêu cầu serverless." },
       ] },
     ],
-    result: "Kinesis Data Streams tiếp nhận dữ liệu, ECS task trên Fargate thực thi tác vụ dài mà không cần quản lý máy chủ.",
+    result: "Kinesis Data Streams tiếp nhận dữ liệu, ECS task trên Fargate thực thi tác vụ dài mà không cần quản lý EC2 instance.",
   },
   {
     name: "Ứng dụng đã phát triển cho Kafka",
@@ -147,11 +147,11 @@ const NEEDS_EN: Need[] = [
   {
     name: "Product recommendations on every click",
     about: "Every click on the website must be analyzed immediately to recommend products, no click may be lost during traffic spikes, and the results are stored in S3.",
-    source: ["ShopViet web", "clicks"],
+    source: ["MFTECH web", "clicks"],
     slots: [
       { name: "Ingest", opts: [
         KDS("Takes in thousands of clicks per second and retains the data so it can be reread if the next step fails."),
-        { l1: "EC2 writing to Aurora", l2: "current architecture", ok: false, why: "The servers and the database are the bottleneck; during traffic spikes, clicks are lost." },
+        { l1: "EC2 writing to Aurora", l2: "current architecture", ok: false, why: "The EC2 instances and the database are the bottleneck; during traffic spikes, clicks are lost." },
         { l1: "SQS + EC2", l2: "in-house library", ok: false, why: "The analysis on EC2 must be developed in-house; SQS provides no stream analytics tools." },
       ] },
       { name: "Analyze", opts: [
@@ -164,7 +164,7 @@ const NEEDS_EN: Need[] = [
         { l1: "Lambda writes files", ok: false, why: "This works, but batching, retries and file naming must be handled yourself." },
       ] },
     ],
-    result: "Kinesis Data Streams ingests, Managed Service for Apache Flink analyzes (SQL is possible), Firehose stores to S3. No servers to manage.",
+    result: "Kinesis Data Streams ingests, Managed Service for Apache Flink analyzes (SQL is possible), Firehose stores to S3. A serverless architecture with no EC2 instances to manage.",
   },
   {
     name: "Collect courier locations through a REST API",
@@ -220,7 +220,7 @@ const NEEDS_EN: Need[] = [
   {
     name: "Mask card data before storage",
     about: "The system produces hundreds of thousands of transactions per hour. Several internal apps need to read the original transactions; a copy with sensitive data removed is stored in a document database for low-latency queries.",
-    source: ["ShopViet web", "transactions"],
+    source: ["MFTECH web", "transactions"],
     slots: [
       { name: "Ingest", opts: [
         KDS("Several internal apps read the original transaction stream."),
@@ -250,10 +250,10 @@ const NEEDS_EN: Need[] = [
       { name: "Process", opts: [
         { l1: "ECS on Fargate", ok: true, why: "Serverless containers, not limited to 15 minutes like Lambda, scaling with the number of tasks." },
         { l1: "Lambda + Step Functions", ok: false, why: "The maximum timeout of a standard Lambda function is 900 seconds (15 minutes); a 30-minute job exceeds the limit." },
-        { l1: "EC2 Auto Scaling", ok: false, why: "This works, but servers must be managed, which does not meet the serverless requirement." },
+        { l1: "EC2 Auto Scaling", ok: false, why: "This works, but EC2 instances must be managed, which does not meet the serverless requirement." },
       ] },
     ],
-    result: "Kinesis Data Streams ingests the data, and an ECS task on Fargate runs the long job with no servers to manage.",
+    result: "Kinesis Data Streams ingests the data, and an ECS task on Fargate runs the long job with no EC2 instances to manage.",
   },
   {
     name: "Apps already built for Kafka",
@@ -356,16 +356,16 @@ export default function StreamPipelineSim() {
   }
 
   return (
-    <div className="stage kpb">
-      <div className="kpb-row" role="group" aria-label={L({ vi: "Yêu cầu của ShopViet", en: "ShopViet requirements" })}>
+    <div className="stage">
+      <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Yêu cầu của MFTECH", en: "MFTECH requirements" })}>
         {L({ vi: NEEDS, en: NEEDS_EN }).map((n, i) => (
           <button key={i} className="chip" aria-pressed={i === ni} onClick={() => pickNeed(i)} disabled={busy && i !== ni}>{n.name}</button>
         ))}
       </div>
-      <p className="kpb-about">{need.about}</p>
+      <p className="mx-4 mt-2.5 mb-1.5 text-step--1">{need.about}</p>
       {need.slots.map((s, si) => (
-        <div key={si} className="stage-bar kpb-slot" role="group" aria-label={s.name}>
-          <span className="label">{si + 1} · {s.name}</span>
+        <div key={si} className="stage-bar border-b-0 pb-1" role="group" aria-label={s.name}>
+          <span className="label min-w-[120px]">{si + 1} · {s.name}</span>
           {shown(s.opts.length, si + ni).map((oi) => {
             const o = s.opts[oi];
             return (
@@ -377,8 +377,8 @@ export default function StreamPipelineSim() {
         </div>
       ))}
       <div className="stage-bar">
-        <span className="kpb-note">{ready ? L({ vi: "Đã chọn dịch vụ cho tất cả các bước.", en: "A service is chosen for every step." }) : L({ vi: "Chọn một dịch vụ cho mỗi bước.", en: "Choose one service for each step." })}</span>
-        <button className="btn primary" onClick={run} disabled={busy || !ready}>{L({ vi: "Chạy mô phỏng", en: "Run simulation" })}</button>
+        <span className="text-step--1 text-muted">{ready ? L({ vi: "Đã chọn dịch vụ cho tất cả các bước.", en: "A service is chosen for every step." }) : L({ vi: "Chọn một dịch vụ cho mỗi bước.", en: "Choose one service for each step." })}</span>
+        <button className="btn primary ml-auto" onClick={run} disabled={busy || !ready}>{L({ vi: "Chạy mô phỏng", en: "Run simulation" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 40 820 120" role="img" aria-label={L({ vi: `Pipeline: ${need.source[0]}, sau đó ${need.slots.map((s) => s.name).join(", ")}`, en: `Pipeline: ${need.source[0]}, then ${need.slots.map((s) => s.name).join(", ")}` })}>
@@ -404,12 +404,12 @@ export default function StreamPipelineSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="kss-hint">{L({ vi: <>Chọn dịch vụ cho từng bước, sau đó chọn <b>Chạy mô phỏng</b>.</>, en: <>Choose a service for each step, then choose <b>Run simulation</b>.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn dịch vụ cho từng bước, sau đó chọn <b>Chạy mô phỏng</b>.</>, en: <>Choose a service for each step, then choose <b>Run simulation</b>.</> })}</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) =>
               e.state === undefined ? (
-                <li key={i} className={`kss-result ${e.ok ? "ok" : "bad"}`}>{L(e.msg)}</li>
+                <li key={i} className={`mt-1.5 block rounded-[12px] px-2.5 py-2 ${e.ok ? "bg-ok-soft" : "bg-bad-soft"}`}>{L(e.msg)}</li>
               ) : (
                 <li key={i}>
                   <span className={`tag kss-tag ${e.state === "pass" ? "hit" : "bad"}`}>{e.state === "pass" ? L({ vi: "PHÙ HỢP", en: "FIT" }) : L({ vi: "KHÔNG PHÙ HỢP", en: "NOT A FIT" })}</span>

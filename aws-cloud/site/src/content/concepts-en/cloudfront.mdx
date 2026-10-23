@@ -76,10 +76,10 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s3", label: "3 · Request processing at the edge" },
   { href: "#en-s4", label: "4 · CloudFront and Global Accelerator" },
   { href: "#en-s5", label: "5 · Regional edge caches, uploads and dynamic content" },
-  { href: "#en-s6", label: "6 · Quick comparison" },
+  { href: "#en-s6", label: "6 · Settings compared" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-ShopViet's static content is already distributed through **Amazon CloudFront** (see the Global Infrastructure lesson). The system is now expanding to paid video courses, card payments and users in many countries, which leads to three requirements: the S3 bucket must not be accessed directly, paid content must be served only to entitled users, and the service must keep running when the primary origin fails.
+MFTECH's static content is already distributed through **Amazon CloudFront** (see the Global Infrastructure lesson). The system is now expanding to paid video courses, card payments and users in many countries, which leads to three requirements: the S3 bucket must not be accessed directly, paid content must be served only to entitled users, and the service must keep running when the primary origin fails.
 </Story>
 
 <Scene id="en-s1" label="Part 1/6" title="Restricting access to the S3 origin through CloudFront" questions={["exam6_q54", "exam3_q60", "exam5_q15"]}>
@@ -115,7 +115,7 @@ When the bucket is configured as public, clients can access the S3 endpoint dire
     options: [
       { name: "Security group on EC2", verdict: "bad",
         flows: [{ path: ["no", "cf", "s3"], tone: "bad", label: "still gets in" }],
-        text: "A security group applies only to network interfaces (for example EC2); requests to CloudFront and S3 do not pass through a security group, so they are not restricted." },
+        text: "A security group applies only to network interfaces (for example, an EC2 instance's); requests to CloudFront and S3 do not pass through a security group, so they are not restricted." },
       { name: "WAF on CloudFront + OAI", verdict: "good",
         flows: [{ path: ["ok", "waf", "cf", "s3"], tone: "good" }, { path: ["no", "waf"], blocked: true, label: "blocked" }],
         text: "Associate an **AWS WAF** web ACL that contains an **IP set** with the CloudFront distribution so that only the allowed IP ranges are accepted, combined with **OAI/OAC** to prevent direct access to S3. Both control layers must be applied together." },
@@ -128,17 +128,17 @@ When the bucket is configured as public, clients can access the S3 endpoint dire
 
 <Scene id="en-s2" label="Part 2/6" title="CloudFront origin types" questions={["exam1_q62", "exam6_q5", "exam3_q40", "exam2_q2", "exam3_q42", "exam3_q48", "exam1_q1"]}>
 
-<p class="scene-intro">CloudFront does not keep the original content itself; it fetches it from a source called the origin and keeps a copy at edge locations near users.</p>
+<p class="scene-intro">CloudFront does not store the original content; it fetches objects from the origin and stores copies in the cache at edge locations near users.</p>
 
 How the edge cache works: the first request (cache miss) is forwarded to the origin; later requests within the TTL (cache hit) are served directly at the edge location.
 
 <EdgeCacheDemo client:visible />
 
-Besides S3, CloudFront supports custom origins, including an Application Load Balancer, EC2 and on-premises servers. Select each requirement to see the matching architecture:
+Besides S3, CloudFront supports custom origins, including an Application Load Balancer, EC2 instances and on-premises HTTP servers. Select each requirement to see the matching architecture:
 
 <RequirementPicker client:visible items={[
   { need: "The backend must stay in a data center in the US, and users in Asia require low latency", answer: "CloudFront with a custom origin pointing to on premises",
-    why: "A custom origin can be a server outside AWS, so the backend does not need to move." },
+    why: "A custom origin can be an HTTP server outside AWS, so the backend does not need to move." },
   { need: "A dynamic web application behind an ALB, with heavy read load overloading the database", answer: "CloudFront in front of the ALB + Aurora Replica",
     why: "CloudFront caches the cacheable responses; an Aurora Replica takes the remaining read load." },
   { need: "A static website, serverless architecture, cost-optimized", answer: "S3 + CloudFront + Route 53 Alias",
@@ -151,13 +151,13 @@ Besides S3, CloudFront supports custom origins, including an Application Load Ba
     why: "Each data tier uses its matching cache layer." },
 ]} />
 
-<Takeaway>CloudFront supports S3, ALB, EC2 and on-premises servers as origins; besides reducing latency, CloudFront reduces the load on the origin and its data transfer costs.</Takeaway>
+<Takeaway>CloudFront supports S3, ALB, EC2 instances and on-premises HTTP servers as origins; besides reducing latency, CloudFront reduces the load on the origin and its data transfer costs.</Takeaway>
 
 </Scene>
 
 <Scene id="en-s3" label="Part 3/6" title="How a request is processed at the edge location" questions={["exam6_q62", "exam1_q38", "exam4_q63", "exam5_q15", "exam5_q13", "exam5_q57"]}>
 
-<p class="scene-intro">An edge location does not only serve cached content; it is also the first place a request is checked, before it reaches ShopViet's system.</p>
+<p class="scene-intro">An edge location does not only serve cached content; it is also the first place a request is checked, before it is forwarded to MFTECH's origin.</p>
 
 Before forwarding a request to the origin, CloudFront can apply the following mechanisms at the edge location: TLS termination with an ACM certificate, evaluation by AWS WAF, geo restriction, signed URL/cookie validation, field-level encryption and origin selection by cache behavior. The simulation arranges these mechanisms into a chain for illustration. Choose a scenario, change the configuration and send a request to see the corresponding processing step.
 
@@ -169,7 +169,7 @@ Before forwarding a request to the origin, CloudFront can apply the following me
 
 <Scene id="en-s4" label="Part 4/6" title="CloudFront, S3 Transfer Acceleration and AWS Global Accelerator" questions={["exam5_q21", "exam6_q58", "exam1_q59", "exam3_q8", "exam4_q58", "exam5_q55", "exam2_q22"]}>
 
-<p class="scene-intro">Several AWS services use the global edge network to speed things up; each suits a different kind of traffic.</p>
+<p class="scene-intro">Several AWS services use the global edge network to reduce latency and increase throughput; each suits a different kind of traffic.</p>
 
 The three services all use the AWS edge network but serve different purposes. Global Accelerator failover was covered in the Global Infrastructure lesson; this part summarizes the selection criteria by requirement.
 
@@ -191,7 +191,7 @@ The three services all use the AWS edge network but serve different purposes. Gl
 
 CloudFront caches at two tiers. **POPs** (edge locations) serve users directly and keep popular content. **Regional edge caches** sit between the POPs and the origin and have a larger cache than an individual POP, so objects that become less popular (older product photos, user-generated content, news that suddenly regains interest) stay close to users after a POP has removed them. When neither tier has the object, the origin response is cached at both the regional edge cache and the POP; the POPs of an area share the regional edge cache, which removes repeated requests to the origin. Both tiers belong to CloudFront and serve HTTP/HTTPS only; an application that uses UDP uses AWS Global Accelerator (part 4).
 
-Not every request goes through a regional edge cache: requests that use PUT, POST, PATCH, OPTIONS or DELETE, and dynamic requests (as determined at request time), go from the POP directly to the origin; when the origin is S3 and the optimal regional edge cache is in the same Region as the bucket, the POP also goes to the bucket directly. Besides product images, two more ShopViet flows use the same distribution: customers upload review photos to an S3 bucket, and shipping partners look up order status through an API. Choose a scenario and a configuration to watch the request path:
+Not every request goes through a regional edge cache: requests that use PUT, POST, PATCH, OPTIONS or DELETE, and dynamic requests (as determined at request time), go from the POP directly to the origin; when the origin is S3 and the optimal regional edge cache is in the same Region as the bucket, the POP also goes to the bucket directly. Besides product images, two more MFTECH flows use the same distribution: customers upload review photos to an S3 bucket, and shipping partners look up order status through an API. Choose a scenario and a configuration to watch the request path:
 
 <TieredPathSim client:visible />
 
@@ -203,16 +203,16 @@ Not every request goes through a regional edge cache: requests that use PUT, POS
 
 </Scene>
 
-<Scene id="en-s6" label="Part 6/6" title="Quick comparison of settings that are easy to confuse" questions={["exam4_q63", "exam5_q7", "exam5_q15", "exam6_q62", "exam4_q53", "exam5_q30", "exam2_q17"]}>
+<Scene id="en-s6" label="Part 6/6" title="CloudFront settings with similar names compared" questions={["exam4_q63", "exam5_q7", "exam5_q15", "exam6_q62", "exam4_q53", "exam5_q30", "exam2_q17"]}>
 
 <p class="scene-intro">Many CloudFront settings have similar names; telling them apart helps you pick the right one for each requirement.</p>
 
-Some CloudFront settings have names close to a real requirement but solve a different problem. Select each item to see when to use it, why it does not fit the matching ShopViet situation, and what fits instead:
+Some CloudFront settings have names close to a real requirement but solve a different problem. Select each item to see when to use it, why it does not fit the matching MFTECH situation, and what fits instead:
 
 <QuickCompare client:visible items={[
   { name: "Price class",
     use: "Limits the set of edge locations that serve the distribution to the maximum price you want to pay: `PriceClass_100`, `PriceClass_200` or `PriceClass_All`. By default CloudFront serves from edge locations in all regions. With a price class other than `PriceClass_All`, CloudFront serves from the lowest-latency edge location within the price class; viewers in excluded regions may see slower performance.",
-    notHere: "ShopViet must serve images from S3 and the API from an ALB in one distribution, with a standby origin. A price class only concerns cost and the set of edge locations; it does not route requests to origins.",
+    notHere: "MFTECH must serve images from S3 and the API from an ALB in one distribution, with a standby origin. A price class only concerns cost and the set of edge locations; it does not route requests to origins.",
     instead: "**Cache behaviors** by path pattern (`/images/*` to S3, `/api/*` to the ALB) and an **origin group** for failover (part 3)." },
   { name: "Origin request policy",
     use: "Chooses which viewer query strings, headers and cookies go into the origin request without being part of the cache key, for example when the origin needs data for analytics. Values in the cache key are forwarded to the origin automatically. AWS provides managed policies such as `AllViewer` and `AllViewerExceptHostHeader`.",
@@ -228,7 +228,7 @@ Some CloudFront settings have names close to a real requirement but solve a diff
     instead: "ALB + an Auto Scaling group across multiple AZs; Aurora MySQL with an Aurora Replica in another AZ." },
   { name: "Cognito user authentication on CloudFront",
     use: "A CloudFront distribution has no setting that authenticates users with an Amazon Cognito user pool. To check sign-in at the edge you write the function yourself: **Lambda@Edge** on the viewer request event inspects tokens and can make network calls to confirm user credentials; **CloudFront Functions** can only validate signed tokens such as JWTs. The whole sign-in, redirect and token check flow is code the team writes and runs.",
-    notHere: "A social media application runs on EC2 behind an ALB, fronted by CloudFront; the team wants to offload user authentication from the application servers with minimal development effort. Authenticating at CloudFront means writing and maintaining a Lambda@Edge function.",
+    notHere: "A social media application runs on EC2 instances behind an ALB, fronted by CloudFront; the team wants to offload user authentication from the application servers with minimal development effort. Authenticating at CloudFront means writing and maintaining a Lambda@Edge function.",
     instead: "An **ALB** HTTPS listener rule with the `authenticate-cognito` action using a **Cognito user pool** (an identity pool only issues temporary AWS credentials; it does not authenticate users for the application). With CloudFront in front of the ALB: forward all headers, cookies and query strings, and use HTTPS port 443 along the whole path." },
   { name: "CloudFront in front of a dynamic site during a flash sale",
     use: "Caches the cacheable part of the content at the edge and accelerates the delivery of dynamic content.",
@@ -259,14 +259,14 @@ Sort each feature into the matching service. On a mobile device: select a card, 
   ]}
 />
 
-Check your understanding: as the designer of the ShopViet system, which option is right?
+Check your understanding: as the designer of the MFTECH system, which option is right?
 
 <Quiz client:visible items={[
   { q: "Product images are stored in S3. Requirement: users access images only through CloudFront, not directly from the bucket. Which configuration meets the requirement?",
     opts: ["Enable S3 Transfer Acceleration", "Create an origin access identity/control and update the bucket policy", "Place the bucket in a private subnet"],
     a: 1,
     why: "OAI/OAC is CloudFront's identity; the bucket policy grants read access only to that identity. An S3 bucket does not belong to any subnet, so the subnet option does not apply." },
-  { q: "The distribution uses the custom domain shopviet.vn over HTTPS; the origin is in ap-southeast-1. In which Region must the ACM certificate be created?",
+  { q: "The distribution uses the custom domain mftech.vn over HTTPS; the origin is in ap-southeast-1. In which Region must the ACM certificate be created?",
     opts: ["ap-southeast-1, the same Region as the origin", "us-east-1", "Any Region"],
     a: 1,
     why: "CloudFront uses only ACM certificates in us-east-1 (N. Virginia), regardless of the origin's Region." },
@@ -278,7 +278,7 @@ Check your understanding: as the designer of the ShopViet system, which option i
     opts: ["Distribute through CloudFront", "Move to S3 Glacier", "Enable S3 Transfer Acceleration"],
     a: 0,
     why: "Data transfer from an AWS origin such as S3 to CloudFront is free, and CloudFront serves from a cache close to users. S3 Transfer Acceleration speeds up transfers but does not cache and can incur additional data transfer charges." },
-  { q: "ShopViet wants to lower CloudFront delivery cost and accepts higher latency for users in some regions. Which setting meets the requirement?",
+  { q: "MFTECH wants to lower CloudFront delivery cost and accepts higher latency for users in some regions. Which setting meets the requirement?",
     opts: ["Choose a price class other than PriceClass_All", "Create an origin group", "Enable geo restriction"],
     a: 0,
     why: "A price class limits the set of edge locations by price; users in excluded regions are still served, from a more distant edge location. Geo restriction blocks users by country; an origin group is for failover." },

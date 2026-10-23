@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./migration-sims.css";
 
-// ShopViet replaces its two self-managed SFTP servers on EC2 (Elastic IPs, Linux accounts,
+// MFTECH replaces its two self-managed SFTP servers on EC2 (Elastic IPs, Linux accounts,
 // shared file system) with AWS Transfer Family. Pick the endpoint type, how source IPs are
 // restricted and the storage behind the server, then let a supplier (allowed IP) and an
 // unknown address try to connect.
@@ -126,35 +126,35 @@ export default function SftpExchangeSim() {
   const filterLabel = ep === "internal" ? "" : filter === "sg" ? (ep === "public" ? tr({ vi: "SG: không áp dụng", en: "SG: not applicable" }) : "Security group") : filter === "waf" ? tr({ vi: "WAF: không áp dụng", en: "WAF: not applicable" }) : tr({ vi: "không lọc IP", en: "no IP filter" });
 
   return (
-    <div className="stage mgx">
-      <div className="mgx-row">
-        <span className="mgx-lbl">{tr({ vi: "Yêu cầu", en: "Requirements" })}</span>
-        <span className="mgx-req">{tr({ vi: "dịch vụ được quản lý", en: "managed service" })}</span>
-        <span className="mgx-req">{tr({ vi: "chỉ IP nhà cung cấp", en: "supplier IPs only" })}</span>
-        <span className="mgx-req">{tr({ vi: "IP cố định cho firewall đối tác", en: "fixed IPs for the partner firewall" })}</span>
-        <span className="mgx-req">{tr({ vi: "giữ quyền theo tệp (UID/GID)", en: "keep file-level permissions (UID/GID)" })}</span>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-3">
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{tr({ vi: "Yêu cầu", en: "Requirements" })}</span>
+        <span className="rounded-[10px] border border-line bg-bg px-2 py-[3px] text-[0.8125rem] wrap-anywhere">{tr({ vi: "dịch vụ được quản lý", en: "managed service" })}</span>
+        <span className="rounded-[10px] border border-line bg-bg px-2 py-[3px] text-[0.8125rem] wrap-anywhere">{tr({ vi: "chỉ IP nhà cung cấp", en: "supplier IPs only" })}</span>
+        <span className="rounded-[10px] border border-line bg-bg px-2 py-[3px] text-[0.8125rem] wrap-anywhere">{tr({ vi: "IP cố định cho firewall đối tác", en: "fixed IPs for the partner firewall" })}</span>
+        <span className="rounded-[10px] border border-line bg-bg px-2 py-[3px] text-[0.8125rem] wrap-anywhere">{tr({ vi: "giữ quyền theo tệp (UID/GID)", en: "keep file-level permissions (UID/GID)" })}</span>
       </div>
-      <div className="mgx-row" role="group" aria-label={tr({ vi: "Loại endpoint", en: "Endpoint type" })}>
-        <span className="mgx-lbl">Endpoint</span>
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-2" role="group" aria-label={tr({ vi: "Loại endpoint", en: "Endpoint type" })}>
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">Endpoint</span>
         {(Object.keys(EPS) as EpId[]).map((k) => (
           <button key={k} className="chip" aria-pressed={k === ep} disabled={busy} onClick={() => pick(setEp)(k)}>{tr(EPS[k].name)}</button>
         ))}
       </div>
-      <div className="mgx-row" role="group" aria-label={tr({ vi: "Giới hạn IP nguồn", en: "Source IP restriction" })}>
-        <span className="mgx-lbl">{tr({ vi: "Giới hạn IP", en: "IP restriction" })}</span>
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-2" role="group" aria-label={tr({ vi: "Giới hạn IP nguồn", en: "Source IP restriction" })}>
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{tr({ vi: "Giới hạn IP", en: "IP restriction" })}</span>
         {(Object.keys(FILTERS) as FilterId[]).map((k) => (
           <button key={k} className="chip" aria-pressed={k === filter} disabled={busy} onClick={() => pick(setFilter)(k)}>{tr(FILTERS[k])}</button>
         ))}
       </div>
-      <div className="mgx-row" role="group" aria-label={tr({ vi: "Lưu trữ phía sau server", en: "Storage behind the server" })}>
-        <span className="mgx-lbl">{tr({ vi: "Lưu trữ", en: "Storage" })}</span>
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-2" role="group" aria-label={tr({ vi: "Lưu trữ phía sau server", en: "Storage behind the server" })}>
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{tr({ vi: "Lưu trữ", en: "Storage" })}</span>
         {(Object.keys(STORES) as StoreId[]).map((k) => (
           <button key={k} className="chip" aria-pressed={k === store} disabled={busy} onClick={() => pick(setStore)(k)}>{STORES[k].name}</button>
         ))}
       </div>
-      <div className="stage-bar">
-        <span className="mgx-hint">{tr({ vi: "Nhà cung cấp và một địa chỉ lạ cùng thử kết nối SFTP.", en: "The supplier and an unknown address both try to connect over SFTP." })}</span>
-        <button className="btn primary" onClick={run} disabled={busy}>{tr({ vi: "Thử kết nối", en: "Try to connect" })}</button>
+      <div className="stage-bar mt-3 border-t border-line">
+        <span className="m-0 text-step--1 text-muted">{tr({ vi: "Nhà cung cấp và một địa chỉ lạ cùng thử kết nối SFTP.", en: "The supplier and an unknown address both try to connect over SFTP." })}</span>
+        <button className="btn primary ml-auto" onClick={run} disabled={busy}>{tr({ vi: "Thử kết nối", en: "Try to connect" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 20 800 220" role="img" aria-label={tr({ vi: `Nhà cung cấp và một địa chỉ lạ kết nối SFTP tới endpoint ${tr(EPS[ep].name)} của Transfer Family, lưu trữ ${STORES[store].name}`, en: `A supplier and an unknown address connect over SFTP to a ${tr(EPS[ep].name)} Transfer Family endpoint backed by ${STORES[store].name}` })}>
@@ -186,14 +186,14 @@ export default function SftpExchangeSim() {
       </div>
       <div className="readout" aria-live="polite">
         {!res ? (
-          <p className="mgx-hint">{tr({ vi: <>Chọn loại endpoint, cách giới hạn IP và nơi lưu trữ, sau đó nhấn <b>Thử kết nối</b>.</>, en: <>Choose the endpoint type, the IP restriction and the storage, then press <b>Try to connect</b>.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{tr({ vi: <>Chọn loại endpoint, cách giới hạn IP và nơi lưu trữ, sau đó nhấn <b>Thử kết nối</b>.</>, en: <>Choose the endpoint type, the IP restriction and the storage, then press <b>Try to connect</b>.</> })}</p>
         ) : (
           <ul className="log">
             {res.lines.map((e, i) => (
               <li key={i}><span className={`tag ${e.cls}`}>{tr(e.tag)}</span><span>{rich(tr(e.msg))}</span></li>
             ))}
             <li className={`mgx-result ${res.ok ? "ok" : "bad"}`}>{rich(tr(res.ok
-              ? { vi: "Đáp ứng mọi yêu cầu: **Transfer Family SFTP** với endpoint **VPC internet-facing** (Elastic IP + security group) và **EFS** với POSIX profile cho từng user. AWS vận hành server SFTP; ShopViet không còn quản lý EC2.", en: "Meets every requirement: **Transfer Family SFTP** with a **VPC hosted, internet-facing** endpoint (Elastic IPs + security group) and **EFS** with a POSIX profile per user. AWS runs the SFTP servers; ShopViet no longer manages EC2." }
+              ? { vi: "Đáp ứng mọi yêu cầu: **Transfer Family SFTP** với endpoint **VPC internet-facing** (Elastic IP + security group) và **EFS** với POSIX profile cho từng user. AWS vận hành server SFTP; MFTECH không còn quản lý EC2.", en: "Meets every requirement: **Transfer Family SFTP** with a **VPC hosted, internet-facing** endpoint (Elastic IPs + security group) and **EFS** with a POSIX profile per user. AWS runs the SFTP servers; MFTECH no longer manages EC2." }
               : { vi: "Chưa đáp ứng đủ yêu cầu. Xem các dòng màu đỏ hoặc cam ở trên.", en: "Not all requirements are met. See the red or orange lines above." }))}</li>
           </ul>
         )}

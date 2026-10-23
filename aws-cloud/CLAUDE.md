@@ -10,7 +10,7 @@ Các quy tắc này do chủ repo đặt ra, áp dụng cho mọi phiên làm vi
 
 ## Nội dung bài học
 - Không hiển thị mã câu đề (`examN_qM`) ở bất kỳ trang lý thuyết nào, kể cả trong HTML/JS được gửi tới trình duyệt. Mã đề chỉ nằm trong prop `questions` của `<Scene>` (chỉ dùng lúc build) hoặc comment.
-- Trình bày theo tình huống thực tế của hệ thống ShopViet, không theo giọng luyện đề ("đề hay hỏi", "đáp án", "Select two"…).
+- Trình bày theo tình huống thực tế của hệ thống MFTECH, không theo giọng luyện đề ("đề hay hỏi", "đáp án", "Select two"…).
 - Mục nào chỉ là danh sách liệt kê thì chuyển thành mô phỏng tương tác.
 
 ## Văn phong

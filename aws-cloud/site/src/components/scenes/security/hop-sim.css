@@ -1,44 +1,40 @@
-/* HopSim engine (security/HopSim.tsx), shared by the KMS, security, Cognito and EC2 simulations */
-.hop-scenarios { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
-.hop-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; overflow-wrap: anywhere; }
-.hop-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
-.hop .stage-bar .btn.primary { margin-left: auto; }
-.hop-hint { margin: 0; font-size: var(--step--1); }
-.hop-hint span { color: var(--muted); }
-.hop-result { margin-top: 6px; padding: 8px 10px; border-radius: 8px; display: block !important; }
-.hop-result.ok { background: var(--ok-soft); }
-.hop-result.bad { background: var(--bad-soft); }
+@reference "../../../styles/app.css";
 
-.hop-box rect { fill: var(--bg); stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 5 4; }
-.hop-box.t-region rect { fill: none; stroke: var(--accent); }
-.hop-box.t-onprem rect { fill: none; stroke: var(--edge); }
-.hop-box text { fill: var(--muted); font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; }
-.hop-box.t-region text { fill: var(--accent); }
-.hop-box.t-onprem text { fill: var(--edge); }
+/* HopSim engine (security/HopSim.tsx), shared by the KMS, security, Cognito and EC2 simulations: SVG parts.
+   Boxes have a tone (t-account, t-region, t-onprem); nodes have a kind (k-user, k-app, k-store, k-key, ...) and
+   then take the state of the hop that reached them (.pass, .block/.alert, .change, .skip). */
+@layer components {
+  .hop-box rect { @apply fill-bg stroke-muted stroke-[1.2]; stroke-dasharray: 5 4; }
+  .hop-box.t-region rect { @apply fill-none stroke-accent; }
+  .hop-box.t-onprem rect { @apply fill-none stroke-edge; }
+  .hop-box text { @apply fill-muted font-mono text-[10.5px] font-medium; }
+  .hop-box.t-region text { @apply fill-accent; }
+  .hop-box.t-onprem text { @apply fill-edge; }
 
-.hop-link { stroke: var(--line); stroke-width: 2; transition: stroke .25s; }
-.hop-link.pass { stroke: var(--ok); }
-.hop-link.block, .hop-link.alert { stroke: var(--bad); }
-.hop-link.change { stroke: var(--edge); }
+  .hop-link { @apply stroke-line stroke-2; transition: stroke .25s; }
+  .hop-link.pass { @apply stroke-ok; }
+  .hop-link.block, .hop-link.alert { @apply stroke-bad; }
+  .hop-link.change { @apply stroke-edge; }
 
-.hop-node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill .2s, stroke .2s, opacity .2s; }
-.hop-nt { fill: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
-.hop-ns { fill: var(--muted); font-family: var(--font-body); font-size: 10px; }
-.hop-node.k-user rect { stroke: var(--ink); stroke-dasharray: 3 3; }
-.hop-node.k-bad rect { fill: var(--bad-soft); stroke: var(--bad); }
-.hop-node.k-app rect { fill: var(--accent-soft); stroke: var(--accent); }
-.hop-node.k-store rect { stroke: var(--accent); }
-.hop-node.k-key rect { fill: var(--edge-soft); stroke: var(--edge); }
-.hop-node.k-log rect { fill: var(--bg); stroke: var(--muted); }
-.hop-node.k-svc rect { stroke: var(--ink); }
-.hop-node.k-aws rect { fill: var(--bg); stroke: var(--edge); stroke-dasharray: 4 3; }
-.hop-node.pass rect { fill: var(--ok-soft); stroke: var(--ok); stroke-dasharray: none; }
-.hop-node.block rect, .hop-node.alert rect { fill: var(--bad-soft); stroke: var(--bad); stroke-dasharray: none; }
-.hop-node.change rect { fill: var(--edge-soft); stroke: var(--edge); stroke-dasharray: none; }
-.hop-node.skip { opacity: .45; }
+  .hop-node rect { @apply fill-surface stroke-line stroke-[1.5]; transition: fill .2s, stroke .2s, opacity .2s; }
+  .hop-nt { @apply fill-ink font-body text-[12px] font-semibold; }
+  .hop-ns { @apply fill-muted font-body text-[10px]; }
+  .hop-node.k-user rect { @apply stroke-ink; stroke-dasharray: 3 3; }
+  .hop-node.k-bad rect { @apply fill-bad-soft stroke-bad; }
+  .hop-node.k-app rect { @apply fill-accent-soft stroke-accent; }
+  .hop-node.k-store rect { @apply stroke-accent; }
+  .hop-node.k-key rect { @apply fill-edge-soft stroke-edge; }
+  .hop-node.k-log rect { @apply fill-bg stroke-muted; }
+  .hop-node.k-svc rect { @apply stroke-ink; }
+  .hop-node.k-aws rect { @apply fill-bg stroke-edge; stroke-dasharray: 4 3; }
+  .hop-node.pass rect { @apply fill-ok-soft stroke-ok; stroke-dasharray: none; }
+  .hop-node.block rect, .hop-node.alert rect { @apply fill-bad-soft stroke-bad; stroke-dasharray: none; }
+  .hop-node.change rect { @apply fill-edge-soft stroke-edge; stroke-dasharray: none; }
+  .hop-node.skip { @apply opacity-45; }
 
-.hop-flash { fill: var(--muted); font-family: var(--font-mono); font-size: 13px; font-weight: 700; text-anchor: middle; }
-.hop-flash.ok { fill: var(--ok); }
-.hop-flash.bad { fill: var(--bad); }
-.hop-flash.edge { fill: var(--edge); }
-.hop .log .tag { white-space: nowrap; }
+  /* Label that flashText() pops on a node. */
+  .hop-flash { @apply fill-muted font-mono text-[13px] font-bold; text-anchor: middle; }
+  .hop-flash.ok { @apply fill-ok; }
+  .hop-flash.bad { @apply fill-bad; }
+  .hop-flash.edge { @apply fill-edge; }
+}

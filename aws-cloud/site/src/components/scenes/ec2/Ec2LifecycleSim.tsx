@@ -3,7 +3,7 @@ import { useLang, type Bi } from "../../../lib/lang";
 import { rich } from "../diagram";
 import "./ec2-sims.css";
 
-// One ShopViet transcoding instance and what survives each lifecycle action: reboot, stop/start,
+// One MFTECH transcoding instance and what survives each lifecycle action: reboot, stop/start,
 // hibernate, CloudWatch recovery, creating an EBS-backed AMI, terminating. Rows: instance ID,
 // private / public / Elastic IP, EBS root volume, instance store scratch data, RAM.
 // Also the requests EC2 rejects: adding or moving instance store after launch, undoing a terminate.
@@ -121,7 +121,7 @@ function outcome(a: Action, eip: boolean): Outcome {
       return { ok: false, state: { vi: "terminated", en: "terminated" },
         cells: { id: lost("Không thể start hoặc recover", "Cannot be started or recovered"), priv: lost("Đã release", "Released"), pub: eip ? b.pub : lost("Đã release", "Released"),
           eip: eip ? chg("Có thể gắn sang instance mới", "Can be associated with a new instance") : b.eip, ebs: lost("Đã xoá", "Deleted"), store: lost("Đã xoá", "Deleted"), ram: lost("Đã xoá", "Erased") },
-        text: { vi: "**Không thể.** Instance đã terminate không thể kết nối, start hay recover (kể cả bằng automatic recovery). Cách duy nhất là launch instance **mới** từ AMI và khôi phục dữ liệu từ bản sao lưu.",
+        text: { vi: "**Không thể.** Instance đã terminate không thể kết nối, start hay recover (kể cả bằng automatic recovery). Cách duy nhất là launch instance **mới** từ AMI và khôi phục dữ liệu từ backup.",
           en: "**Not possible.** A terminated instance cannot be connected to, started or recovered (automatic recovery included). The only option is to launch a **new** instance from an AMI and restore data from backups." } };
   }
 }
@@ -142,16 +142,16 @@ export default function Ec2LifecycleSim() {
 
   return (
     <div className="stage">
-      <p className="ec2-story">{rich(L({ vi: "Instance **shop-transcode** chuyển mã video sản phẩm. Tệp đang xử lý nằm trên instance store; đối tác CDN đưa địa chỉ public của instance vào allow list. Chọn một thao tác để xem thành phần nào còn lại.",
+      <p className="m-0 px-3.5 pt-2.5 pb-0 text-step--1">{rich(L({ vi: "Instance **shop-transcode** chuyển mã video sản phẩm. Tệp đang xử lý nằm trên instance store; đối tác CDN đưa địa chỉ public của instance vào allow list. Chọn một thao tác để xem thành phần nào còn lại.",
         en: "The **shop-transcode** instance transcodes product videos. Files in progress are on the instance store; a CDN partner has put the instance's public address on its allow list. Pick an action to see what remains." }))}</p>
       <div className="stage-bar">
-        <label className="lc-toggle">
+        <label className="inline-flex cursor-pointer items-center gap-1.5 text-step--1">
           <input type="checkbox" checked={eip} onChange={(e) => setEip(e.target.checked)} />
           {L({ vi: "Gắn Elastic IP cho instance", en: "Associate an Elastic IP address" })}
         </label>
-        <span className="count">{L({ vi: "Trạng thái: ", en: "State: " })}<span className="lc-state">{out ? L(out.state) : "running"}</span></span>
+        <span className="count">{L({ vi: "Trạng thái: ", en: "State: " })}<span className="font-mono text-[0.78rem]">{out ? L(out.state) : "running"}</span></span>
       </div>
-      <div className="lc-actions" role="group" aria-label={L({ vi: "Thao tác", en: "Action" })}>
+      <div className="flex flex-wrap gap-1.5 border-b border-line px-3.5 py-3" role="group" aria-label={L({ vi: "Thao tác", en: "Action" })}>
         {(Object.keys(ACTIONS) as Action[]).map((a) => (
           <button key={a} className={"btn" + (a === "terminate" || a === "undo" ? " danger" : "")} aria-pressed={a === act} onClick={() => setAct(a === act ? null : a)}>{L(ACTIONS[a])}</button>
         ))}
@@ -173,10 +173,10 @@ export default function Ec2LifecycleSim() {
               <span className={"pill " + (out.ok ? "ok" : "bad")}><i />{out.ok ? L({ vi: "Đáp ứng yêu cầu", en: "Meets the need" }) : L({ vi: "Cần lưu ý", en: "Watch out" })}</span>
               <span className="count">{L(ACTIONS[act!])}</span>
             </div>
-            <p style={{ margin: "8px 0 0" }}>{rich(L(out.text))}</p>
+            <p className="mx-0 mt-2 mb-0">{rich(L(out.text))}</p>
           </>
         ) : (
-          <p style={{ margin: 0 }}>{L({ vi: "Chọn một thao tác ở trên. Bật hoặc tắt Elastic IP để so sánh địa chỉ public tự gán với Elastic IP.",
+          <p className="m-0">{L({ vi: "Chọn một thao tác ở trên. Bật hoặc tắt Elastic IP để so sánh địa chỉ public tự gán với Elastic IP.",
             en: "Pick an action above. Turn the Elastic IP address on or off to compare an auto-assigned public address with an Elastic IP address." })}</p>
         )}
         <p className="note-small">{L({ vi: "Theo tài liệu AWS: AWS tính phí mọi địa chỉ public IPv4, kể cả Elastic IP chưa gắn; mỗi Region mặc định có quota 5 Elastic IP.",

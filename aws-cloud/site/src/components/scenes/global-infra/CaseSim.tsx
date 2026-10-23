@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./case-sim.css";
 
-// A small engine for "try it on ShopViet" simulations, in the style of
+// A small engine for "try it on MFTECH" simulations, in the style of
 // cloudfront/EdgePipelineSim: pick a situation, flip a switch or pick an option,
 // press the action button and watch one packet walk the diagram. Every station
 // it reaches lights up (pass / block / change) and writes one line in the log.
@@ -210,9 +210,9 @@ export default function CaseSim({ scenarios, action: actionProp, label }: { scen
   const stateOf = (id: string): CaseState | undefined => lit[id] ?? marks[id];
 
   return (
-    <div className="stage cs">
+    <div className="stage">
       {scenarios.length > 1 && (
-        <div className="cs-scenarios" role="group" aria-label={L({ vi: "Tình huống", en: "Scenario" })}>
+        <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Tình huống", en: "Scenario" })}>
           {scenarios.map((s, i) => (
             <button key={s.name} className="chip" aria-pressed={i === index} onClick={() => pick(i)} disabled={busy && i !== index}>
               {s.name}
@@ -221,18 +221,18 @@ export default function CaseSim({ scenarios, action: actionProp, label }: { scen
         </div>
       )}
       <div className="stage-bar">
-        <code className="cs-req">{sc.request}</code>
-        {sc.from && <span className="cs-from">{sc.from}</span>}
+        <code className="rounded-[10px] border border-line bg-bg px-2 py-[3px] text-[0.8125rem] wrap-anywhere">{sc.request}</code>
+        {sc.from && <span className="text-step--1 text-muted">{sc.from}</span>}
         {sc.toggle && (
-          <label className="cs-toggle">
+          <label className="inline-flex cursor-pointer items-center gap-1.5 text-step--1">
             <input type="checkbox" checked={v === 1} disabled={busy} onChange={(e) => choose(e.target.checked ? 1 : 0)} />
             {sc.toggle.label}
           </label>
         )}
-        <button className="btn primary cs-go" onClick={send} disabled={busy}>{action}</button>
+        <button className="btn primary ml-auto" onClick={send} disabled={busy}>{action}</button>
       </div>
       {sc.choices && (
-        <div className="stage-bar cs-choices" role="group" aria-label={sc.choices.label}>
+        <div className="stage-bar pt-2.5" role="group" aria-label={sc.choices.label}>
           <span className="label">{sc.choices.label}</span>
           {sc.choices.options.map((o, i) => (
             <button key={o} className="btn" aria-pressed={i === v} disabled={busy && i !== v} onClick={() => choose(i)}>{o}</button>
@@ -289,7 +289,7 @@ export default function CaseSim({ scenarios, action: actionProp, label }: { scen
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="cs-hint">
+          <p className="m-0 text-step--1 text-muted">
             {L({
               vi: <>Nhấn <b>{action}</b> để quan sát từng bước xử lý.{sc.toggle || sc.choices ? " Thay đổi lựa chọn và chạy lại để so sánh kết quả." : ""}</>,
               en: <>Press <b>{action}</b> to watch each processing step.{sc.toggle || sc.choices ? " Change the choice and run again to compare the results." : ""}</>,
@@ -304,7 +304,7 @@ export default function CaseSim({ scenarios, action: actionProp, label }: { scen
                   <span><b>{e.node}:</b> {e.msg}</span>
                 </li>
               ) : (
-                <li key={i} className={`cs-result ${e.ok ? "ok" : "bad"}`}>{e.msg}</li>
+                <li key={i} className={`mt-1.5 block! rounded-[12px] px-2.5 py-2 ${e.ok ? "bg-ok-soft" : "bg-bad-soft"}`}>{e.msg}</li>
               ),
             )}
           </ul>

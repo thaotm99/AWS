@@ -17,7 +17,7 @@ const layout = (L: Lang): PLayout => ({
   aria: L({ vi: "Traffic từ Internet đi qua internet gateway, GWLB endpoint, Gateway Load Balancer và firewall appliance rồi mới tới EC2 ứng dụng",
     en: "Traffic from the internet passes the internet gateway, the GWLB endpoint, the Gateway Load Balancer and a firewall appliance before reaching the application EC2 instances" }),
   boxes: [
-    { x: 105, y: 48, w: 300, h: 222, label: L({ vi: "VPC ứng dụng ShopViet", en: "ShopViet application VPC" }) },
+    { x: 105, y: 48, w: 300, h: 222, label: L({ vi: "VPC ứng dụng MFTECH", en: "MFTECH application VPC" }) },
     { x: 450, y: 48, w: 375, h: 222, label: L({ vi: "VPC bảo mật (appliance)", en: "Security VPC (appliances)" }), edge: true },
   ],
   nodes: [
@@ -58,7 +58,7 @@ const scenarios = (L: Lang): PScenario[] => {
   {
     name: L({ vi: "Gói tin khớp chữ ký tấn công", en: "Packet matches an attack signature" }),
     request: "TCP 443 → 10.0.2.15 (exploit)",
-    from: L({ vi: "nguồn: máy chủ độc hại", en: "source: malicious host" }),
+    from: L({ vi: "nguồn: host độc hại", en: "source: malicious host" }),
     run: () => ({
       steps: [IGW, EP, LB("Firewall A"),
         { at: "fw1", state: "block", flash: "DROP", msg: L({ vi: "Hệ thống IPS trên appliance phát hiện chữ ký tấn công và huỷ gói tin. GWLB không tự lọc nội dung: quyết định do phần mềm appliance đưa ra.", en: "The IPS software on the appliance detects the attack signature and drops the packet. The GWLB itself does not filter content: the appliance software decides." }) }],

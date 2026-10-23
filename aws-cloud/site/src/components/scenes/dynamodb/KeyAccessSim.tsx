@@ -1,7 +1,7 @@
 import PacketSim, { type PLayout, type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// How ShopViet's requests reach DynamoDB. A read by partition key goes straight to
+// How MFTECH's requests reach DynamoDB. A read by partition key goes straight to
 // one partition; a filter on a non-key attribute scans every partition until a GSI
 // exists; a video does not fit in a 400 KB item; a report that needs JOINs belongs
 // in a relational database; and a worker in a private subnet needs a gateway endpoint.
@@ -15,7 +15,7 @@ function tableLayout(L: Lang, gsi: boolean): PLayout {
     aria: L({ vi: "Ứng dụng gửi request tới DynamoDB; request router chọn partition theo partition key", en: "The application sends requests to DynamoDB; the request router picks the partition by partition key" }),
     boxes: [{ x: 395, y: 48, w: 170, h: 212, label: "Table Orders" }],
     nodes: [
-      { id: "app", x: 70, y: 150, l1: L({ vi: "App ShopViet", en: "ShopViet app" }), user: true },
+      { id: "app", x: 70, y: 150, l1: L({ vi: "App MFTECH", en: "MFTECH app" }), user: true },
       { id: "router", x: 250, y: 150, w: 150, l1: "DynamoDB", l2: "request router" },
       { id: "p1", x: 480, y: 94, w: 140, l1: "Partition 1" },
       { id: "p2", x: 480, y: 150, w: 140, l1: "Partition 2" },
@@ -113,7 +113,7 @@ const scenarios = (L: Lang): PScenario[] => [
     layout: (gw) => ({
       viewBox: VB,
       aria: L({ vi: "EC2 trong private subnet kết nối tới DynamoDB qua route table và gateway endpoint", en: "EC2 in a private subnet connects to DynamoDB through the route table and a gateway endpoint" }),
-      boxes: [{ x: 24, y: 52, w: 520, h: 196, label: L({ vi: "VPC của ShopViet · private subnet, không có NAT", en: "ShopViet VPC · private subnet, no NAT" }) }],
+      boxes: [{ x: 24, y: 52, w: 520, h: 196, label: L({ vi: "VPC của MFTECH · private subnet, không có NAT", en: "MFTECH VPC · private subnet, no NAT" }) }],
       nodes: [
         { id: "ec2", x: 110, y: 150, w: 130, l1: L({ vi: "EC2 xử lý ảnh", en: "Image EC2" }), l2: L({ vi: "chỉ có private IP", en: "private IP only" }) },
         { id: "rt", x: 290, y: 150, w: 150, l1: "Route table", l2: gw ? "pl-ddb → vpce-…" : L({ vi: "chỉ có route local", en: "local route only" }) },
@@ -129,12 +129,12 @@ const scenarios = (L: Lang): PScenario[] => [
             { at: "ddb", state: "pass", msg: L({ vi: "Cập nhật trạng thái thành công.", en: "The status update succeeds." }) },
           ], ok: true, result: L({ vi: "Chỉ **S3** và **DynamoDB** hỗ trợ gateway endpoint. Khi cần cả hai, tạo hai gateway endpoint và thêm cả hai vào route table.", en: "Only **S3** and **DynamoDB** support gateway endpoints. When you need both, create two gateway endpoints and add both to the route table." }) }
       : { steps: [
-            { at: "rt", state: "block", flash: "timeout", msg: L({ vi: "Không có route tới DynamoDB và không có NAT. Request bị treo cho tới khi hết thời gian chờ (timeout).", en: "There is no route to DynamoDB and no NAT. The request hangs until it times out." }) },
+            { at: "rt", state: "block", flash: "timeout", msg: L({ vi: "Không có route tới DynamoDB và không có NAT. Request bị treo cho tới khi timeout.", en: "There is no route to DynamoDB and no NAT. The request hangs until it times out." }) },
           ], ok: false, result: L({ vi: "Thêm gateway endpoint cho DynamoDB vào route table của subnet. Không cần NAT gateway hay public IP.", en: "Add a DynamoDB gateway endpoint to the subnet’s route table. No NAT gateway or public IP is needed." }) },
   },
 ];
 
 export default function KeyAccessSim() {
   const L = useLang();
-  return <PacketSim scenarios={scenarios(L)} hint={L({ vi: "Chọn một tác vụ của ShopViet và gửi request để quan sát đường đi của request trong DynamoDB. Với tình huống có tuỳ chọn cấu hình, bật tuỳ chọn và chạy lại để so sánh.", en: "Choose a ShopViet task and send the request to follow its path through DynamoDB. For scenarios with a configuration option, turn it on and run again to compare." })} />;
+  return <PacketSim scenarios={scenarios(L)} hint={L({ vi: "Chọn một tác vụ của MFTECH và gửi request để quan sát đường đi của request trong DynamoDB. Với tình huống có tuỳ chọn cấu hình, bật tuỳ chọn và chạy lại để so sánh.", en: "Choose a MFTECH task and send the request to follow its path through DynamoDB. For scenarios with a configuration option, turn it on and run again to compare." })} />;
 }

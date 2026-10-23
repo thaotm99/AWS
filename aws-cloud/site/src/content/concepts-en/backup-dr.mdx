@@ -1,6 +1,6 @@
 ---
 title: "Backup + Disaster Recovery: recovering when a Region fails"
-lede: "The ShopViet system runs stably in the Singapore Region. This lesson shows how to prepare for the most serious failure scenario: choosing one of four DR strategies based on how much data may be lost and how much downtime is allowed, keeping databases and caches running through a failure, using AWS Backup for a shared file system, and configuring a single EC2 instance to recover automatically."
+lede: "The MFTECH system runs stably in the Singapore Region. This lesson shows how to prepare for the most serious failure scenario: choosing one of four DR strategies based on how much data may be lost and how much downtime is allowed, keeping databases and caches running through a failure, using AWS Backup for a shared file system, and configuring a single EC2 instance to recover automatically."
 minutes: 24
 scenes: 5
 prerequisites: ["global-infra", "ec2", "rds", "storage"]
@@ -62,14 +62,14 @@ import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
-  { href: "#en-s1", label: "1 · Four DR strategies" },
+  { href: "#en-s1", label: "1 · Disaster recovery strategies" },
   { href: "#en-s2", label: "2 · Database and cache resilience" },
-  { href: "#en-s3", label: "3 · AWS Backup" },
-  { href: "#en-s4", label: "4 · Automatic recovery of a single EC2 instance" },
-  { href: "#en-s5", label: "5 · Quick comparison" },
+  { href: "#en-s3", label: "3 · AWS Backup: backup plans and vaults" },
+  { href: "#en-s4", label: "4 · Recovering a single EC2 instance" },
+  { href: "#en-s5", label: "5 · AWS DRS, MGN and AWS Backup" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-Multi-AZ keeps ShopViet running when one data center fails. However, there must be a plan for when **the entire Singapore Region** goes down. Management asks two questions: "What is the maximum number of orders we can afford to lose?" and "How soon must the system be back?". The two corresponding metrics are:
+A Multi-AZ deployment keeps MFTECH running when one Availability Zone (AZ) fails. However, there must be a plan for when **the entire Singapore Region** goes down. Management asks two questions: "What is the maximum number of orders we can afford to lose?" and "How soon must the system be back?". The two corresponding metrics are:
 
 - **RPO** (recovery point objective): the maximum amount of data that may be lost, measured in time. An RPO of 15 minutes means losing at most 15 minutes of order data.
 - **RTO** (recovery time objective): the maximum time from the moment of failure until the system is back in operation.
@@ -77,32 +77,32 @@ Multi-AZ keeps ShopViet running when one data center fails. However, there must 
 The smaller the RPO and RTO, the higher the cost. This lesson shows how to choose a level that just meets the requirement.
 </Story>
 
-<Scene id="en-s1" label="Part 1/5" title="Four strategies for preparing for a Region-level failure" questions={["exam4_q41", "exam4_q5"]}>
+<Scene id="en-s1" label="Part 1/5" title="Four disaster recovery (DR) strategies for a Region-level failure" questions={["exam4_q41", "exam4_q5"]}>
 
-<p class="scene-intro">Losing a whole Region is rare but costly; how much is prepared in advance decides both the recovery time and the running cost.</p>
+<p class="scene-intro">A Region-level failure is rare but has a large impact; how much is prepared in advance in the standby Region decides the RTO, the RPO and the running cost.</p>
 
-ShopViet chooses Tokyo as its standby Region. The question is which components are kept in Tokyo under normal conditions. The more components are running, the shorter the recovery time and the higher the cost. There are four levels:
+MFTECH chooses Tokyo as its standby Region. The question is which components are kept in Tokyo under normal conditions. The more components are running, the shorter the recovery time and the higher the cost. There are four levels:
 
-1. **Backup & restore**: only backups are kept. When a failure happens, the system is rebuilt from scratch.
-2. **Pilot light**: the core (the database) is always running and receiving data. Web servers are off and are started only when a failure happens.
+1. **Backup and restore**: only backups are kept. When a failure happens, the system is rebuilt from scratch.
+2. **Pilot light**: the core (the database) is always running and receiving data. The web tier EC2 instances are off and are started only when a failure happens.
 3. **Warm standby**: a scaled-down but fully functional copy is always running. When a failure happens, the system is scaled up.
-4. **Multi-site active-active**: Tokyo is a full site, serving users at the same time as Singapore.
+4. **Multi-site active/active**: Tokyo is a full site, serving users at the same time as Singapore.
 
-Choose a ShopViet objective, choose a strategy, then simulate a failure in Singapore. Also try the AMI option: ShopViet's web application takes more than 45 minutes to install on an empty instance.
+Choose a MFTECH objective, choose a strategy, then simulate a failure in Singapore. Also try the AMI option: MFTECH's web application takes more than 45 minutes to install on an empty instance.
 
 <DrStrategySim client:visible />
 
-An AMI can be used only in the Region that contains it. To launch quickly in Tokyo, **copy the AMI to Tokyo** in advance (the copy steps were covered in the Global Infrastructure lesson). If ShopViet operates in several Regions, the AMI must be copied to each of those Regions.
+An AMI can be used only in the Region that contains it. To launch quickly in Tokyo, **copy the AMI to Tokyo** in advance (the copy steps were covered in the Global Infrastructure lesson). If MFTECH operates in several Regions, the AMI must be copied to each of those Regions.
 
-<Takeaway>Backup & restore → pilot light → warm standby → multi-site: RPO/RTO decrease, cost increases. Choose the lowest-cost level that still meets the objective. "A scaled-down, fully functional copy that is always running" is warm standby. To bring up servers quickly in another Region: create an AMI with the application preinstalled and copy it to that Region.</Takeaway>
+<Takeaway>Backup and restore → pilot light → warm standby → multi-site: RPO/RTO decrease, cost increases. Choose the lowest-cost level that still meets the objective. "A scaled-down, fully functional copy that is always running" is warm standby. To launch EC2 instances quickly in another Region: create an AMI with the application preinstalled and copy it to that Region.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/5" title="Keeping databases and caches running through a failure" questions={["exam2_q61", "exam6_q23", "exam5_q42", "exam4_q32"]}>
+<Scene id="en-s2" label="Part 2/5" title="Aurora Global Database, cross-Region read replicas and ElastiCache Multi-AZ" questions={["exam2_q61", "exam6_q23", "exam5_q42", "exam4_q32"]}>
 
-<p class="scene-intro">Servers can be rebuilt in minutes, but lost data cannot be recovered; each kind of data needs its own protection.</p>
+<p class="scene-intro">EC2 instances can be launched again from an AMI in minutes, but lost data cannot be recovered; each data store needs its own protection mechanism.</p>
 
-Web servers can be rebuilt in minutes, but data cannot: lost orders cannot be recovered. ShopViet has three data components, each needing its own protection mechanism:
+Web tier EC2 instances can be launched again in minutes, but data cannot: lost orders cannot be recovered. MFTECH has three data components, each needing its own protection mechanism:
 
 - **Aurora** stores orders: target RPO ≤ 5 minutes, RTO ≤ 15 minutes when the entire Region fails, and the operations team does not want to develop its own scripts.
 - **RDS PostgreSQL** for the inventory application: Multi-AZ is enabled, but nothing exists in another Region yet.
@@ -116,11 +116,11 @@ Web servers can be rebuilt in minutes, but data cannot: lost orders cannot be re
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/5" title="AWS Backup for a shared file system" questions={["exam5_q47", "exam5_q64", "exam5_q16"]}>
+<Scene id="en-s3" label="Part 3/5" title="AWS Backup: backup plans, backup vaults and cross-Region copy for Amazon EFS" questions={["exam5_q47", "exam5_q64", "exam5_q16"]}>
 
-<p class="scene-intro">Backups must run automatically, on a schedule, and be kept as long as required; managing them centrally ensures no resource is missed.</p>
+<p class="scene-intro">Backups must run automatically, on a schedule, and be retained as long as required; AWS Backup manages backups centrally so that no resource is missed.</p>
 
-ShopViet's services run on ECS with Fargate and all read and write seller images and invoices on a shared file system. ShopViet chooses **Amazon EFS**: a POSIX (NFS) file system that spans multiple AZs and that Fargate tasks can mount directly. Compliance requirements: automatic backups, a copy in another Region, and at most 8 hours of data loss.
+MFTECH's services run on ECS with Fargate and all read and write seller images and invoices on a shared file system. MFTECH chooses **Amazon EFS**: a POSIX (NFS) file system that spans multiple AZs and that Fargate tasks can mount directly. Compliance requirements: automatic backups, a copy in another Region, and at most 8 hours of data loss.
 
 **AWS Backup** centrally manages backups for many services (EFS, EBS, RDS, DynamoDB…). The operator defines a **backup plan**: backup frequency, retention period and copy destination. Recovery points are stored in a **backup vault**. Adjust the plan and test it against each kind of incident:
 
@@ -134,11 +134,11 @@ AWS Backup serves data protection and compliance; it is not a tool for cloning d
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/5" title="Automatically recovering a single EC2 instance" questions={["exam3_q38"]}>
+<Scene id="en-s4" label="Part 4/5" title="Recovering a single EC2 instance with a CloudWatch alarm action" questions={["exam3_q38"]}>
 
-<p class="scene-intro">Not every system needs a complex recovery strategy; for a single server, simple automatic recovery is usually enough.</p>
+<p class="scene-intro">Not every system needs a complex DR strategy; for a single EC2 instance, the CloudWatch alarm recover action is usually enough.</p>
 
-ShopViet's internal admin page runs on a single EC2 instance. It has few users and needs neither an Auto Scaling group nor a DR strategy. Requirement: when the instance fails, the system comes back by itself within about 10 minutes, at low cost and with no manual intervention outside working hours.
+MFTECH's internal admin page runs on a single EC2 instance. It has few users and needs neither an Auto Scaling group nor a DR strategy. Requirement: when the instance fails, the system comes back by itself within about 10 minutes, at low cost and with no manual intervention outside working hours.
 
 EC2 has two kinds of status checks. The **system status check** reflects problems with the AWS infrastructure the instance runs on (loss of network connectivity, loss of power, hardware or software failure on the host). The **instance status check** reflects problems inside the instance (the operating system hangs, memory is exhausted). A **CloudWatch alarm** that watches a status check can perform an action: recover, reboot, stop or terminate.
 
@@ -148,16 +148,16 @@ EC2 has two kinds of status checks. The **system status check** reflects problem
 
 </Scene>
 
-<Scene id="en-s5" label="Part 5/5" title="Quick comparison: DR, migration and data cloning tools" questions={["exam6_q48", "exam5_q64"]}>
+<Scene id="en-s5" label="Part 5/5" title="Comparing AWS Elastic Disaster Recovery, Application Migration Service and AWS Backup" questions={["exam6_q48", "exam5_q64"]}>
 
 <p class="scene-intro">Several services copy data in similar ways but for different purposes: disaster recovery, migration or data replication.</p>
 
-Some services share a mechanism (continuous replication, restoring from a copy) but serve different purposes. Choose each service to see when to use it, why it does not fit the matching ShopViet situation, and what to choose instead:
+Some services share a mechanism (continuous replication, restoring from a copy) but serve different purposes. Choose each service to see when to use it, why it does not fit the matching MFTECH situation, and what to choose instead:
 
 <QuickCompare client:visible items={[
   { name: "AWS Elastic Disaster Recovery (AWS DRS)",
     use: "DR for on-premises or cloud-based servers: continuous replication into a low-cost **staging area subnet** (affordable storage, minimal compute) in your AWS account; launch recovery instances within minutes from the latest state or an earlier point in time; non-disruptive drills and **failback** to the primary site once the issue is resolved. AWS describes RPOs of seconds and RTOs of minutes. DRS replaces CloudEndure Disaster Recovery (the CloudEndure Disaster Recovery page now redirects to the AWS DRS page).",
-    notHere: "ShopViet is moving the old warehouse VMs to EC2 for good with a lift-and-shift; it does not need a standby site or failback. DRS can be used to move servers to AWS, but AWS presents MGN as the recommended service for migrations.",
+    notHere: "MFTECH is moving the old warehouse VMs to EC2 for good with a lift-and-shift; it does not need a standby site or failback. DRS can be used to move servers to AWS, but AWS presents MGN as the recommended service for migrations.",
     instead: "**AWS Application Migration Service (MGN)**, now named AWS Transform MGN: install the Replication Agent, replicate, launch test instances, then cut over (Storage Gateway, Snow, DataSync, DMS lesson, part 3)." },
   { name: "AWS Backup (restoring to clone data)",
     use: "Centralized data protection: backup plans (frequency, retention), backup vaults, cross-Region and cross-account copies, Vault Lock for compliance.",
@@ -179,10 +179,10 @@ Sort each description into the matching DR strategy. On mobile devices: choose a
 
 <SortGame client:visible
   bins={[
-    { id: "br", title: "Backup & restore", sub: "backups only", hint: "Hint: nothing is running in the standby Region." },
-    { id: "pilot", title: "Pilot light", sub: "core always running", hint: "Hint: only the data tier is always running; application servers are off." },
+    { id: "br", title: "Backup and restore", sub: "backups only", hint: "Hint: nothing is running in the standby Region." },
+    { id: "pilot", title: "Pilot light", sub: "core always running", hint: "Hint: only the data tier is always running; the application tier EC2 instances are off." },
     { id: "warm", title: "Warm standby", sub: "scaled-down copy always running", hint: "Hint: every component runs, but at a smaller scale." },
-    { id: "multi", title: "Multi-site active-active", sub: "two full sites", hint: "Hint: both Regions are serving users." },
+    { id: "multi", title: "Multi-site active/active", sub: "two full sites", hint: "Hint: both Regions are serving users." },
   ]}
   cards={[
     ["Only snapshots and AMIs in Tokyo", "br"], ["RTO in hours, lowest cost", "br"],
@@ -192,18 +192,18 @@ Sort each description into the matching DR strategy. On mobile devices: choose a
   ]}
 />
 
-Check your understanding: as the designer of the ShopViet system, which option fits?
+Check your understanding: as the designer of the MFTECH system, which option fits?
 
 <Quiz client:visible items={[
   { q: "Requirement: Tokyo always has a scaled-down copy of the whole system running; when a failure happens, it only needs to scale up to shorten the disruption. Which strategy is this?",
-    opts: ["Pilot light", "Warm standby", "Backup & restore"],
+    opts: ["Pilot light", "Warm standby", "Backup and restore"],
     a: 1,
-    why: "Warm standby: every component runs, but at a smaller scale. Pilot light keeps only the core, such as the database, running; application servers stay off." },
+    why: "Warm standby: every component runs, but at a smaller scale. Pilot light keeps only the core, such as the database, running; the application tier EC2 instances stay off." },
   { q: "Order data is stored on Aurora MySQL in Singapore. Requirement: RPO ≤ 5 minutes, RTO ≤ 15 minutes when the Region fails, with minimal configuration effort. Which option fits?",
     opts: ["Aurora Global Database with a secondary cluster in Tokyo", "Lambda copies snapshots to Tokyo every 5 minutes", "DMS replicates to a separate cluster in Tokyo, with manual failover"],
     a: 0,
     why: "A global database replicates with latency typically under 1 second (RPO in seconds), and failover typically completes within minutes (RTO in minutes). The other two options work, but they take longer to recover and must be operated yourself." },
-  { q: "A Redis cache stores shopping carts. Requirement: the lowest downtime and data loss when the primary node fails. Which option fits?",
+  { q: "ElastiCache (Redis) stores shopping carts. Requirement: the lowest downtime and data loss when the primary node fails. Which option fits?",
     opts: ["Automatic nightly backups", "Multi-AZ with automatic failover", "Manual backups through AOF"],
     a: 1,
     why: "A replica in another AZ receives data continuously and is promoted automatically. Backups only keep data up to the latest snapshot, and restoring is slow." },
@@ -211,7 +211,7 @@ Check your understanding: as the designer of the ShopViet system, which option f
     opts: ["A CloudWatch alarm on the system status check with the recover action", "Trusted Advisor monitors and remediates automatically", "Deploy warm standby in another Region"],
     a: 0,
     why: "Recover moves the instance to a new host and keeps the instance ID, IP addresses and EBS volumes. Trusted Advisor inspects the environment and makes recommendations; it does not recover instances. Warm standby costs far too much for this requirement." },
-  { q: "An application takes more than 45 minutes to install but must be rebuilt within 5 minutes in every Region where ShopViet operates. Which option fits?",
+  { q: "An application takes more than 45 minutes to install but must be rebuilt within 5 minutes in every Region where MFTECH operates. Which option fits?",
     opts: ["Store the installer in S3", "Create an AMI with everything preinstalled and copy it to each Region", "Write user data that installs automatically"],
     a: 1,
     why: "An AMI with everything preinstalled lets an instance work right after launch. An AMI belongs to one Region, so it must be copied to each Region. User data still needs 45 minutes to install." },

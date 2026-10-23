@@ -57,7 +57,7 @@ export interface HopRun {
 
 export interface HopScenario {
   name: string;
-  /** One line shown before running: what is going on at ShopViet. */
+  /** One line shown before running: what is going on at MFTECH. */
   story: string;
   /** Short code-style label of what is being sent. */
   request: string;
@@ -194,8 +194,8 @@ export default function HopSim({ scenarios, action, height, label }: Props) {
   }
 
   return (
-    <div className="stage hop">
-      <div className="hop-scenarios" role="group" aria-label={L({ vi: "Tình huống", en: "Scenario" })}>
+    <div className="stage">
+      <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Tình huống", en: "Scenario" })}>
         {scenarios.map((s, i) => (
           <button key={s.name} className="chip" aria-pressed={i === index} onClick={() => pick(i)} disabled={busy && i !== index}>
             {s.name}
@@ -203,14 +203,14 @@ export default function HopSim({ scenarios, action, height, label }: Props) {
         ))}
       </div>
       <div className="stage-bar">
-        <code className="hop-req">{sc.request}</code>
+        <code className="rounded-[10px] border border-line bg-bg px-2 py-[3px] text-[0.8125rem] wrap-anywhere">{sc.request}</code>
         {sc.toggle && (
-          <label className="hop-toggle">
+          <label className="inline-flex cursor-pointer items-center gap-1.5 text-step--1">
             <input type="checkbox" checked={on} disabled={busy} onChange={(e) => { setOn(e.target.checked); reset(); }} />
             {sc.toggle.label}
           </label>
         )}
-        <button className="btn primary" onClick={go} disabled={busy}>{action}</button>
+        <button className="btn primary ml-auto" onClick={go} disabled={busy}>{action}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox={`0 0 820 ${height}`} role="img" aria-label={label}>
@@ -239,7 +239,7 @@ export default function HopSim({ scenarios, action, height, label }: Props) {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="hop-hint">{rich(sc.story)} <span>{L({
+          <p className="m-0 text-step--1">{rich(sc.story)} <span className="text-muted">{L({
             vi: <>Nhấn <b>{action}</b> để quan sát kết quả.{sc.toggle ? " Thay đổi cấu hình và chạy lại để so sánh." : ""}</>,
             en: <>Press <b>{action}</b> to see the result.{sc.toggle ? " Change the configuration and run again to compare." : ""}</>,
           })}</span></p>
@@ -247,10 +247,10 @@ export default function HopSim({ scenarios, action, height, label }: Props) {
           <ul className="log" aria-live="polite">
             {log.map((e, i) =>
               e.state === undefined ? (
-                <li key={i} className={`hop-result ${e.ok ? "ok" : "bad"}`}>{e.msg}</li>
+                <li key={i} className={`mt-1.5 block! rounded-[12px] px-2.5 py-2 ${e.ok ? "bg-ok-soft" : "bg-bad-soft"}`}>{e.msg}</li>
               ) : (
                 <li key={i}>
-                  <span className={`tag ${TAG[e.state].cls}`}>{e.tag ?? L(TAG[e.state].text)}</span>
+                  <span className={`tag whitespace-nowrap ${TAG[e.state].cls}`}>{e.tag ?? L(TAG[e.state].text)}</span>
                   <span><b>{e.who}:</b> {e.msg}</span>
                 </li>
               ),

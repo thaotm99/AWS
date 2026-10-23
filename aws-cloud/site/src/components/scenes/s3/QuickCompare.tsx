@@ -2,7 +2,7 @@ import { useState } from "react";
 import { rich } from "../diagram";
 import { useLang } from "../../../lib/lang";
 
-// "Quick comparison": S3 features that look similar to the right choice in a ShopViet
+// "Quick comparison": S3 features that look similar to the right choice in a MFTECH
 // situation. Each item says what the feature is for and why it does not fit that situation.
 // Text comes from the MDX file of each language.
 

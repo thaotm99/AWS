@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./rds-sims.css";
 
-// ShopViet adds a copy of its (still unencrypted) RDS for MySQL order database for the reporting team.
+// MFTECH adds a copy of its (still unencrypted) RDS for MySQL order database for the reporting team.
 // The learner picks the kind of copy (Read Replica or Multi-AZ standby), its size, its encryption and
 // its Region, then creates it and points the reports at it.
 // Facts: replica of an unencrypted instance cannot be encrypted (Overview.Encryption.html, limitations);
@@ -141,8 +141,8 @@ export default function ReplicaLab() {
   const nodeCls = state === "failed" ? "bad" : state === "created" ? (verdict?.tone === "ok" ? "ok" : verdict?.tone === "bad" ? "bad" : "warn") : "on";
 
   const chips = <T extends string>(label: Bi, value: T, set: (v: T) => void, opts: [T, Bi][], disabled = false) => (
-    <div className="rdx-row" role="group" aria-label={tr(label)}>
-      <span className="rdx-lbl">{tr(label)}</span>
+    <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-3 [&+&]:pt-2" role="group" aria-label={tr(label)}>
+      <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{tr(label)}</span>
       {opts.map(([v, l]) => (
         <button key={v} className="chip" aria-pressed={value === v} disabled={busy || disabled} onClick={() => change(set, v)}>{tr(l)}</button>
       ))}
@@ -150,15 +150,15 @@ export default function ReplicaLab() {
   );
 
   return (
-    <div className="stage rdx">
+    <div className="stage">
       {chips({ vi: "Loại bản sao", en: "Copy type" }, kind, setKind, [["rr", { vi: "Read Replica", en: "Read Replica" }], ["standby", { vi: "Multi-AZ standby", en: "Multi-AZ standby" }]])}
       {chips({ vi: "Compute", en: "Compute" }, cpu, setCpu, [["same", { vi: "Bằng source", en: "Same as source" }], ["half", { vi: "Một nửa", en: "Half" }]], standby)}
       {chips({ vi: "Storage", en: "Storage" }, disk, setDisk, [["same", { vi: "Bằng source", en: "Same as source" }], ["half", { vi: "Một nửa", en: "Half" }]], standby)}
       {chips({ vi: "Mã hoá", en: "Encryption" }, enc, setEnc, [["follow", { vi: "Giữ như source", en: "Same as source" }], ["encrypt", { vi: "Mã hoá bản sao", en: "Encrypt the copy" }]])}
       {chips({ vi: "Vị trí", en: "Location" }, where, setWhere, [["same", { vi: "Cùng Region", en: "Same Region" }], ["other", { vi: "Region khác", en: "Another Region" }]])}
-      <div className="stage-bar">
-        <span className="rdx-hint">{tr({ vi: "Source: RDS for MySQL, db.r6g.2xlarge, 500 GiB, chưa mã hoá.", en: "Source: RDS for MySQL, db.r6g.2xlarge, 500 GiB, unencrypted." })}</span>
-        <button className="btn primary" onClick={run} disabled={busy}>{tr({ vi: "Tạo bản sao và chạy báo cáo", en: "Create the copy and run reports" })}</button>
+      <div className="stage-bar mt-3 border-t border-line">
+        <span className="m-0 text-step--1 text-muted">{tr({ vi: "Source: RDS for MySQL, db.r6g.2xlarge, 500 GiB, chưa mã hoá.", en: "Source: RDS for MySQL, db.r6g.2xlarge, 500 GiB, unencrypted." })}</span>
+        <button className="btn primary ml-auto" onClick={run} disabled={busy}>{tr({ vi: "Tạo bản sao và chạy báo cáo", en: "Create the copy and run reports" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 20 820 220" role="img" aria-label={tr({ vi: "DB instance nguồn tại Region Singapore, bản sao cùng Region hoặc ở Region khác, và ứng dụng báo cáo", en: "Source DB instance in the Singapore Region, a copy in the same Region or another Region, and the reporting application" })}>
@@ -193,7 +193,7 @@ export default function ReplicaLab() {
       </div>
       <div className="readout" aria-live="polite">
         {lines.length === 0 ? (
-          <p className="rdx-hint">{tr({ vi: "Phòng kế toán cần một bản sao để chạy báo cáo. Chọn cấu hình, sau đó tạo bản sao. Thử cả các cấu hình sai để xem lý do bị loại.", en: "The accounting team needs a copy to run reports on. Choose a configuration, then create the copy. Try the wrong configurations too to see why they are ruled out." })}</p>
+          <p className="m-0 text-step--1 text-muted">{tr({ vi: "Phòng kế toán cần một bản sao để chạy báo cáo. Chọn cấu hình, sau đó tạo bản sao. Thử cả các cấu hình sai để xem lý do bị loại.", en: "The accounting team needs a copy to run reports on. Choose a configuration, then create the copy. Try the wrong configurations too to see why they are ruled out." })}</p>
         ) : (
           <>
             <ul className="log">

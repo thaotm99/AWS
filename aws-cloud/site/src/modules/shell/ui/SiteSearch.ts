@@ -65,7 +65,7 @@ function highlight(text: string, folded: string, tokens: Token[]): string {
   let at = 0;
   for (const [a, b] of marks) {
     if (a < at) continue;
-    html += escape(text.slice(at, a)) + "<mark>" + escape(text.slice(a, b)) + "</mark>";
+    html += escape(text.slice(at, a)) + '<mark class="rounded-[3px] bg-edge/28 px-px text-inherit">' + escape(text.slice(a, b)) + "</mark>";
     at = b;
   }
   return html + escape(text.slice(at));
@@ -219,11 +219,11 @@ export class SiteSearch<M> {
         const snippet = d.text.slice(from, from + 170);
         const fSnippet = d.fText.slice(from, from + 170);
         const kind = this.t(`shell.search.kind.${d.entry.kind}`);
-        return `<li role="option" id="search-opt-${i}" aria-selected="${i === 0}">
-          <a href="${escape(d.entry.url)}" tabindex="-1">
-            <span class="sr-kind">${escape(kind)}${d.context ? " · " + escape(d.context) : ""}</span>
-            <b>${mark(d.title, d.fTitle)}</b>
-            ${snippet ? `<span class="sr-text">${from > 0 ? "…" : ""}${mark(snippet, fSnippet)}${from + 170 < d.text.length ? "…" : ""}</span>` : ""}
+        return `<li class="group" role="option" id="search-opt-${i}" aria-selected="${i === 0}">
+          <a class="flex flex-col gap-[3px] rounded-[18px] px-3 py-2.5 text-ink no-underline group-aria-selected:bg-accent-soft hover:bg-accent-soft" href="${escape(d.entry.url)}" tabindex="-1">
+            <span class="font-mono text-[0.75rem] text-muted">${escape(kind)}${d.context ? " · " + escape(d.context) : ""}</span>
+            <b class="text-[0.98rem] leading-[1.35]">${mark(d.title, d.fTitle)}</b>
+            ${snippet ? `<span class="line-clamp-2 text-[0.85rem] leading-[1.55] text-muted">${from > 0 ? "…" : ""}${mark(snippet, fSnippet)}${from + 170 < d.text.length ? "…" : ""}</span>` : ""}
           </a>
         </li>`;
       })

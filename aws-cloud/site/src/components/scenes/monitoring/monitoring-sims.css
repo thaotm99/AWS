@@ -1,67 +1,52 @@
-/* Metric and alarm chart (monitoring/MetricAlarmSim) */
-.mas-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
-.mas-metric { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; overflow-wrap: anywhere; }
-.mas-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
-.mas .stage-bar .mas-play { margin-left: auto; }
-.mas-about { margin: 10px 16px 0; font-size: var(--step--1); color: var(--muted); }
-.mas-grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
-.mas-zone { fill: var(--bad-soft); opacity: .35; }
-.mas-threshold { stroke: var(--bad); stroke-width: 2; stroke-dasharray: 7 5; }
-.mas-th-label { fill: var(--bad); font-family: var(--font-mono); font-size: 11px; font-weight: 600; }
-.mas-raw { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 2 3; opacity: .8; }
-.mas-seg { stroke: var(--accent); stroke-width: 2.5; }
-.mas-pt { fill: var(--accent); stroke: var(--surface); stroke-width: 1.5; }
-.mas-pt.over { fill: var(--bad); }
-.mas-fire { stroke: var(--bad); stroke-width: 2; }
-.mas-now { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 2 3; }
-.mas-flash { fill: var(--bad); font-family: var(--font-mono); font-size: 13px; font-weight: 700; text-anchor: middle; }
-.mas-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
-.mas-action { font-size: var(--step--1); font-weight: 600; }
-.mas-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 8px; font-size: var(--step--1); }
-.mas-result.ok { background: var(--ok-soft); }
-.mas-result.bad { background: var(--bad-soft); }
+@reference "../../../styles/app.css";
 
-/* Configuration history of one security group (monitoring/ConfigTimelineSim) */
-.cts-row { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; margin-bottom: 10px; }
-.cts .stage-bar .cts-play { margin-left: auto; }
-.cts-axis { stroke: var(--line); stroke-width: 3; stroke-linecap: round; }
-.cts-dot { cursor: pointer; }
-.cts-dot circle { fill: var(--surface); stroke: var(--ok); stroke-width: 3; transition: r .2s, fill .2s; }
-.cts-dot.bad circle { stroke: var(--bad); }
-.cts-dot.on circle { fill: var(--ok); }
-.cts-dot.bad.on circle { fill: var(--bad); }
-.cts-dot:focus-visible { outline: none; }
-.cts-dot:focus-visible circle { stroke-width: 5; }
-.cts-day { fill: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
-.cts-time { fill: var(--muted); font-family: var(--font-mono); font-size: 10.5px; }
-.cts-panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
-.cts-panel { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--bg); min-width: 0; }
-.cts-panel h2 { margin: 0 0 6px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
-.cts-rules { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-family: var(--font-mono); font-size: 0.8125rem; }
-.cts-rules li { padding: 2px 6px; border-radius: 4px; overflow-wrap: anywhere; }
-.cts-rules li.add { background: var(--ok-soft); }
-.cts-rules li.risk { background: var(--bad-soft); color: var(--bad); font-weight: 600; }
-.cts-rules li.gone { text-decoration: line-through; color: var(--muted); }
-.cts-event { font-family: var(--font-mono); font-size: 0.8125rem; margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
-.cts-note { margin: 10px 0 0; font-size: var(--step--1); }
-.cts-panel .cts-note { margin-top: 8px; }
+/* Monitoring lesson simulations: SVG parts and state classes of MetricAlarmSim, ConfigTimelineSim and
+   PatchWindowSim. Layout lives in the markup. */
+@layer components {
+  /* MetricAlarmSim chart: grid, alarm zone and threshold, raw and averaged series, firing and "now" markers. */
+  .mas-grid { @apply stroke-line stroke-1; stroke-dasharray: 3 4; }
+  .mas-zone { @apply fill-bad-soft opacity-35; }
+  .mas-threshold { @apply stroke-bad stroke-2; stroke-dasharray: 7 5; }
+  .mas-th-label { @apply fill-bad font-mono text-[11px] font-semibold; }
+  .mas-raw { @apply fill-none stroke-muted stroke-[1.5] opacity-80; stroke-dasharray: 2 3; }
+  .mas-seg { @apply stroke-accent stroke-[2.5]; }
+  .mas-pt { @apply fill-accent stroke-surface stroke-[1.5]; }
+  .mas-pt.over { @apply fill-bad; }
+  .mas-fire { @apply stroke-bad stroke-2; }
+  .mas-now { @apply stroke-muted stroke-1; stroke-dasharray: 2 3; }
+  /* Label that flashText() pops when the alarm fires. */
+  .mas-flash { @apply fill-bad font-mono text-[13px] font-bold; text-anchor: middle; }
 
-/* Patching behind the ALB in a maintenance window (monitoring/PatchWindowSim) */
-.pws .stage-bar .pws-play { margin-left: auto; }
-.pws-node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill .2s, stroke .2s; }
-.pws-node.serve rect { fill: var(--ok-soft); stroke: var(--ok); }
-.pws-node.drain rect { fill: var(--accent-soft); stroke: var(--accent); stroke-dasharray: 5 4; }
-.pws-node.patch rect { fill: var(--edge-soft); stroke: var(--edge); }
-.pws-node.reboot rect { fill: var(--bad-soft); stroke: var(--bad); }
-.pws-node.reboot.out rect { fill: var(--edge-soft); stroke: var(--edge); }
-.pws-l1 { fill: var(--ink); font-family: var(--font-body); font-size: 12.5px; font-weight: 600; }
-.pws-l2 { fill: var(--muted); font-family: var(--font-body); font-size: 10.5px; }
-.pws-user { fill: var(--muted); }
-.pws-link { fill: none; stroke: var(--line); stroke-width: 2; }
-.pws-link.off { stroke-dasharray: 3 5; opacity: .5; }
-.pws-clock { fill: var(--ink); font-family: var(--font-mono); font-size: 13px; font-weight: 600; }
-.pws-flash { fill: var(--bad); font-family: var(--font-mono); font-size: 13px; font-weight: 700; text-anchor: middle; }
-.pws-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
-.pws-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 8px; font-size: var(--step--1); }
-.pws-result.ok { background: var(--ok-soft); }
-.pws-result.bad { background: var(--bad-soft); }
+  /* ConfigTimelineSim: one configuration item on the axis; .bad is non-compliant, .on is selected. */
+  .cts-axis { @apply stroke-line stroke-3; stroke-linecap: round; }
+  .cts-dot { @apply cursor-pointer focus-visible:outline-none; }
+  .cts-dot circle { @apply fill-surface stroke-ok stroke-3; transition: r .2s, fill .2s; }
+  .cts-dot.bad circle { @apply stroke-bad; }
+  .cts-dot.on circle { @apply fill-ok; }
+  .cts-dot.bad.on circle { @apply fill-bad; }
+  .cts-dot:focus-visible circle { @apply stroke-5; }
+  .cts-day { @apply fill-ink font-body text-[12px] font-semibold; }
+  .cts-time { @apply fill-muted font-mono text-[10.5px]; }
+  /* Security group rules at that point: .add new, .risk open to the internet, .gone removed. */
+  .cts-rules li { @apply rounded-[4px] px-1.5 py-0.5 wrap-anywhere; }
+  .cts-rules li.add { @apply bg-ok-soft; }
+  .cts-rules li.risk { @apply bg-bad-soft font-semibold text-bad; }
+  .cts-rules li.gone { @apply text-muted line-through; }
+
+  /* PatchWindowSim: an instance behind the ALB in its patch phase (.serve, .drain, .patch, .reboot; .out when the
+     runbook took it out of the target group first). */
+  .pws-node rect { @apply fill-surface stroke-line stroke-[1.5]; transition: fill .2s, stroke .2s; }
+  .pws-node.serve rect { @apply fill-ok-soft stroke-ok; }
+  .pws-node.drain rect { @apply fill-accent-soft stroke-accent; stroke-dasharray: 5 4; }
+  .pws-node.patch rect { @apply fill-edge-soft stroke-edge; }
+  .pws-node.reboot rect { @apply fill-bad-soft stroke-bad; }
+  .pws-node.reboot.out rect { @apply fill-edge-soft stroke-edge; }
+  .pws-l1 { @apply fill-ink font-body text-[12.5px] font-semibold; }
+  .pws-l2 { @apply fill-muted font-body text-[10.5px]; }
+  .pws-user { @apply fill-muted; }
+  .pws-link { @apply fill-none stroke-line stroke-2; }
+  .pws-link.off { @apply opacity-50; stroke-dasharray: 3 5; }
+  .pws-clock { @apply fill-ink font-mono text-[13px] font-semibold; }
+  /* "502" that flashText() pops on an instance that drops requests. */
+  .pws-flash { @apply fill-bad font-mono text-[13px] font-bold; text-anchor: middle; }
+}

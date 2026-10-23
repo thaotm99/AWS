@@ -11,7 +11,7 @@ Làm tuần tự từng đợt; hết đợt 4 thì rà lại toàn bộ 6 đề
 ## Quy tắc
 1. Mọi nội dung mới đối chiếu AWS docs; URL ghi vào `docs` của bài và nhật ký `aws-cloud/site/FACTCHECK-*.md`.
 2. Viết song ngữ ngay: `concepts/<bài>.mdx` và `concepts-en/<bài>.mdx`; chữ trong mô phỏng qua `L({vi, en})`.
-3. Văn phong kỹ thuật, tình huống ShopViet; nội dung dạng liệt kê thì làm thành mô phỏng; không đưa mã đề lên trang (chỉ trong prop `questions`).
+3. Văn phong kỹ thuật, tình huống MFTECH; nội dung dạng liệt kê thì làm thành mô phỏng; không đưa mã đề lên trang (chỉ trong prop `questions`).
 4. Hết mỗi đợt: chạy lại audit cho các bài trong đợt, cập nhật `test-N.json` và dựng lại `CHECKLIST.md`.
 5. Tính năng đã ngừng (Spot block, Kinesis Data Analytics for SQL…): một dòng "đã ngừng hỗ trợ", không viết phần riêng.
 6. Đề 2 câu 64 (EFS Max I/O) và đề 4 câu 15 (gp2): bài học giữ khuyến nghị hiện tại theo docs; lời giải 2 câu này trên trang Luyện đề có ghi chú "đề dùng đáp án theo khuyến nghị cũ".

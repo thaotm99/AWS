@@ -4,7 +4,7 @@ import { useLang, type Bi } from "../../../lib/lang";
 import "./s3-sims.css";
 
 // Lifecycle rule filters (prefix, object tags, empty filter = whole bucket).
-// ShopViet's product bucket: originals under images/ go cold after 45 days, thumbnails/
+// MFTECH's product bucket: originals under images/ go cold after 45 days, thumbnails/
 // stay hot; everything is archived after 180 days; the data must survive the loss of an AZ.
 // Facts: intro-lifecycle-filters.html, storage-class-intro.html. Source question: exam4_q43.
 
@@ -112,41 +112,41 @@ export default function LifecycleFilterSim() {
   const xml2 = f2 === "all" ? "<Filter></Filter>" : "<Prefix>images/</Prefix>";
 
   return (
-    <div className="stage s3x">
-      <div className="s3x-row" role="group" aria-label={L({ vi: "Filter của rule ngày 45", en: "Filter of the day-45 rule" })}>
-        <span className="s3x-lbl">{L({ vi: "Rule 1 · ngày 45", en: "Rule 1 · day 45" })}</span>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-3" role="group" aria-label={L({ vi: "Filter của rule ngày 45", en: "Filter of the day-45 rule" })}>
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Rule 1 · ngày 45", en: "Rule 1 · day 45" })}</span>
         {FILTERS.map((x) => (
           <button key={x.id} className="chip" aria-pressed={x.id === f1} onClick={() => change(() => setF1(x.id))}>{L(x.name)}</button>
         ))}
       </div>
-      <div className="s3x-row" role="group" aria-label={L({ vi: "Storage class đích của rule 1", en: "Target storage class of rule 1" })}>
-        <span className="s3x-lbl">{L({ vi: "Chuyển sang", en: "Transition to" })}</span>
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-2" role="group" aria-label={L({ vi: "Storage class đích của rule 1", en: "Target storage class of rule 1" })}>
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Chuyển sang", en: "Transition to" })}</span>
         <button className="chip" aria-pressed={ia === "ia"} onClick={() => change(() => setIa("ia"))}>Standard-IA</button>
         <button className="chip" aria-pressed={ia === "oz"} onClick={() => change(() => setIa("oz"))}>One Zone-IA</button>
       </div>
-      <div className="s3x-row" role="group" aria-label={L({ vi: "Filter của rule ngày 180", en: "Filter of the day-180 rule" })}>
-        <span className="s3x-lbl">{L({ vi: "Rule 2 · ngày 180 → Glacier", en: "Rule 2 · day 180 → Glacier" })}</span>
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-2" role="group" aria-label={L({ vi: "Filter của rule ngày 180", en: "Filter of the day-180 rule" })}>
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Rule 2 · ngày 180 → Glacier", en: "Rule 2 · day 180 → Glacier" })}</span>
         <button className="chip" aria-pressed={f2 === "all"} onClick={() => change(() => setF2("all"))}>{L({ vi: "Filter rỗng (toàn bucket)", en: "Empty filter (whole bucket)" })}</button>
         <button className="chip" aria-pressed={f2 === "images"} onClick={() => change(() => setF2("images"))}>{L({ vi: "Prefix images/", en: "Prefix images/" })}</button>
       </div>
-      <div className="stage-bar">
-        <code className="s3x-req">{`Rule 1: ${xml1} → ${CLS_NAME[ia]} · Rule 2: ${xml2} → Glacier`}</code>
-        <button className="btn primary" onClick={run} disabled={busy}>{L({ vi: "Chạy 180 ngày", en: "Run 180 days" })}</button>
+      <div className="stage-bar mt-3 border-t border-line">
+        <code className="rounded-[10px] border border-line bg-bg px-2 py-[3px] text-[0.8125rem] wrap-anywhere">{`Rule 1: ${xml1} → ${CLS_NAME[ia]} · Rule 2: ${xml2} → Glacier`}</code>
+        <button className="btn primary ml-auto" onClick={run} disabled={busy}>{L({ vi: "Chạy 180 ngày", en: "Run 180 days" })}</button>
       </div>
-      <div className="s3x-lc" aria-live="polite">
-        <div className="s3x-lc-day">
+      <div className="border-t border-line px-3.5 py-3" aria-live="polite">
+        <div className="mb-2 flex gap-1.5">
           {[0, 45, 180].map((d) => (
-            <span key={d} className={d <= day ? "on" : ""}>{L({ vi: `Ngày ${d}`, en: `Day ${d}` })}</span>
+            <span key={d} className={"flex-1 rounded-[999px] py-[3px] text-center text-[0.75rem] font-semibold transition-colors duration-300 ease-[ease] " + (d <= day ? "bg-accent-soft text-accent" : "bg-bg text-muted")}>{L({ vi: `Ngày ${d}`, en: `Day ${d}` })}</span>
           ))}
         </div>
-        <ul className="s3x-lc-list">
+        <ul className="m-0 grid list-none gap-1 p-0">
           {OBJECTS.map((o) => {
             const c = classAt(o, day);
             const hot = o.thumb && (c === "ia" || c === "oz");
             return (
-              <li key={o.key}>
-                <span className="s3x-lc-key"><code>{o.key}</code>{o.tag && <span className="s3x-lc-tag">{o.tag}</span>}</span>
-                <span className="s3x-lc-use">{o.thumb ? L({ vi: "đọc thường xuyên", en: "read often" }) : day >= 45 ? L({ vi: "hầu như không đọc", en: "rarely read" }) : L({ vi: "đọc nhiều", en: "read often" })}</span>
+              <li key={o.key} className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1.3fr)] items-center gap-2 border-b border-dashed border-line py-1 text-[0.8125rem] max-sm:grid-cols-[minmax(0,1fr)_auto]">
+                <span className="flex min-w-0 flex-wrap items-center gap-1 wrap-anywhere"><code>{o.key}</code>{o.tag && <span className="rounded-[999px] bg-accent-soft px-1.5 py-px text-[0.6875rem] text-accent">{o.tag}</span>}</span>
+                <span className="text-[0.75rem] text-muted max-sm:hidden">{o.thumb ? L({ vi: "đọc thường xuyên", en: "read often" }) : day >= 45 ? L({ vi: "hầu như không đọc", en: "rarely read" }) : L({ vi: "đọc nhiều", en: "read often" })}</span>
                 <span className={`s3x-lc-cls ${c}${hot ? " warn" : ""}`}>{CLS_NAME[c]}</span>
               </li>
             );
@@ -163,7 +163,7 @@ export default function LifecycleFilterSim() {
             ))}
           </ul>
         ) : (
-          <p className="s3x-hint">{L({
+          <p className="m-0 text-step--1 text-muted">{L({
             vi: <>Yêu cầu: sau 45 ngày ảnh gốc hầu như không được đọc nhưng thumbnail vẫn được đọc thường xuyên; sau 180 ngày lưu trữ cả hai; dữ liệu phải chịu được sự cố mất một AZ. Chọn filter cho từng rule rồi nhấn <b>Chạy 180 ngày</b>.</>,
             en: <>Requirements: after 45 days the originals are hardly read but thumbnails are still read often; after 180 days both are archived; the data must survive the loss of an AZ. Choose a filter for each rule, then press <b>Run 180 days</b>.</>,
           })}</p>

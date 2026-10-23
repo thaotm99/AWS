@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./messaging-sims.css";
 
-// ShopViet's wallet sends five balance changes for two customers, one of them sent
+// MFTECH's wallet sends five balance changes for two customers, one of them sent
 // twice after a network timeout. A standard queue may deliver out of order and more
 // than once, so a balance ends up wrong. A FIFO queue keeps the order and drops the
 // duplicate, but with one message group only one message is in flight at a time.
@@ -165,7 +165,7 @@ export default function FifoSim() {
   };
 
   return (
-    <div className="stage ffs">
+    <div className="stage">
       <div className="stage-bar">
         <span className="label">{L({ vi: "Loại queue", en: "Queue type" })}</span>
         {(["standard", "fifo"] as const).map((t) => (
@@ -173,13 +173,13 @@ export default function FifoSim() {
             {t === "standard" ? "Standard" : "FIFO (.fifo)"}
           </button>
         ))}
-        <label className="ffs-toggle">
+        <label className="inline-flex cursor-pointer items-center gap-1.5 text-step--1 has-[input:disabled]:cursor-default has-[input:disabled]:opacity-50">
           <input type="checkbox" checked={groups} disabled={busy || type === "standard"} onChange={(e) => { setGroups(e.target.checked); reset(); }} />
           {L({ vi: "Message Group ID = mã người dùng", en: "Message Group ID = user ID" })}
         </label>
-        <button className="btn primary" onClick={run} disabled={busy}>{L({ vi: "Gửi 5 message", en: "Send 5 messages" })}</button>
+        <button className="btn primary ml-auto" onClick={run} disabled={busy}>{L({ vi: "Gửi 5 message", en: "Send 5 messages" })}</button>
       </div>
-      <p className="ffs-about">{L({ vi: "Người dùng A nạp 100, sau đó thanh toán 80. Người dùng B nạp 50, sau đó thanh toán 30. Lệnh nạp của A bị ứng dụng gửi lại một lần do timeout mạng. Số dư chính xác: A = 20, B = 20.", en: "User A tops up 100, then pays 80. User B tops up 50, then pays 30. The app resends A\u2019s top-up once after a network timeout. Correct balances: A = 20, B = 20." })}</p>
+      <p className="mx-4 mt-2.5 mb-0 text-step--1 text-muted">{L({ vi: "Người dùng A nạp 100, sau đó thanh toán 80. Người dùng B nạp 50, sau đó thanh toán 30. Lệnh nạp của A bị ứng dụng gửi lại một lần do timeout mạng. Số dư chính xác: A = 20, B = 20.", en: "User A tops up 100, then pays 80. User B tops up 50, then pays 30. The app resends A\u2019s top-up once after a network timeout. Correct balances: A = 20, B = 20." })}</p>
       <div className="svg-wrap">
         <svg viewBox="0 30 820 200" role="img" aria-label={L({ vi: "Năm message được gửi từ ứng dụng ví vào queue, sau đó tới hai consumer", en: "Five messages are sent from the wallet app to the queue, then to two consumers" })}>
           <path className="mls-link" d={`M100 ${LANE} H150 M530 ${LANE} H550 V${C_Y.c1} H560 M550 ${LANE} V${C_Y.c2} H560`} />
@@ -190,7 +190,7 @@ export default function FifoSim() {
           </g>
           <g className="mls-lane">
             <rect x={150} y={LANE - 24} width={380} height={48} rx={10} />
-            <text x={156} y={LANE - 30}>{type === "fifo" ? "shopviet-vi.fifo" : "shopviet-vi (standard)"}</text>
+            <text x={156} y={LANE - 30}>{type === "fifo" ? "mftech-vi.fifo" : "mftech-vi (standard)"}</text>
           </g>
           {(["c1", "c2"] as const).map((c) => (
             <g key={c} className={"mls-worker " + (busyC[c] !== undefined ? "busy" : "idle")}>
@@ -216,13 +216,13 @@ export default function FifoSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="mls-hint">{L({ vi: <>Chọn loại queue, sau đó chọn <b>Gửi 5 message</b>. So sánh cả ba cấu hình: Standard, FIFO, FIFO + Message Group ID.</>, en: <>Choose a queue type, then choose <b>Send 5 messages</b>. Compare all three configurations: Standard, FIFO, FIFO + Message Group ID.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn loại queue, sau đó chọn <b>Gửi 5 message</b>. So sánh cả ba cấu hình: Standard, FIFO, FIFO + Message Group ID.</>, en: <>Choose a queue type, then choose <b>Send 5 messages</b>. Compare all three configurations: Standard, FIFO, FIFO + Message Group ID.</> })}</p>
         ) : (
           <>
             <ul className="log" aria-live="polite">
               {log.map((e, i) =>
                 e.tag === undefined ? (
-                  <li key={i} className={`mls-result ${e.ok ? "ok" : "bad"}`}>{L(e.msg)}</li>
+                  <li key={i} className={`mt-1.5 block rounded-[12px] px-2.5 py-2 ${e.ok ? "bg-ok-soft" : "bg-bad-soft"}`}>{L(e.msg)}</li>
                 ) : (
                   <li key={i}>
                     <span className={`tag mls-tag ${e.cls}`}>{L(e.tag)}</span>
@@ -232,7 +232,7 @@ export default function FifoSim() {
               )}
             </ul>
             {balance && (
-              <div className="status ffs-balance">
+              <div className="status mt-2.5">
                 {(["A", "B"] as const).map((k) => (
                   <span key={k} className={"pill " + (balance[k] === EXPECT[k] ? "ok" : "bad")}><i />{L({ vi: "Số dư", en: "Balance" })} {k}: {balance[k]} ({L({ vi: "giá trị đúng", en: "correct value" })}: {EXPECT[k]})</span>
                 ))}

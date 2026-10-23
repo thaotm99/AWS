@@ -28,7 +28,7 @@ const T = {
   allKnown: { vi: "Bạn đã hiểu mọi từ khóa của phần này", en: "You know every key term in this section" },
   review: { vi: "Xem lại", en: "Review" },
   more: { vi: "Xem thêm", en: "Show more" },
-  example: { vi: "Ở ShopViet:", en: "At ShopViet:" },
+  example: { vi: "Ở MFTECH:", en: "At MFTECH:" },
   learn: { vi: "Học kỹ ở bài", en: "Covered in" },
   glossary: { vi: "Mở trong trang Thuật ngữ", en: "Open in the glossary" },
   docs: { vi: "Tài liệu AWS", en: "AWS documentation" },
@@ -94,12 +94,12 @@ function markTerms(section: Element, terms: StripTerm[], pick: (id: string) => v
 function Ring({ done, total }: { done: number; total: number }) {
   const c = 2 * Math.PI * 15;
   return (
-    <span className="kw-ring">
+    <span className="relative size-10 flex-none">
       <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
-        <circle cx="20" cy="20" r="15" className="kw-ring-bg" />
-        <circle cx="20" cy="20" r="15" className="kw-ring-fg" strokeDasharray={c} strokeDashoffset={c * (1 - done / total)} transform="rotate(-90 20 20)" />
+        <circle cx="20" cy="20" r="15" className="fill-none stroke-edge/22 stroke-4" />
+        <circle cx="20" cy="20" r="15" className="fill-none stroke-ok stroke-4 [stroke-linecap:round] transition-[stroke-dashoffset] duration-600 ease-[cubic-bezier(.3,.8,.2,1)]" strokeDasharray={c} strokeDashoffset={c * (1 - done / total)} transform="rotate(-90 20 20)" />
       </svg>
-      <span>{done}/{total}</span>
+      <span className="absolute inset-0 grid place-items-center font-mono text-[0.68rem] font-semibold">{done}/{total}</span>
     </span>
   );
 }
@@ -145,17 +145,20 @@ export default function KeywordStrip({ terms }: { terms: StripTerm[] }) {
   const curKnown = cur ? known.has(cur.id) : false;
 
   return (
-    <div className="kw-strip" ref={root}>
-      <div className="kw-bar">
+    <div
+      className="kw-strip mt-2.5 mb-4 overflow-hidden rounded-[18px] border border-[color-mix(in_srgb,var(--color-edge)_22%,var(--color-line))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-edge-soft)_55%,var(--color-surface)),var(--color-edge-soft))]"
+      ref={root}
+    >
+      <div className="flex flex-wrap items-center gap-x-3.5 gap-y-2.5 px-4 py-3">
         <Ring done={knownCount} total={terms.length} />
-        <div className="kw-title">
-          <b>{L(T.title)}</b>
-          <span>{collapsed ? L(T.allKnown) : L(T.hint)}</span>
+        <div className="flex min-w-0 flex-col leading-[1.35]">
+          <b className="text-[0.9rem]">{L(T.title)}</b>
+          <span className="text-[0.78rem] text-muted">{collapsed ? L(T.allKnown) : L(T.hint)}</span>
         </div>
         {collapsed ? (
-          <button type="button" className="kw-review" onClick={() => setReview(true)}>{L(T.review)}</button>
+          <button type="button" className="kw-chip ml-auto" onClick={() => setReview(true)}>{L(T.review)}</button>
         ) : (
-          <div className="kw-chips" role="group" aria-label={L(T.title)}>
+          <div className="flex flex-[1_1_320px] flex-wrap gap-1.5 max-sm:basis-full" role="group" aria-label={L(T.title)}>
             {shown.map((t) => (
               <button key={t.id} type="button" className="kw-chip" aria-pressed={open === t.id} data-known={known.has(t.id) || undefined} onClick={() => setOpen(open === t.id ? null : t.id)}>
                 {known.has(t.id) && (
@@ -165,28 +168,28 @@ export default function KeywordStrip({ terms }: { terms: StripTerm[] }) {
               </button>
             ))}
             {!more && terms.length > VISIBLE && (
-              <button type="button" className="kw-more" aria-label={`${L(T.more)} ${terms.length - VISIBLE}`} onClick={() => setMore(true)}>+{terms.length - VISIBLE}</button>
+              <button type="button" className="kw-chip text-edge" aria-label={`${L(T.more)} ${terms.length - VISIBLE}`} onClick={() => setMore(true)}>+{terms.length - VISIBLE}</button>
             )}
           </div>
         )}
       </div>
       {cur && (
-        <div className="kw-panel" key={cur.id} aria-live="polite">
-          <div className="kw-panel-text">
-            <b className="kw-name">{cur.name}</b>
-            <p>{L({ vi: cur.vi.def, en: cur.en.def })}</p>
+        <div className="mx-2.5 mb-2.5 grid animate-[kw-open_.32s_ease_both] grid-cols-[minmax(0,1fr)_minmax(220px,300px)] gap-[18px] rounded-[20px] bg-surface px-[18px] py-4 motion-reduce:animate-none max-sm:grid-cols-1" key={cur.id} aria-live="polite">
+          <div className="flex min-w-0 flex-col gap-2">
+            <b className="text-[1.05rem]">{cur.name}</b>
+            <p className="m-0 max-w-none text-[0.95rem] leading-[1.65]">{L({ vi: cur.vi.def, en: cur.en.def })}</p>
             {cur.vi.example && (
-              <p className="kw-ex"><b>{L(T.example)}</b> {L({ vi: cur.vi.example, en: cur.en.example ?? cur.vi.example })}</p>
+              <p className="m-0 max-w-none text-[0.85rem] text-muted"><b className="text-edge">{L(T.example)}</b> {L({ vi: cur.vi.example, en: cur.en.example ?? cur.vi.example })}</p>
             )}
-            <p className="kw-links">
-              {cur.learn && <a href={`/concepts/${cur.learn.id}/`}>{L(T.learn)} {L(cur.learn)} →</a>}
-              <a href={`/glossary/#${cur.id}`}>{L(T.glossary)}</a>
-              <a href={cur.docs} target="_blank" rel="noopener">{L(T.docs)} ↗</a>
+            <p className="m-0 flex max-w-none flex-wrap gap-x-4 gap-y-1 text-[0.82rem] font-semibold">
+              {cur.learn && <a className="no-underline" href={`/concepts/${cur.learn.id}/`}>{L(T.learn)} {L(cur.learn)} →</a>}
+              <a className="no-underline" href={`/glossary/#${cur.id}`}>{L(T.glossary)}</a>
+              <a className="text-muted no-underline" href={cur.docs} target="_blank" rel="noopener">{L(T.docs)} ↗</a>
             </p>
           </div>
-          <div className="kw-panel-side">
+          <div className="flex flex-col gap-2.5">
             {cur.flow && <FlowFigure flow={cur.flow} lang={locale} />}
-            <button type="button" className="kw-mark" aria-pressed={curKnown} onClick={() => setKnown(cur.id, !curKnown)}>
+            <button type="button" className="min-h-11 cursor-pointer rounded-[18px] border-[1.5px] border-ok bg-ok text-[0.85rem] font-semibold text-surface transition-[background,color] duration-200 aria-pressed:bg-ok-soft aria-pressed:text-ok" aria-pressed={curKnown} onClick={() => setKnown(cur.id, !curKnown)}>
               {curKnown ? `${L(T.understood)} ✓` : L(T.mark)}
             </button>
           </div>

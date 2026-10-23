@@ -1,7 +1,7 @@
 import PacketSim, { type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// Two ShopViet stories about logs. First: the Auto Scaling group already terminated
+// Two MFTECH stories about logs. First: the Auto Scaling group already terminated
 // the instance that had the bug, so the log is gone unless the CloudWatch agent sent
 // it out. Second: someone keeps calling AWS APIs they are not allowed to; CloudTrail
 // records it, and a metric filter plus an alarm turns it into a warning within minutes.
@@ -20,7 +20,7 @@ const SCENARIOS: PScenario[] = [
         { id: "dev", x: 70, y: 145, l1: "Kỹ sư", user: true },
         { id: "i3", x: 415, y: 100, w: 170, l1: "i-web3", l2: "đã terminate hôm qua" },
         { id: "i9", x: 415, y: 195, w: 170, l1: "i-web9", l2: "instance mới, không có lỗi" },
-        { id: "logs", x: 690, y: 145, w: 190, l1: "CloudWatch Logs", l2: "log group /shopviet/web" },
+        { id: "logs", x: 690, y: 145, w: 190, l1: "CloudWatch Logs", l2: "log group /mftech/web" },
       ],
       links: [["dev", "i3"], ["i3", "logs"], ["i9", "logs"], ["dev", "logs"]],
     },
@@ -32,7 +32,7 @@ const SCENARIOS: PScenario[] = [
           ok: true,
           result: "Xác định được lỗi mà không cần SSH. Fleet thay thế instance hằng ngày cũng không làm mất log." }
       : { steps: [
-            { at: "i3", state: "block", flash: "mất", msg: "ASG đã terminate i-web3. Log được lưu trên ổ đĩa của instance nên bị mất theo." },
+            { at: "i3", state: "block", flash: "mất", msg: "ASG đã terminate i-web3. Log được lưu cục bộ trên root volume của instance nên bị mất theo." },
             { at: "i9", from: "dev", state: "skip", msg: "Instance mới không có log của hai ngày trước." }],
           ok: false,
           result: "Không còn dữ liệu để truy vết. Tắt scale in hoặc tạo snapshot trước khi terminate chỉ là biện pháp tạm thời. Cần cài đặt **CloudWatch agent** để log được gửi lên CloudWatch Logs, bên ngoài instance." },
@@ -92,7 +92,7 @@ const SCENARIOS_EN: PScenario[] = [
         { id: "dev", x: 70, y: 145, l1: "Engineer", user: true },
         { id: "i3", x: 415, y: 100, w: 170, l1: "i-web3", l2: "terminated yesterday" },
         { id: "i9", x: 415, y: 195, w: 170, l1: "i-web9", l2: "new instance, no error" },
-        { id: "logs", x: 690, y: 145, w: 190, l1: "CloudWatch Logs", l2: "log group /shopviet/web" },
+        { id: "logs", x: 690, y: 145, w: 190, l1: "CloudWatch Logs", l2: "log group /mftech/web" },
       ],
       links: [["dev", "i3"], ["i3", "logs"], ["i9", "logs"], ["dev", "logs"]],
     },
@@ -104,7 +104,7 @@ const SCENARIOS_EN: PScenario[] = [
           ok: true,
           result: "The error is found without SSH. A fleet that replaces instances every day no longer loses logs." }
       : { steps: [
-            { at: "i3", state: "block", flash: "lost", msg: "The ASG has terminated i-web3. The logs were stored on the instance's disk, so they are lost with it." },
+            { at: "i3", state: "block", flash: "lost", msg: "The ASG has terminated i-web3. The logs were stored locally on the instance root volume, so they are lost with it." },
             { at: "i9", from: "dev", state: "skip", msg: "The new instance has no logs from two days ago." }],
           ok: false,
           result: "No data is left to trace. Disabling scale-in or taking a snapshot before termination is only a stopgap. Install the **CloudWatch agent** so that logs are sent to CloudWatch Logs, outside the instance." },

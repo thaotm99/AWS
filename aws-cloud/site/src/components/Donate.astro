@@ -12,28 +12,28 @@ const fields = [
   { key: "note", value: DONATE.note, copy: true, strong: true },
 ] as const;
 ---
-<aside class="donate" aria-labelledby="donate-title">
-  <div class="donate-text">
-    <h2 id="donate-title"><span aria-hidden="true">☕</span> <T k="shell.donate.title" /></h2>
-    <p><T k="shell.donate.body" /></p>
-    <dl class="donate-fields">
+<aside class="donate mt-12 grid grid-cols-[minmax(0,1fr)_200px] items-start gap-x-6 gap-y-5 rounded-[20px] border border-edge bg-bg px-5.5 py-5 max-sm:grid-cols-[minmax(0,1fr)] max-sm:p-4" aria-labelledby="donate-title">
+  <div>
+    <h2 class="mt-0 mb-1.5 text-step-1" id="donate-title"><span aria-hidden="true">☕</span> <T k="shell.donate.title" /></h2>
+    <p class="mt-0 mb-3.5 text-[0.9375rem] text-muted"><T k="shell.donate.body" /></p>
+    <dl class="m-0 grid gap-2">
       {fields.map((f) => (
-        <div class:list={["donate-field", { strong: "strong" in f && f.strong }]}>
-          <dt><T k={`shell.donate.${f.key}`} /></dt>
-          <dd>
-            <span class="donate-value">{f.value}</span>
+        <div class:list={["min-w-0 rounded-[14px] border bg-surface px-3 py-2", "strong" in f && f.strong ? "border-edge" : "border-line"]}>
+          <dt class:list={["text-[0.75rem]", "strong" in f && f.strong ? "font-semibold text-edge" : "text-muted"]}><T k={`shell.donate.${f.key}`} /></dt>
+          <dd class="m-0 flex flex-wrap items-center justify-between gap-2.5">
+            <span class="font-mono text-[0.9375rem] font-semibold wrap-anywhere">{f.value}</span>
             {"copy" in f && f.copy && (
-              <button type="button" class="donate-copy" data-copy={f.value}><T k="shell.donate.copy" /></button>
+              <button type="button" class="min-h-8 flex-none cursor-pointer rounded-sm border border-edge bg-transparent px-2.5 py-0.75 text-[0.8125rem] font-semibold text-edge hover:bg-edge hover:text-surface [&.done]:bg-edge [&.done]:text-surface" data-copy={f.value}><T k="shell.donate.copy" /></button>
             )}
           </dd>
         </div>
       ))}
     </dl>
-    <p class="donate-hint"><T k="shell.donate.hint" /></p>
+    <p class="mx-0 mt-3.5 mb-0 text-[0.9375rem] text-muted"><T k="shell.donate.hint" /></p>
   </div>
-  <figure class="donate-qr">
-    <div class="donate-qr-code" set:html={qr} />
-    <figcaption><T k="shell.donate.scan" /></figcaption>
+  <figure class="m-0 text-center max-sm:max-w-[220px] max-sm:justify-self-center">
+    <div class="rounded-[18px] border border-line bg-white p-2.5 [&_svg]:block [&_svg]:h-auto [&_svg]:w-full" set:html={qr} />
+    <figcaption class="mt-2 text-[0.75rem] text-muted"><T k="shell.donate.scan" /></figcaption>
   </figure>
   <span class="donate-copied" hidden><T k="shell.donate.copied" /></span>
 </aside>

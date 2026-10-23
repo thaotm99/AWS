@@ -2,10 +2,11 @@ import { useRef, useState, type ReactNode } from "react";
 import { flashText, travel, type Pt } from "../../../lib/animate";
 import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
+import "./cloudfront-sims.css";
 
 type Lang = ReturnType<typeof useLang>;
 
-// One request of ShopViet walks through the checks CloudFront runs at the edge,
+// One request of MFTECH walks through the checks CloudFront runs at the edge,
 // then reaches an origin. Each scenario turns on the feature that solves one real
 // problem: HTTPS certificate, WAF, geo restriction, signed cookies, field-level
 // encryption, cache behaviors and origin-group failover.
@@ -50,7 +51,7 @@ interface Scenario {
 }
 
 function scenarios(L: Lang): Scenario[] {
-const PASS_TLS = { state: "pass" as const, msg: L({ vi: "TLS termination bằng chứng chỉ ACM của **shopviet.vn** (us-east-1).", en: "TLS termination with the ACM certificate for **shopviet.vn** (us-east-1)." }) };
+const PASS_TLS = { state: "pass" as const, msg: L({ vi: "TLS termination bằng chứng chỉ ACM của **mftech.vn** (us-east-1).", en: "TLS termination with the ACM certificate for **mftech.vn** (us-east-1)." }) };
 const PASS_WAF = { state: "pass" as const, msg: L({ vi: "Request không khớp rule chặn nào trong web ACL.", en: "The request matches no blocking rule in the web ACL." }) };
 const PASS_GEO = { state: "pass" as const, msg: L({ vi: "Quốc gia nguồn (VN) thuộc allow list.", en: "The source country (VN) is on the allow list." }) };
 const OPEN = { state: "skip" as const, msg: L({ vi: "Nội dung công khai, không yêu cầu chữ ký.", en: "Public content, no signature required." }) };
@@ -133,7 +134,7 @@ return [
   },
   {
     name: L({ vi: "Tên miền tuỳ chỉnh", en: "Custom domain name" }),
-    request: "GET https://shopviet.vn/",
+    request: "GET https://mftech.vn/",
     from: L({ vi: "Việt Nam", en: "Vietnam" }),
     toggle: { label: L({ vi: "Chứng chỉ ACM tạo tại us-east-1", en: "ACM certificate created in us-east-1" }), initial: false },
     run: (on) => on
@@ -217,8 +218,8 @@ export default function EdgePipelineSim() {
   }
 
   return (
-    <div className="stage cfp">
-      <div className="cfp-scenarios" role="tablist" aria-label={L({ vi: "Tình huống", en: "Scenario" })}>
+    <div className="stage">
+      <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-0" role="tablist" aria-label={L({ vi: "Tình huống", en: "Scenario" })}>
         {SCENARIOS.map((s, i) => (
           <button key={s.name} role="tab" aria-selected={i === index} className="chip" onClick={() => pick(i)} disabled={busy && i !== index}>
             {s.name}
@@ -226,23 +227,23 @@ export default function EdgePipelineSim() {
         ))}
       </div>
       <div className="stage-bar">
-        <code className="cfp-req">{sc.request}</code>
-        <span className="cfp-from">{L({ vi: "nguồn: ", en: "source: " })}{sc.from}</span>
+        <code className="rounded-[10px] border border-line bg-bg px-2 py-[3px] text-[0.8125rem] wrap-anywhere">{sc.request}</code>
+        <span className="text-step--1 text-muted">{L({ vi: "nguồn: ", en: "source: " })}{sc.from}</span>
         {sc.toggle && (
-          <label className="cfp-toggle">
+          <label className="inline-flex cursor-pointer items-center gap-1.5 text-step--1">
             <input type="checkbox" checked={on} disabled={busy} onChange={(e) => { setOn(e.target.checked); reset(); }} />
             {sc.toggle.label}
           </label>
         )}
-        <button className="btn primary" onClick={send} disabled={busy}>{L({ vi: "Gửi request", en: "Send request" })}</button>
+        <button className="btn primary ml-auto" onClick={send} disabled={busy}>{L({ vi: "Gửi request", en: "Send request" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 30 820 222" role="img" aria-label={L({ vi: "Request đi từ khách qua các trạm kiểm tra của CloudFront tại edge, rồi tới origin S3 hoặc ALB", en: "The request goes from the customer through CloudFront's checks at the edge, then to the S3 or ALB origin" })}>
+        <svg viewBox="0 30 820 222" role="img" aria-label={L({ vi: "Request đi từ viewer qua các bước xử lý của CloudFront tại edge location, rồi tới origin S3 hoặc ALB", en: "The request goes from the viewer through CloudFront's processing steps at the edge location, then to the S3 or ALB origin" })}>
           <path d={`M60 ${LANE} H610`} stroke="var(--line)" strokeWidth={2} fill="none" />
           {(Object.keys(ORIGINS) as OriginId[]).map((id) => (
             <path key={id} d={`M610 ${LANE} V${ORIGINS[id].y} H640`} stroke="var(--line)" strokeWidth={2} fill="none" />
           ))}
-          <rect className="cfp-edge" x={138} y={52} width={460} height={190} rx={12} />
+          <rect className="cfx-edge" x={138} y={52} width={460} height={190} rx={12} />
           <text className="edge-t" x={150} y={72}>{L({ vi: "CloudFront · edge location gần người dùng", en: "CloudFront · edge location near users" })}</text>
           <g transform={`translate(60 ${LANE})`} aria-hidden="true">
             <circle className="user" cy={-9} r={7} />
@@ -250,7 +251,7 @@ export default function EdgePipelineSim() {
           </g>
           <text className="t" x={60} y={LANE + 40} textAnchor="middle">{L({ vi: "Người dùng", en: "Users" })}</text>
           {GATES.map((g, i) => (
-            <g key={g.id} className={`cfp-gate ${lit[g.id] ?? ""}`}>
+            <g key={g.id} className={`cfx-gate ${lit[g.id] ?? ""}`}>
               <rect x={GX(i) - 34} y={LANE - 37} width={68} height={74} rx={8} />
               {(() => {
                 const lines = sub(g);
@@ -258,22 +259,22 @@ export default function EdgePipelineSim() {
                 const top = lines.length > 1 ? LANE - 12 : LANE - 4;
                 return (
                   <>
-                    <text className="cfp-gt" x={GX(i)} y={top} textAnchor="middle">{g.l1}</text>
+                    <text className="cfx-gt" x={GX(i)} y={top} textAnchor="middle">{g.l1}</text>
                     {lines.map((line, k) => (
-                      <text key={k} className="cfp-gs" x={GX(i)} y={top + 16 + k * 13} textAnchor="middle">{line}</text>
+                      <text key={k} className="cfx-gs" x={GX(i)} y={top + 16 + k * 13} textAnchor="middle">{line}</text>
                     ))}
                   </>
                 );
               })()}
             </g>
           ))}
-          <rect className="cfp-group" x={632} y={38} width={180} height={124} rx={10} />
+          <rect className="cfx-group" x={632} y={38} width={180} height={124} rx={10} />
           <text className="ts" x={722} y={176} textAnchor="middle">origin group</text>
           {(Object.keys(ORIGINS) as OriginId[]).map((id) => (
-            <g key={id} className={`cfp-origin ${origins[id] ?? ""}`}>
+            <g key={id} className={`cfx-origin ${origins[id] ?? ""}`}>
               <rect x={640} y={ORIGINS[id].y - 23} width={164} height={46} rx={8} />
-              <text className="cfp-gt" x={722} y={ORIGINS[id].y - 3} textAnchor="middle">{ORIGINS[id].l1}</text>
-              <text className="cfp-gs" x={722} y={ORIGINS[id].y + 13} textAnchor="middle">{L(ORIGINS[id].l2)}</text>
+              <text className="cfx-gt" x={722} y={ORIGINS[id].y - 3} textAnchor="middle">{ORIGINS[id].l1}</text>
+              <text className="cfx-gs" x={722} y={ORIGINS[id].y + 13} textAnchor="middle">{L(ORIGINS[id].l2)}</text>
             </g>
           ))}
           <g ref={pk} />
@@ -281,7 +282,7 @@ export default function EdgePipelineSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="cfp-hint">{L({
+          <p className="m-0 text-step--1 text-muted">{L({
             vi: <>Nhấn <b>{L({ vi: "Gửi request", en: "Send request" })}</b> để quan sát từng bước xử lý tại edge.{sc.toggle ? " Thay đổi cấu hình và gửi lại để so sánh kết quả." : ""}</>,
             en: <>Press <b>Send request</b> to watch each processing step at the edge.{sc.toggle ? " Change the configuration and send again to compare the results." : ""}</>,
           })}</p>
@@ -289,7 +290,7 @@ export default function EdgePipelineSim() {
           <ul className="log" aria-live="polite">
             {log.map((e, i) =>
               e.tag === "result" ? (
-                <li key={i} className={`cfp-result ${e.ok ? "ok" : "bad"}`}>{e.msg}</li>
+                <li key={i} className={`mt-1.5 block! rounded-[12px] px-2.5 py-2 ${e.ok ? "bg-ok-soft" : "bg-bad-soft"}`}>{e.msg}</li>
               ) : (
                 <li key={i}>
                   <span className={`tag ${TAG[e.tag].cls}`}>{L(TAG[e.tag].text)}</span>

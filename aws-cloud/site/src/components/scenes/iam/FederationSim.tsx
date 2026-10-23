@@ -3,7 +3,7 @@ import CaseSim, { type CaseScenario } from "../global-infra/CaseSim";
 
 type Lang = ReturnType<typeof useLang>;
 
-// ShopViet staff sign in to many AWS accounts with the identities the company already has.
+// MFTECH staff sign in to many AWS accounts with the identities the company already has.
 // Compares IAM users per account, an IAM SAML identity provider per account, and IAM Identity Center
 // with an AD Connector / AWS Managed Microsoft AD / external IdP identity source.
 // Facts: IAM best practices (federation + IAM Identity Center for human users), IAM SAML provider must
@@ -132,5 +132,5 @@ function scenarios(L: Lang): CaseScenario[] {
 
 export default function FederationSim() {
   const L = useLang();
-  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Truy cập tập trung cho nhân sự ShopViet", en: "Central workforce access for ShopViet" })} action={L({ vi: "Chạy mô phỏng", en: "Run simulation" })} />;
+  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Truy cập tập trung cho nhân sự MFTECH", en: "Central workforce access for MFTECH" })} action={L({ vi: "Chạy mô phỏng", en: "Run simulation" })} />;
 }

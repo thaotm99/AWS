@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./rds-sims.css";
 
-// Five days in the life of ShopViet's order database. Each scenario is a real incident;
+// Five days in the life of MFTECH's order database. Each scenario is a real incident;
 // the toggle turns on the RDS feature that prevents it (Read Replica, RDS Proxy, storage
 // auto scaling, cross-Region read replica, RDS Custom). Meters show CPU, connections, disk.
 // Source questions: exam2_q13, exam6_q19, exam6_q46, exam4_q19, exam1_q3, exam1_q55, exam2_q63, exam4_q47, exam5_q42, exam2_q62.
@@ -77,7 +77,7 @@ const SCENARIOS: Scenario[] = [
     },
   },
   {
-    name: { vi: "Flash sale: 2.000 Lambda mở kết nối", en: "Flash sale: 2,000 Lambdas open connections" },
+    name: { vi: "Flash sale: 2.000 Lambda invocation đồng thời mở database connection", en: "Flash sale: 2,000 concurrent Lambda invocations open database connections" },
     client: [{ vi: "Lambda × 2.000", en: "Lambda × 2,000" }, { vi: "1 kết nối/lần gọi", en: "1 connection/invoke" }],
     toggle: { vi: "Triển khai RDS Proxy phía trước", en: "Put RDS Proxy in front" },
     shows: () => ["proxy"],
@@ -94,7 +94,7 @@ const SCENARIOS: Scenario[] = [
             await travel(L, rev(toPrimary), 400, "pkt-bad", 5);
           }
         }));
-        log({ vi: "KẾT NỐI", en: "CONNECTIONS" }, "bad", { vi: "Mỗi Lambda mở một kết nối mới. Database đạt giới hạn **max_connections**; các kết nối mới bị từ chối.", en: "Each Lambda opens a new connection. The database hits its **max_connections** limit; new connections are refused." });
+        log({ vi: "KẾT NỐI", en: "CONNECTIONS" }, "bad", { vi: "Mỗi Lambda invocation mở một database connection mới. DB instance đạt giới hạn **max_connections**; các kết nối mới bị từ chối.", en: "Each Lambda invocation opens a new database connection. The DB instance hits its **max_connections** limit; new connections are refused." });
         return { tone: "bad", msg: { vi: "Đơn hàng bị lỗi đúng thời điểm lưu lượng cao nhất. Cần triển khai **RDS Proxy** để gộp kết nối.", en: "Orders fail right at peak traffic. Deploy **RDS Proxy** to pool connections." } };
       }
       light("proxy", "on");
@@ -108,9 +108,9 @@ const SCENARIOS: Scenario[] = [
     },
   },
   {
-    name: { vi: "Ổ đĩa database sắp đầy", en: "Database storage almost full" },
+    name: { vi: "Storage của DB instance sắp hết dung lượng", en: "Database storage almost full" },
     client: [{ vi: "Web bán hàng", en: "Store website" }, { vi: "đơn hàng tăng gấp đôi", en: "orders double" }],
-    toggle: { vi: "Bật storage auto scaling", en: "Enable storage autoscaling" },
+    toggle: { vi: "Bật storage autoscaling", en: "Enable storage autoscaling" },
     shows: () => [],
     async run({ L, on, tr, log, light, meter }) {
       for (const [i, v] of [80, 90, 97].entries()) {
@@ -122,15 +122,15 @@ const SCENARIOS: Scenario[] = [
         meter("disk", 100, "100% / 500 GB");
         light("primary", "bad");
         flashText(L, PRIMARY[0], PRIMARY[1] - 38, "storage-full", "flash-bad", 1200);
-        log({ vi: "Ổ ĐĨA", en: "STORAGE" }, "bad", { vi: "Dung lượng cấp phát đã hết; instance chuyển sang trạng thái **storage-full** và không thể ghi thêm dữ liệu.", en: "The allocated storage is used up; the instance enters the **storage-full** state and cannot write more data." });
-        return { tone: "bad", msg: { vi: "Hệ thống không tiếp nhận đơn hàng mới cho tới khi dung lượng được tăng thủ công. Bật **storage auto scaling** để RDS tự động xử lý.", en: "The system accepts no new orders until storage is increased manually. Enable **storage autoscaling** so RDS handles it automatically." } };
+        log({ vi: "STORAGE", en: "STORAGE" }, "bad", { vi: "Dung lượng cấp phát đã hết; instance chuyển sang trạng thái **storage-full** và không thể ghi thêm dữ liệu.", en: "The allocated storage is used up; the instance enters the **storage-full** state and cannot write more data." });
+        return { tone: "bad", msg: { vi: "Hệ thống không tiếp nhận đơn hàng mới cho tới khi dung lượng được tăng thủ công. Bật **storage autoscaling** để RDS tự động tăng dung lượng.", en: "The system accepts no new orders until storage is increased manually. Enable **storage autoscaling** so RDS handles it automatically." } };
       }
       flashText(L, PRIMARY[0], PRIMARY[1] - 38, tr({ vi: "+ dung lượng", en: "+ storage" }), "rdx-flash-ok", 1200);
       await wait(500);
       meter("disk", 65, "65% / 750 GB");
       light("primary", "ok");
       await travel(L, toPrimary, 400, "pkt");
-      log({ vi: "Ổ ĐĨA", en: "STORAGE" }, "hit", { vi: "Khi dung lượng trống còn ≤ 10% trong ít nhất 5 phút, RDS **tự động tăng dung lượng** (mỗi lần thêm 10 GiB hoặc 10%, lấy giá trị lớn hơn), tới mức maximum storage threshold đã cấu hình.", en: "When free space is ≤ 10% for at least 5 minutes, RDS **automatically increases storage** (by 10 GiB or 10% each time, whichever is greater), up to the configured maximum storage threshold." });
+      log({ vi: "STORAGE", en: "STORAGE" }, "hit", { vi: "Khi dung lượng trống còn ≤ 10% trong ít nhất 5 phút, RDS **tự động tăng dung lượng** (mỗi lần thêm 10 GiB hoặc 10%, lấy giá trị lớn hơn), tới mức maximum storage threshold đã cấu hình.", en: "When free space is ≤ 10% for at least 5 minutes, RDS **automatically increases storage** (by 10 GiB or 10% each time, whichever is greater), up to the configured maximum storage threshold." });
       return { tone: "ok", msg: { vi: "Đơn hàng vẫn được ghi bình thường. Cấu hình maximum storage threshold để giới hạn chi phí.", en: "Orders keep being written normally. Configure a maximum storage threshold to cap the cost." } };
     },
   },
@@ -157,8 +157,8 @@ const SCENARIOS: Scenario[] = [
       flashText(L, TOKYO[0], TOKYO[1] - 38, "promote", "rdx-flash-ok", 1100);
       light("tokyo", "ok");
       await travel(L, toTokyo, 900, "pkt");
-      log("DR", "hit", { vi: "**Promote** replica tại Tokyo thành database độc lập và chuyển ứng dụng sang endpoint mới.", en: "**Promote** the Tokyo replica to a standalone database and point the application to the new endpoint." });
-      return { tone: "ok", msg: { vi: "Website hoạt động trở lại từ Tokyo. Lượng dữ liệu mất tối đa là phần chưa kịp sao chép (replication lag).", en: "The website is back up from Tokyo. At most, the data not yet replicated (replication lag) is lost." } };
+      log("DR", "hit", { vi: "**Promote** replica tại Tokyo thành DB instance độc lập và chuyển ứng dụng sang endpoint mới.", en: "**Promote** the Tokyo replica to a standalone DB instance and point the application to the new endpoint." });
+      return { tone: "ok", msg: { vi: "Website hoạt động trở lại từ Tokyo. Lượng dữ liệu mất tối đa là phần chưa kịp replicate (replica lag).", en: "The website is back up from Tokyo. At most, the data not yet replicated (replica lag) is lost." } };
     },
   },
   {
@@ -173,7 +173,7 @@ const SCENARIOS: Scenario[] = [
         light("primary", "bad");
         flashText(L, PRIMARY[0], PRIMARY[1] - 38, tr({ vi: "không truy cập được OS", en: "no OS access" }), "flash-bad", 1200);
         await travel(L, rev(toPrimary), 400, "pkt-bad");
-        log("OS", "bad", { vi: "Với RDS tiêu chuẩn, AWS quản lý hệ điều hành: không hỗ trợ SSH và không cài đặt được phần mềm lên máy chủ.", en: "With standard RDS, AWS manages the operating system: there is no SSH access and you cannot install software on the host." });
+        log("OS", "bad", { vi: "Với RDS tiêu chuẩn, AWS quản lý hệ điều hành: không hỗ trợ SSH và không cài đặt được phần mềm lên host của DB instance.", en: "With standard RDS, AWS manages the operating system: there is no SSH access and you cannot install software on the host." });
         return { tone: "bad", msg: { vi: "Khi cần tuỳ chỉnh OS mà vẫn được AWS quản lý backup, vá lỗi và Multi-AZ, sử dụng **RDS Custom**.", en: "When you need to customize the OS while AWS still manages backups, patching and Multi-AZ, use **RDS Custom**." } };
       }
       await travel(L, toPrimary, 600, "pkt");
@@ -187,7 +187,7 @@ const SCENARIOS: Scenario[] = [
 const METERS: { id: MeterId; name: Bi }[] = [
   { id: "cpu", name: { vi: "CPU", en: "CPU" } },
   { id: "conn", name: { vi: "Kết nối", en: "Conns" } },
-  { id: "disk", name: { vi: "Ổ đĩa", en: "Storage" } },
+  { id: "disk", name: { vi: "Storage", en: "Storage" } },
 ];
 
 type LogEntry = { tag: string | Bi; cls: string; msg: Bi };
@@ -244,18 +244,18 @@ export default function RdsOpsSim() {
   );
 
   return (
-    <div className="stage rdx">
-      <div className="rdx-row" role="group" aria-label={tr({ vi: "Tình huống", en: "Scenario" })}>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={tr({ vi: "Tình huống", en: "Scenario" })}>
         {SCENARIOS.map((s, i) => (
           <button key={s.name.vi} className="chip" aria-pressed={i === index} disabled={busy && i !== index} onClick={() => pick(i)}>{tr(s.name)}</button>
         ))}
       </div>
-      <div className="stage-bar">
-        <label className="rdx-toggle">
+      <div className="stage-bar mt-3 border-t border-line">
+        <label className="inline-flex cursor-pointer items-center gap-1.5 text-step--1">
           <input type="checkbox" checked={on} disabled={busy} onChange={(e) => { setOn(e.target.checked); reset(); }} />
           {tr(sc.toggle)}
         </label>
-        <button className="btn primary" onClick={go} disabled={busy}>{tr({ vi: "Chạy", en: "Run" })}</button>
+        <button className="btn primary ml-auto" onClick={go} disabled={busy}>{tr({ vi: "Chạy", en: "Run" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 20 820 255" role="img" aria-label={tr({ vi: "Ứng dụng kết nối database RDS tại Region Singapore; tuỳ tình huống có RDS Proxy, Read Replica hoặc replica tại Tokyo", en: "The application connects to the RDS database in the Singapore Region; depending on the scenario there is an RDS Proxy, a Read Replica or a replica in Tokyo" })}>
@@ -291,7 +291,7 @@ export default function RdsOpsSim() {
       </div>
       <div className="readout">
         {log.length === 0 && !result ? (
-          <p className="rdx-hint">{tr({ vi: <>Chọn một sự cố và nhấn <b>Chạy</b> để quan sát hậu quả. Sau đó bật tính năng tương ứng và chạy lại.</>, en: <>Choose an incident and press <b>Run</b> to see the impact. Then turn on the matching feature and run again.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{tr({ vi: <>Chọn một sự cố và nhấn <b>Chạy</b> để quan sát hậu quả. Sau đó bật tính năng tương ứng và chạy lại.</>, en: <>Choose an incident and press <b>Run</b> to see the impact. Then turn on the matching feature and run again.</> })}</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) => (

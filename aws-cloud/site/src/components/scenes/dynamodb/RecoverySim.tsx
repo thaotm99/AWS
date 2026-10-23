@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./recovery-sim.css";
 
-// A day on ShopViet's Orders table, 00:00 to 18:00. Two accidents: a bad deploy that
+// A day on MFTECH's Orders table, 00:00 to 18:00. Two accidents: a bad deploy that
 // writes corrupt data at 14:32 (found at 15:10), and an engineer deleting the table at
 // 16:05. For each, pick what was set up beforehand and watch what can be recovered.
 
@@ -43,8 +43,8 @@ const END = 18;
 
 const INCIDENTS: Record<IncidentId, { name: Bi; about: Bi; stop: number; options: Option[] }> = {
   corrupt: {
-    name: { vi: "Bản deploy lỗi ghi sai dữ liệu", en: "A bad deploy writes wrong data" },
-    about: { vi: "Lúc 14:32, bản deploy mới ghi sai giá vào hàng loạt đơn hàng. Lúc 15:10, đội vận hành phát hiện sự cố. Bảng cần được khôi phục về đúng trạng thái ngay trước 14:32.", en: "At 14:32, a new deploy writes wrong prices into a large batch of orders. At 15:10, the operations team spots the problem. The table must be restored to its exact state just before 14:32." },
+    name: { vi: "Deployment lỗi ghi sai dữ liệu", en: "A faulty deployment writes wrong data" },
+    about: { vi: "Lúc 14:32, deployment mới ghi sai giá vào hàng loạt đơn hàng. Lúc 15:10, đội vận hành phát hiện sự cố. Bảng cần được khôi phục về đúng trạng thái ngay trước 14:32.", en: "At 14:32, a new deployment writes wrong prices into a large batch of orders. At 15:10, the operations team spots the problem. The table must be restored to its exact state just before 14:32." },
     stop: T_FOUND,
     options: [
       { id: "backup", name: { vi: "On-demand backup lúc 02:00", en: "On-demand backup at 02:00" }, ok: false, lost: [BACKUP, T_BAD], to: BACKUP,
@@ -52,7 +52,7 @@ const INCIDENTS: Record<IncidentId, { name: Bi; about: Bi; stop: number; options
         note: { vi: "On-demand backup chỉ khôi phục về **đúng thời điểm tạo backup**. Mọi đơn hàng hợp lệ từ 02:00 tới 14:32 đều bị mất. Loại backup này phù hợp để lưu giữ dài hạn (lưu tới khi được xoá thủ công, phục vụ yêu cầu tuân thủ).", en: "An on-demand backup restores only to **the moment the backup was created**. All valid orders from 02:00 to 14:32 are lost. This type of backup suits long-term retention (kept until deleted manually, for compliance requirements)." } },
       { id: "pitr", name: { vi: "Point-in-time recovery (PITR)", en: "Point-in-time recovery (PITR)" }, ok: true, lost: [T_BAD, T_FOUND], to: T_BAD,
         lostText: { vi: "chỉ phần ghi sau 14:32", en: "only the writes after 14:32" }, downText: { vi: "trong thời gian restore", en: "during the restore" },
-        note: { vi: "**PITR** sao lưu liên tục, khôi phục về **bất kỳ giây nào** trong tối đa 35 ngày gần nhất. Chọn 14:31:59. Kết quả luôn là **một bảng mới**; ứng dụng cần được trỏ sang bảng đó.", en: "**PITR** backs up continuously and restores to **any second** within the last 35 days at most. Choose 14:31:59. The result is always **a new table**; the application must be pointed to it." } },
+        note: { vi: "**PITR** duy trì continuous backup, khôi phục về **bất kỳ giây nào** trong tối đa 35 ngày gần nhất. Chọn 14:31:59. Kết quả luôn là **một bảng mới**; ứng dụng cần được trỏ sang bảng đó.", en: "**PITR** backs up continuously and restores to **any second** within the last 35 days at most. Choose 14:31:59. The result is always **a new table**; the application must be pointed to it." } },
       { id: "streams", name: { vi: "DynamoDB Streams", en: "DynamoDB Streams" }, ok: false, flash: { vi: "không hỗ trợ restore", en: "no restore support" },
         lostText: { vi: "không khôi phục được", en: "cannot be recovered" }, downText: { vi: "không áp dụng", en: "not applicable" },
         note: { vi: "Streams là luồng sự kiện được lưu giữ 24 giờ để Lambda xử lý, **không phải backup**. Streams không hỗ trợ thao tác restore.", en: "Streams is an event stream retained for 24 hours for Lambda to process; it is **not a backup**. Streams does not support restore operations." } },
@@ -170,8 +170,8 @@ export default function RecoverySim() {
   const badSeg: Seg = incident === "corrupt" ? [T_BAD, Math.min(clock, T_FOUND)] : [0, 0];
 
   return (
-    <div className="stage rcv">
-      <div className="rcv-row" role="group" aria-label={L({ vi: "Sự cố", en: "Incident" })}>
+    <div className="stage">
+      <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Sự cố", en: "Incident" })}>
         {(Object.keys(INCIDENTS) as IncidentId[]).map((id) => (
           <button key={id} className="chip" aria-pressed={id === incident} disabled={busy && id !== incident} onClick={() => pickIncident(id)}>
             {L(INCIDENTS[id].name)}
@@ -185,9 +185,9 @@ export default function RecoverySim() {
             {L(o.name)}
           </button>
         ))}
-        <button className="btn primary rcv-play" onClick={run} disabled={busy}>{L({ vi: "Chạy", en: "Run" })}</button>
+        <button className="btn primary ml-auto" onClick={run} disabled={busy}>{L({ vi: "Chạy", en: "Run" })}</button>
       </div>
-      <p className="rcv-about">{L(inc.about)}</p>
+      <p className="mx-4 mt-2.5 mb-0 text-step--1 text-muted">{L(inc.about)}</p>
       <div className="svg-wrap">
         <svg viewBox="0 30 820 200" role="img" aria-label={L({ vi: "Dòng thời gian một ngày của bảng Orders, từ 0 giờ tới 18 giờ, với sự cố và điểm khôi phục", en: "Timeline of one day of the Orders table, from 0:00 to 18:00, with the incident and the restore point" })}>
           {Array.from({ length: END / 3 + 1 }, (_, i) => i * 3).map((h) => (
@@ -242,14 +242,14 @@ export default function RecoverySim() {
       </div>
       <div className="readout" aria-live="polite">
         {!done ? (
-          <p className="rcv-hint">{L({ vi: <>Chọn sự cố và phương án khôi phục, sau đó nhấn <b>Chạy</b>.</>, en: <>Choose an incident and a recovery option, then press <b>Run</b>.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn sự cố và phương án khôi phục, sau đó nhấn <b>Chạy</b>.</>, en: <>Choose an incident and a recovery option, then press <b>Run</b>.</> })}</p>
         ) : (
           <>
             <div className="status">
               <span className={"pill " + (opt.ok || opt.kept ? "ok" : "bad")}><i />{L({ vi: "Dữ liệu mất: ", en: "Data lost: " })}{L(opt.lostText)}</span>
-              <span className="pill rcv-muted"><i />{L({ vi: "Ứng dụng ngừng: ", en: "App downtime: " })}{L(opt.downText)}</span>
+              <span className="pill border border-line bg-bg text-muted"><i />{L({ vi: "Ứng dụng ngừng: ", en: "App downtime: " })}{L(opt.downText)}</span>
             </div>
-            <p className={`rcv-result ${opt.ok ? "ok" : "bad"}`}>{rich(L(opt.note))}</p>
+            <p className={`mx-0 mt-2.5 mb-0 rounded-[12px] px-2.5 py-2 text-step--1 ${opt.ok ? "bg-ok-soft" : "bg-bad-soft"}`}>{rich(L(opt.note))}</p>
           </>
         )}
       </div>

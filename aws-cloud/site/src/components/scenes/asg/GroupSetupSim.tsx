@@ -3,7 +3,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./asg-sims.css";
 
-// Building the ShopViet web Auto Scaling group: launch template vs launch configuration,
+// Building the MFTECH web Auto Scaling group: launch template vs launch configuration,
 // subnets (AZs of one Region only), and purchase options of a mixed instances group
 // (On-Demand base capacity + On-Demand percentage above base, the rest Spot).
 
@@ -55,14 +55,14 @@ export default function GroupSetupSim() {
   let k = 0;
 
   return (
-    <div className="stage gss">
+    <div className="stage">
       <div className="stage-bar">
         <span className="label">{L({ vi: "Cấu hình launch", en: "Launch settings" })}</span>
         <button className="btn" aria-pressed={lt} onClick={() => setLt(true)}>Launch template</button>
         <button className="btn" aria-pressed={!lt} onClick={() => setLt(false)}>{L({ vi: "Launch configuration (cũ)", en: "Launch configuration (legacy)" })}</button>
       </div>
-      <p className="sps-about">{lt
-        ? L({ vi: "Launch template lt-shopviet-web, phiên bản 3: AMI của ứng dụng, instance type, key pair, security group, user data. Mỗi lần đổi AMI, tạo phiên bản mới thay vì tạo lại từ đầu.", en: "Launch template lt-shopviet-web, version 3: the application AMI, instance type, key pair, security group, user data. Each AMI change becomes a new version instead of a new resource." })
+      <p className="mx-4 mt-2.5 mb-0 text-step--1 text-muted">{lt
+        ? L({ vi: "Launch template lt-mftech-web, phiên bản 3: AMI của ứng dụng, instance type, key pair, security group, user data. Mỗi lần đổi AMI, tạo phiên bản mới thay vì tạo lại từ đầu.", en: "Launch template lt-mftech-web, version 3: the application AMI, instance type, key pair, security group, user data. Each AMI change becomes a new version instead of a new resource." })
         : L({ vi: "Launch configuration chứa cùng loại thông tin nhưng không có phiên bản và không sửa được sau khi tạo.", en: "A launch configuration holds the same kind of information, but has no versions and cannot be modified after creation." })}</p>
       <div className="stage-bar">
         <span className="label">Subnets</span>
@@ -74,26 +74,26 @@ export default function GroupSetupSim() {
       </div>
       <div className="stage-bar">
         <span className="label">{L({ vi: "Purchase options", en: "Purchase options" })}</span>
-        <label className="gss-field">
+        <label className="inline-flex flex-wrap items-center gap-1.5 text-step--1 [&_input]:max-w-[140px]">
           <span>{L({ vi: "On-Demand base", en: "On-Demand base" })}: <b>{lt ? baseOd : "—"}</b></span>
           <input type="range" min={0} max={10} value={baseOd} disabled={!lt} onChange={(e) => setBaseOd(Number(e.target.value))} aria-label="On-Demand base capacity" />
         </label>
-        <span className="gss-field"><span>{L({ vi: "On-Demand trên phần base", en: "On-Demand above base" })}</span>
-          <span className="gss-chips">{PCTS.map((p) => (
+        <span className="inline-flex flex-wrap items-center gap-1.5 text-step--1"><span>{L({ vi: "On-Demand trên phần base", en: "On-Demand above base" })}</span>
+          <span className="inline-flex flex-wrap gap-1">{PCTS.map((p) => (
             <button key={p} className="chip" aria-pressed={pct === p} disabled={!lt} onClick={() => setPct(p)}>{p}%</button>
           ))}</span>
         </span>
-        <label className="gss-field">
+        <label className="inline-flex flex-wrap items-center gap-1.5 text-step--1 [&_input]:max-w-[140px]">
           <span>{L({ vi: "Desired capacity", en: "Desired capacity" })}: <b>{desired}</b></span>
           <input type="range" min={2} max={20} value={desired} onChange={(e) => setDesired(Number(e.target.value))} aria-label="Desired capacity" />
         </label>
       </div>
       {valid && (
-        <div className="hrs-grid gss-azs">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3 p-3.5">
           {azs.map((s, i) => (
-            <div key={s.id} className="term-az">
+            <div key={s.id} className="grid content-start gap-2 rounded-[14px] border border-line bg-bg p-2.5">
               <b>{s.az}</b>
-              <div className="gss-insts">
+              <div className="flex min-h-[18px] flex-wrap gap-[5px]">
                 {Array.from({ length: perAz[i] }, () => kinds[k++]).map((kind, j) => <span key={j} className={`gss-inst ${kind}`} title={kind} />)}
               </div>
             </div>
@@ -103,14 +103,14 @@ export default function GroupSetupSim() {
       <div className="readout" aria-live="polite">
         {valid && (
           <div className="status">
-            <span className="gss-key"><span className="gss-inst base" />{L({ vi: `On-Demand base: ${m.base}`, en: `On-Demand base: ${m.base}` })}</span>
-            <span className="gss-key"><span className="gss-inst od" />{L({ vi: `On-Demand: ${m.od}`, en: `On-Demand: ${m.od}` })}</span>
-            <span className="gss-key"><span className="gss-inst spot" />{`Spot: ${m.spot}`}</span>
+            <span className="inline-flex items-center gap-1.5 text-step--1"><span className="gss-inst base" />{L({ vi: `On-Demand base: ${m.base}`, en: `On-Demand base: ${m.base}` })}</span>
+            <span className="inline-flex items-center gap-1.5 text-step--1"><span className="gss-inst od" />{L({ vi: `On-Demand: ${m.od}`, en: `On-Demand: ${m.od}` })}</span>
+            <span className="inline-flex items-center gap-1.5 text-step--1"><span className="gss-inst spot" />{`Spot: ${m.spot}`}</span>
           </div>
         )}
-        <ul className="gss-issues">
-          {issues.map((x, i) => <li key={i} className={x.ok ? "ok" : "bad"}>{rich(L(x.text))}</li>)}
-          {lt && valid && <li className="ok">{rich(L({ vi: "Mixed instances policy: phần **base** luôn là On-Demand (ASG launch đủ base trước khi launch Spot); phần vượt base chia theo tỉ lệ phần trăm, làm tròn lên về phía On-Demand. Reserved Instances hoặc Savings Plans giảm giá cho các instance On-Demand, Spot giảm chi phí cho phần tải tăng thêm của ứng dụng stateless.", en: "Mixed instances policy: the **base** is always On-Demand (the ASG launches the base before any Spot); capacity above base is split by percentage, rounded up in favor of On-Demand. Reserved Instances or Savings Plans discount the On-Demand instances, while Spot lowers the cost of the extra capacity of a stateless application." }))}</li>}
+        <ul className="list-disc mx-0 mt-2 mb-0 grid gap-1 pl-5 text-step--1">
+          {issues.map((x, i) => <li key={i} className={x.ok ? "marker:text-ok" : "marker:text-bad"}>{rich(L(x.text))}</li>)}
+          {lt && valid && <li className="marker:text-ok">{rich(L({ vi: "Mixed instances policy: phần **base** luôn là On-Demand (ASG launch đủ base trước khi launch Spot); phần vượt base chia theo tỉ lệ phần trăm, làm tròn lên về phía On-Demand. Reserved Instances hoặc Savings Plans giảm giá cho các instance On-Demand, Spot giảm chi phí cho phần tải tăng thêm của ứng dụng stateless.", en: "Mixed instances policy: the **base** is always On-Demand (the ASG launches the base before any Spot); capacity above base is split by percentage, rounded up in favor of On-Demand. Reserved Instances or Savings Plans discount the On-Demand instances, while Spot lowers the cost of the extra capacity of a stateless application." }))}</li>}
         </ul>
       </div>
     </div>

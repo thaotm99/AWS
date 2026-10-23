@@ -1,6 +1,6 @@
 ---
 title: "Start here: an AWS map for newcomers"
-lede: "An orientation before the study path: how cloud computing differs from running your own servers, which tasks AWS takes over, how the groups of services work together when ShopViet handles an order, and how to study on CloudLab."
+lede: "An orientation before the study path: how cloud computing differs from running your own servers, which tasks AWS takes over, how the groups of services work together when MFTECH handles an order, and how to study on CloudLab."
 minutes: 15
 scenes: 4
 prerequisites: []
@@ -28,17 +28,17 @@ import SiteTour from "../../components/scenes/aws-map/SiteTour.tsx";
 <MapHero />
 
 <Story toc={[
-  { href: "#en-s1", label: "1 · Who runs what" },
-  { href: "#en-s2", label: "2 · An order's journey" },
-  { href: "#en-s3", label: "3 · Six groups of services" },
+  { href: "#en-s1", label: "1 · Shared responsibility model" },
+  { href: "#en-s2", label: "2 · Request flow through services" },
+  { href: "#en-s3", label: "3 · AWS service categories" },
   { href: "#en-s4", label: "4 · How to study here" },
 ]}>
-**ShopViet** is the online store that runs through the whole study path. This lesson walks through the system once at a high level: each service mentioned gets one sentence here and its own detailed lesson in a later layer.
+**MFTECH** is the online store that runs through the whole study path. This lesson walks through the system once at a high level: each service mentioned gets one sentence here and its own detailed lesson in a later layer.
 </Story>
 
-<Scene id="en-s1" label="Part 1/4" title="Who runs what: self-managed servers, managed services and serverless">
+<Scene id="en-s1" label="Part 1/4" title="Shared responsibility model: on-premises, managed services and serverless">
 
-<p class="scene-intro">With servers of its own, a company handles everything from power to software patches; on AWS, the higher-level the service you choose, the more of the operating work AWS takes over.</p>
+<p class="scene-intro">With on-premises infrastructure, a company handles everything from power to software patches; on AWS, the higher-level the service you choose, the more of the operating work AWS takes over.</p>
 
 AWS calls this split the **shared responsibility model**: AWS is responsible for the cloud infrastructure, and the customer for what they put on it. Pick each way of running the order database and watch the tasks move to AWS.
 
@@ -48,7 +48,7 @@ AWS calls this split the **shared responsibility model**: AWS is responsible for
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/4" title="One order's journey through AWS services">
+<Scene id="en-s2" label="Part 2/4" title="Request flow for one order through AWS services">
 
 <p class="scene-intro">A simple customer action passes through several services, each doing one job; knowing this path explains why the study path is split into networking, compute, database and integration layers.</p>
 
@@ -56,11 +56,11 @@ The simulation plays through eight steps on its own; pause it to go step by step
 
 <OrderJourney client:visible />
 
-<Takeaway>Networking (Route 53, CloudFront) brings the request in, compute (load balancer, EC2, Lambda) processes it, the database (RDS) stores the data, and integration (SQS) separates the steps so parts of the system do not wait on each other.</Takeaway>
+<Takeaway>Networking (Route 53, CloudFront) brings the request in, compute (load balancer, EC2, Lambda) processes it, the database (RDS) stores the data, and integration (SQS) decouples the steps so components do not wait on each other.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/4" title="Six groups of services and the study path's layers">
+<Scene id="en-s3" label="Part 3/4" title="AWS service categories and the study path's layers">
 
 <p class="scene-intro">AWS offers more than two hundred services, but most belong to a few functional groups; knowing a service's group is the first step to knowing what problem it solves.</p>
 

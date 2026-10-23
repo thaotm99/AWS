@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useLang } from "../../../lib/lang";
-import "./messaging-sims.css";
 
 // How many messages per second a FIFO queue takes without high throughput mode:
 // 300 send calls per second, each call carrying up to 10 messages with batching.
@@ -20,7 +19,7 @@ export default function FifoBatchCalc() {
   const pct = (v: number) => `${Math.min(100, (v / MAX) * 100)}%`;
 
   return (
-    <div className="stage fbc">
+    <div className="stage">
       <div className="stage-bar">
         <span className="label">{L({ vi: "Thông lượng yêu cầu", en: "Required throughput" })}</span>
         {RATES.map((r) => (
@@ -28,29 +27,29 @@ export default function FifoBatchCalc() {
         ))}
       </div>
       <div className="stage-bar">
-        <label className="fbc-slider">
+        <label className="flex min-w-0 flex-1 items-center gap-2.5">
           <span className="label">{L({ vi: "Số message mỗi lệnh gọi", en: "Messages per call" })}</span>
-          <input type="range" min={1} max={10} value={batch} onChange={(e) => setBatch(Number(e.target.value))} aria-label={L({ vi: "Số message trong một batch", en: "Messages in one batch" })} />
-          <b className="fbc-num">{batch}</b>
+          <input className="min-w-20 flex-1 accent-accent" type="range" min={1} max={10} value={batch} onChange={(e) => setBatch(Number(e.target.value))} aria-label={L({ vi: "Số message trong một batch", en: "Messages in one batch" })} />
+          <b className="min-w-[2ch] text-right font-mono">{batch}</b>
         </label>
       </div>
-      <div className="fbc-bars" aria-live="polite">
-        <div className="fbc-row">
+      <div className="grid gap-2.5 px-4 py-3.5" aria-live="polite">
+        <div className="grid grid-cols-[110px_minmax(0,1fr)_auto] items-center gap-2.5 text-step--1 max-sm:grid-cols-[1fr_auto]">
           <span>{L({ vi: "Yêu cầu", en: "Required" })}</span>
-          <div className="fbc-track"><div className="fbc-fill need" style={{ width: pct(rate) }} /></div>
+          <div className="relative h-3.5 overflow-hidden rounded-[999px] border border-line bg-bg max-sm:col-span-full max-sm:row-start-2"><div className="h-full rounded-[999px] transition-[width] duration-300 ease-[ease] bg-accent" style={{ width: pct(rate) }} /></div>
           <span className="count">{rate.toLocaleString(loc)} msg/s</span>
         </div>
-        <div className="fbc-row">
+        <div className="grid grid-cols-[110px_minmax(0,1fr)_auto] items-center gap-2.5 text-step--1 max-sm:grid-cols-[1fr_auto]">
           <span>{L({ vi: "Năng lực FIFO", en: "FIFO capacity" })}</span>
-          <div className="fbc-track">
-            <div className={"fbc-fill " + (ok ? "ok" : "bad")} style={{ width: pct(cap) }} />
-            <div className="fbc-limit" style={{ left: pct(CALLS * 10) }} title={L({ vi: "Giới hạn với batch 10", en: "Limit with a batch of 10" })} />
+          <div className="relative h-3.5 overflow-hidden rounded-[999px] border border-line bg-bg max-sm:col-span-full max-sm:row-start-2">
+            <div className={"h-full rounded-[999px] transition-[width] duration-300 ease-[ease] " + (ok ? "bg-ok" : "bg-bad")} style={{ width: pct(cap) }} />
+            <div className="absolute -top-0.5 -bottom-0.5 w-0.5 bg-ink" style={{ left: pct(CALLS * 10) }} title={L({ vi: "Giới hạn với batch 10", en: "Limit with a batch of 10" })} />
           </div>
           <span className="count">{CALLS} × {batch} = {cap.toLocaleString(loc)} msg/s</span>
         </div>
       </div>
       <div className="readout">
-        <p className={`fbc-result ${ok ? "ok" : "bad"}`}>
+        <p className={`m-0 rounded-[12px] px-2.5 py-2 text-step--1 ${ok ? "bg-ok-soft" : "bg-bad-soft"}`}>
           {ok
             ? L({ vi: <>Đáp ứng yêu cầu. Tối đa {CALLS} lệnh gọi mỗi giây, mỗi lệnh gọi {batch} message. Kích thước batch tối thiểu cần dùng: <b>{need}</b>.</>,
               en: <>Meets the requirement. Up to {CALLS} calls per second, {batch} messages per call. Minimum batch size needed: <b>{need}</b>.</> })

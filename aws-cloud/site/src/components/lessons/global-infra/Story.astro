@@ -9,17 +9,17 @@ interface Props {
 // The story opens the lesson overview; part pages go straight to their content.
 const onOverview = !lessonRoute(Astro.url.pathname)?.part;
 ---
-{onOverview && <div class="story">
-  <svg viewBox="0 0 150 120" aria-hidden="true">
+{onOverview && <div class="mt-7 grid grid-cols-[150px_minmax(0,1fr)] items-center gap-5 rounded-[18px] border border-line bg-surface px-5 py-[18px] max-sm:grid-cols-[minmax(0,1fr)]">
+  <svg class="block h-auto w-full max-sm:max-w-[150px]" viewBox="0 0 150 120" aria-hidden="true">
     <rect x="18" y="38" width="114" height="72" rx="6" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/>
     <path d="M12 40 L28 16 H122 L138 40 Z" fill="var(--edge)"/>
     <path d="M28 40 v6 a9 9 0 0 0 18 0 v-6 M46 40 v6 a9 9 0 0 0 18 0 v-6 M64 40 v6 a9 9 0 0 0 18 0 v-6 M82 40 v6 a9 9 0 0 0 18 0 v-6 M100 40 v6 a9 9 0 0 0 18 0 v-6" fill="var(--edge-soft)" stroke="var(--edge)" stroke-width="1.5"/>
     <rect x="30" y="64" width="40" height="46" rx="3" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
     <rect x="80" y="64" width="40" height="28" rx="3" fill="var(--bg)" stroke="var(--muted)" stroke-width="1.5"/>
-    <text x="75" y="31" text-anchor="middle" fill="var(--on-accent)" font-family="var(--font-body)" font-size="12" font-weight="700">ShopViet</text>
+    <text x="75" y="31" text-anchor="middle" fill="var(--on-accent)" font-family="var(--font-body)" font-size="12" font-weight="700">MFTECH</text>
   </svg>
-  <div>
-    <div class="eyebrow"><T k="lesson.story.eyebrow" /></div>
+  <div class="[&_p]:m-0">
+    <div class="mb-1 text-[0.75rem] font-bold tracking-[0.1em] text-edge uppercase"><T k="lesson.story.eyebrow" /></div>
     <p><slot /></p>
   </div>
 </div>}

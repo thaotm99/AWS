@@ -1,6 +1,6 @@
 ---
 title: "IAM and Organizations: authentication and authorization"
-lede: "As ShopViet grows in staff, applications and accounts, controlling access becomes necessary. This lesson covers how to read a JSON policy, how a request is evaluated across several permission layers (SCP, permissions boundary, identity policy, resource policy), using IAM roles instead of access keys for applications, and governing many accounts with AWS Organizations."
+lede: "As MFTECH grows in staff, applications and accounts, controlling access becomes necessary. This lesson covers how to read a JSON policy, how a request is evaluated across several permission layers (SCP, permissions boundary, identity policy, resource policy), using IAM roles instead of access keys for applications, and governing many accounts with AWS Organizations."
 minutes: 45
 scenes: 6
 prerequisites: ["global-infra"]
@@ -87,33 +87,33 @@ import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 
 <Story toc={[
   { href: "#en-s1", label: "1 · Reading a policy" },
-  { href: "#en-s2", label: "2 · Evaluating permission layers" },
+  { href: "#en-s2", label: "2 · Policy evaluation logic" },
   { href: "#en-s3", label: "3 · IAM roles" },
   { href: "#en-s4", label: "4 · Organizations" },
-  { href: "#en-s5", label: "5 · Central workforce access" },
+  { href: "#en-s5", label: "5 · IAM Identity Center" },
   { href: "#en-s6", label: "6 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-ShopViet adds developers, a production account and auditors. Each user and each application must be granted only the permissions its job requires. This requirement is met with **IAM** within one account and **AWS Organizations** across many accounts.
+MFTECH adds developers, a production account and auditors. Each user and each application must be granted only the permissions its job requires. This requirement is met with **IAM** within one account and **AWS Organizations** across many accounts.
 </Story>
 
 <Scene id="en-s1" label="Part 1/6" title="Working out the permissions a policy grants" questions={["exam2_q37", "exam2_q38", "exam2_q48", "exam2_q54", "exam1_q58"]}>
 
 <p class="scene-intro">Every permission on AWS is described by a policy, a JSON document that lists which actions are allowed or denied on which resources; reading policies is a skill you need before granting access.</p>
 
-Before attaching a policy written by someone else to a ShopViet user or role, you must determine exactly what permissions it grants. Choose a policy, predict the result, then send each request to check.
+Before attaching a policy written by someone else to a MFTECH user or role, you must determine exactly what permissions it grants. Choose a policy, predict the result, then send each request to check.
 
 <PolicyReader client:visible />
 
-Reading a policy correctly is half the job; the other half is granting **exactly** the permissions needed (least privilege). ShopViet's finance team must list the shopviet-reports bucket and delete old reports, nothing more. The current policy cannot delete objects yet. Choose the statement to add and watch which requests are allowed.
+Reading a policy correctly is half the job; the other half is granting **exactly** the permissions needed (least privilege). MFTECH's finance team must list the mftech-reports bucket and delete old reports, nothing more. The current policy cannot delete objects yet. Choose the statement to add and watch which requests are allowed.
 
 <LeastPrivilegeSim client:visible />
 
-<Takeaway>When no Allow statement matches, the request is implicitly denied (implicit deny). aws:SourceIp is the caller's IP; aws:RequestedRegion is the Region that receives the API call. ListBucket applies to the bucket ARN; GetObject/DeleteObject apply to bucket/*. A wildcard inside an action name (`s3:*Object`), `s3:*`, and a trailing `*` in an ARN (`bucket*`, which also matches `/` and other buckets with the same prefix) all easily grant excess permissions.</Takeaway>
+<Takeaway>When no Allow statement matches, the request is implicitly denied (implicit deny). aws:SourceIp is the requester's IP address; aws:RequestedRegion is the Region that receives the API call. ListBucket applies to the bucket ARN; GetObject/DeleteObject apply to bucket/*. A wildcard inside an action name (`s3:*Object`), `s3:*`, and a trailing `*` in an ARN (`bucket*`, which also matches `/` and other buckets with the same prefix) all easily grant excess permissions.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/6" title="The permission layers that evaluate a request" questions={["exam3_q59", "exam1_q25", "exam2_q39", "exam2_q16"]}>
+<Scene id="en-s2" label="Part 2/6" title="Policy evaluation logic: the policy types that evaluate a request" questions={["exam3_q59", "exam1_q25", "exam2_q39", "exam2_q16"]}>
 
 <p class="scene-intro">A request to AWS succeeds only when every relevant permission layer allows it; a single layer that denies it blocks the request.</p>
 
@@ -125,14 +125,14 @@ A request can be stopped at several layers: an Organizations **SCP** limits the 
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/6" title="IAM roles instead of access keys" questions={["exam2_q3", "exam3_q23", "exam1_q17", "exam4_q34", "exam1_q5", "exam4_q39", "exam2_q16", "exam3_q6", "exam1_q16"]}>
+<Scene id="en-s3" label="Part 3/6" title="IAM roles for applications instead of access keys" questions={["exam2_q3", "exam3_q23", "exam1_q17", "exam4_q34", "exam1_q5", "exam4_q39", "exam2_q16", "exam3_q6", "exam1_q16"]}>
 
 <p class="scene-intro">Applications need permissions to call AWS services; instead of storing fixed credentials (access keys) in the code, they should receive temporary permissions through an IAM role.</p>
 
-ShopViet's server needs to read data from DynamoDB. The simple but risky option is to store an access key in the source code: when the source code leaks, the access key leaks too. The secure option:
+MFTECH's application on an EC2 instance needs to read data from a DynamoDB table. The simple but risky option is to store an access key in the source code: when the source code leaks, the access key leaks too. The secure option:
 
 <StepSim client:visible height={220}
-  intro="EC2 web-1 needs to read the orders table in DynamoDB. Perform each step in turn to grant access without storing an access key on the server."
+  intro="EC2 instance web-1 needs to read the orders table in DynamoDB. Perform each step in turn to grant access without storing an access key on the instance."
   nodes={[
     { id: "ec2", x: 40, y: 90, label: "EC2 web-1", kind: "ec2" },
     { id: "role", x: 250, y: 30, label: "IAM role", sub: "via instance profile", kind: "net" },
@@ -141,30 +141,30 @@ ShopViet's server needs to read data from DynamoDB. The simple but risky option 
   ]}
   initial={["ec2", "ddb"]}
   steps={[
-    { button: "1. Attach an IAM role to EC2", show: ["role"], flows: [{ path: ["role", "ec2"], tone: "good", label: "instance profile" }],
-      note: "Create an IAM role with read access to the orders table and attach it to EC2 through an **instance profile**. The role's trust policy allows the EC2 service to assume the role. An instance can have only **one** IAM role attached; an instance profile contains exactly one role, and this limit cannot be increased." },
+    { button: "1. Attach an IAM role to the EC2 instance", show: ["role"], flows: [{ path: ["role", "ec2"], tone: "good", label: "instance profile" }],
+      note: "Create an IAM role with read access to the orders table and attach it to the instance through an **instance profile**. The role's trust policy allows the EC2 service to assume the role. An instance can have only **one** IAM role attached; an instance profile contains exactly one role, and this limit cannot be increased." },
     { button: "2. The application gets temporary credentials", show: ["sts"], flows: [{ path: ["ec2", "sts"], tone: "good", label: "automatic, auto-rotated" }],
-      note: "The SDK on EC2 automatically gets **temporary credentials** from STS through instance metadata. The credentials expire and are refreshed automatically." },
+      note: "The AWS SDK on the instance automatically gets the role's **temporary credentials** through instance metadata. The credentials expire and are refreshed automatically." },
     { button: "3. Call DynamoDB", flows: [{ path: ["ec2", "ddb"], tone: "good", label: "authorized" }], move: ["ec2", "ddb"],
-      note: "EC2 calls DynamoDB with the role's permissions. There is no access key in the source code or on disk. This is the **most secure** option." },
+      note: "The application on the instance calls DynamoDB with the role's permissions. There is no access key in the source code or on disk. This is the **most secure** option." },
   ]} />
 
 The same principle applies to other cases:
 
 <RequirementPicker client:visible items={[
-  { need: "A ShopViet developer in the dev account needs to view logs in the production account", answer: "Create a role in production, and the developer assumes it",
+  { need: "A MFTECH developer in the dev account needs to view logs in the production account", answer: "Create a role in production, and the developer assumes it",
     why: "The role in the target account has a trust policy that trusts the dev account. The developer uses the role's temporary credentials, without a new user in production." },
   { need: "A Lambda function that processes orders in account A reads images in S3 in account B", answer: "Lambda execution role + bucket policy in account B",
     why: "The execution role grants permissions on the Lambda side; the bucket policy in account B must allow that role." },
-  { need: "Each Pod on ShopViet's EKS may call only the services that Pod needs", answer: "IAM Roles for Service Accounts (IRSA)",
+  { need: "Each Pod on MFTECH's Amazon EKS cluster may call only the services that Pod needs", answer: "IAM Roles for Service Accounts (IRSA)",
     why: "Each Kubernetes service account is mapped to its own IAM role, ensuring least privilege for each Pod." },
   { need: "A Lambda function connects to RDS PostgreSQL without storing a password in the source code", answer: "IAM database authentication + an IAM role for Lambda",
     why: "Lambda uses the role to get a short-lived authentication token when connecting to RDS." },
   { need: "Define which principals can assume a role", answer: "The role's trust policy",
     why: "The trust policy is the only resource-based policy of IAM itself: it is attached to the role and defines which principals can assume the role." },
-  { need: "An EC2 fleet already has a role that reads RDS and Secrets Manager, and now needs permissions for Systems Manager OS patching", answer: "Turn on Default Host Management Configuration, or add a policy to the existing role",
+  { need: "EC2 instances already have a role that reads RDS and Secrets Manager, and now need permissions for Systems Manager to patch the operating system", answer: "Turn on Default Host Management Configuration, or add a policy to the existing role",
     why: "A second role cannot be attached to the instance. Systems Manager Default Host Management Configuration creates and applies a default IAM role for every instance in the account and Region, without changing instance profiles (requires IMDSv2 and SSM Agent 3.2.582.0 or later). The existing instance profile must not allow ssm:UpdateInstanceInformation, otherwise SSM Agent uses the instance profile permissions first." },
-  { need: "An AWS service needs permissions to call other services on ShopViet's behalf", answer: "Service-linked role",
+  { need: "An AWS service needs permissions to call other services on MFTECH's behalf", answer: "Service-linked role",
     why: "A service-linked role is predefined by the service, including the trust policy and the permissions policy. Only that service can assume the role (unless defined otherwise); administrators can view but not edit its permissions, and the permissions policy cannot be attached to any other identity." },
 ]} />
 
@@ -172,23 +172,23 @@ The same principle applies to other cases:
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/6" title="Governing many accounts with AWS Organizations" questions={["exam2_q43", "exam5_q18", "exam6_q41", "exam3_q36", "exam6_q22", "exam5_q17", "exam2_q36", "exam3_q17"]}>
+<Scene id="en-s4" label="Part 4/6" title="Managing multiple AWS accounts with AWS Organizations" questions={["exam2_q43", "exam5_q18", "exam6_q41", "exam3_q36", "exam6_q22", "exam5_q17", "exam2_q36", "exam3_q17"]}>
 
-<p class="scene-intro">When a company uses many AWS accounts for different environments and teams, it needs a central point to apply common policies and consolidate billing.</p>
+<p class="scene-intro">When a company uses many AWS accounts for different environments and teams, it needs a central point to apply common policies and use consolidated billing.</p>
 
-ShopViet now has many accounts: dev, staging, prod, sandbox, marketing. Managing each account by hand cannot keep up as the organization grows. Each scenario below is a real governance task. Try the manual option first, then switch to the AWS tool to compare.
+MFTECH now has many accounts: dev, staging, prod, sandbox, marketing. Managing each account by hand cannot keep up as the organization grows. Each scenario below is a real governance task. Try the manual option first, then switch to the AWS tool to compare.
 
 <OrgGuardSim client:visible />
 
-<Takeaway>SCP: the maximum permissions for a whole account, including admins. Tag policy + SCP: enforce standard tagging. Budgets actions: automatically restrict when a budget is exceeded. Access Analyzer: find resources shared unintentionally. StackSets: deploy one template to many accounts and Regions. Control Tower: create new accounts to a common standard.</Takeaway>
+<Takeaway>SCP: the maximum permissions for a whole account, including admins. Tag policy + SCP: enforce standard tagging. AWS Budgets budget actions: automatically restrict when a budget is exceeded. IAM Access Analyzer: find resources shared unintentionally. CloudFormation StackSets: deploy one template to many accounts and Regions. AWS Control Tower: create new accounts according to a common landing zone.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s5" label="Part 5/6" title="Central workforce access with existing identities" questions={["exam1_q10", "exam4_q4", "exam6_q10"]}>
+<Scene id="en-s5" label="Part 5/6" title="Centralized workforce access with IAM Identity Center" questions={["exam1_q10", "exam4_q4", "exam6_q10"]}>
 
-<p class="scene-intro">Employees already have accounts in the company's identity system; instead of creating separate AWS sign-ins for each person, they can sign in to AWS with those same accounts.</p>
+<p class="scene-intro">Employees already have identities in the company's identity provider (IdP); instead of creating separate AWS sign-in credentials for each person, federation lets them sign in to AWS with those same identities.</p>
 
-ShopViet has 6 accounts in Organizations and manages its staff in on-premises Active Directory; a subsidiary uses Microsoft Entra ID. Staff need access to the right accounts for their job, with their own company account. AWS recommends that human users access AWS through **federation** with an identity provider and use temporary credentials; for centralized access management across many accounts, AWS recommends **IAM Identity Center**.
+MFTECH has 6 accounts in Organizations and manages its staff in on-premises Active Directory; a subsidiary uses Microsoft Entra ID. Staff need access to the right accounts for their job, with their own corporate identity. AWS recommends that human users access AWS through **federation** with an identity provider and use temporary credentials; for centralized access management across many accounts, AWS recommends **IAM Identity Center**.
 
 Identity Center has exactly one identity source per organization: the Identity Center directory, Active Directory (through **AD Connector** or **AWS Managed Microsoft AD**), or an external IdP through **SAML 2.0**. Permissions are defined as **permission sets** (collections of IAM policies) and assigned to users or groups for each account. Choose a scenario and compare the options.
 
@@ -200,11 +200,11 @@ The directory used by Identity Center must be in the Organizations management ac
 
 </Scene>
 
-<Scene id="en-confuse" label="Common mistakes" title="Five principles for protecting an account" questions={["exam1_q31", "exam6_q40", "exam1_q16", "exam6_q29", "exam1_q25"]}>
+<Scene id="en-confuse" label="Common mistakes" title="Security best practices for an AWS account" questions={["exam1_q31", "exam6_q40", "exam1_q16", "exam6_q29", "exam1_q25"]}>
 
 <p class="scene-intro">Most incidents where control of an AWS account is lost come from ignoring a few basic rules for managing identities and credentials.</p>
 
-The five principles below determine how secure ShopViet's account is. Choose a scenario, try the shortcut option first, then switch to the correct option.
+The five best practices below determine how secure MFTECH's AWS account is. Choose a scenario, try the option that is not recommended first, then switch to the correct option.
 
 <IamMythsSim client:visible />
 
@@ -216,7 +216,7 @@ The five principles below determine how secure ShopViet's account is. Choose a s
 
 <p class="scene-intro">IAM and related services offer several tools with similar names; each one meets a different access need.</p>
 
-The tools below have similar names or functions. Each item states when to use the tool, why it does not fit ShopViet's situation, and what fits instead.
+The tools below have similar names or functions. Each item states when to use the tool, why it does not fit MFTECH's situation, and what fits instead.
 
 <QuickCompare client:visible items={[
   { name: "IAM last accessed information (access advisor)",
@@ -225,7 +225,7 @@ The tools below have similar names or functions. Each item states when to use th
     instead: "**IAM Access Analyzer** with an external access analyzer whose zone of trust is the Organization (part 4)." },
   { name: "IAM Access Analyzer for S3",
     use: "Creates findings for buckets that allow public access or access from other accounts (through a bucket policy, ACL or access point policy); blocks public access in one action. Requires an external access analyzer in each Region; available at no extra cost in the S3 console.",
-    notHere: "ShopViet must create a thumbnail whenever a new image is uploaded. Access Analyzer analyzes policies; it emits no event when an object is created, so it cannot trigger Lambda.",
+    notHere: "MFTECH must create a thumbnail whenever a new image is uploaded. Access Analyzer analyzes policies; it emits no event when an object is created, so it cannot trigger Lambda.",
     instead: "**S3 Event Notifications** (destinations: SNS, SQS, Lambda, EventBridge) invoke Lambda to create the thumbnail and write it to a second bucket, avoiding a trigger loop." },
   { name: "AWS Config",
     use: "Records resource configurations, the relationships between resources and their change history; evaluates compliance with rules.",
@@ -241,7 +241,7 @@ The tools below have similar names or functions. Each item states when to use th
     instead: "One **S3 access point** per service, with an access point policy scoped to its prefix (S3 lesson). A policy reused by several roles: a customer managed policy." },
   { name: "Service-linked role",
     use: "A role predefined by an AWS service to call other services on the account's behalf. Administrators can view but not edit its permissions; only that service can assume it; its permissions policy cannot be attached to other identities. SCPs do not affect service-linked roles.",
-    notHere: "Developers have root user access to their own accounts, and ShopViet must keep the mandatory CloudTrail trail unchanged. A service-linked role is not a mechanism for limiting users, and its permissions are defined by the service.",
+    notHere: "Developers have root user access to their own accounts, and MFTECH must keep the mandatory CloudTrail trail unchanged. A service-linked role is not a mechanism for limiting users, and its permissions are defined by the service.",
     instead: "An **SCP** that denies CloudTrail changes, attached to the OU that holds the developer accounts (part 4)." },
 ]} />
 
@@ -266,26 +266,26 @@ Sort each function into the matching policy type. On a mobile device: select a c
   ]}
 />
 
-Check your understanding: as the designer of the ShopViet system, which option is right?
+Check your understanding: as the designer of the MFTECH system, which option is right?
 
 <Quiz client:visible items={[
-  { q: "ShopViet's application on EC2 needs to read images on S3 and orders in DynamoDB. Which way of granting permissions is the most secure?",
-    opts: ["Store an IAM user's access key in a configuration file", "Attach an IAM role to EC2 through an instance profile", "Use the root user's access key"],
+  { q: "MFTECH's application on an EC2 instance needs to read images on S3 and orders in DynamoDB. Which way of granting permissions is the most secure?",
+    opts: ["Store an IAM user's access key in a configuration file", "Attach an IAM role to the EC2 instance through an instance profile", "Use the root user's access key"],
     a: 1,
-    why: "A role provides temporary credentials that rotate automatically, with no key stored on the server." },
-  { q: "A policy allows ec2:RunInstances with the condition aws:RequestedRegion = eu-west-1. A ShopViet developer is in Vietnam. Which statement is correct?",
-    opts: ["EC2 can run only in eu-west-1, and the API can be called from anywhere", "The API can be called only when the user is in Europe", "EC2 can run in any Region but must be called from eu-west-1"],
+    why: "A role provides temporary credentials that rotate automatically, with no access key stored on the instance." },
+  { q: "A policy allows ec2:RunInstances with the condition aws:RequestedRegion = eu-west-1. A MFTECH developer is in Vietnam. Which statement is correct?",
+    opts: ["EC2 instances can be launched only in eu-west-1, and the API can be called from anywhere", "The API can be called only when the user is in Europe", "EC2 instances can be launched in any Region, but the API must be called from eu-west-1"],
     a: 0,
     why: "aws:RequestedRegion is the Region the API call is directed to, not the caller's location." },
   { q: "A developer's IAM policy allows deleting log groups, but the dev account's SCP does not allow this action. What is the result?",
     opts: ["Allowed, because the identity policy allows it", "Denied", "Allowed if the user is an admin"],
     a: 1,
     why: "An SCP sets the maximum permissions for the whole account. An action outside this limit is not allowed for any principal, including admins and the root user of a member account." },
-  { q: "ShopViet lets developers attach managed policies themselves when needed, but developers must not be able to escalate themselves to admin. Which mechanism meets the requirement?",
+  { q: "MFTECH lets developers attach managed policies themselves when needed, but developers must not be able to escalate themselves to admin. Which mechanism meets the requirement?",
     opts: ["Set a permissions boundary for each developer", "Use an SCP to block the whole account", "Remove the developers' IAM permissions"],
     a: 0,
     why: "A permissions boundary limits the maximum permissions; even if a developer attaches AdministratorAccess, the effective permissions still do not exceed the boundary." },
-  { q: "A ShopViet subsidiary manages its staff in Okta and has 8 accounts in Organizations. Which option grants group-based access with the least operational effort?",
+  { q: "A MFTECH subsidiary manages its staff in Okta and has 8 accounts in Organizations. Which option grants group-based access with the least operational effort?",
     opts: ["Create an IAM SAML identity provider and roles in every account", "IAM Identity Center connected to Okta through SAML 2.0 and SCIM, with permission sets assigned to groups", "Create an IAM user for each employee in each account"],
     a: 1,
     why: "Identity Center manages access centrally for every account; SCIM provisions users and groups automatically, and a permission set creates the roles in each assigned account. An IAM SAML identity provider must be in the same account as the role, so the setup is repeated." },

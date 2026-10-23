@@ -2,7 +2,6 @@
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import ExamPage from "../../../modules/practice/ui/ExamPage.tsx";
 import { practiceCatalog } from "../../../modules/practice/content/PracticeCatalog";
-import "../../../styles/practice.css";
 
 // getStaticPaths runs in its own scope, so the certification id is written inside it.
 export function getStaticPaths() {
@@ -16,10 +15,10 @@ const { id } = Astro.params;
 const { cert, title } = Astro.props;
 ---
 <BaseLayout
-  title={`Kiểm tra ${title} · CloudLab`}
+  title={`Bài kiểm tra · ${title} · CloudLab`}
   titleKey="practice.topic.pageTitle"
   titleParams={{ title }}
-  description={`Các câu hỏi luyện tập về ${title}.`}
+  description={`Bài kiểm tra gồm các câu hỏi về ${title}.`}
   current={id}
   currentQuiz
 >

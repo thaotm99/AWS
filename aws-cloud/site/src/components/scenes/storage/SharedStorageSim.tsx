@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./storage-sims.css";
 
-// A customer uploads a product video to one of ShopViet's three web servers (two AZs).
+// A customer uploads a product video to one of MFTECH's three web servers (two AZs).
 // With EBS only that instance sees it; with EFS or S3 every instance does, and the data
 // survives losing an AZ. Source questions: exam2_q29, exam6_q15, exam1_q46, exam1_q9.
 
@@ -70,7 +70,7 @@ export default function SharedStorageSim() {
       light("w3", "bad");
       light("store", "bad");
       add({ vi: "GHI", en: "WRITE" }, "bad", { vi: "web-3 tại AZ b không truy cập được volume: **EBS** thuộc AZ a và chỉ gắn được vào instance cùng AZ.", en: "web-3 in AZ b cannot access the volume: the **EBS** volume is in AZ a and can attach only to instances in the same AZ." });
-      setResult({ ok: false, msg: { vi: "Cả video cũ trên volume và video mới đều không sử dụng được cho tới khi AZ a phục hồi hoặc dữ liệu được khôi phục từ snapshot. Dữ liệu lưu trên một ổ block gắn với một AZ là single point of failure.", en: "Neither the existing videos on the volume nor the new video can be used until AZ a recovers or the data is restored from a snapshot. Data on a block volume tied to one AZ is a single point of failure." } });
+      setResult({ ok: false, msg: { vi: "Cả video cũ trên volume và video mới đều không sử dụng được cho tới khi AZ a phục hồi hoặc dữ liệu được khôi phục từ snapshot. Dữ liệu lưu trên một EBS volume gắn với một AZ là single point of failure.", en: "Neither the existing videos on the volume nor the new video can be used until AZ a recovers or the data is restored from a snapshot. Data on an EBS volume tied to one AZ is a single point of failure." } });
       setBusy(false);
       return;
     }
@@ -98,17 +98,17 @@ export default function SharedStorageSim() {
     const okCount = results.filter(Boolean).length;
     if (store === "ebs") {
       add({ vi: "ĐỌC", en: "READ" }, "bad", { vi: "web-2 và web-3 không truy cập được video. Một EBS volume chỉ gắn vào một instance (Multi-Attach chỉ hỗ trợ io1/io2 và chỉ trong cùng AZ).", en: "web-2 and web-3 cannot access the video. An EBS volume attaches to only one instance (Multi-Attach supports only io1/io2, and only within the same AZ)." });
-      setResult({ ok: false, msg: { vi: "Người dùng được định tuyến tới web-2 hoặc web-3 không xem được video vừa tải lên. Dữ liệu dùng chung cần được chuyển sang **EFS** hoặc **S3**. EBS phù hợp làm ổ boot và ổ riêng của từng instance, tính phí theo **dung lượng cấp phát**.", en: "Users routed to web-2 or web-3 cannot watch the video that was just uploaded. Shared data needs to move to **EFS** or **S3**. EBS suits boot volumes and per-instance volumes, and is charged for **provisioned capacity**." } });
+      setResult({ ok: false, msg: { vi: "Người dùng được định tuyến tới web-2 hoặc web-3 không xem được video vừa tải lên. Dữ liệu dùng chung cần được chuyển sang **EFS** hoặc **S3**. EBS phù hợp làm boot volume và data volume riêng của từng instance, tính phí theo **dung lượng cấp phát**.", en: "Users routed to web-2 or web-3 cannot watch the video that was just uploaded. Shared data needs to move to **EFS** or **S3**. EBS suits boot volumes and per-instance volumes, and is charged for **provisioned capacity**." } });
     } else if (store === "efs") {
-      add({ vi: "ĐỌC", en: "READ" }, "hit", { vi: `${okCount}/${alive.length} server truy cập được video qua **mount target** trong AZ tương ứng.`, en: `${okCount}/${alive.length} servers access the video through the **mount target** in their AZ.` });
+      add({ vi: "ĐỌC", en: "READ" }, "hit", { vi: `${okCount}/${alive.length} instance truy cập được video qua **mount target** trong AZ tương ứng.`, en: `${okCount}/${alive.length} instances access the video through the **mount target** in their AZ.` });
       setResult({ ok: true, msg: azDown
         ? { vi: "AZ a gặp sự cố nhưng EFS lưu dữ liệu tại nhiều AZ; web-3 vẫn đọc dữ liệu qua mount target tại AZ b. EFS tính phí theo dung lượng thực tế sử dụng.", en: "AZ a fails, but EFS stores data across multiple AZs; web-3 still reads the data through the mount target in AZ b. EFS charges for the storage actually used." }
-        : { vi: "Mọi server truy cập cùng một thư mục, tương tự một ổ mạng dùng chung. EFS tự co giãn và tính phí theo dung lượng dữ liệu thực tế lưu trữ; ứng dụng đọc ghi tệp theo cách thông thường qua NFS.", en: "Every server accesses the same folder, like a shared network drive. EFS scales automatically and charges for the data actually stored; applications read and write files the usual way over NFS." } });
+        : { vi: "Mọi instance mount cùng một file system và truy cập cùng một thư mục. EFS tự co giãn và tính phí theo dung lượng dữ liệu thực tế lưu trữ; ứng dụng đọc ghi tệp theo cách thông thường qua NFS.", en: "Every instance mounts the same file system and accesses the same directory. EFS scales automatically and charges for the data actually stored; applications read and write files the usual way over NFS." } });
     } else {
-      add({ vi: "ĐỌC", en: "READ" }, "hit", { vi: `${okCount}/${alive.length} server truy xuất video qua **S3 API**.`, en: `${okCount}/${alive.length} servers retrieve the video through the **S3 API**.` });
+      add({ vi: "ĐỌC", en: "READ" }, "hit", { vi: `${okCount}/${alive.length} instance truy xuất video qua **S3 API**.`, en: `${okCount}/${alive.length} instances retrieve the video through the **S3 API**.` });
       setResult({ ok: true, msg: azDown
         ? { vi: "S3 Standard lưu dữ liệu tại tối thiểu 3 AZ, không phụ thuộc vào instance hay AZ cụ thể. Video được giữ nguyên.", en: "S3 Standard stores data across at least 3 AZs, independent of any particular instance or AZ. The video is intact." }
-        : { vi: "Mọi server đọc cùng một object. S3 Standard lưu dữ liệu tại tối thiểu 3 AZ và tính phí theo dung lượng sử dụng, nhưng ứng dụng phải gọi API thay vì đọc tệp như trên ổ đĩa.", en: "Every server reads the same object. S3 Standard stores data across at least 3 AZs and charges for the storage used, but the application must call an API instead of reading files as on a disk." } });
+        : { vi: "Mọi instance đọc cùng một object. S3 Standard lưu dữ liệu tại tối thiểu 3 AZ và tính phí theo dung lượng sử dụng, nhưng ứng dụng phải gọi S3 API thay vì đọc tệp qua file system.", en: "Every instance reads the same object. S3 Standard stores data across at least 3 AZs and charges for the storage used, but the application must call the S3 API instead of reading files through a file system." } });
     }
     setBusy(false);
   }
@@ -127,24 +127,24 @@ export default function SharedStorageSim() {
   };
 
   return (
-    <div className="stage stx">
-      <div className="stx-row" role="group" aria-label={tr({ vi: "Vị trí lưu video", en: "Where to store the video" })}>
-        <span className="stx-lbl">{tr({ vi: "Lưu video tại", en: "Store video on" })}</span>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-3" role="group" aria-label={tr({ vi: "Vị trí lưu video", en: "Where to store the video" })}>
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{tr({ vi: "Lưu video tại", en: "Store video on" })}</span>
         {STORES.map((s) => (
           <button key={s.id} className="chip" aria-pressed={s.id === store} disabled={busy} onClick={() => { setStore(s.id); reset(); }}>{tr(s.name)}</button>
         ))}
       </div>
-      <div className="stage-bar">
-        <label className="stx-toggle">
+      <div className="stage-bar mt-3 border-t border-line">
+        <label className="inline-flex cursor-pointer items-center gap-1.5 text-step--1">
           <input type="checkbox" checked={azDown} disabled={busy} onChange={(e) => { setAzDown(e.target.checked); reset(); }} />
           {tr({ vi: "AZ a mất nguồn điện", en: "AZ a loses power" })}
         </label>
-        <button className="btn primary" onClick={run} disabled={busy}>{tr({ vi: "Người dùng tải lên video", en: "User uploads a video" })}</button>
+        <button className="btn primary ml-auto" onClick={run} disabled={busy}>{tr({ vi: "Người dùng tải lên video", en: "User uploads a video" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 10 820 250" role="img" aria-label={tr({ vi: "Ba web server tại hai AZ cùng cần đọc một video; video được lưu trên EBS, EFS hoặc S3", en: "Three web servers in two AZs all need to read one video; the video is stored on EBS, EFS or S3" })}>
+        <svg viewBox="0 10 820 250" role="img" aria-label={tr({ vi: "Ba EC2 instance chạy web server tại hai AZ cùng cần đọc một video; video được lưu trên EBS, EFS hoặc S3", en: "Three EC2 web server instances in two AZs all need to read one video; the video is stored on EBS, EFS or S3" })}>
           <rect className="stx-region" x={20} y={40} width={780} height={214} rx={12} />
-          <text className="stx-m" x={32} y={57}>{tr({ vi: "Region Singapore · VPC của ShopViet", en: "Singapore Region · ShopViet VPC" })}</text>
+          <text className="stx-m" x={32} y={57}>{tr({ vi: "Region Singapore · VPC của MFTECH", en: "Singapore Region · MFTECH VPC" })}</text>
           <rect className={`stx-az ${azDown ? "down" : ""}`} x={40} y={66} width={370} height={120} rx={10} />
           <text className="stx-m" x={52} y={82}>AZ a</text>
           <rect className="stx-az" x={430} y={66} width={350} height={120} rx={10} />
@@ -174,7 +174,7 @@ export default function SharedStorageSim() {
       </div>
       <div className="readout">
         {log.length === 0 && !result ? (
-          <p className="stx-hint">{tr({ vi: <>Chọn vị trí lưu video, sau đó nhấn <b>Người dùng tải lên video</b>: video được ghi qua một server, sau đó cả ba server cùng truy cập. Bật <b>AZ a mất nguồn điện</b> để mô phỏng sự cố một AZ.</>, en: <>Choose where to store the video, then press <b>User uploads a video</b>: the video is written through one server, then all three servers access it. Turn on <b>AZ a loses power</b> to simulate an AZ failure.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{tr({ vi: <>Chọn vị trí lưu video, sau đó nhấn <b>Người dùng tải lên video</b>: video được ghi qua một instance, sau đó cả ba instance cùng truy cập. Bật <b>AZ a mất nguồn điện</b> để mô phỏng sự cố một AZ.</>, en: <>Choose where to store the video, then press <b>User uploads a video</b>: the video is written through one instance, then all three instances access it. Turn on <b>AZ a loses power</b> to simulate an AZ failure.</> })}</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) => (

@@ -1,7 +1,7 @@
 import PacketSim, { type PLayout, type PScenario, type PStep } from "./PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// Why a healthy ShopViet server is marked unhealthy: the security group does not let
+// Why a healthy MFTECH server is marked unhealthy: the security group does not let
 // the ALB in, or the health check path is wrong. Then: the ALB drops a target but the
 // Auto Scaling group does not replace it (EC2 vs ELB health check). Last: which IP an
 // NLB sends to when the target is registered by instance ID.
@@ -50,7 +50,7 @@ const scenarios = (L: Lang): PScenario[] => {
       ? { steps: [SG_OK, { at: "i2", state: "pass", flash: "200", roundTrip: true, msg: L({ vi: "Ứng dụng có path `/health`, trả về 200 OK.", en: "The application has the `/health` path and returns 200 OK." }) }],
           ok: true, result: L({ vi: "i-2 trở lại trạng thái healthy.", en: "i-2 is healthy again." }) }
       : { steps: [SG_OK, { at: "i2", state: "block", flash: "404", msg: L({ vi: "Ứng dụng không có path `/healthz`, trả về 404. Success code mặc định là 200 nên ALB xem 404 là health check thất bại.", en: "The application has no `/healthz` path and returns 404. The default success code is 200, so the ALB treats 404 as a failed health check." }) }],
-          ok: false, result: L({ vi: "Target unhealthy dù máy chủ không có lỗi. Cần kiểm tra path và mã phản hồi kỳ vọng (success codes) của health check.", en: "The target is unhealthy although the server has no fault. Check the health check path and the expected response codes (success codes)." }) },
+          ok: false, result: L({ vi: "Target unhealthy dù instance không có lỗi. Cần kiểm tra path và mã phản hồi kỳ vọng (success codes) của health check.", en: "The target is unhealthy although the instance has no fault. Check the health check path and the expected response codes (success codes)." }) },
   },
   {
     name: L({ vi: "ALB loại instance nhưng không được thay thế", en: "ALB drops an instance, nothing replaces it" }),
@@ -69,7 +69,7 @@ const scenarios = (L: Lang): PScenario[] => {
       back: false,
       result: elb
         ? L({ vi: "Nhóm tự phục hồi: i-4 được đăng ký vào target group, khôi phục đủ 3 instance.", en: "The group heals itself: i-4 is registered with the target group, restoring all 3 instances." })
-        : L({ vi: "ALB đã loại i-2 nhưng ASG vẫn giữ instance này. ShopViet vận hành thiếu một instance cho tới khi có can thiệp thủ công.", en: "The ALB has dropped i-2, but the ASG keeps the instance. ShopViet runs one instance short until someone intervenes manually." }),
+        : L({ vi: "ALB đã loại i-2 nhưng ASG vẫn giữ instance này. MFTECH vận hành thiếu một instance cho tới khi có can thiệp thủ công.", en: "The ALB has dropped i-2, but the ASG keeps the instance. MFTECH runs one instance short until someone intervenes manually." }),
     }),
   },
   {

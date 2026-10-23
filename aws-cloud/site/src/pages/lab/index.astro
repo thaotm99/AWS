@@ -5,60 +5,69 @@ import L from "../../components/L.astro";
 import { LABS } from "../../lib/labs";
 import { DRILLS } from "../../lib/drills";
 import { COMPARE } from "../../lib/compare";
+
+// The three hub lists share one look; .lab-list-done stays as the page script's hook.
+const h2 = "mx-0 mt-2 mb-3 text-step-1";
+const list = "mb-10 grid grid-cols-2 gap-3 max-lg:grid-cols-1";
+const card = "flex h-full items-start gap-3.5 rounded-[20px] border-2 border-line bg-surface px-[18px] py-4 text-ink no-underline shadow-[0_4px_0] shadow-line hover:border-accent";
+const no = "pt-0.5 font-mono text-[0.875rem] text-accent";
+const text = "flex min-w-0 flex-1 flex-col gap-1";
+const brief = "line-clamp-3 text-[0.8125rem] leading-[1.55] text-muted";
+const done = "lab-list-done flex-none text-[0.75rem] font-semibold text-ok";
 ---
-<BaseLayout title="Lab · CloudLab" titleKey="shell.lab.pageTitle" description="Dựng kiến trúc ShopViet trên AWS theo yêu cầu và kiểm tra thiết kế." section="lab" sidebar={false}>
+<BaseLayout title="Lab · CloudLab" titleKey="shell.lab.pageTitle" description="Dựng kiến trúc MFTECH trên AWS theo yêu cầu và kiểm tra thiết kế." section="lab" sidebar={false}>
   <header class="gl-head">
     <span class="gl-eyebrow"><T k="shell.lab.eyebrow" /></span>
     <h1><T k="shell.lab.title" /></h1>
     <p class="lede"><T k="shell.lab.lede" /></p>
   </header>
 
-  <section class="lab-hub" aria-labelledby="lab-build">
-    <h2 id="lab-build"><T k="shell.lab.build" /></h2>
-    <ol class="lab-list">
+  <section aria-labelledby="lab-build">
+    <h2 class={h2} id="lab-build"><T k="shell.lab.build" /></h2>
+    <ol class={list}>
       {LABS.map((lab, i) => (
         <li>
-          <a href={`/lab/${lab.id}/`} data-lab={lab.id}>
-            <span class="lab-list-no">{String(i + 1).padStart(2, "0")}</span>
-            <span class="lab-list-text">
+          <a class={card} href={`/lab/${lab.id}/`} data-lab={lab.id}>
+            <span class={no}>{String(i + 1).padStart(2, "0")}</span>
+            <span class={text}>
               <b><L vi={lab.title.vi} en={lab.title.en} /></b>
-              <small><L vi={lab.brief.vi} en={lab.brief.en} /></small>
+              <small class={brief}><L vi={lab.brief.vi} en={lab.brief.en} /></small>
             </span>
-            <span class="lab-list-done" hidden><T k="shell.lab.doneShort" /></span>
+            <span class={done} hidden><T k="shell.lab.doneShort" /></span>
           </a>
         </li>
       ))}
     </ol>
   </section>
 
-  <section class="lab-hub" aria-labelledby="lab-drills">
-    <h2 id="lab-drills"><T k="shell.drill.hub" /></h2>
-    <ol class="lab-list">
+  <section aria-labelledby="lab-drills">
+    <h2 class={h2} id="lab-drills"><T k="shell.drill.hub" /></h2>
+    <ol class={list}>
       {DRILLS.map((drill, i) => (
         <li>
-          <a href={`/lab/drills/${drill.id}/`} data-drill={drill.id} data-steps={drill.steps.length}>
-            <span class="lab-list-no">{String(i + 1).padStart(2, "0")}</span>
-            <span class="lab-list-text">
+          <a class={card} href={`/lab/drills/${drill.id}/`} data-drill={drill.id} data-steps={drill.steps.length}>
+            <span class={no}>{String(i + 1).padStart(2, "0")}</span>
+            <span class={text}>
               <b><L vi={drill.title.vi} en={drill.title.en} /></b>
-              <small><L vi={drill.brief.vi} en={drill.brief.en} /></small>
+              <small class={brief}><L vi={drill.brief.vi} en={drill.brief.en} /></small>
             </span>
-            <span class="lab-list-done" hidden></span>
+            <span class={done} hidden></span>
           </a>
         </li>
       ))}
     </ol>
   </section>
 
-  <section class="lab-hub" aria-labelledby="lab-compare">
-    <h2 id="lab-compare"><T k="shell.compare.hub" /></h2>
-    <ol class="lab-list">
+  <section aria-labelledby="lab-compare">
+    <h2 class={h2} id="lab-compare"><T k="shell.compare.hub" /></h2>
+    <ol class={list}>
       {COMPARE.map((c, i) => (
         <li>
-          <a href={`/compare/${c.id}/`}>
-            <span class="lab-list-no">{String(i + 1).padStart(2, "0")}</span>
-            <span class="lab-list-text">
+          <a class={card} href={`/compare/${c.id}/`}>
+            <span class={no}>{String(i + 1).padStart(2, "0")}</span>
+            <span class={text}>
               <b><L vi={c.title.vi} en={c.title.en} /></b>
-              <small><L vi={c.lede.vi} en={c.lede.en} /></small>
+              <small class={brief}><L vi={c.lede.vi} en={c.lede.en} /></small>
             </span>
           </a>
         </li>

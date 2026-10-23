@@ -42,8 +42,8 @@ const policies = (L: Lang): Pol[] => [
   }]
 }`,
     requests: [
-      { label: L({ vi: "Chạy EC2 tại eu-west-1, bên gọi đang ở Việt Nam", en: "Run EC2 in eu-west-1, caller is in Vietnam" }), allowed: true, why: L({ vi: "aws:RequestedRegion là Region nhận API call, không phải vị trí của bên gọi. API call được phép từ bất kỳ vị trí nào.", en: "aws:RequestedRegion is the Region that receives the API call, not the caller's location. The API call is allowed from any location." }) },
-      { label: L({ vi: "Chạy EC2 tại ap-southeast-1", en: "Run EC2 in ap-southeast-1" }), allowed: false, why: L({ vi: "Region của request không phải eu-west-1 nên điều kiện không khớp.", en: "The request's Region is not eu-west-1, so the condition does not match." }) },
+      { label: L({ vi: "Khởi chạy EC2 instance tại eu-west-1, bên gọi đang ở Việt Nam", en: "Launch an EC2 instance in eu-west-1, caller is in Vietnam" }), allowed: true, why: L({ vi: "aws:RequestedRegion là Region nhận API call, không phải vị trí của bên gọi. API call được phép từ bất kỳ vị trí nào.", en: "aws:RequestedRegion is the Region that receives the API call, not the caller's location. The API call is allowed from any location." }) },
+      { label: L({ vi: "Khởi chạy EC2 instance tại ap-southeast-1", en: "Launch an EC2 instance in ap-southeast-1" }), allowed: false, why: L({ vi: "Region của request không phải eu-west-1 nên điều kiện không khớp.", en: "The request's Region is not eu-west-1, so the condition does not match." }) },
     ],
   },
   {
@@ -53,10 +53,10 @@ const policies = (L: Lang): Pol[] => [
   "Statement": [
     { "Effect": "Allow",
       "Action": "s3:ListBucket",
-      "Resource": "arn:aws:s3:::shopviet-images" },
+      "Resource": "arn:aws:s3:::mftech-images" },
     { "Effect": "Allow",
       "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::shopviet-images/*" }
+      "Resource": "arn:aws:s3:::mftech-images/*" }
   ]
 }`,
     requests: [
@@ -72,11 +72,11 @@ const policies = (L: Lang): Pol[] => [
   "Statement": [{
     "Effect": "Allow",
     "Action": "s3:DeleteObject",
-    "Resource": "arn:aws:s3:::shopviet-images"
+    "Resource": "arn:aws:s3:::mftech-images"
   }]
 }`,
     requests: [
-      { label: L({ vi: "Xóa một ảnh", en: "Delete an image" }), allowed: false, why: L({ vi: "DeleteObject là thao tác trên object nhưng Resource lại là ARN của bucket. Resource phải được sửa thành arn:aws:s3:::shopviet-images/* để thao tác xóa được phép.", en: "DeleteObject is an object operation, but the Resource is the bucket ARN. The Resource must be changed to arn:aws:s3:::shopviet-images/* for the delete to be allowed." }) },
+      { label: L({ vi: "Xóa một ảnh", en: "Delete an image" }), allowed: false, why: L({ vi: "DeleteObject là thao tác trên object nhưng Resource lại là ARN của bucket. Resource phải được sửa thành arn:aws:s3:::mftech-images/* để thao tác xóa được phép.", en: "DeleteObject is an object operation, but the Resource is the bucket ARN. The Resource must be changed to arn:aws:s3:::mftech-images/* for the delete to be allowed." }) },
     ],
   },
 ];
@@ -97,10 +97,10 @@ export default function PolicyReader() {
           <button key={x.name} className="btn" aria-pressed={i === pi} onClick={() => { setPi(i); setRi(null); }}>{x.name}</button>
         ))}
       </div>
-      <div className="policy-grid">
-        <pre className="policy-json"><code>{p.json}</code></pre>
-        <div className="policy-reqs">
-          <div className="label">{L({ vi: "Request kiểm tra", en: "Test requests" })}</div>
+      <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] max-md:grid-cols-1">
+        <pre className="m-0 overflow-x-auto border-r border-line bg-bg px-4 py-3.5 text-[0.8125rem] leading-[1.5] max-md:border-r-0 max-md:border-b"><code>{p.json}</code></pre>
+        <div className="grid content-start gap-1.5 p-3.5">
+          <div className="label text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Request kiểm tra", en: "Test requests" })}</div>
           {p.requests.map((x, i) => (
             <button key={x.label} className="picker-item" aria-pressed={i === ri} onClick={() => setRi(i)}>{x.label}</button>
           ))}
@@ -110,9 +110,9 @@ export default function PolicyReader() {
         {r ? (
           <>
             <span className={"pill " + (r.allowed ? "ok" : "bad")}><i />{r.allowed ? "Allow" : "Deny"}</span>
-            <p style={{ margin: "8px 0 0" }}>{r.why}</p>
+            <p className="mx-0 mt-2 mb-0">{r.why}</p>
           </>
-        ) : <p style={{ margin: 0 }}>{L({ vi: "Đọc policy bên trái, dự đoán kết quả, sau đó chọn một request để kiểm tra.", en: "Read the policy on the left, predict the result, then choose a request to test." })}</p>}
+        ) : <p className="m-0">{L({ vi: "Đọc policy bên trái, dự đoán kết quả, sau đó chọn một request để kiểm tra.", en: "Read the policy on the left, predict the result, then choose a request to test." })}</p>}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import PacketSim, { type PLayout, type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// ShopViet's admin site runs on a single EC2 instance, no Auto Scaling group. A CloudWatch
+// MFTECH's admin site runs on a single EC2 instance, no Auto Scaling group. A CloudWatch
 // alarm with the recover action brings it back on new hardware with the same instance ID
 // and IPs, but only for system status check failures and only when its data is on EBS.
 

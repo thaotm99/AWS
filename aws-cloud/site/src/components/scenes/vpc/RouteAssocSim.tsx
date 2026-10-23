@@ -52,39 +52,39 @@ export default function RouteAssocSim() {
     if (t.internet === null) {
       setMsg({ ok: false, text: { vi: `\`${s.name}\` dùng \`${t.name}\` (${how.vi}). Bảng chỉ có route \`local\` nên traffic tới \`0.0.0.0/0\` không có đích: subnet không ra được internet.`, en: `\`${s.name}\` uses \`${t.name}\` (${how.en}). The table has only the \`local\` route, so traffic to \`0.0.0.0/0\` has no target: the subnet cannot reach the internet.` } });
     } else if (t.internet === "igw" && s.id !== "web") {
-      setMsg({ ok: false, text: { vi: `\`${t.name}\` có route tới Internet Gateway, nhưng \`${s.ec2.split(" · ")[0]}\` chỉ có private IP. Internet Gateway chỉ thực hiện NAT cho instance có public IP hoặc Elastic IP.`, en: `\`${t.name}\` has a route to the internet gateway, but \`${s.ec2.split(" · ")[0]}\` has only a private IP. The internet gateway performs NAT only for instances with a public IP or Elastic IP.` } });
+      setMsg({ ok: false, text: { vi: `\`${t.name}\` có route tới internet gateway, nhưng \`${s.ec2.split(" · ")[0]}\` chỉ có private IP. Internet gateway chỉ thực hiện NAT cho instance có public IP hoặc Elastic IP.`, en: `\`${t.name}\` has a route to the internet gateway, but \`${s.ec2.split(" · ")[0]}\` has only a private IP. The internet gateway performs NAT only for instances with a public IP or Elastic IP.` } });
     } else if (t.internet === "igw") {
-      setMsg({ ok: true, text: { vi: `\`${s.name}\` dùng \`${t.name}\` (${how.vi}): route \`0.0.0.0/0 → igw\` và instance có public IP. Bước còn lại: NACL cho phép cả hai chiều, Security Group cho phép inbound (phần 1).`, en: `\`${s.name}\` uses \`${t.name}\` (${how.en}): route \`0.0.0.0/0 → igw\` and the instance has a public IP. What remains: the NACL allows both directions and the security group allows inbound (part 1).` } });
+      setMsg({ ok: true, text: { vi: `\`${s.name}\` dùng \`${t.name}\` (${how.vi}): route \`0.0.0.0/0 → igw\` và instance có public IP. Bước còn lại: NACL cho phép cả hai chiều, security group cho phép inbound (phần 1).`, en: `\`${s.name}\` uses \`${t.name}\` (${how.en}): route \`0.0.0.0/0 → igw\` and the instance has a public IP. What remains: the NACL allows both directions and the security group allows inbound (part 1).` } });
     } else {
       setMsg({ ok: true, text: { vi: `\`${s.name}\` dùng \`${t.name}\` (${how.vi}): kết nối đi ra qua NAT gateway; internet không khởi tạo được kết nối vào.`, en: `\`${s.name}\` uses \`${t.name}\` (${how.en}): outbound connections go through the NAT gateway; the internet cannot initiate connections in.` } });
     }
   }
 
   return (
-    <div className="stage vpx">
-      <div className="vpx-assoc">
-        <div className="vpx-col" role="group" aria-label={L({ vi: "Subnet", en: "Subnets" })}>
-          <span className="vpx-lbl">Subnet</span>
+    <div className="stage">
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-3 px-3.5 py-3 max-sm:grid-cols-1">
+        <div className="grid content-start gap-1.5" role="group" aria-label={L({ vi: "Subnet", en: "Subnets" })}>
+          <span className="mr-1 text-[0.72rem] font-semibold tracking-[0.08em] text-muted uppercase">Subnet</span>
           {SUBNETS.map((s) => (
-            <button key={s.id} className="vpx-card" aria-pressed={sel === s.id} onClick={() => { setSel(s.id); setMsg(null); }}>
+            <button key={s.id} className="grid cursor-pointer gap-0.5 rounded-[12px] border border-line bg-surface px-2.5 py-2 text-left text-step--1 text-ink aria-pressed:border-accent aria-pressed:shadow-[0_0_0_1px_var(--color-accent)]" aria-pressed={sel === s.id} onClick={() => { setSel(s.id); setMsg(null); }}>
               <b>{s.name}</b> <code>{s.cidr}</code>
-              <small>{s.ec2}</small>
-              <small className={assoc[s.id] ? "vpx-ex" : "vpx-im"}>
+              <small className="text-muted">{s.ec2}</small>
+              <small className={assoc[s.id] ? "text-accent" : "text-edge"}>
                 → {TABLES[eff(s.id)].name} {assoc[s.id] ? L({ vi: "(tường minh)", en: "(explicit)" }) : L({ vi: "(ngầm định, main)", en: "(implicit, main)" })}
               </small>
             </button>
           ))}
         </div>
-        <div className="vpx-col">
-          <span className="vpx-lbl">Route table</span>
+        <div className="grid content-start gap-1.5">
+          <span className="mr-1 text-[0.72rem] font-semibold tracking-[0.08em] text-muted uppercase">Route table</span>
           {(Object.keys(TABLES) as Rt[]).map((id) => {
             const t = TABLES[id];
             const users = SUBNETS.filter((s) => eff(s.id) === id).map((s) => s.name.replace("subnet-", ""));
             return (
-              <div key={id} className={"vpx-rt" + (eff(sel) === id ? " on" : "")}>
-                <div><b>{t.name}</b> <small>{L(t.note)}</small></div>
-                <table><tbody>{t.routes.map(([d, g]) => <tr key={d}><td><code>{d}</code></td><td><code>{g}</code></td></tr>)}</tbody></table>
-                <small>{L({ vi: "Subnet đang dùng: ", en: "Used by: " })}{users.length ? users.join(", ") : "—"}</small>
+              <div key={id} className={"grid gap-1 rounded-[12px] border px-2.5 py-2 text-step--1 " + (eff(sel) === id ? "border-accent bg-accent-soft" : "border-line bg-bg")}>
+                <div><b>{t.name}</b> <small className="text-muted">{L(t.note)}</small></div>
+                <table className="border-collapse [&_td]:py-px [&_td]:pr-2.5 [&_td]:pl-0"><tbody>{t.routes.map(([d, g]) => <tr key={d}><td><code>{d}</code></td><td><code>{g}</code></td></tr>)}</tbody></table>
+                <small className="text-muted">{L({ vi: "Subnet đang dùng: ", en: "Used by: " })}{users.length ? users.join(", ") : "—"}</small>
               </div>
             );
           })}
@@ -100,9 +100,9 @@ export default function RouteAssocSim() {
       </div>
       <div className="readout" aria-live="polite">
         {msg ? (
-          <p style={{ margin: 0 }}><span className={"pill " + (msg.ok ? "ok" : "bad")}><i />{msg.ok ? "OK" : L({ vi: "Không ra được internet", en: "No internet access" })}</span> {rich(L(msg.text))}</p>
+          <p className="m-0"><span className={"pill " + (msg.ok ? "ok" : "bad")}><i />{msg.ok ? "OK" : L({ vi: "Không ra được internet", en: "No internet access" })}</span> {rich(L(msg.text))}</p>
         ) : (
-          <p style={{ margin: 0 }}>{L({ vi: "Chọn một subnet, gắn nó với route table khác hoặc gỡ association, sau đó thử kết nối internet. subnet-web và subnet-batch chưa có association tường minh.", en: "Pick a subnet, associate it with another route table or remove the association, then test internet access. subnet-web and subnet-batch have no explicit association yet." })}</p>
+          <p className="m-0">{L({ vi: "Chọn một subnet, gắn nó với route table khác hoặc gỡ association, sau đó thử kết nối internet. subnet-web và subnet-batch chưa có association tường minh.", en: "Pick a subnet, associate it with another route table or remove the association, then test internet access. subnet-web and subnet-batch have no explicit association yet." })}</p>
         )}
       </div>
     </div>

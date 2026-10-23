@@ -59,23 +59,23 @@ export default function LifecycleValidator() {
 
   return (
     <div className="stage">
-      <div className="lc-grid">
+      <div className="grid grid-cols-2 gap-3.5 p-3.5 max-sm:grid-cols-1">
         <div>
-          <div className="label">{L({ vi: "Storage class nguồn", en: "Source storage class" })}</div>
-          <div className="lc-list">
+          <div className="label mb-1.5 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Storage class nguồn", en: "Source storage class" })}</div>
+          <div className="grid gap-1">
             {CLASSES.map((c) => (
-              <button key={c.id} className="picker-item" aria-pressed={c.id === from} onClick={() => setFrom(c.id)}>
-                <b>{c.label}</b><span className="term-meta">{L(c.note)}</span>
+              <button key={c.id} className="picker-item grid gap-px" aria-pressed={c.id === from} onClick={() => setFrom(c.id)}>
+                <b>{c.label}</b><span className="text-[0.75rem] text-muted">{L(c.note)}</span>
               </button>
             ))}
           </div>
         </div>
         <div>
-          <div className="label">{L({ vi: "Storage class đích", en: "Target storage class" })}</div>
-          <div className="lc-list">
+          <div className="label mb-1.5 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Storage class đích", en: "Target storage class" })}</div>
+          <div className="grid gap-1">
             {CLASSES.map((c) => (
-              <button key={c.id} className={"picker-item" + (ALLOWED[from].includes(c.id) ? " lc-ok" : "")} aria-pressed={c.id === to} onClick={() => setTo(c.id)}>
-                <b>{c.label}</b><span className="term-meta">{ALLOWED[from].includes(c.id) ? L({ vi: "hợp lệ", en: "valid" }) : c.id === from ? L({ vi: "lớp hiện tại", en: "current class" }) : L({ vi: "không hợp lệ", en: "not valid" })}</span>
+              <button key={c.id} className={"picker-item grid gap-px" + (ALLOWED[from].includes(c.id) ? " not-aria-pressed:border-ok" : "")} aria-pressed={c.id === to} onClick={() => setTo(c.id)}>
+                <b>{c.label}</b><span className="text-[0.75rem] text-muted">{ALLOWED[from].includes(c.id) ? L({ vi: "hợp lệ", en: "valid" }) : c.id === from ? L({ vi: "lớp hiện tại", en: "current class" }) : L({ vi: "không hợp lệ", en: "not valid" })}</span>
               </button>
             ))}
           </div>
@@ -87,7 +87,7 @@ export default function LifecycleValidator() {
       </div>
       <div className="readout" aria-live="polite">
         <span className={"pill " + (ok ? "ok" : "bad")}><i />{ok ? L({ vi: "Transition hợp lệ", en: "Valid transition" }) : L({ vi: "Không hợp lệ", en: "Not valid" })}</span>
-        <p style={{ margin: "8px 0 0" }}>{why}</p>
+        <p className="mx-0 mt-2 mb-0">{why}</p>
       </div>
     </div>
   );

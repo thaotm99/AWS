@@ -1,7 +1,7 @@
 import PacketSim, { type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// Five jobs ElastiCache does for ShopViet: cache repeated Aurora reads (cache-aside),
+// Five jobs ElastiCache does for MFTECH: cache repeated Aurora reads (cache-aside),
 // keep sessions when a web server dies, serve a live seller leaderboard, find the
 // nearest shipper with geospatial commands, and survive a cache node failure.
 
@@ -17,7 +17,7 @@ const scenarios = (L: Lang): PScenario[] => [
       viewBox: VB,
       aria: L({ vi: "Ứng dụng đọc trạng thái đơn hàng từ ElastiCache trước, chỉ truy vấn Aurora khi cache chưa có dữ liệu", en: "The application reads order status from ElastiCache first and queries Aurora only when the cache has no data" }),
       nodes: [
-        { id: "app", x: 100, y: 150, w: 140, l1: L({ vi: "App ShopViet", en: "ShopViet app" }), l2: "EC2" },
+        { id: "app", x: 100, y: 150, w: 140, l1: L({ vi: "App MFTECH", en: "MFTECH app" }), l2: "EC2" },
         ...(cache ? [{ id: "cache", x: 420, y: 92, w: 170, l1: "ElastiCache", l2: L({ vi: "TTL 60 giây", en: "TTL 60 seconds" }) }] : []),
         { id: "db", x: 420, y: 210, w: 170, l1: "Aurora MySQL", l2: cache ? "CPU 35%" : L({ vi: "CPU 92%, đã có replica", en: "CPU 92%, has a replica" }) },
       ],
@@ -28,7 +28,7 @@ const scenarios = (L: Lang): PScenario[] => [
             { at: "cache", state: "skip", tag: "MISS", roundTrip: true, msg: L({ vi: "Lần đầu tiên: cache chưa có dữ liệu đơn 88.", en: "First time: the cache has no data for order 88." }) },
             { at: "db", state: "pass", msg: L({ vi: "Ứng dụng đọc từ Aurora một lần.", en: "The application reads from Aurora once." }) },
             { at: "cache", from: "app", state: "change", tag: "SET", roundTrip: true, msg: L({ vi: "Ứng dụng ghi kết quả vào cache, hết hạn sau 60 giây.", en: "The application writes the result to the cache, expiring after 60 seconds." }) },
-            { at: "cache", state: "pass", tag: "HIT", flash: "< 1 ms", msg: L({ vi: "Các lần tiếp theo: dữ liệu được lấy trực tiếp từ bộ nhớ, không phát sinh tải cho Aurora.", en: "Subsequent requests: the data comes straight from memory, putting no load on Aurora." }) },
+            { at: "cache", state: "pass", tag: "HIT", flash: "< 1 ms", msg: L({ vi: "Các lần tiếp theo: dữ liệu được lấy trực tiếp từ cache, không phát sinh tải cho Aurora.", en: "Subsequent requests: the data comes straight from the cache, putting no load on Aurora." }) },
           ], ok: true, result: L({ vi: "Phần lớn lượt đọc lặp lại được phục vụ tại cache. Tải trên Aurora giảm đáng kể mà không cần thêm replica. TTL đảm bảo dữ liệu không cũ quá 60 giây.", en: "Most repeated reads are served from the cache. Load on Aurora drops significantly with no extra replica. The TTL ensures data is never more than 60 seconds old." }) }
       : { steps: [
             { at: "db", state: "wait", flash: "180 ms", msg: L({ vi: "Cùng một truy vấn được thực thi lặp lại hàng nghìn lần. Thêm read replica chỉ giải quyết được trong ngắn hạn.", en: "The same query runs thousands of times over. Adding read replicas only helps in the short term." }) },
@@ -56,13 +56,13 @@ const scenarios = (L: Lang): PScenario[] => [
             { at: "w1", jump: true, state: "block", tag: "UNHEALTHY", msg: L({ vi: "EC2 #1 gặp lỗi và được Auto Scaling thay thế.", en: "EC2 #1 fails and Auto Scaling replaces it." }) },
             { at: "alb", state: "pass", msg: L({ vi: "Chuyển người dùng sang EC2 #2.", en: "Sends the user to EC2 #2." }) },
             { at: "w2", state: "pass", msg: L({ vi: "Không lưu trạng thái trong RAM cục bộ.", en: "Keeps no state in local RAM." }) },
-            { at: "cache", state: "pass", tag: "HIT", msg: L({ vi: "Đọc session theo session id. Mọi server dùng chung một kho lưu trữ.", en: "Reads the session by session ID. Every server shares one store." }) },
-          ], ok: true, result: L({ vi: "Người dùng không bị ảnh hưởng khi một server gặp lỗi. Web server là stateless nên có thể thêm bớt linh hoạt.", en: "Users are unaffected when a server fails. The web servers are stateless, so they can be added or removed freely." }) }
+            { at: "cache", state: "pass", tag: "HIT", msg: L({ vi: "Đọc session theo session ID. Mọi web server dùng chung một session store.", en: "Reads the session by session ID. Every web server shares one session store." }) },
+          ], ok: true, result: L({ vi: "Người dùng không bị ảnh hưởng khi một web server gặp lỗi. Web server là stateless nên có thể thêm bớt linh hoạt.", en: "Users are unaffected when a web server fails. The web servers are stateless, so they can be added or removed freely." }) }
       : { steps: [
             { at: "w1", jump: true, state: "block", tag: "UNHEALTHY", msg: L({ vi: "EC2 #1 gặp lỗi. Session của người dùng được lưu trong RAM của instance này.", en: "EC2 #1 fails. The user’s session was stored in this instance’s RAM." }) },
             { at: "alb", state: "pass", msg: L({ vi: "Chuyển người dùng sang EC2 #2.", en: "Sends the user to EC2 #2." }) },
             { at: "w2", state: "block", flash: L({ vi: "đăng nhập lại", en: "log in again" }), msg: L({ vi: "EC2 #2 không có thông tin về session 7f3a.", en: "EC2 #2 knows nothing about session 7f3a." }) },
-          ], ok: false, result: L({ vi: "Người dùng phải đăng nhập lại và mất giỏ hàng. Sticky session cũng không khắc phục được khi chính server đó gặp lỗi. Giải pháp: lưu session tại một kho in-memory dùng chung: ElastiCache.", en: "The user must log in again and loses their cart. Sticky sessions do not help either when that very server fails. Solution: store sessions in a shared in-memory store: ElastiCache." }) },
+          ], ok: false, result: L({ vi: "Người dùng phải đăng nhập lại và mất giỏ hàng. Sticky session cũng không khắc phục được khi chính web server đó gặp lỗi. Giải pháp: lưu session tại một in-memory session store dùng chung: ElastiCache.", en: "The user must log in again and loses their cart. Sticky sessions do not help either when that very server fails. Solution: store sessions in a shared in-memory store: ElastiCache." }) },
   },
   {
     name: L({ vi: "Bảng xếp hạng người bán thời gian thực", en: "Real-time seller leaderboard" }),
@@ -74,7 +74,7 @@ const scenarios = (L: Lang): PScenario[] => [
       aria: L({ vi: "Ứng dụng lấy top người bán từ Aurora hoặc từ Redis sorted set", en: "The application gets the top sellers from Aurora or from a Redis sorted set" }),
       nodes: [
         { id: "user", x: 70, y: 150, l1: L({ vi: "Người dùng", en: "User" }), user: true },
-        { id: "app", x: 260, y: 150, w: 130, l1: L({ vi: "App ShopViet", en: "ShopViet app" }) },
+        { id: "app", x: 260, y: 150, w: 130, l1: L({ vi: "App MFTECH", en: "MFTECH app" }) },
         { id: "store", x: 560, y: 150, w: 230, l1: redis ? "ElastiCache (Redis OSS)" : "Aurora", l2: redis ? "sorted set top-sellers" : L({ vi: "SUM + ORDER BY mỗi lần", en: "SUM + ORDER BY every time" }) },
       ],
       links: [["user", "app"], ["app", "store"]],
@@ -99,7 +99,7 @@ const scenarios = (L: Lang): PScenario[] => [
       aria: L({ vi: "Shipper gửi vị trí vào cache; ứng dụng tìm shipper gần nhất", en: "Shippers send their locations to the cache; the application finds the nearest shipper" }),
       nodes: [
         { id: "user", x: 70, y: 150, l1: L({ vi: "Người đặt hàng", en: "Customer" }), user: true },
-        { id: "app", x: 270, y: 150, w: 140, l1: L({ vi: "App ShopViet", en: "ShopViet app" }) },
+        { id: "app", x: 270, y: 150, w: 140, l1: L({ vi: "App MFTECH", en: "MFTECH app" }) },
         { id: "cache", x: 540, y: 150, w: 210, l1: redis ? "ElastiCache (Redis OSS)" : "ElastiCache (Memcached)", l2: redis ? L({ vi: "GEOADD mỗi 5 giây", en: "GEOADD every 5 seconds" }) : L({ vi: "chỉ có key → value", en: "key → value only" }) },
         { id: "ship", x: 540, y: 236, w: 170, l1: L({ vi: "App shipper", en: "Shipper app" }), l2: L({ vi: "gửi vị trí liên tục", en: "sends location nonstop" }) },
       ],
@@ -125,7 +125,7 @@ const scenarios = (L: Lang): PScenario[] => [
       aria: L({ vi: "Ứng dụng đọc cache; node chính gặp lỗi, replica tại AZ khác thay thế hoặc mọi request chuyển tới database", en: "The application reads the cache; the primary node fails, and either a replica in another AZ takes over or every request goes to the database" }),
       boxes: [{ x: 300, y: 50, w: 250, h: 200, label: "ElastiCache (Redis OSS)" }],
       nodes: [
-        { id: "app", x: 110, y: 150, w: 140, l1: L({ vi: "App ShopViet", en: "ShopViet app" }) },
+        { id: "app", x: 110, y: 150, w: 140, l1: L({ vi: "App MFTECH", en: "MFTECH app" }) },
         { id: "pri", x: 425, y: 104, w: 170, l1: "Primary", l2: L({ vi: "AZ a · lỗi", en: "AZ a · failed" }) },
         { id: "rep", x: 425, y: 206, w: 170, l1: maz ? "Replica" : L({ vi: "(không có replica)", en: "(no replica)" }), l2: maz ? "AZ b" : undefined },
         { id: "db", x: 700, y: 150, w: 150, l1: "RDS", l2: L({ vi: "database chính", en: "primary database" }) },
@@ -152,7 +152,7 @@ const scenarios = (L: Lang): PScenario[] => [
       viewBox: VB,
       aria: L({ vi: "Ứng dụng ghi đơn hàng vào ElastiCache hoặc vào SQS queue; Aurora là nơi lưu đơn hàng cuối cùng", en: "The application writes orders to ElastiCache or to an SQS queue; Aurora is where orders are finally stored" }),
       nodes: [
-        { id: "app", x: 90, y: 150, w: 140, l1: L({ vi: "App ShopViet", en: "ShopViet app" }), l2: "EC2" },
+        { id: "app", x: 90, y: 150, w: 140, l1: L({ vi: "App MFTECH", en: "MFTECH app" }), l2: "EC2" },
         { id: "buf", x: 320, y: 150, w: 180, l1: sqs ? "Amazon SQS" : "ElastiCache", l2: sqs ? L({ vi: "lưu trên nhiều server", en: "stored on multiple servers" }) : L({ vi: "dữ liệu trong bộ nhớ", en: "data in memory" }) },
         { id: "wk", x: 540, y: 150, w: 160, l1: sqs ? L({ vi: "Worker (ASG)", en: "Workers (ASG)" }) : L({ vi: "Job đẩy sang DB", en: "Flush job" }), l2: sqs ? L({ vi: "co giãn theo queue", en: "scale with the queue" }) : L({ vi: "chạy định kỳ", en: "runs periodically" }) },
         { id: "db", x: 730, y: 150, w: 150, l1: "Aurora", l2: L({ vi: "nơi lưu đơn hàng", en: "system of record" }) },
@@ -164,7 +164,7 @@ const scenarios = (L: Lang): PScenario[] => [
             { at: "buf", state: "pass", tag: "SEND", msg: L({ vi: "Đơn hàng được gửi vào SQS. SQS lưu message trên nhiều server nên không mất khi một server gặp lỗi.", en: "The order is sent to SQS. SQS stores messages on multiple servers, so they survive a server failure." }) },
             { at: "wk", state: "pass", msg: L({ vi: "Worker nhận message và xử lý theo tốc độ Aurora chịu được; Auto Scaling thêm worker khi queue dài ra.", en: "Workers receive the messages and process them at a rate Aurora can handle; Auto Scaling adds workers as the queue grows." }) },
             { at: "db", state: "pass", msg: L({ vi: "Đơn được ghi vào Aurora. Cache chỉ dùng cho tải đọc (cache-aside hoặc write-through sau khi database đã ghi).", en: "The order is written to Aurora. The cache is used only for reads (cache-aside, or write-through after the database write)." }) },
-          ], ok: true, back: false, result: L({ vi: "Đỉnh tải được queue hấp thụ, không mất đơn. Thêm RDS Proxy để gom kết nối tới Aurora (bài RDS).", en: "The queue absorbs the peak and no order is lost. Add RDS Proxy to pool connections to Aurora (RDS lesson)." }) }
+          ], ok: true, back: false, result: L({ vi: "Đỉnh tải được queue hấp thụ, không mất đơn. Thêm RDS Proxy để thực hiện connection pooling tới Aurora (bài RDS).", en: "The queue absorbs the peak and no order is lost. Add RDS Proxy for connection pooling to Aurora (RDS lesson)." }) }
       : { steps: [
             { at: "buf", state: "change", tag: "SET", msg: L({ vi: "Đơn hàng chỉ nằm trong bộ nhớ của cache node, chưa có trong database.", en: "The order exists only in the cache node's memory, not yet in the database." }) },
             { at: "buf", state: "block", tag: L({ vi: "LỖI", en: "FAIL" }), msg: L({ vi: "Cache node gặp lỗi trước khi job kịp ghi sang Aurora. Replication sang replica là bất đồng bộ.", en: "The cache node fails before the job writes to Aurora. Replication to replicas is asynchronous." }) },
@@ -175,5 +175,5 @@ const scenarios = (L: Lang): PScenario[] => [
 
 export default function CacheSim() {
   const L = useLang();
-  return <PacketSim scenarios={scenarios(L)} action={L({ vi: "Gửi request", en: "Send request" })} hint={L({ vi: "Chọn một tình huống của ShopViet, gửi request, sau đó bật tuỳ chọn cấu hình để quan sát tác dụng của ElastiCache.", en: "Choose a ShopViet scenario, send the request, then turn on the configuration option to see what ElastiCache does." })} />;
+  return <PacketSim scenarios={scenarios(L)} action={L({ vi: "Gửi request", en: "Send request" })} hint={L({ vi: "Chọn một tình huống của MFTECH, gửi request, sau đó bật tuỳ chọn cấu hình để quan sát tác dụng của ElastiCache.", en: "Choose a MFTECH scenario, send the request, then turn on the configuration option to see what ElastiCache does." })} />;
 }

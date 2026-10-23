@@ -1,0 +1,35 @@
+/* Lesson scenes (src/components/scenes/<lesson>/): the palette of the always-dark AWS-map stage, and the few
+   classes that several lessons share. Lesson-only classes live in a CSS file next to that lesson's components. */
+
+/* AWS-map stage (lesson 0): stays dark in both site themes, like the home-page map, so it has its own colors.
+   Used as bg-map-panel, text-map-cyan, var(--color-map-amber) and so on. */
+@theme {
+  --color-map-bg: #0b1218;
+  --color-map-deep: #0f1a21;
+  --color-map-panel: #111b22;
+  --color-map-raised: #16262f;
+  --color-map-well: #1b2a33;
+  --color-map-line: #22323c;
+  --color-map-line-soft: #1d2c35;
+  --color-map-ring: #1d3a46;
+  --color-map-edge: #2a3c47;
+  --color-map-glow: #10303b;
+  --color-map-glow-hero: #12303b;
+  --color-map-ink: #e4ecf0;
+  --color-map-soft: #b4c4cc;
+  --color-map-muted: #90a4af;
+  --color-map-on: #06121a;
+  --color-map-cyan: #4cc2df;
+  --color-map-amber: #f0a95a;
+  --color-map-amber-ink: #f3d3ad;
+  --color-map-violet: #b29cff;
+  --color-map-green: #5ccf94;
+  --color-map-blue: #7fb0ff;
+  --color-map-pink: #f293b8;
+  --color-map-red: #f08585;
+  --color-map-kw: #2a1f14;
+  --color-map-kw-line: #4a3520;
+  --color-map-kw-chip: #17120d;
+  --color-map-kw-chip-line: #6b4a26;
+  --color-map-kw-ink: #f3e3cf;
+}

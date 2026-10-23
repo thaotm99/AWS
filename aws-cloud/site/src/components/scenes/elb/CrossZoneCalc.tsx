@@ -15,15 +15,15 @@ export default function CrossZoneCalc() {
   const pct = (v: number) => `${(Math.round(v * 100) / 100).toLocaleString(L({ vi: "vi-VN", en: "en-US" }))}%`;
 
   const column = (az: "a" | "b", n: number) => (
-    <div className="cz-az">
-      <div className="cz-head">
+    <div className="rounded-[14px] border border-line bg-bg px-3 py-2.5">
+      <div className="mb-2 flex flex-wrap justify-between gap-2">
         <b>AZ {az.toUpperCase()}</b>
         <span className="count">{L({ vi: "node của LB nhận 50% traffic từ DNS", en: "LB node gets 50% of traffic from DNS" })}</span>
       </div>
-      <div className="cz-targets">
+      <div className="flex flex-wrap gap-2">
         {Array.from({ length: n }, (_, i) => (
-          <div key={i} className="cz-target">
-            <div className="cz-bar"><i style={{ height: `${Math.min(100, share(az) * 2)}%` }} /></div>
+          <div key={i} className="grid w-[54px] justify-items-center gap-1 font-mono text-[0.75rem]">
+            <div className="flex h-[90px] w-[26px] items-end overflow-hidden rounded-[4px] border border-line bg-surface"><i className="block w-full bg-accent transition-[height] duration-300 ease-[ease]" style={{ height: `${Math.min(100, share(az) * 2)}%` }} /></div>
             <span>{pct(share(az))}</span>
           </div>
         ))}
@@ -42,7 +42,7 @@ export default function CrossZoneCalc() {
         <button className="btn" aria-pressed={cross} onClick={() => setCross(true)}>{L({ vi: "Cross-zone bật", en: "Cross-zone on" })}</button>
         <button className="btn" aria-pressed={!cross} onClick={() => setCross(false)}>{L({ vi: "Cross-zone tắt", en: "Cross-zone off" })}</button>
       </div>
-      <div className="cz-grid">{column("a", a)}{column("b", b)}</div>
+      <div className="grid grid-cols-2 gap-3 p-3.5 max-sm:grid-cols-1">{column("a", a)}{column("b", b)}</div>
       <div className="readout" aria-live="polite">
         {cross
           ? L({ vi: <>Cross-zone bật: mỗi node phân phối traffic cho <b>mọi target trên mọi AZ</b>, do đó mỗi target nhận 100% ÷ {total} = {pct(100 / total)}.</>,

@@ -41,32 +41,32 @@ export default function NotesPage() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  if (!list.length) return <p className="np-empty">{t("shell.notes.none")}</p>;
+  if (!list.length) return <p className="text-muted">{t("shell.notes.none")}</p>;
 
   return (
-    <div className="np">
-      <div className="np-tools">
-        <label className="gl-search">
+    <div className="mb-10 flex flex-col gap-4">
+      <div className="flex flex-wrap items-center gap-2.5">
+        <label className="gl-search flex-[1_1_280px]">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
           <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("shell.notes.search")} aria-label={t("shell.notes.search")} />
         </label>
-        <button type="button" className="btn" onClick={exportMd}>{t("shell.notes.export")}</button>
+        <button type="button" className="btn min-h-12 px-4 py-0" onClick={exportMd}>{t("shell.notes.export")}</button>
       </div>
-      <p className="np-count" role="status">{t("shell.notes.count", { n: shown.length })}</p>
+      <p className="m-0 text-[0.8125rem] text-muted" role="status">{t("shell.notes.count", { n: shown.length })}</p>
       {groups.map((g) => (
-        <section key={`${g[0].lesson}/${g[0].part}`} className="np-group">
-          <h2><a href={`/concepts/${g[0].lesson}/${g[0].part}/`}>{g[0].title[locale] || g[0].title.vi}</a></h2>
-          <ul>
+        <section key={`${g[0].lesson}/${g[0].part}`} >
+          <h2 className="m-0 text-[1rem]"><a href={`/concepts/${g[0].lesson}/${g[0].part}/`}>{g[0].title[locale] || g[0].title.vi}</a></h2>
+          <ul className="mt-3 flex flex-col gap-3">
             {g.map((h) => (
-              <li key={h.id} data-color={h.color}>
-                <blockquote lang={h.lang}>{h.quote}</blockquote>
+              <li key={h.id} className="flex flex-col gap-2 rounded-[14px] border border-line bg-surface p-3" data-color={h.color}>
+                <blockquote className="m-0 border-l-3 pl-2.5 text-[0.875rem] leading-[1.55]" lang={h.lang}>{h.quote}</blockquote>
                 <label>
                   <span className="sr-only">{t("shell.notes.note")}</span>
-                  <textarea rows={2} defaultValue={h.note} placeholder={t("shell.notes.placeholder")} onChange={(e) => updateNote(h.id, { note: e.target.value })} />
+                  <textarea className="w-full resize-y rounded-sm border border-line bg-bg px-2.5 py-2 text-[0.875rem] text-ink" rows={2} defaultValue={h.note} placeholder={t("shell.notes.placeholder")} onChange={(e) => updateNote(h.id, { note: e.target.value })} />
                 </label>
-                <div className="np-actions">
-                  <small>{new Date(h.at).toLocaleDateString(locale === "en" ? "en-GB" : "vi-VN")}</small>
-                  <button type="button" onClick={() => removeNote(h.id)}>{t("shell.notes.remove")}</button>
+                <div className="flex items-center justify-between gap-2">
+                  <small className="text-[0.75rem] text-muted">{new Date(h.at).toLocaleDateString(locale === "en" ? "en-GB" : "vi-VN")}</small>
+                  <button type="button" className="min-h-9 cursor-pointer rounded-sm border border-line bg-bg px-2.5 text-[0.8125rem] text-ink" onClick={() => removeNote(h.id)}>{t("shell.notes.remove")}</button>
                 </div>
               </li>
             ))}

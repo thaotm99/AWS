@@ -1,7 +1,7 @@
 import PacketSim, { type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// Guardrails around ShopViet's accounts. An SCP keeps the mandatory CloudTrail trail
+// Guardrails around MFTECH's accounts. An SCP keeps the mandatory CloudTrail trail
 // running even for a developer who is root in their own account. An AWS Config managed
 // rule warns 30 days before an imported certificate expires. A Config rule finds SSH
 // opened to the internet and a remediation runbook closes it.
@@ -38,7 +38,7 @@ const SCENARIOS: PScenario[] = [
   {
     name: "Chứng chỉ import sắp hết hạn",
     action: "Chạy đánh giá hằng ngày",
-    request: "Chứng chỉ của pay.shopviet.vn mua từ bên ngoài, import vào ACM, còn hiệu lực 25 ngày",
+    request: "Chứng chỉ của pay.mftech.vn mua từ bên ngoài, import vào ACM, còn hiệu lực 25 ngày",
     toggle: { label: "Kích hoạt Config rule acm-certificate-expiration-check (30 ngày)", initial: false },
     layout: {
       viewBox: "0 96 820 104",
@@ -55,12 +55,12 @@ const SCENARIOS: PScenario[] = [
     run: (rule) => rule
       ? { steps: [
             { at: "acm", jump: true, state: "wait", tag: "25 NGÀY", msg: "Chứng chỉ **import** từ bên ngoài: ACM **không tự động gia hạn**. Chứng chỉ do ACM cấp được ACM tự động gia hạn." },
-            { at: "config", state: "change", tag: "NON_COMPLIANT", flash: "< 30 ngày", msg: "Rule `acm-certificate-expiration-check` với `daysToExpiration = 30` (giá trị mặc định là 14, ShopViet đã cấu hình thành 30) đánh dấu chứng chỉ NON_COMPLIANT." },
+            { at: "config", state: "change", tag: "NON_COMPLIANT", flash: "< 30 ngày", msg: "Rule `acm-certificate-expiration-check` với `daysToExpiration = 30` (giá trị mặc định là 14, MFTECH đã cấu hình thành 30) đánh dấu chứng chỉ NON_COMPLIANT." },
             { at: "eb", state: "pass", msg: "Event \"Config Rules Compliance Change\" khớp rule của EventBridge." },
             { at: "sns", state: "pass", msg: "Email được gửi qua topic của đội bảo mật." },
             { at: "team", state: "pass", msg: "Còn gần một tháng để mua và import chứng chỉ mới." }],
           ok: true, back: false,
-          result: "Không cần viết script hay bảo trì máy chủ. Managed rule đã có sẵn; tham số `daysToExpiration` mặc định 14 ngày và có thể cấu hình lại." }
+          result: "Không cần viết script hay vận hành EC2 instance để chạy script. Managed rule đã có sẵn; tham số `daysToExpiration` mặc định 14 ngày và có thể cấu hình lại." }
       : { steps: [
             { at: "acm", jump: true, state: "wait", tag: "25 NGÀY", msg: "Chứng chỉ import không được tự động gia hạn và ngày hết hạn không được giám sát." },
             { at: "config", state: "skip", msg: "Chưa có rule nào đánh giá." }],
@@ -87,7 +87,7 @@ const SCENARIOS: PScenario[] = [
             { at: "sg", jump: true, state: "change", tag: "THAY ĐỔI", msg: "Cấu hình mới được ghi lại thành một configuration item." },
             { at: "config", state: "change", tag: "NON_COMPLIANT", flash: "22 mở", msg: "Rule `restricted-ssh` (identifier `INCOMING_SSH_DISABLED`) đánh giá NON_COMPLIANT vì SSH được mở cho 0.0.0.0/0." },
             { at: "ssm", state: "pass", msg: "**Remediation action** thực thi runbook, gỡ rule SSH mở ra Internet." },
-            { at: "sg", from: "ssm", state: "pass", tag: "COMPLIANT", relabel: { l2: "đã đóng cổng 22" }, msg: "Security group trở lại trạng thái tuân thủ." }],
+            { at: "sg", from: "ssm", state: "pass", tag: "COMPLIANT", relabel: { l2: "đã đóng port 22" }, msg: "Security group trở lại trạng thái tuân thủ." }],
           ok: true, back: false,
           result: "Cổng 22 chỉ bị mở trong vài phút. Config lưu toàn bộ lịch sử: thời điểm mở và thời điểm đóng." }
       : { steps: [
@@ -95,7 +95,7 @@ const SCENARIOS: PScenario[] = [
             { at: "config", state: "change", tag: "NON_COMPLIANT", flash: "22 mở", msg: "Rule đánh dấu NON_COMPLIANT trên dashboard." },
             { at: "ssm", state: "skip", msg: "Chưa cấu hình remediation, chỉ có cảnh báo." }],
           ok: false, back: false,
-          result: "Config phát hiện được vi phạm, nhưng cổng vẫn mở cho tới khi được khắc phục thủ công. Cần cấu hình **remediation** để tự động khắc phục." },
+          result: "Config phát hiện được vi phạm, nhưng port 22 vẫn mở cho tới khi được khắc phục thủ công. Cần cấu hình **remediation** để tự động khắc phục." },
   },
 ];
 
@@ -131,7 +131,7 @@ const SCENARIOS_EN: PScenario[] = [
   {
     name: "Imported certificate about to expire",
     action: "Run daily evaluation",
-    request: "The pay.shopviet.vn certificate, bought externally and imported into ACM, is valid for 25 more days",
+    request: "The pay.mftech.vn certificate, bought externally and imported into ACM, is valid for 25 more days",
     toggle: { label: "Enable the acm-certificate-expiration-check Config rule (30 days)", initial: false },
     layout: {
       viewBox: "0 96 820 104",
@@ -148,12 +148,12 @@ const SCENARIOS_EN: PScenario[] = [
     run: (rule) => rule
       ? { steps: [
             { at: "acm", jump: true, state: "wait", tag: "25 DAYS", msg: "An externally **imported** certificate: ACM **does not renew it automatically**. Certificates issued by ACM are renewed automatically by ACM." },
-            { at: "config", state: "change", tag: "NON_COMPLIANT", flash: "< 30 days", msg: "The `acm-certificate-expiration-check` rule with `daysToExpiration = 30` (the default is 14; ShopViet has set it to 30) marks the certificate NON_COMPLIANT." },
+            { at: "config", state: "change", tag: "NON_COMPLIANT", flash: "< 30 days", msg: "The `acm-certificate-expiration-check` rule with `daysToExpiration = 30` (the default is 14; MFTECH has set it to 30) marks the certificate NON_COMPLIANT." },
             { at: "eb", state: "pass", msg: "The \"Config Rules Compliance Change\" event matches an EventBridge rule." },
             { at: "sns", state: "pass", msg: "An email is sent through the security team's topic." },
             { at: "team", state: "pass", msg: "There is almost a month left to buy and import a new certificate." }],
           ok: true, back: false,
-          result: "No script to write and no server to maintain. The managed rule is ready to use; the `daysToExpiration` parameter defaults to 14 days and can be reconfigured." }
+          result: "No script to write and no EC2 instance to run it on. The managed rule is ready to use; the `daysToExpiration` parameter defaults to 14 days and can be reconfigured." }
       : { steps: [
             { at: "acm", jump: true, state: "wait", tag: "25 DAYS", msg: "The imported certificate is not renewed automatically, and its expiration date is not monitored." },
             { at: "config", state: "skip", msg: "No rule is evaluating yet." }],

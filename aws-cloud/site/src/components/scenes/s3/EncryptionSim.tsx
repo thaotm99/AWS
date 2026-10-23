@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./s3-sims.css";
 
-// ShopViet uploads three invoices with each S3 encryption option and watches where the
+// MFTECH uploads three invoices with each S3 encryption option and watches where the
 // data is encrypted, where the key lives, and how many times KMS is called (and logged).
 // Source questions: exam2_q10, exam6_q51, exam3_q24, exam1_q22, exam5_q46.
 
@@ -27,7 +27,7 @@ const SCENARIOS: Scenario[] = [
   { id: "bucket-key", name: { vi: "Chi phí gọi KMS tăng đột biến", en: "KMS request costs spike" }, method: "SSE-KMS + S3 Bucket Key",
     toggle: { label: { vi: "Bật S3 Bucket Key", en: "Enable S3 Bucket Key" }, initial: false },
     result: (on, n) => on
-      ? { vi: `Chỉ ${n} lần gọi KMS: S3 tạo một **bucket key** ngắn hạn, sau đó tự sinh data key cho các object tiếp theo. Phương thức vẫn là SSE-KMS, nhưng số request tới KMS và chi phí giảm đáng kể.`, en: `Only ${n} KMS call: S3 creates a short-lived **bucket key** and then generates data keys for the following objects itself. The method is still SSE-KMS, but requests to KMS and their cost drop significantly.` }
+      ? { vi: `Chỉ ${n} lần gọi KMS: S3 tạo một **S3 Bucket Key** ngắn hạn, sau đó tự sinh data key cho các object tiếp theo. Phương thức vẫn là SSE-KMS, nhưng số request tới KMS và chi phí giảm đáng kể.`, en: `Only ${n} KMS call: S3 creates a short-lived **S3 Bucket Key** and then generates data keys for the following objects itself. The method is still SSE-KMS, but requests to KMS and their cost drop significantly.` }
       : { vi: `${n} lần gọi KMS cho ${n} object. Với hàng triệu object mỗi ngày, chi phí KMS rất lớn. Bật **S3 Bucket Key** và tải lên lại để so sánh.`, en: `${n} KMS calls for ${n} objects. With millions of objects a day, the KMS cost is very high. Enable **S3 Bucket Key** and upload again to compare.` } },
   { id: "sse-c", name: { vi: "Key lưu giữ tại máy chủ công ty", en: "Keys kept on company servers" }, method: "SSE-C",
     result: () => ({ vi: "Key được gửi kèm từng request (bắt buộc HTTPS). S3 **không lưu key**. Khi đọc, request phải kèm đúng key đó; mất key đồng nghĩa với mất object. Từ tháng 4/2026, SSE-C bị **chặn mặc định** trên bucket general purpose mới; phải đặt `BlockedEncryptionTypes` = `NONE` bằng PutBucketEncryption trước khi tải lên, nếu không request trả về 403 AccessDenied.", en: "The key is sent with every request (HTTPS is required). S3 **does not store the key**. To read, the request must include that same key; losing the key means losing the object. Since April 2026, SSE-C is **blocked by default** on new general purpose buckets; you must set `BlockedEncryptionTypes` = `NONE` with PutBucketEncryption before uploading, otherwise the request returns 403 AccessDenied." }) },
@@ -39,7 +39,7 @@ const POS: Record<NodeId, Pt> = {
   app: [100, 120], keys: [100, 212], s3: [410, 120], kms: [410, 38], trail: [700, 38], disk: [700, 120],
 };
 const LABEL: Record<NodeId, { l1: Bi; l2: Bi; w: number }> = {
-  app: { l1: { vi: "App ShopViet", en: "ShopViet app" }, l2: { vi: "tải lên hoá đơn", en: "uploads invoices" }, w: 140 },
+  app: { l1: { vi: "App MFTECH", en: "MFTECH app" }, l2: { vi: "tải lên hoá đơn", en: "uploads invoices" }, w: 140 },
   keys: { l1: { vi: "Kho key nội bộ", en: "Internal key store" }, l2: { vi: "on-premises", en: "on-premises" }, w: 140 },
   s3: { l1: { vi: "Amazon S3", en: "Amazon S3" }, l2: { vi: "tiếp nhận object", en: "receives objects" }, w: 150 },
   kms: { l1: { vi: "AWS KMS", en: "AWS KMS" }, l2: { vi: "KMS key", en: "KMS key" }, w: 150 },
@@ -126,12 +126,12 @@ export default function EncryptionSim() {
             travel(L, [[POS.kms[0] + 75, POS.kms[1]], [POS.trail[0] - 85, POS.trail[1]]], 300 * fast, "pkt-edge", 4),
           ]);
           if (i === 0) {
-            add("KMS", "lock", m === "bucket-key" && on ? { vi: "Lần đầu tiên: S3 gọi KMS để tạo **bucket key** cho bucket.", en: "First time: S3 calls KMS to create a **bucket key** for the bucket." } : { vi: "S3 gọi **KMS** để yêu cầu data key cho object này.", en: "S3 calls **KMS** to request a data key for this object." });
+            add("KMS", "lock", m === "bucket-key" && on ? { vi: "Lần đầu tiên: S3 gọi KMS để tạo **S3 Bucket Key** cho bucket.", en: "First time: S3 calls KMS to create an **S3 Bucket Key** for the bucket." } : { vi: "S3 gọi **KMS** để yêu cầu data key cho object này.", en: "S3 calls **KMS** to request a data key for this object." });
             add("LOG", "hit", { vi: "Lần sử dụng key được ghi vào **CloudTrail**.", en: "The key use is recorded in **CloudTrail**." });
           }
         } else {
           flashText(L, POS.s3[0], POS.s3[1] - 34, tr({ vi: "sử dụng bucket key", en: "uses bucket key" }), "s3x-flash-edge", 700);
-          if (i === 1) add("S3", "miss", { vi: "Các object tiếp theo: S3 tự sinh data key từ **bucket key**, không gọi KMS.", en: "Following objects: S3 generates data keys from the **bucket key** without calling KMS." });
+          if (i === 1) add("S3", "miss", { vi: "Các object tiếp theo: S3 tự sinh data key từ **S3 Bucket Key**, không gọi KMS.", en: "Following objects: S3 generates data keys from the **S3 Bucket Key** without calling KMS." });
           await wait(300 * fast);
         }
       }
@@ -160,21 +160,21 @@ export default function EncryptionSim() {
   };
 
   return (
-    <div className="stage s3x">
-      <div className="s3x-row" role="group" aria-label={tr({ vi: "Tình huống", en: "Scenario" })}>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-3" role="group" aria-label={tr({ vi: "Tình huống", en: "Scenario" })}>
         {SCENARIOS.map((s, i) => (
           <button key={s.id} className="chip" aria-pressed={i === index} disabled={busy && i !== index} onClick={() => pick(i)}>{tr(s.name)}</button>
         ))}
       </div>
-      <div className="stage-bar">
-        <code className="s3x-req">{sc.method}</code>
+      <div className="stage-bar mt-3 border-t border-line">
+        <code className="rounded-[10px] border border-line bg-bg px-2 py-[3px] text-[0.8125rem] wrap-anywhere">{sc.method}</code>
         {sc.toggle && (
-          <label className="s3x-toggle">
+          <label className="inline-flex cursor-pointer items-center gap-1.5 text-step--1">
             <input type="checkbox" checked={on} disabled={busy} onChange={(e) => { setOn(e.target.checked); reset(); }} />
             {tr(sc.toggle.label)}
           </label>
         )}
-        <button className="btn primary" onClick={upload} disabled={busy}>{tr({ vi: "Tải lên 3 hoá đơn", en: "Upload 3 invoices" })}</button>
+        <button className="btn primary ml-auto" onClick={upload} disabled={busy}>{tr({ vi: "Tải lên 3 hoá đơn", en: "Upload 3 invoices" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 8 820 236" role="img" aria-label={tr({ vi: "Hoá đơn được gửi từ ứng dụng tới S3 rồi tới tầng lưu trữ; KMS, CloudTrail và kho key nội bộ tham gia tuỳ theo phương thức mã hoá", en: "Invoices travel from the application to S3 and then to storage; KMS, CloudTrail and the internal key store take part depending on the encryption method" })}>
@@ -190,7 +190,7 @@ export default function EncryptionSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="s3x-hint">{tr({ vi: <>Chọn một yêu cầu, sau đó nhấn <b>Tải lên 3 hoá đơn</b> để quan sát vị trí mã hoá dữ liệu và nơi lưu trữ key.</>, en: <>Choose a requirement, then press <b>Upload 3 invoices</b> to see where the data is encrypted and where the key is kept.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{tr({ vi: <>Chọn một yêu cầu, sau đó nhấn <b>Tải lên 3 hoá đơn</b> để quan sát vị trí mã hoá dữ liệu và nơi lưu trữ key.</>, en: <>Choose a requirement, then press <b>Upload 3 invoices</b> to see where the data is encrypted and where the key is kept.</> })}</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) =>
@@ -198,7 +198,7 @@ export default function EncryptionSim() {
                 <li key={i} className="s3x-result ok">{rich(tr(e.msg))}</li>
               ) : (
                 <li key={i}>
-                  <span className={`tag ${"cls" in e ? e.cls : ""}`}>{e.tag}</span>
+                  <span className={`tag ${"cls" in e ? (e.cls === "lock" ? "bg-accent-soft text-accent" : e.cls) : ""}`}>{e.tag}</span>
                   <span>{rich(tr(e.msg))}</span>
                 </li>
               ),

@@ -1,70 +1,58 @@
-/* Queue vs stream with shards (kinesis/ShardStreamSim), shared by the other Kinesis sims */
-.kss .stage-bar .kss-run { margin-left: auto; }
-.kss-src rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
-.kss-l1 { fill: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
-.kss-l2 { fill: var(--muted); font-family: var(--font-body); font-size: 10.5px; }
-.kss-link { fill: none; stroke: var(--line); stroke-width: 2; }
-.kss-shard rect { fill: var(--bg); stroke: var(--accent); stroke-width: 1.5; }
-.kss-shard text { fill: var(--muted); font-family: var(--font-body); font-size: 11px; font-weight: 600; }
-.kss-shard.queue rect { stroke: var(--muted); }
-.kss-app rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
-.kss-app.c0 rect { stroke: var(--accent); }
-.kss-app.c1 rect { stroke: var(--edge); }
-.kss-app.c2 rect { stroke: var(--ok); }
-.kss-ptr { transition: transform .4s ease; }
-.kss-ptr.c0 { fill: var(--accent); }
-.kss-ptr.c1 { fill: var(--edge); }
-.kss-ptr.c2 { fill: var(--ok); }
-.kss-rec { transition: transform .55s ease, opacity .4s; }
-.kss-rec rect { fill: var(--surface); stroke: var(--ink); stroke-width: 1.3; }
-.kss-rec text { fill: var(--ink); font-family: var(--font-mono); font-size: 11px; font-weight: 600; }
-.kss-rec.kA rect { fill: var(--accent-soft); stroke: var(--accent); }
-.kss-rec.kB rect { fill: var(--edge-soft); stroke: var(--edge); }
-.kss-rec.kC rect { fill: var(--ok-soft); stroke: var(--ok); }
-.kss-rec.hidden { opacity: 0; }
-.kss-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
-.kss-tag { white-space: nowrap; }
-.kss-tag.hit { background: var(--ok-soft); color: var(--ok); }
-.kss-tag.bad { background: var(--bad-soft); color: var(--bad); }
-.kss-tag.info { background: var(--bg); color: var(--muted); }
-.kss-tag.edge { background: var(--edge-soft); color: var(--edge); }
-.log li.kss-result { margin-top: 6px; padding: 8px 10px; border-radius: 8px; display: block; }
-.kss-result.ok { background: var(--ok-soft); }
-.kss-result.bad { background: var(--bad-soft); }
-@media (prefers-reduced-motion: reduce) { .kss-rec, .kss-ptr { transition: none; } }
+@reference "../../../styles/app.css";
 
-/* Shard limits over ten seconds (kinesis/ShardThroughputSim) */
-.kts-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
-.kts-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; overflow-wrap: anywhere; }
-.kts-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
-.kts .stage-bar .btn.primary { margin-left: auto; }
-.kts-flash { fill: var(--ok); font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; text-anchor: middle; }
-.kts-flash.bad { fill: var(--bad); }
-.kts-track { fill: var(--bg); stroke: var(--line); stroke-width: 1; }
-.kts-fill { fill: var(--ok); transition: width .3s ease; }
-.kts-fill.over { fill: var(--bad); }
-.kts-limit { stroke: var(--ink); stroke-width: 2; }
-.kts-grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
-.kts-col { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1; transition: opacity .2s; }
-.kts-col.over { fill: var(--bad-soft); stroke: var(--bad); }
-.kts-ghost { opacity: .25; }
-.kts-cap { fill: none; stroke: var(--ok); stroke-width: 3; stroke-linejoin: round; }
-.kts-pipe rect { fill: var(--bad-soft); stroke: var(--bad); stroke-width: 1.5; }
-.kts-lag { fill: var(--ok); font-family: var(--font-mono); font-size: 13px; font-weight: 700; }
-.kts-lag.bad { fill: var(--bad); }
-.kts-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
-.kts-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 8px; font-size: var(--step--1); }
-.kts-result.ok { background: var(--ok-soft); }
-.kts-result.bad { background: var(--bad-soft); }
+/* Kinesis lesson simulations: SVG parts of ShardStreamSim (kss-*, shared by the other Kinesis sims),
+   ShardThroughputSim (kts-*) and StreamPipelineSim (kpb-*), and the data-driven log tags. */
+@layer components {
+  /* Producer, shards (or a queue), consumer apps c0–c2 with their read pointers, and records kA–kC. */
+  .kss-src rect { @apply fill-surface stroke-line stroke-[1.5]; }
+  .kss-l1 { @apply fill-ink font-body text-[12px] font-semibold; }
+  .kss-l2 { @apply fill-muted font-body text-[10.5px]; }
+  .kss-link { @apply fill-none stroke-line stroke-2; }
+  .kss-shard rect { @apply fill-bg stroke-accent stroke-[1.5]; }
+  .kss-shard text { @apply fill-muted font-body text-[11px] font-semibold; }
+  .kss-shard.queue rect { @apply stroke-muted; }
+  .kss-app rect { @apply fill-surface stroke-line stroke-[1.5]; }
+  .kss-app.c0 rect { @apply stroke-accent; }
+  .kss-app.c1 rect { @apply stroke-edge; }
+  .kss-app.c2 rect { @apply stroke-ok; }
+  .kss-ptr { transition: transform .4s ease; }
+  .kss-ptr.c0 { @apply fill-accent; }
+  .kss-ptr.c1 { @apply fill-edge; }
+  .kss-ptr.c2 { @apply fill-ok; }
+  .kss-rec { transition: transform .55s ease, opacity .4s; }
+  .kss-rec rect { @apply fill-surface stroke-ink stroke-[1.3]; }
+  .kss-rec text { @apply fill-ink font-mono text-[11px] font-semibold; }
+  .kss-rec.kA rect { @apply fill-accent-soft stroke-accent; }
+  .kss-rec.kB rect { @apply fill-edge-soft stroke-edge; }
+  .kss-rec.kC rect { @apply fill-ok-soft stroke-ok; }
+  .kss-rec.hidden { @apply opacity-0; }
+  /* Log tag tinted by the step's tone (hit, bad, info, edge). */
+  .kss-tag { @apply whitespace-nowrap; }
+  .kss-tag.hit { @apply bg-ok-soft text-ok; }
+  .kss-tag.bad { @apply bg-bad-soft text-bad; }
+  .kss-tag.info { @apply bg-bg text-muted; }
+  .kss-tag.edge { @apply bg-edge-soft text-edge; }
 
-/* Pipeline builder (kinesis/StreamPipelineSim) */
-.kpb-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
-.kpb-about { margin: 10px 16px 6px; font-size: var(--step--1); }
-.kpb .stage-bar.kpb-slot { border-bottom: 0; padding-bottom: 4px; }
-.kpb .stage-bar.kpb-slot .label { min-width: 120px; }
-.kpb-note { font-size: var(--step--1); color: var(--muted); }
-.kpb .stage-bar .btn.primary { margin-left: auto; }
-.kpb-node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill .2s, stroke .2s; }
-.kpb-node.empty rect { stroke-dasharray: 5 4; fill: var(--bg); }
-.kpb-node.pass rect { fill: var(--ok-soft); stroke: var(--ok); }
-.kpb-node.block rect { fill: var(--bad-soft); stroke: var(--bad); }
+  /* ShardThroughputSim: usage bars (.over past the limit), the per-second chart and the consumer lag. */
+  .kts-flash { @apply fill-ok font-mono text-[10.5px] font-bold; text-anchor: middle; }
+  .kts-flash.bad { @apply fill-bad; }
+  .kts-track { @apply fill-bg stroke-line stroke-1; }
+  .kts-fill { @apply fill-ok; transition: width .3s ease; }
+  .kts-fill.over { @apply fill-bad; }
+  .kts-limit { @apply stroke-ink stroke-2; }
+  .kts-grid { @apply stroke-line stroke-1; stroke-dasharray: 3 4; }
+  .kts-col { @apply fill-accent-soft stroke-accent stroke-1; transition: opacity .2s; }
+  .kts-col.over { @apply fill-bad-soft stroke-bad; }
+  .kts-cap { @apply fill-none stroke-ok stroke-3; stroke-linejoin: round; }
+  .kts-pipe rect { @apply fill-bad-soft stroke-bad stroke-[1.5]; }
+  .kts-lag { @apply fill-ok font-mono text-[13px] font-bold; }
+  .kts-lag.bad { @apply fill-bad; }
+
+  /* StreamPipelineSim: a pipeline step (.empty until chosen, then .pass or .block). */
+  .kpb-node rect { @apply fill-surface stroke-line stroke-[1.5]; transition: fill .2s, stroke .2s; }
+  .kpb-node.empty rect { @apply fill-bg; stroke-dasharray: 5 4; }
+  .kpb-node.pass rect { @apply fill-ok-soft stroke-ok; }
+  .kpb-node.block rect { @apply fill-bad-soft stroke-bad; }
+
+  @media (prefers-reduced-motion: reduce) { .kss-rec, .kss-ptr { transition: none; } }
+}

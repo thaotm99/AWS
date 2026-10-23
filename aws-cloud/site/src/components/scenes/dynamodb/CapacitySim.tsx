@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./capacity-sim.css";
 
-// One day of reads on a ShopViet DynamoDB table, hour by hour. Bars are the reads the
+// One day of reads on a MFTECH DynamoDB table, hour by hour. Bars are the reads the
 // app sends (RCU); the line is the capacity the table has under the chosen mode. The
 // right panel shows how those reads land on four partitions, each capped at 3,000 RCU.
 // Simplified model: Auto Scaling sets capacity from the previous hour at 70% target
@@ -58,12 +58,12 @@ const NOTE: Record<PatternId, Record<ModeId, Bi>> = {
   shipper: {
     prov: { vi: "Auto Scaling cần vài phút để tăng capacity, nên các đợt tăng đột ngột bị **throttle**. Ban đêm gần như không có người dùng nhưng vẫn phát sinh phí cho capacity tối thiểu.", en: "Auto Scaling needs a few minutes to add capacity, so sudden bursts are **throttled**. At night there are almost no users, but you still pay for the minimum capacity." },
     od: { vi: "**On-Demand** tính phí theo từng request: ban đêm không có request thì không phát sinh phí đọc ghi, ban ngày tải tăng đột biến vẫn được phục vụ ngay. Phù hợp với tải không dự đoán được, có thời điểm gần bằng 0.", en: "**On-Demand** charges per request: with no requests at night there are no read or write charges, and daytime spikes are still served immediately. It suits unpredictable load that at times drops to almost zero." },
-    dax: { vi: "Vị trí shipper thay đổi liên tục nên tỷ lệ cache hit rất thấp. Cụm DAX chạy 24/7 nhưng gần như không giảm được tải.", en: "Shipper locations change constantly, so the cache hit ratio is very low. The DAX cluster runs 24/7 but barely reduces the load." },
+    dax: { vi: "Vị trí shipper thay đổi liên tục nên tỷ lệ cache hit rất thấp. DAX cluster chạy 24/7 nhưng gần như không giảm được tải trên bảng.", en: "Shipper locations change constantly, so the cache hit ratio is very low. The DAX cluster runs 24/7 but barely reduces the load." },
   },
   steady: {
     prov: { vi: "Tải ổn định, dự đoán được: **Provisioned + Auto Scaling** giữ capacity sát nhu cầu, đơn giá mỗi đơn vị capacity thấp hơn so với tính phí theo request. Đây là phương án chi phí thấp nhất cho mẫu tải này.", en: "Steady, predictable load: **Provisioned + Auto Scaling** keeps capacity close to demand, and the unit price of capacity is lower than per-request billing. This is the lowest-cost option for this load pattern." },
     od: { vi: "Hoạt động ổn định, không bị throttle. Tuy nhiên, với tải ổn định cả ngày, tính phí theo từng request có chi phí cao hơn cấp phát trước capacity.", en: "Runs smoothly with no throttling. However, with steady load all day, per-request billing costs more than provisioning capacity in advance." },
-    dax: { vi: "Hoạt động ổn định, nhưng bảng không gặp vấn đề về hiệu năng. Chi phí cụm DAX phát sinh mà không cần thiết.", en: "Runs smoothly, but the table has no performance problem. The DAX cluster cost is unnecessary." },
+    dax: { vi: "Hoạt động ổn định, nhưng bảng không gặp vấn đề về hiệu năng. Chi phí DAX cluster phát sinh mà không cần thiết.", en: "Runs smoothly, but the table has no performance problem. The DAX cluster cost is unnecessary." },
   },
   live: {
     prov: { vi: "Tổng capacity của bảng đủ đáp ứng, nhưng 70% lượt đọc tập trung vào **một partition**, vượt giới hạn 3.000 RCU của partition đó. Tăng RCU cho toàn bảng cũng không khắc phục được.", en: "The table has enough total capacity, but 70% of reads land on **one partition**, exceeding that partition’s 3,000 RCU limit. Adding RCUs to the whole table does not fix it." },
@@ -157,8 +157,8 @@ export default function CapacitySim() {
     : "";
 
   return (
-    <div className="stage dcap">
-      <div className="dcap-row" role="group" aria-label={L({ vi: "Mẫu tải", en: "Load pattern" })}>
+    <div className="stage">
+      <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Mẫu tải", en: "Load pattern" })}>
         {(Object.keys(PATTERNS) as PatternId[]).map((id) => (
           <button key={id} className="chip" aria-pressed={id === pattern} disabled={busy && id !== pattern} onClick={() => change(() => setPattern(id))}>
             {L(PATTERNS[id].name)}
@@ -172,9 +172,9 @@ export default function CapacitySim() {
             {m.name}
           </button>
         ))}
-        <button className="btn primary dcap-play" onClick={play} disabled={busy}>{L({ vi: "Mô phỏng một ngày", en: "Simulate one day" })}</button>
+        <button className="btn primary ml-auto" onClick={play} disabled={busy}>{L({ vi: "Mô phỏng một ngày", en: "Simulate one day" })}</button>
       </div>
-      <p className="dcap-about">{L(PATTERNS[pattern].about)}</p>
+      <p className="mx-4 mt-2.5 mb-0 text-step--1 text-muted">{L(PATTERNS[pattern].about)}</p>
       <div className="svg-wrap">
         <svg viewBox="0 0 820 268" role="img" aria-label={L({ vi: "Biểu đồ 24 giờ: cột là lượt đọc, đường là capacity của bảng; bên phải là tải trên bốn partition so với giới hạn 3.000 RCU", en: "24-hour chart: bars are reads, the line is the table capacity; on the right is the load on four partitions against the 3,000 RCU limit" })}>
           {[0, 3000, 6000, 9000].map((v) => (
@@ -238,18 +238,18 @@ export default function CapacitySim() {
       </div>
       <div className="readout" aria-live="polite">
         {shown < 0 ? (
-          <p className="dcap-hint">{L({ vi: <>Chọn mẫu tải và capacity mode, sau đó nhấn <b>Mô phỏng một ngày</b>. Mô hình đã được đơn giản hoá: Auto Scaling đặt capacity theo tải của giờ trước, với mức sử dụng mục tiêu 70%.</>, en: <>Choose a load pattern and a capacity mode, then press <b>Simulate one day</b>. The model is simplified: Auto Scaling sets capacity from the previous hour’s load, with a 70% target utilization.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn mẫu tải và capacity mode, sau đó nhấn <b>Mô phỏng một ngày</b>. Mô hình đã được đơn giản hoá: Auto Scaling đặt capacity theo tải của giờ trước, với mức sử dụng mục tiêu 70%.</>, en: <>Choose a load pattern and a capacity mode, then press <b>Simulate one day</b>. The model is simplified: Auto Scaling sets capacity from the previous hour’s load, with a 70% target utilization.</> })}</p>
         ) : (
           <>
             <div className="status">
               <span className="count">{shown}h · {fmt(now.need)} RCU{mode === "dax" ? L({ vi: ` · ${fmt(now.table)} tới bảng`, en: ` · ${fmt(now.table)} to the table` }) : ""}</span>
               <span className={"pill " + (throttled ? "bad" : "ok")}><i />{L({ vi: `${throttled} giờ bị throttle`, en: `${throttled} ${throttled === 1 ? "hour" : "hours"} throttled` })}</span>
-              {mode === "prov" && <span className="pill dcap-muted"><i />{L({ vi: `${fmt(idle)} RCU-giờ trả phí nhưng không sử dụng`, en: `${fmt(idle)} RCU-hours paid for but unused` })}</span>}
-              {mode === "od" && <span className="pill dcap-muted"><i />{L({ vi: "tính phí theo từng request", en: "billed per request" })}</span>}
-              {mode === "dax" && <span className="pill dcap-muted"><i />{L({ vi: "cụm DAX chạy liên tục 24 giờ", en: "DAX cluster runs 24 hours a day" })}</span>}
+              {mode === "prov" && <span className="pill border border-line bg-bg text-muted"><i />{L({ vi: `${fmt(idle)} RCU-giờ trả phí nhưng không sử dụng`, en: `${fmt(idle)} RCU-hours paid for but unused` })}</span>}
+              {mode === "od" && <span className="pill border border-line bg-bg text-muted"><i />{L({ vi: "tính phí theo từng request", en: "billed per request" })}</span>}
+              {mode === "dax" && <span className="pill border border-line bg-bg text-muted"><i />{L({ vi: "DAX cluster chạy liên tục 24 giờ", en: "DAX cluster runs 24 hours a day" })}</span>}
             </div>
             {done && (
-              <p className={`dcap-result ${fits ? "ok" : "bad"}`}>
+              <p className={`mx-0 mt-2.5 mb-0 rounded-[12px] px-2.5 py-2 text-step--1 ${fits ? "bg-ok-soft" : "bg-bad-soft"}`}>
                 <b>{fits ? L({ vi: "Phù hợp với mẫu tải này. ", en: "A good fit for this load pattern. " }) : L({ vi: "Chưa phù hợp. ", en: "Not a good fit. " })}</b>{rich(L(NOTE[pattern][mode]))}
               </p>
             )}

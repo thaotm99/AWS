@@ -27,37 +27,50 @@ const groups = (["learn", "review", "exercise"] as PartKind[])
   .map((kind) => ({ kind, items: parts.filter((p) => p.kind === kind).map(card) }))
   .filter((g) => g.items.length || (g.kind === "exercise" && quiz));
 const learnCount = parts.filter((p) => p.kind === "learn").length;
+
+// A part card; the script marks the next part to read (data-state="current") and the parts read.
+const cardClass =
+  "group flex flex-1 flex-col gap-1.5 rounded-[20px] border-2 bg-surface px-4 py-3.5 text-ink no-underline shadow-[0_4px_0_var(--color-line)] transition-[translate,border-color,background] duration-200 hover:-translate-y-0.5 data-[state=current]:border-accent data-[state=current]:bg-accent-soft data-[state=current]:shadow-[0_4px_0_var(--color-accent)]";
+// Review parts have an orange edge, exercises and the quiz a violet one.
+const border: Record<PartKind | "quiz", string> = {
+  learn: "border-line hover:border-accent",
+  review: "border-[color-mix(in_srgb,var(--color-edge)_35%,var(--color-line))]",
+  exercise: "border-[color-mix(in_srgb,var(--color-violet)_40%,var(--color-line))]",
+  quiz: "border-[color-mix(in_srgb,var(--color-violet)_40%,var(--color-line))]",
+};
+const meta = "flex justify-between gap-2 font-mono text-[0.75rem] text-muted";
+const head = "text-[0.98rem] leading-[1.35]";
 ---
-<section class="lp" id="parts" data-lesson={lesson} data-parts={JSON.stringify(parts.map((p) => p.slug))} aria-labelledby="lp-title">
+<section class="lp mt-7 mb-2 flex flex-col gap-[26px]" id="parts" data-lesson={lesson} data-parts={JSON.stringify(parts.map((p) => p.slug))} aria-labelledby="lp-title">
   <h2 class="sr-only" id="lp-title"><T k="lesson.parts.label" /></h2>
 
   {groups.map((g) => (
-    <div class:list={["lp-group", `lp-${g.kind}`]}>
-      <div class="lp-group-head">
-        <h3><T k={`lesson.parts.${g.kind}`} /></h3>
+    <div class="flex flex-col gap-3">
+      <div class="flex flex-wrap items-baseline gap-3 [&_span]:text-[0.8125rem] [&_span]:text-muted">
+        <h3 class="m-0 text-[1.05rem]"><T k={`lesson.parts.${g.kind}`} /></h3>
         <span><T k={`lesson.parts.${g.kind}Hint`} params={{ n: learnCount }} /></span>
       </div>
-      <ol class="lp-grid">
+      <ol class="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(min(230px,100%),1fr))] gap-3 p-0 max-sm:gap-2">
         {g.items.map((p) => (
-          <li>
-            <a class="lp-card" href={p.href} data-slug={p.slug} data-scene={p.id} data-kind={p.kind}>
-              <span class="lp-meta">
+          <li class="flex">
+            <a class:list={["lp-card", cardClass, border[p.kind]]} href={p.href} data-slug={p.slug} data-scene={p.id} data-kind={p.kind}>
+              <span class={meta}>
                 <span><L vi={p.label.vi} en={p.label.en} /> · <T k="lesson.parts.minutes" params={{ n: p.minutes }} /></span>
-                <span class="lp-state">
-                  <span class="lp-state-read"><T k="lesson.parts.read" /> ✓</span>
-                  <span class="lp-state-current"><T k="lesson.parts.current" /></span>
+                <span>
+                  <span class="hidden font-body font-semibold text-ok group-data-[state=read]:inline"><T k="lesson.parts.read" /> ✓</span>
+                  <span class="hidden font-body font-semibold text-accent group-data-[state=current]:inline"><T k="lesson.parts.current" /></span>
                 </span>
               </span>
-              <b class="lp-head"><L vi={p.head.vi} en={p.head.en} /></b>
-              {(p.sub.vi || p.sub.en) && <span class="lp-sub"><L vi={p.sub.vi} en={p.sub.en} /></span>}
+              <b class={`lp-head ${head}`}><L vi={p.head.vi} en={p.head.en} /></b>
+              {(p.sub.vi || p.sub.en) && <span class="text-[0.8125rem] leading-[1.5] text-muted"><L vi={p.sub.vi} en={p.sub.en} /></span>}
             </a>
           </li>
         ))}
         {g.kind === "exercise" && quiz ? (
-          <li>
-            <a class="lp-card" href={`/concepts/${lesson}/quiz/`} data-kind="quiz">
-              <span class="lp-meta"><span><T k="lesson.parts.quiz" /> · <T k="lesson.parts.quizCount" params={{ n: quiz }} /></span></span>
-              <b class="lp-head"><T k="lesson.parts.quiz" /></b>
+          <li class="flex">
+            <a class:list={["lp-card", cardClass, border.quiz]} href={`/concepts/${lesson}/quiz/`} data-kind="quiz">
+              <span class={meta}><span><T k="lesson.parts.quiz" /> · <T k="lesson.parts.quizCount" params={{ n: quiz }} /></span></span>
+              <b class={head}><T k="lesson.parts.quiz" /></b>
             </a>
           </li>
         ) : null}

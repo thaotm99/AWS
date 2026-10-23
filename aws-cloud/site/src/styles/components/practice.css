@@ -1,0 +1,379 @@
+/* Practice tests (modules/practice): pieces shared by several practice views, or whose look depends on state
+   classes set from script. One-off layout lives as utilities in the components themselves. */
+
+/* Secondary line of text: hints, counts, loading and empty messages. */
+.pr-muted {
+  @apply m-0 text-step--1 text-pretty text-muted;
+}
+
+/* Error message box (also the crash panel of PageBoundary). */
+.pr-error {
+  @apply mx-0 mt-3 mb-0 max-w-none rounded-sm bg-bad-soft px-3.5 py-2.5 text-bad;
+}
+
+/* Question, option and explanation HTML from the question data: paragraphs, pictures and code blocks.
+   The class is also DiagramZoom's hook for zoomable pictures (.pr-html img). */
+.pr-html {
+  @apply min-w-0 wrap-anywhere;
+
+  & p {
+    @apply mx-0 mt-0 mb-2.5 max-w-none;
+  }
+  & p:last-child {
+    @apply mb-0;
+  }
+  & img {
+    @apply h-auto max-w-full rounded-[10px] border border-line bg-white;
+  }
+  & img[data-zoom] {
+    @apply cursor-zoom-in;
+  }
+  & pre {
+    @apply overflow-x-auto rounded-[10px] bg-bg p-2.5 text-[0.875rem];
+  }
+}
+
+/* Status pill of a test (catalog) or a result: not started, in progress, passed, failed. */
+.pr-badge {
+  @apply rounded-full border border-line px-2.5 py-0.5 text-step--1 font-semibold whitespace-nowrap text-muted;
+
+  &.pass {
+    @apply border-transparent bg-ok-soft text-ok;
+  }
+  &.fail {
+    @apply border-transparent bg-bad-soft text-bad;
+  }
+  &.wip {
+    @apply border-transparent bg-edge-soft text-edge;
+  }
+}
+
+/* Heading row of a test run: the title, and a button on the right when there is one. */
+.pr-run-head {
+  @apply flex flex-wrap items-center justify-between gap-3;
+
+  & h1 {
+    @apply my-2.5 text-step-2;
+  }
+}
+
+/* Button row under a question, a result or the crash message. */
+.pr-actions {
+  @apply mt-4.5 flex flex-wrap items-center justify-between gap-2.5;
+
+  & .btn {
+    @apply px-4 py-2 font-semibold no-underline;
+  }
+}
+
+/* Numbered grid of questions (question map and mock exam overview). Buttons carry their state as classes:
+   r / w answered right or wrong, cur the open question; in the mock exam done and flag. */
+.pr-grid {
+  @apply mt-2.5 grid grid-cols-[repeat(auto-fill,minmax(34px,1fr))] gap-1;
+
+  & button {
+    @apply cursor-pointer rounded-[5px] border border-line bg-surface px-0 py-[5px] font-mono text-[0.8125rem] tabular-nums;
+    @apply disabled:cursor-default disabled:opacity-40;
+  }
+  & button.r {
+    @apply border-ok bg-ok-soft text-ok;
+  }
+  & button.w {
+    @apply border-bad bg-bad-soft text-bad;
+  }
+  & button.cur {
+    @apply outline-2 outline-offset-1 outline-accent;
+  }
+}
+.pr-mock-grid {
+  & button {
+    @apply min-h-10;
+  }
+  & button.done {
+    @apply border-accent bg-accent-soft text-ink;
+  }
+  & button.flag {
+    @apply inset-shadow-[0_-3px_0] inset-shadow-edge;
+  }
+}
+
+/* Nothing to review: shown by the review plan and by an empty review session. */
+.pr-empty-review {
+  @apply mt-3 rounded-[18px] border border-dashed border-line bg-surface p-5;
+
+  & p {
+    @apply mx-0 mt-0 mb-2;
+  }
+}
+
+/* Answer option (QuestionCard): presses like a key. State comes from the markup: aria-checked while choosing,
+   then the classes right / wrong / faded once answered (and multi for a select-several question). */
+.pr-option {
+  @apply grid w-full cursor-pointer grid-cols-[26px_minmax(0,1fr)_auto] items-start gap-2.5 rounded-[14px] border-2 border-line bg-surface px-3.5 py-3 text-left leading-normal;
+  @apply shadow-[0_3px_0] shadow-line motion-reduce:transition-none;
+  @apply enabled:hover:border-accent disabled:cursor-default;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, border-color 0.15s ease;
+
+  &[aria-checked="true"] {
+    @apply border-accent bg-accent-soft shadow-accent;
+  }
+  &.right {
+    @apply border-ok bg-ok-soft shadow-ok;
+  }
+  &.wrong {
+    @apply border-bad bg-bad-soft shadow-bad;
+  }
+  &.faded {
+    @apply opacity-60;
+  }
+  &:active:enabled {
+    @apply translate-y-0.5 shadow-[0_1px_0] shadow-line motion-reduce:translate-none;
+  }
+}
+
+/* Option letter: a circle (a square for multi), filled with the state color. */
+.pr-key {
+  @apply grid h-6 w-6 place-items-center rounded-full border border-line font-display text-[0.8125rem] font-semibold text-muted;
+
+  .multi > & {
+    @apply rounded-[5px];
+  }
+  [aria-checked="true"] > & {
+    @apply border-accent bg-accent text-surface;
+  }
+  .right > & {
+    @apply border-ok bg-ok text-surface;
+  }
+  .wrong > & {
+    @apply border-bad bg-bad text-surface;
+  }
+}
+
+/* "Correct" / "Your answer" label at the end of an answered option. */
+.pr-tag {
+  @apply self-center text-[0.75rem] font-bold tracking-[0.06em] uppercase;
+
+  .right > & {
+    @apply text-ok;
+  }
+  .wrong > & {
+    @apply text-bad;
+  }
+}
+
+/* Animated diagram under a verdict (illustrations/IllustrationPanel). DiagramZoom opens the panel full screen by
+   giving it .zoomed; on a phone held upright it also sets html.zoom-rotate, and the rotated view then pads the
+   panel itself. */
+.pr-illus {
+  @apply mx-0 mt-1 mb-2.5 min-w-0 rounded-sm bg-surface;
+
+  :where(html:not(.zoom-rotate)) & {
+    @apply px-3.5 py-3;
+  }
+}
+
+/* Title, one tab per option, and the full-screen button. */
+.pr-illus-head {
+  @apply mb-2.5 flex flex-wrap items-center gap-x-3.5 gap-y-2;
+
+  :where(html.zoom-rotate .zoomed) & {
+    @apply gap-x-1.5 gap-y-1 py-1;
+  }
+}
+
+/* Option tab: outlined green for a correct option, red for a wrong pick; the open one is filled. */
+.pr-illus-tab {
+  @apply inline-flex cursor-pointer items-baseline gap-1.5 rounded-full border-[1.5px] border-line bg-surface px-[11px] py-0.5 text-step--1 font-medium;
+  @apply hover:border-accent;
+
+  &.right {
+    @apply border-ok;
+  }
+  &.wrong {
+    @apply border-bad;
+  }
+  &[aria-selected="true"] {
+    @apply border-ink bg-ink text-bg;
+  }
+  :where(html.zoom-rotate .zoomed) & {
+    @apply px-[9px] py-[3px] text-[0.75rem];
+  }
+}
+.pr-illus-tag {
+  @apply text-[0.75rem] font-bold tracking-[0.05em] text-ok uppercase;
+
+  .wrong > & {
+    @apply text-bad;
+  }
+  [aria-selected="true"] > & {
+    @apply text-inherit opacity-85;
+  }
+}
+
+/* Drawing area: scrolls sideways on a narrow screen; full screen, the drawing scales to fill it. */
+.pr-illus-frame {
+  @apply overflow-x-auto rounded-sm border border-line bg-bg;
+
+  & svg {
+    @apply block h-auto w-full;
+  }
+  .zoomed & {
+    @apply flex min-h-[120px] flex-auto overflow-hidden;
+  }
+  .zoomed & svg {
+    @apply h-full max-h-none w-full min-w-0!;
+  }
+}
+
+/* Play button and step dots under the drawing. */
+.pr-illus-bar {
+  @apply mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-2;
+
+  & .btn {
+    @apply px-3 py-1 text-step--1 font-semibold;
+  }
+  :where(html.zoom-rotate .zoomed) & .btn {
+    @apply px-[9px] py-[3px] text-[0.75rem];
+  }
+}
+
+/* Drawing internals, from the illustration spec: zones by tone (t-*), nodes by kind (k-*), and the state a step
+   gives a node, link or badge (ok, warn, bad, dim). */
+.pr-illus-zone {
+  & rect {
+    @apply fill-none stroke-muted stroke-[1.2];
+    stroke-dasharray: 5 4;
+  }
+  & text {
+    @apply fill-muted font-mono text-[10.5px] font-medium;
+  }
+  &.t-region rect {
+    @apply stroke-accent;
+  }
+  &.t-region text {
+    @apply fill-accent;
+  }
+  &.t-vpc rect {
+    @apply stroke-ok;
+    stroke-dasharray: none;
+  }
+  &.t-vpc text {
+    @apply fill-ok;
+  }
+  &.t-account rect {
+    @apply stroke-violet;
+  }
+  &.t-account text {
+    @apply fill-violet;
+  }
+  &.t-onprem rect {
+    @apply stroke-edge;
+  }
+  &.t-onprem text {
+    @apply fill-edge;
+  }
+  &.t-az rect {
+    stroke-dasharray: 2 4;
+  }
+}
+
+.pr-illus-link {
+  @apply stroke-line stroke-2;
+  transition: stroke 0.25s;
+
+  &.ok {
+    @apply stroke-ok;
+  }
+  &.warn {
+    @apply stroke-edge;
+  }
+  &.bad {
+    @apply stroke-bad;
+  }
+}
+
+.pr-illus-node {
+  & rect {
+    @apply fill-surface stroke-line stroke-[1.5];
+    transition: fill 0.2s, stroke 0.2s, opacity 0.2s;
+  }
+  & .nt {
+    @apply fill-ink font-body text-[12px] font-semibold;
+  }
+  & .ns {
+    @apply fill-muted font-body text-[10px];
+  }
+  &.k-actor rect {
+    @apply stroke-ink;
+    stroke-dasharray: 3 3;
+  }
+  &.k-service rect {
+    @apply fill-accent-soft stroke-accent;
+  }
+  &.k-data rect {
+    @apply stroke-accent;
+  }
+  &.k-onprem rect {
+    @apply fill-edge-soft stroke-edge;
+  }
+  &.k-ghost rect {
+    @apply fill-bg stroke-muted;
+    stroke-dasharray: 4 3;
+  }
+  &.k-ghost .nt {
+    @apply fill-muted;
+  }
+  &.ok rect {
+    @apply fill-ok-soft stroke-ok;
+    stroke-dasharray: none;
+  }
+  &.warn rect {
+    @apply fill-edge-soft stroke-edge;
+    stroke-dasharray: none;
+  }
+  &.bad rect {
+    @apply fill-bad-soft stroke-bad;
+    stroke-dasharray: none;
+  }
+  &.dim {
+    @apply opacity-40;
+  }
+}
+
+.pr-illus-badge {
+  & rect {
+    @apply fill-surface stroke-[1.2];
+  }
+  & text {
+    @apply font-mono text-[10.5px] font-semibold;
+  }
+  &.ok rect {
+    @apply fill-ok-soft stroke-ok;
+  }
+  &.ok text {
+    @apply fill-ok;
+  }
+  &.warn rect {
+    @apply fill-edge-soft stroke-edge;
+  }
+  &.warn text {
+    @apply fill-edge;
+  }
+  &.bad rect {
+    @apply fill-bad-soft stroke-bad;
+  }
+  &.bad text {
+    @apply fill-bad;
+  }
+}
+
+/* Red cross on a node that stops the request. */
+.pr-illus-stop {
+  & circle {
+    @apply fill-bad;
+  }
+  & path {
+    @apply stroke-surface stroke-2;
+    stroke-linecap: round;
+  }
+}

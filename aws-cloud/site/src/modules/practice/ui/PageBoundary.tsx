@@ -46,8 +46,8 @@ export default class PageBoundary extends Component<{ children: ReactNode }, Sta
     if (!error) return this.props.children;
     const { t } = i18n.translator();
     return (
-      <div className="pr-error pr-crash" role="alert">
-        <h2>{t("practice.crash.title")}</h2>
+      <div className="pr-error" role="alert">
+        <h2 className="text-step-1">{t("practice.crash.title")}</h2>
         <p>{t("practice.crash.body")}</p>
         <div className="pr-actions">
           <button type="button" className="btn primary" onClick={() => location.reload()}>{t("practice.crash.reload")}</button>
@@ -55,7 +55,7 @@ export default class PageBoundary extends Component<{ children: ReactNode }, Sta
         </div>
         <details>
           <summary>{t("practice.crash.details")}</summary>
-          <pre>{`${error.name}: ${error.message}\n${error.stack ?? ""}`}</pre>
+          <pre className="max-h-60 overflow-auto rounded-[10px] bg-bg p-2.5 text-[0.75rem] whitespace-pre-wrap">{`${error.name}: ${error.message}\n${error.stack ?? ""}`}</pre>
         </details>
       </div>
     );

@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./asg-sims.css";
 
-// One day of ShopViet traffic, hour by hour. Bars are how many EC2 instances the load
+// One day of MFTECH traffic, hour by hour. Bars are how many EC2 instances the load
 // really needs; the line is how many the Auto Scaling group runs under the chosen
 // scaling policy. Red bars are hours when customers wait. Each load pattern has a
 // policy that fits it: predictive for daily cycles, scheduled for a known sale,
@@ -176,8 +176,8 @@ export default function ScalingPolicySim() {
   const line = cap.slice(0, visible).map((c, h) => `${h ? "L" : "M"}${X0 + h * bw} ${y(c)} H${X0 + (h + 1) * bw}`).join(" ");
 
   return (
-    <div className="stage sps">
-      <div className="sps-row" role="group" aria-label={L({ vi: "Dạng tải trong ngày", en: "Daily load pattern" })}>
+    <div className="stage">
+      <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Dạng tải trong ngày", en: "Daily load pattern" })}>
         {(Object.keys(PATTERNS) as PatternId[]).map((id) => (
           <button key={id} className="chip" aria-pressed={id === pattern} disabled={busy && id !== pattern} onClick={() => change(() => setPattern(id))}>
             {L(PATTERNS[id].name)}
@@ -191,9 +191,9 @@ export default function ScalingPolicySim() {
             {typeof p.name === "string" ? p.name : L(p.name)}
           </button>
         ))}
-        <button className="btn primary sps-play" onClick={play} disabled={busy}>{L({ vi: "Chạy một ngày", en: "Run one day" })}</button>
+        <button className="btn primary ml-auto" onClick={play} disabled={busy}>{L({ vi: "Chạy một ngày", en: "Run one day" })}</button>
       </div>
-      <p className="sps-about">{L(PATTERNS[pattern].about)}</p>
+      <p className="mx-4 mt-2.5 mb-0 text-step--1 text-muted">{L(PATTERNS[pattern].about)}</p>
       <div className="svg-wrap">
         <svg viewBox="0 0 820 248" role="img" aria-label={L({ vi: "Biểu đồ 24 giờ: cột là số instance tải yêu cầu, đường là số instance Auto Scaling group đang chạy", en: "24-hour chart: bars are the instances the load needs, the line is the instances the Auto Scaling group runs" })}>
           {[0, 4, 8, 12].map((v) => (
@@ -213,7 +213,7 @@ export default function ScalingPolicySim() {
           {Array.from({ length: HOURS / 3 }, (_, i) => i * 3).map((h) => (
             <text key={h} className="ts" x={X0 + h * bw + bw / 2} y={y(0) + 16} textAnchor="middle">{h}h</text>
           ))}
-          <g className="sps-legend" transform={`translate(${X0} 240)`}>
+          <g transform={`translate(${X0} 240)`}>
             <rect className="sps-bar" x={0} y={-9} width={12} height={10} rx={2} />
             <text className="ts" x={18} y={0}>{L({ vi: "nhu cầu (instance)", en: "demand (instances)" })}</text>
             <rect className="sps-bar over" x={150} y={-9} width={12} height={10} rx={2} />
@@ -226,16 +226,16 @@ export default function ScalingPolicySim() {
       </div>
       <div className="readout" aria-live="polite">
         {shown < 0 ? (
-          <p className="sps-hint">{L({ vi: <>Chọn dạng tải và scaling policy, sau đó nhấn <b>Chạy một ngày</b>.</>, en: <>Pick a load pattern and a scaling policy, then press <b>Run one day</b>.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn dạng tải và scaling policy, sau đó nhấn <b>Chạy một ngày</b>.</>, en: <>Pick a load pattern and a scaling policy, then press <b>Run one day</b>.</> })}</p>
         ) : (
           <>
             <div className="status">
               <span className="count">{L({ vi: `Thời điểm ${shown}h · ${cap[shown]} instance đang chạy`, en: `Time ${shown}h · ${cap[shown]} instances running` })}</span>
               <span className={"pill " + (over ? "bad" : "ok")}><i />{L({ vi: `${over} giờ thiếu capacity`, en: `${over} hours short of capacity` })}</span>
-              <span className="pill sps-idle"><i />{L({ vi: `${idle} instance-giờ nhàn rỗi`, en: `${idle} idle instance-hours` })}</span>
+              <span className="pill border border-line bg-bg text-muted"><i />{L({ vi: `${idle} instance-giờ nhàn rỗi`, en: `${idle} idle instance-hours` })}</span>
             </div>
             {done && (
-              <p className={`sps-result ${fits ? "ok" : "bad"}`}>
+              <p className={`mx-0 mt-2.5 mb-0 rounded-[12px] px-2.5 py-2 text-step--1 ${fits ? "bg-ok-soft" : "bg-bad-soft"}`}>
                 <b>{fits ? L({ vi: "Phù hợp với dạng tải này. ", en: "Fits this load pattern. " }) : L({ vi: "Chưa phù hợp. ", en: "Not a good fit. " })}</b>{rich(L(NOTE[pattern][policy]))}
               </p>
             )}

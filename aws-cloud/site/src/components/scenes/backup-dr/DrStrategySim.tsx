@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./dr-strategy-sim.css";
 
-// ShopViet runs in Singapore and keeps a disaster recovery copy in Tokyo. Pick how much
+// MFTECH runs in Singapore and keeps a disaster recovery copy in Tokyo. Pick how much
 // the business can lose (a target), pick one of the four DR strategies, then take
 // Singapore down. The Tokyo side comes up step by step while a clock runs; the timeline
 // below shows the data lost before the outage (RPO) and the downtime after it (RTO)
@@ -40,7 +40,7 @@ const ROUTE: Bi = { vi: "Route 53 định tuyến người dùng sang Tokyo.", e
 
 const STRATS: Record<StratId, Strategy> = {
   br: {
-    name: "Backup & restore",
+    name: "Backup and restore",
     about: { vi: "Tokyo chỉ lưu **bản backup**: snapshot database mỗi 4 giờ và (nếu đã copy) AMI của web. Không có instance nào đang chạy.",
       en: "Tokyo keeps only **backups**: a database snapshot every 4 hours and (if copied) the web AMI. No instances are running." },
     cost: 120,
@@ -61,8 +61,8 @@ const STRATS: Record<StratId, Strategy> = {
   },
   pilot: {
     name: "Pilot light",
-    about: { vi: "Phần lõi luôn hoạt động: **database replica** tại Tokyo nhận dữ liệu liên tục. Web server ở trạng thái **tắt** và được khởi tạo từ AMI khi cần.",
-      en: "The core is always running: a **database replica** in Tokyo receives data continuously. Web servers are **off** and are launched from the AMI when needed." },
+    about: { vi: "Phần lõi luôn hoạt động: **database replica** tại Tokyo nhận dữ liệu liên tục. EC2 instance của web tier chưa chạy (**tắt**) và được launch từ AMI khi cần.",
+      en: "The core is always running: a **database replica** in Tokyo receives data continuously. Web tier EC2 instances are not running (**off**) and are launched from the AMI when needed." },
     cost: 450,
     rpo: 5 / 60,
     usesAmi: true,
@@ -81,8 +81,8 @@ const STRATS: Record<StratId, Strategy> = {
   },
   warm: {
     name: "Warm standby",
-    about: { vi: "Một **phiên bản thu nhỏ nhưng đầy đủ chức năng** luôn hoạt động tại Tokyo: 1 web server kích thước nhỏ và database replica. Khi có sự cố chỉ cần scale lên.",
-      en: "A **scaled-down but fully functional copy** is always running in Tokyo: 1 small web server and a database replica. On failure, it only needs to scale up." },
+    about: { vi: "Một **phiên bản thu nhỏ nhưng đầy đủ chức năng** luôn hoạt động tại Tokyo: 1 EC2 instance của web tier với instance type nhỏ và database replica. Khi có sự cố chỉ cần scale lên.",
+      en: "A **scaled-down but fully functional copy** is always running in Tokyo: 1 web tier EC2 instance of a small instance type and a database replica. On failure, it only needs to scale up." },
     cost: 1300,
     rpo: 5 / 60,
     usesAmi: false,
@@ -98,7 +98,7 @@ const STRATS: Record<StratId, Strategy> = {
     ],
   },
   multi: {
-    name: "Multi-site active-active",
+    name: "Multi-site active/active",
     about: { vi: "Tokyo là **một site đầy đủ** đang phục vụ người dùng đồng thời với Singapore. Database cho phép ghi tại cả hai Region.",
       en: "Tokyo is **a full site** serving users at the same time as Singapore. The database accepts writes in both Regions." },
     cost: 3200,
@@ -235,7 +235,7 @@ export default function DrStrategySim() {
     await wait(150);
     setPhase("down");
     flashText(layer, 180, 136, L({ vi: "Region gặp sự cố", en: "Region failure" }), "drs-flash bad", 1300);
-    setLog([{ vi: `Toàn bộ Region Singapore mất điện. Dữ liệu chỉ còn tới bản sao gần nhất tại Tokyo: **mất ${fmt(S.rpo)}** dữ liệu đơn hàng.`, en: `The entire Singapore Region loses power. Data survives only up to the latest copy in Tokyo: **${fmtEn(S.rpo)}** of order data is **lost**.` }]);
+    setLog([{ vi: `Toàn bộ Region Singapore ngừng hoạt động. Dữ liệu chỉ còn tới bản sao gần nhất tại Tokyo: **mất ${fmt(S.rpo)}** dữ liệu đơn hàng.`, en: `The entire Singapore Region becomes unavailable. Data survives only up to the latest copy in Tokyo: **${fmtEn(S.rpo)}** of order data is **lost**.` }]);
     await wait(700);
     let t = 0;
     for (const step of S.steps(ami)) {
@@ -266,16 +266,16 @@ export default function DrStrategySim() {
   const rtoBad = elapsed > T.rto;
 
   return (
-    <div className="stage drs">
-      <div className="drs-row" role="group" aria-label={L({ vi: "Mục tiêu của ShopViet", en: "ShopViet objectives" })}>
-        <span className="drs-label">{L({ vi: "Mục tiêu", en: "Objective" })}</span>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Mục tiêu của MFTECH", en: "MFTECH objectives" })}>
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Mục tiêu", en: "Objective" })}</span>
         {(Object.keys(TARGETS) as TargetId[]).map((id) => (
           <button key={id} className="chip" aria-pressed={id === target} disabled={busy && id !== target} onClick={() => change(() => { setTarget(id); reset(); })}>
             {L(TARGETS[id].name)}
           </button>
         ))}
       </div>
-      <p className="drs-about">{L(T.about)} <b>RPO ≤ {fm(T.rpo)}, RTO ≤ {fm(T.rto)}.</b></p>
+      <p className="mx-4 mt-2 mb-2.5 text-step--1 text-muted [&_b]:text-ink">{L(T.about)} <b>RPO ≤ {fm(T.rpo)}, RTO ≤ {fm(T.rto)}.</b></p>
       <div className="stage-bar">
         <span className="label">{L({ vi: "Chiến lược", en: "Strategy" })}</span>
         {ORDER.map((id) => (
@@ -284,23 +284,23 @@ export default function DrStrategySim() {
           </button>
         ))}
       </div>
-      <div className="stage-bar">
+      <div className="stage-bar pt-0">
         {S.usesAmi ? (
-          <label className="drs-toggle">
+          <label className="inline-flex cursor-pointer items-center gap-1.5 text-step--1">
             <input type="checkbox" checked={ami} disabled={busy} onChange={(e) => { setAmi(e.target.checked); reset(strat, e.target.checked); }} />
             {L({ vi: "Đã copy AMI của web sang Tokyo", en: "Web AMI already copied to Tokyo" })}
           </label>
         ) : (
-          <span className="drs-note">{L({ vi: "Web tại Tokyo đã chạy sẵn, không cần launch từ AMI.", en: "The web tier in Tokyo is already running; no launch from an AMI is needed." })}</span>
+          <span className="text-step--1 text-muted">{L({ vi: "Web tại Tokyo đã chạy sẵn, không cần launch từ AMI.", en: "The web tier in Tokyo is already running; no launch from an AMI is needed." })}</span>
         )}
-        <button className="btn primary drs-play" onClick={run} disabled={busy}>{L({ vi: "Mô phỏng sự cố Singapore", en: "Simulate Singapore failure" })}</button>
+        <button className="btn primary ml-auto" onClick={run} disabled={busy}>{L({ vi: "Mô phỏng sự cố Singapore", en: "Simulate Singapore failure" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 0 820 390" role="img" aria-label={L({ vi: "Region Singapore chính và Region Tokyo dự phòng; bên dưới là trục thời gian thể hiện dữ liệu bị mất và thời gian gián đoạn", en: "The primary Singapore Region and the standby Tokyo Region; below, a timeline shows data lost and downtime" })}>
           <g className="drs-user">
             <circle cx={USER[0]} cy={USER[1] - 8} r={7} />
             <path d={`M${USER[0] - 13} ${USER[1] + 14} a13 13 0 0 1 26 0 z`} />
-            <text className="drs-t" x={USER[0] + 22} y={USER[1] + 6}>{L({ vi: "Người dùng ShopViet", en: "ShopViet users" })}</text>
+            <text className="drs-t" x={USER[0] + 22} y={USER[1] + 6}>{L({ vi: "Người dùng MFTECH", en: "MFTECH users" })}</text>
           </g>
           <path className="drs-link" d={`M${USER[0]} ${USER[1] + 16} V${R53[1] - 18}`} />
           <path className={"drs-link" + (phase === "ready" || strat === "multi" ? "" : " off")} d={`M${R53[0] - 60} ${R53[1]} H180 V${ROW - NH / 2}`} />
@@ -364,25 +364,25 @@ export default function DrStrategySim() {
         </svg>
       </div>
       <div className="readout" aria-live="polite">
-        <div className="drs-cost">
-          <span className="drs-cost-label">{L({ vi: "Chi phí duy trì Tokyo ở trạng thái sẵn sàng", en: "Cost of keeping Tokyo ready" })}</span>
-          <span className="drs-meter"><i style={{ width: `${(S.cost / COST_MAX) * 100}%` }} /></span>
+        <div className="mb-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <span className="text-step--1 font-semibold">{L({ vi: "Chi phí duy trì Tokyo ở trạng thái sẵn sàng", en: "Cost of keeping Tokyo ready" })}</span>
+          <span className="h-2.5 max-w-[260px] flex-[1_1_120px] overflow-hidden rounded-[999px] border border-line bg-bg"><i className="block h-full bg-accent transition-[width] duration-350 ease-[ease]" style={{ width: `${(S.cost / COST_MAX) * 100}%` }} /></span>
           <span className="count">~{S.cost.toLocaleString("en-US")} {L({ vi: "USD/tháng (minh hoạ)", en: "USD/month (illustrative)" })}</span>
         </div>
         {phase === "ready" ? (
-          <p className="drs-hint">{rich(L(S.about))} {L({ vi: <>Chọn <b>Mô phỏng sự cố Singapore</b> để xem thời gian khôi phục tại Tokyo.</>, en: <>Choose <b>Simulate Singapore failure</b> to see the recovery time in Tokyo.</> })}</p>
+          <p className="m-0 text-step--1 text-muted [&_b]:text-ink">{rich(L(S.about))} {L({ vi: <>Chọn <b>Mô phỏng sự cố Singapore</b> để xem thời gian khôi phục tại Tokyo.</>, en: <>Choose <b>Simulate Singapore failure</b> to see the recovery time in Tokyo.</> })}</p>
         ) : (
           <>
-            <ul className="log drs-log">
+            <ul className="log [&>li]:block">
               {log.map((l, i) => <li key={i}>{rich(L(l))}</li>)}
             </ul>
             {phase === "done" && (
               <>
-                <div className="status drs-status">
+                <div className="status mt-2.5">
                   <span className={"pill " + (rpoBad ? "bad" : "ok")}><i />RPO: {L({ vi: `mất ${fmt(S.rpo)}`, en: `${fmtEn(S.rpo)} lost` })}</span>
                   <span className={"pill " + (rtoBad ? "bad" : "ok")}><i />RTO: {fm(rto)}</span>
                 </div>
-                <p className={"drs-result " + (!ok ? "bad" : best === strat ? "ok" : "warn")}>
+                <p className={"mx-0 mt-2.5 mb-0 rounded-[12px] px-2.5 py-2 text-step--1 " + (!ok ? "bg-bad-soft" : best === strat ? "bg-ok-soft" : "bg-accent-soft")}>
                   {rich(L(
                     !ok
                       ? { vi: `Chưa đạt mục tiêu. ${S.usesAmi && !ami && meets(strat, target, true) ? "Nếu copy AMI sang Tokyo từ trước, mục tiêu sẽ đạt do loại bỏ được bước cài đặt ứng dụng. " : ""}Với mục tiêu này, phương án có chi phí thấp nhất vẫn đạt yêu cầu là **${STRATS[best].name}**.`,

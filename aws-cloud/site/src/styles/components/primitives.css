@@ -1,0 +1,186 @@
+/* Shared primitives used across lessons, practice, lab and tool pages: buttons, chips, cards, tags, pills,
+   hints, the simulation "stage" frame and form fields. Markup keeps these short class names; each variant
+   or state changes in one place here. */
+
+/* ---------- Buttons ----------
+   A key-like button with a ledge that presses down. Variants: .primary (filled), .danger (red label),
+   .cta (large call to action), .sun (yellow, on the indigo home banner), .check (on/off toggle with a box).
+   aria-pressed="true" marks the selected button in a group. */
+.btn {
+  @apply inline-flex min-h-10 cursor-pointer items-center justify-center rounded-sm border-2 border-solid border-line bg-surface px-4 py-2;
+  @apply font-display text-[0.9375rem] font-semibold text-ink shadow-[0_3px_0_var(--color-line)];
+  transition: transform .08s ease, box-shadow .08s ease, border-color .15s ease;
+
+  &:disabled { @apply cursor-default opacity-50; }
+  &.primary { @apply border-accent bg-accent text-on-accent shadow-[0_4px_0_var(--color-accent-strong)]; }
+  &.danger { @apply text-bad; }
+  &[aria-pressed="true"] { @apply border-ink bg-ink text-bg shadow-none; }
+
+  /* On/off toggle: a small box shows the state; off reads as "not satisfied". */
+  &.check { @apply gap-2 text-left; }
+  &.check[aria-pressed="true"] { @apply border-ok bg-ok-soft text-ink; }
+  &.check[aria-pressed="false"] { @apply border-bad bg-bad-soft; }
+  &.check .box { @apply inline-grid size-4 flex-none place-items-center rounded-[4px] border-[1.5px] border-current text-[12px] leading-none; }
+
+  &:hover:not(:disabled) { @apply border-accent; }
+  &:active:not(:disabled) { @apply translate-y-0.5 shadow-[0_1px_0_var(--color-line)]; }
+  &.primary:hover:not(:disabled) { @apply border-accent brightness-106; }
+  &.primary:active:not(:disabled) { @apply shadow-[0_1px_0_var(--color-accent-strong)]; }
+  &.primary:disabled { @apply border-line bg-line text-muted opacity-100 shadow-none; }
+
+  &.cta { @apply inline-flex min-h-13 rounded-md px-6.5 py-3 text-[1.0625rem] shadow-press-line; }
+  &.primary.cta { @apply shadow-press; }
+  &.cta:active { @apply translate-y-[3px]; }
+
+  &.sun { @apply border-sun bg-sun text-on-sun shadow-[0_5px_0_var(--color-sun-strong)]; }
+  &.sun:hover:not(:disabled) { @apply border-sun brightness-104; }
+}
+
+/* Link styled as a call to action (with .btn) or as a bare text link. */
+.cta { @apply inline-block no-underline; }
+
+/* ---------- Chips ----------
+   Pill-shaped toggle in filter rows and simulation option groups. */
+.chip {
+  @apply inline-flex min-h-8 cursor-pointer items-center justify-center gap-1.5 rounded-full border border-line bg-surface px-3 py-[5px];
+  @apply text-step--1 leading-[1.4] font-medium;
+  &[aria-pressed="true"] { @apply border-ink bg-ink text-bg; }
+  & code { @apply leading-[1.2]; }
+}
+
+/* ---------- Sort-game card ----------
+   Draggable term card; selected (aria-pressed), placed in the right bin, or shaking after a wrong drop. */
+.card {
+  @apply cursor-grab rounded-sm border border-line bg-bg px-3 py-1.5 text-step--1 font-semibold select-none;
+  &[aria-pressed="true"] { @apply border-accent bg-accent-soft text-accent; }
+  &.placed { @apply cursor-default border-ok bg-ok-soft text-ok; }
+  &.shake { @apply animate-[shake_.35s] border-bad text-bad motion-reduce:animate-none; }
+}
+@keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+/* ---------- Tags, pills, legends ---------- */
+/* Small label in an event log or a timing bar: HIT / MISS / info / error. */
+.tag {
+  @apply text-[0.75rem];
+  &.miss { @apply bg-edge-soft text-edge; }
+  &.hit { @apply bg-ok-soft text-ok; }
+  &.info { @apply bg-bg text-muted; }
+  &.bad { @apply bg-bad-soft text-bad; }
+}
+
+/* Status pill with a dot: healthy (.ok) or failing (.bad). */
+.pill {
+  @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-[3px] text-step--1 font-semibold;
+  &.ok { @apply bg-ok-soft text-ok; }
+  &.bad { @apply bg-bad-soft text-bad; }
+  & i { @apply inline-block size-2 rounded-full bg-current; }
+}
+
+/* Line-colour key under a diagram: each item is a short bar and a label. */
+.key {
+  @apply flex gap-3.5 text-step--1 text-muted;
+  & span { @apply inline-flex items-center gap-1.5; }
+  & i { @apply inline-block h-[3px] w-[18px] rounded-[2px]; }
+}
+
+/* Dot legend under the study roadmap: ring = not started, .r = ready, .d = done. */
+.legend {
+  @apply mt-3.5 flex flex-wrap gap-3.5 text-[0.75rem] text-muted;
+  & span { @apply inline-flex items-center gap-1.5; }
+  & i { @apply inline-block size-[7px] rounded-full border-[1.5px] border-muted; }
+  & i.r { @apply border-accent bg-accent; }
+  & i.d { @apply border-ok bg-ok; }
+}
+
+/* Feedback line under an exercise; turns green or red with the answer. */
+.hint {
+  @apply mt-2.5 mb-0 min-h-[1.4em] text-step--1 text-muted;
+  &.bad { @apply text-bad; }
+  &.ok { @apply text-ok; }
+}
+
+/* Horizontal meter; the inner <i> width is set inline. */
+.bar {
+  @apply h-2.5 overflow-hidden rounded-[5px] bg-bg;
+  & i { @apply block h-full rounded-[5px] bg-accent; transition: width .6s ease-out; }
+}
+
+/* ---------- Simulation stage ----------
+   Frame around an interactive scene: control bars on top, the drawing, then a live readout. */
+.stage { @apply mt-3 mb-4 overflow-hidden rounded-[18px] border border-line bg-surface; }
+
+.stage-bar {
+  @apply flex flex-wrap items-center gap-2 border-b border-line px-3.5 py-3;
+  & .label { @apply mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase; }
+  & .sep { @apply mx-0.5 w-0 self-stretch; }
+  /* Consecutive bars read as one block: no divider at the join and equal padding on both halves. */
+  &:has(+ .stage-bar) { @apply border-b-0 pb-1.5; }
+  & + .stage-bar { @apply pt-1.5; }
+  /* The main action sits at the right end of the bar unless it is the only control. */
+  & > .btn.primary { @apply ml-auto; }
+  & > .btn.primary:only-child { @apply ml-0; }
+}
+/* A bar of .btn.check toggles sits a little tighter. */
+.checks { @apply gap-1.5; }
+
+/* Wide diagram: scrolls sideways on narrow screens and fades the clipped edge while it can still scroll
+   (scroll-driven animation; browsers without support show no fade). */
+.svg-wrap {
+  @apply overflow-x-auto px-2 py-1.5;
+  & svg { @apply block h-auto w-full min-w-[580px]; }
+}
+@property --cue-l { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@property --cue-r { syntax: "<length>"; inherits: false; initial-value: 0px; }
+@keyframes svg-cue { from { --cue-l: 0px; --cue-r: 32px; } to { --cue-l: 32px; --cue-r: 0px; } }
+@supports (animation-timeline: scroll()) {
+  .svg-wrap {
+    animation: svg-cue linear both;
+    animation-timeline: scroll(self inline);
+    mask-image: linear-gradient(to right, transparent, var(--color-black) var(--cue-l), var(--color-black) calc(100% - var(--cue-r)), transparent);
+  }
+}
+
+/* Live explanation under the drawing. */
+.readout {
+  @apply min-h-16 border-t border-line px-4 pt-3 pb-3.5 text-[0.9375rem];
+  & strong { @apply block; }
+}
+
+/* Event log in a readout: newest first, each line a tag and a message. */
+.log {
+  @apply m-0 grid list-none gap-1 p-0 text-step--1;
+  & li { @apply flex gap-2; }
+  & .tag { @apply h-fit rounded-[4px] px-1.5 font-mono text-[0.75rem] font-medium; }
+}
+
+/* ---------- Form fields ---------- */
+input[type="range"] {
+  @apply m-0.5 h-6 cursor-pointer appearance-none bg-transparent accent-accent;
+  &::-webkit-slider-runnable-track { @apply h-1 rounded-[2px] bg-line; }
+  &::-moz-range-track { @apply h-1 rounded-[2px] bg-line; }
+  &::-webkit-slider-thumb { @apply -mt-[7px] size-[18px] appearance-none rounded-full border-2 border-solid border-surface bg-accent shadow-[0_0_0_1px_var(--color-accent)]; }
+  &::-moz-range-thumb { @apply size-3.5 rounded-full border-2 border-solid border-surface bg-accent shadow-[0_0_0_1px_var(--color-accent)]; }
+}
+input[type="checkbox"] {
+  @apply m-0 inline-grid size-6 flex-none cursor-pointer appearance-none place-content-center rounded-[5px] border-[1.5px] border-muted bg-surface;
+  &::after {
+    @apply h-1.5 w-[11px] border-0 border-b-2 border-l-2 border-solid border-on-accent content-[''];
+    transform: rotate(-45deg) translate(1px, -1px) scale(0);
+    transition: transform .12s;
+  }
+  &:checked { @apply border-accent bg-accent; }
+  &:checked::after { transform: rotate(-45deg) translate(1px, -1px) scale(1); }
+}
+input[type="checkbox"]:disabled, input[type="range"]:disabled { @apply cursor-default opacity-50; }
+
+/* ---------- Page header ---------- */
+/* Breadcrumb trail above a page title. */
+.crumbs {
+  @apply flex flex-wrap items-center gap-2 text-step--1 text-muted;
+  & b { @apply font-medium text-ink; }
+  & a { @apply inline-flex min-h-7 items-center; }
+}
+/* Introductory paragraph under a page title. */
+.lede {
+  @apply mb-[18px] text-step-1 leading-[1.6] text-muted;
+}

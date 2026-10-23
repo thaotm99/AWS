@@ -1,12 +1,12 @@
 ---
 // Label and icon follow the current theme; ShellController keeps aria-label/title in sync.
 ---
-<button type="button" class="theme-toggle" id="themeToggle" aria-label="Bật chế độ sáng" title="Bật chế độ sáng">
-  <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+<button type="button" class="icon-btn" id="themeToggle" aria-label="Bật chế độ sáng" title="Bật chế độ sáng">
+  <svg class="hidden dark:block" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
     <circle cx="12" cy="12" r="4.2" />
     <path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" />
   </svg>
-  <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+  <svg class="dark:hidden" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
     <path d="M20.2 14.6A8.5 8.5 0 0 1 9.4 3.8a8.5 8.5 0 1 0 10.8 10.8z" />
   </svg>
 </button>

@@ -1,8 +1,14 @@
-/* IAM lesson simulations (iam/LeastPrivilegeSim). Theme tokens only. */
-.iam-lp .picker-item code { background: none; padding: 0; font-size: 0.78rem; overflow-wrap: anywhere; }
-.iam-lp-rows li { align-items: baseline; flex-wrap: wrap; }
-.iam-lp-rows li.iam-lp-off b { color: var(--bad); }
-.iam-lp-req { font-size: 0.72rem; color: var(--muted); overflow-wrap: anywhere; }
-.iam-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 8px; font-size: var(--step--1); }
-.iam-result.ok { background: var(--ok-soft); }
-.iam-result.bad { background: var(--bad-soft); }
+@reference "../../../styles/app.css";
+
+/* IAM lesson simulations (PolicyEvaluator): one evaluation gate, marked .pass, .fail or .skip. */
+@layer components {
+  .iam-gate { @apply grid grid-cols-[26px_minmax(0,1fr)] gap-2 rounded-[12px] border border-line px-2.5 py-2 text-[0.875rem]; }
+  .iam-gate > div { @apply grid gap-0.5; }
+  .iam-gate > div > span { @apply text-muted; }
+  .iam-gate-mark { @apply grid size-[22px] place-items-center rounded-[50%] text-[0.8125rem] font-bold; }
+  .iam-gate.pass { @apply border-ok bg-ok-soft; }
+  .iam-gate.pass .iam-gate-mark { @apply bg-ok text-surface; }
+  .iam-gate.fail { @apply border-bad bg-bad-soft; }
+  .iam-gate.fail .iam-gate-mark { @apply bg-bad text-surface; }
+  .iam-gate.skip .iam-gate-mark { @apply bg-line text-muted; }
+}

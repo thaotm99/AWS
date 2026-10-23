@@ -54,11 +54,11 @@ export default function ResultPanel({ cert, exam, attempt, topic, review, mock, 
 
   return (
     <section aria-labelledby="pr-result">
-      <h2 id="pr-result" className="pr-visually-hidden">{t("result.heading")}</h2>
-      <div className="pr-score">
-        <span className="pr-score-big">{score.percent}%</span>
+      <h2 id="pr-result" className="sr-only">{t("result.heading")}</h2>
+      <div className="mx-0 mt-1.5 mb-1 flex flex-wrap items-baseline gap-3.5">
+        <span className="text-[3rem] leading-none font-bold tracking-[-0.03em] tabular-nums">{score.percent}%</span>
         {!review && <span className={`pr-badge ${score.passed ? "pass" : "fail"}`}>{score.passed ? t("result.passed") : t("result.failed")}</span>}
-        {mock && <span className="pr-scaled">{t("mock.scaled", { score: Math.max(100, score.percent * 10), pass: cert.passingScore })}</span>}
+        {mock && <span className="font-mono text-[0.95rem] text-muted">{t("mock.scaled", { score: Math.max(100, score.percent * 10), pass: cert.passingScore })}</span>}
       </div>
       <p className="pr-muted">
         {review
@@ -66,28 +66,28 @@ export default function ResultPanel({ cert, exam, attempt, topic, review, mock, 
           : t("result.summary", { correct: score.correct, total: score.total, percent: Scoring.passPercent(cert), score: cert.passingScore })}
       </p>
 
-      <div className="pr-domains">
+      <div className="mx-0 mt-5 mb-1 grid max-w-[560px] gap-2.5">
         {[...domains].map(([name, d]) => (
-          <div key={name} className={`pr-domain${name === weakest ? " weakest" : ""}`}>
-            <span className="pr-domain-name">
+          <div key={name} className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-1 text-[0.9375rem]">
+            <span className={name === weakest ? "font-bold" : undefined}>
               {name ? domainLabel(tr, name) : t("result.other")}
-              {name === weakest && <span className="pr-weak-tag">{t("result.weakest")}</span>}
+              {name === weakest && <span className="ml-2 rounded-full bg-bad-soft px-[7px] py-px text-[0.75rem] font-semibold text-bad">{t("result.weakest")}</span>}
             </span>
-            <span className="pr-domain-val">{d.right}/{d.total}</span>
-            <span className="pr-meter" aria-hidden="true"><span style={{ width: `${(d.right / d.total) * 100}%` }} /></span>
+            <span className="font-mono text-[0.875rem] tabular-nums">{d.right}/{d.total}</span>
+            <span className="col-span-full h-1.5 overflow-hidden rounded-[3px] bg-line" aria-hidden="true"><span className="block h-full bg-accent" style={{ width: `${(d.right / d.total) * 100}%` }} /></span>
           </div>
         ))}
       </div>
 
       {suggestions.length > 0 && (
-        <div className="pr-suggest">
-          <h3>{t("result.learnAgain")}</h3>
-          <ol>
+        <div className="mx-0 mt-4.5 mb-1.5 rounded-[18px] bg-accent-soft px-4 py-3.5">
+          <h3 className="mx-0 mt-0 mb-2 text-[1rem] text-accent">{t("result.learnAgain")}</h3>
+          <ol className="list-decimal m-0 grid gap-1.5 pl-5 text-[0.9rem]">
             {suggestions.map(({ link, misses }) => (
               <li key={link.url}>
-                <a href={link.url}>{link.title[locale]}</a>
+                <a className="font-semibold" href={link.url}>{link.title[locale]}</a>
                 {link.title[locale] !== link.lesson[locale] && <span className="pr-muted"> · {link.lesson[locale]}</span>}
-                <span className="pr-suggest-n">{t("result.misses", { n: misses })}</span>
+                <span className="ml-2 font-mono text-[0.75rem] text-muted">{t("result.misses", { n: misses })}</span>
               </li>
             ))}
           </ol>
@@ -108,16 +108,20 @@ export default function ResultPanel({ cert, exam, attempt, topic, review, mock, 
         )}
       </div>
 
-      <h3 className="pr-review-title">{t("result.review")}</h3>
-      <ol className="pr-review">
+      <h3 className="mx-0 mt-7 mb-2">{t("result.review")}</h3>
+      <ol className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-1.5 p-0">
         {exam.questions.map((q, i) => {
           const a = attempt.answers[q.id];
           return (
             <li key={q.id}>
-              <button type="button" onClick={() => dispatch({ type: "exam/goTo", index: i })}>
-                <span className="pr-review-n">{q.number}</span>
-                <span className="pr-review-domain">{domainLabel(tr, q.domain)}</span>
-                <span className={`pr-review-r ${a?.correct ? "ok" : "bad"}`}>{a?.correct ? t("result.correct") : t("result.incorrect")}</span>
+              <button
+                type="button"
+                className="grid w-full cursor-pointer grid-cols-[28px_minmax(0,1fr)_auto] items-baseline gap-2 rounded-sm border border-line bg-surface px-2.5 py-[7px] text-left text-step--1 hover:border-accent"
+                onClick={() => dispatch({ type: "exam/goTo", index: i })}
+              >
+                <span className="font-mono text-muted">{q.number}</span>
+                <span className="truncate text-muted">{domainLabel(tr, q.domain)}</span>
+                <span className={`font-bold ${a?.correct ? "text-ok" : "text-bad"}`}>{a?.correct ? t("result.correct") : t("result.incorrect")}</span>
               </button>
             </li>
           );

@@ -1,9 +1,9 @@
 ---
 import { LOCALES } from "../../../core/i18n/types";
 ---
-<div class="lang-switch" role="group" aria-label="Ngôn ngữ" data-i18n-attr="aria-label:shell.nav.language">
+<div class="flex h-9 flex-none max-sm:h-8 overflow-hidden rounded-sm border border-line" role="group" aria-label="Ngôn ngữ" data-i18n-attr="aria-label:shell.nav.language">
   {LOCALES.map((locale) => (
-    <button type="button" data-locale={locale} aria-pressed={locale === "vi" ? "true" : "false"} lang={locale}>
+    <button type="button" class="h-full cursor-pointer border-0 bg-surface px-2.5 max-sm:px-2 font-mono text-step--1 font-semibold text-muted [&+&]:border-l [&+&]:border-line aria-pressed:bg-ink aria-pressed:text-bg" data-locale={locale} aria-pressed={locale === "vi" ? "true" : "false"} lang={locale}>
       {locale.toUpperCase()}
     </button>
   ))}

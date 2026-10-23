@@ -13,6 +13,9 @@ interface Card {
   example: { vi: string; en: string };
 }
 
+/** Keyboard hint inside an answer button. */
+const KBD = "ml-1.5 font-mono text-[0.75rem] opacity-70";
+
 interface Layer {
   n: number;
   name: string;
@@ -91,15 +94,15 @@ export default function Flashcards({ layers }: { layers: Layer[] }) {
     return () => window.removeEventListener("keydown", onKey);
   });
 
-  if (error) return <p className="fc-msg">{t("shell.flashcards.error")}</p>;
-  if (!cards) return <p className="fc-msg">{t("shell.flashcards.loading")}</p>;
+  if (error) return <p className="text-muted">{t("shell.flashcards.error")}</p>;
+  if (!cards) return <p className="text-muted">{t("shell.flashcards.loading")}</p>;
 
   const counts = boxCounts(ids, deck);
   const L = (x: { vi: string; en: string }) => x[locale] || x.vi;
 
   return (
-    <div className="fc">
-      <div className="fc-filters" role="group" aria-label={t("shell.flashcards.filter")}>
+    <div className="flex max-w-[720px] flex-col gap-4">
+      <div className="gl-filters gap-1.5" role="group" aria-label={t("shell.flashcards.filter")}>
         <button type="button" className="gl-filter" aria-pressed={layer === "all"} onClick={() => setLayer("all")}>{t("shell.flashcards.all")}</button>
         {layers.map((l) => (
           <button key={l.n} type="button" className="gl-filter" aria-pressed={layer === l.n} onClick={() => setLayer(l.n)}>
@@ -108,43 +111,43 @@ export default function Flashcards({ layers }: { layers: Layer[] }) {
         ))}
       </div>
 
-      <div className="fc-boxes" aria-label={t("shell.flashcards.boxes")}>
+      <div className="grid grid-cols-6 gap-1.5" aria-label={t("shell.flashcards.boxes")}>
         {counts.map((n, i) => (
-          <span key={i} className={`fc-box b${i}`} title={i ? t("shell.flashcards.boxHint", { n: i, days: BOX_DAYS[i - 1] }) : t("shell.flashcards.new")}>
-            <b>{n}</b>
-            <small>{i ? t("shell.flashcards.box", { n: i }) : t("shell.flashcards.new")}</small>
+          <span key={i} className="flex flex-col items-center gap-0.5 rounded-[14px] border border-line bg-surface px-1 py-2" title={i ? t("shell.flashcards.boxHint", { n: i, days: BOX_DAYS[i - 1] }) : t("shell.flashcards.new")}>
+            <b className={`font-mono text-[1.05rem]${i === 5 ? " text-ok" : ""}`}>{n}</b>
+            <small className="text-[0.75rem] text-muted">{i ? t("shell.flashcards.box", { n: i }) : t("shell.flashcards.new")}</small>
           </span>
         ))}
       </div>
 
       {current ? (
         <>
-          <p className="fc-left" aria-live="polite">{t("shell.flashcards.left", { n: queue.length, done })}</p>
-          <div className={`fc-card${shown ? " shown" : ""}`}>
-            <button type="button" className="fc-front" aria-expanded={shown} onClick={() => setShown(true)} disabled={shown}>
-              <small>{L(current.lesson)}</small>
-              <b>{current.name}</b>
-              {!shown && <span className="fc-hint">{t("shell.flashcards.reveal")}</span>}
+          <p className="m-0 text-[0.875rem] text-muted" aria-live="polite">{t("shell.flashcards.left", { n: queue.length, done })}</p>
+          <div className={`overflow-hidden rounded-[18px] border-2 bg-surface shadow-[0_4px_0] shadow-line ${shown ? "border-accent" : "border-line"}`}>
+            <button type="button" className="flex min-h-[200px] w-full cursor-pointer flex-col items-center justify-center gap-2.5 p-6 text-center text-ink disabled:min-h-0 disabled:cursor-default disabled:pb-2" aria-expanded={shown} onClick={() => setShown(true)} disabled={shown}>
+              <small className="text-[0.8125rem] text-muted">{L(current.lesson)}</small>
+              <b className="text-[clamp(1.4rem,4vw,2rem)] leading-[1.2]">{current.name}</b>
+              {!shown && <span className="text-[0.8125rem] text-accent">{t("shell.flashcards.reveal")}</span>}
             </button>
             {shown && (
-              <div className="fc-back">
-                <p>{L(current.def)}</p>
-                {L(current.example) && <p className="fc-ex"><b>{t("shell.glossary.example")}</b> {L(current.example)}</p>}
-                <a href={`/glossary/#${current.id}`}>{t("shell.flashcards.more")}</a>
+              <div className="animate-[fc-in_0.25s_ease] border-t border-dashed border-line px-[22px] pt-1 pb-5 motion-reduce:animate-none">
+                <p className="mx-0 mt-3 mb-0 leading-[1.65]">{L(current.def)}</p>
+                {L(current.example) && <p className="mx-0 mt-3 mb-0 text-[0.9rem] leading-[1.65] text-muted"><b className="text-edge">{t("shell.glossary.example")}</b> {L(current.example)}</p>}
+                <a className="mt-3 inline-block text-[0.875rem]" href={`/glossary/#${current.id}`}>{t("shell.flashcards.more")}</a>
               </div>
             )}
           </div>
           {shown && (
-            <div className="fc-actions">
-              <button type="button" className="btn fc-again" onClick={() => answer(false)}>{t("shell.flashcards.again")} <kbd>1</kbd></button>
-              <button type="button" className="btn primary" onClick={() => answer(true)}>{t("shell.flashcards.good")} <kbd>2</kbd></button>
+            <div className="grid grid-cols-2 gap-2.5">
+              <button type="button" className="btn min-h-12 font-bold" onClick={() => answer(false)}>{t("shell.flashcards.again")} <kbd className={KBD}>1</kbd></button>
+              <button type="button" className="btn primary min-h-12 font-bold" onClick={() => answer(true)}>{t("shell.flashcards.good")} <kbd className={KBD}>2</kbd></button>
             </div>
           )}
         </>
       ) : (
-        <div className="fc-done">
+        <div className="rounded-[20px] border border-dashed border-line bg-surface p-[22px]">
           <b>{t("shell.flashcards.doneTitle")}</b>
-          <p>{done ? t("shell.flashcards.doneBody", { n: done }) : t("shell.flashcards.nothingDue")}</p>
+          <p className="mx-0 mt-1.5 mb-0 text-muted">{done ? t("shell.flashcards.doneBody", { n: done }) : t("shell.flashcards.nothingDue")}</p>
         </div>
       )}
     </div>

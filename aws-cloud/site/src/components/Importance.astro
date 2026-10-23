@@ -11,8 +11,8 @@ interface Props {
 const { level, hint = false } = Astro.props;
 const name = IMPORTANCE_NAMES[level];
 ---
-<span class="imp-label">
+<span class="inline-flex flex-wrap items-center gap-1.5">
   <span class={`imp imp-${level}`} aria-hidden="true"><i></i><i></i><i></i></span>
   <T k={`shell.importance.${name}`} />
-  {hint && <span class="imp-hint"><T k={`shell.importance.${name}Hint`} /></span>}
+  {hint && <span class="basis-full text-muted"><T k={`shell.importance.${name}Hint`} /></span>}
 </span>

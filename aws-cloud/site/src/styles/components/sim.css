@@ -1,0 +1,172 @@
+/* Shared vocabulary of the lesson simulations and practice illustrations: SVG text, shapes, resource boxes,
+   animated flows and packets, plus the small HTML parts the scene engines share (status line, picker).
+   Scene components and lib/animate.ts set these class names on SVG elements, often by state. */
+
+/* ---------- SVG text ---------- */
+.t { @apply fill-ink font-body text-[13px] font-semibold; }       /* label */
+.ts { @apply fill-muted font-mono text-[11px]; }                  /* small annotation */
+.tw { @apply fill-surface font-body text-[12px] font-semibold; }  /* label on a filled shape */
+.edge-t { @apply fill-edge font-body text-[11.5px] font-semibold; }
+.zone-t { @apply fill-accent font-mono text-[11px] font-medium; }
+.down-t { @apply fill-bad font-body text-[11px] font-bold tracking-[.06em]; }
+.err-t { @apply fill-bad font-mono text-[12px] font-medium; }
+.ok-t { @apply fill-ok font-mono text-[12px] font-medium; }
+.cache-t { @apply fill-edge font-mono text-[11px] font-medium; }
+/* Word drawn over a red flash, such as BLOCKED or 403. */
+.flash-bad { @apply fill-bad font-mono text-[15px] font-bold; text-anchor: middle; }
+
+/* ---------- SVG shapes ---------- */
+.lane { @apply fill-none stroke-line stroke-2; }
+.node { @apply fill-surface stroke-accent stroke-2; }
+.node.won { @apply fill-accent; }
+.user { @apply fill-muted; }
+.cloud { @apply fill-bg stroke-muted stroke-[1.5]; }
+.frame { @apply fill-none stroke-line stroke-[1.5]; stroke-dasharray: 5 5; transition: all .25s; }
+.region { @apply fill-bg stroke-muted stroke-[1.5]; transition: all .25s; }
+.az { @apply fill-surface stroke-muted stroke-[1.2]; transition: all .25s; }
+.az.dashed { @apply fill-bg; stroke-dasharray: 6 4; }
+.subnet { @apply fill-bg stroke-line stroke-[1.2]; }
+.subnet.pub { @apply fill-ok-soft; fill-opacity: .5; }
+.tier { @apply fill-surface stroke-accent stroke-[1.5]; }
+.attacker { @apply fill-bad; }
+.r53 { @apply fill-accent; }
+.dc { @apply fill-bg stroke-muted stroke-1; }
+.dc-line { @apply stroke-muted stroke-1; }
+.edge-dot { @apply fill-edge-soft stroke-edge stroke-[1.5]; transition: fill .25s; }
+.zone { @apply fill-none stroke-accent stroke-[1.5]; stroke-dasharray: 6 4; }
+.lb rect { @apply fill-ink; }
+.origin rect { @apply fill-accent; }
+.ga-box { @apply fill-edge-soft stroke-edge stroke-[1.5]; fill-opacity: .45; stroke-dasharray: 5 4; }
+.backbone { @apply fill-none stroke-accent stroke-[2.5] opacity-50; }
+.internet { @apply fill-none stroke-muted stroke-2; stroke-dasharray: 2 6; }
+.dep { @apply stroke-muted stroke-[1.5]; stroke-dasharray: 3 3; }
+.err-box { @apply fill-bad-soft stroke-bad stroke-[1.5]; }
+.block-x { @apply fill-bad text-[18px] font-bold; }
+
+/* Highlighted scope (ScopeExplorer): the frame, Region, AZs or edge locations of the chosen resource. */
+.hl .frame { @apply stroke-accent stroke-3; stroke-dasharray: none; }
+.hl > .region, .hl .az { @apply fill-accent-soft stroke-accent stroke-[2.5]; }
+.hl .edge-dot { @apply fill-edge; }
+
+/* Failed Availability Zone or Region. */
+.az-box.down .az { @apply fill-bad-soft stroke-bad stroke-[2.5]; }
+
+/* Server in a target group: hit by a request, or dead with its AZ. */
+.inst {
+  & rect { @apply fill-ok-soft stroke-ok stroke-[1.5]; transition: fill .15s; }
+  & text { @apply fill-ink font-mono text-[11px]; }
+  &.hit rect { @apply fill-ok; }
+  &.dead rect { @apply fill-bad-soft stroke-bad; }
+  &.dead line { @apply stroke-bad stroke-2; }
+}
+
+/* Edge cache box: dashed while empty, filled once it holds the object. */
+.cache-box {
+  & rect { @apply fill-bg stroke-edge stroke-[1.5]; stroke-dasharray: 4 3; transition: all .25s; }
+  &.full rect { @apply fill-edge-soft; stroke-dasharray: none; }
+}
+
+/* Token on a scope diagram; .ghost is a copy that does not exist yet. */
+.tok {
+  & rect { @apply fill-accent; }
+  & text { @apply fill-surface font-mono text-[10.5px] font-medium; }
+  &.ghost rect { @apply fill-accent-soft stroke-accent; stroke-dasharray: 3 3; }
+  &.ghost text { @apply fill-accent; }
+}
+
+/* Element that just appeared. */
+.pop { @apply animate-[pop_.45s_ease-out_both] motion-reduce:animate-none; transform-box: fill-box; transform-origin: center; }
+@keyframes pop { from { opacity: .25; transform: scale(.85); } to { opacity: 1; transform: none; } }
+
+/* ---------- Resource boxes (diagram.tsx and hand-drawn scenes) ---------- */
+.res rect { @apply stroke-[1.5]; }
+.res.faded { @apply opacity-30; }
+.res-ec2 rect { @apply fill-ok-soft stroke-ok; }
+.res-snap rect { @apply fill-edge-soft stroke-edge; }
+.res-ami rect, .res-db rect { @apply fill-accent-soft stroke-accent; }
+.res-net rect { @apply fill-surface stroke-accent; stroke-dasharray: 4 3; }
+.res-store rect { @apply fill-accent stroke-accent; }
+.res-site rect { @apply fill-surface stroke-muted; }
+.res-user rect { @apply fill-surface stroke-ink; stroke-dasharray: 3 3; }
+.res-edge rect { @apply fill-edge-soft stroke-edge; }
+.res-warn rect { @apply fill-bad-soft stroke-bad; }
+.res-t { @apply fill-ink font-body text-[12.5px] font-semibold; }
+.res-s { @apply fill-muted font-mono text-[11px]; }
+.res-store .res-t, .res-store .res-s { @apply fill-surface; }
+
+/* Boxes drawn by diagram.tsx: Region, subnet, public subnet, on-premises site. */
+.dbox { @apply stroke-[1.4]; }
+.dbox-region { @apply fill-bg stroke-muted; }
+.dbox-subnet { @apply fill-surface stroke-line; }
+.dbox-public { @apply fill-ok-soft stroke-line; fill-opacity: .45; }
+.dbox-onprem { @apply fill-surface stroke-muted; stroke-dasharray: 6 4; }
+
+/* ---------- Flows and packets ----------
+   A flow is a dashed path that marches along; free/paid (CostPatterns) or tone-good/bad/neutral (diagram.tsx).
+   Packets are dots that lib/animate.ts moves along a path. The march keeps running under reduced motion, as it
+   did before the migration; .still stops it. */
+.flow {
+  @apply fill-none stroke-3;
+  stroke-dasharray: 7 7;
+  animation: dash 1.1s linear infinite;
+  &.free, &.tone-good { @apply stroke-ok; }
+  &.paid, &.tone-bad { @apply stroke-edge; }
+  &.tone-neutral { @apply stroke-accent; }
+  &.heavy { @apply stroke-6; }
+  &.still { animation: none; stroke-dasharray: 4 5; }
+}
+@keyframes dash { to { stroke-dashoffset: -28; } }
+.flow-hit { @apply cursor-pointer fill-none stroke-transparent stroke-18; }
+.flow-g.active .flow { @apply stroke-5; }
+.flow-g.dim { @apply opacity-30; }
+/* Flow label, outlined in the surface colour so it stays legible over lines. */
+.flow-t {
+  @apply font-mono text-[10.5px] font-medium;
+  paint-order: stroke; stroke: var(--color-surface); stroke-width: 4px; stroke-linejoin: round;
+  &.paid, &.tone-bad { @apply fill-edge; }
+  &.free, &.tone-good { @apply fill-ok; }
+  &.tone-neutral { @apply fill-accent; }
+}
+.mk-free { @apply fill-ok; }
+.mk-paid { @apply fill-edge; }
+.mk-neutral { @apply fill-accent; }
+
+.pkt { @apply fill-accent; }
+.pkt-back { @apply fill-ok; }
+.pkt-bad { @apply fill-bad; }
+.pkt-edge { @apply fill-edge; }
+
+/* ---------- HTML parts shared by scene engines ---------- */
+/* Status line in a readout: a .pill plus counters. */
+.status { @apply flex flex-wrap items-center gap-x-5.5 gap-y-2.5; }
+.count { @apply font-mono text-[0.8125rem] text-muted tabular-nums; }
+/* Verdict after an option name: the favoured answer (.ok) or a costly / wrong one (.bad). */
+.verdict.ok { @apply text-ok; }
+.verdict.bad { @apply text-edge; }
+.note-small { @apply mx-0 mt-2 mb-0 text-[0.8125rem] text-muted; }
+
+/* Requirement picker: a list of needs on the left, the chosen answer on the right; stacks on narrow screens. */
+.picker { @apply grid grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] max-[700px]:grid-cols-[minmax(0,1fr)]; }
+.picker-list { @apply grid gap-1 border-r border-line p-3 max-[700px]:border-r-0 max-[700px]:border-b; }
+.picker-item {
+  @apply cursor-pointer rounded-sm border border-line bg-bg px-2.5 py-2 text-left text-[0.875rem] leading-[1.4];
+  &:hover { @apply border-muted bg-surface; }
+  &[aria-pressed="true"] { @apply border-accent bg-accent-soft text-ink; }
+}
+.picker-answer {
+  @apply grid content-start gap-1.5 px-4.5 py-4;
+  & .label { @apply text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase; }
+  & p { @apply m-0 text-[0.9375rem]; }
+}
+.picker-service { @apply text-step-2 leading-[1.2] text-accent; }
+
+/* Route table beside a VPC diagram. */
+.rt {
+  @apply border-l border-line p-3.5 text-[0.8125rem] max-[700px]:border-t max-[700px]:border-l-0;
+  & table { @apply w-full border-collapse; }
+  & th, & td { @apply border-b border-line px-1 py-1.5 text-left align-top; }
+  & th { @apply text-[0.75rem] tracking-[0.08em] text-muted uppercase; }
+  & code { @apply text-[0.75rem] break-all; }
+}
+.rt-title { @apply mb-2 font-semibold; }
+.rt-new td { @apply bg-ok-soft; }

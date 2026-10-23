@@ -153,7 +153,7 @@ export default function ShardStreamSim() {
   }
 
   return (
-    <div className="stage kss">
+    <div className="stage">
       <div className="stage-bar">
         <span className="label">{L({ vi: "Đích nhận sự kiện", en: "Event destination" })}</span>
         {(["sqs", "kds"] as const).map((m) => (
@@ -161,7 +161,7 @@ export default function ShardStreamSim() {
             {m === "sqs" ? "SQS queue" : "Kinesis Data Streams"}
           </button>
         ))}
-        <button className="btn primary kss-run" onClick={run} disabled={busy}>{L({ vi: "Gửi 6 sự kiện", en: "Send 6 events" })}</button>
+        <button className="btn primary ml-auto" onClick={run} disabled={busy}>{L({ vi: "Gửi 6 sự kiện", en: "Send 6 events" })}</button>
         {mode === "kds" && <button className="btn" onClick={replay} disabled={busy || !ran}>{L({ vi: "Đọc lại từ đầu stream", en: "Reread from the start of the stream" })}</button>}
       </div>
       <div className="svg-wrap">
@@ -218,12 +218,12 @@ export default function ShardStreamSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="kss-hint">{L({ vi: <>Chọn đích nhận sự kiện, sau đó chọn <b>Gửi 6 sự kiện</b>. So sánh kết quả của cả hai phương án.</>, en: <>Choose an event destination, then choose <b>Send 6 events</b>. Compare the results of both options.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn đích nhận sự kiện, sau đó chọn <b>Gửi 6 sự kiện</b>. So sánh kết quả của cả hai phương án.</>, en: <>Choose an event destination, then choose <b>Send 6 events</b>. Compare the results of both options.</> })}</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) =>
               e.tag === undefined ? (
-                <li key={i} className={`kss-result ${e.ok ? "ok" : "bad"}`}>{L(e.msg)}</li>
+                <li key={i} className={`mt-1.5 block rounded-[12px] px-2.5 py-2 ${e.ok ? "bg-ok-soft" : "bg-bad-soft"}`}>{L(e.msg)}</li>
               ) : (
                 <li key={i}><span className={`tag kss-tag ${e.cls}`}>{L(e.tag)}</span><span>{L(e.msg)}</span></li>
               ),

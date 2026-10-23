@@ -20,7 +20,7 @@ Checked 2026-10-22 against the pages below (keyword → claim → URL).
 - Custom health check (SetInstanceHealth) → set-instance-health Unhealthy makes ASG replace the instance; respects the grace period by default, `--no-should-respect-grace-period` overrides; activity cause "in response to a user health-check" → https://docs.aws.amazon.com/autoscaling/ec2/userguide/set-up-a-custom-health-check.html , https://docs.aws.amazon.com/autoscaling/ec2/userguide/replace-unhealthy-instance.html
 - Unhealthy replacement order → by default terminate first, then another activity launches while terminating; instance maintenance policy can launch first → https://docs.aws.amazon.com/autoscaling/ec2/userguide/replace-unhealthy-instance.html , https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-maintenance-policy.html
 - AZ rebalancing → triggered by explicit terminate/detach; launches new instances before terminating; may exceed max by 10% or 1 instance, whichever is greater → https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-benefits.html
-- Simulation-only assumptions (labelled as such in the UI): instance ready 2 minutes after launch; step thresholds and +2/+4/+6 adjustments are ShopViet's example configuration.
+- Simulation-only assumptions (labelled as such in the UI): instance ready 2 minutes after launch; step thresholds and +2/+4/+6 adjustments are MFTECH's example configuration.
 
 ## ec2
 
@@ -125,7 +125,7 @@ Checked 2026-10-22 against the pages below (keyword → claim → URL).
 | ALB query string parameter-based routing | Rule xét theo priority từ nhỏ tới lớn, default rule xét cuối cùng | https://docs.aws.amazon.com/elasticloadbalancing/latest/application/listener-rules.html |
 | ALB HTTP to HTTPS redirect | Action: authenticate-cognito, authenticate-oidc, fixed-response (2XX/4XX/5XX), forward, jwt-validation, redirect; redirect 301 hoặc 302; HTTP→HTTPS được, HTTPS→HTTP không; từ khoá #{host}, #{path}, #{query} giữ nguyên thành phần URL | https://docs.aws.amazon.com/elasticloadbalancing/latest/application/rule-action-types.html |
 | ALB has no built-in rate limiting | Listener rule chỉ gồm điều kiện và action như trên (không có thiết lập giới hạn tốc độ); ALB tích hợp AWS WAF qua web ACL | https://docs.aws.amazon.com/elasticloadbalancing/latest/application/rule-action-types.html ; https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-integrations.html |
-| ALB has no built-in rate limiting | WAF rate-based rule: evaluation window 60/120/300/600 giây, mặc định 300; ngưỡng tối thiểu 10; action bất kỳ trừ Allow; mặc định gom theo IP nguồn (IP của proxy/LB cuối nếu đi qua proxy), có thể gom theo header, method, query argument. Ví dụ 3.000 request/5 phút/IP là cấu hình ShopViet tự đặt | https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-rate-based-high-level-settings.html ; https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-rate-based-aggregation-options.html |
+| ALB has no built-in rate limiting | WAF rate-based rule: evaluation window 60/120/300/600 giây, mặc định 300; ngưỡng tối thiểu 10; action bất kỳ trừ Allow; mặc định gom theo IP nguồn (IP của proxy/LB cuối nếu đi qua proxy), có thể gom theo header, method, query argument. Ví dụ 3.000 request/5 phút/IP là cấu hình MFTECH tự đặt | https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-rate-based-high-level-settings.html ; https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-rate-based-aggregation-options.html |
 | ALB has no built-in rate limiting | Web ACL bảo vệ CloudFront, API Gateway REST API, ALB… | https://docs.aws.amazon.com/waf/latest/developerguide/what-is-aws-waf.html |
 | ALB has no built-in rate limiting | API Gateway usage plan + API key: throttling (rate, burst) và quota theo chu kỳ cho từng key; best-effort, không phải giới hạn cứng; client vượt mức nhận 429 | https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-api-usage-plans.html ; https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-create-usage-plans.html ; https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling.html |
 | ALB has no built-in rate limiting | Shield Advanced: gói đăng ký; tự động giảm thiểu tấn công tầng 7 bằng rule group thêm vào web ACL, bổ sung cho web ACL và rate-based rule do khách hàng tự thêm | https://docs.aws.amazon.com/waf/latest/developerguide/ddos-advanced-summary.html ; https://docs.aws.amazon.com/waf/latest/developerguide/ddos-automatic-app-layer-response.html |
@@ -164,7 +164,7 @@ Checked 2026-10-22 against the pages below (keyword → claim → URL).
 - AWS PrivateLink "TCP only" → current docs say an interface endpoint sends **TCP or UDP** traffic to an endpoint service, so the lesson does not claim "TCP only"; the lesson rules PrivateLink out for an internet-facing global app because it serves consumers that have a VPC endpoint → https://docs.aws.amazon.com/vpc/latest/privatelink/concepts.html , https://docs.aws.amazon.com/vpc/latest/privatelink/privatelink-share-your-services.html (UDP fragmentation note)
 - AWS Client VPN → managed client-based VPN, OpenVPN-based client, TLS, AD / federated / certificate authentication, security-group-based access control → https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/what-is.html
 - Bastion host → Session Manager manages nodes without open inbound ports or bastion hosts → https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html ; a NAT instance can act as a bastion → https://docs.aws.amazon.com/vpc/latest/userguide/work-with-nat-instances.html
-- Simulation-only assumptions (ShopViet example data): 25 VPCs × 4 services = 100 endpoints; address plan 10.0.0.0/16 and partner range 192.0.2.0/24 (the documentation range used in the AWS example).
+- Simulation-only assumptions (MFTECH example data): 25 VPCs × 4 services = 100 endpoints; address plan 10.0.0.0/16 and partner range 192.0.2.0/24 (the documentation range used in the AWS example).
 
 ## iam
 
@@ -190,7 +190,7 @@ Checked 2026-10-22 against the pages below (keyword → claim → URL).
 - AWS Config / Amazon Inspector (distractors) → Config records configurations, relationships and history → https://docs.aws.amazon.com/config/latest/developerguide/WhatIsConfig.html ; Inspector scans EC2, ECR images and Lambda for software vulnerabilities and network exposure → https://docs.aws.amazon.com/inspector/latest/user/what-is-inspector.html
 - Root user email → use a group email address managed by the business that forwards to a group of users, not used for other purposes → https://docs.aws.amazon.com/IAM/latest/UserGuide/root-user-best-practices.html
 - AWS account alternate contacts → up to three (one each of billing, operations, security), can be a distribution list, in addition to the root email; management account or delegated admin updates member accounts centrally → https://docs.aws.amazon.com/accounts/latest/reference/manage-acct-update-contact-alternate.html
-- Simulation-only assumptions (ShopViet examples): 6 accounts, two AD forests, an Entra ID subsidiary, bucket names shopviet-reports / shopviet-reports-archive.
+- Simulation-only assumptions (MFTECH examples): 6 accounts, two AD forests, an Entra ID subsidiary, bucket names mftech-reports / mftech-reports-archive.
 
 ## containers
 
@@ -226,7 +226,7 @@ Checked 2026-10-22 against the pages below (keyword → claim → URL).
 - Aurora database cloning (Aurora only) → copy-on-write, faster and more space-efficient than restoring a snapshot, for test environments; can't create a clone in a different Region → https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Managing.Clone.html
 - Aurora cross-Region read replica → Aurora MySQL DB cluster as read replica in another Region (DR, reads closer to users), up to five per source, binlog-based, more lag than Global Database (typically < 1 s, up to 10 secondaries) → https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Replication.CrossRegion.html
 - Amazon Aurora machine learning → integrates Aurora MySQL / Aurora PostgreSQL with Bedrock, Comprehend, SageMaker AI (calls a deployed endpoint via aws_sagemaker.invoke_endpoint) → https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-ml.html , https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/postgresql-ml.html ; Redshift ML: CREATE MODEL trains with SageMaker AI, prediction function registered as a SQL function → https://docs.aws.amazon.com/redshift/latest/dg/machine_learning.html
-- Simulation-only assumptions (ReplicaLab): instance class names and the 500 GiB source are ShopViet's example configuration.
+- Simulation-only assumptions (ReplicaLab): instance class names and the 500 GiB source are MFTECH's example configuration.
 
 ## lambda
 
@@ -406,7 +406,7 @@ Checked 2026-10-22 against the pages below (keyword → claim → URL).
 | Route 53 multivalue answer routing | Returns up to eight healthy records, different answers to different resolvers; "not a substitute for a load balancer", improves uptime and load sharing (confuse Route53MythsSim case 5, takeaway, quiz) | https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-multivalue.html |
 | Route 53 multivalue answer routing | ASG scaling policies adjust desired capacity between min and max and launch/terminate instances ("instead" path) | https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-groups.html |
 
-Note: the AliasCnameSim case "shopviet.vn → www" (unchanged) calls Alias the lowest-cost option; the docs' free-query statement covers alias queries to AWS resources, so the new RecordTypeSim text avoids claiming the apex→www alias query is free.
+Note: the AliasCnameSim case "mftech.vn → www" (unchanged) calls Alias the lowest-cost option; the docs' free-query statement covers alias queries to AWS resources, so the new RecordTypeSim text avoids claiming the apex→www alias query is free.
 
 ## global-infra
 

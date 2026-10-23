@@ -44,25 +44,25 @@ export default function QuestionCard({ question: translated, original, total, an
   const lastKey = q.options[q.options.length - 1]?.key ?? "";
 
   return (
-    <section className="pr-card" aria-labelledby="pr-q">
-      <div className="pr-q-meta">
+    <section className="rounded-[18px] border-2 border-line bg-surface p-5.5 shadow-soft max-sm:p-4" aria-labelledby="pr-q">
+      <div className="mb-2 flex flex-wrap gap-x-3.5 gap-y-1.5 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">
         <span>{t("exam.questionOf", { n: q.number, total })}</span>
         {q.domain && <span>{domainLabel(tr, q.domain)}</span>}
-        {multi && <span className="pr-multi">{t("exam.selectN", { n: count })}</span>}
+        {multi && <span className="text-edge">{t("exam.selectN", { n: count })}</span>}
       </div>
       {(original || !translated.translated) && (
-        <div className="pr-lang">
+        <div className="mx-0 mt-1.5 mb-3 flex flex-wrap items-center gap-2.5">
           {!translated.translated && <span className="pr-muted">{t("exam.notTranslated")}</span>}
           {original && translated.translated && (
-            <button type="button" className="pr-lang-btn" aria-pressed={showOriginal} onClick={() => setShowOriginal((v) => !v)}>
+            <button type="button" className="cursor-pointer rounded-full border border-line bg-bg px-2.5 py-0.5 text-step--1 text-muted hover:border-accent hover:text-ink aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-bg" aria-pressed={showOriginal} onClick={() => setShowOriginal((v) => !v)}>
               {showOriginal ? t("exam.showTranslation") : t("exam.showOriginal")}
             </button>
           )}
         </div>
       )}
-      <div id="pr-q" className="pr-html pr-prompt" dangerouslySetInnerHTML={{ __html: q.promptHtml }} />
+      <div id="pr-q" className="pr-html mb-4.5 text-[1.0625rem] [&_p]:max-w-[75ch]" dangerouslySetInnerHTML={{ __html: q.promptHtml }} />
 
-      <div className="pr-options" role={multi ? "group" : "radiogroup"} aria-labelledby="pr-q">
+      <div className="grid gap-2.5" role={multi ? "group" : "radiogroup"} aria-labelledby="pr-q">
         {q.options.map((o) => {
           const picked = answer ? chosen.includes(o.key) : selection.includes(o.key);
           const right = answer && q.correct.includes(o.key);
@@ -87,9 +87,9 @@ export default function QuestionCard({ question: translated, original, total, an
       </div>
 
       {answer && (
-        <div className={`pr-verdict ${answer.correct ? "ok" : "bad"}`} role="status">
-          <b className="pr-verdict-head">{answer.correct ? t("exam.correct") : t("exam.incorrect")}</b>
-          <p>
+        <div className={`mt-4.5 rounded-[14px] border px-4 py-3.5 ${answer.correct ? "border-ok bg-ok-soft" : "border-bad bg-bad-soft"}`} role="status">
+          <b className={`mb-0.5 block text-step-1 ${answer.correct ? "text-ok" : "text-bad"}`}>{answer.correct ? t("exam.correct") : t("exam.incorrect")}</b>
+          <p className="mx-0 mt-0 mb-2">
             {t(multi ? "exam.correctAnswers" : "exam.correctAnswer")} <b>{q.correct.map(label).join(", ")}</b>
             {!answer.correct && <> · {t("exam.yourAnswer", { keys: chosen.map(label).join(", ") })}</>}
           </p>
@@ -100,25 +100,25 @@ export default function QuestionCard({ question: translated, original, total, an
               </Suspense>
             </OptionalBoundary>
           )}
-          <details className="pr-explain" open>
-            <summary>{t("exam.explanation")}</summary>
-            <div className="pr-html" dangerouslySetInnerHTML={{ __html: q.explanationHtml }} />
+          <details className="rounded-sm bg-surface px-3.5 py-2.5 text-[0.9375rem]" open>
+            <summary className="mb-1.5 cursor-pointer font-semibold">{t("exam.explanation")}</summary>
+            <div className="pr-html [&_p:not(:last-child)]:mb-2" dangerouslySetInnerHTML={{ __html: q.explanationHtml }} />
           </details>
           {ANSWER_NOTES[q.id] && (
-            <aside className="pr-note" role="note">
+            <aside className="mt-2.5 rounded-r-sm border-l-3 border-edge bg-edge-soft px-3 py-2.5 text-[0.875rem]" role="note">
               <b>{t("exam.noteTitle")}</b> {ANSWER_NOTES[q.id].text[locale]}{" "}
               {ANSWER_NOTES[q.id].sources.map((s) => (
-                <a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer">{s.title}</a>
+                <a key={s.url} className="ml-1" href={s.url} target="_blank" rel="noopener noreferrer">{s.title}</a>
               ))}
             </aside>
           )}
           {learn.length > 0 && (
-            <nav className="pr-learn" aria-label={t("exam.learnAgain")}>
-              <b>{t("exam.learnAgain")}</b>
-              <ul>
+            <nav className="mt-3 rounded-[14px] bg-accent-soft px-3 py-2.5 text-[0.875rem]" aria-label={t("exam.learnAgain")}>
+              <b className="mb-1 block text-accent">{t("exam.learnAgain")}</b>
+              <ul className="grid gap-1">
                 {learn.map((l) => (
                   <li key={l.url}>
-                    <a href={l.url}>{l.title[locale]}</a>
+                    <a className="font-semibold" href={l.url}>{l.title[locale]}</a>
                     {l.title[locale] !== l.lesson[locale] && <span className="pr-muted"> · {l.lesson[locale]}</span>}
                   </li>
                 ))}
@@ -136,7 +136,7 @@ export default function QuestionCard({ question: translated, original, total, an
             <button type="button" className="btn" disabled={!mock.canPrev} onClick={() => dispatch({ type: "exam/goTo", index: q.number - 2 })}>
               {t("mock.prev")}
             </button>
-            <button type="button" className="btn pr-flag" aria-pressed={mock.flagged} onClick={mock.onFlag}>
+            <button type="button" className="btn aria-pressed:border-edge aria-pressed:text-edge" aria-pressed={mock.flagged} onClick={mock.onFlag}>
               {mock.flagged ? t("mock.unflag") : t("mock.flag")}
             </button>
             <button type="button" className="btn primary" onClick={() => dispatch({ type: "exam/next" })}>
@@ -145,7 +145,7 @@ export default function QuestionCard({ question: translated, original, total, an
           </>
         ) : answer ? (
           <>
-            <span className="pr-muted pr-keys-hint">{t("exam.pressEnter")}</span>
+            <span className="pr-muted [@media(hover:none)]:hidden">{t("exam.pressEnter")}</span>
             <button type="button" className="btn primary" onClick={() => dispatch({ type: "exam/next" })}>
               {isLast ? t("exam.showResults") : t("exam.next")}
             </button>
@@ -154,7 +154,7 @@ export default function QuestionCard({ question: translated, original, total, an
           <>
             <span className="pr-muted">
               {multi ? t("exam.pickN", { n: q.selectCount, picked: selection.length }) : t("exam.pickOne")}
-              <span className="pr-keys-hint">
+              <span className="[@media(hover:none)]:hidden">
                 {" · "}
                 {t("exam.keys", { last: label(lastKey) })}
               </span>

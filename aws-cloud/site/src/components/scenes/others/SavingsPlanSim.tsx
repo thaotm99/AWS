@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./savings-plan-sim.css";
 
-// ShopViet's steady workloads after launch: EC2 in two Regions, Fargate, Lambda and a
+// MFTECH's steady workloads after launch: EC2 in two Regions, Fargate, Lambda and a
 // SageMaker inference endpoint. Tick the Savings Plans to buy, press apply, and the
 // discount travels from each plan to every workload it covers. Goal: every workload
 // discounted with as few plans as possible.
@@ -39,7 +39,7 @@ function verdict(sel: PlanId[]): { ok: boolean; text: Bi } {
   const covered = new Set(sel.flatMap((p) => COVERS[p]));
   const missing = WORKS.filter((w) => !covered.has(w.id)).map((w) => w.l1.vi);
   const missingEn = WORKS.filter((w) => !covered.has(w.id)).map((w) => w.l1.en);
-  if (sel.length === 0) return { ok: false, text: { vi: "Chưa mua plan nào: mọi workload chạy theo giá on-demand.", en: "No plan bought yet: every workload runs at on-demand prices." } };
+  if (sel.length === 0) return { ok: false, text: { vi: "Chưa mua plan nào: mọi workload chạy theo giá On-Demand.", en: "No plan bought yet: every workload runs at On-Demand prices." } };
   if (missing.length) {
     let why = "";
     let whyEn = "";
@@ -55,7 +55,7 @@ function verdict(sel: PlanId[]): { ok: boolean; text: Bi } {
       why += " **SageMaker không thuộc phạm vi Compute Savings Plans** mà có SageMaker AI Savings Plans riêng.";
       whyEn += " **SageMaker is outside the scope of Compute Savings Plans** and has its own SageMaker AI Savings Plans.";
     }
-    return { ok: false, text: { vi: `Vẫn chạy theo giá on-demand: ${missing.join(", ")}.${why}`, en: `Still running at on-demand prices: ${missingEn.join(", ")}.${whyEn}` } };
+    return { ok: false, text: { vi: `Vẫn chạy theo giá On-Demand: ${missing.join(", ")}.${why}`, en: `Still running at On-Demand prices: ${missingEn.join(", ")}.${whyEn}` } };
   }
   if (sel.includes("ec2i")) return { ok: false, text: { vi: "Đã áp dụng cho mọi workload nhưng **dư một plan**: Compute Savings Plans đã giảm giá cho EC2 web. Bỏ EC2 Instance Savings Plans để giảm số plan cần quản lý.",
     en: "Applied to every workload, but with **one plan too many**: Compute Savings Plans already discount EC2 web. Drop EC2 Instance Savings Plans to reduce the number of plans to manage." } };
@@ -112,7 +112,7 @@ export default function SavingsPlanSim() {
   const coveredCount = done ? lit.length : 0;
 
   return (
-    <div className="stage sav">
+    <div className="stage">
       <div className="stage-bar">
         <span className="label">{L({ vi: "Mua", en: "Buy" })}</span>
         {PLANS.map((p) => (
@@ -120,10 +120,10 @@ export default function SavingsPlanSim() {
             {p.l1}
           </button>
         ))}
-        <button className="btn primary sav-play" onClick={apply} disabled={busy}>{L({ vi: "Áp dụng giảm giá", en: "Apply discounts" })}</button>
+        <button className="btn primary ml-auto" onClick={apply} disabled={busy}>{L({ vi: "Áp dụng giảm giá", en: "Apply discounts" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 0 820 290" role="img" aria-label={L({ vi: "Các Savings Plans ở bên trái, workload của ShopViet ở bên phải; đường nối thể hiện plan giảm giá cho workload", en: "Savings Plans on the left, ShopViet workloads on the right; lines show which plan discounts which workload" })}>
+        <svg viewBox="0 0 820 290" role="img" aria-label={L({ vi: "Các Savings Plans ở bên trái, workload của MFTECH ở bên phải; đường nối thể hiện plan giảm giá cho workload", en: "Savings Plans on the left, MFTECH workloads on the right; lines show which plan discounts which workload" })}>
           <text className="sav-cap" x={PX} y={22} textAnchor="middle">Savings Plans</text>
           <text className="sav-cap" x={WX} y={22} textAnchor="middle">{L({ vi: "Workload có tải ổn định", en: "Steady-state workloads" })}</text>
           {PLANS.filter((p) => sel.includes(p.id)).flatMap((p) => COVERS[p.id].map((w) => {
@@ -144,7 +144,7 @@ export default function SavingsPlanSim() {
             <g key={w.id} className={"sav-node" + (lit.includes(w.id) ? " ok" : done ? " bad" : "")}>
               <rect x={WX - WW / 2} y={w.y - 19} width={WW} height={38} rx={8} />
               <text className="sav-t" x={WX} y={w.y - 3} textAnchor="middle">{L(w.l1)}</text>
-              <text className="sav-s" x={WX} y={w.y + 12} textAnchor="middle">{lit.includes(w.id) ? L({ vi: "giá Savings Plans", en: "Savings Plans price" }) : done ? L({ vi: "giá on-demand", en: "on-demand price" }) : L(w.l2)}</text>
+              <text className="sav-s" x={WX} y={w.y + 12} textAnchor="middle">{lit.includes(w.id) ? L({ vi: "giá Savings Plans", en: "Savings Plans price" }) : done ? L({ vi: "giá On-Demand", en: "On-Demand price" }) : L(w.l2)}</text>
             </g>
           ))}
           <g ref={fx} />
@@ -152,14 +152,14 @@ export default function SavingsPlanSim() {
       </div>
       <div className="readout" aria-live="polite">
         {!done ? (
-          <p className="sav-hint">{L({ vi: <>Chọn các Savings Plans cần mua, sau đó chọn <b>Áp dụng giảm giá</b>. Mục tiêu: mọi workload được giảm giá với số plan tối thiểu.</>, en: <>Choose the Savings Plans to buy, then choose <b>Apply discounts</b>. Goal: every workload discounted with the fewest plans.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn các Savings Plans cần mua, sau đó chọn <b>Áp dụng giảm giá</b>. Mục tiêu: mọi workload được giảm giá với số plan tối thiểu.</>, en: <>Choose the Savings Plans to buy, then choose <b>Apply discounts</b>. Goal: every workload discounted with the fewest plans.</> })}</p>
         ) : (
           <>
             <div className="status">
               <span className={"pill " + (coveredCount === WORKS.length ? "ok" : "bad")}><i />{coveredCount}/{WORKS.length} {L({ vi: "workload được giảm giá", en: "workloads discounted" })}</span>
               <span className="count">{sel.length} {L({ vi: "plan", en: sel.length === 1 ? "plan" : "plans" })}</span>
             </div>
-            <p className={"sav-result " + (v.ok ? "ok" : "bad")}>{rich(L(v.text))}</p>
+            <p className={"mx-0 mt-2.5 mb-0 rounded-[12px] px-2.5 py-2 text-step--1 " + (v.ok ? "bg-ok-soft" : "bg-bad-soft")}>{rich(L(v.text))}</p>
           </>
         )}
       </div>
