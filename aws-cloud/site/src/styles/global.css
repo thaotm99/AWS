@@ -997,7 +997,9 @@ input[type="checkbox"]:disabled, input[type="range"]:disabled { opacity: .5; cur
 .part-top { display: flex; flex-direction: column; gap: 10px; margin-bottom: 4px; }
 .part-steps { list-style: none; margin: 0; padding: 0; display: flex; gap: 3px; }
 .part-steps li { flex: 1; display: flex; }
-.part-steps a { flex: 1; display: flex; align-items: center; min-height: 16px; }
+/* The bar stays thin; each segment's hit area is 32px tall (WCAG 2.2 target size is 24px). */
+.part-steps { margin: -8px 0; }
+.part-steps a { flex: 1; display: flex; align-items: center; min-height: 32px; }
 .part-steps a::before { content: ""; flex: 1; height: 5px; border-radius: 3px; background: var(--line); transition: background .3s; }
 .part-steps a[data-read="true"]::before { background: var(--ok, var(--accent)); }
 .part-steps a[aria-current]::before { background: var(--accent); height: 7px; }
