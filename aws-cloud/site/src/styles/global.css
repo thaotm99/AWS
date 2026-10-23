@@ -1068,3 +1068,14 @@ main.article:focus { outline: none; }
 @media (prefers-reduced-motion: reduce) { .search[open] { animation: none; } }
 .search-close .touch-only { display: none; font-family: var(--font-body); font-size: 0.875rem; }
 @media (hover: none) { .search-close .key-only { display: none; } .search-close .touch-only { display: inline; } .search-close { min-height: 40px; } }
+
+/* Top bar on phones: the brand stays on one line next to search, language and theme. */
+.brand-text { white-space: nowrap; }
+@media (max-width: 560px) {
+  .topbar-inner { gap: 6px; }
+  .brand { gap: 8px; }
+  .brand-text { font-size: 0.94rem; }
+}
+@media (max-width: 370px) {
+  .brand-text { display: none; }
+}
