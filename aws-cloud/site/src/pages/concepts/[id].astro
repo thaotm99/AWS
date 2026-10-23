@@ -5,6 +5,7 @@ import L from "../../components/L.astro";
 import Donate from "../../components/Donate.astro";
 import Importance from "../../components/Importance.astro";
 import LessonParts from "../../components/lesson/LessonParts.astro";
+import LessonProgress from "../../components/lesson/LessonProgress.astro";
 import T from "../../app/T.astro";
 import { findConcept } from "../../data/curriculum";
 import { getCurriculum } from "../../data/exam";
@@ -77,6 +78,7 @@ const docParts = [
   </div>
   <h1><L vi={title} en={titleEn} /></h1>
   {entry && <p class="lede"><L vi={entry.data.lede} en={entryEn?.data.lede ?? entry.data.lede} /></p>}
+  {entry && parts.length > 0 && <LessonProgress lesson={id} parts={parts} />}
   <dl class="meta-row">
     {!concept.intro && (
       <div>
@@ -116,7 +118,7 @@ const docParts = [
         </>
       )}
       {parts.length > 0 && (
-        <LessonParts lesson={id} parts={parts} quiz={concept.exact && concept.questions > 0 ? concept.questions : undefined} minutes={entry!.data.minutes} />
+        <LessonParts lesson={id} parts={parts} quiz={concept.exact && concept.questions > 0 ? concept.questions : undefined} />
       )}
       <section class="scene prose" id="next">
         <div class="scene-head">

@@ -44,7 +44,6 @@ export const vi = {
     finish: "Hoàn thành bài",
     quiz: "Câu hỏi kiểm tra",
     quizCount: "{n} câu hỏi",
-    total: "Khoảng {minutes} phút cho cả bài",
   },
   takeaway: "Ghi nhớ:",
   story: {

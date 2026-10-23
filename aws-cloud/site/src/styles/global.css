@@ -967,7 +967,6 @@ input[type="checkbox"]:disabled, input[type="range"]:disabled { opacity: .5; cur
 .lp-cta-verb { display: none; }
 .lp-cta-verb::after { content: ":"; }
 .lp-cta[data-verb="start"] [data-verb="start"], .lp-cta:not([data-verb]) [data-verb="start"], .lp-cta[data-verb="resume"] [data-verb="resume"], .lp-cta[data-verb="again"] [data-verb="again"] { display: inline; }
-.lp-total { grid-column: 1 / -1; color: var(--muted); font-size: 0.8125rem; }
 .lp-group { display: flex; flex-direction: column; gap: 12px; }
 .lp-group-head { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
 .lp-group-head h3 { margin: 0; font-size: 1.05rem; }
@@ -1039,3 +1038,4 @@ input[type="checkbox"]:disabled, input[type="range"]:disabled { opacity: .5; cur
 .skip-link:focus { transform: none; }
 main.article:focus { outline: none; }
 .lp-complete { margin-left: auto; font-size: 0.8125rem; font-weight: 600; color: var(--ok, var(--accent)); }
+.article > .lp-progress { margin: 22px 0 8px; }

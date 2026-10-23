@@ -44,7 +44,6 @@ export const en: Messages<typeof vi> = {
     finish: "Finish the lesson",
     quiz: "Quiz",
     quizCount: "{n} questions",
-    total: "About {minutes} min for the whole lesson",
   },
   takeaway: "Key point:",
   story: {

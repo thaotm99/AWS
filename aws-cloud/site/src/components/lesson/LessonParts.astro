@@ -1,5 +1,6 @@
 ---
-// Lesson overview: progress, a "continue" link and one card per part, grouped by kind.
+// Lesson overview: one card per part, grouped by kind. The progress card (LessonProgress) sits at the
+// top of the page; this component's script drives both.
 import L from "../L.astro";
 import T from "../../app/T.astro";
 import type { LessonPart, PartKind } from "../../data/lesson-parts";
@@ -9,9 +10,8 @@ interface Props {
   parts: LessonPart[];
   /** Questions in the lesson quiz, when it has one. */
   quiz?: number;
-  minutes: number;
 }
-const { lesson, parts, quiz, minutes } = Astro.props;
+const { lesson, parts, quiz } = Astro.props;
 
 // "NAT gateway: kết nối internet…" → heading "NAT gateway", subheading "kết nối internet…".
 const split = (s: string) => {
@@ -27,28 +27,9 @@ const groups = (["learn", "review", "exercise"] as PartKind[])
   .map((kind) => ({ kind, items: parts.filter((p) => p.kind === kind).map(card) }))
   .filter((g) => g.items.length || (g.kind === "exercise" && quiz));
 const learnCount = parts.filter((p) => p.kind === "learn").length;
-const first = card(parts[0]);
 ---
 <section class="lp" id="parts" data-lesson={lesson} data-parts={JSON.stringify(parts.map((p) => p.slug))} aria-labelledby="lp-title">
   <h2 class="sr-only" id="lp-title"><T k="lesson.parts.label" /></h2>
-  <div class="lp-progress">
-    <div class="lp-progress-head">
-      <b><T k="lesson.parts.progress" /></b>
-      <span class="lp-count"><span data-lp-done>0</span> / {parts.length}</span>
-      <span class="lp-complete" hidden><T k="lesson.parts.complete" /></span>
-    </div>
-    <div class="lp-bar" aria-hidden="true">
-      {parts.map((p) => <i data-slug={p.slug} data-kind={p.kind} />)}
-    </div>
-    <a class="btn cta lp-cta" href={first.href} data-lp-cta>
-      <span class="lp-cta-verb" data-verb="start"><T k="lesson.parts.start" /></span>
-      <span class="lp-cta-verb" data-verb="resume"><T k="lesson.parts.resume" /></span>
-      <span class="lp-cta-verb" data-verb="again"><T k="lesson.parts.again" /></span>
-      <span class="lp-cta-title" data-lp-cta-title><L vi={first.head.vi} en={first.head.en} /></span>
-      <span aria-hidden="true">→</span>
-    </a>
-    <small class="lp-total"><T k="lesson.parts.total" params={{ minutes }} /></small>
-  </div>
 
   {groups.map((g) => (
     <div class:list={["lp-group", `lp-${g.kind}`]}>
@@ -98,18 +79,18 @@ const first = card(parts[0]);
     const target = location.hash && cards.find((c) => c.dataset.scene === decodeURIComponent(location.hash.slice(1)).replace(/^en-/, ""));
     if (target) location.replace(target.href);
 
-    const cta = root.querySelector<HTMLAnchorElement>("[data-lp-cta]")!;
+    const cta = document.querySelector<HTMLAnchorElement>("[data-lp-cta]")!;
     const sync = () => {
       // Lesson progress is the parts read; a lesson marked done before lessons were split counts as fully read.
       const read = getDone().has(lesson) ? new Set(slugs) : getPartsRead(lesson);
       const next = slugs.find((s) => !read.has(s));
       const nextCard = cards.find((c) => c.dataset.slug === (next ?? slugs[0]))!;
       for (const c of cards) c.dataset.state = read.has(c.dataset.slug!) ? "read" : c === nextCard && read.size > 0 ? "current" : "";
-      root.querySelectorAll<HTMLElement>(".lp-bar i").forEach((i) => (i.dataset.state = read.has(i.dataset.slug!) ? "read" : i.dataset.slug === next && read.size > 0 ? "current" : ""));
-      root.querySelector("[data-lp-done]")!.textContent = String(slugs.filter((s) => read.has(s)).length);
+      document.querySelectorAll<HTMLElement>(".lp-bar i").forEach((i) => (i.dataset.state = read.has(i.dataset.slug!) ? "read" : i.dataset.slug === next && read.size > 0 ? "current" : ""));
+      document.querySelector("[data-lp-done]")!.textContent = String(slugs.filter((s) => read.has(s)).length);
       cta.href = nextCard.href;
       cta.dataset.verb = read.size === 0 ? "start" : next ? "resume" : "again";
-      root.querySelector<HTMLElement>(".lp-complete")!.hidden = Boolean(next);
+      document.querySelector<HTMLElement>(".lp-complete")!.hidden = Boolean(next);
       cta.querySelector("[data-lp-cta-title]")!.innerHTML = nextCard.querySelector(".lp-head")!.innerHTML;
     };
     sync();
