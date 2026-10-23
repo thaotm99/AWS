@@ -97,9 +97,9 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#s1", label: "1 · Storage class và lifecycle" },
-  { href: "#s2", label: "2 · Bảo vệ dữ liệu khỏi thao tác xoá" },
+  { href: "#s2", label: "2 · Versioning và Object Lock" },
   { href: "#s3", label: "3 · Kiểm soát truy cập" },
-  { href: "#s4", label: "4 · Quản lý key mã hoá" },
+  { href: "#s4", label: "4 · Mã hoá dữ liệu" },
   { href: "#s5", label: "5 · Hiệu năng tải lên và khả năng chịu tải" },
   { href: "#s6", label: "6 · Website tĩnh và trang dự phòng" },
   { href: "#s7", label: "7 · Phân biệt nhanh" },
@@ -118,9 +118,9 @@ Chi phí S3 gồm hai thành phần chính: phí lưu trữ tính theo GB và ph
   { need: "Thumbnail có thể tạo lại từ ảnh gốc; truy cập nhiều trong tuần đầu, sau đó giảm nhưng vẫn phải truy xuất được ngay", answer: "Lifecycle sang One Zone-IA sau 7 ngày",
     why: "Do dữ liệu có thể tạo lại, việc lưu tại một AZ để có chi phí thấp hơn Standard-IA là chấp nhận được. Dữ liệu vẫn được truy xuất ngay. Từ 16/7/2026, lifecycle rule chuyển được object sang One Zone-IA ngay từ ngày tạo, nên chuyển ngay khi lượt truy cập giảm (sau tuần đầu) có chi phí thấp nhất. Trước thời điểm đó, object phải nằm ít nhất 30 ngày trong Standard mới được chuyển sang Standard-IA hoặc One Zone-IA, nên tài liệu ôn tập cũ chọn mốc 30 ngày." },
   { need: "Kho video sản phẩm hàng trăm TB, lưu nhiều năm, chỉ được truy cập khoảng một lần mỗi quý nhưng khi truy cập phải có dữ liệu trong mili giây", answer: "S3 Glacier Instant Retrieval",
-    why: "AWS mô tả lớp này dành cho dữ liệu lưu trữ dài hạn, truy cập khoảng một lần mỗi quý và cần truy xuất trong mili giây. Đổi lại: phí truy xuất theo GB và thời gian lưu trữ tối thiểu 90 ngày. Glacier Flexible Retrieval và Deep Archive yêu cầu restore trước khi đọc, mất từ vài phút tới nhiều giờ." },
+    why: "AWS mô tả storage class này dành cho dữ liệu lưu trữ dài hạn, truy cập khoảng một lần mỗi quý và cần truy xuất trong mili giây. Đổi lại: phí truy xuất theo GB và thời gian lưu trữ tối thiểu 90 ngày. Glacier Flexible Retrieval và Deep Archive yêu cầu restore trước khi đọc, mất từ vài phút tới nhiều giờ." },
   { need: "Tệp trung gian của pipeline xử lý đơn hàng, được đọc lại liên tục", answer: "S3 Standard",
-    why: "Với dữ liệu đọc thường xuyên, Standard có chi phí thấp nhất vì các lớp IA tính phí cho mỗi lần truy xuất dữ liệu." },
+    why: "Với dữ liệu đọc thường xuyên, Standard có chi phí thấp nhất vì các storage class IA tính phí cho mỗi lần truy xuất dữ liệu." },
   { need: "Ảnh sản phẩm: mẫu bán chạy được truy cập liên tục, các mẫu khác hầu như không được truy cập; không dự đoán trước được", answer: "S3 Intelligent-Tiering",
     why: "Tự động chuyển từng object giữa các tầng theo mức độ truy cập, không tính phí truy xuất dữ liệu; chỉ thu một khoản phí monitoring và automation nhỏ cho mỗi object." },
   { need: "Hoá đơn: truy cập thường xuyên trong tháng đầu, sau đó ít nhưng phải truy xuất được ngay; lưu giữ 5 năm rồi xoá", answer: "Lifecycle sang Standard-IA sau 30 ngày + expiration",
@@ -133,7 +133,7 @@ Lifecycle chuyển object theo mô hình thác nước (waterfall): chỉ theo m
 
 <LifecycleValidator client:visible />
 
-**Thời điểm transition sang lớp IA.** Từ ngày 16/7/2026, lifecycle rule chuyển được object sang Standard-IA hoặc One Zone-IA ngay từ 0 ngày sau khi tạo. Trước thời điểm đó, S3 yêu cầu object nằm ít nhất 30 ngày trong Standard rồi mới được chuyển sang hai lớp này; tài liệu ôn tập soạn trước tháng 7/2026 dựa trên quy định cũ nên loại các phương án "chuyển sau 7 ngày". Thời gian lưu trữ tối thiểu 30 ngày của Standard-IA và One Zone-IA vẫn giữ nguyên: đây là quy tắc tính phí khi object rời lớp IA sớm, không phải điều kiện để được transition. Ngoài ra, mặc định lifecycle không chuyển object nhỏ hơn 128 KB sang bất kỳ storage class nào.
+**Thời điểm transition sang storage class IA.** Từ ngày 16/7/2026, lifecycle rule chuyển được object sang Standard-IA hoặc One Zone-IA ngay từ 0 ngày sau khi tạo. Trước thời điểm đó, S3 yêu cầu object nằm ít nhất 30 ngày trong Standard rồi mới được chuyển sang hai lớp này; tài liệu ôn tập soạn trước tháng 7/2026 dựa trên quy định cũ nên loại các phương án "chuyển sau 7 ngày". Thời gian lưu trữ tối thiểu 30 ngày của Standard-IA và One Zone-IA vẫn giữ nguyên: đây là quy tắc tính phí khi object rời lớp IA sớm, không phải điều kiện để được transition. Ngoài ra, mặc định lifecycle không chuyển object nhỏ hơn 128 KB sang bất kỳ storage class nào.
 
 Một lifecycle rule không nhất thiết áp dụng cho toàn bucket. Phần tử **filter** của rule xác định nhóm object chịu tác động: theo **prefix** của key, theo một hoặc nhiều **object tag** (khớp chính xác cả key và value), hoặc theo kích thước object; khi kết hợp nhiều điều kiện, S3 áp dụng logic AND. Mỗi filter chỉ có một prefix, nên muốn áp dụng hành động cho nhiều prefix khác nhau thì tạo nhiều rule. Filter rỗng áp dụng cho mọi object trong bucket. Bucket ảnh sản phẩm của ShopViet lưu ảnh gốc trong `images/` và thumbnail trong `thumbnails/`; hai nhóm này có mẫu truy cập khác nhau:
 
@@ -143,11 +143,11 @@ Lượng dữ liệu được đọc lại quyết định storage class nào r�
 
 <CostEstimator client:visible preset="s3-classes" />
 
-<Takeaway>Truy cập thường xuyên: Standard. Mẫu truy cập không dự đoán được: Intelligent-Tiering. Truy cập ít nhưng cần truy xuất ngay: Standard-IA (One Zone-IA nếu dữ liệu tạo lại được và chấp nhận mất dữ liệu khi một AZ gặp sự cố). Lưu trữ dài hạn: các lớp Glacier. Lifecycle không chuyển ngược lên. Chỉ một phần dữ liệu đổi mẫu truy cập: lifecycle rule có filter theo prefix hoặc tag. Standard-IA và One Zone-IA có thời gian lưu trữ tối thiểu 30 ngày: object bị xoá, ghi đè hoặc chuyển đi sớm hơn vẫn bị tính phí đủ 30 ngày. Từ 16/7/2026, rule chuyển sang Standard-IA hoặc One Zone-IA được ngay từ ngày 0 (trước đó object phải ở Standard tối thiểu 30 ngày).</Takeaway>
+<Takeaway>Truy cập thường xuyên: Standard. Mẫu truy cập không dự đoán được: Intelligent-Tiering. Truy cập ít nhưng cần truy xuất ngay: Standard-IA (One Zone-IA nếu dữ liệu tạo lại được và chấp nhận mất dữ liệu khi một AZ gặp sự cố). Lưu trữ dài hạn: các storage class S3 Glacier. Lifecycle không chuyển ngược lên. Chỉ một phần dữ liệu đổi mẫu truy cập: lifecycle rule có filter theo prefix hoặc tag. Standard-IA và One Zone-IA có thời gian lưu trữ tối thiểu 30 ngày: object bị xoá, ghi đè hoặc chuyển đi sớm hơn vẫn bị tính phí đủ 30 ngày. Từ 16/7/2026, rule chuyển sang Standard-IA hoặc One Zone-IA được ngay từ ngày 0 (trước đó object phải ở Standard tối thiểu 30 ngày).</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/7" title="Bảo vệ hoá đơn khỏi thao tác xoá: versioning và Object Lock" questions={["exam1_q20", "exam5_q50", "exam1_q56", "exam4_q64", "exam5_q39"]}>
+<Scene id="s2" label="Phần 2/7" title="Bảo vệ dữ liệu khỏi thao tác xoá: S3 Versioning, MFA Delete và S3 Object Lock" questions={["exam1_q20", "exam5_q50", "exam1_q56", "exam4_q64", "exam5_q39"]}>
 
 <p class="scene-intro">Một số dữ liệu phải được giữ nguyên trong nhiều năm theo quy định; cần cơ chế ngăn việc xoá hoặc ghi đè, kể cả do nhầm lẫn hay do chính quản trị viên.</p>
 
@@ -165,9 +165,9 @@ Retention period gắn với từng phiên bản object, do đó các phiên b�
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/7" title="Kiểm soát truy cập bucket" questions={["exam4_q65", "exam2_q24", "exam4_q8", "exam2_q15", "exam6_q30", "exam6_q3", "exam6_q54", "exam6_q29", "exam4_q34", "exam5_q39", "exam5_q24"]}>
+<Scene id="s3" label="Phần 3/7" title="Kiểm soát truy cập trong Amazon S3" questions={["exam4_q65", "exam2_q24", "exam4_q8", "exam2_q15", "exam6_q30", "exam6_q3", "exam6_q54", "exam6_q29", "exam4_q34", "exam5_q39", "exam5_q24"]}>
 
-<p class="scene-intro">Khi nhiều team và đối tác cùng dùng một kho dữ liệu, việc cấp quyền cần rõ ràng: ai được đọc, ai được ghi, và chỉ trong phạm vi nào.</p>
+<p class="scene-intro">Khi nhiều team và đối tác cùng dùng một bucket, việc cấp quyền cần rõ ràng: ai được đọc, ai được ghi, và chỉ trong phạm vi nào.</p>
 
 Khi số lượng team và đối tác sử dụng dữ liệu tăng lên, việc cấp quyền cần được tổ chức gọn và rõ ràng. Chọn từng tình huống:
 
@@ -197,7 +197,7 @@ Khi số lượng team và đối tác sử dụng dữ liệu tăng lên, việ
 
 </Scene>
 
-<Scene id="s4" label="Phần 4/7" title="Quản lý key mã hoá" questions={["exam2_q10", "exam6_q51", "exam3_q24", "exam1_q22", "exam5_q46"]}>
+<Scene id="s4" label="Phần 4/7" title="Mã hoá dữ liệu: server-side encryption và client-side encryption" questions={["exam2_q10", "exam6_q51", "exam3_q24", "exam1_q22", "exam5_q46"]}>
 
 <p class="scene-intro">Dữ liệu trên S3 luôn được mã hoá; điều cần quyết định là ai giữ key mã hoá và có cần ghi lại mỗi lần key được sử dụng hay không.</p>
 
@@ -205,13 +205,13 @@ Mọi phương thức mã hoá đều khiến dữ liệu lưu trên đĩa khôn
 
 <EncryptionSim client:visible />
 
-Khi chuyển kho hoá đơn từ trung tâm dữ liệu lên S3, bộ phận bảo mật yêu cầu mỗi tệp được mã hoá bằng một key khác nhau. Yêu cầu này không đòi hỏi chia dữ liệu ra nhiều bucket: với server-side encryption, S3 mã hoá **mỗi object bằng một key riêng**, kể cả với SSE-S3 mặc định. **Client-side encryption** là phương án khác hẳn: ứng dụng dùng **Amazon S3 Encryption Client** để mã hoá dữ liệu cục bộ trước khi gửi; S3 nhận dữ liệu đã mã hoá, không tham gia mã hoá hay giải mã, và không nhận biết object đó đã được mã hoá. Encryption Client cũng mã hoá mỗi object bằng một data key riêng, nhưng ứng dụng phải tích hợp thư viện và tự quản lý wrapping key, nên chỉ phù hợp khi dữ liệu phải được mã hoá trước khi rời khỏi hệ thống của công ty.
+Khi chuyển dữ liệu hoá đơn từ data center lên S3, bộ phận bảo mật yêu cầu mỗi tệp được mã hoá bằng một key khác nhau. Yêu cầu này không đòi hỏi chia dữ liệu ra nhiều bucket: với server-side encryption, S3 mã hoá **mỗi object bằng một key riêng**, kể cả với SSE-S3 mặc định. **Client-side encryption** là phương án khác hẳn: ứng dụng dùng **Amazon S3 Encryption Client** để mã hoá dữ liệu cục bộ trước khi gửi; S3 nhận dữ liệu đã mã hoá, không tham gia mã hoá hay giải mã, và không nhận biết object đó đã được mã hoá. Encryption Client cũng mã hoá mỗi object bằng một data key riêng, nhưng ứng dụng phải tích hợp thư viện và tự quản lý wrapping key, nên chỉ phù hợp khi dữ liệu phải được mã hoá trước khi rời khỏi hệ thống của công ty.
 
 <Takeaway>Cấu hình đơn giản nhất: SSE-S3 (mỗi object một key riêng). Cần audit việc sử dụng key: SSE-KMS (bật S3 Bucket Key để giảm chi phí gọi KMS). Key phải được lưu giữ tại công ty nhưng S3 thực hiện mã hoá: SSE-C (từ tháng 4/2026, SSE-C bị chặn mặc định trên bucket mới; cần bật lại bằng PutBucketEncryption). Dữ liệu phải được mã hoá trước khi gửi tới AWS: client-side encryption với Amazon S3 Encryption Client.</Takeaway>
 
 </Scene>
 
-<Scene id="s5" label="Phần 5/7" title="Tối ưu tốc độ tải lên và khả năng chịu tải cao điểm" questions={["exam4_q14", "exam1_q64", "exam1_q18", "exam1_q40", "exam1_q51", "exam6_q20", "exam5_q21", "exam3_q37"]}>
+<Scene id="s5" label="Phần 5/7" title="Hiệu năng Amazon S3: multipart upload, Transfer Acceleration và prefix" questions={["exam4_q14", "exam1_q64", "exam1_q18", "exam1_q40", "exam1_q51", "exam6_q20", "exam5_q21", "exam3_q37"]}>
 
 <p class="scene-intro">Khi khối lượng dữ liệu và số người dùng tăng, tốc độ tải lên và khả năng chịu tải cao điểm trở thành vấn đề; S3 có các tính năng riêng cho từng tình huống.</p>
 
@@ -225,9 +225,9 @@ Phần này trình bày bốn sự cố ShopViet gặp phải khi khối lượn
 
 </Scene>
 
-<Scene id="s6" label="Phần 6/7" title="Website tĩnh trên S3: website endpoint và trang dự phòng khi sự cố" questions={["exam5_q15", "exam1_q62", "exam4_q53", "exam5_q56"]}>
+<Scene id="s6" label="Phần 6/7" title="Static website hosting trên Amazon S3 và trang dự phòng với Route 53 failover" questions={["exam5_q15", "exam1_q62", "exam4_q53", "exam5_q56"]}>
 
-<p class="scene-intro">Một website chỉ gồm HTML, CSS và ảnh không cần máy chủ chạy ứng dụng; các file có thể được phục vụ trực tiếp từ S3.</p>
+<p class="scene-intro">Một website chỉ gồm HTML, CSS và ảnh không cần tầng ứng dụng như EC2 instance; các object được phục vụ trực tiếp từ bucket S3.</p>
 
 Trang khuyến mãi theo mùa của ShopViet chỉ gồm HTML, CSS, ảnh và client-side script, nên có thể được phục vụ trực tiếp từ bucket `shopviet-promo`. Khi bật **static website hosting**, bucket có thêm một **website endpoint** theo Region (`http://<bucket>.s3-website-<region>.amazonaws.com` hoặc `…s3-website.<region>…` tuỳ Region), tách biệt với **REST API endpoint** mà ứng dụng dùng để gửi request API. Hai endpoint xử lý cùng một request theo cách rất khác nhau. Gửi từng request qua mỗi endpoint để so sánh:
 
@@ -293,7 +293,7 @@ Một số tính năng S3 có tên hoặc mô tả gần với nhu cầu thực 
     notHere: "Bộ phận tuân thủ cần danh sách mọi bucket chưa bật versioning trên mọi Region và account. Access point chỉ định tuyến request tới dữ liệu, không báo cáo cấu hình bucket.",
     instead: "**S3 Storage Lens**: dashboard toàn Organization, có metric về versioning theo bucket." },
   { name: "S3 on Outposts",
-    use: "Tạo bucket trên AWS Outposts tại trung tâm dữ liệu của công ty, storage class `OUTPOSTS`, cho yêu cầu dữ liệu lưu tại chỗ, xử lý cục bộ hoặc độ trễ thấp tới hệ thống on-premises. Outposts được mua theo cấu hình rack.",
+    use: "Tạo bucket trên AWS Outposts tại data center của công ty, storage class `OUTPOSTS`, cho yêu cầu dữ liệu lưu tại chỗ, xử lý cục bộ hoặc độ trễ thấp tới hệ thống on-premises. Outposts được mua theo cấu hình rack.",
     notHere: "Hàng trăm bucket có lifecycle cấu hình chưa tối ưu khiến chi phí lưu trữ tăng. Đưa dữ liệu về Outposts không phải biện pháp giảm chi phí lưu trữ.",
     instead: "**S3 Intelligent-Tiering**: tự động chuyển object giữa các tầng theo mức độ truy cập, không phí truy xuất, không cần quản lý lifecycle cho từng bucket." },
   { name: "ACL",
@@ -338,7 +338,7 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Object Lock Governance mode", "Object Lock Compliance mode", "Versioning"],
     a: 1,
     why: "Compliance mode không cho phép bất kỳ ai bỏ qua trong thời hạn lưu giữ. Governance mode vẫn cho phép người có quyền bypass thực hiện xoá." },
-  { q: "Bộ phận bảo mật yêu cầu key mã hoá phải được lưu giữ trên máy chủ của công ty, nhưng S3 đảm nhận việc mã hoá. Phương án nào phù hợp?",
+  { q: "Bộ phận bảo mật yêu cầu key mã hoá phải do công ty tự quản lý và lưu giữ, nhưng S3 đảm nhận việc mã hoá. Phương án nào phù hợp?",
     opts: ["SSE-KMS", "SSE-C", "Client-side encryption"],
     a: 1,
     why: "Với SSE-C, ứng dụng gửi key kèm theo từng request qua HTTPS; S3 mã hoá dữ liệu và không lưu key. Trên bucket mới, SSE-C bị chặn mặc định nên phải bật lại bằng PutBucketEncryption trước khi sử dụng." },

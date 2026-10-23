@@ -27,7 +27,7 @@ const SCENARIOS: Scenario[] = [
   { id: "bucket-key", name: { vi: "Chi phí gọi KMS tăng đột biến", en: "KMS request costs spike" }, method: "SSE-KMS + S3 Bucket Key",
     toggle: { label: { vi: "Bật S3 Bucket Key", en: "Enable S3 Bucket Key" }, initial: false },
     result: (on, n) => on
-      ? { vi: `Chỉ ${n} lần gọi KMS: S3 tạo một **bucket key** ngắn hạn, sau đó tự sinh data key cho các object tiếp theo. Phương thức vẫn là SSE-KMS, nhưng số request tới KMS và chi phí giảm đáng kể.`, en: `Only ${n} KMS call: S3 creates a short-lived **bucket key** and then generates data keys for the following objects itself. The method is still SSE-KMS, but requests to KMS and their cost drop significantly.` }
+      ? { vi: `Chỉ ${n} lần gọi KMS: S3 tạo một **S3 Bucket Key** ngắn hạn, sau đó tự sinh data key cho các object tiếp theo. Phương thức vẫn là SSE-KMS, nhưng số request tới KMS và chi phí giảm đáng kể.`, en: `Only ${n} KMS call: S3 creates a short-lived **S3 Bucket Key** and then generates data keys for the following objects itself. The method is still SSE-KMS, but requests to KMS and their cost drop significantly.` }
       : { vi: `${n} lần gọi KMS cho ${n} object. Với hàng triệu object mỗi ngày, chi phí KMS rất lớn. Bật **S3 Bucket Key** và tải lên lại để so sánh.`, en: `${n} KMS calls for ${n} objects. With millions of objects a day, the KMS cost is very high. Enable **S3 Bucket Key** and upload again to compare.` } },
   { id: "sse-c", name: { vi: "Key lưu giữ tại máy chủ công ty", en: "Keys kept on company servers" }, method: "SSE-C",
     result: () => ({ vi: "Key được gửi kèm từng request (bắt buộc HTTPS). S3 **không lưu key**. Khi đọc, request phải kèm đúng key đó; mất key đồng nghĩa với mất object. Từ tháng 4/2026, SSE-C bị **chặn mặc định** trên bucket general purpose mới; phải đặt `BlockedEncryptionTypes` = `NONE` bằng PutBucketEncryption trước khi tải lên, nếu không request trả về 403 AccessDenied.", en: "The key is sent with every request (HTTPS is required). S3 **does not store the key**. To read, the request must include that same key; losing the key means losing the object. Since April 2026, SSE-C is **blocked by default** on new general purpose buckets; you must set `BlockedEncryptionTypes` = `NONE` with PutBucketEncryption before uploading, otherwise the request returns 403 AccessDenied." }) },
@@ -126,12 +126,12 @@ export default function EncryptionSim() {
             travel(L, [[POS.kms[0] + 75, POS.kms[1]], [POS.trail[0] - 85, POS.trail[1]]], 300 * fast, "pkt-edge", 4),
           ]);
           if (i === 0) {
-            add("KMS", "lock", m === "bucket-key" && on ? { vi: "Lần đầu tiên: S3 gọi KMS để tạo **bucket key** cho bucket.", en: "First time: S3 calls KMS to create a **bucket key** for the bucket." } : { vi: "S3 gọi **KMS** để yêu cầu data key cho object này.", en: "S3 calls **KMS** to request a data key for this object." });
+            add("KMS", "lock", m === "bucket-key" && on ? { vi: "Lần đầu tiên: S3 gọi KMS để tạo **S3 Bucket Key** cho bucket.", en: "First time: S3 calls KMS to create an **S3 Bucket Key** for the bucket." } : { vi: "S3 gọi **KMS** để yêu cầu data key cho object này.", en: "S3 calls **KMS** to request a data key for this object." });
             add("LOG", "hit", { vi: "Lần sử dụng key được ghi vào **CloudTrail**.", en: "The key use is recorded in **CloudTrail**." });
           }
         } else {
           flashText(L, POS.s3[0], POS.s3[1] - 34, tr({ vi: "sử dụng bucket key", en: "uses bucket key" }), "s3x-flash-edge", 700);
-          if (i === 1) add("S3", "miss", { vi: "Các object tiếp theo: S3 tự sinh data key từ **bucket key**, không gọi KMS.", en: "Following objects: S3 generates data keys from the **bucket key** without calling KMS." });
+          if (i === 1) add("S3", "miss", { vi: "Các object tiếp theo: S3 tự sinh data key từ **S3 Bucket Key**, không gọi KMS.", en: "Following objects: S3 generates data keys from the **S3 Bucket Key** without calling KMS." });
           await wait(300 * fast);
         }
       }

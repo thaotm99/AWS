@@ -97,9 +97,9 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#en-s1", label: "1 · Storage classes and lifecycle" },
-  { href: "#en-s2", label: "2 · Protecting data from deletion" },
+  { href: "#en-s2", label: "2 · Versioning and Object Lock" },
   { href: "#en-s3", label: "3 · Access control" },
-  { href: "#en-s4", label: "4 · Managing encryption keys" },
+  { href: "#en-s4", label: "4 · Data encryption" },
   { href: "#en-s5", label: "5 · Upload performance and peak load" },
   { href: "#en-s6", label: "6 · Static website and failover page" },
   { href: "#en-s7", label: "7 · Quick comparison" },
@@ -118,9 +118,9 @@ S3 cost has two main components: a storage charge per GB and a data retrieval ch
   { need: "Thumbnails that can be regenerated from the original images; accessed heavily in the first week, then less, but must still be retrievable immediately", answer: "Lifecycle to One Zone-IA after 7 days",
     why: "Because the data can be regenerated, storing it in a single AZ at a lower cost than Standard-IA is acceptable. The data is still retrieved immediately. Since July 16, 2026, a lifecycle rule can transition objects to One Zone-IA as soon as the day they are created, so moving them as soon as access drops (after the first week) costs the least. Before that date, objects had to stay at least 30 days in Standard before a transition to Standard-IA or One Zone-IA, which is why older study material picks 30 days." },
   { need: "A product video library of hundreds of TB, kept for many years, accessed only about once a quarter, but when accessed the data must be available in milliseconds", answer: "S3 Glacier Instant Retrieval",
-    why: "AWS describes this class as being for long-lived archive data accessed about once a quarter that needs millisecond retrieval. The trade-off: a per-GB retrieval charge and a 90-day minimum storage duration. Glacier Flexible Retrieval and Deep Archive require a restore before reading, which takes from minutes to many hours." },
+    why: "AWS describes this storage class as being for long-lived archive data accessed about once a quarter that needs millisecond retrieval. The trade-off: a per-GB retrieval charge and a 90-day minimum storage duration. Glacier Flexible Retrieval and Deep Archive require a restore before reading, which takes from minutes to many hours." },
   { need: "Intermediate files of the order-processing pipeline, read again constantly", answer: "S3 Standard",
-    why: "For frequently read data, Standard costs the least because the IA classes charge for every data retrieval." },
+    why: "For frequently read data, Standard costs the least because the IA storage classes charge for every data retrieval." },
   { need: "Product images: best-selling items are accessed constantly, other items are almost never accessed; this cannot be predicted in advance", answer: "S3 Intelligent-Tiering",
     why: "Automatically moves each object between tiers based on access, with no data retrieval charges; it only charges a small monitoring and automation fee per object." },
   { need: "Invoices: accessed frequently in the first month, then rarely but must be retrievable immediately; kept for 5 years and then deleted", answer: "Lifecycle to Standard-IA after 30 days + expiration",
@@ -133,7 +133,7 @@ Lifecycle transitions objects in a waterfall model: one way only, down to lower-
 
 <LifecycleValidator client:visible />
 
-**When objects can move to an IA class.** Since July 16, 2026, a lifecycle rule can transition objects to Standard-IA or One Zone-IA as soon as 0 days after creation. Before that date, S3 required objects to stay at least 30 days in Standard before a transition to these two classes; study material written before July 2026 relies on the old rule and therefore rules out "transition after 7 days" options. The 30-day minimum storage duration of Standard-IA and One Zone-IA is unchanged: it is a billing rule for objects that leave the IA class early, not a condition for the transition. In addition, by default lifecycle does not transition objects smaller than 128 KB to any storage class.
+**When objects can transition to an IA storage class.** Since July 16, 2026, a lifecycle rule can transition objects to Standard-IA or One Zone-IA as soon as 0 days after creation. Before that date, S3 required objects to stay at least 30 days in Standard before a transition to these two classes; study material written before July 2026 relies on the old rule and therefore rules out "transition after 7 days" options. The 30-day minimum storage duration of Standard-IA and One Zone-IA is unchanged: it is a billing rule for objects that leave the IA class early, not a condition for the transition. In addition, by default lifecycle does not transition objects smaller than 128 KB to any storage class.
 
 A lifecycle rule does not have to apply to the whole bucket. The rule's **filter** element selects the objects it acts on: by key **prefix**, by one or more **object tags** (each matching both key and value exactly), or by object size; when several conditions are combined, S3 applies a logical AND. A filter has only one prefix, so to apply an action to several different prefixes you create several rules. An empty filter applies to every object in the bucket. ShopViet's product image bucket keeps originals under `images/` and thumbnails under `thumbnails/`; the two groups have different access patterns:
 
@@ -143,11 +143,11 @@ How much data is read back decides which storage class is cheapest. Change the v
 
 <CostEstimator client:visible preset="s3-classes" />
 
-<Takeaway>Frequent access: Standard. Unpredictable access patterns: Intelligent-Tiering. Infrequent access that needs immediate retrieval: Standard-IA (One Zone-IA if the data can be regenerated and losing it with an AZ is acceptable). Long-term archive: the Glacier classes. Lifecycle does not transition objects back up. Only part of the data changes its access pattern: a lifecycle rule with a prefix or tag filter. Standard-IA and One Zone-IA have a 30-day minimum storage duration: an object deleted, overwritten or transitioned earlier is still charged for the full 30 days. Since July 16, 2026, a rule can transition to Standard-IA or One Zone-IA from day 0 (before that, objects had to stay in Standard for at least 30 days).</Takeaway>
+<Takeaway>Frequent access: Standard. Unpredictable access patterns: Intelligent-Tiering. Infrequent access that needs immediate retrieval: Standard-IA (One Zone-IA if the data can be regenerated and losing it with an AZ is acceptable). Long-term archive: the S3 Glacier storage classes. Lifecycle does not transition objects back up. Only part of the data changes its access pattern: a lifecycle rule with a prefix or tag filter. Standard-IA and One Zone-IA have a 30-day minimum storage duration: an object deleted, overwritten or transitioned earlier is still charged for the full 30 days. Since July 16, 2026, a rule can transition to Standard-IA or One Zone-IA from day 0 (before that, objects had to stay in Standard for at least 30 days).</Takeaway>
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/7" title="Protecting invoices from deletion: versioning and Object Lock" questions={["exam1_q20", "exam5_q50", "exam1_q56", "exam4_q64", "exam5_q39"]}>
+<Scene id="en-s2" label="Part 2/7" title="Protecting data from deletion: S3 Versioning, MFA Delete and S3 Object Lock" questions={["exam1_q20", "exam5_q50", "exam1_q56", "exam4_q64", "exam5_q39"]}>
 
 <p class="scene-intro">Some data must stay untouched for years by regulation; it needs a mechanism that prevents deletion or overwriting, whether by mistake or by an administrator.</p>
 
@@ -165,9 +165,9 @@ Retention periods apply to individual object versions, so versions of the same k
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/7" title="Controlling bucket access" questions={["exam4_q65", "exam2_q24", "exam4_q8", "exam2_q15", "exam6_q30", "exam6_q3", "exam6_q54", "exam6_q29", "exam4_q34", "exam5_q39", "exam5_q24"]}>
+<Scene id="en-s3" label="Part 3/7" title="Access control in Amazon S3" questions={["exam4_q65", "exam2_q24", "exam4_q8", "exam2_q15", "exam6_q30", "exam6_q3", "exam6_q54", "exam6_q29", "exam4_q34", "exam5_q39", "exam5_q24"]}>
 
-<p class="scene-intro">When many teams and partners share one data store, access must be clear: who may read, who may write, and within which scope.</p>
+<p class="scene-intro">When many teams and partners share one bucket, access must be clear: who may read, who may write, and within which scope.</p>
 
 As the number of teams and partners using the data grows, permissions need to be organized in a compact, clear way. Choose each scenario:
 
@@ -197,7 +197,7 @@ An **ACL** is S3's legacy access control mechanism: every bucket and object has 
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/7" title="Managing encryption keys" questions={["exam2_q10", "exam6_q51", "exam3_q24", "exam1_q22", "exam5_q46"]}>
+<Scene id="en-s4" label="Part 4/7" title="Data encryption: server-side and client-side encryption" questions={["exam2_q10", "exam6_q51", "exam3_q24", "exam1_q22", "exam5_q46"]}>
 
 <p class="scene-intro">Data in S3 is always encrypted; what must be decided is who holds the encryption key and whether each use of it must be logged.</p>
 
@@ -205,13 +205,13 @@ Every encryption method makes data at rest unusable without the key. The differe
 
 <EncryptionSim client:visible />
 
-When the invoice archive moves from the data center to S3, the security team requires every file to be encrypted with a different key. This does not require splitting the data across several buckets: with server-side encryption, S3 encrypts **each object with a unique key**, including with the default SSE-S3. **Client-side encryption** is a different approach: the application uses the **Amazon S3 Encryption Client** to encrypt data locally before sending it; S3 receives data that is already encrypted, plays no role in encrypting or decrypting it, and does not recognize the object as encrypted. The Encryption Client also encrypts every object with a unique data key, but the application must integrate the library and manage the wrapping key itself, so it fits only when data must be encrypted before it leaves the company's systems.
+When the invoice data moves from the data center to S3, the security team requires every file to be encrypted with a different key. This does not require splitting the data across several buckets: with server-side encryption, S3 encrypts **each object with a unique key**, including with the default SSE-S3. **Client-side encryption** is a different approach: the application uses the **Amazon S3 Encryption Client** to encrypt data locally before sending it; S3 receives data that is already encrypted, plays no role in encrypting or decrypting it, and does not recognize the object as encrypted. The Encryption Client also encrypts every object with a unique data key, but the application must integrate the library and manage the wrapping key itself, so it fits only when data must be encrypted before it leaves the company's systems.
 
 <Takeaway>Simplest configuration: SSE-S3 (a unique key per object). Need to audit key usage: SSE-KMS (enable S3 Bucket Key to reduce the cost of KMS calls). Keys must be kept at the company but S3 performs the encryption: SSE-C (since April 2026, SSE-C is blocked by default on new buckets; re-enable it with PutBucketEncryption). Data must be encrypted before it is sent to AWS: client-side encryption with the Amazon S3 Encryption Client.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s5" label="Part 5/7" title="Optimizing upload speed and peak-load capacity" questions={["exam4_q14", "exam1_q64", "exam1_q18", "exam1_q40", "exam1_q51", "exam6_q20", "exam5_q21", "exam3_q37"]}>
+<Scene id="en-s5" label="Part 5/7" title="Amazon S3 performance: multipart upload, Transfer Acceleration and prefixes" questions={["exam4_q14", "exam1_q64", "exam1_q18", "exam1_q40", "exam1_q51", "exam6_q20", "exam5_q21", "exam3_q37"]}>
 
 <p class="scene-intro">As data and users grow, upload speed and peak-time load become problems; S3 has a specific feature for each situation.</p>
 
@@ -225,9 +225,9 @@ This part presents four problems ShopViet ran into as data volume and the number
 
 </Scene>
 
-<Scene id="en-s6" label="Part 6/7" title="Static websites on S3: the website endpoint and a failover page" questions={["exam5_q15", "exam1_q62", "exam4_q53", "exam5_q56"]}>
+<Scene id="en-s6" label="Part 6/7" title="Static website hosting on Amazon S3 and a failover page with Route 53" questions={["exam5_q15", "exam1_q62", "exam4_q53", "exam5_q56"]}>
 
-<p class="scene-intro">A website made only of HTML, CSS and images needs no application server; the files can be served straight from S3.</p>
+<p class="scene-intro">A website made only of HTML, CSS and images needs no application tier such as EC2 instances; the objects are served directly from an S3 bucket.</p>
 
 ShopViet's seasonal promotion site consists only of HTML, CSS, images and client-side scripts, so it can be served directly from the `shopviet-promo` bucket. When you enable **static website hosting**, the bucket gets a Region-specific **website endpoint** (`http://<bucket>.s3-website-<region>.amazonaws.com` or `…s3-website.<region>…`, depending on the Region), separate from the **REST API endpoint** that applications send API requests to. The two endpoints handle the same request very differently. Send each request through each endpoint to compare:
 
@@ -338,7 +338,7 @@ Check question: as the designer of the ShopViet system, which option fits?
     opts: ["Object Lock Governance mode", "Object Lock Compliance mode", "Versioning"],
     a: 1,
     why: "Compliance mode lets no one bypass it during the retention period. Governance mode still lets users with bypass permission delete." },
-  { q: "The security department requires the encryption keys to be kept on company servers, but S3 must handle the encryption. Which option fits?",
+  { q: "The security department requires the encryption keys to be managed and kept by the company, but S3 must handle the encryption. Which option fits?",
     opts: ["SSE-KMS", "SSE-C", "Client-side encryption"],
     a: 1,
     why: "With SSE-C, the application sends the key with each request over HTTPS; S3 encrypts the data and does not store the key. On new buckets, SSE-C is blocked by default, so it must be re-enabled with PutBucketEncryption before use." },
