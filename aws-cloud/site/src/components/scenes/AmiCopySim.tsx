@@ -17,15 +17,15 @@ function Res({ x, y, label, sub, kind }: { x: number; y: number; label: string; 
 }
 
 const NOTES: Record<Step, Bi<ReactNode>> = {
-  0: { vi: <>Server <code>web-1</code> của ShopViet đang chạy tại Region Singapore. Yêu cầu: chuẩn bị sẵn phương án khôi phục tại Region Tokyo khi Singapore gặp sự cố. Thực hiện lần lượt các bước phía trên.</>,
-    en: <>ShopViet's server <code>web-1</code> is running in the Singapore Region. Requirement: have a recovery plan ready in the Tokyo Region in case Singapore fails. Perform the steps above in order.</> },
+  0: { vi: <>EC2 instance <code>web-1</code> của ShopViet đang chạy tại Region Singapore. Yêu cầu: chuẩn bị sẵn phương án khôi phục tại Region Tokyo khi Singapore gặp sự cố. Thực hiện lần lượt các bước phía trên.</>,
+    en: <>ShopViet's EC2 instance <code>web-1</code> is running in the Singapore Region. Requirement: have a recovery plan ready in the Tokyo Region in case Singapore fails. Perform the steps above in order.</> },
   1: { vi: <>Snapshot lưu lại trạng thái EBS volume của <code>web-1</code>. Snapshot là tài nguyên cấp Region: snapshot chỉ tồn tại tại Singapore.</>,
     en: <>The snapshot saves the state of <code>web-1</code>'s EBS volume. A snapshot is a Regional resource: the snapshot exists only in Singapore.</> },
-  2: { vi: <>AMI là template dùng để launch server; AMI tham chiếu tới snapshot bên dưới. AMI cũng là tài nguyên cấp Region.</>,
-    en: <>An AMI is the template used to launch servers; the AMI references the snapshot underneath. An AMI is also a Regional resource.</> },
+  2: { vi: <>AMI là template dùng để launch EC2 instance; AMI tham chiếu tới snapshot bên dưới. AMI cũng là tài nguyên cấp Region.</>,
+    en: <>An AMI is the template used to launch EC2 instances; the AMI references the snapshot underneath. An AMI is also a Regional resource.</> },
   3: { vi: <>Copy AMI sang Tokyo. AWS <b>tự động tạo một snapshot tại Tokyo</b> làm backing snapshot cho AMI bản copy (với AMI dùng EBS).</>,
     en: <>Copy the AMI to Tokyo. AWS <b>automatically creates a snapshot in Tokyo</b> as the backing snapshot for the copied AMI (for EBS-backed AMIs).</> },
-  4: { vi: <>Launch <code>web-1b</code> từ AMI tại Tokyo. Region Tokyo hiện có <b>1 EC2, 1 AMI và 1 snapshot</b>.</>,
+  4: { vi: <>Launch <code>web-1b</code> từ AMI tại Tokyo. Region Tokyo hiện có <b>1 EC2 instance, 1 AMI và 1 snapshot</b>.</>,
     en: <>Launch <code>web-1b</code> from the AMI in Tokyo. The Tokyo Region now has <b>1 EC2 instance, 1 AMI and 1 snapshot</b>.</> },
 };
 
@@ -61,7 +61,7 @@ export default function AmiCopySim() {
   }
 
   const labels = L({
-    vi: ["1. Tạo snapshot", "2. Tạo AMI", "3. Copy AMI sang Tokyo", "4. Launch EC2 tại Tokyo"],
+    vi: ["1. Tạo snapshot", "2. Tạo AMI", "3. Copy AMI sang Tokyo", "4. Launch instance tại Tokyo"],
     en: ["1. Create snapshot", "2. Create AMI", "3. Copy AMI to Tokyo", "4. Launch EC2 in Tokyo"],
   });
   const inTokyo = [step >= 4 ? "1 EC2" : "0 EC2", step >= 3 ? "1 AMI" : "0 AMI", step >= 3 ? "1 snapshot" : "0 snapshot"];
@@ -75,7 +75,7 @@ export default function AmiCopySim() {
           <button className="btn" onClick={reset}>{L({ vi: "Đặt lại", en: "Reset" })}</button>
         )}
         {step < 3 && (
-          <button className="btn danger" onClick={launchWithoutCopy} disabled={busy}>{L({ vi: "Launch EC2 tại Tokyo khi chưa copy", en: "Launch EC2 in Tokyo without copying" })}</button>
+          <button className="btn danger" onClick={launchWithoutCopy} disabled={busy}>{L({ vi: "Launch instance tại Tokyo khi chưa copy", en: "Launch an instance in Tokyo without copying" })}</button>
         )}
       </div>
       <div className="svg-wrap">

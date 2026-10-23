@@ -109,7 +109,7 @@ function scenarios(L: Lang): CaseScenario[] {
       ...base,
       name: L({ vi: "Firewall của đối tác chỉ cho phép IP cố định", en: "A partner's firewall allows only fixed IPs" }),
       request: "POST /api/orders",
-      from: L({ vi: "từ máy chủ đối tác", en: "from the partner's server" }),
+      from: L({ vi: "từ server của đối tác", en: "from the partner's server" }),
       choices: { ...SERVICES, initial: 0 },
       run: (v) => {
         if (v === 2) return {
@@ -133,7 +133,7 @@ function scenarios(L: Lang): CaseScenario[] {
       choices: { label: L({ vi: "Phương thức định tuyến", en: "Routing method" }), options: [L({ vi: "Route 53 (chỉ DNS)", en: "Route 53 (DNS only)" }), "Global Accelerator"], initial: 0 },
       run: (v) => v === 0
         ? { marks: { sg: "down", edge: "skip" },
-            steps: [{ at: "sg", state: "down", flash: "timeout", msg: L({ vi: "Bản ghi DNS đã được chuyển sang Frankfurt, nhưng thiết bị client vẫn giữ IP cũ trong cache cho tới khi hết TTL.", en: "The DNS record has been switched to Frankfurt, but client devices keep the old IP in their cache until the TTL expires." }) }],
+            steps: [{ at: "sg", state: "down", flash: "timeout", msg: L({ vi: "DNS record đã được chuyển sang Frankfurt, nhưng thiết bị client vẫn giữ IP cũ trong cache cho tới khi hết TTL.", en: "The DNS record has been switched to Frankfurt, but client devices keep the old IP in their cache until the TTL expires." }) }],
             ok: false, result: L({ vi: "Nhiều người dùng tiếp tục gửi request tới Region đang gặp sự cố. Failover bằng DNS phụ thuộc vào thời điểm cache hết hạn.", en: "Many users keep sending requests to the failed Region. DNS failover depends on when caches expire." }) }
         : { marks: { sg: "down" },
             steps: [

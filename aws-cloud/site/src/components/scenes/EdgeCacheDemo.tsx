@@ -17,7 +17,7 @@ export default function EdgeCacheDemo() {
   const [cached, setCached] = useState(false);
   const [busy, setBusy] = useState(false);
   const [log, setLog] = useState<Entry[]>([
-    { tag: { vi: "sẵn sàng", en: "ready" }, cls: "info", msg: { vi: "Cache ở edge đang trống. Bấm \"Khách mở ảnh sản phẩm\".", en: "The edge cache is empty. Press \"Customer opens product image\"." } },
+    { tag: { vi: "sẵn sàng", en: "ready" }, cls: "info", msg: { vi: "Cache tại edge location đang trống. Bấm \"Khách mở ảnh sản phẩm\".", en: "The edge cache is empty. Press \"Customer opens product image\"." } },
   ]);
   const [times, setTimes] = useState<Timing[]>([]);
 
@@ -30,15 +30,15 @@ export default function EdgeCacheDemo() {
     try {
       await travel(layer, [USER, EDGE], 450, "pkt");
       if (cached) {
-        push({ tag: same("HIT"), cls: "hit", msg: { vi: "Edge có sẵn ảnh trong cache, trả về ngay. Không cần đi tới Singapore.", en: "The edge already has the image in its cache and returns it immediately. No trip to Singapore is needed." } });
+        push({ tag: same("HIT"), cls: "hit", msg: { vi: "Edge location có sẵn ảnh trong cache (cache hit) và trả về ngay. Request không phải đi tới origin ở Singapore.", en: "The edge location already has the image in its cache (cache hit) and returns it immediately. The request does not need to go to the origin in Singapore." } });
         await travel(layer, [EDGE, USER], 450, "pkt-back");
         setTimes((t) => [...t, { hit: true, units: 2 }].slice(-3));
       } else {
-        push({ tag: same("MISS"), cls: "miss", msg: { vi: "Edge chưa có ảnh. Phải đi tiếp tới S3 ở Singapore để lấy bản gốc.", en: "The edge does not have the image yet. It must go on to S3 in Singapore to fetch the original." } });
+        push({ tag: same("MISS"), cls: "miss", msg: { vi: "Edge location chưa có ảnh trong cache (cache miss). CloudFront phải lấy object từ origin là S3 bucket ở Singapore.", en: "The edge location does not have the image in its cache yet (cache miss). CloudFront must fetch the object from the origin, the S3 bucket in Singapore." } });
         await travel(layer, [EDGE, ORIGIN], 1000, "pkt-edge");
         await travel(layer, [ORIGIN, EDGE], 1000, "pkt-back");
         setCached(true);
-        push({ tag: same("CACHE"), cls: "info", msg: { vi: "Edge lưu một bản ảnh vào cache, rồi trả về cho khách.", en: "The edge stores a copy of the image in its cache, then returns it to the customer." } });
+        push({ tag: same("CACHE"), cls: "info", msg: { vi: "Edge location lưu object vào cache, sau đó trả về cho khách.", en: "The edge location stores the object in its cache, then returns it to the customer." } });
         await travel(layer, [EDGE, USER], 450, "pkt-back");
         setTimes((t) => [...t, { hit: false, units: 6 }].slice(-3));
       }
@@ -49,7 +49,7 @@ export default function EdgeCacheDemo() {
 
   function expire() {
     setCached(false);
-    push({ tag: same("TTL"), cls: "info", msg: { vi: "Bản cache hết hạn và bị xóa. Request tiếp theo sẽ lại là MISS.", en: "The cached copy expires and is removed. The next request will be a MISS again." } });
+    push({ tag: same("TTL"), cls: "info", msg: { vi: "Object trong cache hết hạn và bị xóa. Request tiếp theo sẽ lại là MISS.", en: "The cached object expires and is removed. The next request will be a MISS again." } });
   }
 
   const max = Math.max(1, ...times.map((t) => t.units));
@@ -61,7 +61,7 @@ export default function EdgeCacheDemo() {
         <button className="btn" onClick={expire} disabled={busy}>{L({ vi: "Cache hết hạn (TTL)", en: "Cache expires (TTL)" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 0 760 230" role="img" aria-label={L({ vi: "Request đi từ khách tới Edge location, nếu không có trong cache thì đi tiếp tới S3 ở Singapore", en: "The request goes from the customer to the edge location and, if it is not in the cache, on to S3 in Singapore" })}>
+        <svg viewBox="0 0 760 230" role="img" aria-label={L({ vi: "Request đi từ khách tới edge location, nếu không có trong cache thì đi tiếp tới S3 ở Singapore", en: "The request goes from the customer to the edge location and, if it is not in the cache, on to S3 in Singapore" })}>
           <path d="M90 110 H338" stroke="var(--line)" strokeWidth={2} fill="none" />
           <path d="M382 110 H612" stroke="var(--line)" strokeWidth={2} strokeDasharray="6 5" fill="none" />
           <text className="ts" x={214} y={98} textAnchor="middle">{L({ vi: "gần, vài trăm km", en: "near, a few hundred km" })}</text>

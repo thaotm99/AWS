@@ -128,23 +128,23 @@ A Region consists of multiple **Availability Zones (AZs)**: data centers with in
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/7" title="The impact of an Availability Zone failure" questions={["exam1_q2", "exam2_q8", "exam2_q32"]}>
+<Scene id="en-s3" label="Part 3/7" title="Fault tolerance when an Availability Zone fails" questions={["exam1_q2", "exam2_q8", "exam2_q32"]}>
 
-<p class="scene-intro">When every server of an application sits in one AZ, a failure in that AZ stops the whole application; spreading servers across AZs removes that risk.</p>
+<p class="scene-intro">When every EC2 instance of an application sits in one AZ, a failure in that AZ stops the whole application; spreading instances across AZs removes that risk.</p>
 
-ShopViet runs 2 EC2 web servers behind a load balancer. Each dot represents a user request. Choose a server placement, then trigger a failure to see the impact.
+ShopViet runs 2 EC2 instances as web servers, registered as targets of a load balancer. Each dot represents a user request. Choose an instance placement, then trigger a failure to see the impact.
 
 <AzFailureSim client:visible />
 
-<Takeaway>The standard fault-tolerant architecture: EC2 in an Auto Scaling group spread across at least 2 AZs, behind a load balancer. Two servers in the same AZ both stop working when that AZ fails.</Takeaway>
+<Takeaway>The standard fault-tolerant architecture: EC2 instances in an Auto Scaling group spread across at least 2 AZs, behind a load balancer. Two instances in the same AZ both stop working when that AZ fails.</Takeaway>
 
 </Scene>
 
 <Scene id="en-s4" label="Part 4/7" title="Edge locations: CloudFront caches content, S3 Transfer Acceleration speeds transfers to and from a bucket" questions={["exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
 
-<p class="scene-intro">Users far from the servers wait longer because data travels a long way; AWS shortens that distance with points of presence near users, called edge locations.</p>
+<p class="scene-intro">Users far from the origin see higher latency because data travels a long way; AWS shortens that distance with points of presence near users, called edge locations.</p>
 
-**Edge locations** are AWS points of presence located close to users, far more numerous than Regions. **CloudFront** caches content at these locations; the origin can be S3, an ALB or an on-premises server. ShopViet's product images are stored in S3 in Singapore. Fetch an image twice to compare the results.
+**Edge locations** are AWS points of presence located close to users, far more numerous than Regions. **CloudFront** caches content at these locations; the origin can be an S3 bucket, an ALB or an on-premises HTTP server (custom origin). ShopViet's product images are stored in S3 in Singapore. Fetch an image twice to compare the results.
 
 <EdgeCacheDemo client:visible />
 
@@ -189,13 +189,13 @@ Choose a mechanism, set the share sent to green and apply the change. The cache 
 
 <Scene id="en-s6" label="Part 7/7" title="Data flows that incur data transfer charges" questions={["exam2_q62", "exam3_q47", "exam5_q2"]}>
 
-<p class="scene-intro">AWS charges not only for servers and storage but also for data moving between AZs, between Regions and out to the internet; a poorly planned data flow can raise costs considerably.</p>
+<p class="scene-intro">AWS charges not only for compute and storage but also for data moving between AZs, between Regions and out to the internet; a poorly planned data flow can raise costs considerably.</p>
 
 When ShopViet's AWS bill grows, the cause is often not the unit price of a service but data flows that were not designed well. Below are three scenarios that commonly incur charges. Choose a scenario and compare the options.
 
 <CostPatterns client:visible />
 
-<Takeaway>A Read Replica in the same Region has no replication charge; a Read Replica in another Region does. EC2 in a private subnet reading and writing S3 in the same Region: use an S3 gateway endpoint instead of a NAT gateway. Keep large traffic volumes inside AWS and send only the small amount of data out. Data sent out over Direct Connect is charged at the reduced Direct Connect data transfer rate, lower than internet data transfer out rates.</Takeaway>
+<Takeaway>A Read Replica in the same Region has no replication charge; a Read Replica in another Region does. EC2 instances in a private subnet reading and writing S3 in the same Region: use an S3 gateway endpoint instead of a NAT gateway. Keep large traffic volumes inside AWS and send only the small amount of data out. Data sent out over Direct Connect is charged at the reduced Direct Connect data transfer rate, lower than internet data transfer out rates.</Takeaway>
 
 </Scene>
 
@@ -231,7 +231,7 @@ Drag each card into the matching group. On a mobile device: select a card, then 
 Check your understanding: as the designer of the ShopViet system, which option is right?
 
 <Quiz client:visible items={[
-  { q: "ShopViet creates an AMI from a snapshot of the web server in Singapore, copies the AMI to Tokyo, then launches an EC2 instance from that AMI in Tokyo. Which resources does the Tokyo Region then have?",
+  { q: "ShopViet creates an AMI from an EBS snapshot of the EC2 instance running the web server in Singapore, copies the AMI to Tokyo, then launches an EC2 instance from that AMI in Tokyo. Which resources does the Tokyo Region then have?",
     opts: ["1 EC2 instance and 1 AMI", "1 EC2 instance, 1 AMI and 1 snapshot", "1 EC2 instance and 1 snapshot"],
     a: 1,
     why: "Copying the AMI to Tokyo automatically creates the corresponding snapshot in Tokyo, along with the AMI and the EC2 instance just launched." },
@@ -243,11 +243,11 @@ Check your understanding: as the designer of the ShopViet system, which option i
     opts: ["Replication within the same Region is charged", "Replication between two Regions is charged", "Replication between two Regions is free"],
     a: 1,
     why: "Replication to a Read Replica in the same Region has no data transfer charge; a cross-Region Read Replica does." },
-  { q: "ShopViet's workers in a private subnet read and write large volumes of images to S3 in the same Region, currently through a NAT gateway, and the NAT gateway cost is very high. Which solution reduces cost?",
+  { q: "ShopViet's worker instances in a private subnet read and write large volumes of images to S3 in the same Region, currently through a NAT gateway, and the NAT gateway cost is very high. Which solution reduces cost?",
     opts: ["Add another NAT gateway", "Create an S3 gateway endpoint and update the route table", "Move the EC2 instances to a public subnet"],
     a: 1,
     why: "A gateway endpoint for S3 has no additional charge; traffic no longer goes through the NAT gateway, so no NAT gateway data processing charge is incurred." },
-  { q: "ShopViet's VPC has public and private subnets in 3 AZs. Servers in the private subnets need internet access to download updates, even when one AZ fails. Which architecture fits?",
+  { q: "ShopViet's VPC has public and private subnets in 3 AZs. EC2 instances in the private subnets need internet access to download updates, even when one AZ fails. Which architecture fits?",
     opts: ["One NAT gateway shared by all 3 AZs", "One NAT gateway per AZ in a public subnet, with a separate route table per AZ", "One NAT gateway per AZ in a private subnet"],
     a: 1,
     why: "A public NAT gateway in zonal mode must be placed in a public subnet and is tied to one AZ; so each AZ needs a NAT gateway, with its own route table pointing to the NAT gateway in the same AZ. A regional NAT gateway is the alternative: one NAT gateway automatically expands to the AZs that have workloads, without needing a public subnet." },

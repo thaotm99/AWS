@@ -128,23 +128,23 @@ Một Region gồm nhiều **Availability Zone (AZ)**: các data center độc l
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/7" title="Ảnh hưởng của sự cố Availability Zone" questions={["exam1_q2", "exam2_q8", "exam2_q32"]}>
+<Scene id="s3" label="Phần 3/7" title="Khả năng chịu lỗi khi một Availability Zone gặp sự cố" questions={["exam1_q2", "exam2_q8", "exam2_q32"]}>
 
-<p class="scene-intro">Khi mọi máy chủ của một ứng dụng nằm trong cùng một AZ, sự cố tại AZ đó làm toàn bộ ứng dụng ngừng hoạt động; phân bổ máy chủ trên nhiều AZ loại bỏ rủi ro này.</p>
+<p class="scene-intro">Khi mọi EC2 instance của một ứng dụng nằm trong cùng một AZ, sự cố tại AZ đó làm toàn bộ ứng dụng ngừng hoạt động; phân bổ instance trên nhiều AZ loại bỏ rủi ro này.</p>
 
-ShopViet vận hành 2 web server EC2 phía sau một Load Balancer. Mỗi chấm biểu diễn một request của người dùng. Chọn cách bố trí server, sau đó tạo sự cố để quan sát ảnh hưởng.
+ShopViet vận hành 2 EC2 instance chạy web server, đăng ký làm target của một load balancer. Mỗi chấm biểu diễn một request của người dùng. Chọn cách bố trí instance, sau đó tạo sự cố để quan sát ảnh hưởng.
 
 <AzFailureSim client:visible />
 
-<Takeaway>Kiến trúc chịu lỗi tiêu chuẩn: EC2 trong Auto Scaling group phân bố trên ít nhất 2 AZ, phía sau Load Balancer. Hai server trong cùng một AZ sẽ cùng ngừng hoạt động khi AZ đó gặp sự cố.</Takeaway>
+<Takeaway>Kiến trúc chịu lỗi tiêu chuẩn: EC2 instance trong Auto Scaling group phân bố trên ít nhất 2 AZ, phía sau load balancer. Hai instance trong cùng một AZ sẽ cùng ngừng hoạt động khi AZ đó gặp sự cố.</Takeaway>
 
 </Scene>
 
 <Scene id="s4" label="Phần 4/7" title="Edge location: CloudFront cache nội dung, S3 Transfer Acceleration tăng tốc truyền tới và từ bucket" questions={["exam1_q62", "exam6_q5", "exam6_q58", "exam1_q18", "exam3_q37"]}>
 
-<p class="scene-intro">Người dùng ở xa máy chủ phải chờ lâu hơn vì dữ liệu đi qua quãng đường dài; AWS rút ngắn quãng đường này bằng các điểm hiện diện đặt gần người dùng, gọi là edge location.</p>
+<p class="scene-intro">Người dùng ở xa origin chịu độ trễ cao hơn vì dữ liệu đi qua quãng đường dài; AWS rút ngắn quãng đường này bằng các point of presence đặt gần người dùng, gọi là edge location.</p>
 
-**Edge location** là các điểm hiện diện của AWS đặt gần người dùng, với số lượng lớn hơn nhiều so với số Region. **CloudFront** cache nội dung tại các điểm này; origin có thể là S3, ALB hoặc máy chủ on-premises. Ảnh sản phẩm của ShopViet được lưu tại S3 Singapore. Truy xuất ảnh hai lần để so sánh kết quả.
+**Edge location** là các point of presence (điểm hiện diện) của AWS đặt gần người dùng, với số lượng lớn hơn nhiều so với số Region. **CloudFront** cache nội dung tại các điểm này; origin có thể là S3 bucket, ALB hoặc HTTP server on-premises (custom origin). Ảnh sản phẩm của ShopViet được lưu tại S3 Singapore. Truy xuất ảnh hai lần để so sánh kết quả.
 
 <EdgeCacheDemo client:visible />
 
@@ -189,13 +189,13 @@ Chọn cơ chế, đặt tỷ lệ chuyển sang green và áp dụng thay đổ
 
 <Scene id="s6" label="Phần 7/7" title="Các luồng dữ liệu phát sinh chi phí data transfer" questions={["exam2_q62", "exam3_q47", "exam5_q2"]}>
 
-<p class="scene-intro">AWS tính phí không chỉ cho máy chủ và lưu trữ mà cả cho dữ liệu di chuyển giữa các AZ, các Region và ra internet; luồng dữ liệu thiết kế chưa hợp lý có thể làm chi phí tăng đáng kể.</p>
+<p class="scene-intro">AWS tính phí không chỉ cho compute và storage mà cả cho dữ liệu di chuyển giữa các AZ, các Region và ra internet; luồng dữ liệu thiết kế chưa hợp lý có thể làm chi phí tăng đáng kể.</p>
 
 Chi phí AWS của ShopViet tăng thường không do đơn giá dịch vụ mà do luồng dữ liệu được thiết kế chưa phù hợp. Dưới đây là ba tình huống thường phát sinh chi phí. Chọn một tình huống và so sánh các phương án.
 
 <CostPatterns client:visible />
 
-<Takeaway>Read Replica trong cùng Region không tính phí replication; Read Replica khác Region thì có. EC2 trong private subnet đọc ghi S3 cùng Region: sử dụng S3 gateway endpoint thay cho NAT gateway. Lưu lượng lớn nên được giữ trong AWS, chỉ phần dữ liệu nhỏ được truyền ra ngoài. Dữ liệu truyền ra qua Direct Connect được tính theo đơn giá Direct Connect data transfer, thấp hơn đơn giá data transfer out qua internet.</Takeaway>
+<Takeaway>Read Replica trong cùng Region không tính phí replication; Read Replica khác Region thì có. EC2 instance trong private subnet đọc ghi S3 cùng Region: sử dụng S3 gateway endpoint thay cho NAT gateway. Lưu lượng lớn nên được giữ trong AWS, chỉ phần dữ liệu nhỏ được truyền ra ngoài. Dữ liệu truyền ra qua Direct Connect được tính theo đơn giá Direct Connect data transfer, thấp hơn đơn giá data transfer out qua internet.</Takeaway>
 
 </Scene>
 
@@ -231,8 +231,8 @@ Kéo từng thẻ vào nhóm tương ứng. Trên thiết bị di động: chọ
 Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "ShopViet tạo AMI từ snapshot của web server tại Singapore, copy AMI sang Tokyo, sau đó launch một EC2 instance từ AMI đó tại Tokyo. Region Tokyo khi đó có những tài nguyên nào?",
-    opts: ["1 EC2 và 1 AMI", "1 EC2, 1 AMI và 1 snapshot", "1 EC2 và 1 snapshot"],
+  { q: "ShopViet tạo AMI từ EBS snapshot của EC2 instance chạy web server tại Singapore, copy AMI sang Tokyo, sau đó launch một EC2 instance từ AMI đó tại Tokyo. Region Tokyo khi đó có những tài nguyên nào?",
+    opts: ["1 EC2 instance và 1 AMI", "1 EC2 instance, 1 AMI và 1 snapshot", "1 EC2 instance và 1 snapshot"],
     a: 1,
     why: "Thao tác copy AMI sang Tokyo tự động tạo snapshot tương ứng tại Tokyo, cùng với AMI và EC2 instance vừa launch." },
   { q: "ShopViet triển khai minigame khuyến mãi sử dụng UDP, người chơi ở nhiều châu lục, và ứng dụng phải chuyển Region nhanh chóng khi một Region gặp sự cố. Dịch vụ nào phù hợp?",
@@ -243,11 +243,11 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Replicate trong cùng Region bị tính phí", "Replicate giữa hai Region bị tính phí", "Replicate giữa hai Region miễn phí"],
     a: 1,
     why: "Replication tới Read Replica trong cùng Region không tính phí data transfer; Cross-Region Read Replica thì có." },
-  { q: "Worker của ShopViet trong private subnet đọc ghi khối lượng lớn ảnh với S3 cùng Region, hiện đi qua NAT gateway, và chi phí NAT gateway rất cao. Giải pháp nào giảm chi phí?",
-    opts: ["Thêm một NAT gateway nữa", "Tạo S3 gateway endpoint và cập nhật route table", "Chuyển EC2 sang public subnet"],
+  { q: "Các worker instance của ShopViet trong private subnet đọc ghi khối lượng lớn ảnh với S3 cùng Region, hiện đi qua NAT gateway, và chi phí NAT gateway rất cao. Giải pháp nào giảm chi phí?",
+    opts: ["Thêm một NAT gateway nữa", "Tạo S3 gateway endpoint và cập nhật route table", "Chuyển EC2 instance sang public subnet"],
     a: 1,
     why: "Gateway endpoint cho S3 không tính phí bổ sung; traffic không còn đi qua NAT gateway nên không phát sinh phí xử lý dữ liệu của NAT gateway." },
-  { q: "VPC của ShopViet có public subnet và private subnet tại 3 AZ. Server trong private subnet cần truy cập internet để tải bản cập nhật, kể cả khi một AZ gặp sự cố. Kiến trúc nào phù hợp?",
+  { q: "VPC của ShopViet có public subnet và private subnet tại 3 AZ. Các EC2 instance trong private subnet cần truy cập internet để tải bản cập nhật, kể cả khi một AZ gặp sự cố. Kiến trúc nào phù hợp?",
     opts: ["Một NAT gateway dùng chung cho cả 3 AZ", "Mỗi AZ một NAT gateway trong public subnet, mỗi AZ một route table riêng", "Mỗi AZ một NAT gateway trong private subnet"],
     a: 1,
     why: "Public NAT gateway ở chế độ zonal phải được đặt trong public subnet và gắn với một AZ; do đó mỗi AZ cần một NAT gateway, với route table riêng trỏ tới NAT gateway trong cùng AZ. Chế độ regional NAT gateway là phương án thay thế: một NAT gateway tự động mở rộng sang các AZ có workload, không cần public subnet." },

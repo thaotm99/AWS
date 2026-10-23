@@ -81,12 +81,12 @@ export default function GlobalAcceleratorSim() {
   const note = L<string>(
     mode === "ga"
       ? down
-        ? { vi: "Global Accelerator thực hiện health check endpoint và chuyển traffic của người dùng châu Á sang Frankfurt. Client vẫn kết nối tới 2 địa chỉ IP tĩnh ban đầu, không cần thay đổi DNS, nên không bị ảnh hưởng bởi DNS cache trên thiết bị.",
+        ? { vi: "Global Accelerator thực hiện health check trên các endpoint và chuyển traffic của người dùng châu Á sang Frankfurt. Client vẫn kết nối tới 2 địa chỉ IP tĩnh ban đầu, không cần thay đổi DNS, nên không bị ảnh hưởng bởi DNS cache trên thiết bị.",
             en: "Global Accelerator health checks the endpoints and shifts the traffic of users in Asia to Frankfurt. Clients still connect to the same 2 static IP addresses, with no DNS change, so they are not affected by DNS caches on their devices." }
-        : { vi: "Traffic của người dùng đi vào mạng AWS tại Edge location gần nhất, sau đó truyền qua mạng riêng của AWS tới Region gần nhất. Mọi người dùng kết nối tới cùng 2 địa chỉ IP tĩnh (anycast). Nhấn \"Sự cố Region Singapore\" để quan sát cơ chế failover.",
+        : { vi: "Traffic của người dùng đi vào mạng AWS tại edge location gần nhất, sau đó truyền qua mạng riêng của AWS tới Region gần nhất. Mọi người dùng kết nối tới cùng 2 địa chỉ IP tĩnh (anycast). Nhấn \"Sự cố Region Singapore\" để quan sát cơ chế failover.",
             en: "User traffic enters the AWS network at the nearest edge location, then travels over the AWS private network to the nearest Region. All users connect to the same 2 static (anycast) IP addresses. Press \"Fail Singapore Region\" to see how failover works." }
       : down
-        ? { vi: "Chỉ sử dụng DNS: dù bản ghi DNS đã được cập nhật, nhiều client vẫn giữ địa chỉ cũ trong cache cho tới khi hết TTL và tiếp tục gửi request tới Region đang gặp sự cố. Do đó, khi cần failover nhanh giữa các Region, giải pháp phù hợp là Global Accelerator.",
+        ? { vi: "Chỉ sử dụng DNS: dù DNS record đã được cập nhật, nhiều client vẫn giữ địa chỉ cũ trong cache cho tới khi hết TTL và tiếp tục gửi request tới Region đang gặp sự cố. Do đó, khi cần failover nhanh giữa các Region, giải pháp phù hợp là Global Accelerator.",
             en: "DNS only: even after the DNS record is updated, many clients keep the old address in their cache until the TTL expires and keep sending requests to the failed Region. So when fast failover between Regions is needed, the right solution is Global Accelerator." }
         : { vi: "Chỉ sử dụng DNS: traffic của người dùng đi qua internet công cộng trực tiếp tới Region. Tạo sự cố để so sánh với Global Accelerator.",
             en: "DNS only: user traffic goes over the public internet directly to the Region. Trigger a failure to compare with Global Accelerator." });

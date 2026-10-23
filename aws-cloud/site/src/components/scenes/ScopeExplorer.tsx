@@ -44,8 +44,8 @@ const SERVICES: { name: string; scope: Scope; label: string; text: Bi<ReactNode>
       <text className="zone-t" x={516} y={128} textAnchor="end">VPC 10.0.0.0/16</text>
     </> },
   { name: "EFS", scope: "region", label: "Region",
-    text: { vi: <>EFS file system là tài nguyên cấp Region, có mount target tại từng AZ nên server ở bất kỳ AZ nào cũng mount được. Server tại Region khác vẫn truy cập được thông qua inter-region VPC peering, không cần copy dữ liệu.</>,
-      en: <>An EFS file system is a Regional resource with a mount target in each AZ, so servers in any AZ can mount it. Servers in another Region can still access it through inter-Region VPC peering, without copying data.</> },
+    text: { vi: <>EFS file system là tài nguyên cấp Region, có mount target tại từng AZ nên EC2 instance ở bất kỳ AZ nào cũng mount được. EC2 instance tại Region khác vẫn truy cập được thông qua inter-region VPC peering, không cần copy dữ liệu.</>,
+      en: <>An EFS file system is a Regional resource with a mount target in each AZ, so EC2 instances in any AZ can mount it. Instances in another Region can still access it through inter-Region VPC peering, without copying data.</> },
     draw: <><Token x={296} y={70} w={220} label="EFS: shopviet-shared" />{AZS.map((az) => <Token key={az.n} x={az.x + 20} y={200} w={100} label="mount target" ghost />)}</> },
   { name: "AMI", scope: "region", label: "Region",
     text: { vi: <>AMI <code>shopviet-web</code> chỉ sử dụng được trong Region nơi AMI được tạo, nhưng sử dụng được tại mọi AZ của Region đó. Để launch tại Region khác, AMI phải được copy sang Region đích (Phần 1).</>,
@@ -63,12 +63,12 @@ const SERVICES: { name: string; scope: Scope; label: string; text: Bi<ReactNode>
       en: <>A public NAT gateway in zonal mode is created in the public subnet of a specific AZ. If all 3 AZs share one NAT gateway, a failure in the AZ that contains the NAT gateway cuts internet access for the other AZs. Correct configuration: one NAT gateway and a separate route table per AZ, or a NAT gateway in regional mode (automatically expands to the AZs that have workloads).</> },
     draw: <>{AZS.map((az) => <Token key={az.n} x={az.x + 20} y={200} w={100} label="NAT gateway" ghost={az.n !== "a"} />)}</> },
   { name: "EC2", scope: "az", label: "AZ",
-    text: { vi: <>Server <code>web-1</code> chạy trong một subnet nên nằm trong đúng một AZ. Khi AZ đó gặp sự cố, server cũng ngừng hoạt động. Phần 3 minh hoạ trường hợp này.</>,
-      en: <>The server <code>web-1</code> runs in a subnet, so it resides in exactly one AZ. When that AZ fails, the server also stops working. Part 3 illustrates this case.</> },
+    text: { vi: <>EC2 instance <code>web-1</code> chạy trong một subnet nên nằm trong đúng một AZ. Khi AZ đó gặp sự cố, instance cũng ngừng hoạt động. Phần 3 minh hoạ trường hợp này.</>,
+      en: <>The EC2 instance <code>web-1</code> runs in a subnet, so it resides in exactly one AZ. When that AZ fails, the instance also stops working. Part 3 illustrates this case.</> },
     draw: <Token x={70} y={200} w={100} label="EC2: web-1" /> },
   { name: "EBS", scope: "az", label: "AZ",
-    text: { vi: <>EBS volume chỉ attach được vào server trong cùng AZ. Để chuyển sang AZ khác: tạo snapshot, sau đó tạo volume mới từ snapshot.</>,
-      en: <>An EBS volume can be attached only to a server in the same AZ. To move it to another AZ: create a snapshot, then create a new volume from the snapshot.</> },
+    text: { vi: <>EBS volume chỉ attach được vào EC2 instance trong cùng AZ. Để chuyển sang AZ khác: tạo snapshot, sau đó tạo volume mới từ snapshot.</>,
+      en: <>An EBS volume can be attached only to an EC2 instance in the same AZ. To move it to another AZ: create a snapshot, then create a new volume from the snapshot.</> },
     draw: <>
       <Token x={70} y={196} w={100} label="EC2: web-1" />
       <line x1={120} y1={220} x2={120} y2={238} stroke="var(--accent)" strokeWidth={2} />

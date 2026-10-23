@@ -10,9 +10,9 @@ type Lang = ReturnType<typeof useLang>;
 function scenarios(L: Lang): CaseScenario[] {
   return [
     {
-      name: L({ vi: "Server tại Singapore đọc EFS tại us-east-1", en: "A server in Singapore reads EFS in us-east-1" }),
+      name: L({ vi: "EC2 instance tại Singapore mount EFS tại us-east-1", en: "An EC2 instance in Singapore mounts EFS in us-east-1" }),
       request: "mount fs-0a1b.efs.us-east-1",
-      from: L({ vi: "từ EC2 báo cáo tại Singapore", en: "from the reporting EC2 in Singapore" }),
+      from: L({ vi: "từ EC2 instance báo cáo tại Singapore", en: "from the reporting EC2 instance in Singapore" }),
       boxes: [
         { x: 20, y: 16, w: 300, h: 206, label: L({ vi: "Region Singapore", en: "Singapore Region" }) },
         { x: 500, y: 16, w: 300, h: 206, label: L({ vi: "Region N. Virginia (us-east-1)", en: "N. Virginia Region (us-east-1)" }) },
@@ -38,12 +38,12 @@ function scenarios(L: Lang): CaseScenario[] {
             ok: false, result: L({ vi: "Hoạt động được nhưng phát sinh tác vụ không cần thiết. EFS là tài nguyên cấp Region nhưng không bị giới hạn truy cập trong Region đó.", en: "It works but adds unnecessary work. EFS is a Regional resource, but access to it is not limited to that Region." }) }
         : { hide: ["copy"],
             steps: [{ at: "efs", state: "pass", msg: L({ vi: "Mount trực tiếp EFS tại us-east-1 qua **inter-region VPC peering**.", en: "Mount the EFS in us-east-1 directly over **inter-Region VPC peering**." }) }],
-            ok: true, result: L({ vi: "Chỉ duy trì một bản dữ liệu; server tại Region khác vẫn sử dụng chung được.", en: "Only one copy of the data is maintained; servers in another Region can still share it." }) },
+            ok: true, result: L({ vi: "Chỉ duy trì một bản dữ liệu; EC2 instance tại Region khác vẫn sử dụng chung được.", en: "Only one copy of the data is maintained; EC2 instances in another Region can still share it." }) },
     },
     {
-      name: L({ vi: "Worker trong private subnet tải bản vá", en: "A worker in a private subnet downloads patches" }),
+      name: L({ vi: "Worker instance trong private subnet tải bản vá", en: "A worker instance in a private subnet downloads patches" }),
       request: "GET https://updates.example.com (IPv4)",
-      from: L({ vi: "từ worker EC2", en: "from the EC2 worker" }),
+      from: L({ vi: "từ worker EC2 instance", en: "from the worker EC2 instance" }),
       boxes: [
         { x: 20, y: 6, w: 560, h: 228, label: "VPC ShopViet · AZ a" },
         { x: 40, y: 28, w: 520, h: 84, label: "public subnet · route 0.0.0.0/0 → IGW" },
@@ -55,7 +55,7 @@ function scenarios(L: Lang): CaseScenario[] {
         { id: "eigw", x: 270, y: 158, w: 140, l1: "Egress-only IGW", l2: L({ vi: "chỉ dành cho IPv6", en: "IPv6 only" }) },
         { id: "natPub", x: 270, y: 50, w: 140, l1: "NAT gateway", l2: L({ vi: "đặt trong public subnet", en: "in the public subnet" }) },
         { id: "igw", x: 620, y: 50, w: 140, l1: "Internet Gateway" },
-        { id: "net", x: 620, y: 158, w: 140, l1: "Internet", l2: L({ vi: "máy chủ bản vá", en: "patch server" }) },
+        { id: "net", x: 620, y: 158, w: 140, l1: "Internet", l2: L({ vi: "server bản vá", en: "patch server" }) },
       ],
       links: [
         { a: "worker", b: "natPriv" },
@@ -66,18 +66,18 @@ function scenarios(L: Lang): CaseScenario[] {
         { a: "eigw", b: "net" },
       ],
       start: "worker",
-      choices: { label: L({ vi: "Cổng ra internet", en: "Internet exit" }), options: [L({ vi: "NAT gateway trong private subnet", en: "NAT gateway in private subnet" }), L({ vi: "NAT gateway trong public subnet", en: "NAT gateway in public subnet" }), "Egress-only IGW"], initial: 0 },
+      choices: { label: L({ vi: "Đường ra internet (egress)", en: "Internet egress" }), options: [L({ vi: "NAT gateway trong private subnet", en: "NAT gateway in private subnet" }), L({ vi: "NAT gateway trong public subnet", en: "NAT gateway in public subnet" }), "Egress-only IGW"], initial: 0 },
       run: (v) => {
         if (v === 0) return { hide: ["natPub", "eigw"],
           steps: [
             { at: "natPriv", state: "pass", msg: L({ vi: "Route `0.0.0.0/0` của private subnet trỏ tới NAT gateway.", en: "The private subnet's `0.0.0.0/0` route points to the NAT gateway." }) },
-            { at: "natPriv", state: "block", msg: L({ vi: "NAT gateway nằm trong private subnet, và subnet này không có route tới Internet Gateway.", en: "The NAT gateway is in a private subnet, and this subnet has no route to the internet gateway." }) },
+            { at: "natPriv", state: "block", msg: L({ vi: "NAT gateway nằm trong private subnet, và subnet này không có route tới internet gateway.", en: "The NAT gateway is in a private subnet, and this subnet has no route to the internet gateway." }) },
           ],
           ok: false, result: L({ vi: "Không truy cập được internet. Public NAT gateway ở chế độ zonal phải nằm trong **public subnet**.", en: "No internet access. A public NAT gateway in zonal mode must be in a **public subnet**." }) };
         if (v === 1) return { hide: ["natPriv", "eigw"],
           steps: [
             { at: "natPub", via: [[125, 73]], state: "change", tag: "NAT", msg: L({ vi: "NAT gateway thay thế private IP của worker bằng Elastic IP của NAT gateway.", en: "The NAT gateway replaces the worker's private IP with the NAT gateway's Elastic IP." }) },
-            { at: "igw", state: "pass", msg: L({ vi: "Public subnet có route tới Internet Gateway.", en: "The public subnet has a route to the internet gateway." }) },
+            { at: "igw", state: "pass", msg: L({ vi: "Public subnet có route tới internet gateway.", en: "The public subnet has a route to the internet gateway." }) },
             { at: "net", state: "pass", msg: L({ vi: "Bản vá được tải về. Internet không thể khởi tạo kết nối ngược vào worker.", en: "The patches are downloaded. The internet cannot initiate connections back to the worker." }) },
           ],
           ok: true, result: L({ vi: "Truy cập internet thành công. Zonal NAT gateway thuộc một AZ, do đó mỗi AZ cần một NAT gateway để chịu được sự cố AZ; chế độ regional NAT gateway tự động mở rộng sang các AZ có workload.", en: "Internet access works. A zonal NAT gateway belongs to one AZ, so each AZ needs a NAT gateway to tolerate an AZ failure; a regional NAT gateway automatically expands to the AZs that have workloads." }) };
@@ -87,7 +87,7 @@ function scenarios(L: Lang): CaseScenario[] {
       },
     },
     {
-      name: L({ vi: "Đặt server cùng AZ với server đối tác", en: "Place a server in the same AZ as a partner's server" }),
+      name: L({ vi: "Đặt EC2 instance cùng AZ với instance của đối tác", en: "Place an EC2 instance in the same AZ as a partner's instance" }),
       request: "ping 10.20.0.15",
       from: L({ vi: "từ account ShopViet tới account đối tác", en: "from the ShopViet account to the partner account" }),
       boxes: [
@@ -96,8 +96,8 @@ function scenarios(L: Lang): CaseScenario[] {
       ],
       nodes: [
         { id: "shop", x: 40, y: 96, w: 160, l1: L({ vi: "Server ShopViet", en: "ShopViet server" }), l2: "account A: us-east-1a" },
-        { id: "near", x: 215, y: 96, w: 160, l1: L({ vi: "Server đối tác", en: "Partner server" }), l2: "account B: use1-az2" },
-        { id: "far", x: 560, y: 96, w: 180, l1: L({ vi: "Server đối tác", en: "Partner server" }), l2: "account B: us-east-1a" },
+        { id: "near", x: 215, y: 96, w: 160, l1: L({ vi: "Instance đối tác", en: "Partner instance" }), l2: "account B: use1-az2" },
+        { id: "far", x: 560, y: 96, w: 180, l1: L({ vi: "Instance đối tác", en: "Partner instance" }), l2: "account B: us-east-1a" },
       ],
       links: [{ a: "shop", b: "near" }, { a: "shop", b: "far" }],
       start: "shop",
@@ -105,10 +105,10 @@ function scenarios(L: Lang): CaseScenario[] {
       run: (v) => v === 0
         ? { hide: ["near"],
             steps: [{ at: "far", state: "change", tag: L({ vi: "KHÁC AZ", en: "OTHER AZ" }), msg: L({ vi: "Cùng tên `us-east-1a`, nhưng tại account B tên này ánh xạ tới **use1-az4**.", en: "Same name `us-east-1a`, but in account B this name maps to **use1-az4**." }) }],
-            ok: false, result: L({ vi: "Hai server nằm tại hai AZ khác nhau: phát sinh thêm độ trễ và phí data transfer giữa các AZ.", en: "The two servers are in two different AZs: this adds latency and cross-AZ data transfer charges." }) }
+            ok: false, result: L({ vi: "Hai instance nằm tại hai AZ khác nhau: phát sinh thêm độ trễ và phí data transfer giữa các AZ.", en: "The two instances are in two different AZs: this adds latency and cross-AZ data transfer charges." }) }
         : { hide: ["far"],
             steps: [{ at: "near", state: "pass", msg: L({ vi: "Cả hai account chọn subnet theo **AZ ID** `use1-az2`.", en: "Both accounts choose subnets by **AZ ID** `use1-az2`." }) }],
-            ok: true, result: L({ vi: "Hai server nằm trong cùng một AZ vật lý. Tại các Region ánh xạ AZ độc lập theo account như us-east-1, cùng một tên AZ có thể trỏ tới AZ vật lý khác nhau; AZ ID thì nhất quán giữa mọi account.", en: "The two servers are in the same physical AZ. In Regions that map AZs independently per account, such as us-east-1, the same AZ name can point to different physical AZs; the AZ ID is consistent across all accounts." }) },
+            ok: true, result: L({ vi: "Hai instance nằm trong cùng một AZ vật lý. Tại các Region ánh xạ AZ độc lập theo account như us-east-1, cùng một tên AZ có thể trỏ tới AZ vật lý khác nhau; AZ ID thì nhất quán giữa mọi account.", en: "The two instances are in the same physical AZ. In Regions that map AZs independently per account, such as us-east-1, the same AZ name can point to different physical AZs; the AZ ID is consistent across all accounts." }) },
     },
     {
       name: L({ vi: "Người dùng vừa truy xuất vừa tải lên ảnh", en: "Users both fetch and upload images" }),

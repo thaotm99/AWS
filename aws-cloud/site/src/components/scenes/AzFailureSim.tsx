@@ -6,7 +6,7 @@ type Az = "a" | "b" | "c";
 const AZ_X: Record<Az, number> = { a: 40, b: 280, c: 520 };
 
 const MODES = {
-  one: { label: { vi: "2 server trong 1 AZ", en: "2 servers in 1 AZ" }, servers: [["a", "web-1", 0], ["a", "web-2", 1]] },
+  one: { label: { vi: "2 instance trong 1 AZ", en: "2 instances in 1 AZ" }, servers: [["a", "web-1", 0], ["a", "web-2", 1]] },
   two: { label: { vi: "Phân bố 2 AZ", en: "Spread over 2 AZs" }, servers: [["a", "web-1", 0], ["b", "web-2", 0]] },
   three: { label: { vi: "Phân bố 3 AZ", en: "Spread over 3 AZs" }, servers: [["a", "web-1", 0], ["b", "web-2", 0], ["c", "web-3", 0]] },
 } as const;
@@ -28,18 +28,18 @@ function serversFor(mode: Mode) {
 function explain(mode: Mode, down: Set<Az>, alive: number, total: number): Bi {
   if (!down.size)
     return mode === "one"
-      ? { vi: "Hệ thống hoạt động bình thường, nhưng cả hai server cùng nằm trong AZ a. Nhấn \"Sự cố AZ a\" để quan sát ảnh hưởng.",
-          en: "The system is running normally, but both servers are in AZ a. Press \"Fail AZ a\" to see the impact." }
-      : { vi: "Request được phân phối đều cho các server tại nhiều AZ. Tạo sự cố tại một AZ để quan sát ảnh hưởng.",
-          en: "Requests are distributed evenly across servers in multiple AZs. Trigger a failure in one AZ to see the impact." };
+      ? { vi: "Hệ thống hoạt động bình thường, nhưng cả hai instance cùng nằm trong AZ a. Nhấn \"Sự cố AZ a\" để quan sát ảnh hưởng.",
+          en: "The system is running normally, but both instances are in AZ a. Press \"Fail AZ a\" to see the impact." }
+      : { vi: "Load balancer phân phối request đều cho các target tại nhiều AZ. Tạo sự cố tại một AZ để quan sát ảnh hưởng.",
+          en: "The load balancer distributes requests evenly across targets in multiple AZs. Trigger a failure in one AZ to see the impact." };
   if (!alive)
-    return { vi: "Toàn bộ server nằm trong AZ gặp sự cố. Load Balancer không còn target healthy để xử lý request, người dùng nhận lỗi. Hai server không mang lại khả năng chịu lỗi nếu cùng nằm trong một AZ.",
-      en: "All servers are in the failed AZ. The load balancer has no healthy target left to handle requests, and users receive errors. Two servers provide no fault tolerance if they are in the same AZ." };
+    return { vi: "Toàn bộ instance nằm trong AZ gặp sự cố. Load balancer không còn target healthy để xử lý request, người dùng nhận lỗi. Hai instance không mang lại khả năng chịu lỗi nếu cùng nằm trong một AZ.",
+      en: "All instances are in the failed AZ. The load balancer has no healthy target left to handle requests, and users receive errors. Two instances provide no fault tolerance if they are in the same AZ." };
   if (alive < total)
-    return { vi: "Load Balancer xác định server tại AZ gặp sự cố là unhealthy và chuyển toàn bộ request sang server còn lại. Người dùng vẫn đặt hàng bình thường; chỉ tổng năng lực xử lý giảm.",
-      en: "The load balancer marks the server in the failed AZ as unhealthy and sends all requests to the remaining server. Users still place orders normally; only total capacity is reduced." };
-  return { vi: "AZ gặp sự cố không chứa server nào của ShopViet nên hệ thống không bị ảnh hưởng.",
-    en: "The failed AZ contains none of ShopViet's servers, so the system is not affected." };
+    return { vi: "Health check của load balancer đánh dấu target tại AZ gặp sự cố là unhealthy; load balancer định tuyến toàn bộ request tới target còn lại. Người dùng vẫn đặt hàng bình thường; chỉ tổng năng lực xử lý giảm.",
+      en: "The load balancer health checks mark the target in the failed AZ as unhealthy; the load balancer routes all requests to the remaining target. Users still place orders normally; only total capacity is reduced." };
+  return { vi: "AZ gặp sự cố không chứa instance nào của ShopViet nên hệ thống không bị ảnh hưởng.",
+    en: "The failed AZ contains none of ShopViet's instances, so the system is not affected." };
 }
 
 export default function AzFailureSim() {
@@ -127,7 +127,7 @@ export default function AzFailureSim() {
         </button>
       </div>
       <div className="svg-wrap">
-        <svg ref={svgRef} viewBox="0 0 760 400" role="img" aria-label={L({ vi: "Request từ người dùng đi qua Load Balancer tới các server trong 3 AZ", en: "User requests pass through the load balancer to servers in 3 AZs" })}>
+        <svg ref={svgRef} viewBox="0 0 760 400" role="img" aria-label={L({ vi: "Request từ người dùng đi qua load balancer tới các target trong 3 AZ", en: "User requests pass through the load balancer to targets in 3 AZs" })}>
           <g aria-hidden="true">
             {USERS_X.map((x) => (
               <g key={x} transform={`translate(${x} 30)`}>
@@ -174,7 +174,7 @@ export default function AzFailureSim() {
             <i />{alive.length ? L({ vi: "ShopViet hoạt động", en: "ShopViet is up" }) : L({ vi: "ShopViet gián đoạn", en: "ShopViet is down" })}
           </span>
           <span className="count">
-            {L({ vi: "Server healthy: ", en: "Healthy servers: " })}{alive.length}/{servers.length} · {L({ vi: "request thành công", en: "successful requests" })} {ok} · {L({ vi: "lỗi", en: "errors" })} {err}
+            {L({ vi: "Target healthy: ", en: "Healthy targets: " })}{alive.length}/{servers.length} · {L({ vi: "request thành công", en: "successful requests" })} {ok} · {L({ vi: "lỗi", en: "errors" })} {err}
           </span>
         </div>
         <p style={{ margin: "8px 0 0" }}>{L(explain(mode, down, alive.length, servers.length))}</p>
