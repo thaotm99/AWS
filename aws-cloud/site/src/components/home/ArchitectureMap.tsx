@@ -121,6 +121,27 @@ export default function ArchitectureMap({ titles, titlesEn }: { titles: Record<s
   const [lit, setLit] = useState<string[]>([]);
   const [dr, setDr] = useState(false);
   const [caption, setCaption] = useState<{ step: string; text: Tx | null; node: string }>({ step: "", text: null, node: "s3" });
+  const root = useRef<HTMLDivElement>(null);
+  // The tour only moves while the map is on screen and the tab is visible; waiting steps resume together.
+  const shown = useRef(true);
+  const waiting = useRef(new Set<() => void>());
+  useEffect(() => {
+    let inView = true;
+    const update = () => {
+      shown.current = inView && !document.hidden;
+      if (!shown.current) return;
+      for (const resume of waiting.current) resume();
+      waiting.current.clear();
+    };
+    const io = new IntersectionObserver(([e]) => { inView = e.isIntersecting; update(); });
+    if (root.current) io.observe(root.current);
+    document.addEventListener("visibilitychange", update);
+    return () => {
+      io.disconnect();
+      document.removeEventListener("visibilitychange", update);
+    };
+  }, []);
+  const whenShown = () => (shown.current ? Promise.resolve() : new Promise<void>((r) => waiting.current.add(r)));
 
   // One run per flow (or replay); a newer run cancels the older one through `token`.
   useEffect(() => {
@@ -145,6 +166,7 @@ export default function ArchitectureMap({ titles, titlesEn }: { titles: Record<s
       setDr(Boolean(f.dr));
       setLit([]);
       for (const [i, st] of f.steps.entries()) {
+        await whenShown();
         if (!alive()) return;
         setCaption({ step: `${i + 1}/${f.steps.length}`, text: st.text, node: st.on[0] });
         setLit(st.on);
@@ -174,7 +196,7 @@ export default function ArchitectureMap({ titles, titlesEn }: { titles: Record<s
   }
 
   return (
-    <div className="amap">
+    <div className="amap" ref={root}>
       <div className="amap-bar">
         <span className="amap-label">{t("shell.home.map.flows")}</span>
         <div className="amap-chips" role="group" aria-label={t("shell.home.map.pickFlow")}>
