@@ -15,3 +15,101 @@
 .gl-eyebrow {
   @apply font-body text-[0.8125rem] font-bold tracking-[0.08em] text-accent uppercase;
 }
+
+/* Search field with a leading icon (glossary, notes). */
+.gl-search {
+  @apply flex min-h-12 items-center gap-2.5 rounded-[20px] border border-line bg-surface px-4 text-muted transition-[border-color,box-shadow] duration-200;
+  @apply focus-within:border-accent focus-within:ring-4 focus-within:ring-accent-soft;
+  & input {
+    @apply min-w-0 flex-1 border-0 bg-transparent text-ink outline-none;
+  }
+}
+
+/* Row of filter pills; on phones it scrolls sideways instead of wrapping (glossary, flashcards). */
+.gl-filters {
+  @apply flex flex-wrap gap-2;
+  @apply max-[640px]:-mx-4 max-[640px]:flex-nowrap max-[640px]:overflow-x-auto max-[640px]:px-4 max-[640px]:pt-0.5 max-[640px]:pb-1.5 max-[640px]:[scrollbar-width:none];
+}
+
+/* Filter pill, pressed when its filter is on. An optional <i> dot takes the layer color (--layer). */
+.gl-filter {
+  @apply inline-flex min-h-[38px] cursor-pointer items-center gap-[7px] rounded-full border border-line bg-surface px-3.5 text-step--1 text-ink transition-[background,color,border-color,transform] duration-200 max-[640px]:flex-none;
+  @apply hover:-translate-y-px hover:border-(--layer,var(--accent));
+  @apply aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-bg;
+  & i {
+    @apply size-[9px] rounded-[9px] bg-(--layer);
+  }
+  & b {
+    @apply font-mono text-[0.75rem] font-medium text-muted;
+  }
+  &[aria-pressed="true"] b {
+    @apply text-inherit opacity-75;
+  }
+}
+
+/* Glossary term card: fixed height, a layer-colored top line, rises in; flashes when linked to (#term). */
+.gl-card {
+  @apply relative flex h-[470px] scroll-mt-[84px] flex-col gap-2.5 overflow-hidden rounded-[18px] border-2 border-line bg-surface px-5 pt-[18px] pb-4 shadow-soft transition-[transform,border-color] duration-250;
+  @apply max-[640px]:h-[530px] max-[640px]:p-4;
+  @apply hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--layer)_45%,var(--color-line))];
+  animation: gl-rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  &::before {
+    @apply absolute inset-x-0 top-0 h-[3px] bg-(--layer) opacity-85;
+    content: "";
+  }
+  &:target {
+    @apply border-(--layer);
+    animation: gl-rise 0.5s both, gl-flash 1.6s ease 0.2s 2;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    &,
+    &:target {
+      animation: none;
+    }
+  }
+}
+@keyframes gl-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes gl-flash {
+  0%, 100% { box-shadow: var(--shadow); }
+  50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--layer) 30%, transparent); }
+}
+
+/* Card body: the page script adds .scrolls when its text overflows and .at-end once it is scrolled to the
+   bottom; until then the bottom fades. */
+.gl-body {
+  @apply flex min-h-0 flex-1 flex-col gap-2.5 overflow-hidden *:flex-none;
+  &.scrolls {
+    @apply overflow-y-auto [scrollbar-width:thin];
+  }
+  &.scrolls:not(.at-end) {
+    mask-image: linear-gradient(black calc(100% - 36px), transparent);
+  }
+}
+
+/* A term's flow figure: a panel that stays dark in both themes, so it has its own palette (no theme token
+   matches); boxes joined by arrows, with a light running along underneath. */
+.gl-flow {
+  --flow-bg: #0b1218;
+  --flow-box: #16262f;
+  --flow-box-ink: #e4ecf0;
+  --flow-box-edge: #2a3c47;
+  --flow-track: #1d2c35;
+  --flow-light: #4cc2df;
+}
+.gl-flow-light {
+  @apply absolute -top-[3px] -ml-1 size-2 rounded-[12px] bg-(--flow-light) shadow-[0_0_10px_2px_var(--flow-light)];
+  animation: gl-travel 2.6s ease-in-out infinite;
+  @media (prefers-reduced-motion: reduce) {
+    @apply left-1/2;
+    animation: none;
+  }
+}
+@keyframes gl-travel {
+  0% { left: 0; opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
