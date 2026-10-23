@@ -91,14 +91,6 @@
 
 /* A term's flow figure: a panel that stays dark in both themes, so it has its own palette (no theme token
    matches); boxes joined by arrows, with a light running along underneath. */
-.gl-flow {
-  --flow-bg: #0b1218;
-  --flow-box: #16262f;
-  --flow-box-ink: #e4ecf0;
-  --flow-box-edge: #2a3c47;
-  --flow-track: #1d2c35;
-  --flow-light: #4cc2df;
-}
 .gl-flow-light {
   @apply absolute -top-[3px] -ml-1 size-2 rounded-[12px] bg-(--flow-light) shadow-[0_0_10px_2px_var(--flow-light)];
   animation: gl-travel 2.6s ease-in-out infinite;

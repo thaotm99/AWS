@@ -12,13 +12,11 @@
 .err-t { @apply fill-bad font-mono text-[12px] font-medium; }
 .ok-t { @apply fill-ok font-mono text-[12px] font-medium; }
 .cache-t { @apply fill-edge font-mono text-[11px] font-medium; }
-.rank { @apply fill-surface font-mono text-[11px] font-medium; }
 /* Word drawn over a red flash, such as BLOCKED or 403. */
 .flash-bad { @apply fill-bad font-mono text-[15px] font-bold; text-anchor: middle; }
 
 /* ---------- SVG shapes ---------- */
 .lane { @apply fill-none stroke-line stroke-2; }
-.lane-hn { @apply fill-none stroke-line stroke-[1.5]; }
 .node { @apply fill-surface stroke-accent stroke-2; }
 .node.won { @apply fill-accent; }
 .user { @apply fill-muted; }
@@ -145,7 +143,7 @@
 /* Verdict after an option name: the favoured answer (.ok) or a costly / wrong one (.bad). */
 .verdict.ok { @apply text-ok; }
 .verdict.bad { @apply text-edge; }
-.note-small { @apply mt-2 mb-0 text-[0.8125rem] text-muted; }
+.note-small { @apply mx-0 mt-2 mb-0 text-[0.8125rem] text-muted; }
 
 /* Requirement picker: a list of needs on the left, the chosen answer on the right; stacks on narrow screens. */
 .picker { @apply grid grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] max-[700px]:grid-cols-[minmax(0,1fr)]; }

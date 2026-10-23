@@ -32,7 +32,7 @@
   &.primary.cta { @apply shadow-press; }
   &.cta:active { @apply translate-y-[3px]; }
 
-  &.sun { @apply border-sun bg-sun text-[#1e1b4b] shadow-[0_5px_0_var(--color-sun-strong)]; }
+  &.sun { @apply border-sun bg-sun text-on-sun shadow-[0_5px_0_var(--color-sun-strong)]; }
   &.sun:hover:not(:disabled) { @apply border-sun brightness-104; }
 }
 
@@ -182,5 +182,5 @@ input[type="checkbox"]:disabled, input[type="range"]:disabled { @apply cursor-de
 }
 /* Introductory paragraph under a page title. */
 .lede {
-  @apply mb-[18px] text-step-1 leading-[1.6] text-muted max-sm:text-[1.0625rem];
+  @apply mb-[18px] text-step-1 leading-[1.6] text-muted;
 }

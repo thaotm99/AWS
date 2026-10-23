@@ -1,6 +1,6 @@
-/* Entry stylesheet. Layer order: Tailwind theme and base, the pre-Tailwind "legacy" styles, shared components,
-   then utilities, so a utility class always wins over older rules while areas are migrated one by one. */
-@layer theme, base, legacy, components, utilities;
+/* Entry stylesheet: Tailwind theme and preflight, element defaults (base.css), shared component classes
+   (components/*.css), then utilities, which always win. */
+@layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/preflight.css" layer(base);
 @import "./base.css" layer(base);
@@ -51,6 +51,7 @@
   --color-bad: var(--bad);
   --color-bad-soft: var(--bad-soft);
   --color-sun: var(--sun);
+  --color-on-sun: var(--on-sun);
   --color-sun-strong: var(--sun-strong);
   --color-sun-soft: var(--sun-soft);
   --color-sun-ink: var(--sun-ink);

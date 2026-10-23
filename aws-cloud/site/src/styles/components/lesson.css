@@ -118,13 +118,6 @@ mark.hl {
     @apply shadow-[0_0_0_3px_var(--color-edge)];
   }
 }
-/* Highlight colours stay the same in both themes, so they are fixed values rather than theme tokens. */
-:root {
-  --hl-yellow: #f0c75a;
-  --hl-blue: #4cc2df;
-  --hl-violet: #b29cff;
-  --hl-yellow-line: #e0b33f;
-}
 
 /* Floating toolbar over a selection or a highlight: colour swatches, note, remove. */
 .hl-bar {

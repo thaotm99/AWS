@@ -71,3 +71,21 @@
   --shadow: 0 1px 2px rgb(0 0 0 / .5), 0 12px 32px rgb(0 0 0 / .3);
   color-scheme: dark;
 }
+
+/* Fixed palettes: the same in both themes, so they are not switched with dark mode. */
+:root {
+  /* Dark ink on the sun fill (sun buttons, hero highlight). */
+  --on-sun: #1e1b4b;
+  /* Text highlight colours chosen by the reader. */
+  --hl-yellow: #f0c75a;
+  --hl-blue: #4cc2df;
+  --hl-violet: #b29cff;
+  --hl-yellow-line: #e0b33f;
+  /* Glossary flow figure: a panel that stays dark in both themes. */
+  --flow-bg: #0b1218;
+  --flow-box: #16262f;
+  --flow-box-ink: #e4ecf0;
+  --flow-box-edge: #2a3c47;
+  --flow-track: #1d2c35;
+  --flow-light: #4cc2df;
+}
