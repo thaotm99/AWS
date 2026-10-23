@@ -3,6 +3,11 @@ import { IMPORTANCE_NAMES, type RoadmapLayer } from "../data/curriculum";
 import { getDone, onProgressChange } from "../lib/progress";
 import { useI18n } from "../app/i18n";
 
+/** Status dot of a lesson, also used in the legend. */
+const DOT = "size-1.75 flex-none rounded-full border-[1.5px]";
+const DOT_READY = "border-accent bg-accent";
+const DOT_DONE = "border-ok bg-ok";
+
 interface Props {
   layers: RoadmapLayer[];
   current?: string;
@@ -39,43 +44,45 @@ export default function Roadmap({ layers, current, currentQuiz = false, ready }:
 
   return (
     <>
-      <div className="course-card">
-        <div className="side-label">{t("shell.roadmap.title")}</div>
-        <p className="course-progress-text">{t("shell.roadmap.progress", { done: finished, total })}</p>
-        <div className="course-progress">
-          <span className="course-bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} aria-label={t("shell.roadmap.title")}>
-            <i style={{ width: `${percent}%` }} />
+      <div className="mb-3 rounded-[18px] border border-line bg-surface px-3.5 py-3">
+        <div className="text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{t("shell.roadmap.title")}</div>
+        <p className="mt-1 mb-2 text-[0.875rem] font-semibold">{t("shell.roadmap.progress", { done: finished, total })}</p>
+        <div className="flex items-center gap-2.5">
+          <span className="h-1.5 flex-1 overflow-hidden rounded-[3px] bg-line" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} aria-label={t("shell.roadmap.title")}>
+            <i className="block h-full rounded-[3px] bg-ok transition-[width] duration-300" style={{ width: `${percent}%` }} />
           </span>
-          <span className="course-percent">{percent}%</span>
+          <span className="font-mono text-[0.75rem] font-semibold text-ok">{percent}%</span>
         </div>
       </div>
-      <p className="filter-note">{t("shell.roadmap.note")}</p>
-      <ul className="layers">
+      <p className="mt-0 mb-3.5 text-step--1 text-muted">{t("shell.roadmap.note")}</p>
+      <ul className="m-0 grid list-none gap-1 p-0">
         {layers.map((layer) => (
-          <li className="layer" key={layer.n}>
-            <button aria-expanded={open.has(layer.n)} onClick={() => toggleLayer(layer.n)}>
-              <span className="layer-num">{layer.n}</span>
+          <li key={layer.n}>
+            <button className="flex w-full cursor-pointer items-baseline gap-2.5 border-0 bg-transparent px-1 py-1.75 text-left font-medium"
+              aria-expanded={open.has(layer.n)} onClick={() => toggleLayer(layer.n)}>
+              <span className="w-5.5 flex-none font-mono text-[0.75rem] text-muted">{layer.n}</span>
               <span>{en ? layer.nameEn : layer.name}</span>
             </button>
-            <ul className="concepts" hidden={!open.has(layer.n)}>
+            <ul className="mt-0 mr-0 mb-1.5 ml-3.5 list-none border-l border-line py-0 pr-0 pl-3.5" hidden={!open.has(layer.n)}>
               {layer.concepts.map((c) => {
-                const cls = ["concept", ready.includes(c.id) ? "ready" : "", done.has(c.id) ? "done" : ""]
-                  .filter(Boolean).join(" ");
+                const dot = done.has(c.id) ? DOT_DONE : ready.includes(c.id) ? DOT_READY : "border-muted";
                 const here = c.id === current;
                 return (
                   <li key={c.id}>
-                    <a className={cls} href={`/concepts/${c.id}/`} aria-current={here && !currentQuiz ? "page" : undefined}>
-                      <span className="dot" aria-hidden="true" />
+                    <a
+                      className="flex w-full cursor-pointer items-start gap-2 rounded-[10px] px-2 py-1.5 text-left text-[0.875rem] leading-[1.35] text-ink no-underline hover:bg-surface aria-[current=page]:bg-accent-soft aria-[current=page]:font-semibold aria-[current=page]:text-accent"
+                      href={`/concepts/${c.id}/`} aria-current={here && !currentQuiz ? "page" : undefined}>
+                      <span className={`mt-1.5 ${DOT} ${dot}`} aria-hidden="true" />
                       <span>{en ? c.titleEn : c.title}</span>
                       {!c.intro && (
-                        <span className={`imp imp-${c.importance}`} title={t(`shell.importance.${IMPORTANCE_NAMES[c.importance]}`)}>
+                        <span className={`imp imp-${c.importance} ml-auto`} title={t(`shell.importance.${IMPORTANCE_NAMES[c.importance]}`)}>
                           <i /><i /><i />
                         </span>
                       )}
                     </a>
                     {ready.includes(c.id) && c.quiz > 0 && (
                       <a
-                        className="concept-quiz"
+                        className="mt-px mr-0 mb-1 ml-6.5 flex items-center gap-1.5 rounded-[10px] px-2 py-0.75 text-[0.8125rem] text-muted no-underline hover:bg-surface hover:text-ink aria-[current=page]:bg-accent-soft aria-[current=page]:font-semibold aria-[current=page]:text-accent"
                         href={`/concepts/${c.id}/quiz/`}
                         aria-current={here && currentQuiz ? "page" : undefined}
                       >
@@ -84,7 +91,7 @@ export default function Roadmap({ layers, current, currentQuiz = false, ready }:
                           <path d="M5 8.2l2 2 4-4.4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                         <span>{t("shell.roadmap.quiz")}</span>
-                        <span className="concept-quiz-n">{t("shell.roadmap.quizCount", { n: c.quiz })}</span>
+                        <span className="ml-auto font-mono text-[0.75rem]">{t("shell.roadmap.quizCount", { n: c.quiz })}</span>
                       </a>
                     )}
                   </li>
@@ -94,10 +101,10 @@ export default function Roadmap({ layers, current, currentQuiz = false, ready }:
           </li>
         ))}
       </ul>
-      <div className="legend">
-        <span><i className="r" />{t("shell.roadmap.ready")}</span>
-        <span><i />{t("shell.roadmap.soon")}</span>
-        <span><i className="d" />{t("shell.roadmap.done")}</span>
+      <div className="mt-3.5 flex flex-wrap gap-3.5 text-[0.75rem] text-muted *:inline-flex *:items-center *:gap-1.5">
+        <span><i className={`inline-block ${DOT} ${DOT_READY}`} />{t("shell.roadmap.ready")}</span>
+        <span><i className={`inline-block ${DOT} border-muted`} />{t("shell.roadmap.soon")}</span>
+        <span><i className={`inline-block ${DOT} ${DOT_DONE}`} />{t("shell.roadmap.done")}</span>
       </div>
     </>
   );
