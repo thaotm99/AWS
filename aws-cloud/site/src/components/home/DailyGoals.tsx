@@ -120,8 +120,8 @@ export default function DailyGoals() {
           <div><dt>{t("shell.goals.current")}</dt><dd>{t("shell.goals.days", { n: s.current })}</dd></div>
           <div><dt>{t("shell.goals.longest")}</dt><dd>{t("shell.goals.days", { n: s.longest })}</dd></div>
           <div><dt>{t("shell.goals.rest")}</dt><dd>{s.restLeft}</dd></div>
-          <p>{t("shell.goals.rule")}</p>
         </dl>
+        <p className="dg-rule">{t("shell.goals.rule")}</p>
       </div>
     </section>
   );

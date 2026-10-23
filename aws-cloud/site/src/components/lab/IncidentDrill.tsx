@@ -89,7 +89,7 @@ export default function IncidentDrill({ id, learn }: { id: string; learn: Link }
         <div className="drill-panels">
           {drill.panels.map((p, i) => (
             <section key={i} className="drill-panel" aria-label={L(p.title)}>
-              <h3>{L(p.title)}</h3>
+              <h2>{L(p.title)}</h2>
               <ul>
                 {p.items.map((it) => (
                   <li key={it.id} data-state={items[it.id]}>
@@ -103,7 +103,7 @@ export default function IncidentDrill({ id, learn }: { id: string; learn: Link }
           ))}
         </div>
         <section className="drill-log" aria-labelledby="drill-log-h">
-          <h3 id="drill-log-h">{t("shell.drill.timeline")}</h3>
+          <h2 id="drill-log-h">{t("shell.drill.timeline")}</h2>
           <ol>
             {[...drill.start, ...log].map((e, i) => (
               <li key={i}><b>{L(e.at)}</b> {L(e.text)}</li>
