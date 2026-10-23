@@ -166,7 +166,7 @@ ShopViet's data is stored in a data lake on S3. Each task has a best-fit service
 - **Glue**: serverless ETL and the Data Catalog; **Glue Studio** is the visual interface for creating, running and monitoring Glue jobs. **Glue DataBrew**: clean data through a visual interface, with no code to write, with data profiling, shareable recipes and a data lineage map.
 - **EMR**: Spark/Hadoop clusters of the size you choose, used when you need control over the framework and configuration.
 
-Choose a task, run the simulation, then switch to the better-suited tool. Continuous database sync is covered in detail in the [data migration lesson](/concepts/storage-migration/#en-s3):
+Choose a task, run the simulation, then switch to the better-suited tool. Continuous database sync is covered in detail in the [data migration lesson](/concepts/storage-migration/server-database-migration/):
 
 <DataJobSim client:visible />
 
@@ -225,7 +225,7 @@ Some services have names or features close to a ShopViet need but solve a differ
     instead: "**Glue → Redshift Serverless → Redshift ML**: a SQL `CREATE MODEL` statement uses data in Redshift to create a model in SageMaker AI, then predictions run as a SQL function (part 4). Athena ML fits when an endpoint already exists and you only need inference from ad-hoc queries on S3." },
 ]} />
 
-More on Security Lake: [Security lesson, part 2](/concepts/security/#en-s2). More on global tables: [DynamoDB lesson, part 5](/concepts/dynamodb/#en-s5).
+More on Security Lake: [Security lesson, part 2](/concepts/security/security-incidents/). More on global tables: [DynamoDB lesson, part 5](/concepts/dynamodb/multi-region/).
 
 <Takeaway>Building ETL jobs visually: Glue Studio; preparing data with profiling and shared recipes: DataBrew. Bringing SaaS data into AWS: AppFlow. Fine-grained permissions on a data lake: Lake Formation; centralizing security logs: Security Lake. Constantly updated locations: Redis geospatial; search and maps: OpenSearch. Graphs: Neptune; multi-Region writes: DynamoDB global tables. Calling an existing SageMaker AI endpoint from SQL on S3: Athena ML; training models with SQL in a data warehouse: Redshift ML.</Takeaway>
 

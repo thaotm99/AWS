@@ -240,7 +240,7 @@ Some CloudFront settings have names close to a real requirement but solve a diff
     instead: "To improve performance for distant users without moving the application: **AWS Global Accelerator** with a TCP 443 listener and the existing EC2/ALB as the endpoint. With CloudFront: CachingDisabled with a suitable origin request policy." },
 ]} />
 
-<Takeaway>A price class sets cost and the set of edge locations; it does not route to origins. An origin request policy decides what is sent to the origin; it grants no permission. HTTPS to the origin protects data in transit; it does not restrict viewers. Lambda@Edge customizes requests and responses at the edge; it does not make the application and database highly available. CloudFront has no built-in Cognito authentication: authenticating at the edge needs Lambda@Edge; the least-code option is letting the ALB behind it authenticate with a Cognito user pool ([ELB lesson](/concepts/elb/#en-s3)).</Takeaway>
+<Takeaway>A price class sets cost and the set of edge locations; it does not route to origins. An origin request policy decides what is sent to the origin; it grants no permission. HTTPS to the origin protects data in transit; it does not restrict viewers. Lambda@Edge customizes requests and responses at the edge; it does not make the application and database highly available. CloudFront has no built-in Cognito authentication: authenticating at the edge needs Lambda@Edge; the least-code option is letting the ALB behind it authenticate with a Cognito user pool ([ELB lesson](/concepts/elb/one-alb-many-services/)).</Takeaway>
 
 </Scene>
 

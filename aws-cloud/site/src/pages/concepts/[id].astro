@@ -5,9 +5,11 @@ import L from "../../components/L.astro";
 import Donate from "../../components/Donate.astro";
 import DoneButton from "../../components/DoneButton.tsx";
 import Importance from "../../components/Importance.astro";
+import LessonParts from "../../components/lesson/LessonParts.astro";
 import T from "../../app/T.astro";
 import { findConcept } from "../../data/curriculum";
 import { getCurriculum } from "../../data/exam";
+import { lessonParts } from "../../data/lesson-parts";
 
 export async function getStaticPaths() {
   const entries = await getCollection("concepts");
@@ -28,6 +30,7 @@ const { Content: ContentEn } = entryEn ? await render(entryEn) : { Content: null
 const all = layers.flatMap((l) => l.concepts);
 const index = all.findIndex((c) => c.id === id);
 const next = all.slice(index + 1, index + 4);
+const parts = lessonParts(id);
 const ready = new Set((await getCollection("concepts")).map((e) => e.id));
 const prereqs = (entry?.data.prerequisites ?? []).map((p) => findConcept(layers, p)).filter(Boolean);
 const title = entry?.data.title ?? concept.title;
@@ -69,19 +72,6 @@ const docParts = [
 ];
 ---
 <BaseLayout title={`${concept.title} · AWS Thực Chiến`} description={entry?.data.lede} current={id}>
-  {entry && (
-    <nav slot="toc" class="ltoc" id="toc" aria-label="Mục lục bài học" data-i18n-attr="aria-label:shell.toc.label">
-      <div class="toc-head">
-        <span class="side-label"><T k="shell.toc.progress" /></span>
-        <span class="toc-percent" data-read-percent>0%</span>
-      </div>
-      <p class="toc-lesson"><L vi={title} en={titleEn} /></p>
-      <div class="side-label toc-title"><T k="shell.toc.title" /></div>
-      <ol></ol>
-      <div class="toc-bar" aria-hidden="true"><i /></div>
-      <p class="toc-keys"><kbd>J</kbd> / <kbd>K</kbd> <T k="shell.toc.jump" /></p>
-    </nav>
-  )}
   <div class="crumbs">
     <span><T k="lesson.frame.layer" params={{ n: concept.layer.n }} /> · <L vi={concept.layer.name} en={concept.layer.nameEn} /></span>
     <span aria-hidden="true">/</span><b><L vi={concept.title} en={concept.titleEn} /></b>
@@ -126,6 +116,9 @@ const docParts = [
           <p class="untranslated" data-lang="en"><T k="lesson.frame.untranslated" /></p>
           <Content />
         </>
+      )}
+      {parts.length > 0 && (
+        <LessonParts lesson={id} parts={parts} quiz={concept.exact && concept.questions > 0 ? concept.questions : undefined} minutes={entry!.data.minutes} />
       )}
       <section class="scene prose" id="next">
         <div class="scene-head">
@@ -188,17 +181,3 @@ const docParts = [
     </div>
   )}
 </BaseLayout>
-
-<script>
-  import { i18n } from "../../app/i18n";
-  import { LessonToc } from "../../modules/shell/ui/LessonToc";
-
-  const root = document.getElementById("toc");
-  const content = document.querySelector<HTMLElement>("main.article");
-  if (root && content) {
-    const toc = new LessonToc(root, content);
-    toc.start();
-    // Each language has its own copy of the lesson; rebuild the contents for the visible one.
-    i18n.subscribe(() => requestAnimationFrame(() => toc.refresh()));
-  }
-</script>

@@ -173,7 +173,7 @@ Chọn từng tác vụ của ShopViet, điều chỉnh cấu hình rồi triể
 
 <FunctionConfigSim client:visible />
 
-Layer không thay thế được nơi lưu dữ liệu. Khi team gợi ý sản phẩm cần đọc bộ dữ liệu lớn, liên tục tăng trên EFS thuộc account đối tác, Lambda mount trực tiếp EFS đó qua access point, kèm file system policy cho phép cross-account và kết nối VPC peering: xem [bài Storage, phần 3](/concepts/storage/#s3). Đóng gói dữ liệu vào layer không phù hợp vì layer version bất biến và bị giới hạn 250 MB chung với package.
+Layer không thay thế được nơi lưu dữ liệu. Khi team gợi ý sản phẩm cần đọc bộ dữ liệu lớn, liên tục tăng trên EFS thuộc account đối tác, Lambda mount trực tiếp EFS đó qua access point, kèm file system policy cho phép cross-account và kết nối VPC peering: xem [bài Storage, phần 3](/concepts/storage/efs-configuration/). Đóng gói dữ liệu vào layer không phù hợp vì layer version bất biến và bị giới hạn 250 MB chung với package.
 
 <Takeaway>CPU tỷ lệ với memory (1.769 MB ≈ 1 vCPU). `/tmp` từ 512 MB tới 10.240 MB, tạm thời, riêng cho từng execution environment; dữ liệu bền vững dùng S3 hoặc EFS. Timeout đặt theo load test, không đặt dư. Gói .zip tối đa 250 MB giải nén kể cả layer; lớn hơn dùng container image (tối đa 10 GB). Layer cho thư viện dùng chung, không cho dữ liệu.</Takeaway>
 

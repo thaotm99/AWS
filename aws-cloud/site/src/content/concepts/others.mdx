@@ -153,7 +153,7 @@ Mỗi tình huống dưới đây là một luồng xử lý của ShopViet; vă
 
 <AiPipelineSim client:visible />
 
-**Amazon SageMaker AI** là dịch vụ ML được quản lý toàn phần để xây dựng, huấn luyện và triển khai model ML. Tự huấn luyện model trên SageMaker AI cũng đáp ứng được các yêu cầu trên, nhưng cần nhân sự có chuyên môn ML và chi phí vận hành cao hơn. Khi đã có service dựng sẵn phù hợp, nên ưu tiên sử dụng service đó. SageMaker AI cũng không phải nơi chạy API container của ứng dụng: việc đó thuộc về [ECS hoặc EKS trên Fargate](/concepts/containers/#s1).
+**Amazon SageMaker AI** là dịch vụ ML được quản lý toàn phần để xây dựng, huấn luyện và triển khai model ML. Tự huấn luyện model trên SageMaker AI cũng đáp ứng được các yêu cầu trên, nhưng cần nhân sự có chuyên môn ML và chi phí vận hành cao hơn. Khi đã có service dựng sẵn phù hợp, nên ưu tiên sử dụng service đó. SageMaker AI cũng không phải nơi chạy API container của ứng dụng: việc đó thuộc về [ECS hoặc EKS trên Fargate](/concepts/containers/ec2-or-fargate/).
 
 <Takeaway>Văn bản → cảm xúc, thực thể: Comprehend (loại thực thể riêng: custom entity recognition). Ảnh, video: Rekognition. Dịch ngôn ngữ: Translate. Văn bản → giọng nói: Polly. Giọng nói → văn bản: Transcribe, sau đó truy vấn SQL bằng Athena. Ảnh scan, PDF → văn bản: Textract, sau đó chuyển sang Comprehend. Lưu lượng dữ liệu tăng đột biến: đặt SQS giữa API Gateway và Lambda; tự động xoá dữ liệu sau một năm: TTL của DynamoDB (item hết hạn thường bị xoá trong vòng vài ngày).</Takeaway>
 
@@ -257,7 +257,7 @@ Khi thiết kế các luồng xử lý của ShopViet, một số dịch vụ c�
     instead: "**Amazon SQS** làm lớp đệm, ứng dụng poll hàng đợi theo tốc độ của mình. Khi thiết bị đi qua IoT Core, có thể dùng action SQS của IoT rule." },
 ]} />
 
-Chi tiết các phương án thay thế: [ECS và EKS với Fargate](/concepts/containers/#s1), [AWS Transfer Family](/concepts/storage-migration/#s2), [RDS Multi-AZ](/concepts/rds/#s1), [SQS làm lớp đệm](/concepts/messaging/#s1).
+Chi tiết các phương án thay thế: [ECS và EKS với Fargate](/concepts/containers/ec2-or-fargate/), [AWS Transfer Family](/concepts/storage-migration/data-transfer/), [RDS Multi-AZ](/concepts/rds/multi-az-read-replicas/), [SQS làm lớp đệm](/concepts/messaging/queues/).
 
 <Takeaway>Văn bản: Comprehend. Ảnh, video: Rekognition. Dịch: Translate. Giọng nói ↔ văn bản: Transcribe (vào là âm thanh), Polly (ra là âm thanh). Container không quản lý máy chủ: ECS/EKS với Fargate, không phải SageMaker AI hay Lightsail. Nhà cung cấp gửi file qua SFTP: Transfer Family, không phải AppFlow. Database quan hệ: RDS, không phải Timestream. Cần lớp đệm để không mất dữ liệu: SQS, không phải SNS.</Takeaway>
 

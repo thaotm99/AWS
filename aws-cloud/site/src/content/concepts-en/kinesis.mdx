@@ -147,7 +147,7 @@ ShopViet's customer service department stores call recordings on S3 and wants to
     instead: "Transcribe reads the files directly from S3 (post-call analytics); Athena queries the results." },
 ]} />
 
-The Transcribe → S3 → Athena pipeline is simulated in [the Analytics lesson, Part 3](/concepts/analytics/#en-s3).
+The Transcribe → S3 → Athena pipeline is simulated in [the Analytics lesson, Part 3](/concepts/analytics/data-tools/).
 
 <Takeaway>Analyzing a continuous data stream: Managed Service for Apache Flink (Studio for interactive queries on a stream). Call recordings that need sentiment analysis and ad-hoc SQL: Amazon Transcribe (Call Analytics) converts them to text on S3, and Amazon Athena runs the SQL. Kinesis does not convert speech to text.</Takeaway>
 

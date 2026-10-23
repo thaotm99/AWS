@@ -1,0 +1,143 @@
+---
+// One part of a lesson: the lesson MDX is rendered whole, and only the matching <Scene> outputs anything
+// (see Scene.astro), so the page carries one part's text and simulations.
+import { getCollection, getEntry, render } from "astro:content";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import L from "../../../components/L.astro";
+import T from "../../../app/T.astro";
+import { findConcept } from "../../../data/curriculum";
+import { getCurriculum } from "../../../data/exam";
+import { lessonParts, type LessonPart } from "../../../data/lesson-parts";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("concepts");
+  return entries.flatMap((entry) =>
+    lessonParts(entry.id).map((part) => ({ params: { id: entry.id, part: part.slug }, props: { entry, part } })),
+  );
+}
+
+const { id } = Astro.params;
+const { entry, part } = Astro.props as { entry: Awaited<ReturnType<typeof getCollection<"concepts">>>[number]; part: LessonPart };
+const layers = getCurriculum();
+const concept = findConcept(layers, id)!;
+const { Content } = await render(entry);
+const entryEn = await getEntry("conceptsEn", id);
+const { Content: ContentEn } = entryEn ? await render(entryEn) : { Content: null };
+const title = entry.data.title;
+const titleEn = entryEn?.data.title ?? concept.titleEn;
+
+const parts = lessonParts(id);
+const index = parts.findIndex((p) => p.slug === part.slug);
+const prev = parts[index - 1];
+const next = parts[index + 1];
+const quiz = concept.exact && concept.questions > 0 ? concept.questions : 0;
+const href = (p: LessonPart) => `/concepts/${id}/${p.slug}/`;
+const head = (s: string) => s.split(": ")[0];
+// After the last part: the lesson quiz when there is one, else back to the overview.
+const after = next
+  ? { href: href(next), vi: head(next.title.vi), en: head(next.title.en) }
+  : quiz
+    ? { href: `/concepts/${id}/quiz/`, vi: "Câu hỏi kiểm tra", en: "Quiz" }
+    : { href: `/concepts/${id}/`, vi: "Tổng quan bài", en: "Lesson overview" };
+---
+<BaseLayout title={`${head(part.title.vi)} · ${concept.title} · AWS Thực Chiến`} description={entry.data.lede} current={id}>
+  <nav slot="toc" class="ltoc pnav" aria-label="Các phần của bài học" data-i18n-attr="aria-label:lesson.parts.label">
+    <a class="pnav-back" href={`/concepts/${id}/`}>← <T k="lesson.parts.overview" /></a>
+    <p class="toc-lesson"><L vi={title} en={titleEn} /></p>
+    <ol>
+      {parts.map((p) => (
+        <li>
+          <a href={href(p)} aria-current={p.slug === part.slug ? "true" : undefined} data-slug={p.slug} data-kind={p.kind}>
+            <small><L vi={p.label.vi} en={p.label.en} /></small>
+            <L vi={head(p.title.vi)} en={head(p.title.en)} />
+          </a>
+        </li>
+      ))}
+      {quiz > 0 && (
+        <li><a href={`/concepts/${id}/quiz/`} data-kind="quiz"><small><T k="lesson.parts.quiz" /></small><T k="lesson.parts.quizCount" params={{ n: quiz }} /></a></li>
+      )}
+    </ol>
+  </nav>
+
+  <div class="part-top">
+    <div class="crumbs">
+      <span><T k="lesson.frame.layer" params={{ n: concept.layer.n }} /> · <L vi={concept.layer.name} en={concept.layer.nameEn} /></span>
+      <span aria-hidden="true">/</span><a href={`/concepts/${id}/`}><L vi={concept.title} en={concept.titleEn} /></a>
+    </div>
+    <ol class="part-steps" aria-label="Các phần của bài học" data-i18n-attr="aria-label:lesson.parts.label">
+      {parts.map((p) => (
+        <li><a href={href(p)} aria-current={p.slug === part.slug ? "step" : undefined} data-slug={p.slug} data-kind={p.kind} title={p.title.vi}><span class="sr-only"><L vi={p.title.vi} en={p.title.en} /></span></a></li>
+      ))}
+    </ol>
+  </div>
+
+  <article class="part-body" data-lesson={id} data-part={part.slug} data-parts={JSON.stringify(parts.map((p) => p.slug))}>
+    {ContentEn ? (
+      <>
+        <div data-lang="vi"><Content /></div>
+        <div data-lang="en"><ContentEn /></div>
+      </>
+    ) : (
+      <Content />
+    )}
+  </article>
+  <div class="part-end" aria-hidden="true"></div>
+
+  <nav class="part-pager" aria-label="Chuyển phần" data-i18n-attr="aria-label:lesson.parts.label">
+    {prev ? (
+      <a class="part-prev" href={href(prev)}>
+        <small><T k="lesson.parts.prev" /></small>
+        <b><L vi={head(prev.title.vi)} en={head(prev.title.en)} /></b>
+      </a>
+    ) : (
+      <a class="part-prev" href={`/concepts/${id}/`}>
+        <small><T k="lesson.parts.overview" /></small>
+        <b><L vi={concept.title} en={concept.titleEn} /></b>
+      </a>
+    )}
+    <a class="part-next" href={after.href} data-part-next>
+      <small><T k={next ? "lesson.parts.next" : "lesson.parts.finish"} /></small>
+      <b><L vi={after.vi} en={after.en} /> →</b>
+    </a>
+  </nav>
+</BaseLayout>
+
+<script>
+  import { getPartsRead, onProgressChange, setPartRead } from "../../../lib/progress";
+
+  const body = document.querySelector<HTMLElement>(".part-body");
+  if (body) {
+    const lesson = body.dataset.lesson!;
+    const part = body.dataset.part!;
+    const all: string[] = JSON.parse(body.dataset.parts!);
+    const pager = document.querySelector<HTMLElement>(".part-pager")!;
+
+    // Read state on the part list (desktop column) and the step bar.
+    const sync = () => {
+      const read = getPartsRead(lesson);
+      document.querySelectorAll<HTMLElement>(".pnav a[data-slug], .part-steps a").forEach((a) => (a.dataset.read = String(read.has(a.dataset.slug!))));
+    };
+    sync();
+    onProgressChange(sync);
+
+    // Reaching the end of the part, or moving on from it, counts as reading it. The marker sits after
+    // the content: on phones the pager is pinned to the screen and always in view.
+    const done = () => setPartRead(lesson, part, all);
+    new IntersectionObserver((entries, io) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        done();
+        io.disconnect();
+      }
+    }).observe(document.querySelector(".part-end")!);
+    pager.querySelector("[data-part-next]")!.addEventListener("click", done);
+
+    // Reading progress within the part, for the thin bar under the top bar.
+    const progress = () => {
+      const r = body.getBoundingClientRect();
+      const p = Math.min(1, Math.max(0, (innerHeight - r.top) / (r.height || 1)));
+      document.documentElement.style.setProperty("--read", `${Math.round(p * 100)}%`);
+    };
+    addEventListener("scroll", progress, { passive: true });
+    progress();
+  }
+</script>

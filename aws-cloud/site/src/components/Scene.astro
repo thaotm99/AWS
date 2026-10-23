@@ -1,7 +1,9 @@
 ---
 import { assertListed, getCurriculum } from "../data/exam";
 import { stripTerms } from "../data/glossary-scan";
+import { lessonRoute, partOfScene } from "../data/lesson-parts";
 import { spellings } from "../data/glossary-rules";
+import T from "../app/T.astro";
 import KeywordStrip, { type StripTerm } from "./glossary/KeywordStrip.tsx";
 
 interface Props {
@@ -14,11 +16,17 @@ interface Props {
 const { id, label, title, questions = [] } = Astro.props;
 assertListed(questions, `Scene "${id}"`);
 
+// Each part of a lesson is its own page (/concepts/<lesson>/<slug>/): a scene renders only there,
+// so the overview page and the other parts carry neither its markup nor its islands.
+const route = lessonRoute(Astro.url.pathname);
+const lesson = route?.lesson;
+const part = lesson ? partOfScene(lesson, id) : undefined;
+const visible = !route || (part !== undefined && part.slug === route.part);
+
 // Key terms the scene introduces, read from the lesson source at build time. English scenes
-// carry an "en-" id prefix; only lesson pages (/concepts/<id>/) get a strip.
-const lesson = /^\/concepts\/([^/]+)\/?$/.exec(Astro.url.pathname)?.[1];
+// carry an "en-" id prefix.
 const concepts = getCurriculum().flatMap((l) => l.concepts);
-const terms: StripTerm[] = lesson
+const terms: StripTerm[] = lesson && visible
   ? stripTerms(id.startsWith("en-") ? "en" : "vi", lesson, id).map((t) => {
       const home = concepts.find((c) => c.id === t.lesson)!;
       return {
@@ -34,8 +42,13 @@ const terms: StripTerm[] = lesson
     })
   : [];
 ---
-<section class="scene prose" id={id}>
-  <div class="scene-head"><span class="scene-no">{label}</span><h2>{title}</h2></div>
-  {terms.length > 0 && <KeywordStrip client:idle terms={terms} />}
-  <slot />
-</section>
+{visible && (
+  <section class="scene prose" id={id}>
+    <div class="scene-head">
+      <span class="scene-no">{label}{part && <> · <T k="lesson.parts.minutes" params={{ n: part.minutes }} /></>}</span>
+      {route ? <h1>{title}</h1> : <h2>{title}</h2>}
+    </div>
+    {terms.length > 0 && <KeywordStrip client:idle terms={terms} />}
+    <slot />
+  </section>
+)}

@@ -210,7 +210,7 @@ Ba tình huống của ShopViet: biểu mẫu đăng ký người bán phải đ
     instead: "Kinesis Data Streams: record được lưu mặc định 24 giờ, tối đa 365 ngày; nhiều ứng dụng cùng đọc; Lambda event source mapping retry batch lỗi tới khi record hết hạn hoặc vượt maximum age." },
 ]} />
 
-Kênh tiếp nhận luồng dữ liệu bằng Kinesis Data Streams và cách nhiều ứng dụng cùng đọc một stream được trình bày trong [bài Kinesis, Phần 1](/concepts/kinesis/#s1).
+Kênh tiếp nhận luồng dữ liệu bằng Kinesis Data Streams và cách nhiều ứng dụng cùng đọc một stream được trình bày trong [bài Kinesis, Phần 1](/concepts/kinesis/queues-and-streams/).
 
 <Takeaway>Xử lý đúng một lần giữa hai tầng: SQS FIFO; standard queue và EventBridge event bus classic đều at-least-once. Giảm chi phí do nhận rỗng: long polling, không phải message timer hay visibility timeout. SNS có retry và DLQ, nhưng standard topic không lưu message để đọc lại; luồng dữ liệu cần lưu giữ và xử lý lại: Kinesis Data Streams.</Takeaway>
 

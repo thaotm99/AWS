@@ -185,7 +185,7 @@ Team gợi ý sản phẩm của ShopViet chạy Lambda function trong VPC, cầ
       note: "Trong cấu hình function, chọn **access point** và local mount path bắt đầu bằng `/mnt/`. Function đọc ghi tệp trực tiếp, không cần sao chép dữ liệu sang S3 hay gọi qua function trung gian." },
   ]} />
 
-Các lưu ý khác khi Lambda chạy trong VPC (truy cập Internet, NAT gateway): xem [bài Lambda](/concepts/lambda/#s2).
+Các lưu ý khác khi Lambda chạy trong VPC (truy cập Internet, NAT gateway): xem [bài Lambda](/concepts/lambda/production/).
 
 <Takeaway>EFS: file system NFS dùng chung giữa nhiều AZ. Cấu hình khuyến nghị: General Purpose performance mode + Elastic throughput; Max I/O là thế hệ trước (tài liệu cũ có thể khuyến nghị Max I/O cho tải song song). Bursting: throughput theo dung lượng lớp Standard, dùng burst credit. Đã biết trước nhu cầu throughput: Provisioned throughput. Tệp ít truy cập: lớp IA. Không cần chịu lỗi cấp AZ, ưu tiên chi phí: One Zone. Mount target cùng AZ để giảm độ trễ. Lambda mount EFS qua access point.</Takeaway>
 

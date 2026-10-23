@@ -109,7 +109,7 @@ Một số dịch vụ thường được cân nhắc cùng AWS WAF nhưng giả
     instead: "Endpoint **VPC hosted, Internet Facing** gắn Elastic IP cho từng subnet; **security group** của endpoint chỉ cho phép SSH (cổng 22 mặc định) từ dải IP của đối tác. Lựa chọn backend lưu trữ cho Transfer Family được trình bày trong bài Di chuyển dữ liệu, Phần 2." },
 ]} />
 
-AWS Transfer Family và lựa chọn backend lưu trữ (Amazon S3 hoặc Amazon EFS) được trình bày tại [bài Di chuyển dữ liệu, Phần 2](/concepts/storage-migration/#s2).
+AWS Transfer Family và lựa chọn backend lưu trữ (Amazon S3 hoặc Amazon EFS) được trình bày tại [bài Di chuyển dữ liệu, Phần 2](/concepts/storage-migration/data-transfer/).
 
 <Takeaway>Chặn request web độc hại: AWS WAF. Xem tập trung và ưu tiên finding bảo mật của nhiều account: Security Hub (không chặn traffic). Áp dụng cùng rule cho nhiều account: Firewall Manager. Giới hạn IP cho traffic không phải HTTP như SFTP: security group (hoặc network ACL) ở tầng mạng.</Takeaway>
 

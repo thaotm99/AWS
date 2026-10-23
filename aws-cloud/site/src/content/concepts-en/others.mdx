@@ -153,7 +153,7 @@ Each scenario below is a ShopViet processing pipeline; the text sent to Comprehe
 
 <AiPipelineSim client:visible />
 
-**Amazon SageMaker AI** is a fully managed ML service for building, training and deploying ML models. Training your own model on SageMaker AI also meets these requirements, but it needs staff with ML expertise and costs more to operate. When a suitable pre-trained service exists, prefer that service. SageMaker AI is also not where the application's container APIs run: that is the job of [ECS or EKS on Fargate](/concepts/containers/#en-s1).
+**Amazon SageMaker AI** is a fully managed ML service for building, training and deploying ML models. Training your own model on SageMaker AI also meets these requirements, but it needs staff with ML expertise and costs more to operate. When a suitable pre-trained service exists, prefer that service. SageMaker AI is also not where the application's container APIs run: that is the job of [ECS or EKS on Fargate](/concepts/containers/ec2-or-fargate/).
 
 <Takeaway>Text → sentiment, entities: Comprehend (custom entity types: custom entity recognition). Images, video: Rekognition. Language translation: Translate. Text → speech: Polly. Speech → text: Transcribe, then query with SQL using Athena. Scanned images, PDFs → text: Textract, then pass to Comprehend. Traffic spikes: put SQS between API Gateway and Lambda; automatically delete data after one year: DynamoDB TTL (expired items are typically deleted within a few days).</Takeaway>
 
@@ -257,7 +257,7 @@ When designing ShopViet's processing pipelines, some services have a name or sco
     instead: "**Amazon SQS** as a buffer, with the application polling the queue at its own pace. When devices go through IoT Core, the IoT rule's SQS action can be used." },
 ]} />
 
-Details of the alternatives: [ECS and EKS with Fargate](/concepts/containers/#en-s1), [AWS Transfer Family](/concepts/storage-migration/#en-s2), [RDS Multi-AZ](/concepts/rds/#en-s1), [SQS as a buffer](/concepts/messaging/#en-s1).
+Details of the alternatives: [ECS and EKS with Fargate](/concepts/containers/ec2-or-fargate/), [AWS Transfer Family](/concepts/storage-migration/data-transfer/), [RDS Multi-AZ](/concepts/rds/multi-az-read-replicas/), [SQS as a buffer](/concepts/messaging/queues/).
 
 <Takeaway>Text: Comprehend. Images, video: Rekognition. Translation: Translate. Speech ↔ text: Transcribe (audio in), Polly (audio out). Containers without managing servers: ECS/EKS with Fargate, not SageMaker AI or Lightsail. Vendors sending files over SFTP: Transfer Family, not AppFlow. Relational database: RDS, not Timestream. A buffer so no data is lost: SQS, not SNS.</Takeaway>
 
