@@ -1,0 +1,17 @@
+{
+  "name": "AWS Thực Chiến",
+  "short_name": "AWS Thực Chiến",
+  "description": "Học kiến trúc AWS qua hệ thống ShopViet: bài học, mô phỏng và luyện đề song ngữ.",
+  "lang": "vi",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0b1218",
+  "theme_color": "#0b1218",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

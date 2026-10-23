@@ -75,6 +75,9 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
     <script is:inline set:html={loadScript + idleScript + visibleScript + onlyScript} />
     <script is:inline set:html={islandScript} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <meta name="theme-color" content="#0b1218" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
@@ -147,6 +150,10 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
 
       new ShellController(i18n, theme).start();
       new SiteSearch(i18n, document.getElementById("search") as HTMLDialogElement, document.getElementById("searchBtn")!).start();
+      // Offline reading: pages and their files are kept as they are opened (see pages/sw.js.ts).
+      if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+        navigator.serviceWorker.register("/sw.js").catch((e) => console.warn("[sw] not registered", e));
+      }
       diagramZoom.start();
     </script>
   </body>

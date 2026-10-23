@@ -1111,3 +1111,10 @@ main.article:focus { outline: none; }
 .fc-done { padding: 22px; border-radius: 14px; border: 1px dashed var(--line); background: var(--surface); }
 .fc-done p { margin: 6px 0 0; color: var(--muted); }
 .fc-msg { color: var(--muted); }
+
+/* Save a lesson for offline reading (lesson overview) and the offline page. */
+.lp-offline { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding-top: 10px; border-top: 1px dashed var(--line); }
+.lp-save { min-height: 40px; font-size: 0.875rem; }
+.lp-save-status { font-size: 0.8125rem; color: var(--muted); }
+.offline-h { margin-top: 24px; font-size: 1.1rem; }
+.offline-list { display: grid; gap: 6px; padding-left: 20px; }

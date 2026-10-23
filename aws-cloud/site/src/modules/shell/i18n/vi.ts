@@ -52,6 +52,17 @@ export const vi = {
     doneBody: "Bạn đã nhớ {n} thẻ. Các thẻ sẽ quay lại đúng ngày cần ôn.",
     nothingDue: "Không có thẻ nào đến hạn ôn. Quay lại vào ngày mai, hoặc chọn lớp khác để học thêm thẻ mới.",
   },
+  offline: {
+    title: "Đang offline",
+    body: "Không có kết nối mạng và trang này chưa được lưu trên thiết bị. Các trang đã mở, hoặc bài đã lưu để đọc offline, vẫn mở được:",
+    saved: "Trang đã lưu trên thiết bị",
+    none: "Chưa có trang nào được lưu. Khi có mạng, mở trang tổng quan của bài và chọn “Lưu bài để đọc offline”.",
+    save: "Lưu bài để đọc offline",
+    saving: "Đang lưu {done}/{total} trang…",
+    done: "Đã lưu {n} trang: đọc được khi không có mạng",
+    failed: "Không lưu được. Kiểm tra kết nối rồi thử lại.",
+    unsupported: "Trình duyệt này không hỗ trợ đọc offline.",
+  },
   glossary: {
     pageTitle: "Thuật ngữ · AWS Thực Chiến",
     eyebrow: "Tra cứu",

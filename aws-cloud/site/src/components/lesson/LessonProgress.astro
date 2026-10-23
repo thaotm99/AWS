@@ -30,4 +30,41 @@ const firstHref = `/concepts/${lesson}/${first.slug}/`;
     <span class="lp-cta-title" data-lp-cta-title><L vi={head(first.title.vi)} en={head(first.title.en)} /></span>
     <span aria-hidden="true">→</span>
   </a>
+  <div class="lp-offline">
+    <button type="button" class="btn lp-save" data-urls={JSON.stringify([`/concepts/${lesson}/`, ...parts.map((p) => `/concepts/${lesson}/${p.slug}/`)])}>
+      <T k="shell.offline.save" />
+    </button>
+    <span class="lp-save-status" role="status" aria-live="polite"></span>
+  </div>
 </div>
+
+<script>
+  import { i18n } from "../../app/i18n";
+
+  // Asks the service worker to store the overview and every part of the lesson, with their files.
+  const button = document.querySelector<HTMLButtonElement>(".lp-save");
+  const status = document.querySelector<HTMLElement>(".lp-save-status");
+  const say = (key: string, params?: Record<string, number>) => {
+    if (status) status.textContent = (i18n.translator() as unknown as { lookup(k: string, p?: object): string }).lookup(key, params);
+  };
+  if (button && status) {
+    if (!("serviceWorker" in navigator)) button.hidden = true;
+    button.addEventListener("click", async () => {
+      const reg = await navigator.serviceWorker.ready.catch(() => null);
+      if (!reg?.active) return say("shell.offline.unsupported");
+      const urls: string[] = JSON.parse(button.dataset.urls!);
+      const channel = new MessageChannel();
+      button.disabled = true;
+      say("shell.offline.saving", { done: 0, total: urls.length });
+      channel.port1.onmessage = ({ data }) => {
+        if (data.type === "progress") say("shell.offline.saving", { done: data.done, total: data.total });
+        else {
+          button.disabled = false;
+          if (data.type === "done") say("shell.offline.done", { n: data.pages });
+          else say("shell.offline.failed");
+        }
+      };
+      reg.active.postMessage({ type: "save-lesson", urls }, [channel.port2]);
+    });
+  }
+</script>

@@ -54,6 +54,17 @@ export const en: Messages<typeof vi> = {
     doneBody: "You remembered {n} cards. They come back on the day they are due.",
     nothingDue: "No cards are due. Come back tomorrow, or pick another layer to learn new cards.",
   },
+  offline: {
+    title: "You are offline",
+    body: "There is no connection and this page is not saved on this device. Pages you have opened, or lessons saved for offline reading, still open:",
+    saved: "Pages saved on this device",
+    none: "Nothing is saved yet. When you are online, open a lesson overview and choose “Save for offline reading”.",
+    save: "Save for offline reading",
+    saving: "Saving {done}/{total} pages…",
+    done: "Saved {n} pages: readable without a connection",
+    failed: "Could not save. Check your connection and try again.",
+    unsupported: "This browser does not support offline reading.",
+  },
   glossary: {
     pageTitle: "Glossary · AWS Thực Chiến",
     eyebrow: "Reference",
