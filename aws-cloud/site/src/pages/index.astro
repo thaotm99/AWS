@@ -38,16 +38,35 @@ const features = [
 const showcase = features.slice(0, 4);
 const more = features.slice(4);
 const extras = ["lang", "search", "offline", "theme"] as const;
+const stats = [
+  { n: lessons, k: "shell.home.statLessons" },
+  { n: questions, k: "shell.home.statQuestions" },
+  { n: LABS.length + DRILLS.length, k: "shell.home.statLabs" },
+] as const;
+// Tinted ground behind each feature's illustration.
+const artBg: Record<(typeof features)[number]["id"], string> = {
+  lessons: "bg-accent-soft",
+  practice: "bg-edge-soft",
+  lab: "bg-ok-soft",
+  skills: "bg-sun-soft",
+  compare: "bg-accent-soft",
+  flashcards: "bg-[color-mix(in_srgb,var(--color-blue)_14%,var(--color-surface))]",
+  notes: "bg-sun-soft",
+  progress: "bg-ok-soft",
+};
+// Section headings and their lede (features, map).
+const sectionTitle = "mb-3 text-[length:clamp(1.75rem,3.2vw,2.5rem)] leading-[1.2]";
+const sectionLede = "m-0 mb-8 max-w-[70ch] text-step-0 text-muted";
 // Lessons in study order, for the "Continue" link a returning reader gets instead of "Start learning".
 const order = concepts.filter((c) => ready.has(c.id)).map((c) => ({ id: c.id, vi: c.title, en: c.titleEn }));
 ---
 <BaseLayout title="CloudLab" sidebar={false} wide>
-  <section class="hero hero-split">
-    <div class="hero-copy">
-    <span class="hero-badge"><T k="shell.home.badge" /></span>
-    <h1><T k="shell.home.titleA" /> <mark class="hero-hl"><T k="shell.home.titleHl" /></mark> <T k="shell.home.titleB" /></h1>
-    <p class="lede"><T k="shell.home.lede2" /></p>
-    <div class="hero-actions">
+  <section class="grid grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] items-center gap-12 pt-12 pb-6 max-lg:grid-cols-1 max-md:pt-6">
+    <div>
+    <span class="inline-flex items-center rounded-full bg-ok-soft px-3.5 py-1.5 text-[0.875rem] font-semibold text-ok"><T k="shell.home.badge" /></span>
+    <h1 class="mx-0 mt-4 mb-[18px] max-w-[16ch] text-[length:clamp(2.25rem,5vw,3.5rem)] leading-[1.14] font-extrabold tracking-[-0.02em]"><T k="shell.home.titleA" /> <mark class="rounded-sm bg-sun px-[.18em] text-ink box-decoration-clone dark:text-bg"><T k="shell.home.titleHl" /></mark> <T k="shell.home.titleB" /></h1>
+    <p class="lede max-w-[34em] text-step-1"><T k="shell.home.lede2" /></p>
+    <div class="mt-6 mb-7 flex flex-wrap gap-4 max-md:*:flex-[1_1_100%]">
       {first && (
         <a class="btn primary cta home-start" href={`/concepts/${first.id}/`} data-lessons={JSON.stringify(order)}>
           <span data-cta="start"><T k="shell.home.start" /></span>
@@ -56,65 +75,68 @@ const order = concepts.filter((c) => ready.has(c.id)).map((c) => ({ id: c.id, vi
       )}
       <a class="btn cta" href="/practice/"><T k="shell.home.practice" /></a>
     </div>
-    <dl class="hero-stats">
-      <div><dd>{lessons}</dd><dt><T k="shell.home.statLessons" /></dt></div>
-      <div><dd>{questions}</dd><dt><T k="shell.home.statQuestions" /></dt></div>
-      <div><dd>{LABS.length + DRILLS.length}</dd><dt><T k="shell.home.statLabs" /></dt></div>
+    <dl class="flex flex-wrap gap-8 max-md:gap-5">
+      {stats.map((s) => (
+        <div class="flex flex-col">
+          <dd class="-order-1 m-0 font-display text-[1.75rem] leading-[1.25] font-bold tabular-nums">{s.n}</dd>
+          <dt class="text-[0.875rem] text-muted"><T k={s.k} /></dt>
+        </div>
+      ))}
     </dl>
     </div>
-    <div class="hero-art"><FeatureArt kind="hero" /></div>
+    <div class="rounded-[28px] bg-surface p-5 shadow-soft"><FeatureArt kind="hero" /></div>
   </section>
 
-  <section class="home-features" aria-labelledby="features-title">
-    <h2 id="features-title"><T k="shell.home.featuresTitle" /></h2>
-    <p class="home-sub"><T k="shell.home.featuresLede" /></p>
-    <div class="showcase">
+  <section class="mt-section" aria-labelledby="features-title">
+    <h2 id="features-title" class={sectionTitle}><T k="shell.home.featuresTitle" /></h2>
+    <p class={sectionLede}><T k="shell.home.featuresLede" /></p>
+    <div class="mb-8 flex flex-col gap-6">
       {showcase.map((f) => (
-        <article class="showcase-row" data-feature={f.id}>
-          <div class="showcase-art"><FeatureArt kind={f.id} /></div>
-          <div class="showcase-text">
-            <h3><T k={`shell.home.feat.${f.id}.title`} /></h3>
-            <p><T k={`shell.home.feat.${f.id}.body`} /></p>
-            <p class="feature-meta"><T k={`shell.home.feat.${f.id}.meta`} params={"params" in f ? f.params : undefined} /></p>
+        <article class="group grid grid-cols-2 items-center gap-10 rounded-[28px] border-2 border-line bg-surface p-6 shadow-[0_6px_0] shadow-line max-lg:grid-cols-1 max-md:gap-4 max-md:p-4" data-feature={f.id}>
+          <div class:list={["rounded-[20px] p-[18px] group-even:order-2 max-lg:group-even:order-0", artBg[f.id]]}><FeatureArt kind={f.id} class="mx-auto max-h-[250px] max-w-[400px]" /></div>
+          <div>
+            <h3 class="m-0 mb-3 text-[length:clamp(1.375rem,2.2vw,1.75rem)] leading-[1.3]"><T k={`shell.home.feat.${f.id}.title`} /></h3>
+            <p class="m-0 mb-4 text-step-0 leading-[1.65] text-muted"><T k={`shell.home.feat.${f.id}.body`} /></p>
+            <p class="m-0 mb-4 font-mono text-[0.875rem] leading-[1.65] text-muted tabular-nums"><T k={`shell.home.feat.${f.id}.meta`} params={"params" in f ? f.params : undefined} /></p>
             <a class="btn cta" href={f.href}><T k={`shell.home.feat.${f.id}.cta`} /> →</a>
           </div>
         </article>
       ))}
     </div>
-    <ul class="feature-grid">
+    <ul class="m-0 grid list-none grid-cols-4 gap-6 p-0 max-xl:grid-cols-2 max-sm:grid-cols-1">
       {more.map((f) => (
-        <li>
-          <a class="feature" href={f.href} data-feature={f.id}>
-            <span class="feature-art"><FeatureArt kind={f.id} /></span>
-            <h3><T k={`shell.home.feat.${f.id}.title`} /></h3>
-            <p><T k={`shell.home.feat.${f.id}.body`} /></p>
-            <span class="feature-foot">
-              <span class="feature-meta"><T k={`shell.home.feat.${f.id}.meta`} params={"params" in f ? f.params : undefined} /></span>
-              <span class="feature-cta"><T k={`shell.home.feat.${f.id}.cta`} /> →</span>
+        <li class="flex min-w-0">
+          <a class="flex w-full flex-col gap-3 rounded-lg border-2 border-line bg-surface p-5 text-ink no-underline shadow-[0_6px_0] shadow-line transition-[border-color,translate] duration-150 ease-[ease] hover:-translate-y-0.5 hover:border-accent hover:shadow-[0_8px_0] motion-reduce:transition-none motion-reduce:hover:translate-none" href={f.href} data-feature={f.id}>
+            <span class:list={["mb-1 block rounded-[18px] p-3", artBg[f.id]]}><FeatureArt kind={f.id} class="mx-auto max-h-[150px]" /></span>
+            <h3 class="m-0 mt-1 text-[1.25rem] leading-[1.35]"><T k={`shell.home.feat.${f.id}.title`} /></h3>
+            <p class="m-0 flex-1 text-[0.9375rem] leading-[1.6] text-muted"><T k={`shell.home.feat.${f.id}.body`} /></p>
+            <span class="flex flex-col items-start gap-1 border-t border-line pt-2.5 text-[0.8125rem]">
+              <span class="font-mono text-muted tabular-nums"><T k={`shell.home.feat.${f.id}.meta`} params={"params" in f ? f.params : undefined} /></span>
+              <span class="font-display text-[0.9375rem] font-semibold text-accent"><T k={`shell.home.feat.${f.id}.cta`} /> →</span>
             </span>
           </a>
         </li>
       ))}
     </ul>
-    <div class="home-extras">
-      <h3><T k="shell.home.extras" /></h3>
-      <ul>
-        {extras.map((x) => <li><T k={`shell.home.extra.${x}`} /></li>)}
+    <div class="mt-4 flex flex-wrap items-center gap-x-3.5 gap-y-2">
+      <h3 class="m-0 text-[0.75rem] tracking-[0.08em] text-muted uppercase"><T k="shell.home.extras" /></h3>
+      <ul class="m-0 flex list-none flex-wrap gap-2 p-0">
+        {extras.map((x) => <li class="rounded-full border border-line bg-surface px-3.5 py-1.5 text-[0.875rem] text-ink"><T k={`shell.home.extra.${x}`} /></li>)}
       </ul>
     </div>
   </section>
 
-  <section class="home-cta" aria-labelledby="cta-title">
+  <section class="mt-section flex flex-wrap items-center justify-between gap-6 rounded-[32px] bg-accent-strong p-12 text-white max-md:rounded-lg max-md:px-5 max-md:py-7 dark:bg-accent-soft" aria-labelledby="cta-title">
     <div>
-      <h2 id="cta-title"><T k="shell.home.ctaTitle" /></h2>
-      <p><T k="shell.home.ctaBody" params={{ n: cert.questionCount, min: cert.minutes }} /></p>
+      <h2 id="cta-title" class="m-0 mb-2 text-[length:clamp(1.5rem,3vw,2.25rem)] text-white"><T k="shell.home.ctaTitle" /></h2>
+      <p class="m-0 text-step-1 text-white/85"><T k="shell.home.ctaBody" params={{ n: cert.questionCount, min: cert.minutes }} /></p>
     </div>
-    <a class="btn cta sun" href={`/practice/${cert.id}/1/mock/`}><T k="shell.home.ctaButton" /></a>
+    <a class="btn cta border-sun bg-sun text-ink shadow-[0_5px_0] shadow-sun-strong hover:border-sun hover:brightness-104 active:shadow-[0_1px_0] active:shadow-line max-md:flex-[1_1_100%] dark:text-bg" href={`/practice/${cert.id}/1/mock/`}><T k="shell.home.ctaButton" /></a>
   </section>
 
-  <section class="home-map" aria-labelledby="map-title">
-    <h2 id="map-title"><T k="shell.home.mapTitle" /></h2>
-    <p class="home-sub"><T k="shell.home.mapLede" /></p>
+  <section class="mt-section" aria-labelledby="map-title">
+    <h2 id="map-title" class={sectionTitle}><T k="shell.home.mapTitle" /></h2>
+    <p class={sectionLede}><T k="shell.home.mapLede" /></p>
     <ArchitectureMap client:visible titles={titles} titlesEn={titlesEn} />
   </section>
 </BaseLayout>
@@ -148,4 +170,3 @@ const order = concepts.filter((c) => ready.has(c.id)).map((c) => ({ id: c.id, vi
     }
   }
 </script>
-
