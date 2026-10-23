@@ -50,6 +50,11 @@ jobs:
       - run: npm ci
       # No artifact upload: dist/ holds the copyrighted practice tests, and nothing deploys from CI any more.
       - run: npm run build
+      - run: npm run test:unit
+      # Every page in a real browser: hydration, JavaScript errors, every button pressable, internal
+      # links, no practice-test question ids served, axe-core (see aws-cloud/site/e2e/run.mjs).
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
 
   infra:
     name: Check infra
