@@ -58,12 +58,12 @@ const NOTE: Record<PatternId, Record<ModeId, Bi>> = {
   shipper: {
     prov: { vi: "Auto Scaling cần vài phút để tăng capacity, nên các đợt tăng đột ngột bị **throttle**. Ban đêm gần như không có người dùng nhưng vẫn phát sinh phí cho capacity tối thiểu.", en: "Auto Scaling needs a few minutes to add capacity, so sudden bursts are **throttled**. At night there are almost no users, but you still pay for the minimum capacity." },
     od: { vi: "**On-Demand** tính phí theo từng request: ban đêm không có request thì không phát sinh phí đọc ghi, ban ngày tải tăng đột biến vẫn được phục vụ ngay. Phù hợp với tải không dự đoán được, có thời điểm gần bằng 0.", en: "**On-Demand** charges per request: with no requests at night there are no read or write charges, and daytime spikes are still served immediately. It suits unpredictable load that at times drops to almost zero." },
-    dax: { vi: "Vị trí shipper thay đổi liên tục nên tỷ lệ cache hit rất thấp. Cụm DAX chạy 24/7 nhưng gần như không giảm được tải.", en: "Shipper locations change constantly, so the cache hit ratio is very low. The DAX cluster runs 24/7 but barely reduces the load." },
+    dax: { vi: "Vị trí shipper thay đổi liên tục nên tỷ lệ cache hit rất thấp. DAX cluster chạy 24/7 nhưng gần như không giảm được tải trên bảng.", en: "Shipper locations change constantly, so the cache hit ratio is very low. The DAX cluster runs 24/7 but barely reduces the load." },
   },
   steady: {
     prov: { vi: "Tải ổn định, dự đoán được: **Provisioned + Auto Scaling** giữ capacity sát nhu cầu, đơn giá mỗi đơn vị capacity thấp hơn so với tính phí theo request. Đây là phương án chi phí thấp nhất cho mẫu tải này.", en: "Steady, predictable load: **Provisioned + Auto Scaling** keeps capacity close to demand, and the unit price of capacity is lower than per-request billing. This is the lowest-cost option for this load pattern." },
     od: { vi: "Hoạt động ổn định, không bị throttle. Tuy nhiên, với tải ổn định cả ngày, tính phí theo từng request có chi phí cao hơn cấp phát trước capacity.", en: "Runs smoothly with no throttling. However, with steady load all day, per-request billing costs more than provisioning capacity in advance." },
-    dax: { vi: "Hoạt động ổn định, nhưng bảng không gặp vấn đề về hiệu năng. Chi phí cụm DAX phát sinh mà không cần thiết.", en: "Runs smoothly, but the table has no performance problem. The DAX cluster cost is unnecessary." },
+    dax: { vi: "Hoạt động ổn định, nhưng bảng không gặp vấn đề về hiệu năng. Chi phí DAX cluster phát sinh mà không cần thiết.", en: "Runs smoothly, but the table has no performance problem. The DAX cluster cost is unnecessary." },
   },
   live: {
     prov: { vi: "Tổng capacity của bảng đủ đáp ứng, nhưng 70% lượt đọc tập trung vào **một partition**, vượt giới hạn 3.000 RCU của partition đó. Tăng RCU cho toàn bảng cũng không khắc phục được.", en: "The table has enough total capacity, but 70% of reads land on **one partition**, exceeding that partition’s 3,000 RCU limit. Adding RCUs to the whole table does not fix it." },
@@ -246,7 +246,7 @@ export default function CapacitySim() {
               <span className={"pill " + (throttled ? "bad" : "ok")}><i />{L({ vi: `${throttled} giờ bị throttle`, en: `${throttled} ${throttled === 1 ? "hour" : "hours"} throttled` })}</span>
               {mode === "prov" && <span className="pill dcap-muted"><i />{L({ vi: `${fmt(idle)} RCU-giờ trả phí nhưng không sử dụng`, en: `${fmt(idle)} RCU-hours paid for but unused` })}</span>}
               {mode === "od" && <span className="pill dcap-muted"><i />{L({ vi: "tính phí theo từng request", en: "billed per request" })}</span>}
-              {mode === "dax" && <span className="pill dcap-muted"><i />{L({ vi: "cụm DAX chạy liên tục 24 giờ", en: "DAX cluster runs 24 hours a day" })}</span>}
+              {mode === "dax" && <span className="pill dcap-muted"><i />{L({ vi: "DAX cluster chạy liên tục 24 giờ", en: "DAX cluster runs 24 hours a day" })}</span>}
             </div>
             {done && (
               <p className={`dcap-result ${fits ? "ok" : "bad"}`}>

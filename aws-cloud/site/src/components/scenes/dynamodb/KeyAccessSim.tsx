@@ -129,7 +129,7 @@ const scenarios = (L: Lang): PScenario[] => [
             { at: "ddb", state: "pass", msg: L({ vi: "Cập nhật trạng thái thành công.", en: "The status update succeeds." }) },
           ], ok: true, result: L({ vi: "Chỉ **S3** và **DynamoDB** hỗ trợ gateway endpoint. Khi cần cả hai, tạo hai gateway endpoint và thêm cả hai vào route table.", en: "Only **S3** and **DynamoDB** support gateway endpoints. When you need both, create two gateway endpoints and add both to the route table." }) }
       : { steps: [
-            { at: "rt", state: "block", flash: "timeout", msg: L({ vi: "Không có route tới DynamoDB và không có NAT. Request bị treo cho tới khi hết thời gian chờ (timeout).", en: "There is no route to DynamoDB and no NAT. The request hangs until it times out." }) },
+            { at: "rt", state: "block", flash: "timeout", msg: L({ vi: "Không có route tới DynamoDB và không có NAT. Request bị treo cho tới khi timeout.", en: "There is no route to DynamoDB and no NAT. The request hangs until it times out." }) },
           ], ok: false, result: L({ vi: "Thêm gateway endpoint cho DynamoDB vào route table của subnet. Không cần NAT gateway hay public IP.", en: "Add a DynamoDB gateway endpoint to the subnet’s route table. No NAT gateway or public IP is needed." }) },
   },
 ];

@@ -29,7 +29,7 @@ const scenarios = (L: Lang): PScenario[] => [
     action: L({ vi: "Đặt hàng", en: "Place order" }),
     layout: (gt) => ({
       viewBox: VB,
-      aria: L({ vi: "Ba Region, mỗi Region có một bản sao database; người dùng tại Frankfurt ghi đơn hàng", en: "Three Regions, each with a copy of the database; a user in Frankfurt writes an order" }),
+      aria: L({ vi: "Ba Region, mỗi Region có một replica của database; người dùng tại Frankfurt ghi đơn hàng", en: "Three Regions, each with a replica of the database; a user in Frankfurt writes an order" }),
       boxes: BOXES,
       nodes: [
         { id: "de", x: X.fra + UX, y: UY, l1: L({ vi: "Người dùng Đức", en: "German user" }), user: true },
