@@ -4,6 +4,7 @@ import T from "../../app/T.astro";
 import L from "../../components/L.astro";
 import { LABS } from "../../lib/labs";
 import { DRILLS } from "../../lib/drills";
+import { COMPARE } from "../../lib/compare";
 ---
 <BaseLayout title="Lab · CloudLab" titleKey="shell.lab.pageTitle" description="Dựng kiến trúc ShopViet trên AWS theo yêu cầu và kiểm tra thiết kế." section="lab" sidebar={false}>
   <header class="gl-head">
@@ -42,6 +43,23 @@ import { DRILLS } from "../../lib/drills";
               <small><L vi={drill.brief.vi} en={drill.brief.en} /></small>
             </span>
             <span class="lab-list-done" hidden></span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="lab-hub" aria-labelledby="lab-compare">
+    <h2 id="lab-compare"><T k="shell.compare.hub" /></h2>
+    <ol class="lab-list">
+      {COMPARE.map((c, i) => (
+        <li>
+          <a href={`/compare/${c.id}/`}>
+            <span class="lab-list-no">{String(i + 1).padStart(2, "0")}</span>
+            <span class="lab-list-text">
+              <b><L vi={c.title.vi} en={c.title.en} /></b>
+              <small><L vi={c.lede.vi} en={c.lede.en} /></small>
+            </span>
           </a>
         </li>
       ))}
