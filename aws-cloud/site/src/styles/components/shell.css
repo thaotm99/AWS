@@ -39,3 +39,23 @@
     @apply text-ok;
   }
 }
+
+/* Site search dialog (#search, opened by SiteSearch); full screen on phones. */
+.search {
+  @apply mx-auto mt-[10vh] mb-auto max-h-[min(78vh,680px)] w-[min(680px,calc(100vw-24px))] overflow-hidden rounded-[18px] border border-line bg-surface p-0 text-ink;
+  @apply max-sm:m-0 max-sm:h-dvh max-sm:max-h-none max-sm:w-screen max-sm:max-w-none max-sm:rounded-none max-sm:border-0;
+  box-shadow: 0 30px 80px --alpha(var(--color-black) / 45%);
+
+  &[open] {
+    display: flex;
+    animation: search-in 0.18s ease-out;
+    @apply motion-reduce:animate-none;
+  }
+  &::backdrop {
+    @apply bg-black/55;
+    backdrop-filter: blur(3px);
+  }
+}
+@keyframes search-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+}
