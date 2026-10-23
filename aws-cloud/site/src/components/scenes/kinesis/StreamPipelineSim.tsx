@@ -24,7 +24,7 @@ const NEEDS: Need[] = [
     slots: [
       { name: "Thu thập", opts: [
         KDS("Tiếp nhận hàng nghìn click mỗi giây, lưu giữ dữ liệu để đọc lại khi bước tiếp theo gặp lỗi."),
-        { l1: "EC2 ghi vào Aurora", l2: "kiến trúc hiện tại", ok: false, why: "Máy chủ và database là điểm nghẽn; khi tải tăng đột biến, click bị mất." },
+        { l1: "EC2 ghi vào Aurora", l2: "kiến trúc hiện tại", ok: false, why: "Các EC2 instance và database là điểm nghẽn; khi tải tăng đột biến, click bị mất." },
         { l1: "SQS + EC2", l2: "thư viện tự phát triển", ok: false, why: "Phần phân tích trên EC2 phải tự phát triển; SQS không cung cấp công cụ phân tích stream." },
       ] },
       { name: "Phân tích", opts: [
@@ -37,7 +37,7 @@ const NEEDS: Need[] = [
         { l1: "Lambda tự ghi file", ok: false, why: "Phương án hoạt động được nhưng phải tự xử lý gộp dữ liệu, retry và đặt tên file." },
       ] },
     ],
-    result: "Kinesis Data Streams tiếp nhận, Managed Service for Apache Flink phân tích (có thể bằng SQL), Firehose lưu vào S3. Không có máy chủ cần quản lý.",
+    result: "Kinesis Data Streams tiếp nhận, Managed Service for Apache Flink phân tích (có thể bằng SQL), Firehose lưu vào S3. Kiến trúc serverless, không có EC2 instance cần quản lý.",
   },
   {
     name: "Thu thập vị trí shipper qua REST API",
@@ -123,10 +123,10 @@ const NEEDS: Need[] = [
       { name: "Xử lý", opts: [
         { l1: "ECS trên Fargate", ok: true, why: "Container serverless, không bị giới hạn 15 phút như Lambda, scale theo số task." },
         { l1: "Lambda + Step Functions", ok: false, why: "Timeout tối đa của một Lambda function tiêu chuẩn là 900 giây (15 phút); tác vụ 30 phút vượt quá giới hạn." },
-        { l1: "EC2 Auto Scaling", ok: false, why: "Phương án hoạt động được nhưng phải quản lý máy chủ, không đáp ứng yêu cầu serverless." },
+        { l1: "EC2 Auto Scaling", ok: false, why: "Phương án hoạt động được nhưng phải quản lý EC2 instance, không đáp ứng yêu cầu serverless." },
       ] },
     ],
-    result: "Kinesis Data Streams tiếp nhận dữ liệu, ECS task trên Fargate thực thi tác vụ dài mà không cần quản lý máy chủ.",
+    result: "Kinesis Data Streams tiếp nhận dữ liệu, ECS task trên Fargate thực thi tác vụ dài mà không cần quản lý EC2 instance.",
   },
   {
     name: "Ứng dụng đã phát triển cho Kafka",
@@ -151,7 +151,7 @@ const NEEDS_EN: Need[] = [
     slots: [
       { name: "Ingest", opts: [
         KDS("Takes in thousands of clicks per second and retains the data so it can be reread if the next step fails."),
-        { l1: "EC2 writing to Aurora", l2: "current architecture", ok: false, why: "The servers and the database are the bottleneck; during traffic spikes, clicks are lost." },
+        { l1: "EC2 writing to Aurora", l2: "current architecture", ok: false, why: "The EC2 instances and the database are the bottleneck; during traffic spikes, clicks are lost." },
         { l1: "SQS + EC2", l2: "in-house library", ok: false, why: "The analysis on EC2 must be developed in-house; SQS provides no stream analytics tools." },
       ] },
       { name: "Analyze", opts: [
@@ -164,7 +164,7 @@ const NEEDS_EN: Need[] = [
         { l1: "Lambda writes files", ok: false, why: "This works, but batching, retries and file naming must be handled yourself." },
       ] },
     ],
-    result: "Kinesis Data Streams ingests, Managed Service for Apache Flink analyzes (SQL is possible), Firehose stores to S3. No servers to manage.",
+    result: "Kinesis Data Streams ingests, Managed Service for Apache Flink analyzes (SQL is possible), Firehose stores to S3. A serverless architecture with no EC2 instances to manage.",
   },
   {
     name: "Collect courier locations through a REST API",
@@ -250,10 +250,10 @@ const NEEDS_EN: Need[] = [
       { name: "Process", opts: [
         { l1: "ECS on Fargate", ok: true, why: "Serverless containers, not limited to 15 minutes like Lambda, scaling with the number of tasks." },
         { l1: "Lambda + Step Functions", ok: false, why: "The maximum timeout of a standard Lambda function is 900 seconds (15 minutes); a 30-minute job exceeds the limit." },
-        { l1: "EC2 Auto Scaling", ok: false, why: "This works, but servers must be managed, which does not meet the serverless requirement." },
+        { l1: "EC2 Auto Scaling", ok: false, why: "This works, but EC2 instances must be managed, which does not meet the serverless requirement." },
       ] },
     ],
-    result: "Kinesis Data Streams ingests the data, and an ECS task on Fargate runs the long job with no servers to manage.",
+    result: "Kinesis Data Streams ingests the data, and an ECS task on Fargate runs the long job with no EC2 instances to manage.",
   },
   {
     name: "Apps already built for Kafka",
