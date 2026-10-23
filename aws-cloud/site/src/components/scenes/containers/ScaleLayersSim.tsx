@@ -205,18 +205,18 @@ export default function ScaleLayersSim() {
   }
 
   return (
-    <div className="stage ctx">
-      <div className="ctx-row" role="group" aria-label={L({ vi: "Nền tảng", en: "Platform" })}>
-        <span className="ctx-lbl">{L({ vi: "Nền tảng", en: "Platform" })}</span>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-3" role="group" aria-label={L({ vi: "Nền tảng", en: "Platform" })}>
+        <span className="mr-1 text-[0.72rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Nền tảng", en: "Platform" })}</span>
         <button className="chip" aria-pressed={platform === "eks"} onClick={pick(() => setPlatform("eks"))}>{L({ vi: "EKS · node EC2", en: "EKS · EC2 nodes" })}</button>
         <button className="chip" aria-pressed={platform === "ecs"} onClick={pick(() => setPlatform("ecs"))}>{L({ vi: "ECS · Fargate", en: "ECS · Fargate" })}</button>
       </div>
-      <div className="ctx-row" role="group" aria-label={L({ vi: "Cấu hình mở rộng", en: "Scaling configuration" })}>
-        <span className="ctx-lbl">{L({ vi: "Cấu hình", en: "Setup" })}</span>
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-0 pt-2" role="group" aria-label={L({ vi: "Cấu hình mở rộng", en: "Scaling configuration" })}>
+        <span className="mr-1 text-[0.72rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Cấu hình", en: "Setup" })}</span>
         {platform === "eks" ? (
           <>
-            <label className="ctx-toggle"><input type="checkbox" checked={hpa} onChange={pick(() => setHpa((v) => !v))} />Horizontal Pod Autoscaler</label>
-            <label className="ctx-toggle"><input type="checkbox" checked={ca} onChange={pick(() => setCa((v) => !v))} />Cluster Autoscaler</label>
+            <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-[999px] border border-line bg-surface px-[11px] py-[3px] text-step--1 [&>input]:m-0"><input type="checkbox" checked={hpa} onChange={pick(() => setHpa((v) => !v))} />Horizontal Pod Autoscaler</label>
+            <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-[999px] border border-line bg-surface px-[11px] py-[3px] text-step--1 [&>input]:m-0"><input type="checkbox" checked={ca} onChange={pick(() => setCa((v) => !v))} />Cluster Autoscaler</label>
           </>
         ) : (
           <>
@@ -225,19 +225,19 @@ export default function ScaleLayersSim() {
           </>
         )}
       </div>
-      <div className="ctx-stats" aria-live="polite">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(7.5rem,1fr))] gap-1.5 px-3.5 pt-2.5 pb-0" aria-live="polite">
         {stats.map((x) => (
           <div key={x.k.en} className={`ctx-stat ${x.tone ?? ""}`}><span>{L(x.k)}</span><b>{x.v}</b></div>
         ))}
       </div>
       <div className="svg-wrap">{svg}</div>
-      <div className="stage-bar">
+      <div className="stage-bar mt-3 border-t border-line">
         <button className="btn" onClick={reset} disabled={level === 0}>{L({ vi: "Đặt lại", en: "Reset" })}</button>
         <button className="btn primary" onClick={step} disabled={level >= MAX_LEVEL}>{L({ vi: "Tăng lưu lượng", en: "Increase traffic" })}</button>
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="ctx-hint">{L({
+          <p className="m-0 text-step--1 text-muted">{L({
             vi: platform === "eks" ? "Chọn cấu hình, sau đó nhấn Tăng lưu lượng ba lần. Thử lần lượt: không bật gì, chỉ HPA, chỉ Cluster Autoscaler, cả hai." : "Chọn cách mở rộng, sau đó nhấn Tăng lưu lượng ba lần và so sánh hai cách.",
             en: platform === "eks" ? "Choose a setup, then press Increase traffic three times. Try in turn: nothing, HPA only, Cluster Autoscaler only, both." : "Choose how to scale, then press Increase traffic three times and compare the two approaches." })}</p>
         ) : (
