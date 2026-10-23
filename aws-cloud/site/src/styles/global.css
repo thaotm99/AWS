@@ -1565,3 +1565,35 @@ mark.hl.flash { box-shadow: 0 0 0 3px var(--edge); }
 .dg-stats dd { margin: 0; font-family: var(--font-mono); font-weight: 600; }
 .dg-rule { grid-column: 2; margin: -8px 0 0; font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
 @media (max-width: 700px) { .dg-bottom { grid-template-columns: minmax(0, 1fr); } .dg-rule { grid-column: 1; margin: 0; } .dg { padding: 16px; } }
+
+/* ---------------------------------------------------------------------------------------------
+   UI refresh: components. Buttons press like keys (5 px ledge), pills for nav and chips,
+   rounder cards. Declared last so it overrides the earlier, scattered base rules.
+   --------------------------------------------------------------------------------------------- */
+.btn {
+  min-height: 40px; padding: 8px 16px; border: 2px solid var(--line); border-radius: var(--r-sm);
+  background: var(--surface); color: var(--ink); font-family: var(--font-display); font-size: 0.9375rem; font-weight: 600;
+  box-shadow: 0 3px 0 var(--line); transition: transform .08s ease, box-shadow .08s ease, border-color .15s ease;
+}
+.btn:hover:not(:disabled) { border-color: var(--accent); }
+.btn:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--line); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); box-shadow: 0 4px 0 var(--accent-strong); }
+.btn.primary:hover:not(:disabled) { border-color: var(--accent); filter: brightness(1.06); }
+.btn.primary:active:not(:disabled) { box-shadow: 0 1px 0 var(--accent-strong); }
+.btn.primary:disabled { box-shadow: none; }
+.btn[aria-pressed="true"] { box-shadow: none; }
+.btn.cta, .hero-actions .btn { min-height: 52px; padding: 12px 26px; border-radius: var(--r-md); font-size: 1.0625rem; box-shadow: var(--press-line); }
+.btn.primary.cta, .hero-actions .btn.primary { box-shadow: var(--press); }
+.btn.cta:active, .hero-actions .btn:active { transform: translateY(3px); }
+@media (prefers-reduced-motion: reduce) { .btn, .btn:active { transition: none; transform: none; } }
+
+.topbar-inner { height: 64px; }
+.brand { font-family: var(--font-display); font-size: 1.1875rem; }
+.brand-mark { width: 34px; height: 34px; border-radius: 11px; box-shadow: 0 3px 0 var(--accent-strong); }
+.topnav a { height: 38px; padding: 0 16px; border-radius: 999px; font-size: 0.9375rem; font-weight: 500; color: var(--muted); }
+.topnav a:hover { color: var(--ink); background: var(--bg); }
+.topnav a[aria-current="page"] { color: var(--accent-strong); background: var(--accent-soft); box-shadow: none; font-weight: 600; }
+:root[data-theme="dark"] .topnav a[aria-current="page"] { color: var(--ink); }
+
+.lede { font-size: var(--step-1); line-height: 1.6; }
+.hero-eyebrow, .gl-eyebrow { font-family: var(--font-body); font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
