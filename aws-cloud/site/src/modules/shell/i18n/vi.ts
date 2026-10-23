@@ -248,6 +248,7 @@ export const vi = {
     build: "Xây dựng",
     buildTip: "Chọn công trình rồi chọn ô trống trên bản đồ. Chọn công trình đã xây để xem hoặc phá bỏ.",
     pickSlot: "Đã chọn {name}. Chọn một ô sáng trên bản đồ.",
+    lockedCount: "{n} công trình chưa mở khoá: học bài tương ứng để mở",
     studyToUnlock: "Học bài {lesson} để mở khoá",
     levelsTitle: "Thành phố lớn dần theo lộ trình học",
     layer: { l0: "Nền tảng", l1: "Networking", l2: "Security", l3: "Compute", l4: "Storage", l5: "Database", l6: "Integration và vận hành" },

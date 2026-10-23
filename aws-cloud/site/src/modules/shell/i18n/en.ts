@@ -250,6 +250,7 @@ export const en: Messages<typeof vi> = {
     build: "Build",
     buildTip: "Pick a building, then an empty plot on the map. Pick a building on the map to see it or demolish it.",
     pickSlot: "{name} picked. Pick a highlighted plot on the map.",
+    lockedCount: "{n} buildings still locked: study their lessons to open them",
     studyToUnlock: "Study {lesson} to unlock",
     levelsTitle: "The city grows with the study path",
     layer: { l0: "Foundations", l1: "Networking", l2: "Security", l3: "Compute", l4: "Storage", l5: "Database", l6: "Integration and operations" },
