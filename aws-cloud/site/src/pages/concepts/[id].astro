@@ -3,7 +3,6 @@ import { getCollection, getEntry, render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import L from "../../components/L.astro";
 import Donate from "../../components/Donate.astro";
-import DoneButton from "../../components/DoneButton.tsx";
 import Importance from "../../components/Importance.astro";
 import LessonParts from "../../components/lesson/LessonParts.astro";
 import T from "../../app/T.astro";
@@ -99,7 +98,6 @@ const docParts = [
           <dt><T k="lesson.frame.duration" /></dt>
           <dd><T k="lesson.frame.durationValue" params={{ minutes: entry.data.minutes, scenes: entry.data.scenes }} /></dd>
         </div>
-        <div><dt><T k="lesson.frame.progress" /></dt><dd><DoneButton client:load id={id} /></dd></div>
       </>
     )}
   </dl>

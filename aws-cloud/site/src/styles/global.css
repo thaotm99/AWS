@@ -196,7 +196,6 @@ p { margin: 0 0 12px; max-width: 68ch; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .btn.danger { color: var(--bad); }
 .btn[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.done-btn[aria-pressed="true"] { background: var(--ok-soft); color: var(--ok); border-color: var(--ok); }
 
 /* Story intro */
 .story { margin-top: 28px; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 20px; align-items: center;
@@ -1039,3 +1038,4 @@ input[type="checkbox"]:disabled, input[type="range"]:disabled { opacity: .5; cur
 .skip-link { position: fixed; z-index: 100; top: 8px; left: 8px; padding: 10px 16px; border-radius: 10px; background: var(--accent); color: var(--on-accent); font-weight: 700; text-decoration: none; transform: translateY(-160%); transition: transform .15s; }
 .skip-link:focus { transform: none; }
 main.article:focus { outline: none; }
+.lp-complete { margin-left: auto; font-size: 0.8125rem; font-weight: 600; color: var(--ok, var(--accent)); }

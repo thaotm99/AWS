@@ -35,6 +35,7 @@ const first = card(parts[0]);
     <div class="lp-progress-head">
       <b><T k="lesson.parts.progress" /></b>
       <span class="lp-count"><span data-lp-done>0</span> / {parts.length}</span>
+      <span class="lp-complete" hidden><T k="lesson.parts.complete" /></span>
     </div>
     <div class="lp-bar" aria-hidden="true">
       {parts.map((p) => <i data-slug={p.slug} data-kind={p.kind} />)}
@@ -85,7 +86,7 @@ const first = card(parts[0]);
 </section>
 
 <script>
-  import { getPartsRead, onProgressChange } from "../../lib/progress";
+  import { getDone, getPartsRead, onProgressChange } from "../../lib/progress";
 
   const root = document.querySelector<HTMLElement>(".lp");
   if (root) {
@@ -99,7 +100,8 @@ const first = card(parts[0]);
 
     const cta = root.querySelector<HTMLAnchorElement>("[data-lp-cta]")!;
     const sync = () => {
-      const read = getPartsRead(lesson);
+      // Lesson progress is the parts read; a lesson marked done before lessons were split counts as fully read.
+      const read = getDone().has(lesson) ? new Set(slugs) : getPartsRead(lesson);
       const next = slugs.find((s) => !read.has(s));
       const nextCard = cards.find((c) => c.dataset.slug === (next ?? slugs[0]))!;
       for (const c of cards) c.dataset.state = read.has(c.dataset.slug!) ? "read" : c === nextCard && read.size > 0 ? "current" : "";
@@ -107,6 +109,7 @@ const first = card(parts[0]);
       root.querySelector("[data-lp-done]")!.textContent = String(slugs.filter((s) => read.has(s)).length);
       cta.href = nextCard.href;
       cta.dataset.verb = read.size === 0 ? "start" : next ? "resume" : "again";
+      root.querySelector<HTMLElement>(".lp-complete")!.hidden = Boolean(next);
       cta.querySelector("[data-lp-cta-title]")!.innerHTML = nextCard.querySelector(".lp-head")!.innerHTML;
     };
     sync();

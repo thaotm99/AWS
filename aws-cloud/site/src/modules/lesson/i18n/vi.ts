@@ -7,7 +7,6 @@ export const vi = {
     noPrerequisites: "Không yêu cầu. Đây là bài khởi đầu của lộ trình",
     duration: "Thời lượng",
     durationValue: "~{minutes} phút, {scenes} phần có mô phỏng",
-    progress: "Tiến độ",
     nextLabel: "Tiếp theo",
     nextTitle: "Các bài tiếp theo trong lộ trình",
     nextLessons: "Bài học tiếp theo",
@@ -32,6 +31,7 @@ export const vi = {
     exerciseHint: "tự đánh giá trước khi sang bài sau",
     progress: "Tiến độ bài",
     count: "{done} / {total} phần",
+    complete: "Đã hoàn thành bài ✓",
     start: "Bắt đầu học",
     resume: "Đọc tiếp",
     again: "Đọc lại từ đầu",
@@ -45,10 +45,6 @@ export const vi = {
     quiz: "Câu hỏi kiểm tra",
     quizCount: "{n} câu hỏi",
     total: "Khoảng {minutes} phút cho cả bài",
-  },
-  done: {
-    mark: "Đánh dấu hoàn thành",
-    done: "Đã hoàn thành ✓",
   },
   takeaway: "Ghi nhớ:",
   story: {
