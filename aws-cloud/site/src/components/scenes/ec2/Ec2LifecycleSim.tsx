@@ -121,7 +121,7 @@ function outcome(a: Action, eip: boolean): Outcome {
       return { ok: false, state: { vi: "terminated", en: "terminated" },
         cells: { id: lost("Không thể start hoặc recover", "Cannot be started or recovered"), priv: lost("Đã release", "Released"), pub: eip ? b.pub : lost("Đã release", "Released"),
           eip: eip ? chg("Có thể gắn sang instance mới", "Can be associated with a new instance") : b.eip, ebs: lost("Đã xoá", "Deleted"), store: lost("Đã xoá", "Deleted"), ram: lost("Đã xoá", "Erased") },
-        text: { vi: "**Không thể.** Instance đã terminate không thể kết nối, start hay recover (kể cả bằng automatic recovery). Cách duy nhất là launch instance **mới** từ AMI và khôi phục dữ liệu từ bản sao lưu.",
+        text: { vi: "**Không thể.** Instance đã terminate không thể kết nối, start hay recover (kể cả bằng automatic recovery). Cách duy nhất là launch instance **mới** từ AMI và khôi phục dữ liệu từ backup.",
           en: "**Not possible.** A terminated instance cannot be connected to, started or recovered (automatic recovery included). The only option is to launch a **new** instance from an AMI and restore data from backups." } };
   }
 }

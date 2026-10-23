@@ -10,22 +10,22 @@ type Lang = ReturnType<typeof useLang>;
 
 const scenarios = (L: Lang): HopScenario[] => [
   {
-    name: L({ vi: "Spot worker bị thu hồi", en: "Spot worker reclaimed" }),
-    story: L({ vi: "Worker xử lý ảnh sản phẩm chạy trên **Spot Instance** và nhận tác vụ từ hàng đợi SQS. Lúc nửa đêm, AWS cần thu hồi capacity.",
+    name: L({ vi: "Spot worker bị gián đoạn", en: "Spot worker interrupted" }),
+    story: L({ vi: "Worker xử lý ảnh sản phẩm chạy trên **Spot Instance** và nhận tác vụ từ một SQS queue. Lúc nửa đêm, AWS cần thu hồi capacity.",
       en: "A worker that processes product images runs on a **Spot Instance** and takes tasks from an SQS queue. At midnight, AWS needs the capacity back." }),
-    request: L({ vi: "Thông báo thu hồi Spot", en: "Spot interruption notice" }),
+    request: L({ vi: "Spot Instance interruption notice", en: "Spot Instance interruption notice" }),
     toggle: { label: L({ vi: "Spot request kiểu persistent", en: "Persistent Spot request" }), initial: false },
     start: "aws",
     nodes: [
       { id: "aws", x: 100, y: 60, label: "AWS", sub: L({ vi: "thu hồi capacity", en: "reclaims capacity" }), kind: "aws" },
       { id: "w1", x: 360, y: 60, label: "Spot worker", sub: L({ vi: "đang xử lý ảnh", en: "processing images" }), kind: "app" },
-      { id: "q", x: 660, y: 60, label: L({ vi: "Hàng đợi SQS", en: "SQS queue" }), sub: L({ vi: "ảnh chờ xử lý", en: "images to process" }), kind: "store" },
+      { id: "q", x: 660, y: 60, label: L({ vi: "SQS queue", en: "SQS queue" }), sub: L({ vi: "ảnh chờ xử lý", en: "images to process" }), kind: "store" },
       { id: "req", x: 100, y: 200, label: "Spot request", kind: "svc" },
       { id: "w2", x: 360, y: 200, label: L({ vi: "Spot worker mới", en: "New Spot worker" }), kind: "app" },
     ],
     run: (on) => ({ hops: [
       { to: "w1", state: "alert", tag: L({ vi: "2 PHÚT", en: "2 MINUTES" }), flash: "2:00", msg: L({ vi: "Thông báo gián đoạn được gửi trước **2 phút** khi EC2 stop hoặc terminate Spot Instance.", en: "An interruption notice is sent **2 minutes** before EC2 stops or terminates the Spot Instance." }) },
-      { to: "q", state: "change", tag: L({ vi: "TRẢ TÁC VỤ", en: "TASK RETURNED" }), msg: L({ vi: "Worker trả tác vụ đang xử lý dở về hàng đợi; không tác vụ nào bị mất.", en: "The worker returns its unfinished task to the queue; no task is lost." }) },
+      { to: "q", state: "change", tag: L({ vi: "TRẢ TÁC VỤ", en: "TASK RETURNED" }), msg: L({ vi: "Worker trả tác vụ đang xử lý dở về queue; không tác vụ nào bị mất.", en: "The worker returns its unfinished task to the queue; no task is lost." }) },
       ...(on ? [
         { from: "req", to: "w2", state: "pass" as const, tag: L({ vi: "MỞ LẠI", en: "REOPENED" }), msg: L({ vi: "Request **persistent** được mở lại (open) sau khi instance bị gián đoạn; khi có capacity, instance mới được khởi chạy. Khác với trường hợp chính bạn **stop** Spot Instance: request chuyển sang **disabled** và chỉ mở lại sau khi bạn **start** instance.", en: "The **persistent** request is opened again after the instance is interrupted; when capacity is available, a new instance launches. Unlike when you **stop** the Spot Instance yourself: the request becomes **disabled** and opens only after you **start** the instance." }) },
         { to: "q", state: "pass" as const, tag: L({ vi: "TIẾP TỤC", en: "RESUMED" }), msg: L({ vi: "Worker mới tiếp tục nhận tác vụ.", en: "The new worker continues taking tasks." }) },
@@ -33,7 +33,7 @@ const scenarios = (L: Lang): HopScenario[] => [
         { from: "req", to: "w2", state: "skip" as const, tag: L({ vi: "ĐÃ ĐÓNG", en: "CLOSED" }), msg: L({ vi: "Request **one-time** không được gửi lại khi instance bị gián đoạn; không có worker thay thế.", en: "A **one-time** request is not resubmitted when the instance is interrupted; there is no replacement worker." }) },
       ]),
     ], ok: on, result: on
-      ? L({ vi: "Spot có chi phí thấp hơn tới 90% so với On-Demand. Tác vụ chịu được gián đoạn, nhận việc từ hàng đợi và dùng persistent request là trường hợp phù hợp cho Spot.",
+      ? L({ vi: "Spot có chi phí thấp hơn tới 90% so với On-Demand. Tác vụ chịu được gián đoạn, nhận việc từ queue và dùng persistent request là trường hợp phù hợp cho Spot.",
         en: "Spot costs up to 90% less than On-Demand. Interruption-tolerant tasks that take work from a queue and use a persistent request are a good fit for Spot." })
       : L({ vi: "Dữ liệu ảnh không bị mất, nhưng không còn worker nào xử lý. Job dài hạn cần tiếp tục xử lý nên sử dụng request **persistent** (hoặc Auto Scaling group).",
         en: "No image data is lost, but no worker is left to process it. Long-running jobs that must keep processing should use a **persistent** request (or an Auto Scaling group)." }) }),
@@ -72,13 +72,13 @@ const scenarios = (L: Lang): HopScenario[] => [
   },
   {
     name: L({ vi: "Yêu cầu phần cứng không dùng chung", en: "Non-shared hardware required" }),
-    story: L({ vi: "Đối tác ngân hàng yêu cầu máy chủ xử lý thanh toán của ShopViet chạy trên **phần cứng single-tenant**. Không có yêu cầu license đặc biệt; mục tiêu là chi phí thấp nhất.",
-      en: "A banking partner requires ShopViet's payment servers to run on **single-tenant hardware**. There are no special licensing requirements; the goal is the lowest cost." }),
+    story: L({ vi: "Đối tác ngân hàng yêu cầu các EC2 instance xử lý thanh toán của ShopViet chạy trên **phần cứng single-tenant**. Không có yêu cầu license đặc biệt; mục tiêu là chi phí thấp nhất.",
+      en: "A banking partner requires ShopViet's payment EC2 instances to run on **single-tenant hardware**. There are no special licensing requirements; the goal is the lowest cost." }),
     request: L({ vi: "Launch 4 instance thanh toán", en: "Launch 4 payment instances" }),
     toggle: { label: L({ vi: "Dedicated Instances (tắt: Dedicated Hosts)", en: "Dedicated Instances (off: Dedicated Hosts)" }), initial: false },
     start: "pay",
     nodes: [
-      { id: "pay", x: 100, y: 130, label: L({ vi: "Máy chủ thanh toán", en: "Payment servers" }), sub: L({ vi: "4 instance", en: "4 instances" }), kind: "app" },
+      { id: "pay", x: 100, y: 130, label: L({ vi: "Instance thanh toán", en: "Payment instances" }), sub: L({ vi: "4 instance", en: "4 instances" }), kind: "app" },
       { id: "di", x: 400, y: 130, label: "Dedicated Instances", sub: L({ vi: "phần cứng riêng của ShopViet", en: "hardware dedicated to ShopViet" }), kind: "svc" },
       { id: "dh", x: 400, y: 130, label: "Dedicated Host", sub: L({ vi: "thuê toàn bộ máy chủ vật lý", en: "rent the whole physical server" }), kind: "svc" },
       { id: "bill", x: 680, y: 130, w: 120, label: L({ vi: "Hoá đơn", en: "Bill" }), kind: "store" },
@@ -93,8 +93,8 @@ const scenarios = (L: Lang): HopScenario[] => [
       : { hops: [
           { to: "dh", state: "pass", tag: "SINGLE-TENANT", msg: L({ vi: "Đáp ứng yêu cầu.", en: "Meets the requirement." }) },
           { to: "bill", state: "alert", tag: L({ vi: "TOÀN BỘ HOST", en: "WHOLE HOST" }), msg: L({ vi: "Tính phí theo host: trả cho toàn bộ máy chủ vật lý, kể cả phần capacity không sử dụng.", en: "Billed per host: you pay for the whole physical server, including unused capacity." }) },
-        ], ok: false, result: L({ vi: "Đáp ứng yêu cầu nhưng chi phí cao hơn mức cần thiết. Khi không có license theo máy chủ, lựa chọn phù hợp là **Dedicated Instances**.",
-          en: "Meets the requirement but costs more than necessary. Without per-server licenses, the right choice is **Dedicated Instances**." }) },
+        ], ok: false, result: L({ vi: "Đáp ứng yêu cầu nhưng chi phí cao hơn mức cần thiết. Khi không có license tính theo socket hoặc core, lựa chọn phù hợp là **Dedicated Instances**.",
+          en: "Meets the requirement but costs more than necessary. Without per-socket or per-core licenses, the right choice is **Dedicated Instances**." }) },
   },
   {
     name: L({ vi: "License tính theo socket", en: "Per-socket licensing" }),

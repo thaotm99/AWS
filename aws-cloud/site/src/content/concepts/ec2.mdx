@@ -1,6 +1,6 @@
 ---
 title: "Amazon EC2: tuỳ chọn mua, khởi tạo, kết nối mạng và vận hành instance"
-lede: "Tầng máy chủ của ShopViet chạy trên các EC2 instance. Bài học trình bày các tác vụ vận hành thường gặp: lựa chọn tuỳ chọn mua để tối ưu chi phí, rút ngắn thời gian khởi tạo instance xuống vài phút, cấu hình mạng giữa các instance, và xử lý sự cố phần cứng, ứng dụng không phản hồi hoặc mất dữ liệu tạm."
+lede: "Tầng ứng dụng (application tier) của ShopViet chạy trên các EC2 instance. Bài học trình bày các tác vụ vận hành thường gặp: lựa chọn tuỳ chọn mua để tối ưu chi phí, rút ngắn thời gian khởi tạo instance xuống vài phút, cấu hình mạng giữa các instance, và xử lý sự cố phần cứng, ứng dụng không phản hồi hoặc mất dữ liệu tạm."
 minutes: 42
 scenes: 6
 prerequisites: ["vpc", "iam"]
@@ -99,26 +99,26 @@ import PlacementSim from "../../components/scenes/ec2/PlacementSim.tsx";
 import Ec2LifecycleSim from "../../components/scenes/ec2/Ec2LifecycleSim.tsx";
 
 <Story toc={[
-  { href: "#s1", label: "1 · Tối ưu chi phí mua" },
+  { href: "#s1", label: "1 · Tuỳ chọn mua (purchasing options)" },
   { href: "#s2", label: "2 · Rút ngắn thời gian khởi tạo" },
   { href: "#s3", label: "3 · Kết nối mạng giữa các instance" },
   { href: "#s4", label: "4 · Xử lý sự cố instance" },
-  { href: "#s5", label: "5 · Placement group và card mạng" },
+  { href: "#s5", label: "5 · Placement group và enhanced networking" },
   { href: "#s6", label: "6 · Vòng đời instance và địa chỉ IP" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-Tầng máy chủ của ShopViet chạy trên các EC2 instance. Thách thức không nằm ở việc khởi chạy một instance, mà ở các quyết định thiết kế: tuỳ chọn mua nào tối ưu chi phí, thời gian khởi tạo bao lâu, bố trí các instance gần nhau hay phân tán, lưu dữ liệu tạm ở đâu, và cơ chế tự phục hồi khi xảy ra sự cố.
+Tầng ứng dụng (application tier) của ShopViet chạy trên các EC2 instance. Thách thức không nằm ở việc khởi chạy một instance, mà ở các quyết định thiết kế: tuỳ chọn mua nào tối ưu chi phí, thời gian khởi tạo bao lâu, bố trí các instance gần nhau hay phân tán, lưu dữ liệu tạm ở đâu, và cơ chế tự phục hồi khi xảy ra sự cố.
 </Story>
 
-<Scene id="s1" label="Phần 1/6" title="Tối ưu chi phí mà vẫn đảm bảo tính sẵn sàng" questions={["exam2_q33", "exam2_q35", "exam4_q49", "exam5_q60", "exam1_q21", "exam4_q46", "exam2_q49", "exam6_q18", "exam2_q23", "exam6_q21", "exam6_q33", "exam6_q38", "exam4_q30", "exam3_q30", "exam4_q60", "exam6_q2", "exam3_q51"]}>
+<Scene id="s1" label="Phần 1/6" title="Tuỳ chọn mua EC2: tối ưu chi phí mà vẫn đảm bảo tính sẵn sàng" questions={["exam2_q33", "exam2_q35", "exam4_q49", "exam5_q60", "exam1_q21", "exam4_q46", "exam2_q49", "exam6_q18", "exam2_q23", "exam6_q21", "exam6_q33", "exam6_q38", "exam4_q30", "exam3_q30", "exam4_q60", "exam6_q2", "exam3_q51"]}>
 
-<p class="scene-intro">Cùng một máy chủ ảo có thể được mua theo nhiều cách với mức giá khác nhau; cách mua phù hợp phụ thuộc vào việc máy chủ chạy liên tục hay chỉ chạy lúc cần, và có chịu được gián đoạn hay không.</p>
+<p class="scene-intro">Cùng một EC2 instance có thể được mua theo nhiều tuỳ chọn mua (purchasing option) với mức giá khác nhau; tuỳ chọn phù hợp phụ thuộc vào việc instance chạy liên tục hay chỉ chạy lúc cần, và có chịu được gián đoạn hay không.</p>
 
-ShopViet cần 80 instance chạy liên tục 24/7; vào ban ngày cần bổ sung worker xử lý ảnh từ hàng đợi (chịu được gián đoạn). Chọn chiến lược mua:
+ShopViet cần 80 instance chạy liên tục 24/7; vào ban ngày cần bổ sung worker xử lý ảnh từ một queue (chịu được gián đoạn). Chọn chiến lược mua:
 
 <PurchaseMixSim client:visible />
 
-Biểu đồ trên thể hiện bức tranh tổng thể. Thực tế còn nhiều tình huống cụ thể hơn: Spot Instance bị thu hồi lúc nửa đêm, đối tác yêu cầu phần cứng riêng, license tính theo socket, hoá đơn bao gồm cả Fargate và Lambda. Chọn từng tình huống, thay đổi cấu hình, sau đó nhấn Chạy:
+Biểu đồ trên thể hiện bức tranh tổng thể. Thực tế còn nhiều tình huống cụ thể hơn: Spot Instance bị gián đoạn (interruption) lúc nửa đêm, đối tác yêu cầu phần cứng riêng, license tính theo socket, hoá đơn bao gồm cả Fargate và Lambda. Chọn từng tình huống, thay đổi cấu hình, sau đó nhấn Chạy:
 
 <Ec2CostSim client:visible />
 
@@ -132,9 +132,9 @@ Hai tuỳ chọn mua cũ đã ngừng: **Scheduled Reserved Instances** (đặt 
 
 <Scene id="s2" label="Phần 2/6" title="Rút ngắn thời gian khởi tạo: golden AMI và user data" questions={["exam4_q1", "exam2_q19", "exam6_q11", "exam2_q51", "exam3_q55"]}>
 
-<p class="scene-intro">Khi tải tăng, máy chủ mới phải sẵn sàng trong vài phút; nếu mỗi máy chủ phải cài đặt lại từ đầu thì hệ thống phản ứng quá chậm.</p>
+<p class="scene-intro">Khi tải tăng, instance mới phải sẵn sàng trong vài phút; nếu mỗi instance phải cài đặt lại từ đầu thì Auto Scaling group phản ứng quá chậm.</p>
 
-Quá trình cài đặt đầy đủ một máy chủ ShopViet mất 45 phút, trong khi Auto Scaling yêu cầu instance mới sẵn sàng trong vài phút.
+Quá trình cài đặt đầy đủ một EC2 instance của ShopViet mất 45 phút, trong khi Auto Scaling yêu cầu instance mới sẵn sàng trong vài phút.
 
 <StepSim client:visible height={230}
   intro="Phần mềm gồm phần tĩnh (runtime, thư viện, agent) giống nhau trên mọi instance, và phần động (cấu hình theo môi trường) thay đổi theo từng lần khởi chạy."
@@ -142,7 +142,7 @@ Quá trình cài đặt đầy đủ một máy chủ ShopViet mất 45 phút, t
     { id: "base", x: 30, y: 30, label: "AMI gốc của AWS", kind: "site" },
     { id: "golden", x: 280, y: 30, label: "Golden AMI", sub: "đã cài phần tĩnh", kind: "net" },
     { id: "ud", x: 280, y: 150, label: "User data", sub: "thực thi khi boot", kind: "edge" },
-    { id: "ec2", x: 560, y: 90, label: "EC2 mới", sub: "sẵn sàng sau vài phút", kind: "ec2" },
+    { id: "ec2", x: 560, y: 90, label: "EC2 instance mới", sub: "sẵn sàng sau vài phút", kind: "ec2" },
   ]}
   initial={["base"]}
   steps={[
@@ -177,7 +177,7 @@ Chọn từng nhu cầu của đội vận hành để xem cơ chế phù hợp:
 
 <Scene id="s3" label="Phần 3/6" title="Kết nối mạng giữa các instance" questions={["exam1_q23", "exam4_q20", "exam4_q60", "exam6_q36", "exam6_q57", "exam6_q59", "exam5_q31"]}>
 
-<p class="scene-intro">Các máy chủ trao đổi dữ liệu với nhau qua mạng; vị trí đặt máy chủ và đường đi của dữ liệu quyết định tốc độ, chi phí và mức độ an toàn.</p>
+<p class="scene-intro">Các EC2 instance trao đổi dữ liệu với nhau qua mạng; vị trí đặt instance và đường đi của traffic quyết định độ trễ, chi phí và mức độ bảo mật.</p>
 
 Vị trí đặt instance và đường truyền giữa chúng quyết định độ trễ, chi phí và mức độ bảo mật. Chọn một tình huống, thay đổi cấu hình, sau đó gửi traffic:
 
@@ -189,19 +189,19 @@ Vị trí đặt instance và đường truyền giữa chúng quyết định �
 
 <Scene id="s4" label="Phần 4/6" title="Xử lý sự cố instance" questions={["exam1_q43", "exam5_q43", "exam5_q52", "exam6_q42", "exam3_q38", "exam3_q57", "exam5_q19", "exam5_q20", "exam5_q31", "exam6_q56"]}>
 
-<p class="scene-intro">Máy chủ có thể gặp sự cố phần cứng hoặc phần mềm vào bất cứ lúc nào; EC2 có sẵn các tính năng giúp phát hiện và khôi phục mà không cần người trực.</p>
+<p class="scene-intro">EC2 instance có thể gặp sự cố phần cứng hoặc phần mềm vào bất cứ lúc nào; EC2 có sẵn các tính năng phát hiện và khôi phục tự động, không cần thao tác thủ công.</p>
 
 Các sự cố thường gặp: lỗi phần cứng lúc 3 giờ sáng, ứng dụng không phản hồi, dữ liệu tạm bị mất sau khi stop. Mô phỏng từng sự cố, sau đó kích hoạt tính năng EC2 tương ứng và chạy lại:
 
 <Ec2OpsSim client:visible />
 
-<Takeaway>Lỗi phần cứng: automatic instance recovery (simplified automatic recovery bật mặc định trên instance được hỗ trợ, hoặc alarm action recover), giữ nguyên instance ID và địa chỉ IP. Ứng dụng không phản hồi: alarm action reboot. Instance store là lưu trữ tạm, mất dữ liệu khi stop, hibernate hoặc terminate; chỉ phù hợp cho buffer, cache, tệp tạm. Dừng instance và giữ trạng thái RAM: Hibernate. Tự động thay thế một instance và giữ nguyên IP: ASG min = max = 1 + Elastic IP gắn bằng user data. Metric chu kỳ 1 phút: detailed monitoring. Instance đã terminate không thể recover hay start lại.</Takeaway>
+<Takeaway>Lỗi phần cứng: automatic instance recovery (simplified automatic recovery bật mặc định trên instance được hỗ trợ, hoặc alarm action recover), giữ nguyên instance ID và địa chỉ IP. Ứng dụng không phản hồi: alarm action reboot. Instance store là lưu trữ tạm, mất dữ liệu khi stop, hibernate hoặc terminate; chỉ phù hợp cho buffer, cache, tệp tạm. Dừng instance và giữ trạng thái RAM: Hibernate. Tự động thay thế một instance và giữ nguyên IP: Auto Scaling group với min = max = 1 + Elastic IP gắn bằng user data. Metric chu kỳ 1 phút: detailed monitoring. Instance đã terminate không thể recover hay start lại.</Takeaway>
 
 </Scene>
 
-<Scene id="s5" label="Phần 5/6" title="Placement group và card mạng cho workload hiệu năng cao" questions={["exam1_q23", "exam4_q20", "exam4_q60", "exam6_q36"]}>
+<Scene id="s5" label="Phần 5/6" title="Placement group, enhanced networking và EFA cho workload hiệu năng cao" questions={["exam1_q23", "exam4_q20", "exam4_q60", "exam6_q36"]}>
 
-<p class="scene-intro">Một số workload cần các máy chủ đặt thật gần nhau để trao đổi dữ liệu nhanh nhất, số khác lại cần đặt thật xa nhau để một sự cố không ảnh hưởng nhiều máy chủ.</p>
+<p class="scene-intro">Một số workload cần các instance đặt thật gần nhau để đạt độ trễ mạng thấp nhất, số khác lại cần tách rời nhau để một sự cố phần cứng không ảnh hưởng nhiều instance.</p>
 
 Khi không chỉ định placement group, EC2 tự trải các instance trên phần cứng để giảm sự cố đồng thời. Placement group cho phép chủ động chọn: đặt các instance **sát nhau** để có độ trễ thấp nhất, hoặc **tách rời** để một sự cố phần cứng không ảnh hưởng nhiều instance. Chọn workload và placement strategy, sau đó nhấn vào một rack để mô phỏng rack đó gặp sự cố:
 
@@ -232,9 +232,9 @@ Placement group chỉ quyết định vị trí. Hiệu năng mạng còn phụ 
 
 <Scene id="s6" label="Phần 6/6" title="Vòng đời instance: instance store, địa chỉ IP và những gì còn lại" questions={["exam1_q2", "exam1_q44", "exam2_q37", "exam3_q57", "exam4_q26", "exam4_q38", "exam5_q52", "exam6_q42"]}>
 
-<p class="scene-intro">Khi một máy chủ được dừng, khởi động lại hoặc xoá, không phải mọi thứ gắn với nó đều được giữ lại; cần biết rõ dữ liệu và cấu hình nào còn, cái nào mất.</p>
+<p class="scene-intro">Khi một EC2 instance được stop, reboot hoặc terminate, không phải mọi thứ gắn với nó đều được giữ lại; cần biết rõ dữ liệu và cấu hình nào còn, cái nào mất.</p>
 
-Máy chủ chuyển mã video của ShopViet cần đọc ghi khoảng 10 TB tệp tạm với hiệu năng I/O cao nhất. **Instance store** là ổ đĩa gắn vật lý vào host của instance; các instance storage optimized được tối ưu để cung cấp hàng chục nghìn IOPS ngẫu nhiên với độ trễ thấp. Instance store không tính phí riêng (đã gồm trong giá instance). Đổi lại, dữ liệu chỉ tồn tại trong vòng đời instance, nên kết quả cuối cùng phải được đẩy lên S3 để lưu trữ bền vững và S3 Glacier để lưu trữ dài hạn.
+EC2 instance chuyển mã video của ShopViet cần đọc ghi khoảng 10 TB tệp tạm với hiệu năng I/O cao nhất. **Instance store** là ổ đĩa gắn vật lý vào host của instance; các instance storage optimized được tối ưu để cung cấp hàng chục nghìn IOPS ngẫu nhiên với độ trễ thấp. Instance store không tính phí riêng (đã gồm trong giá instance). Đổi lại, dữ liệu chỉ tồn tại trong vòng đời instance, nên kết quả cuối cùng phải được đẩy lên S3 để lưu trữ bền vững và S3 Glacier để lưu trữ dài hạn.
 
 Instance còn có ba loại địa chỉ IPv4. **Private IP** dùng trong VPC, thường thuộc dải RFC 1918 (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16), được giữ qua stop/start. **Public IP** tự gán lấy từ pool của Amazon, không thuộc account, được release khi stop, hibernate hoặc terminate. **Elastic IP** là địa chỉ public tĩnh thuộc account cho tới khi release, có thể remap sang instance khác để che sự cố. Chọn một thao tác để xem thành phần nào còn lại:
 
@@ -245,7 +245,7 @@ Một số điểm thường bị nhầm lẫn khi thiết kế:
 - **Elastic IP không thay thế kiến trúc sẵn sàng cao.** Remap Elastic IP che được sự cố của một instance, còn phân phối traffic và thay thế instance lỗi là việc của load balancer và Auto Scaling group. Instance đứng sau Application Load Balancer **không cần** public IP hay Elastic IP: target đăng ký bằng instance ID nhận traffic qua primary private IP.
 - **Elastic IP chỉ là địa chỉ.** Để truy cập instance từ Internet (kể cả ping), route table của subnet vẫn phải có route tới internet gateway và security group phải cho phép traffic tương ứng (ping dùng ICMP).
 - **Điều kiện `aws:SourceIp` trong IAM policy** so khớp IP của bên gọi API, không phải địa chỉ của instance.
-- **Instance store làm root volume** chỉ có với Amazon S3-backed AMI trên một số instance type thế hệ cũ (C1, C3, D2, I2, M1, M2, M3, R3, X1); AWS coi loại AMI này là end of life. Instance như vậy không stop được và không khôi phục được sau khi lỗi hoặc terminate. Ổ EBS st1 và sc1 không dùng làm root volume.
+- **Instance store làm root volume** chỉ có với Amazon S3-backed AMI trên một số instance type thế hệ cũ (C1, C3, D2, I2, M1, M2, M3, R3, X1); AWS coi loại AMI này là end of life. Instance như vậy không stop được và không khôi phục được sau khi lỗi hoặc terminate. EBS volume st1 và sc1 không dùng làm root volume.
 
 <Takeaway>Instance store: hiệu năng I/O cao nhất cho dữ liệu tạm; giữ dữ liệu khi reboot; mất khi stop, hibernate, terminate; chỉ chỉ định khi launch; không tách sang instance khác; dữ liệu không nằm trong AMI tạo từ instance. Public IP tự gán đổi sau stop/start; Elastic IP giữ nguyên và bị tính phí kể cả khi chưa gắn. Recover giữ nguyên instance ID và mọi địa chỉ IP; terminate là vĩnh viễn, không thể recover.</Takeaway>
 
@@ -261,7 +261,7 @@ Phân loại từng nhận định vào ô Đúng hoặc Sai. Trên thiết bị
     { id: "false", title: "Sai", sub: "Nhầm lẫn phổ biến", hint: "Gợi ý: nhận định này có vẻ hợp lý nhưng không chính xác." },
   ]}
   cards={[
-    ["Spot bị thu hồi với thông báo 2 phút", "true"], ["Spot request persistent được mở lại sau khi bị gián đoạn", "true"],
+    ["Spot Instance bị gián đoạn sau interruption notice 2 phút", "true"], ["Spot request persistent được mở lại sau khi bị gián đoạn", "true"],
     ["Hủy Spot request không terminate instance đang chạy", "true"], ["Spot Fleet có thể gồm cả On-Demand", "true"],
     ["Instance store giữ dữ liệu khi stop instance", "false"], ["Instance store có thể tách ra và gắn sang instance khác", "false"],
     ["Hủy Spot request sẽ tự động terminate instance", "false"], ["Persistent Spot request mở lại ngay khi bạn stop Spot Instance", "false"],
@@ -284,15 +284,15 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Spread placement group", "Cluster placement group", "Trải instance qua 3 AZ"],
     a: 1,
     why: "Cluster placement group đặt các instance gần nhau trong một AZ để đạt độ trễ mạng thấp nhất." },
-  { q: "Cài đặt máy chủ ShopViet mất 45 phút; Auto Scaling cần instance mới sẵn sàng nhanh, trong khi cấu hình thay đổi theo môi trường. Giải pháp nào phù hợp?",
+  { q: "Cài đặt một EC2 instance của ShopViet mất 45 phút; Auto Scaling cần instance mới sẵn sàng nhanh, trong khi cấu hình thay đổi theo môi trường. Giải pháp nào phù hợp?",
     opts: ["Golden AMI cho phần tĩnh và user data cho phần động", "Chỉ dùng user data cài toàn bộ", "Sử dụng instance type lớn hơn"],
     a: 0,
     why: "AMI rút ngắn thời gian cài đặt; user data xử lý phần thay đổi khi boot." },
-  { q: "Máy chủ shop-api chấp nhận tối đa 10 phút downtime. Cơ chế tự phục hồi nào có chi phí thấp nhất khi xảy ra lỗi phần cứng?",
+  { q: "EC2 instance shop-api chấp nhận tối đa 10 phút downtime. Cơ chế tự phục hồi nào có chi phí thấp nhất khi xảy ra lỗi phần cứng?",
     opts: ["CloudWatch alarm recover instance (instance dùng EBS)", "Chạy thêm một instance dự phòng 24/7", "Sử dụng instance store"],
     a: 0,
     why: "Recover chuyển instance sang phần cứng khác, giữ nguyên instance ID, địa chỉ IP và EBS volume đã gắn; dữ liệu trong RAM (và trên instance store, nếu có) bị mất." },
-  { q: "Đối tác ngân hàng yêu cầu máy chủ thanh toán chạy trên phần cứng single-tenant, không có yêu cầu license đặc biệt. Phương án nào có chi phí thấp nhất?",
+  { q: "Đối tác ngân hàng yêu cầu các EC2 instance xử lý thanh toán chạy trên phần cứng single-tenant, không có yêu cầu license đặc biệt. Phương án nào có chi phí thấp nhất?",
     opts: ["Dedicated Hosts", "Dedicated Instances", "Cluster placement group"],
     a: 1,
     why: "Dedicated Instances chạy trên phần cứng dành riêng cho một account và tính phí theo instance; Dedicated Hosts tính phí theo toàn bộ host và chỉ cần khi phải kiểm soát socket, core cho license." },
@@ -304,8 +304,8 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Elastic network interface (ENI)", "Elastic Network Adapter (ENA)", "Elastic Fabric Adapter (EFA)", "Elastic IP address"],
     a: 2,
     why: "EFA bổ sung OS-bypass cho HPC và ML. ENA là enhanced networking thông thường; ENI là card mạng ảo; Elastic IP chỉ là địa chỉ." },
-  { q: "Máy chủ chuyển mã cần khoảng 10 TB không gian tạm với I/O cao nhất; kết quả được lưu lên S3. Lưu trữ tạm nào phù hợp?",
-    opts: ["Instance store", "EBS gp3", "Amazon EFS"],
+  { q: "EC2 instance chuyển mã cần khoảng 10 TB không gian tạm với I/O cao nhất; kết quả được lưu lên S3. Lưu trữ tạm nào phù hợp?",
+    opts: ["Instance store", "EBS gp3 volume", "Amazon EFS"],
     a: 0,
     why: "Instance store là ổ gắn vật lý vào host, cho I/O cao nhất và đã gồm trong giá instance. Dữ liệu mất khi stop hoặc terminate nên chỉ dùng cho dữ liệu tạm." },
 ]} />

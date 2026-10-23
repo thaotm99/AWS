@@ -1,6 +1,6 @@
 ---
 title: "Amazon EC2: purchasing options, launching, networking and operating instances"
-lede: "ShopViet's server tier runs on EC2 instances. This lesson covers common operational tasks: choosing purchasing options to optimize cost, cutting instance launch time down to a few minutes, configuring networking between instances, and handling hardware failures, unresponsive applications and loss of temporary data."
+lede: "ShopViet's application tier runs on EC2 instances. This lesson covers common operational tasks: choosing purchasing options to optimize cost, cutting instance launch time down to a few minutes, configuring networking between instances, and handling hardware failures, unresponsive applications and loss of temporary data."
 minutes: 42
 scenes: 6
 prerequisites: ["vpc", "iam"]
@@ -99,26 +99,26 @@ import PlacementSim from "../../components/scenes/ec2/PlacementSim.tsx";
 import Ec2LifecycleSim from "../../components/scenes/ec2/Ec2LifecycleSim.tsx";
 
 <Story toc={[
-  { href: "#en-s1", label: "1 · Optimizing purchase cost" },
+  { href: "#en-s1", label: "1 · Purchasing options" },
   { href: "#en-s2", label: "2 · Shortening launch time" },
   { href: "#en-s3", label: "3 · Networking between instances" },
   { href: "#en-s4", label: "4 · Handling instance failures" },
-  { href: "#en-s5", label: "5 · Placement groups and network devices" },
+  { href: "#en-s5", label: "5 · Placement groups and enhanced networking" },
   { href: "#en-s6", label: "6 · Instance lifecycle and IP addresses" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-ShopViet's server tier runs on EC2 instances. The challenge is not launching an instance but the design decisions: which purchasing option optimizes cost, how long a launch takes, whether to place instances close together or spread them out, where to keep temporary data, and how instances recover on their own when something fails.
+ShopViet's application tier runs on EC2 instances. The challenge is not launching an instance but the design decisions: which purchasing option optimizes cost, how long a launch takes, whether to place instances close together or spread them out, where to keep temporary data, and how instances recover on their own when something fails.
 </Story>
 
-<Scene id="en-s1" label="Part 1/6" title="Optimizing cost while keeping availability" questions={["exam2_q33", "exam2_q35", "exam4_q49", "exam5_q60", "exam1_q21", "exam4_q46", "exam2_q49", "exam6_q18", "exam2_q23", "exam6_q21", "exam6_q33", "exam6_q38", "exam4_q30", "exam3_q30", "exam4_q60", "exam6_q2", "exam3_q51"]}>
+<Scene id="en-s1" label="Part 1/6" title="EC2 purchasing options: optimizing cost while keeping availability" questions={["exam2_q33", "exam2_q35", "exam4_q49", "exam5_q60", "exam1_q21", "exam4_q46", "exam2_q49", "exam6_q18", "exam2_q23", "exam6_q21", "exam6_q33", "exam6_q38", "exam4_q30", "exam3_q30", "exam4_q60", "exam6_q2", "exam3_q51"]}>
 
-<p class="scene-intro">The same virtual server can be bought several ways at different prices; the right choice depends on whether it runs all the time or only when needed, and whether it can tolerate interruptions.</p>
+<p class="scene-intro">The same EC2 instance can be bought through several purchasing options at different prices; the right option depends on whether it runs all the time or only when needed, and whether it can tolerate interruptions.</p>
 
 ShopViet needs 80 instances running continuously 24/7; during the day it also needs extra workers that process images from a queue (interruption-tolerant). Choose a purchasing strategy:
 
 <PurchaseMixSim client:visible />
 
-The chart above shows the big picture. In practice there are more specific situations: a Spot Instance reclaimed at midnight, a partner that requires dedicated hardware, licenses priced per socket, a bill that includes Fargate and Lambda as well. Pick each scenario, change the configuration, then press Run:
+The chart above shows the big picture. In practice there are more specific situations: a Spot Instance interrupted at midnight, a partner that requires dedicated hardware, licenses priced per socket, a bill that includes Fargate and Lambda as well. Pick each scenario, change the configuration, then press Run:
 
 <Ec2CostSim client:visible />
 
@@ -132,9 +132,9 @@ Two older purchasing options are retired: **Scheduled Reserved Instances** (capa
 
 <Scene id="en-s2" label="Part 2/6" title="Shortening launch time: golden AMI and user data" questions={["exam4_q1", "exam2_q19", "exam6_q11", "exam2_q51", "exam3_q55"]}>
 
-<p class="scene-intro">When load rises, a new server must be ready within minutes; if every server has to be installed from scratch, the system reacts far too slowly.</p>
+<p class="scene-intro">When load rises, a new instance must be ready within minutes; if every instance has to be installed from scratch, the Auto Scaling group reacts far too slowly.</p>
 
-A full installation of a ShopViet server takes 45 minutes, while Auto Scaling needs a new instance ready within a few minutes.
+A full installation of a ShopViet EC2 instance takes 45 minutes, while Auto Scaling needs a new instance ready within a few minutes.
 
 <StepSim client:visible height={230}
   intro="The software has a static part (runtime, libraries, agents) that is the same on every instance, and a dynamic part (environment-specific configuration) that changes with each launch."
@@ -142,7 +142,7 @@ A full installation of a ShopViet server takes 45 minutes, while Auto Scaling ne
     { id: "base", x: 30, y: 30, label: "AWS base AMI", kind: "site" },
     { id: "golden", x: 280, y: 30, label: "Golden AMI", sub: "static part installed", kind: "net" },
     { id: "ud", x: 280, y: 150, label: "User data", sub: "runs at boot", kind: "edge" },
-    { id: "ec2", x: 560, y: 90, label: "New EC2", sub: "ready in a few minutes", kind: "ec2" },
+    { id: "ec2", x: 560, y: 90, label: "New EC2 instance", sub: "ready in a few minutes", kind: "ec2" },
   ]}
   initial={["base"]}
   steps={[
@@ -195,13 +195,13 @@ Common failures: a hardware fault at 3 a.m., an unresponsive application, tempor
 
 <Ec2OpsSim client:visible />
 
-<Takeaway>Hardware failure: automatic instance recovery (simplified automatic recovery, on by default for supported instances, or a recover alarm action), which keeps the instance ID and IP addresses. Unresponsive application: reboot alarm action. Instance store is temporary storage and loses data on stop, hibernate or terminate; it suits only buffers, caches and temporary files. Stop an instance and keep the RAM state: Hibernate. Automatically replace a single instance and keep its IP: ASG min = max = 1 + an Elastic IP attached by user data. 1-minute metrics: detailed monitoring. A terminated instance cannot be recovered or started again.</Takeaway>
+<Takeaway>Hardware failure: automatic instance recovery (simplified automatic recovery, on by default for supported instances, or a recover alarm action), which keeps the instance ID and IP addresses. Unresponsive application: reboot alarm action. Instance store is temporary storage and loses data on stop, hibernate or terminate; it suits only buffers, caches and temporary files. Stop an instance and keep the RAM state: Hibernate. Automatically replace a single instance and keep its IP: an Auto Scaling group with min = max = 1 + an Elastic IP attached by user data. 1-minute metrics: detailed monitoring. A terminated instance cannot be recovered or started again.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s5" label="Part 5/6" title="Placement groups and network devices for high-performance workloads" questions={["exam1_q23", "exam4_q20", "exam4_q60", "exam6_q36"]}>
+<Scene id="en-s5" label="Part 5/6" title="Placement groups, enhanced networking and EFA for high-performance workloads" questions={["exam1_q23", "exam4_q20", "exam4_q60", "exam6_q36"]}>
 
-<p class="scene-intro">Some workloads need servers placed very close together for the fastest data exchange; others need them far apart so one failure does not hit many servers.</p>
+<p class="scene-intro">Some workloads need instances placed very close together for the lowest network latency; others need them kept apart so one hardware failure does not hit many instances.</p>
 
 Without a placement group, EC2 spreads instances across the underlying hardware to minimize correlated failures. A placement group lets you choose: place instances **close together** for the lowest latency, or **apart** so one hardware failure does not affect many instances. Pick a workload and a placement strategy, then press a rack to simulate a failure of that rack:
 
@@ -232,9 +232,9 @@ A placement group only decides where instances go. Network performance also depe
 
 <Scene id="en-s6" label="Part 6/6" title="Instance lifecycle: instance store, IP addresses and what remains" questions={["exam1_q2", "exam1_q44", "exam2_q37", "exam3_q57", "exam4_q26", "exam4_q38", "exam5_q52", "exam6_q42"]}>
 
-<p class="scene-intro">When a server is stopped, restarted or deleted, not everything attached to it is kept; you need to know which data and settings survive and which are lost.</p>
+<p class="scene-intro">When an EC2 instance is stopped, rebooted or terminated, not everything attached to it is kept; you need to know which data and settings survive and which are lost.</p>
 
-ShopViet's video transcoding server reads and writes about 10 TB of temporary files and needs the highest possible I/O performance. **Instance store** is disk physically attached to the instance's host computer; storage optimized instances are optimized to deliver tens of thousands of low-latency, random IOPS. Instance store has no separate charge (it is included in the instance price). In exchange, the data exists only for the lifetime of the instance, so the final output must be pushed to S3 for durable storage and to S3 Glacier for archival.
+ShopViet's video transcoding EC2 instance reads and writes about 10 TB of temporary files and needs the highest possible I/O performance. **Instance store** is disk physically attached to the instance's host computer; storage optimized instances are optimized to deliver tens of thousands of low-latency, random IOPS. Instance store has no separate charge (it is included in the instance price). In exchange, the data exists only for the lifetime of the instance, so the final output must be pushed to S3 for durable storage and to S3 Glacier for archival.
 
 An instance also has three kinds of IPv4 address. A **private IP** is used inside the VPC, typically from the RFC 1918 ranges (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16), and is kept across stop/start. An auto-assigned **public IP** comes from Amazon's pool, is not associated with your account, and is released on stop, hibernate or terminate. An **Elastic IP address** is a static public address that belongs to your account until you release it and can be remapped to another instance to mask a failure. Pick an action to see what remains:
 
@@ -261,7 +261,7 @@ Sort each statement into True or False. On a mobile device: tap a card, then tap
     { id: "false", title: "False", sub: "Common misconception", hint: "Hint: this statement sounds plausible but is not accurate." },
   ]}
   cards={[
-    ["Spot is reclaimed with a 2-minute notice", "true"], ["A persistent Spot request is reopened after an interruption", "true"],
+    ["A Spot Instance is interrupted after a 2-minute interruption notice", "true"], ["A persistent Spot request is reopened after an interruption", "true"],
     ["Canceling a Spot request does not terminate running instances", "true"], ["A persistent Spot request reopens as soon as you stop the Spot Instance", "false"], ["A Spot Fleet can include On-Demand", "true"],
     ["Instance store keeps data when the instance stops", "false"], ["Instance store can be detached and attached to another instance", "false"],
     ["Canceling a Spot request automatically terminates the instances", "false"],
@@ -284,15 +284,15 @@ Check your understanding: as the designer of the ShopViet system, which option f
     opts: ["Spread placement group", "Cluster placement group", "Spread the instances across 3 AZs"],
     a: 1,
     why: "A cluster placement group places instances close together in one AZ for the lowest network latency." },
-  { q: "Installing a ShopViet server takes 45 minutes; Auto Scaling needs new instances ready quickly, while the configuration varies by environment. Which solution fits?",
+  { q: "Installing a ShopViet EC2 instance takes 45 minutes; Auto Scaling needs new instances ready quickly, while the configuration varies by environment. Which solution fits?",
     opts: ["Golden AMI for the static part and user data for the dynamic part", "Install everything with user data only", "Use a larger instance type"],
     a: 0,
     why: "The AMI shortens installation time; user data handles the changing part at boot." },
-  { q: "The shop-api server tolerates at most 10 minutes of downtime. Which self-recovery mechanism costs the least when a hardware failure occurs?",
+  { q: "The shop-api EC2 instance tolerates at most 10 minutes of downtime. Which self-recovery mechanism costs the least when a hardware failure occurs?",
     opts: ["CloudWatch alarm to recover the instance (EBS-backed instance)", "Run an extra standby instance 24/7", "Use instance store"],
     a: 0,
     why: "Recover moves the instance to other hardware and keeps the instance ID, IP addresses and attached EBS volumes; data in RAM (and on instance store, if any) is lost." },
-  { q: "A banking partner requires the payment servers to run on single-tenant hardware, with no special licensing requirements. Which option costs the least?",
+  { q: "A banking partner requires the payment EC2 instances to run on single-tenant hardware, with no special licensing requirements. Which option costs the least?",
     opts: ["Dedicated Hosts", "Dedicated Instances", "Cluster placement group"],
     a: 1,
     why: "Dedicated Instances run on hardware dedicated to a single account and are billed per instance; Dedicated Hosts are billed for the whole host and are needed only when you must control sockets and cores for licensing." },
@@ -304,8 +304,8 @@ Check your understanding: as the designer of the ShopViet system, which option f
     opts: ["Elastic network interface (ENI)", "Elastic Network Adapter (ENA)", "Elastic Fabric Adapter (EFA)", "Elastic IP address"],
     a: 2,
     why: "EFA adds OS-bypass for HPC and ML. ENA is standard enhanced networking; an ENI is a virtual network card; an Elastic IP is only an address." },
-  { q: "A transcoding server needs about 10 TB of scratch space with the highest I/O; results are stored in S3. Which temporary storage fits?",
-    opts: ["Instance store", "EBS gp3", "Amazon EFS"],
+  { q: "A transcoding EC2 instance needs about 10 TB of scratch space with the highest I/O; results are stored in S3. Which temporary storage fits?",
+    opts: ["Instance store", "EBS gp3 volume", "Amazon EFS"],
     a: 0,
     why: "Instance store is disk physically attached to the host, gives the highest I/O and is included in the instance price. Data is lost on stop or terminate, so use it only for temporary data." },
 ]} />

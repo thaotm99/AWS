@@ -11,7 +11,7 @@ type Lang = ReturnType<typeof useLang>;
 
 const scenarios = (L: Lang): HopScenario[] => [
   {
-    name: L({ vi: "Lỗi máy chủ vật lý", en: "Physical host failure" }),
+    name: L({ vi: "Lỗi phần cứng của host vật lý", en: "Physical host hardware failure" }),
     story: L({ vi: "Lúc 3 giờ sáng, phần cứng bên dưới instance **shop-api** gặp lỗi. Instance sử dụng EBS và có Elastic IP đã được đối tác đưa vào allow list. Simplified automatic recovery mặc định của instance này đã bị tắt.",
       en: "At 3 a.m., the hardware under the **shop-api** instance fails. The instance uses EBS and has an Elastic IP that a partner has added to its allow list. This instance's default simplified automatic recovery has been turned off." }),
     request: "StatusCheckFailed_System = 1",
@@ -66,14 +66,14 @@ const scenarios = (L: Lang): HopScenario[] => [
   },
   {
     name: L({ vi: "Stop instance để thay đổi instance type", en: "Stop an instance to change its type" }),
-    story: L({ vi: "Máy chủ xử lý video cần cấu hình lớn hơn. Kỹ sư **stop** instance, thay đổi instance type rồi start lại. Tệp video đang xử lý dở nằm trên ổ đĩa của instance.",
-      en: "The video processing server needs a larger configuration. An engineer **stops** the instance, changes the instance type and starts it again. The partly processed video files are on the instance's disk." }),
+    story: L({ vi: "EC2 instance xử lý video cần instance type lớn hơn. Kỹ sư **stop** instance, thay đổi instance type rồi start lại. Tệp video đang xử lý dở nằm trên một volume gắn với instance.",
+      en: "The video processing EC2 instance needs a larger instance type. An engineer **stops** the instance, changes the instance type and starts it again. The partly processed video files are on a volume attached to the instance." }),
     request: "aws ec2 stop-instances",
     toggle: { label: L({ vi: "File nằm trên EBS (tắt: instance store)", en: "Files on EBS (off: instance store)" }), initial: false },
     start: "ec2",
     nodes: [
-      { id: "ec2", x: 110, y: 130, label: L({ vi: "Máy chủ video", en: "Video server" }), kind: "app" },
-      { id: "ebs", x: 400, y: 130, label: "EBS volume", sub: L({ vi: "ổ mạng, bền vững", en: "network drive, durable" }), kind: "store" },
+      { id: "ec2", x: 110, y: 130, label: L({ vi: "Instance xử lý video", en: "Video instance" }), kind: "app" },
+      { id: "ebs", x: 400, y: 130, label: "EBS volume", sub: L({ vi: "gắn qua mạng, bền vững", en: "network-attached, durable" }), kind: "store" },
       { id: "is", x: 400, y: 130, label: "Instance store", sub: L({ vi: "ổ gắn với host", en: "disk tied to the host" }), kind: "store" },
       { id: "new", x: 680, y: 130, w: 130, label: L({ vi: "Instance sau khi start", en: "Instance after start" }), sub: L({ vi: "host khác", en: "different host" }), kind: "app" },
     ],
@@ -86,26 +86,26 @@ const scenarios = (L: Lang): HopScenario[] => [
           en: "EBS data persists through stop/start. Instance store is included in the instance price and suits **temporary** data (buffers, caches, scratch): after processing, results are pushed to S3." }) }
       : { hops: [
           { to: "is", state: "alert", tag: L({ vi: "MẤT DỮ LIỆU", en: "DATA LOST" }), flash: "✕", msg: L({ vi: "Khi stop, mọi block của instance store volume bị xoá bằng mã hoá (cryptographically erased).", en: "On stop, every block of the instance store volume is cryptographically erased." }) },
-          { to: "new", state: "alert", tag: L({ vi: "TRỐNG", en: "EMPTY" }), msg: L({ vi: "Instance khởi động lại với ổ đĩa trống.", en: "The instance starts again with an empty disk." }) },
+          { to: "new", state: "alert", tag: L({ vi: "TRỐNG", en: "EMPTY" }), msg: L({ vi: "Instance khởi động lại với instance store volume trống.", en: "The instance starts again with an empty instance store volume." }) },
         ], ok: false, result: L({ vi: "Instance store mất dữ liệu khi stop, hibernate hoặc terminate (giữ dữ liệu khi reboot) và không thể tách ra để gắn sang instance khác. Chỉ phù hợp cho tệp tạm hoặc dữ liệu đã có bản sao ở nơi khác.",
           en: "Instance store loses data on stop, hibernate or terminate (data survives a reboot) and cannot be detached and attached to another instance. It suits only temporary files or data that has a copy elsewhere." }) },
   },
   {
     name: L({ vi: "Dừng instance ban đêm, khởi động nhanh buổi sáng", en: "Stop at night, start fast in the morning" }),
-    story: L({ vi: "Máy chủ phân tích chỉ cần chạy trong giờ hành chính. Mỗi sáng, ứng dụng mất 10 phút để nạp dữ liệu vào RAM.",
-      en: "The analytics server only needs to run during business hours. Every morning, the application takes 10 minutes to load data into RAM." }),
+    story: L({ vi: "EC2 instance phân tích chỉ cần chạy trong giờ hành chính. Mỗi sáng, ứng dụng mất 10 phút để nạp dữ liệu vào RAM.",
+      en: "The analytics EC2 instance only needs to run during business hours. Every morning, the application takes 10 minutes to load data into RAM." }),
     request: L({ vi: "Stop lúc 19:00, start lúc 8:00", en: "Stop at 19:00, start at 8:00" }),
     toggle: { label: L({ vi: "Kích hoạt EC2 Hibernate", en: "Enable EC2 Hibernate" }), initial: false },
     start: "ec2",
     nodes: [
-      { id: "ec2", x: 110, y: 130, label: L({ vi: "Máy chủ phân tích", en: "Analytics server" }), sub: L({ vi: "RAM đã nạp dữ liệu", en: "data loaded in RAM" }), kind: "app" },
+      { id: "ec2", x: 110, y: 130, label: L({ vi: "Instance phân tích", en: "Analytics instance" }), sub: L({ vi: "RAM đã nạp dữ liệu", en: "data loaded in RAM" }), kind: "app" },
       { id: "root", x: 400, y: 130, label: "EBS root volume", sub: L({ vi: "mã hoá", en: "encrypted" }), kind: "store" },
       { id: "am", x: 680, y: 130, w: 120, label: L({ vi: "8:00 sáng", en: "8:00 a.m." }), kind: "user" },
     ],
     run: (on) => on
       ? { hops: [
           { to: "root", state: "change", tag: L({ vi: "LƯU RAM", en: "SAVE RAM" }), msg: L({ vi: "Nội dung RAM được ghi xuống EBS root volume.", en: "The RAM contents are written to the EBS root volume." }) },
-          { to: "am", state: "pass", tag: L({ vi: "TIẾP TỤC", en: "RESUMED" }), msg: L({ vi: "Khi start lại, RAM được nạp từ đĩa; ứng dụng tiếp tục hoạt động ngay.", en: "On start, RAM is restored from disk; the application resumes immediately." }) },
+          { to: "am", state: "pass", tag: L({ vi: "TIẾP TỤC", en: "RESUMED" }), msg: L({ vi: "Khi start lại, RAM được nạp lại từ EBS root volume; ứng dụng tiếp tục hoạt động ngay.", en: "On start, RAM is restored from the EBS root volume; the application resumes immediately." }) },
         ], ok: true, result: L({ vi: "**Hibernate**: dừng và khởi động lại instance mà không phải khởi động ứng dụng từ đầu. Khi instance ở trạng thái hibernated, không tính phí sử dụng instance; vẫn tính phí lưu trữ EBS (kể cả phần chứa nội dung RAM) và Elastic IP nếu có.",
           en: "**Hibernate**: stop and restart the instance without starting the application from scratch. While the instance is hibernated, you are not charged for instance usage; you are still charged for EBS storage (including the RAM contents) and for any Elastic IP." }) }
       : { hops: [
@@ -119,7 +119,7 @@ const scenarios = (L: Lang): HopScenario[] => [
     story: L({ vi: "Một dịch vụ legacy chỉ chạy được trên **một** instance. Đối tác đã đưa IP của instance vào allow list. Khi instance lỗi, instance mới phải được tạo tự động với cùng IP.",
       en: "A legacy service can run on only **one** instance. A partner has added the instance's IP to its allow list. When the instance fails, a new instance must be created automatically with the same IP." }),
     request: L({ vi: "Instance ở AZ a bị terminate", en: "Instance in AZ a is terminated" }),
-    toggle: { label: L({ vi: "ASG min = max = 1 trên 2 AZ + Elastic IP gắn bằng user data", en: "ASG min = max = 1 across 2 AZs + Elastic IP attached by user data" }), initial: false },
+    toggle: { label: L({ vi: "Auto Scaling group min = max = 1 trên 2 AZ + Elastic IP gắn bằng user data", en: "Auto Scaling group min = max = 1 across 2 AZs + Elastic IP attached by user data" }), initial: false },
     start: "old",
     boxes: [
       { x: 20, y: 28, w: 300, h: 200, label: "AZ a" },
@@ -135,16 +135,16 @@ const scenarios = (L: Lang): HopScenario[] => [
     hidden: (on) => (on ? [] : ["asg", "new"]),
     run: (on) => on
       ? { hops: [
-          { to: "asg", state: "alert", tag: L({ vi: "THIẾU 1", en: "1 MISSING" }), msg: L({ vi: "ASG phát hiện số instance giảm xuống 0.", en: "The ASG detects that the instance count has dropped to 0." }) },
+          { to: "asg", state: "alert", tag: L({ vi: "THIẾU 1", en: "1 MISSING" }), msg: L({ vi: "Auto Scaling group phát hiện số instance giảm xuống 0.", en: "The Auto Scaling group detects that the instance count has dropped to 0." }) },
           { to: "new", state: "pass", tag: "LAUNCH", msg: L({ vi: "Launch instance mới tại AZ còn hoạt động.", en: "Launches a new instance in the AZ that is still healthy." }) },
           { to: "eip", state: "change", tag: L({ vi: "GẮN IP", en: "ATTACH IP" }), msg: L({ vi: "User data gọi `AssociateAddress`; instance role cho phép gọi API này.", en: "User data calls `AssociateAddress`; the instance role allows this API call." }) },
           { from: "ptn", to: "eip", state: "pass", tag: L({ vi: "TRUY CẬP", en: "ACCESS" }), msg: L({ vi: "Đối tác tiếp tục kết nối tới IP cũ.", en: "The partner keeps connecting to the same IP." }) },
-        ], ok: true, result: L({ vi: "ASG thay thế instance lỗi; user data tự động gắn lại Elastic IP. Không cần can thiệp thủ công.",
-          en: "The ASG replaces the failed instance; user data reattaches the Elastic IP automatically. No manual intervention is needed." }) }
+        ], ok: true, result: L({ vi: "Auto Scaling group thay thế instance lỗi; user data tự động gắn lại Elastic IP. Không cần can thiệp thủ công.",
+          en: "The Auto Scaling group replaces the failed instance; user data reattaches the Elastic IP automatically. No manual intervention is needed." }) }
       : { hops: [
           { from: "ptn", to: "eip", state: "alert", tag: L({ vi: "MẤT KẾT NỐI", en: "DISCONNECTED" }), msg: L({ vi: "Elastic IP không còn gắn với instance nào.", en: "The Elastic IP is no longer attached to any instance." }) },
-        ], ok: false, result: L({ vi: "Không có cơ chế tự động thay thế instance. Giải pháp: ASG min = max = 1 trên 2 AZ, kết hợp user data gắn lại Elastic IP.",
-          en: "There is no mechanism to replace the instance automatically. Solution: ASG min = max = 1 across 2 AZs, with user data that reattaches the Elastic IP." }) },
+        ], ok: false, result: L({ vi: "Không có cơ chế tự động thay thế instance. Giải pháp: Auto Scaling group min = max = 1 trên 2 AZ, kết hợp user data gắn lại Elastic IP.",
+          en: "There is no mechanism to replace the instance automatically. Solution: an Auto Scaling group with min = max = 1 across 2 AZs, with user data that reattaches the Elastic IP." }) },
   },
   {
     name: L({ vi: "Yêu cầu metric chu kỳ 1 phút", en: "1-minute metrics required" }),
