@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* CloudFormation stack events (iac/StackSim) */
 .sks-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
 .sks .stage-bar .sks-play { margin-left: auto; }
@@ -71,3 +73,4 @@
 
 /* Security group snippet read by sending traffic (iac/SgRuleSim) */
 .sgr-template { margin: 12px 0 0; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.5; overflow-x: auto; color: var(--ink); }
+}

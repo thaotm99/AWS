@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* Packet simulations of the ELB, ASG, container and Lambda lessons (elb/PacketSim) */
 .pks-scenarios { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
 .pks-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 3px 8px; overflow-wrap: anywhere; }
@@ -27,3 +29,4 @@
 .pks .log li.pks-result { margin-top: 6px; padding: 8px 10px; border-radius: 12px; display: block; }
 .pks-result.ok { background: var(--ok-soft); }
 .pks-result.bad { background: var(--bad-soft); }
+}

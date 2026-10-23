@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* CloudFront lesson simulations (cloudfront/TieredPathSim). Theme tokens only. */
 .cft-row, .cft-opts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
 .cft-opts { padding-top: 8px; }
@@ -26,3 +28,4 @@
 .cft-result { margin-top: 6px; padding: 8px 10px; border-radius: 12px; display: block !important; }
 .cft-result.ok { background: var(--ok-soft); }
 .cft-result.bad { background: var(--bad-soft); }
+}

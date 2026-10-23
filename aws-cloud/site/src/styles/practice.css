@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* Luyện đề: certification picker, exam list, one-question runner, result. Classes are prefixed pr- to stay clear of lesson scenes. */
 .pr-muted { color: var(--muted); font-size: var(--step--1); margin: 0; text-wrap: pretty; }
 .pr-error { color: var(--bad); background: var(--bad-soft); border-radius: 12px; padding: 10px 14px; margin: 12px 0 0; max-width: none; }
@@ -303,3 +305,4 @@
 .pr-option.wrong { box-shadow: 0 3px 0 var(--bad); }
 .pr-option .pr-key { font-family: var(--font-display); font-weight: 600; }
 @media (prefers-reduced-motion: reduce) { .pr-option, .pr-option:active { transition: none; transform: none; } }
+}

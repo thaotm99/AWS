@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* Redis OSS vs Memcached on one node (analytics/CacheEngineSim) */
 .cen .stage-bar .cen-play { margin-left: auto; }
 .cen-card { fill: var(--bg); stroke: var(--line); stroke-width: 1.2; }
@@ -23,3 +25,4 @@
 .cen-result.ok { background: var(--ok-soft); }
 .cen-result.bad { background: var(--bad-soft); }
 @media (prefers-reduced-motion: reduce) { .cen-core { transition: none; } }
+}

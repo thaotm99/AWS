@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* Which Savings Plans cover which workload (others/SavingsPlanSim) */
 .sav .stage-bar .sav-play { margin-left: auto; }
 .sav-cap { fill: var(--muted); font-family: var(--font-body); font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
@@ -14,3 +16,4 @@
 .sav-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 12px; font-size: var(--step--1); }
 .sav-result.ok { background: var(--ok-soft); }
 .sav-result.bad { background: var(--bad-soft); }
+}

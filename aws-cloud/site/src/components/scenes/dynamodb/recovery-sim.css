@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* Recovery timeline of a DynamoDB table (dynamodb/RecoverySim) */
 .rcv-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
 .rcv .stage-bar .rcv-play { margin-left: auto; }
@@ -23,3 +25,4 @@
 .rcv-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 12px; font-size: var(--step--1); }
 .rcv-result.ok { background: var(--ok-soft); }
 .rcv-result.bad { background: var(--bad-soft); }
+}

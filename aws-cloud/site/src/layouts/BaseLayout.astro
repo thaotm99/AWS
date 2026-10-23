@@ -1,4 +1,5 @@
 ---
+import "../styles/app.css";
 import "../styles/global.css";
 import Roadmap from "../components/Roadmap.tsx";
 import Pomodoro from "../components/Pomodoro.tsx";
@@ -64,6 +65,8 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
 <html lang="vi" data-i18n-title={titleKey} data-i18n-params={titleParams ? JSON.stringify(titleParams) : undefined}>
   <head>
     <meta charset="utf-8" />
+    {/* Declares the cascade layer order before any bundled stylesheet, whatever order Astro emits them in. */}
+    <style is:inline>@layer theme, base, legacy, components, utilities;</style>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content={description} />
     <title>{title}</title>

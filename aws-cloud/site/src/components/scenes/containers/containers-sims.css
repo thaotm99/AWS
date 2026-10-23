@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* Containers lesson simulations (ScaleLayersSim, EksPlacementSim). Theme tokens only. */
 .ctx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
 .ctx-row + .ctx-row { padding-top: 8px; }
@@ -45,3 +47,4 @@
 .ctx-verdict { display: inline-block; font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600; padding: 0 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
 .ctx-verdict.y { background: var(--ok-soft); color: var(--ok); }
 .ctx-verdict.n { background: var(--bad-soft); color: var(--bad); }
+}

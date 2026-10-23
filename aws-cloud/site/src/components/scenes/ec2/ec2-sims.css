@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* EC2 lesson simulations: PlacementSim and Ec2LifecycleSim (lesson-local styles) */
 .ec2-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
 .ec2-story { margin: 0; padding: 10px 14px 0; font-size: var(--step--1); }
@@ -45,4 +47,5 @@
 @media (max-width: 560px) {
   .lc-table th, .lc-table td { padding: 6px 10px; display: block; width: auto; border-bottom: 0; }
   .lc-table tr { display: block; border-bottom: 1px solid var(--line); padding: 4px 0; }
+}
 }

@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* RDS lesson simulations (rds/RdsOpsSim, rds/AuroraSim). Theme tokens only. */
 .rdx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
 .rdx-row + .rdx-row { padding-top: 8px; }
@@ -45,3 +47,4 @@
 .rdx-copy.hit { fill: var(--ok); stroke: var(--ok); }
 .rdx-node.down { opacity: .35; }
 .rdx .stage-bar:first-child { margin-top: 0; border-top: 0; }
+}

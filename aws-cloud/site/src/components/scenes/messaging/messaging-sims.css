@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* Flash sale buffer (messaging/QueueBufferSim) */
 .qbs-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
 .qbs-about { font-size: var(--step--1); color: var(--muted); }
@@ -100,4 +102,5 @@
 @media (max-width: 520px) {
   .fbc-row { grid-template-columns: 1fr auto; }
   .fbc-row .fbc-track { grid-column: 1 / -1; grid-row: 2; }
+}
 }

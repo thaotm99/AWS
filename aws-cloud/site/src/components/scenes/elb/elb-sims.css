@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* ELB lesson simulations (elb/RuleMatchSim, HttpsListenerSim). Theme tokens only. */
 .elbx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
 .elbx-row + .elbx-row { padding-top: 8px; }
@@ -51,4 +53,5 @@
 @media (max-width: 560px) {
   .elbx-res li { grid-template-columns: minmax(0, 1fr) auto; }
   .elbx-why { grid-column: 1 / -1; }
+}
 }

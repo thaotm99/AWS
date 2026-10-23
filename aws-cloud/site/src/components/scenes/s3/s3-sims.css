@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* S3 lesson simulations (s3/DeleteGuardSim, EncryptionSim, UploadSim, LifecycleFilterSim, RetentionSim,
    WebsiteEndpointSim). Theme tokens only. */
 /* LifecycleFilterSim */
@@ -64,3 +66,4 @@
 .s3x-pop { animation: s3x-pop .4s ease-out both; transform-box: fill-box; transform-origin: center; }
 @keyframes s3x-pop { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .s3x-pop { animation: none; } }
+}

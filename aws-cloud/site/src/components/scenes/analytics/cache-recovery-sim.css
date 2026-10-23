@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* ElastiCache primary failure and recovery options (analytics/CacheRecoverySim). Theme tokens only. */
 .crx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
 .crx-lbl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
@@ -38,3 +40,4 @@
 .crx-pop { animation: crx-pop .35s ease-out both; }
 @keyframes crx-pop { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .crx-pop { animation: none; } .crx-node rect { transition: none; } }
+}

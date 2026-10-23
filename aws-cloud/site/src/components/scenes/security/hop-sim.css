@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* HopSim engine (security/HopSim.tsx), shared by the KMS, security, Cognito and EC2 simulations */
 .hop-scenarios { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
 .hop-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 3px 8px; overflow-wrap: anywhere; }
@@ -42,3 +44,4 @@
 .hop-flash.bad { fill: var(--bad); }
 .hop-flash.edge { fill: var(--edge); }
 .hop .log .tag { white-space: nowrap; }
+}

@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* Storage migration lesson simulations (storage-migration/TransferPlannerSim). Theme tokens only. */
 .mgx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
 .mgx-row + .mgx-row { padding-top: 8px; }
@@ -41,3 +43,4 @@
 .mgx-days.win { fill: var(--ok); }
 .mgx-days.lose { fill: var(--muted); }
 .mgx-road { stroke: var(--muted); stroke-width: 2; stroke-dasharray: 10 7; fill: none; }
+}

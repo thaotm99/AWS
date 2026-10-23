@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* Storage lesson simulations (storage/SharedStorageSim, storage/FsxSim). Theme tokens only. */
 .stx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
 .stx-row + .stx-row { padding-top: 8px; }
@@ -56,3 +58,4 @@
 .stx-bar-fill.ebs { background: var(--edge); }
 .stx-bar > b { text-align: right; font-family: var(--font-mono); font-size: 0.8rem; }
 @media (max-width: 520px) { .stx-bar { grid-template-columns: minmax(0, 1fr) 5.5rem; } .stx-bar-track { grid-column: 1 / -1; grid-row: 2; } }
+}

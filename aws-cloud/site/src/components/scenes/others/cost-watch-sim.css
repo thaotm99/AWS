@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* One month of a cost problem (others/CostWatchSim) */
 .cws-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
 .cws-about { margin: 8px 16px 10px; font-size: var(--step--1); color: var(--muted); }
@@ -19,3 +21,4 @@
 .cws-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 12px; font-size: var(--step--1); }
 .cws-result.ok { background: var(--ok-soft); }
 .cws-result.bad { background: var(--bad-soft); }
+}

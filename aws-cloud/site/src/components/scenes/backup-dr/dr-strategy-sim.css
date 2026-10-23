@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* Four DR strategies against a Region outage (backup-dr/DrStrategySim) */
 .drs-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
 .drs-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
@@ -52,3 +54,4 @@
 .drs-result.ok { background: var(--ok-soft); }
 .drs-result.bad { background: var(--bad-soft); }
 .drs-result.warn { background: var(--accent-soft); }
+}

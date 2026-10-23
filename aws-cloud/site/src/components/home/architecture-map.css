@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* Home-page architecture map (components/home/ArchitectureMap). Category hues come from the theme tokens. */
 .amap { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); overflow: hidden; margin: 18px 0 8px; }
 .amap-bar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--line); }
@@ -37,4 +39,5 @@
 @media (max-width: 640px) {
   .amap-caption { grid-template-columns: minmax(0, 1fr); gap: 4px; }
   .amap-play { margin-left: 0; }
+}
 }

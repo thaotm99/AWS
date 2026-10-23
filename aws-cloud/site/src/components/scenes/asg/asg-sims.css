@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* One day of scaling (asg/ScalingPolicySim) */
 .sps-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
 .sps .stage-bar .sps-play { margin-left: auto; }
@@ -67,3 +69,4 @@
 
 /* Scale-in protection badge (asg/TerminationSim) */
 .term-prot { color: var(--violet); font-weight: 600; }
+}

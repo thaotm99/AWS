@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* One AWS Backup plan against four incidents (backup-dr/BackupPlanSim) */
 .bps .stage-bar + .stage-bar { border-top: 0; padding-top: 0; }
 .bps-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; margin-right: 8px; }
@@ -39,3 +41,4 @@
 .bps-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 12px; font-size: var(--step--1); }
 .bps-result.ok { background: var(--ok-soft); }
 .bps-result.bad { background: var(--bad-soft); }
+}

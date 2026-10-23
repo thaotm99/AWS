@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* Twelve months of S3 data lake storage (analytics/LakeCostSim) */
 .lkc .stage-bar .lkc-play { margin-left: auto; }
 .lkc-about { margin: 10px 16px 0; font-size: var(--step--1); color: var(--muted); }
@@ -12,3 +14,4 @@
 .lkc-result.ok { background: var(--ok-soft); }
 .lkc-result.bad { background: var(--bad-soft); }
 @media (prefers-reduced-motion: reduce) { .lkc-raw, .lkc-ref { transition: none; } }
+}

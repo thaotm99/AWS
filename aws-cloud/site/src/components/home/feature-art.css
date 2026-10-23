@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* Home illustrations (FeatureArt.astro). Colors follow the theme tokens. */
 .fa { width: 100%; height: auto; display: block; overflow: visible; font-family: var(--font-mono); }
 .fa text { font-size: 11px; fill: var(--ink); }
@@ -95,4 +97,5 @@
   .fa-check, .fa-pass, .fa-sticky, .fa .fa-mark { opacity: 1; }
   .fa-face.backface { transform: scaleX(0); }
   .fa-bar { transform: scaleY(var(--v)); }
+}
 }

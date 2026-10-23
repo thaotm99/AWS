@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* IAM lesson simulations (iam/LeastPrivilegeSim). Theme tokens only. */
 .iam-lp .picker-item code { background: none; padding: 0; font-size: 0.78rem; overflow-wrap: anywhere; }
 .iam-lp-rows li { align-items: baseline; flex-wrap: wrap; }
@@ -6,3 +8,4 @@
 .iam-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 12px; font-size: var(--step--1); }
 .iam-result.ok { background: var(--ok-soft); }
 .iam-result.bad { background: var(--bad-soft); }
+}

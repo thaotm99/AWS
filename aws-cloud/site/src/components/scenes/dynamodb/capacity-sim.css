@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* One day of DynamoDB capacity (dynamodb/CapacitySim) */
 .dcap-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
 .dcap .stage-bar .dcap-play { margin-left: auto; }
@@ -23,3 +25,4 @@
 .dcap-result.bad { background: var(--bad-soft); }
 @media (prefers-reduced-motion: reduce) { .dcap-part { transition: none; } }
 .dcap-ceil-t { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; font-weight: 700; }
+}

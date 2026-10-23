@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* VPC lesson simulations (vpc/CidrSim, vpc/RouteAssocSim). Theme tokens only. */
 .vpx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
 .vpx-row.vpx-sep { margin-top: 12px; padding-bottom: 12px; border-top: 1px solid var(--line); }
@@ -39,4 +41,5 @@
   .vpx-facts div { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .vpx-bits { grid-template-columns: repeat(16, minmax(0, 1fr)); row-gap: 6px; font-size: 0.72rem; padding: 12px 10px 4px; }
   .vpx-bits .gap { margin-right: 3px; }
+}
 }

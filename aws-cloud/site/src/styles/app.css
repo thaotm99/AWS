@@ -1,0 +1,63 @@
+/* Entry stylesheet. Layer order: Tailwind theme and base, the pre-Tailwind "legacy" styles, shared components,
+   then utilities, so a utility class always wins over older rules while areas are migrated one by one. */
+@layer theme, base, legacy, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "./tokens.css";
+
+/* Dark theme follows <html data-theme="dark">, set before first paint by BaseLayout. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Tailwind theme mapped onto the design tokens: utilities such as bg-surface, text-muted, border-line,
+   font-display, rounded-md or shadow-press switch with the theme because they resolve to CSS variables. */
+@theme inline {
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
+  --color-edge: var(--edge);
+  --color-edge-soft: var(--edge-soft);
+  --color-coral: var(--coral);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-mint: var(--mint);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-sun: var(--sun);
+  --color-sun-strong: var(--sun-strong);
+  --color-sun-soft: var(--sun-soft);
+  --color-sun-ink: var(--sun-ink);
+  --color-violet: var(--violet);
+  --color-blue: var(--blue);
+  --color-pink: var(--pink);
+
+  --font-body: var(--font-body);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
+
+  --text-step--1: var(--step--1);
+  --text-step-0: var(--step-0);
+  --text-step-1: var(--step-1);
+  --text-step-2: var(--step-2);
+  --text-step-3: var(--step-3);
+
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+
+  --shadow-soft: var(--shadow);
+  --shadow-press: var(--press);
+  --shadow-press-line: var(--press-line);
+
+  --spacing-section: var(--space-section);
+}

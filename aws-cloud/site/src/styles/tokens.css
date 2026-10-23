@@ -1,0 +1,73 @@
+/* Design tokens: the single source of colors, type, radii and spacing. Tailwind reads them through @theme in app.css;
+   light is the default, dark redefines the same names. */
+:root {
+  /* Light (default): violet-tinted ground, indigo action color, coral / mint / sun accents with distinct roles.
+     Text pairs keep contrast >= 4.5:1; the bright fills (--coral, --mint, --sun) carry dark text only. */
+  --bg: #f6f5ff;
+  --surface: #ffffff;
+  --ink: #1e1b4b;
+  --muted: #565a7a;
+  --line: #e4e2f5;
+  --accent: #4f46e5;
+  --accent-strong: #3730a3;
+  --accent-soft: #eef0ff;
+  --edge: #b44a16;
+  --edge-soft: #ffede3;
+  --coral: #ff8a4c;
+  --ok: #0a7d5b;
+  --ok-soft: #e3f8f0;
+  --mint: #12b886;
+  --bad: #c0264a;
+  --bad-soft: #ffe8ec;
+  --sun: #ffc53d;
+  --sun-strong: #c99400;
+  --sun-soft: #fff6da;
+  --sun-ink: #8a5a00;
+  --on-accent: #ffffff;
+  --violet: #6d4bd8;
+  --shadow: 0 1px 2px rgb(30 27 75 / .05), 0 12px 32px rgb(79 70 229 / .10);
+  --press: 0 5px 0 var(--accent-strong);
+  --press-line: 0 5px 0 var(--line);
+  --font-body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Lexend", "Be Vietnam Pro", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  /* Type scale: 14 / 17 / 20 / 32 / 44 px on desktop; phones step down below. */
+  --step--1: 0.875rem;
+  --step-0: 1.0625rem;
+  --step-1: 1.25rem;
+  --step-2: 2rem;
+  --step-3: 2.75rem;
+  /* Radii and spacing (4 px grid). */
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 24px;
+  --space-section: 72px;
+  --blue: #1f6fc0;
+  --pink: #b42f6b;
+}
+@media (max-width: 760px) {
+  :root { --step-0: 1rem; --step-1: 1.125rem; --step-2: 1.625rem; --step-3: 2rem; --space-section: 48px; }
+}
+/* Theme is set on <html data-theme> before first paint (BaseLayout); the media query only covers no-JS. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    /* Dark: deep indigo ground, same color roles, lighter tints; text pairs keep contrast >= 4.5:1. */
+    --bg: #14122b; --surface: #1d1a3a; --ink: #edebff; --muted: #aeabd3; --line: #2f2b57;
+    --accent: #8b85ff; --accent-strong: #4f46e5; --accent-soft: #2a2660; --on-accent: #14122b;
+    --edge: #ffa36b; --edge-soft: #3a2418; --coral: #ff8a4c; --ok: #4fd1a5; --ok-soft: #10342a; --mint: #12b886;
+    --bad: #ff7a93; --bad-soft: #3d1a26; --sun: #ffc53d; --sun-strong: #c99400; --sun-soft: #3a2f10; --sun-ink: #ffd873;
+    --violet: #b9a6ff; --blue: #7fb8ff; --pink: #f293b8;
+    --shadow: 0 1px 2px rgb(0 0 0 / .5), 0 12px 32px rgb(0 0 0 / .3);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  /* Dark: deep indigo ground, same color roles, lighter tints; text pairs keep contrast >= 4.5:1. */
+  --bg: #14122b; --surface: #1d1a3a; --ink: #edebff; --muted: #aeabd3; --line: #2f2b57;
+  --accent: #8b85ff; --accent-strong: #4f46e5; --accent-soft: #2a2660; --on-accent: #14122b;
+  --edge: #ffa36b; --edge-soft: #3a2418; --coral: #ff8a4c; --ok: #4fd1a5; --ok-soft: #10342a; --mint: #12b886;
+  --bad: #ff7a93; --bad-soft: #3d1a26; --sun: #ffc53d; --sun-strong: #c99400; --sun-soft: #3a2f10; --sun-ink: #ffd873;
+  --violet: #b9a6ff; --blue: #7fb8ff; --pink: #f293b8;
+  --shadow: 0 1px 2px rgb(0 0 0 / .5), 0 12px 32px rgb(0 0 0 / .3);
+  color-scheme: dark;
+}

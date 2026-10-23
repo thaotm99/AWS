@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* Lesson 0 (aws-map): hero and simulations. The stages stay dark in both themes, like the home-page map. */
 .am-stage { --am-bg: #0b1218; --am-panel: #111b22; --am-line: #22323c; --am-ink: #e4ecf0; --am-muted: #90a4af; --am-cyan: #4cc2df; --am-amber: #f0a95a;
   --am-net: #4cc2df; --am-sec: #b29cff; --am-cmp: #f0a95a; --am-sto: #5ccf94; --am-db: #7fb0ff; --am-int: #f293b8;
@@ -148,4 +150,5 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .am-stage *, .am-hero * { animation: none !important; transition: none !important; }
+}
 }

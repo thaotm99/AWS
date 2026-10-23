@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* CaseSim engine (scenes/global-infra/CaseSim.tsx), used by the global-infra,
    vpc, route53 and iam simulations. Theme tokens only. */
 .cs-scenarios { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
@@ -29,3 +31,4 @@
 .cs-result { margin-top: 6px; padding: 8px 10px; border-radius: 12px; display: block !important; }
 .cs-result.ok { background: var(--ok-soft); }
 .cs-result.bad { background: var(--bad-soft); }
+}

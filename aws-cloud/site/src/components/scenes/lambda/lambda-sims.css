@@ -1,3 +1,5 @@
+/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
+@layer legacy {
 /* Lambda lesson simulations (FunctionConfigSim). */
 .lfx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 10px 14px 0; }
 .lfx-lbl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
@@ -28,4 +30,5 @@
 @media (max-width: 720px) {
   .lfx-grid { grid-template-columns: minmax(0, 1fr); }
   .lfx-env { margin: 10px 14px 0; }
+}
 }
