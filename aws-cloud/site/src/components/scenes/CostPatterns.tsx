@@ -165,9 +165,9 @@ export default function CostPatterns() {
         </strong>
         {o.text}
       </div>
-      <div className="key" style={{ padding: "0 16px 12px" }}>
-        <span><i style={{ background: "var(--ok)" }} />{L({ vi: "Không tính phí data transfer", en: "No data transfer charge" })}</span>
-        <span><i style={{ background: "var(--edge)" }} />{L({ vi: "Có tính phí theo GB", en: "Charged per GB" })}</span>
+      <div className="key px-4 pb-3">
+        <span><i className="bg-ok" />{L({ vi: "Không tính phí data transfer", en: "No data transfer charge" })}</span>
+        <span><i className="bg-edge" />{L({ vi: "Có tính phí theo GB", en: "Charged per GB" })}</span>
       </div>
     </div>
   );

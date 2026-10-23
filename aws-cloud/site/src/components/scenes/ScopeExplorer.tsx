@@ -71,7 +71,7 @@ const SERVICES: { name: string; scope: Scope; label: string; text: Bi<ReactNode>
       en: <>An EBS volume can be attached only to an EC2 instance in the same AZ. To move it to another AZ: create a snapshot, then create a new volume from the snapshot.</> },
     draw: <>
       <Token x={70} y={196} w={100} label="EC2: web-1" />
-      <line x1={120} y1={220} x2={120} y2={238} stroke="var(--accent)" strokeWidth={2} />
+      <line className="stroke-accent stroke-2" x1={120} y1={220} x2={120} y2={238} />
       <Token x={70} y={238} w={100} label="EBS: 20 GiB" ghost />
     </> },
 ];
@@ -126,9 +126,9 @@ export default function ScopeExplorer() {
             ))}
           </g>
           <g className={hl("edge")}>
-            <path d="M540 200 C 580 200, 590 130, 628 128" fill="none" stroke="var(--edge)" strokeWidth={1.5} strokeDasharray="4 4" />
-            <path d="M540 240 C 590 240, 600 220, 628 220" fill="none" stroke="var(--edge)" strokeWidth={1.5} strokeDasharray="4 4" />
-            <path d="M540 280 C 580 280, 590 312, 628 312" fill="none" stroke="var(--edge)" strokeWidth={1.5} strokeDasharray="4 4" />
+            <path d="M540 200 C 580 200, 590 130, 628 128" className="fill-none stroke-edge stroke-[1.5]" strokeDasharray="4 4" />
+            <path d="M540 240 C 590 240, 600 220, 628 220" className="fill-none stroke-edge stroke-[1.5]" strokeDasharray="4 4" />
+            <path d="M540 280 C 580 280, 590 312, 628 312" className="fill-none stroke-edge stroke-[1.5]" strokeDasharray="4 4" />
             {EDGE_Y.map((y) => <circle key={y} className="edge-dot" cx={640} cy={y} r={11} />)}
             <text className="edge-t" x={606} y={104}>Edge location</text>
           </g>

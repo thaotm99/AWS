@@ -177,7 +177,7 @@ export default function AzFailureSim() {
             {L({ vi: "Target healthy: ", en: "Healthy targets: " })}{alive.length}/{servers.length} · {L({ vi: "request thành công", en: "successful requests" })} {ok} · {L({ vi: "lỗi", en: "errors" })} {err}
           </span>
         </div>
-        <p style={{ margin: "8px 0 0" }}>{L(explain(mode, down, alive.length, servers.length))}</p>
+        <p className="mt-2 mb-0">{L(explain(mode, down, alive.length, servers.length))}</p>
       </div>
     </div>
   );

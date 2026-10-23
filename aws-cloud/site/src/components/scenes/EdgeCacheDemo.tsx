@@ -62,8 +62,8 @@ export default function EdgeCacheDemo() {
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 0 760 230" role="img" aria-label={L({ vi: "Request đi từ người dùng tới edge location; khi cache miss, edge location gửi request tới origin S3 tại Singapore", en: "The request goes from the user to the edge location; on a cache miss, the edge location sends a request to the S3 origin in Singapore" })}>
-          <path d="M90 110 H338" stroke="var(--line)" strokeWidth={2} fill="none" />
-          <path d="M382 110 H612" stroke="var(--line)" strokeWidth={2} strokeDasharray="6 5" fill="none" />
+          <path className="fill-none stroke-line stroke-2" d="M90 110 H338" />
+          <path className="fill-none stroke-line stroke-2" d="M382 110 H612" strokeDasharray="6 5" />
           <text className="ts" x={214} y={98} textAnchor="middle">{L({ vi: "gần, vài trăm km", en: "near, a few hundred km" })}</text>
           <text className="ts" x={497} y={98} textAnchor="middle">{L({ vi: "xa hơn, tới Region", en: "farther, to the Region" })}</text>
           <g transform="translate(66 110)" aria-hidden="true">
@@ -81,7 +81,7 @@ export default function EdgeCacheDemo() {
           <g className="origin">
             <rect x={612} y={84} width={120} height={52} rx={8} />
             <text className="tw" x={672} y={106} textAnchor="middle">S3 bucket</text>
-            <text className="tw" x={672} y={124} textAnchor="middle" style={{ fontWeight: 400, fontSize: 11 }}>Singapore</text>
+            <text className="tw text-[11px] font-normal" x={672} y={124} textAnchor="middle">Singapore</text>
           </g>
           <text className="ts" x={672} y={158} textAnchor="middle">origin</text>
           <g ref={pk} />
@@ -97,10 +97,10 @@ export default function EdgeCacheDemo() {
           ))}
         </ul>
         {times.map((t, i) => (
-          <div className="timebar" key={i}>
-            <span className={"tag " + (t.hit ? "hit" : "miss")}>{t.hit ? "HIT" : "MISS"}</span>
+          <div className="mt-1.5 grid grid-cols-[70px_minmax(0,1fr)] items-center gap-2.5 text-step--1" key={i}>
+            <span className={"tag w-fit rounded-[4px] px-1.5 font-mono font-medium " + (t.hit ? "hit" : "miss")}>{t.hit ? "HIT" : "MISS"}</span>
             <div className="bar">
-              <i style={{ width: `${(t.units / max) * 100}%`, background: t.hit ? "var(--ok)" : "var(--edge)" }} />
+              <i className={t.hit ? "bg-ok" : "bg-edge"} style={{ width: `${(t.units / max) * 100}%` }} />
             </div>
           </div>
         ))}

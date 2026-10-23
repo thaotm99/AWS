@@ -156,7 +156,7 @@ export default function GlobalAcceleratorSim() {
           </span>
           <span className="count">{L({ vi: "thành công", en: "successful" })} {ok} · {L({ vi: "lỗi", en: "errors" })} {err}</span>
         </div>
-        <p style={{ margin: "8px 0 0" }}>{note}</p>
+        <p className="mt-2 mb-0">{note}</p>
       </div>
     </div>
   );
