@@ -22,6 +22,9 @@ const DNS_PICKUP = Array.from({ length: N }, (_, i) => {
 const RANK = Array.from({ length: N }, (_, i) => (((i * 23) % N) + 0.5) / N);
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+// One phone in the grid or legend: blue, green (bg-ok), or dashed while it still uses a cached DNS answer.
+const PHONE = "box-border inline-block aspect-[3/5] rounded-[5px] border-2 transition-[background] duration-300 ease-[ease]";
+
 export default function BlueGreenSim() {
   const L = useLang();
   const uid = useId().replace(/:/g, "");
@@ -88,22 +91,22 @@ export default function BlueGreenSim() {
       <div className="stage-bar">
         <label className="label" htmlFor={`${uid}-pct`}>{L({ vi: "Tỷ lệ chuyển sang green: ", en: "Share sent to green: " })}{pct}%</label>
         <input id={`${uid}-pct`} type="range" min={0} max={100} step={10} value={pct} onChange={(e) => setPct(Number(e.target.value))} disabled={busy} />
-        <span className="bg-w">{mode === "ga" ? `blue ${255 - wGreen} · green ${wGreen}` : `weight blue ${100 - pct} · green ${pct}`}</span>
+        <span className="font-mono text-step--1 text-muted">{mode === "ga" ? `blue ${255 - wGreen} · green ${wGreen}` : `weight blue ${100 - pct} · green ${pct}`}</span>
       </div>
       <div className="stage-bar">
         <button className="btn primary" onClick={apply} disabled={busy}>{L({ vi: "Áp dụng thay đổi", en: "Apply the change" })}</button>
         <button className="btn" onClick={reset}>{L({ vi: "Đặt lại", en: "Reset" })}</button>
-        <span className="bg-clock" aria-live="polite">{L({ vi: "Thời gian sau thay đổi: ", en: "Time since change: " })}<b>{to === from ? "—" : TIMES[step]}</b></span>
+        <span className="font-mono text-step--1 text-muted" aria-live="polite">{L({ vi: "Thời gian sau thay đổi: ", en: "Time since change: " })}<b>{to === from ? "—" : TIMES[step]}</b></span>
       </div>
-      <div className="bg-grid" role="img" aria-label={L({ vi: `${onGreen} trên ${N} điện thoại đang dùng bản green`, en: `${onGreen} of ${N} phones are on green` })}>
+      <div className="grid max-w-[520px] grid-cols-10 gap-1.5 px-4 py-3.5" role="img" aria-label={L({ vi: `${onGreen} trên ${N} điện thoại đang dùng bản green`, en: `${onGreen} of ${N} phones are on green` })}>
         {Array.from({ length: N }, (_, i) => (
-          <span key={i} className={`bg-ph${green(i) ? " g" : ""}${stale(i) ? " stale" : ""}`} />
+          <span key={i} className={`${PHONE} w-full max-w-[30px] ${green(i) ? "bg-ok" : "bg-accent"}${stale(i) ? " border-dashed border-edge" : " border-transparent"}`} />
         ))}
       </div>
-      <div className="bg-legend">
-        <span><i className="bg-ph" /> blue</span>
-        <span><i className="bg-ph g" /> green</span>
-        <span><i className="bg-ph stale" /> {L({ vi: "còn dùng câu trả lời DNS cũ trong cache", en: "still using a cached DNS answer" })}</span>
+      <div className="flex flex-wrap gap-x-4 gap-y-1.5 px-4 pt-0 pb-2.5 text-step--1 text-muted [&>span]:inline-flex [&>span]:items-center [&>span]:gap-1.5">
+        <span><i className={`${PHONE} w-3 max-w-3 border-transparent bg-accent`} /> blue</span>
+        <span><i className={`${PHONE} w-3 max-w-3 border-transparent bg-ok`} /> green</span>
+        <span><i className={`${PHONE} w-3 max-w-3 border-dashed border-edge bg-transparent`} /> {L({ vi: "còn dùng câu trả lời DNS cũ trong cache", en: "still using a cached DNS answer" })}</span>
       </div>
       <div className="readout" aria-live="polite">
         <strong>
@@ -118,17 +121,6 @@ export default function BlueGreenSim() {
           <p className="verdict ok">{L({ vi: "Tỷ lệ mục tiêu đạt được sau vài giây và có thể đảo ngược ngay nếu bản green lỗi.", en: "The target split is reached within seconds and can be reversed at once if green misbehaves." })}</p>
         )}
       </div>
-      <style>{`
-.bg-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px;padding:14px 16px;max-width:520px}
-.bg-ph{display:inline-block;width:100%;max-width:30px;aspect-ratio:3/5;border-radius:5px;background:var(--accent);border:2px solid transparent;box-sizing:border-box;transition:background .3s}
-.bg-ph.g{background:var(--ok)}
-.bg-ph.stale{border:2px dashed var(--edge)}
-.bg-legend{display:flex;flex-wrap:wrap;gap:6px 16px;padding:0 16px 10px;font-size:var(--step--1);color:var(--muted)}
-.bg-legend span{display:inline-flex;align-items:center;gap:6px}
-.bg-legend .bg-ph{width:12px;max-width:12px}
-.bg-legend .bg-ph.stale{background:transparent}
-.bg-w,.bg-clock{font-family:var(--font-mono);font-size:var(--step--1);color:var(--muted)}
-`}</style>
     </div>
   );
 }
