@@ -1,0 +1,29 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import T from "../../app/T.astro";
+import L from "../../components/L.astro";
+import ArchitectureLab from "../../components/lab/ArchitectureLab.tsx";
+import { LABS, type Lab } from "../../lib/labs";
+import { lessonParts } from "../../data/lesson-parts";
+
+export function getStaticPaths() {
+  return LABS.map((lab, i) => ({ params: { id: lab.id }, props: { i } }));
+}
+
+const { i } = Astro.props as { i: number };
+const lab = LABS[i] as Lab;
+const next = LABS[i + 1];
+const part = lessonParts(lab.learn.lesson).find((p) => p.slug === lab.learn.part);
+if (!part) throw new Error(`lab ${lab.id}: no part ${lab.learn.lesson}/${lab.learn.part}`);
+const head = (s: string) => s.split(": ")[0];
+const learn = { href: `/concepts/${lab.learn.lesson}/${lab.learn.part}/`, vi: head(part.title.vi), en: head(part.title.en) };
+---
+<BaseLayout title={`${lab.title.vi} · Lab · CloudLab`} description={lab.brief.vi} section="lab" sidebar={false}>
+  <header class="gl-head lab-head">
+    <span class="gl-eyebrow"><a href="/lab/"><T k="shell.lab.eyebrow" /></a> · <T k="shell.lab.count" params={{ n: i + 1, total: LABS.length }} /></span>
+    <h1><L vi={lab.title.vi} en={lab.title.en} /></h1>
+    <p class="lede"><L vi={lab.brief.vi} en={lab.brief.en} /></p>
+  </header>
+  <ArchitectureLab client:load id={lab.id} n={i + 1} total={LABS.length} learn={learn}
+    next={next ? { href: `/lab/${next.id}/`, vi: next.title.vi, en: next.title.en } : undefined} />
+</BaseLayout>

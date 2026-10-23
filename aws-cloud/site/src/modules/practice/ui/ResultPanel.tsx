@@ -96,9 +96,9 @@ export default function ResultPanel({ cert, exam, attempt, topic, review, mock, 
 
       <div className="pr-actions">
         <button type="button" className="btn" disabled={saving} onClick={() => dispatch({ type: "exam/restart" })}>{review ? t("review.again") : mock ? t("mock.retake") : t("result.retake")}</button>
-        {!review && wrong > 0 && <a className="btn" href={routes.review(cert.id)}>{t("review.cta", { n: wrong })}</a>}
+        {!review && wrong > 0 && <a className="btn" href={routes.reviewSession(cert.id, true)}>{t("review.cta", { n: wrong })}</a>}
         {review ? (
-          <a className="btn primary" href={routes.catalog(cert.id)}>{t("exam.backToList")}</a>
+          <a className="btn primary" href={routes.review(cert.id)}>{t("review.toPlan")}</a>
         ) : topic ? (
           <a className="btn primary" href={routes.lesson(topic.id)}>{t("topic.backToLesson")}</a>
         ) : next ? (

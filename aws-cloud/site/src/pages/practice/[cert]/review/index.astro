@@ -1,0 +1,22 @@
+---
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import T from "../../../../app/T.astro";
+import ReviewPlan from "../../../../modules/practice/ui/ReviewPlan.tsx";
+import { practiceCatalog } from "../../../../modules/practice/content/PracticeCatalog";
+import "../../../../styles/practice.css";
+
+export function getStaticPaths() {
+  return practiceCatalog.listCertifications().map((c) => ({ params: { cert: c.id }, props: { code: c.code } }));
+}
+
+const { cert } = Astro.params;
+const { code } = Astro.props;
+---
+<BaseLayout title={`Câu cần ôn lại · ${code} · CloudLab`} titleKey="practice.review.pageTitle" titleParams={{ code }} section="practice" sidebar={false}>
+  <header class="gl-head">
+    <span class="gl-eyebrow"><a href={`/practice/${cert}/`} style="color: inherit">{code}</a></span>
+    <h1><T k="practice.review.title" /></h1>
+    <p class="lede"><T k="practice.plan.lede" /></p>
+  </header>
+  <ReviewPlan client:only="react" certId={cert} />
+</BaseLayout>

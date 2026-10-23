@@ -1,8 +1,8 @@
 ---
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import ExamPage from "../../../modules/practice/ui/ExamPage.tsx";
-import { practiceCatalog } from "../../../modules/practice/content/PracticeCatalog";
-import "../../../styles/practice.css";
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import ExamPage from "../../../../modules/practice/ui/ExamPage.tsx";
+import { practiceCatalog } from "../../../../modules/practice/content/PracticeCatalog";
+import "../../../../styles/practice.css";
 
 export function getStaticPaths() {
   return practiceCatalog.listCertifications().map((c) => ({ params: { cert: c.id }, props: { code: c.code } }));

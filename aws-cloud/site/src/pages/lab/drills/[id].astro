@@ -1,0 +1,26 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import T from "../../../app/T.astro";
+import L from "../../../components/L.astro";
+import IncidentDrill from "../../../components/lab/IncidentDrill.tsx";
+import { DRILLS, type Drill } from "../../../lib/drills";
+import { lessonParts } from "../../../data/lesson-parts";
+
+export function getStaticPaths() {
+  return DRILLS.map((drill) => ({ params: { id: drill.id }, props: { drill } }));
+}
+
+const { drill } = Astro.props as { drill: Drill };
+const part = lessonParts(drill.learn.lesson).find((p) => p.slug === drill.learn.part);
+if (!part) throw new Error(`drill ${drill.id}: no part ${drill.learn.lesson}/${drill.learn.part}`);
+const head = (s: string) => s.split(": ")[0];
+const learn = { href: `/concepts/${drill.learn.lesson}/${drill.learn.part}/`, vi: head(part.title.vi), en: head(part.title.en) };
+---
+<BaseLayout title={`${drill.title.vi} · Diễn tập · CloudLab`} description={drill.brief.vi} section="lab" sidebar={false}>
+  <header class="gl-head lab-head">
+    <span class="gl-eyebrow"><a href="/lab/"><T k="shell.lab.eyebrow" /></a> · <T k="shell.drill.eyebrow" /></span>
+    <h1><L vi={drill.title.vi} en={drill.title.en} /></h1>
+    <p class="lede"><L vi={drill.brief.vi} en={drill.brief.en} /></p>
+  </header>
+  <IncidentDrill client:load id={drill.id} learn={learn} />
+</BaseLayout>

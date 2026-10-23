@@ -130,6 +130,7 @@ import PacketPath from "../../components/scenes/vpc/PacketPath.tsx";
 import SgChain from "../../components/scenes/vpc/SgChain.tsx";
 import NatHaSim from "../../components/scenes/vpc/NatHaSim.tsx";
 import EndpointSim from "../../components/scenes/vpc/EndpointSim.tsx";
+import CostEstimator from "../../components/scenes/CostEstimator.tsx";
 import VpcConnectSim from "../../components/scenes/vpc/VpcConnectSim.tsx";
 import HybridLinkSim from "../../components/scenes/vpc/HybridLinkSim.tsx";
 import VpcMythsSim from "../../components/scenes/vpc/VpcMythsSim.tsx";
@@ -217,6 +218,10 @@ ShopViet's database and workers are in **private subnets** without public IPs, b
 EC2 instances in ShopViet's private subnet write images to S3 and send jobs to SQS. By default, this traffic goes through the NAT gateway to the service's public endpoint. Choose each option, send a request and watch the change in the route table.
 
 <EndpointSim client:visible />
+
+Cost is the main reason to move S3 traffic to a gateway endpoint. Change the data volume, the Region and the number of NAT gateways to see the monthly cost of both options:
+
+<CostEstimator client:visible preset="nat-endpoint" />
 
 <RequirementPicker client:visible items={[
   { need: "Workers in a private subnet write images to S3 in the same Region, at low cost and without going over the internet", answer: "Gateway endpoint for S3",

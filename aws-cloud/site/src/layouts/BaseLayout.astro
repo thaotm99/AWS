@@ -25,7 +25,7 @@ interface Props {
   /** The page is the current lesson's question set, not the lesson itself. */
   currentQuiz?: boolean;
   /** Top-nav section this page belongs to. */
-  section?: "theory" | "practice" | "glossary" | "flashcards" | "pomodoro";
+  section?: "theory" | "practice" | "lab" | "glossary" | "flashcards" | "pomodoro";
   /** Practice pages have no lesson roadmap. */
   sidebar?: boolean;
   /** Full-width content (home page map); only used without the sidebar. */
@@ -99,6 +99,7 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
         <nav class="topnav" aria-label="Chính" data-i18n-attr="aria-label:shell.nav.main">
           <a href="/" aria-current={section === "theory" ? "page" : undefined}><T k="shell.nav.theory" /></a>
           <a href="/practice/" aria-current={section === "practice" ? "page" : undefined}><T k="shell.nav.practice" /></a>
+          <a href="/lab/" aria-current={section === "lab" ? "page" : undefined}><T k="shell.nav.lab" /></a>
           <a href="/glossary/" aria-current={section === "glossary" ? "page" : undefined}><T k="shell.nav.glossary" /></a>
           <a href="/flashcards/" aria-current={section === "flashcards" ? "page" : undefined}><T k="shell.nav.flashcards" /></a>
         </nav>
@@ -118,6 +119,7 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
         <nav class="drawer-nav" aria-label="Chính" data-i18n-attr="aria-label:shell.nav.main">
           <a href="/" aria-current={section === "theory" ? "page" : undefined}><T k="shell.nav.theory" /></a>
           <a href="/practice/" aria-current={section === "practice" ? "page" : undefined}><T k="shell.nav.practice" /></a>
+          <a href="/lab/" aria-current={section === "lab" ? "page" : undefined}><T k="shell.nav.lab" /></a>
           <a href="/glossary/" aria-current={section === "glossary" ? "page" : undefined}><T k="shell.nav.glossary" /></a>
           <a href="/flashcards/" aria-current={section === "flashcards" ? "page" : undefined}><T k="shell.nav.flashcards" /></a>
         </nav>

@@ -1,0 +1,13 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import T from "../app/T.astro";
+import NotesPage from "../components/NotesPage.tsx";
+---
+<BaseLayout title="Ghi chú của tôi · CloudLab" titleKey="shell.notes.pageTitle" sidebar={false}>
+  <header class="gl-head">
+    <span class="gl-eyebrow"><T k="shell.notes.eyebrow" /></span>
+    <h1><T k="shell.notes.pageHeading" /></h1>
+    <p class="lede"><T k="shell.notes.lede" /></p>
+  </header>
+  <NotesPage client:load />
+</BaseLayout>

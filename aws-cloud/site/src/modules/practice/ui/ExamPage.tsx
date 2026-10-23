@@ -28,13 +28,13 @@ function ExamView({ certId, examId, topic, review }: Props) {
   const { t, locale } = useT();
 
   const set = review
-    ? { kind: "review" as const, id: "review" }
+    ? { kind: "review" as const, id: "review", all: new URLSearchParams(location.search).has("all") }
     : topic
       ? { kind: "topic" as const, id: topic.id }
       : { kind: "exam" as const, id: examId! };
   useEffect(() => {
     app.dispatch({ type: "exam/open", certId, set, locale });
-  }, [certId, set.kind, set.id]);
+  }, [certId, set.kind, set.id, set.all]);
   // Switching VI/EN reloads only the question text; progress stays.
   useEffect(() => {
     app.dispatch({ type: "exam/language", locale });
@@ -84,7 +84,8 @@ function ExamView({ certId, examId, topic, review }: Props) {
     <div className="crumbs">
       <a href={routes.catalog()}>{t("catalog.crumb")}</a><span aria-hidden="true">/</span>
       <a href={routes.catalog(cert.id)}>{cert.code}</a><span aria-hidden="true">/</span>
-      <b>{t("review.crumb")}</b>
+      <a href={routes.review(cert.id)}>{t("review.crumb")}</a><span aria-hidden="true">/</span>
+      <b>{set.all ? t("review.allCrumb") : t("review.dueCrumb")}</b>
     </div>
   );
   if (review && state.empty && cert && state.status === "ready") {
@@ -93,9 +94,9 @@ function ExamView({ certId, examId, topic, review }: Props) {
         {reviewCrumbs}
         <h1>{t("review.title")}</h1>
         <div className="pr-empty-review">
-          <p><b>{t("review.emptyTitle")}</b></p>
-          <p className="pr-muted">{t("review.emptyBody")}</p>
-          <a className="btn primary" href={routes.catalog(cert.id)}>{t("review.toTests")}</a>
+          <p><b>{set.all ? t("review.emptyTitle") : t("review.noneDue")}</b></p>
+          <p className="pr-muted">{set.all ? t("review.emptyBody") : t("review.noneDueBody")}</p>
+          <a className="btn primary" href={set.all ? routes.catalog(cert.id) : routes.review(cert.id)}>{set.all ? t("review.toTests") : t("review.toPlan")}</a>
         </div>
       </>
     );

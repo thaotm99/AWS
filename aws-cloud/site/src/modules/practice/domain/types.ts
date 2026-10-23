@@ -70,6 +70,8 @@ export interface QuestionSetRef {
   kind: QuestionSetKind;
   /** Exam id, the service id of a topic (e.g. "s3"), or "review". */
   id: string;
+  /** Review only: every question in the book, not just those due today. */
+  all?: boolean;
 }
 
 export interface Exam extends ExamSummary {

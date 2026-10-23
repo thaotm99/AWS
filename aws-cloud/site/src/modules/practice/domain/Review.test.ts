@@ -1,7 +1,7 @@
 // npx tsx src/modules/practice/domain/Review.test.ts  (from aws-cloud/site)
 // Not part of the build: nothing imports it.
 import assert from "node:assert/strict";
-import { Review } from "./Review";
+import { Review, dayOf } from "./Review";
 import type { Attempt } from "./types";
 
 const attempt = (examId: string, answers: Array<[string, boolean, string]>): Attempt => ({
@@ -34,5 +34,29 @@ assert.deepEqual(Review.wrongIds(attempts), ["q1", "q3", "q2"]);
 
 // Nothing answered yet: nothing to review.
 assert.deepEqual(Review.wrongIds([]), []);
+
+// The book: a miss is due the next day; right answers move it up (3, then 7 days); right in box 3 leaves.
+const d = (day: number, h = 10) => new Date(2026, 0, day, h).toISOString();
+const book = [attempt("1", [["a", false, d(1)], ["b", true, d(1)]])];
+let e = Review.book(book).entries;
+assert.equal(e.get("a")!.box, 1);
+assert.equal(e.get("a")!.due, dayOf(d(2)));
+assert.ok(!e.has("b"), "never missed, never in the book");
+book.push(attempt("2", [["a", true, d(2)]]));
+assert.equal(Review.book(book).entries.get("a")!.due, dayOf(d(5)));
+book.push(attempt("3", [["a", true, d(5)]]));
+assert.deepEqual([Review.book(book).entries.get("a")!.box, Review.book(book).entries.get("a")!.due], [3, dayOf(d(12))]);
+assert.deepEqual(Review.dueIds(book, dayOf(d(11))), []);
+assert.deepEqual(Review.dueIds(book, dayOf(d(12))), ["a"]);
+book.push(attempt("4", [["a", true, d(12)]]));
+assert.ok(!Review.book(book).entries.has("a"));
+assert.deepEqual(Review.book(book).graduated.map((g) => g.id), ["a"]);
+// Missed again later: back to box 1.
+book.push(attempt("5", [["a", false, d(20)]]));
+assert.equal(Review.book(book).entries.get("a")!.box, 1);
+// Due order: the most overdue first.
+const order = [attempt("x", [["p", false, d(1)], ["q", false, d(3)]])];
+assert.deepEqual(Review.dueIds(order, dayOf(d(9))), ["p", "q"]);
+assert.deepEqual(Review.bookIds(order), ["q", "p"]);
 
 console.log("Review: ok");

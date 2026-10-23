@@ -82,6 +82,13 @@ function CatalogView({ certId }: { certId: string | null }) {
           ) : (
             <p className="pr-empty">{t("catalog.noExamsFor", { code: cert.code })}</p>
           )}
+          <a className="pr-skills-card" href={routes.skills(cert.id)}>
+            <span>
+              <b>{t("skills.title")}</b>
+              <span className="pr-muted">{t("skills.cardBody")}</span>
+            </span>
+            <span aria-hidden="true">→</span>
+          </a>
           {state.reviewCount > 0 && (
             <a className="pr-review-card" href={routes.review(cert.id)}>
               <span className="pr-review-card-n">{state.reviewCount}</span>
