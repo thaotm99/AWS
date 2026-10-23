@@ -125,10 +125,10 @@ export default function SgChain() {
         {verdict ? (
           <>
             <span className={"pill " + (verdict.cls === "ok" ? "ok" : "bad")}><i />{L(verdict.title)}</span>
-            <p style={{ margin: "8px 0 0" }}>{L(verdict.text)}</p>
+            <p className="mx-0 mt-2 mb-0">{L(verdict.text)}</p>
           </>
         ) : (
-          <p style={{ margin: 0 }}>{L({ vi: "Chọn rule inbound cho từng tầng, sau đó nhấn \"Chạy mô phỏng\". Thử cả cấu hình cho phép 0.0.0.0/0 lẫn cấu hình tham chiếu security group để so sánh.", en: "Choose the inbound rule for each tier, then press \"Run simulation\". Try both a configuration that allows 0.0.0.0/0 and one that references a security group to compare." })}</p>
+          <p className="m-0">{L({ vi: "Chọn rule inbound cho từng tầng, sau đó nhấn \"Chạy mô phỏng\". Thử cả cấu hình cho phép 0.0.0.0/0 lẫn cấu hình tham chiếu security group để so sánh.", en: "Choose the inbound rule for each tier, then press \"Run simulation\". Try both a configuration that allows 0.0.0.0/0 and one that references a security group to compare." })}</p>
         )}
       </div>
     </div>

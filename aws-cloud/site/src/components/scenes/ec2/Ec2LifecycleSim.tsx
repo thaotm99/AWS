@@ -173,10 +173,10 @@ export default function Ec2LifecycleSim() {
               <span className={"pill " + (out.ok ? "ok" : "bad")}><i />{out.ok ? L({ vi: "Đáp ứng yêu cầu", en: "Meets the need" }) : L({ vi: "Cần lưu ý", en: "Watch out" })}</span>
               <span className="count">{L(ACTIONS[act!])}</span>
             </div>
-            <p style={{ margin: "8px 0 0" }}>{rich(L(out.text))}</p>
+            <p className="mx-0 mt-2 mb-0">{rich(L(out.text))}</p>
           </>
         ) : (
-          <p style={{ margin: 0 }}>{L({ vi: "Chọn một thao tác ở trên. Bật hoặc tắt Elastic IP để so sánh địa chỉ public tự gán với Elastic IP.",
+          <p className="m-0">{L({ vi: "Chọn một thao tác ở trên. Bật hoặc tắt Elastic IP để so sánh địa chỉ public tự gán với Elastic IP.",
             en: "Pick an action above. Turn the Elastic IP address on or off to compare an auto-assigned public address with an Elastic IP address." })}</p>
         )}
         <p className="note-small">{L({ vi: "Theo tài liệu AWS: AWS tính phí mọi địa chỉ public IPv4, kể cả Elastic IP chưa gắn; mỗi Region mặc định có quota 5 Elastic IP.",

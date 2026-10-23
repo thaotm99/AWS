@@ -114,10 +114,10 @@ export default function PacketPath() {
         {result ? (
           <>
             <span className={"pill " + (result.ok ? "ok" : "bad")}><i />{result.ok ? L({ vi: "Kết nối thành công", en: "Connected" }) : L({ vi: "Bị chặn", en: "Blocked" })}</span>
-            <p style={{ margin: "8px 0 0" }}>{L(result.text)}</p>
+            <p className="mx-0 mt-2 mb-0">{L(result.text)}</p>
           </>
         ) : (
-          <p style={{ margin: 0 }}>{L({ vi: "Bật hoặc tắt các điều kiện phía trên, sau đó gửi request. Cấu hình mặc định đang thiếu một điều kiện thường bị bỏ sót; gửi request để xác định điều kiện đó.", en: "Turn the conditions above on or off, then send a request. The default configuration is missing a condition that is often overlooked; send a request to find it." })}</p>
+          <p className="m-0">{L({ vi: "Bật hoặc tắt các điều kiện phía trên, sau đó gửi request. Cấu hình mặc định đang thiếu một điều kiện thường bị bỏ sót; gửi request để xác định điều kiện đó.", en: "Turn the conditions above on or off, then send a request. The default configuration is missing a condition that is often overlooked; send a request to find it." })}</p>
         )}
       </div>
     </div>

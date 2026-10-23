@@ -87,7 +87,7 @@ export default function LifecycleValidator() {
       </div>
       <div className="readout" aria-live="polite">
         <span className={"pill " + (ok ? "ok" : "bad")}><i />{ok ? L({ vi: "Transition hợp lệ", en: "Valid transition" }) : L({ vi: "Không hợp lệ", en: "Not valid" })}</span>
-        <p style={{ margin: "8px 0 0" }}>{why}</p>
+        <p className="mx-0 mt-2 mb-0">{why}</p>
       </div>
     </div>
   );

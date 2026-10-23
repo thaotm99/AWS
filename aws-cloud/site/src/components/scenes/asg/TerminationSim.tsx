@@ -135,7 +135,7 @@ export default function TerminationSim() {
         ))}
       </div>
       <div className="readout" aria-live="polite">
-        {!guess && <p style={{ margin: 0 }}>{L({ vi: "ASG chuẩn bị scale in 1 instance. Chọn instance dự đoán sẽ bị terminate, sau đó quan sát từng bước đánh giá của ASG.", en: "The ASG is about to scale in by 1 instance. Pick the instance you predict will be terminated, then follow each step of the ASG evaluation." })}</p>}
+        {!guess && <p className="m-0">{L({ vi: "ASG chuẩn bị scale in 1 instance. Chọn instance dự đoán sẽ bị terminate, sau đó quan sát từng bước đánh giá của ASG.", en: "The ASG is about to scale in by 1 instance. Pick the instance you predict will be terminated, then follow each step of the ASG evaluation." })}</p>}
         {guess && (
           <ol className="mx-0 mt-0 mb-2 grid gap-1 pl-5">
             {steps.slice(0, shown).map((s, i) => <li key={i}>{s.text}</li>)}

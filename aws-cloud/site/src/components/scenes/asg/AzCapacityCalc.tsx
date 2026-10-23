@@ -45,7 +45,7 @@ export default function AzCapacityCalc() {
           <span className="count">{L({ vi: `Tổng: ${total} instance · còn lại khi mất 1 AZ: ${total - perAz}`, en: `Total: ${total} instances · left after losing 1 AZ: ${total - perAz}` })}</span>
           <span className={"pill " + (total === best ? "ok" : "bad")}><i />{total === best ? L({ vi: "Chi phí thấp nhất", en: "Lowest cost" }) : L({ vi: `Chưa tối ưu chi phí (tối thiểu ${best})`, en: `Not cost-optimal (minimum ${best})` })}</span>
         </div>
-        <p style={{ margin: "8px 0 0" }}>
+        <p className="mx-0 mt-2 mb-0">
           {L({ vi: `Mỗi AZ cần ⌈${need} ÷ (${azs} − 1)⌉ = ${perAz} instance để khi mất một AZ vẫn duy trì đủ ${need} instance.`,
             en: `Each AZ needs ⌈${need} ÷ (${azs} − 1)⌉ = ${perAz} instances so that ${need} instances still run after losing one AZ.` })}
           {" "}{L({ vi: "So sánh", en: "Compare" })}: {options.map((o) => `${o.k} AZ → ${o.total}`).join(", ")}.

@@ -125,7 +125,7 @@ export default function VpcConnectSim() {
               : L({ vi: `${peeringCount} peering connection${chain ? " (chuỗi A–B–C)" : ` cho full mesh ${n} VPC`}`, en: `${peeringCount} peering connections${chain ? " (chain A–B–C)" : ` for a full mesh of ${n} VPCs`}` })}
           </span>
         </div>
-        <p style={{ margin: "8px 0 0" }}>
+        <p className="mx-0 mt-2 mb-0">
           {rich(L(msg ?? (mode === "tvpc"
             ? { vi: "Mô hình hub-and-spoke dựa trên VPN: các VPC kết nối tới EC2 instance chạy phần mềm router của bên thứ ba trong một VPC trung tâm. Gửi traffic để quan sát chi phí vận hành của mô hình này.", en: "A VPN-based hub-and-spoke design: the VPCs connect to EC2 instances running third-party router software in a central VPC. Send traffic to see what this design costs to operate." }
             : mode === "tgw"

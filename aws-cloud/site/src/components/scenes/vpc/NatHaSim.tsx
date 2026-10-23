@@ -152,7 +152,7 @@ export default function NatHaSim() {
           </span>
           <span className="count">AZ a: {stats.a.ok} ok · {stats.a.err} {L({ vi: "lỗi", en: "errors" })} — AZ b: {stats.b.ok} ok · {stats.b.err} {L({ vi: "lỗi", en: "errors" })}</span>
         </div>
-        <p style={{ margin: "8px 0 0" }}>{note}</p>
+        <p className="mx-0 mt-2 mb-0">{note}</p>
       </div>
     </div>
   );

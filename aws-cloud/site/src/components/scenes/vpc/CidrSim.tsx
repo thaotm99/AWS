@@ -67,7 +67,7 @@ export default function CidrSim() {
       </div>
 
       {b === null ? (
-        <div className="readout"><p style={{ margin: 0 }}>{L({ vi: "Địa chỉ IPv4 không hợp lệ (dạng a.b.c.d, mỗi số 0–255).", en: "Invalid IPv4 address (format a.b.c.d, each number 0–255)." })}</p></div>
+        <div className="readout"><p className="m-0">{L({ vi: "Địa chỉ IPv4 không hợp lệ (dạng a.b.c.d, mỗi số 0–255).", en: "Invalid IPv4 address (format a.b.c.d, each number 0–255)." })}</p></div>
       ) : (
         <>
           <div className="grid grid-cols-[repeat(32,minmax(0,1fr))] gap-0.5 px-3.5 pt-3.5 pb-1 text-center font-mono text-[0.7rem] max-sm:grid-cols-[repeat(16,minmax(0,1fr))] max-sm:gap-y-1.5 max-sm:px-2.5 max-sm:pt-3 max-sm:text-[0.72rem]" aria-label={L({ vi: `${p} bit đầu cố định, ${32 - p} bit sau thay đổi`, en: `The first ${p} bits are fixed, the last ${32 - p} bits vary` })} role="img">
@@ -113,11 +113,11 @@ export default function CidrSim() {
       </div>
       <div className="readout" aria-live="polite">
         {t === null ? (
-          <p style={{ margin: 0 }}>{L({ vi: "Nhập một địa chỉ IPv4 hợp lệ.", en: "Enter a valid IPv4 address." })}</p>
+          <p className="m-0">{L({ vi: "Nhập một địa chỉ IPv4 hợp lệ.", en: "Enter a valid IPv4 address." })}</p>
         ) : (
           <>
             {net !== null && (
-              <p style={{ margin: 0 }}>
+              <p className="m-0">
                 <span className={"pill " + (inBlock(t, net, p) ? "ok" : "bad")}><i />{inBlock(t, net, p) ? L({ vi: "Thuộc khối", en: "Inside the block" }) : L({ vi: "Ngoài khối", en: "Outside the block" })}</span>{" "}
                 <code>{fmt(t)}</code> {L({ vi: "so với", en: "vs" })} <code>{fmt(net)}/{p}</code>
               </p>

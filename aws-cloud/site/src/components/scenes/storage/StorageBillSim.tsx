@@ -47,8 +47,8 @@ export default function StorageBillSim() {
         ))}
       </div>
       <div className="readout">
-        <p style={{ margin: 0 }}><b>{tr({ vi: "Thứ tự chi phí lưu trữ mỗi tháng: ", en: "Monthly storage charge, lowest first: " })}</b>{order}.</p>
-        <p className="note-small" style={{ margin: "6px 0 0" }}>{tr({
+        <p className="m-0"><b>{tr({ vi: "Thứ tự chi phí lưu trữ mỗi tháng: ", en: "Monthly storage charge, lowest first: " })}</b>{order}.</p>
+        <p className="note-small mx-0 mt-1.5 mb-0">{tr({
           vi: "Giá niêm yết us-east-1 (AWS Price List API, 10/2026), chỉ gồm phí lưu trữ: S3 và EFS tính theo dung lượng dữ liệu thực tế, EBS tính theo dung lượng volume cấp phát dù chưa ghi đầy. Chưa gồm phí request S3, phí đọc ghi của EFS Elastic throughput, IOPS/throughput cấp phát thêm của EBS. Giá thay đổi theo Region và thời điểm.",
           en: "us-east-1 list prices (AWS Price List API, 10/2026), storage only: S3 and EFS charge for the data actually stored, EBS charges for the provisioned volume size even when it is not full. Not included: S3 request charges, EFS Elastic throughput read/write charges, extra provisioned EBS IOPS or throughput. Prices vary by Region and over time.",
         })}</p>

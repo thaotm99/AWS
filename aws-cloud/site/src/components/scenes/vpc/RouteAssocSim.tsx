@@ -100,9 +100,9 @@ export default function RouteAssocSim() {
       </div>
       <div className="readout" aria-live="polite">
         {msg ? (
-          <p style={{ margin: 0 }}><span className={"pill " + (msg.ok ? "ok" : "bad")}><i />{msg.ok ? "OK" : L({ vi: "Không ra được internet", en: "No internet access" })}</span> {rich(L(msg.text))}</p>
+          <p className="m-0"><span className={"pill " + (msg.ok ? "ok" : "bad")}><i />{msg.ok ? "OK" : L({ vi: "Không ra được internet", en: "No internet access" })}</span> {rich(L(msg.text))}</p>
         ) : (
-          <p style={{ margin: 0 }}>{L({ vi: "Chọn một subnet, gắn nó với route table khác hoặc gỡ association, sau đó thử kết nối internet. subnet-web và subnet-batch chưa có association tường minh.", en: "Pick a subnet, associate it with another route table or remove the association, then test internet access. subnet-web and subnet-batch have no explicit association yet." })}</p>
+          <p className="m-0">{L({ vi: "Chọn một subnet, gắn nó với route table khác hoặc gỡ association, sau đó thử kết nối internet. subnet-web và subnet-batch chưa có association tường minh.", en: "Pick a subnet, associate it with another route table or remove the association, then test internet access. subnet-web and subnet-batch have no explicit association yet." })}</p>
         )}
       </div>
     </div>

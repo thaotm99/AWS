@@ -93,7 +93,7 @@ export default function PurchaseMixSim() {
           <span className={"pill " + (STRATEGIES[s].verdict === "good" ? "ok" : "bad")}><i />{STRATEGIES[s].verdict === "good" ? L({ vi: "Hợp lý", en: "Reasonable" }) : L({ vi: "Không đạt yêu cầu", en: "Does not meet requirements" })}</span>
           <span className="count">{L({ vi: `Chi phí tương đối: ${Math.round((c / baseline) * 100)}% so với toàn bộ On-Demand`, en: `Relative cost: ${Math.round((c / baseline) * 100)}% of all On-Demand` })}</span>
         </div>
-        <p style={{ margin: "8px 0 0" }}>{L(STRATEGIES[s].text)}</p>
+        <p className="mx-0 mt-2 mb-0">{L(STRATEGIES[s].text)}</p>
         <p className="note-small">{L({ vi: "Mức giá dùng để so sánh là giả định (RI thấp hơn 40%, Spot thấp hơn 70% so với On-Demand). Theo tài liệu AWS, Reserved Instances và Savings Plans giảm tới 72%, Spot giảm tới 90% so với giá On-Demand.",
           en: "The prices used for comparison are assumptions (RI 40% lower, Spot 70% lower than On-Demand). According to the AWS documentation, Reserved Instances and Savings Plans save up to 72%, and Spot up to 90%, compared with On-Demand prices." })}</p>
       </div>

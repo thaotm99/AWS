@@ -169,7 +169,7 @@ export default function PlacementSim() {
             ? L({ vi: "Chọn một rack để thử", en: "Pick a rack to test" })
             : L({ vi: `${lost} instance`, en: `${lost} instance${lost === 1 ? "" : "s"}` })}</b></div>
         </div>
-        <p style={{ margin: "8px 0 0" }}>{rich(L(v.text))}</p>
+        <p className="mx-0 mt-2 mb-0">{rich(L(v.text))}</p>
         <p className="note-small">{L({ vi: "Số rack và vị trí instance trong hình là minh hoạ. Theo tài liệu AWS, mức single-flow 10 Gbps (trong cluster) và 5 Gbps (ngoài cluster) áp dụng cho instance bật enhanced networking. Tạo placement group không tính phí.",
           en: "The rack count and instance positions are illustrative. According to the AWS documentation, the 10 Gbps (inside a cluster) and 5 Gbps (outside a cluster) single-flow limits apply to instances with enhanced networking. There is no charge for creating a placement group." })}</p>
       </div>

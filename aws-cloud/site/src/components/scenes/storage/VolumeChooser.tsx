@@ -56,9 +56,9 @@ export default function VolumeChooser() {
       </div>
       <div className="readout" aria-live="polite">
         <span className="label">{L({ vi: "Loại volume phù hợp", en: "Suitable volume type" })}</span>
-        <strong className="picker-service" style={{ display: "block", margin: "2px 0 6px" }}>{pick}</strong>
-        <p style={{ margin: 0 }}>{why}</p>
-        {hddForBoot && <p className="note-small" style={{ color: "var(--bad)" }}>{L({ vi: "st1 và sc1 không dùng được làm boot volume; với boot volume, chỉ lựa chọn loại SSD.", en: "st1 and sc1 cannot be used as boot volumes; for a boot volume, choose only an SSD type." })}</p>}
+        <strong className="picker-service mx-0 mt-0.5 mb-1.5 block">{pick}</strong>
+        <p className="m-0">{why}</p>
+        {hddForBoot && <p className="note-small text-bad">{L({ vi: "st1 và sc1 không dùng được làm boot volume; với boot volume, chỉ lựa chọn loại SSD.", en: "st1 and sc1 cannot be used as boot volumes; for a boot volume, choose only an SSD type." })}</p>}
       </div>
     </div>
   );

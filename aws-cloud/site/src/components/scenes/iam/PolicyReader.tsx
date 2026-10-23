@@ -110,9 +110,9 @@ export default function PolicyReader() {
         {r ? (
           <>
             <span className={"pill " + (r.allowed ? "ok" : "bad")}><i />{r.allowed ? "Allow" : "Deny"}</span>
-            <p style={{ margin: "8px 0 0" }}>{r.why}</p>
+            <p className="mx-0 mt-2 mb-0">{r.why}</p>
           </>
-        ) : <p style={{ margin: 0 }}>{L({ vi: "Đọc policy bên trái, dự đoán kết quả, sau đó chọn một request để kiểm tra.", en: "Read the policy on the left, predict the result, then choose a request to test." })}</p>}
+        ) : <p className="m-0">{L({ vi: "Đọc policy bên trái, dự đoán kết quả, sau đó chọn một request để kiểm tra.", en: "Read the policy on the left, predict the result, then choose a request to test." })}</p>}
       </div>
     </div>
   );

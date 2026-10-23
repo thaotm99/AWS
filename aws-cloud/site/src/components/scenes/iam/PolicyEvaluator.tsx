@@ -96,7 +96,7 @@ export default function PolicyEvaluator() {
       </div>
       <div className="readout">
         <span className={"pill " + (allowed ? "ok" : "bad")}><i />{allowed ? L({ vi: "Được phép", en: "Allowed" }) : L({ vi: "Bị từ chối", en: "Denied" })}</span>
-        <p style={{ margin: "8px 0 0" }}>
+        <p className="mx-0 mt-2 mb-0">
           {L({
             vi: "Quy tắc: một explicit deny tại bất kỳ lớp nào luôn được ưu tiên. Ngoài ra, mọi lớp áp dụng đều phải cho phép; lớp không đề cập tới action được xem là từ chối ngầm định.",
             en: "Rule: an explicit deny at any layer always takes precedence. Beyond that, every applicable layer must allow the action; a layer that does not mention the action counts as an implicit deny.",
