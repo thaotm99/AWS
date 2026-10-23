@@ -3,12 +3,12 @@ import { useLang, type Bi } from "../../../lib/lang";
 import "./aws-map.css";
 
 const GROUPS: { id: string; layer: number; name: Bi; c: string }[] = [
-  { id: "net", layer: 1, name: { vi: "Mạng", en: "Networking" }, c: "#4cc2df" },
-  { id: "sec", layer: 2, name: { vi: "Bảo mật và danh tính", en: "Security and identity" }, c: "#b29cff" },
-  { id: "cmp", layer: 3, name: { vi: "Tính toán", en: "Compute" }, c: "#f0a95a" },
-  { id: "sto", layer: 4, name: { vi: "Lưu trữ", en: "Storage" }, c: "#5ccf94" },
-  { id: "db", layer: 5, name: { vi: "Database", en: "Database" }, c: "#7fb0ff" },
-  { id: "ops", layer: 6, name: { vi: "Tích hợp, vận hành", en: "Integration, operations" }, c: "#f293b8" },
+  { id: "net", layer: 1, name: { vi: "Mạng", en: "Networking" }, c: "var(--color-map-cyan)" },
+  { id: "sec", layer: 2, name: { vi: "Bảo mật và danh tính", en: "Security and identity" }, c: "var(--color-map-violet)" },
+  { id: "cmp", layer: 3, name: { vi: "Tính toán", en: "Compute" }, c: "var(--color-map-amber)" },
+  { id: "sto", layer: 4, name: { vi: "Lưu trữ", en: "Storage" }, c: "var(--color-map-green)" },
+  { id: "db", layer: 5, name: { vi: "Database", en: "Database" }, c: "var(--color-map-blue)" },
+  { id: "ops", layer: 6, name: { vi: "Tích hợp, vận hành", en: "Integration, operations" }, c: "var(--color-map-pink)" },
 ];
 
 const CARDS: { name: string; group: string; hint: Bi }[] = [
@@ -61,20 +61,20 @@ export default function GroupSort() {
 
   return (
     <div className="am-stage">
-      <div className="am-sort-head">
-        <p className="am-sub" style={{ margin: 0 }}>{L({ vi: "Chọn một dịch vụ, sau đó chọn nhóm của nó.", en: "Pick a service, then pick its group." })}</p>
-        <span className="am-progress" aria-label={L({ vi: "Tiến độ", en: "Progress" })}>
-          <span><i style={{ width: `${(placed.length / CARDS.length) * 100}%` }} /></span>
+      <div className="mb-3 flex flex-wrap items-center gap-3">
+        <p className="m-0 text-[0.9rem] text-map-muted">{L({ vi: "Chọn một dịch vụ, sau đó chọn nhóm của nó.", en: "Pick a service, then pick its group." })}</p>
+        <span className="ml-auto flex items-center gap-2.5 font-mono text-[0.8rem]" aria-label={L({ vi: "Tiến độ", en: "Progress" })}>
+          <span className="h-2 w-[140px] overflow-hidden rounded-[12px] bg-map-well"><i className="block h-full rounded-[12px] bg-[linear-gradient(90deg,var(--color-map-cyan),var(--color-map-green))] transition-[width] duration-500 ease-[cubic-bezier(.3,.8,.2,1)]" style={{ width: `${(placed.length / CARDS.length) * 100}%` }} /></span>
           {placed.length}/{CARDS.length}
         </span>
       </div>
-      <div className="am-pool" role="group" aria-label={L({ vi: "Dịch vụ chưa xếp", en: "Services to sort" })}>
+      <div className="flex min-h-11 flex-wrap items-center gap-2" role="group" aria-label={L({ vi: "Dịch vụ chưa xếp", en: "Services to sort" })}>
         {pool.map((c) => (
           <button key={c.name} type="button" className="am-chip" aria-pressed={sel === c.name} onClick={() => { setSel(c.name); setMsg(null); }}>{c.name}</button>
         ))}
       </div>
       <p className={`am-msg${msg?.kind ? ` ${msg.kind}` : ""}`} aria-live="polite">{msg?.text ?? (done ? "" : " ")}</p>
-      <div className="am-groups">
+      <div className="grid grid-cols-3 gap-3 max-md:grid-cols-2">
         {GROUPS.map((g) => (
           <button
             key={`${g.id}-${wrong?.group === g.id ? wrong.n : 0}`}
@@ -83,10 +83,10 @@ export default function GroupSort() {
             style={{ ["--c" as string]: g.c }}
             onClick={() => drop(g)}
           >
-            <header><i aria-hidden="true" /><b>{L(g.name)}</b><small>{L({ vi: "LỚP", en: "LAYER" })} {g.layer}</small></header>
-            <ul>
+            <header className="flex items-center gap-2"><i aria-hidden="true" className="size-2.5 rounded-[50%] bg-(--c) shadow-[0_0_10px_var(--c)]" /><b className="text-[0.95rem]">{L(g.name)}</b><small className="ml-auto font-mono text-[0.68rem] text-map-muted">{L({ vi: "LỚP", en: "LAYER" })} {g.layer}</small></header>
+            <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
               {CARDS.filter((c) => c.group === g.id && placed.includes(c.name)).map((c) => (
-                <li key={c.name} className={c.name === last ? "new" : undefined}>{c.name}</li>
+                <li key={c.name} className={`rounded-[99px] bg-(--c) px-[11px] py-[5px] text-[0.8rem] font-semibold text-map-on ${c.name === last ? "new" : ""}`}>{c.name}</li>
               ))}
             </ul>
           </button>

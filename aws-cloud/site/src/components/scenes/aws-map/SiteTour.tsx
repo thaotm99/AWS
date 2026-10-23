@@ -17,6 +17,10 @@ const STEPS: { part: Part; title: Bi; sub: Bi; note: Bi }[] = [
     note: { vi: "Cuối bài có bài tập và bộ câu hỏi kiểm tra. Đánh dấu hoàn thành để theo dõi tiến độ trên lộ trình; trang Thuật ngữ dùng để tra cứu bất cứ lúc nào.", en: "Each lesson ends with an exercise and a question set. Mark it done to track progress on the study path; the glossary page is there whenever you need to look something up." } },
 ];
 
+// Dotted term underline and the footer buttons of the mock section.
+const U = "font-semibold text-map-amber underline decoration-dotted underline-offset-3";
+const FOOT = "rounded-[12px] border border-map-line bg-map-panel px-2.5 py-[5px] text-[0.72rem] font-semibold";
+
 /** Lesson 0, part 4: a guided tour of a lesson section, lighting up one part at a time. */
 export default function SiteTour() {
   const L = useLang();
@@ -24,39 +28,39 @@ export default function SiteTour() {
   const lit = (p: Part) => (STEPS[i].part === p ? "lit" : undefined);
   return (
     <div className="am-stage">
-      <div className="am-tour">
-        <ol className="am-steps">
+      <div className="grid grid-cols-[minmax(200px,260px)_minmax(0,1fr)] gap-[18px] max-md:grid-cols-1">
+        <ol className="m-0 flex list-none flex-col gap-2 p-0">
           {STEPS.map((s, k) => (
             <li key={s.part}>
-              <button type="button" aria-pressed={k === i} onClick={() => setI(k)}>
+              <button type="button" className="am-step" aria-pressed={k === i} onClick={() => setI(k)}>
                 <em>{k + 1}</em>
-                <span><b>{L(s.title)}</b><small>{L(s.sub)}</small></span>
+                <span className="flex flex-col gap-0.5 text-[0.84rem] leading-[1.4]"><b>{L(s.title)}</b><small className="text-map-muted">{L(s.sub)}</small></span>
               </button>
             </li>
           ))}
         </ol>
-        <div className="am-mock focus" aria-hidden="true">
-          <div className="am-mock-head">
-            <small>{L({ vi: "PHẦN 2/9", en: "PART 2/9" })}</small>
-            <b>{L({ vi: "Truy cập từ internet", en: "Access from the internet" })}</b>
+        <div className="am-mock focus relative flex flex-col gap-2.5 rounded-[24px] border border-map-line bg-map-bg p-4 text-map-ink" aria-hidden="true">
+          <div>
+            <small className="font-mono text-[0.66rem] tracking-[.08em] text-map-cyan">{L({ vi: "PHẦN 2/9", en: "PART 2/9" })}</small>
+            <b className="block text-[0.95rem]">{L({ vi: "Truy cập từ internet", en: "Access from the internet" })}</b>
           </div>
-          <div className={`am-mock-kw ${lit("kw") ?? ""}`}>
-            {["Internet gateway", "Security group", "Stateful"].map((k) => <span key={k}>{k}</span>)}
+          <div className={`flex flex-wrap gap-[5px] border border-map-kw-line bg-map-kw px-2.5 py-2 ${lit("kw") ?? ""}`}>
+            {["Internet gateway", "Security group", "Stateful"].map((k) => <span key={k} className="rounded-[99px] border border-map-kw-chip-line bg-map-kw-chip px-[9px] py-[3px] text-[0.72rem] font-semibold text-map-kw-ink">{k}</span>)}
           </div>
-          <p className={`am-mock-text ${lit("text") ?? ""}`}>
+          <p className={`m-0 px-1.5 py-1 text-[0.8rem] leading-[1.55] ${lit("text") ?? ""}`}>
             {L({ vi: "Để request từ internet tới được web server, nó phải đi qua ", en: "To reach a web server, a request from the internet passes " })}
-            <u>internet gateway</u>, <u>network ACL</u> {L({ vi: "và", en: "and the" })} <u>security group</u>.
+            <u className={U}>internet gateway</u>, <u className={U}>network ACL</u> {L({ vi: "và", en: "and the" })} <u className={U}>security group</u>.
           </p>
-          <div className={`am-mock-sim ${lit("sim") ?? ""}`}>{L({ vi: "[ mô phỏng: gửi request, bật tắt điều kiện ]", en: "[ simulation: send requests, toggle conditions ]" })}</div>
-          <div className={`am-mock-take ${lit("take") ?? ""}`}><b>{L({ vi: "Ghi nhớ:", en: "Key point:" })}</b> {L({ vi: "Security group là stateful.", en: "Security groups are stateful." })}</div>
-          <div className={`am-mock-foot ${lit("foot") ?? ""}`}>
-            <span>{L({ vi: "Đánh dấu hoàn thành", en: "Mark as done" })}</span>
-            <span>{L({ vi: "Kiểm tra", en: "Quiz" })}</span>
-            <span>{L({ vi: "Thuật ngữ", en: "Glossary" })}</span>
+          <div className={`grid h-16 place-items-center border border-dashed border-map-line bg-map-panel text-[0.72rem] text-map-muted ${lit("sim") ?? ""}`}>{L({ vi: "[ mô phỏng: gửi request, bật tắt điều kiện ]", en: "[ simulation: send requests, toggle conditions ]" })}</div>
+          <div className={`border-l-[3px] border-map-cyan bg-map-glow px-2.5 py-2 text-[0.76rem] ${lit("take") ?? ""}`}><b className="text-map-cyan">{L({ vi: "Ghi nhớ:", en: "Key point:" })}</b> {L({ vi: "Security group là stateful.", en: "Security groups are stateful." })}</div>
+          <div className={`flex gap-2 ${lit("foot") ?? ""}`}>
+            <span className={FOOT}>{L({ vi: "Đánh dấu hoàn thành", en: "Mark as done" })}</span>
+            <span className={FOOT}>{L({ vi: "Kiểm tra", en: "Quiz" })}</span>
+            <span className={FOOT}>{L({ vi: "Thuật ngữ", en: "Glossary" })}</span>
           </div>
         </div>
       </div>
-      <p className="am-tour-note" key={i} aria-live="polite">{L(STEPS[i].note)}</p>
+      <p className="mx-0 mt-3 mb-0 animate-[am-in_.4s_ease_both] text-[0.9rem] text-map-soft" key={i} aria-live="polite">{L(STEPS[i].note)}</p>
     </div>
   );
 }

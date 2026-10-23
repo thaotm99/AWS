@@ -3,7 +3,7 @@ import { prefersReducedMotion } from "../../../lib/animate";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./aws-map.css";
 
-const C = { user: "#e4ecf0", net: "#4cc2df", cmp: "#f0a95a", db: "#7fb0ff", int: "#f293b8" };
+const C = { user: "var(--color-map-ink)", net: "var(--color-map-cyan)", cmp: "var(--color-map-amber)", db: "var(--color-map-blue)", int: "var(--color-map-pink)" };
 
 const STEPS: { name: Bi; mono: string; group: Bi; c: string; text: Bi; lesson?: { id: string } & Bi }[] = [
   { name: { vi: "Khách hàng", en: "Customer" }, mono: "◉", group: { vi: "Người dùng", en: "User" }, c: C.user,
@@ -65,43 +65,43 @@ export default function OrderJourney() {
 
   return (
     <div className="am-stage" ref={root}>
-      <p className="am-sub">{L({ vi: "Khách bấm “Đặt hàng” trên mftech.vn. Theo dõi đơn hàng đi qua từng dịch vụ.", en: "A customer clicks “Place order” on mftech.vn. Follow the order through each service." })}</p>
-      <div className="am-track" role="img" aria-label={L({ vi: "Đơn hàng đi qua: khách hàng, Route 53, CloudFront, load balancer, EC2, RDS, SQS, Lambda", en: "The order passes through: customer, Route 53, CloudFront, load balancer, EC2, RDS, SQS, Lambda" })}>
-        <span className="am-line" style={{ left: "12.5%", width: "75%", top: TOP - 1, height: 2 }} />
-        <span className="am-line" style={{ left: "87.5%", width: 2, top: TOP, height: BOTTOM - TOP }} />
-        <span className="am-line" style={{ left: "12.5%", width: "75%", top: BOTTOM - 1, height: 2 }} />
-        <span className="am-lit" style={{ left: "12.5%", width: `${row1}%`, top: TOP - 2, height: 4, background: "linear-gradient(90deg, #4cc2df, #f0a95a)" }} />
-        <span className="am-lit" style={{ left: "calc(87.5% - 1px)", width: 4, top: TOP, height: i >= 4 ? BOTTOM - TOP : 0, background: "#f0a95a" }} />
-        <span className="am-lit" style={{ left: `${87.5 - row2}%`, width: `${row2}%`, top: BOTTOM - 2, height: 4, background: "linear-gradient(270deg, #f0a95a, #f293b8)" }} />
+      <p className="mx-0 mt-0 mb-3.5 text-[0.9rem] text-map-muted">{L({ vi: "Khách bấm “Đặt hàng” trên mftech.vn. Theo dõi đơn hàng đi qua từng dịch vụ.", en: "A customer clicks “Place order” on mftech.vn. Follow the order through each service." })}</p>
+      <div className="relative h-[280px] rounded-[18px] border border-map-line-soft bg-map-panel/60 max-md:grid max-md:h-auto max-md:gap-2 max-md:p-3" role="img" aria-label={L({ vi: "Đơn hàng đi qua: khách hàng, Route 53, CloudFront, load balancer, EC2, RDS, SQS, Lambda", en: "The order passes through: customer, Route 53, CloudFront, load balancer, EC2, RDS, SQS, Lambda" })}>
+        <span className="absolute rounded-[4px] bg-map-line max-md:hidden" style={{ left: "12.5%", width: "75%", top: TOP - 1, height: 2 }} />
+        <span className="absolute rounded-[4px] bg-map-line max-md:hidden" style={{ left: "87.5%", width: 2, top: TOP, height: BOTTOM - TOP }} />
+        <span className="absolute rounded-[4px] bg-map-line max-md:hidden" style={{ left: "12.5%", width: "75%", top: BOTTOM - 1, height: 2 }} />
+        <span className="am-lit" style={{ left: "12.5%", width: `${row1}%`, top: TOP - 2, height: 4, background: "linear-gradient(90deg, var(--color-map-cyan), var(--color-map-amber))" }} />
+        <span className="am-lit" style={{ left: "calc(87.5% - 1px)", width: 4, top: TOP, height: i >= 4 ? BOTTOM - TOP : 0, background: "var(--color-map-amber)" }} />
+        <span className="am-lit" style={{ left: `${87.5 - row2}%`, width: `${row2}%`, top: BOTTOM - 2, height: 4, background: "linear-gradient(270deg, var(--color-map-amber), var(--color-map-pink))" }} />
         {STEPS.map((n, k) => {
           const q = pos(k);
           return (
             <div key={k} className={`am-node${k <= i ? " on" : ""}${k === i ? " cur" : ""}`} style={{ left: `${q.x}%`, top: q.y, ["--c" as string]: n.c }}>
               <div>
                 <em>{n.mono}</em>
-                <span><b>{L(n.name)}</b><small>{L(n.group)}</small></span>
+                <span className="flex min-w-0 flex-col leading-[1.2]"><b className="truncate text-[0.8rem]">{L(n.name)}</b><small className="text-[0.68rem] text-map-muted">{L(n.group)}</small></span>
               </div>
             </div>
           );
         })}
-        <span className="am-packet" aria-hidden="true" style={{ left: `${p.x}%`, top: p.y - 44, boxShadow: `0 0 0 4px ${s.c}66, 0 0 24px 6px ${s.c}` }} />
+        <span className="am-packet" aria-hidden="true" style={{ left: `${p.x}%`, top: p.y - 44, boxShadow: `0 0 0 4px color-mix(in srgb, ${s.c} 40%, transparent), 0 0 24px 6px ${s.c}` }} />
       </div>
-      <div className="am-journey-foot">
-        <div className="am-caption" key={i} aria-live="polite">
-          <small style={{ color: s.c }}>0{i + 1} / 08 · {L(s.group)}</small>
-          <p><b>{L(s.name)}</b> {L(s.text)}</p>
-          {s.lesson && <a href={`/concepts/${s.lesson.id}/`}>{L({ vi: "Học kỹ ở bài", en: "Covered in" })} {L(s.lesson)} →</a>}
+      <div className="mt-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 max-md:grid-cols-1">
+        <div className="flex animate-[am-in_.45s_ease_both] flex-col gap-1.5 rounded-[18px] border border-map-line bg-map-panel px-[18px] py-3.5" key={i} aria-live="polite">
+          <small className="font-mono text-[0.72rem]" style={{ color: s.c }}>0{i + 1} / 08 · {L(s.group)}</small>
+          <p className="m-0 max-w-none text-[1rem] leading-[1.5]"><b>{L(s.name)}</b> {L(s.text)}</p>
+          {s.lesson && <a className="text-[0.85rem] font-semibold text-map-cyan no-underline" href={`/concepts/${s.lesson.id}/`}>{L({ vi: "Học kỹ ở bài", en: "Covered in" })} {L(s.lesson)} →</a>}
         </div>
-        <div className="am-controls">
-          <button type="button" className="am-btn" aria-label={L({ vi: "Bước trước", en: "Previous step" })} onClick={() => go(i - 1)}>
+        <div className="flex gap-2">
+          <button type="button" className="am-btn w-12 px-0" aria-label={L({ vi: "Bước trước", en: "Previous step" })} onClick={() => go(i - 1)}>
             <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </button>
-          <button type="button" className="am-btn primary" aria-label={play ? L({ vi: "Tạm dừng", en: "Pause" }) : L({ vi: "Tự chạy", en: "Play" })} aria-pressed={play} onClick={() => setPlay(!play)}>
+          <button type="button" className="am-btn primary w-12 px-0" aria-label={play ? L({ vi: "Tạm dừng", en: "Pause" }) : L({ vi: "Tự chạy", en: "Play" })} aria-pressed={play} onClick={() => setPlay(!play)}>
             {play
               ? <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3v10M11 3v10" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" /></svg>
               : <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3l8 5-8 5z" fill="currentColor" /></svg>}
           </button>
-          <button type="button" className="am-btn" aria-label={L({ vi: "Bước tiếp", en: "Next step" })} onClick={() => go(i + 1)}>
+          <button type="button" className="am-btn w-12 px-0" aria-label={L({ vi: "Bước tiếp", en: "Next step" })} onClick={() => go(i + 1)}>
             <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </button>
         </div>

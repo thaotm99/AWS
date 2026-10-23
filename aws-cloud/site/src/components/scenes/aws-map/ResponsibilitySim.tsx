@@ -41,18 +41,18 @@ export default function ResponsibilitySim() {
   const own = TASKS.length - lv.aws;
   return (
     <div className="am-stage">
-      <p className="am-sub">{L({ vi: "Database đơn hàng của MFTech, bốn cách triển khai. Chọn một cách để xem phần việc nào chuyển sang AWS.", en: "MFTech's order database, four ways to run it. Pick one to see which tasks move to AWS." })}</p>
-      <div className="am-seg" role="group" aria-label={L({ vi: "Cách triển khai", en: "Deployment model" })} style={{ ["--i" as string]: i }}>
+      <p className="mb-3.5 mt-0 mx-0 text-[0.9rem] text-map-muted">{L({ vi: "Database đơn hàng của MFTech, bốn cách triển khai. Chọn một cách để xem phần việc nào chuyển sang AWS.", en: "MFTech's order database, four ways to run it. Pick one to see which tasks move to AWS." })}</p>
+      <div className="relative mb-[18px] grid grid-cols-4 rounded-[24px] border border-map-line bg-map-panel p-[5px]" role="group" aria-label={L({ vi: "Cách triển khai", en: "Deployment model" })} style={{ ["--i" as string]: i }}>
         <span className="am-seg-thumb" aria-hidden="true" />
         {LEVELS.map((l, k) => (
-          <button key={l.tag} type="button" aria-pressed={k === i} onClick={() => setI(k)}>
-            <b>{L(l.name)}</b>
-            <span>{L(l.sub)}</span>
+          <button key={l.tag} type="button" className="am-seg-btn" aria-pressed={k === i} onClick={() => setI(k)}>
+            <b className="text-[0.88rem] max-md:text-[0.74rem]">{L(l.name)}</b>
+            <span className="text-[0.7rem] opacity-80 max-md:hidden">{L(l.sub)}</span>
           </button>
         ))}
       </div>
-      <div className="am-resp">
-        <ol className="am-tower" aria-label={L({ vi: "Phần việc vận hành, từ hạ tầng lên ứng dụng", en: "Operating tasks, from infrastructure up to the application" })}>
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(220px,280px)] items-center gap-6 max-md:grid-cols-1">
+        <ol className="am-tower m-0 flex list-none flex-col-reverse gap-1.5 p-0" aria-label={L({ vi: "Phần việc vận hành, từ hạ tầng lên ứng dụng", en: "Operating tasks, from infrastructure up to the application" })}>
           {TASKS.map((t, k) => (
             <li key={t.en} className={k < lv.aws ? "aws" : undefined} style={{ ["--d" as string]: `${k * 0.05}s` }}>
               {L(t)}
@@ -60,23 +60,23 @@ export default function ResponsibilitySim() {
             </li>
           ))}
         </ol>
-        <div className="am-side">
-          <div className="am-side-row">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-4 text-[0.85rem] text-map-soft">
             <div className="am-gauge" style={{ ["--deg" as string]: `${(lv.aws / TASKS.length) * 360}deg` }}>
-              <div>
-                <b key={i}>{own}</b>
-                <span>/ {TASKS.length}</span>
+              <div className="grid size-[102px] place-items-center content-center rounded-[50%] bg-map-bg">
+                <b key={i} className="animate-[am-pop_.45s_ease_both] font-mono text-[2.3rem] leading-none text-map-amber">{own}</b>
+                <span className="text-[0.7rem] text-map-muted">/ {TASKS.length}</span>
               </div>
             </div>
             <span>{L({ vi: "phần việc MFTech tự thực hiện", en: "tasks MFTech does itself" })}</span>
           </div>
-          <div className="am-card" key={i} aria-live="polite">
-            <small>{lv.tag}</small>
+          <div className="flex animate-[am-pop_.45s_ease_both] flex-col gap-1.5 rounded-[24px] border border-map-line bg-map-panel px-4 py-3.5 text-[0.9rem] leading-[1.55]" key={i} aria-live="polite">
+            <small className="font-mono text-[0.68rem] tracking-[0.1em] text-map-cyan">{lv.tag}</small>
             <span>{L(lv.text)}</span>
           </div>
-          <div className="am-legend">
-            <span><i style={{ background: "#4cc2df" }} />AWS</span>
-            <span><i style={{ border: "1.5px solid #f0a95a" }} />MFTech</span>
+          <div className="flex gap-4 text-[0.75rem] text-map-muted">
+            <span className="inline-flex items-center gap-1.5"><i className="size-3 rounded-[4px] bg-map-cyan" />AWS</span>
+            <span className="inline-flex items-center gap-1.5"><i className="size-3 rounded-[4px] border-[1.5px] border-map-amber" />MFTech</span>
           </div>
         </div>
       </div>

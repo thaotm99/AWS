@@ -86,3 +86,4 @@
 @import "./components/lesson.css" layer(components);
 @import "./components/practice.css" layer(components);
 @import "./components/tools.css" layer(components);
+@import "./components/scenes.css" layer(components);
