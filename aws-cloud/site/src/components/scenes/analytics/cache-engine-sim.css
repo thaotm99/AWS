@@ -1,28 +1,27 @@
-/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
-@layer legacy {
-/* Redis OSS vs Memcached on one node (analytics/CacheEngineSim) */
-.cen .stage-bar .cen-play { margin-left: auto; }
-.cen-card { fill: var(--bg); stroke: var(--line); stroke-width: 1.2; }
-.cen-title { fill: var(--ink); font-family: var(--font-body); font-size: 14px; font-weight: 700; }
-.cen-sub { fill: var(--muted); font-family: var(--font-body); font-size: 11px; }
-.cen-queue { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1; }
-.cen-node { fill: var(--surface); stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 4 4; }
-.cen-core { fill: var(--bg); stroke: var(--line); stroke-width: 1.2; transition: fill .15s, stroke .15s; }
-.cen-core.used { fill: var(--ok-soft); stroke: var(--ok); }
-.cen-core.hot { fill: var(--accent); stroke: var(--accent); }
-.cen-core-t { fill: var(--ink); font-family: var(--font-mono); font-size: 10.5px; font-weight: 600; pointer-events: none; }
-.cen-core.hot + .cen-core-t { fill: var(--on-accent); }
-.cen-done { fill: var(--ink); font-family: var(--font-mono); font-size: 12px; font-weight: 700; }
-.cen-done.idle { fill: var(--muted); font-weight: 400; }
-.cen-hint { margin: 0 0 8px; color: var(--muted); font-size: var(--step--1); }
-.cen-needs { display: flex; flex-wrap: wrap; gap: 6px; }
-.cen-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: var(--step--1); }
-.cen-table th, .cen-table td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); }
-.cen-table th { color: var(--muted); font-weight: 600; }
-.cen-table td.yes { color: var(--ok); font-weight: 600; }
-.cen-table td.no { color: var(--bad); font-weight: 600; }
-.cen-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 12px; font-size: var(--step--1); }
-.cen-result.ok { background: var(--ok-soft); }
-.cen-result.bad { background: var(--bad-soft); }
-@media (prefers-reduced-motion: reduce) { .cen-core { transition: none; } }
+@reference "../../../styles/app.css";
+
+/* Redis OSS vs Memcached on one node (analytics/CacheEngineSim): SVG parts and the requirements table. */
+@layer components {
+  .cen-card { @apply fill-bg stroke-line stroke-[1.2]; }
+  .cen-title { @apply fill-ink font-body text-[14px] font-bold; }
+  .cen-sub { @apply fill-muted font-body text-[11px]; }
+  .cen-queue { @apply fill-accent-soft stroke-accent stroke-1; }
+  .cen-node { @apply fill-surface stroke-muted stroke-[1.2]; stroke-dasharray: 4 4; }
+  /* A vCPU core: .used once it ran a command, .hot while running one. */
+  .cen-core { @apply fill-bg stroke-line stroke-[1.2]; transition: fill .15s, stroke .15s; }
+  .cen-core.used { @apply fill-ok-soft stroke-ok; }
+  .cen-core.hot { @apply fill-accent stroke-accent; }
+  .cen-core-t { @apply pointer-events-none fill-ink font-mono text-[10.5px] font-semibold; }
+  .cen-core.hot + .cen-core-t { @apply fill-on-accent; }
+  .cen-done { @apply fill-ink font-mono text-[12px] font-bold; }
+  .cen-done.idle { @apply fill-muted font-normal; }
+
+  /* Which engine supports each chosen requirement (td.yes / td.no). */
+  .cen-table { @apply mt-3 w-full border-collapse text-step--1; }
+  .cen-table th, .cen-table td { @apply border-b border-line px-2 py-[5px] text-left; }
+  .cen-table th { @apply font-semibold text-muted; }
+  .cen-table td.yes { @apply font-semibold text-ok; }
+  .cen-table td.no { @apply font-semibold text-bad; }
+
+  @media (prefers-reduced-motion: reduce) { .cen-core { transition: none; } }
 }

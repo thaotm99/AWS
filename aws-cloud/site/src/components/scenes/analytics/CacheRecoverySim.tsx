@@ -180,21 +180,24 @@ export default function CacheRecoverySim() {
   const priCls = failed ? "bad" : "on";
   const repCls = !hasReplica ? "off" : promoted ? "ok" : failed ? "warn" : "";
   const toneCls = (t: Tone) => (t === "ok" ? "ok" : t === "bad" ? "bad" : "warn");
+  // Pill and result tints; the pill engine has no "warn" tone, so it is drawn here.
+  const PILL = (t: Tone) => (t === "warn" ? "bg-edge-soft text-edge" : t);
+  const RESULT = { ok: "bg-ok-soft", bad: "bg-bad-soft", warn: "bg-edge-soft" };
   const lossX0 = TX(o.loss[0]);
   const lossW = Math.max(TX(o.loss[1]) - lossX0, 4);
   const outW = Math.max(o.outage * 30, 4);
 
   return (
-    <div className="stage crx">
-      <div className="crx-row" role="group" aria-label={L({ vi: "Phương án bảo vệ cache", en: "Cache protection option" })}>
-        <span className="crx-lbl">{L({ vi: "Phương án", en: "Option" })}</span>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Phương án bảo vệ cache", en: "Cache protection option" })}>
+        <span className="mr-1 text-[0.72rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Phương án", en: "Option" })}</span>
         {STRATS.map(([id, name]) => (
           <button key={id} className="chip" aria-pressed={strat === id} disabled={busy} onClick={() => pick(id)}>{L(name)}</button>
         ))}
       </div>
-      <div className="stage-bar">
-        <span className="crx-hint">{L({ vi: "ElastiCache (Redis OSS, node-based) chứa giỏ hàng và kết quả truy vấn đứng trước RDS.", en: "ElastiCache (Redis OSS, node-based) holds carts and query results in front of RDS." })}</span>
-        <button className="btn primary" onClick={run} disabled={busy}>{L({ vi: "Primary gặp lỗi lúc 14:00", en: "Primary fails at 14:00" })}</button>
+      <div className="stage-bar mt-3 border-t border-line">
+        <span className="m-0 text-step--1 text-muted">{L({ vi: "ElastiCache (Redis OSS, node-based) chứa giỏ hàng và kết quả truy vấn đứng trước RDS.", en: "ElastiCache (Redis OSS, node-based) holds carts and query results in front of RDS." })}</span>
+        <button className="btn primary ml-auto" onClick={run} disabled={busy}>{L({ vi: "Primary gặp lỗi lúc 14:00", en: "Primary fails at 14:00" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 10 820 250" role="img" aria-label={L({ vi: "Ứng dụng MFTech, cluster ElastiCache gồm primary tại AZ a và replica tại AZ b, backup trên S3, và dòng thời gian 24 giờ của sự cố", en: "The MFTech application, an ElastiCache cluster with a primary in AZ a and a replica in AZ b, backups in S3, and a 24-hour timeline of the incident" })}>
@@ -250,13 +253,13 @@ export default function CacheRecoverySim() {
       </div>
       <div className="readout" aria-live="polite">
         {!done ? (
-          <p className="crx-hint">{L({ vi: "Chọn một phương án bảo vệ lớp cache, sau đó mô phỏng sự cố primary node lúc 14:00. Dòng thời gian chỉ minh hoạ thứ tự và độ lớn tương đối, không phải số đo thực tế.", en: "Choose a way to protect the cache layer, then simulate a primary node failure at 14:00. The timeline only illustrates order and relative size; it is not a measurement." })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: "Chọn một phương án bảo vệ lớp cache, sau đó mô phỏng sự cố primary node lúc 14:00. Dòng thời gian chỉ minh hoạ thứ tự và độ lớn tương đối, không phải số đo thực tế.", en: "Choose a way to protect the cache layer, then simulate a primary node failure at 14:00. The timeline only illustrates order and relative size; it is not a measurement." })}</p>
         ) : (
           <>
-            <div className="status">
-              <span className={`pill ${o.pills.tones[0]}`}><i />{L(o.pills.writes)}</span>
-              <span className={`pill ${o.pills.tones[1]}`}><i />{L(o.pills.data)}</span>
-              <span className={`pill ${o.pills.tones[2]}`}><i />{L(o.pills.reads)}</span>
+            <div className="status mb-2 gap-x-3 gap-y-2">
+              <span className={`pill ${PILL(o.pills.tones[0])}`}><i />{L(o.pills.writes)}</span>
+              <span className={`pill ${PILL(o.pills.tones[1])}`}><i />{L(o.pills.data)}</span>
+              <span className={`pill ${PILL(o.pills.tones[2])}`}><i />{L(o.pills.reads)}</span>
             </div>
             <ul className="log">
               {o.lines.map((l, i) => (
@@ -266,7 +269,7 @@ export default function CacheRecoverySim() {
                 </li>
               ))}
             </ul>
-            <p className={`crx-result ${toneCls(o.verdict.tone)}`}>{rich(L(o.verdict.msg))}</p>
+            <p className={`mx-0 mt-2 mb-0 rounded-[12px] px-2.5 py-2 text-step--1 ${RESULT[toneCls(o.verdict.tone)]}`}>{rich(L(o.verdict.msg))}</p>
           </>
         )}
       </div>

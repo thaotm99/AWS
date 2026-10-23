@@ -102,7 +102,7 @@ export default function LakeCostSim() {
   else note = L({ vi: "Refined zone ghi ở định dạng CSV: dung lượng lớn hơn nhiều lần so với định dạng cột có nén, và Athena phải quét toàn bộ dữ liệu mỗi lần truy vấn. Cấu hình Glue ghi Parquet nén.", en: "The refined zone is written as CSV: many times larger than a compressed columnar format, and Athena must scan all the data on every query. Configure Glue to write compressed Parquet." });
 
   return (
-    <div className="stage lkc">
+    <div className="stage">
       <div className="stage-bar">
         <span className="label">Raw zone</span>
         {RAW.map((o) => (
@@ -118,9 +118,9 @@ export default function LakeCostSim() {
         {FMT.map((o) => (
           <button key={o.id} className="btn" aria-pressed={o.id === fmt} disabled={busy && o.id !== fmt} onClick={() => change(() => setFmt(o.id))}>{L(o.name)}</button>
         ))}
-        <button className="btn primary lkc-play" onClick={play} disabled={busy}>{L({ vi: "Mô phỏng 12 tháng", en: "Simulate 12 months" })}</button>
+        <button className="btn primary ml-auto" onClick={play} disabled={busy}>{L({ vi: "Mô phỏng 12 tháng", en: "Simulate 12 months" })}</button>
       </div>
-      <p className="lkc-about">{L({ vi: "Mỗi zone tăng thêm 1 TB mỗi ngày. Raw zone phải được lưu giữ 5 năm và gần như không được đọc lại. Refined zone được analyst truy vấn bằng Athena hằng ngày.", en: "Each zone grows by 1 TB a day. The raw zone must be kept for 5 years and is almost never read again. Analysts query the refined zone with Athena every day." })}</p>
+      <p className="mx-4 mt-2.5 mb-0 text-step--1 text-muted">{L({ vi: "Mỗi zone tăng thêm 1 TB mỗi ngày. Raw zone phải được lưu giữ 5 năm và gần như không được đọc lại. Refined zone được analyst truy vấn bằng Athena hằng ngày.", en: "Each zone grows by 1 TB a day. The raw zone must be kept for 5 years and is almost never read again. Analysts query the refined zone with Athena every day." })}</p>
       <div className="svg-wrap">
         <svg viewBox="0 0 820 236" role="img" aria-label={L({ vi: "Biểu đồ chi phí lưu trữ S3 mỗi tháng trong 12 tháng, chia theo raw zone và refined zone", en: "Chart of monthly S3 storage cost over 12 months, split into the raw zone and the refined zone" })}>
           {[0, 0.25, 0.5, 0.75, 1].map((f) => (
@@ -134,7 +134,7 @@ export default function LakeCostSim() {
             const x = X0 + i * bw + 8;
             const w = bw - 16;
             return (
-              <g key={i} className={ghost ? "lkc-ghost" : ""}>
+              <g key={i} className={ghost ? "opacity-20" : ""}>
                 <rect className="lkc-raw" x={x} y={y(c.raw)} width={w} height={y(0) - y(c.raw)} rx={2} />
                 <rect className={"lkc-ref" + (athenaOk ? "" : " bad")} x={x} y={y(c.raw + c.ref)} width={w} height={y(c.raw) - y(c.raw + c.ref)} rx={2} />
                 <text className="ts" x={x + w / 2} y={y(0) + 16} textAnchor="middle">{L({ vi: `T${i + 1}`, en: `M${i + 1}` })}</text>
@@ -153,7 +153,7 @@ export default function LakeCostSim() {
       </div>
       <div className="readout" aria-live="polite">
         {shown === 0 ? (
-          <p className="lkc-hint">{L({ vi: <>Chọn phương án lưu trữ cho từng zone, sau đó nhấn <b>Mô phỏng 12 tháng</b>. Mô phỏng dùng đơn giá minh hoạ (Deep Archive rẻ hơn nhiều so với S3 Standard) và giả định Parquet nén có dung lượng bằng 1/4 CSV. Giá thực tế xem tại trang S3 pricing.</>, en: <>Choose a storage option for each zone, then press <b>Simulate 12 months</b>. The simulation uses illustrative unit prices (Deep Archive is much cheaper than S3 Standard) and assumes compressed Parquet is 1/4 the size of CSV. For actual prices, see the S3 pricing page.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn phương án lưu trữ cho từng zone, sau đó nhấn <b>Mô phỏng 12 tháng</b>. Mô phỏng dùng đơn giá minh hoạ (Deep Archive rẻ hơn nhiều so với S3 Standard) và giả định Parquet nén có dung lượng bằng 1/4 CSV. Giá thực tế xem tại trang S3 pricing.</>, en: <>Choose a storage option for each zone, then press <b>Simulate 12 months</b>. The simulation uses illustrative unit prices (Deep Archive is much cheaper than S3 Standard) and assumes compressed Parquet is 1/4 the size of CSV. For actual prices, see the S3 pricing page.</> })}</p>
         ) : (
           <>
             <div className="status">
@@ -162,7 +162,7 @@ export default function LakeCostSim() {
               <span className={"pill " + (athenaOk ? "ok" : "bad")}><i />{athenaOk ? L({ vi: "Athena đọc được", en: "Athena can read it" }) : L({ vi: "Athena không đọc được", en: "Athena cannot read it" })}</span>
             </div>
             {done && (
-              <p className={`lkc-result ${best ? "ok" : "bad"}`}>
+              <p className={`mx-0 mt-2.5 mb-0 rounded-[12px] px-2.5 py-2 text-step--1 ${best ? "bg-ok-soft" : "bg-bad-soft"}`}>
                 <b>{L({ vi: `Cả năm: ${Math.round((total / BASE) * 100)}% so với phương án giữ nguyên S3 Standard và CSV. `, en: `Full year: ${Math.round((total / BASE) * 100)}% of the cost of keeping S3 Standard and CSV. ` })}</b>{rich(note)}
               </p>
             )}

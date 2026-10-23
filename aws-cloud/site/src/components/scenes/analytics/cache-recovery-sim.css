@@ -1,43 +1,37 @@
-/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
-@layer legacy {
-/* ElastiCache primary failure and recovery options (analytics/CacheRecoverySim). Theme tokens only. */
-.crx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
-.crx-lbl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
-.crx .stage-bar { margin-top: 12px; border-top: 1px solid var(--line); }
-.crx .stage-bar .btn.primary { margin-left: auto; }
-.crx-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
-.crx-region { fill: var(--bg); stroke: var(--muted); stroke-width: 1.2; }
-.crx-az { fill: none; stroke: var(--line); stroke-width: 1.2; stroke-dasharray: 4 4; }
-.crx-wire { stroke: var(--line); stroke-width: 2; fill: none; }
-.crx-wire.dash { stroke-dasharray: 5 5; }
-.crx-node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill .2s, stroke .2s, opacity .2s; }
-.crx-node.on rect { stroke: var(--accent); fill: var(--accent-soft); }
-.crx-node.ok rect { fill: var(--ok-soft); stroke: var(--ok); }
-.crx-node.bad rect { fill: var(--bad-soft); stroke: var(--bad); }
-.crx-node.warn rect { fill: var(--edge-soft); stroke: var(--edge); }
-.crx-node.off { opacity: .4; }
-.crx-t { fill: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
-.crx-s { fill: var(--muted); font-family: var(--font-body); font-size: 10px; }
-.crx-m { fill: var(--muted); font-family: var(--font-mono); font-size: 10.5px; }
-.crx-m.bad { fill: var(--bad); }
-.crx-m.edge { fill: var(--edge); }
-.crx-axis { stroke: var(--muted); stroke-width: 1.2; }
-.crx-mark { stroke: var(--accent); stroke-width: 2; }
-.crx-mark.bad { stroke: var(--bad); }
-.crx-loss { fill: var(--bad-soft); stroke: var(--bad); stroke-width: 1; }
-.crx-out { stroke-width: 1; }
-.crx-out.ok { fill: var(--ok-soft); stroke: var(--ok); }
-.crx-out.warn { fill: var(--edge-soft); stroke: var(--edge); }
-.crx-out.bad { fill: var(--edge-soft); stroke: var(--bad); }
-.crx-flash-ok { fill: var(--ok); font-family: var(--font-mono); font-size: 13px; font-weight: 700; text-anchor: middle; }
-.crx-flash-edge { fill: var(--edge); font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-anchor: middle; }
-.crx-result { margin: 8px 0 0; padding: 8px 10px; border-radius: 12px; font-size: var(--step--1); }
-.crx-result.ok { background: var(--ok-soft); }
-.crx-result.bad { background: var(--bad-soft); }
-.crx-result.warn { background: var(--edge-soft); }
-.crx .status { margin-bottom: 8px; gap: 8px 12px; }
-.crx .pill.warn { background: var(--edge-soft); color: var(--edge); }
-.crx-pop { animation: crx-pop .35s ease-out both; }
-@keyframes crx-pop { from { opacity: 0; } to { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .crx-pop { animation: none; } .crx-node rect { transition: none; } }
+@reference "../../../styles/app.css";
+
+/* ElastiCache primary failure and recovery options (analytics/CacheRecoverySim): SVG parts of the cluster diagram
+   and the outage timeline. Nodes take their state: .on, .ok, .bad, .warn, .off. */
+@layer components {
+  .crx-region { @apply fill-bg stroke-muted stroke-[1.2]; }
+  .crx-az { @apply fill-none stroke-line stroke-[1.2]; stroke-dasharray: 4 4; }
+  .crx-wire { @apply fill-none stroke-line stroke-2; }
+  .crx-wire.dash { stroke-dasharray: 5 5; }
+  .crx-node rect { @apply fill-surface stroke-line stroke-[1.5]; transition: fill .2s, stroke .2s, opacity .2s; }
+  .crx-node.on rect { @apply fill-accent-soft stroke-accent; }
+  .crx-node.ok rect { @apply fill-ok-soft stroke-ok; }
+  .crx-node.bad rect { @apply fill-bad-soft stroke-bad; }
+  .crx-node.warn rect { @apply fill-edge-soft stroke-edge; }
+  .crx-node.off { @apply opacity-40; }
+  .crx-t { @apply fill-ink font-body text-[12px] font-semibold; }
+  .crx-s { @apply fill-muted font-body text-[10px]; }
+  .crx-m { @apply fill-muted font-mono text-[10.5px]; }
+  .crx-m.bad { @apply fill-bad; }
+  .crx-m.edge { @apply fill-edge; }
+  /* Timeline: backup and failure marks, lost data and the write outage (.ok, .warn, .bad). */
+  .crx-axis { @apply stroke-muted stroke-[1.2]; }
+  .crx-mark { @apply stroke-accent stroke-2; }
+  .crx-mark.bad { @apply stroke-bad; }
+  .crx-loss { @apply fill-bad-soft stroke-bad stroke-1; }
+  .crx-out { @apply stroke-1; }
+  .crx-out.ok { @apply fill-ok-soft stroke-ok; }
+  .crx-out.warn { @apply fill-edge-soft stroke-edge; }
+  .crx-out.bad { @apply fill-edge-soft stroke-bad; }
+  .crx-pop { animation: crx-pop .35s ease-out both; }
+  /* Labels that flashText() pops on a node. */
+  .crx-flash-ok { @apply fill-ok font-mono text-[13px] font-bold; text-anchor: middle; }
+  .crx-flash-edge { @apply fill-edge font-mono text-[12px] font-bold; text-anchor: middle; }
+
+  @media (prefers-reduced-motion: reduce) { .crx-pop { animation: none; } .crx-node rect { transition: none; } }
+  @keyframes crx-pop { from { opacity: 0; } to { opacity: 1; } }
 }
