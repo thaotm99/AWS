@@ -358,8 +358,8 @@ export default function MessageLifeSim() {
   const q2 = setup.q2;
 
   return (
-    <div className="stage mls">
-      <div className="mls-scenarios" role="group" aria-label={L({ vi: "Tình huống", en: "Scenarios" })}>
+    <div className="stage">
+      <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Tình huống", en: "Scenarios" })}>
         {SCENARIOS.map((s, i) => (
           <button key={i} className="chip" aria-pressed={i === index} onClick={() => pick(i)} disabled={busy && i !== index}>
             {L(s.name)}
@@ -367,14 +367,14 @@ export default function MessageLifeSim() {
         ))}
       </div>
       <div className="stage-bar">
-        <code className="mls-req">{L(sc.request)}</code>
+        <code className="rounded-[10px] border border-line bg-bg px-2 py-[3px] text-[0.8125rem] wrap-anywhere">{L(sc.request)}</code>
         {sc.toggle && (
-          <label className="mls-toggle">
+          <label className="inline-flex cursor-pointer items-center gap-1.5 text-step--1">
             <input type="checkbox" checked={on} disabled={busy} onChange={(e) => { setOn(e.target.checked); reset(sc.run(e.target.checked)); }} />
             {L(sc.toggle.label)}
           </label>
         )}
-        <button className="btn primary" onClick={play} disabled={busy}>{L({ vi: "Chạy mô phỏng", en: "Run simulation" })}</button>
+        <button className="btn primary ml-auto" onClick={play} disabled={busy}>{L({ vi: "Chạy mô phỏng", en: "Run simulation" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 30 820 220" role="img" aria-label={L({ vi: "Message được gửi từ web tier vào SQS queue, chuyển tới worker, sau đó bị xoá hoặc chuyển sang queue khác", en: "Messages are sent from the web tier to an SQS queue, passed to workers, then deleted or moved to another queue" })}>
@@ -424,12 +424,12 @@ export default function MessageLifeSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="mls-hint">{L({ vi: <>Chọn <b>Chạy mô phỏng</b> để xem từng bước.{sc.toggle ? " Thay đổi cấu hình và chạy lại để so sánh." : ""}</>, en: <>Choose <b>Run simulation</b> to see each step.{sc.toggle ? " Change the setting and run again to compare." : ""}</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn <b>Chạy mô phỏng</b> để xem từng bước.{sc.toggle ? " Thay đổi cấu hình và chạy lại để so sánh." : ""}</>, en: <>Choose <b>Run simulation</b> to see each step.{sc.toggle ? " Change the setting and run again to compare." : ""}</> })}</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) =>
               e.tag === undefined ? (
-                <li key={i} className={`mls-result ${e.ok ? "ok" : "bad"}`}>{L(e.msg)}</li>
+                <li key={i} className={`mt-1.5 block rounded-[12px] px-2.5 py-2 ${e.ok ? "bg-ok-soft" : "bg-bad-soft"}`}>{L(e.msg)}</li>
               ) : (
                 <li key={i}>
                   <span className={`tag mls-tag ${e.tone}`}>{L(e.tag)}</span>

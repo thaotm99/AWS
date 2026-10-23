@@ -1,106 +1,70 @@
-/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
-@layer legacy {
-/* Flash sale buffer (messaging/QueueBufferSim) */
-.qbs-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
-.qbs-about { font-size: var(--step--1); color: var(--muted); }
-.qbs .stage-bar .btn.primary { margin-left: auto; }
-.qbs-link { fill: none; stroke: var(--line); stroke-width: 2; }
-.qbs-node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
-.qbs-l1 { fill: var(--ink); font-family: var(--font-body); font-size: 12.5px; font-weight: 600; }
-.qbs-l2 { fill: var(--muted); font-family: var(--font-body); font-size: 11px; }
-.qbs-queue rect:first-child { fill: var(--bg); stroke: var(--accent); stroke-width: 1.5; }
-.qbs-queue.off rect:first-child { stroke: var(--muted); stroke-dasharray: 5 5; fill: none; }
-.qbs-msg { fill: var(--accent); }
-.qbs-more { fill: var(--accent); font-family: var(--font-mono); font-size: 11px; font-weight: 700; }
-.qbs-worker rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.2; transition: fill .2s, stroke .2s, opacity .2s; }
-.qbs-worker text { fill: var(--ink); font-family: var(--font-mono); font-size: 10.5px; }
-.qbs-worker.busy rect { fill: var(--ok-soft); stroke: var(--ok); }
-.qbs-worker.ghost { opacity: .35; }
-.qbs-worker.ghost rect { stroke-dasharray: 4 3; }
-.qbs-axis { stroke: var(--line); stroke-width: 1; }
-.qbs-lost { fill: var(--bad); opacity: .8; }
-.qbs-line { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; }
-.qbs-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
-.qbs-wait { background: var(--accent-soft); color: var(--ink); }
-.qbs-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 12px; font-size: var(--step--1); }
-.qbs-result.ok { background: var(--ok-soft); }
-.qbs-result.bad { background: var(--bad-soft); }
+@reference "../../../styles/app.css";
 
-/* Life of a message (messaging/MessageLifeSim), shared by FifoSim */
-.mls-scenarios { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
-.mls-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 3px 8px; overflow-wrap: anywhere; }
-.mls-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
-.mls .stage-bar .btn.primary { margin-left: auto; }
-.mls-clock { fill: var(--accent); font-family: var(--font-mono); font-size: 13px; font-weight: 700; }
-.mls-counter { fill: var(--muted); font-family: var(--font-mono); font-size: 11.5px; }
-.mls-link { fill: none; stroke: var(--line); stroke-width: 2; }
-.mls-link.dash { stroke-dasharray: 5 4; stroke: var(--edge); }
-.mls-link.ghost { stroke: var(--line); }
-.mls-src rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
-.mls-src text { fill: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
-.mls-src text.mls-l2 { fill: var(--muted); font-size: 10px; font-weight: 400; }
-.mls-lane rect { fill: var(--bg); stroke: var(--accent); stroke-width: 1.5; }
-.mls-lane text { fill: var(--muted); font-family: var(--font-body); font-size: 11px; font-weight: 600; }
-.mls-lane.dlq rect { stroke: var(--edge); }
-.mls-lane.dlq text { fill: var(--edge); }
-.mls-lane.ghost rect { stroke: var(--muted); stroke-dasharray: 5 5; fill: none; }
-.mls-lane.ghost text { fill: var(--muted); }
-.mls-worker rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill .2s, stroke .2s; }
-.mls-worker.busy rect { fill: var(--accent-soft); stroke: var(--accent); }
-.mls-worker.wait rect { fill: var(--accent-soft); stroke: var(--accent); stroke-dasharray: 5 4; }
-.mls-worker.dead rect { fill: var(--bad-soft); stroke: var(--bad); }
-.mls-l1 { fill: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
-.mls-l2 { fill: var(--muted); font-family: var(--font-body); font-size: 10.5px; }
-.mls-sep { stroke: var(--line); stroke-dasharray: 3 4; }
-.mls-tok { transition: transform .6s ease, opacity .4s; }
-.mls-tok rect { fill: var(--surface); stroke: var(--ink); stroke-width: 1.3; }
-.mls-tok text { fill: var(--ink); font-family: var(--font-mono); font-size: 11px; font-weight: 600; }
-.mls-tok.pro rect { fill: var(--accent); stroke: var(--accent); }
-.mls-tok.pro > text:not(.mls-note) { fill: var(--on-accent); }
-.mls-tok.b rect { fill: var(--edge-soft); stroke: var(--edge); }
-.mls-tok.bad rect { fill: var(--bad-soft); stroke: var(--bad); }
-.mls-tok.hidden { opacity: 0; }
-.mls-tok.dim { opacity: .4; }
-.mls-tok.done rect { fill: var(--ok-soft); stroke: var(--ok); }
-.mls-tok.done > text:not(.mls-note) { fill: var(--ink); }
-.mls-tok text.mls-note { fill: var(--accent); font-family: var(--font-body); font-size: 10px; font-weight: 600; }
-.mls-tok text.mls-note.bad { fill: var(--bad); }
-.mls-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
-.mls-tag { white-space: nowrap; }
-.mls-tag.ok, .mls-tag.hit { background: var(--ok-soft); color: var(--ok); }
-.mls-tag.bad { background: var(--bad-soft); color: var(--bad); }
-.mls-tag.info { background: var(--bg); color: var(--muted); }
-.mls-tag.edge { background: var(--edge-soft); color: var(--edge); }
-.log li.mls-result { margin-top: 6px; padding: 8px 10px; border-radius: 12px; display: block; }
-.mls-result.ok { background: var(--ok-soft); }
-.mls-result.bad { background: var(--bad-soft); }
-@media (prefers-reduced-motion: reduce) { .mls-tok { transition: none; } }
+/* Messaging lesson simulations: SVG parts and state classes of QueueBufferSim, MessageLifeSim and FifoSim, and the
+   log tags whose tone comes from the scenario data. Layout lives in the markup. */
+@layer components {
+  /* QueueBufferSim: web tier, queue (.off when not used) with its messages, workers (.busy, .ghost) and backlog chart. */
+  .qbs-link { @apply fill-none stroke-line stroke-2; }
+  .qbs-node rect { @apply fill-surface stroke-line stroke-[1.5]; }
+  .qbs-l1 { @apply fill-ink font-body text-[12.5px] font-semibold; }
+  .qbs-l2 { @apply fill-muted font-body text-[11px]; }
+  .qbs-queue rect:first-child { @apply fill-bg stroke-accent stroke-[1.5]; }
+  .qbs-queue.off rect:first-child { @apply fill-none stroke-muted; stroke-dasharray: 5 5; }
+  .qbs-msg { @apply fill-accent; }
+  .qbs-more { @apply fill-accent font-mono text-[11px] font-bold; }
+  .qbs-worker rect { @apply fill-surface stroke-line stroke-[1.2]; transition: fill .2s, stroke .2s, opacity .2s; }
+  .qbs-worker text { @apply fill-ink font-mono text-[10.5px]; }
+  .qbs-worker.busy rect { @apply fill-ok-soft stroke-ok; }
+  .qbs-worker.ghost { @apply opacity-35; }
+  .qbs-worker.ghost rect { stroke-dasharray: 4 3; }
+  .qbs-axis { @apply stroke-line stroke-1; }
+  .qbs-lost { @apply fill-bad opacity-80; }
+  .qbs-line { @apply fill-none stroke-accent stroke-[2.5]; stroke-linejoin: round; }
 
-/* FIFO ordering and dedup (messaging/FifoSim) */
-.ffs-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
-.ffs-toggle:has(input:disabled) { opacity: .5; cursor: default; }
-.ffs .stage-bar .btn.primary { margin-left: auto; }
-.ffs-about { margin: 10px 16px 0; font-size: var(--step--1); color: var(--muted); }
-.ffs-tok text { font-size: 10.5px; }
-.ffs-balance { margin-top: 10px; }
+  /* MessageLifeSim (also drawn by FifoSim): producer, queue lanes (.dlq, .ghost), consumers (.busy, .wait, .dead)
+     and message tokens (.pro, .b, .bad, .hidden, .dim, .done) with an optional note above them. */
+  .mls-clock { @apply fill-accent font-mono text-[13px] font-bold; }
+  .mls-counter { @apply fill-muted font-mono text-[11.5px]; }
+  .mls-link { @apply fill-none stroke-line stroke-2; }
+  .mls-link.dash { @apply stroke-edge; stroke-dasharray: 5 4; }
+  .mls-link.ghost { @apply stroke-line; }
+  .mls-src rect { @apply fill-surface stroke-line stroke-[1.5]; }
+  .mls-src text { @apply fill-ink font-body text-[12px] font-semibold; }
+  .mls-src text.mls-l2 { @apply fill-muted text-[10px] font-normal; }
+  .mls-lane rect { @apply fill-bg stroke-accent stroke-[1.5]; }
+  .mls-lane text { @apply fill-muted font-body text-[11px] font-semibold; }
+  .mls-lane.dlq rect { @apply stroke-edge; }
+  .mls-lane.dlq text { @apply fill-edge; }
+  .mls-lane.ghost rect { @apply fill-none stroke-muted; stroke-dasharray: 5 5; }
+  .mls-lane.ghost text { @apply fill-muted; }
+  .mls-worker rect { @apply fill-surface stroke-line stroke-[1.5]; transition: fill .2s, stroke .2s; }
+  .mls-worker.busy rect { @apply fill-accent-soft stroke-accent; }
+  .mls-worker.wait rect { @apply fill-accent-soft stroke-accent; stroke-dasharray: 5 4; }
+  .mls-worker.dead rect { @apply fill-bad-soft stroke-bad; }
+  .mls-l1 { @apply fill-ink font-body text-[12px] font-semibold; }
+  .mls-l2 { @apply fill-muted font-body text-[10.5px]; }
+  .mls-sep { @apply stroke-line; stroke-dasharray: 3 4; }
+  .mls-tok { transition: transform .6s ease, opacity .4s; }
+  .mls-tok rect { @apply fill-surface stroke-ink stroke-[1.3]; }
+  .mls-tok text { @apply fill-ink font-mono text-[11px] font-semibold; }
+  .mls-tok.pro rect { @apply fill-accent stroke-accent; }
+  .mls-tok.pro > text:not(.mls-note) { @apply fill-on-accent; }
+  .mls-tok.b rect { @apply fill-edge-soft stroke-edge; }
+  .mls-tok.bad rect { @apply fill-bad-soft stroke-bad; }
+  .mls-tok.hidden { @apply opacity-0; }
+  .mls-tok.dim { @apply opacity-40; }
+  .mls-tok.done rect { @apply fill-ok-soft stroke-ok; }
+  .mls-tok.done > text:not(.mls-note) { @apply fill-ink; }
+  .mls-tok text.mls-note { @apply fill-accent font-body text-[10px] font-semibold; }
+  .mls-tok text.mls-note.bad { @apply fill-bad; }
+  /* FifoSim draws smaller token labels. */
+  .ffs-tok text { @apply text-[10.5px]; }
+  /* Log tag tinted by the step's tone (ok/hit, bad, info, edge). */
+  .mls-tag { @apply whitespace-nowrap; }
+  .mls-tag.ok, .mls-tag.hit { @apply bg-ok-soft text-ok; }
+  .mls-tag.bad { @apply bg-bad-soft text-bad; }
+  .mls-tag.info { @apply bg-bg text-muted; }
+  .mls-tag.edge { @apply bg-edge-soft text-edge; }
 
-/* FIFO batching (messaging/FifoBatchCalc) */
-.fbc-slider { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
-.fbc-slider input { flex: 1; min-width: 80px; accent-color: var(--accent); }
-.fbc-num { font-family: var(--font-mono); min-width: 2ch; text-align: right; }
-.fbc-bars { display: grid; gap: 10px; padding: 14px 16px; }
-.fbc-row { display: grid; grid-template-columns: 110px minmax(0, 1fr) auto; gap: 10px; align-items: center; font-size: var(--step--1); }
-.fbc-track { position: relative; height: 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
-.fbc-fill { height: 100%; border-radius: 999px; transition: width .3s ease; }
-.fbc-fill.need { background: var(--accent); }
-.fbc-fill.ok { background: var(--ok); }
-.fbc-fill.bad { background: var(--bad); }
-.fbc-limit { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--ink); }
-.fbc-result { margin: 0; padding: 8px 10px; border-radius: 12px; font-size: var(--step--1); }
-.fbc-result.ok { background: var(--ok-soft); }
-.fbc-result.bad { background: var(--bad-soft); }
-@media (max-width: 520px) {
-  .fbc-row { grid-template-columns: 1fr auto; }
-  .fbc-row .fbc-track { grid-column: 1 / -1; grid-row: 2; }
-}
+  @media (prefers-reduced-motion: reduce) { .mls-tok { transition: none; } }
 }
