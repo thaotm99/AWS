@@ -170,8 +170,8 @@ export default function RecoverySim() {
   const badSeg: Seg = incident === "corrupt" ? [T_BAD, Math.min(clock, T_FOUND)] : [0, 0];
 
   return (
-    <div className="stage rcv">
-      <div className="rcv-row" role="group" aria-label={L({ vi: "Sự cố", en: "Incident" })}>
+    <div className="stage">
+      <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Sự cố", en: "Incident" })}>
         {(Object.keys(INCIDENTS) as IncidentId[]).map((id) => (
           <button key={id} className="chip" aria-pressed={id === incident} disabled={busy && id !== incident} onClick={() => pickIncident(id)}>
             {L(INCIDENTS[id].name)}
@@ -185,9 +185,9 @@ export default function RecoverySim() {
             {L(o.name)}
           </button>
         ))}
-        <button className="btn primary rcv-play" onClick={run} disabled={busy}>{L({ vi: "Chạy", en: "Run" })}</button>
+        <button className="btn primary ml-auto" onClick={run} disabled={busy}>{L({ vi: "Chạy", en: "Run" })}</button>
       </div>
-      <p className="rcv-about">{L(inc.about)}</p>
+      <p className="mx-4 mt-2.5 mb-0 text-step--1 text-muted">{L(inc.about)}</p>
       <div className="svg-wrap">
         <svg viewBox="0 30 820 200" role="img" aria-label={L({ vi: "Dòng thời gian một ngày của bảng Orders, từ 0 giờ tới 18 giờ, với sự cố và điểm khôi phục", en: "Timeline of one day of the Orders table, from 0:00 to 18:00, with the incident and the restore point" })}>
           {Array.from({ length: END / 3 + 1 }, (_, i) => i * 3).map((h) => (
@@ -242,14 +242,14 @@ export default function RecoverySim() {
       </div>
       <div className="readout" aria-live="polite">
         {!done ? (
-          <p className="rcv-hint">{L({ vi: <>Chọn sự cố và phương án khôi phục, sau đó nhấn <b>Chạy</b>.</>, en: <>Choose an incident and a recovery option, then press <b>Run</b>.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn sự cố và phương án khôi phục, sau đó nhấn <b>Chạy</b>.</>, en: <>Choose an incident and a recovery option, then press <b>Run</b>.</> })}</p>
         ) : (
           <>
             <div className="status">
               <span className={"pill " + (opt.ok || opt.kept ? "ok" : "bad")}><i />{L({ vi: "Dữ liệu mất: ", en: "Data lost: " })}{L(opt.lostText)}</span>
-              <span className="pill rcv-muted"><i />{L({ vi: "Ứng dụng ngừng: ", en: "App downtime: " })}{L(opt.downText)}</span>
+              <span className="pill border border-line bg-bg text-muted"><i />{L({ vi: "Ứng dụng ngừng: ", en: "App downtime: " })}{L(opt.downText)}</span>
             </div>
-            <p className={`rcv-result ${opt.ok ? "ok" : "bad"}`}>{rich(L(opt.note))}</p>
+            <p className={`mx-0 mt-2.5 mb-0 rounded-[12px] px-2.5 py-2 text-step--1 ${opt.ok ? "bg-ok-soft" : "bg-bad-soft"}`}>{rich(L(opt.note))}</p>
           </>
         )}
       </div>

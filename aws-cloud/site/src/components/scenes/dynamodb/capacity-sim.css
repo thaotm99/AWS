@@ -1,28 +1,21 @@
-/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
-@layer legacy {
-/* One day of DynamoDB capacity (dynamodb/CapacitySim) */
-.dcap-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
-.dcap .stage-bar .dcap-play { margin-left: auto; }
-.dcap-about { margin: 10px 16px 0; font-size: var(--step--1); color: var(--muted); }
-.dcap-grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
-.dcap-bar { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1; transition: fill .2s, stroke .2s, opacity .2s; }
-.dcap-bar.over { fill: var(--bad-soft); stroke: var(--bad); }
-.dcap-bar.ghost { opacity: .25; }
-.dcap-bar.cached { fill: var(--edge-soft); stroke: var(--edge); }
-.dcap-cap { fill: none; stroke: var(--ok); stroke-width: 3; stroke-linejoin: round; }
-.dcap-now { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 2 3; }
-.dcap-title { fill: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
-.dcap-slot { fill: var(--bg); stroke: var(--line); stroke-width: 1; }
-.dcap-part { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.2; transition: y .25s, height .25s, fill .2s, stroke .2s; }
-.dcap-part.over { fill: var(--bad-soft); stroke: var(--bad); }
-.dcap-ceil { stroke: var(--bad); stroke-width: 1.5; stroke-dasharray: 6 4; }
-.dcap-ceil-t { fill: var(--bad); font-family: var(--font-mono); font-size: 10px; }
-.dcap-flash { fill: var(--bad); font-family: var(--font-mono); font-size: 11px; font-weight: 700; text-anchor: middle; }
-.dcap-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
-.dcap-muted { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
-.dcap-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 12px; font-size: var(--step--1); }
-.dcap-result.ok { background: var(--ok-soft); }
-.dcap-result.bad { background: var(--bad-soft); }
-@media (prefers-reduced-motion: reduce) { .dcap-part { transition: none; } }
-.dcap-ceil-t { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; font-weight: 700; }
+@reference "../../../styles/app.css";
+
+/* One day of DynamoDB capacity (dynamodb/CapacitySim): SVG parts of the hourly chart and the partition view. */
+@layer components {
+  .dcap-grid { @apply stroke-line stroke-1; stroke-dasharray: 3 4; }
+  /* Hourly reads: .over is throttled, .ghost not reached yet, .cached served by DAX. */
+  .dcap-bar { @apply fill-accent-soft stroke-accent stroke-1; transition: fill .2s, stroke .2s, opacity .2s; }
+  .dcap-bar.over { @apply fill-bad-soft stroke-bad; }
+  .dcap-bar.ghost { @apply opacity-25; }
+  .dcap-bar.cached { @apply fill-edge-soft stroke-edge; }
+  .dcap-cap { @apply fill-none stroke-ok stroke-3; stroke-linejoin: round; }
+  .dcap-now { @apply stroke-muted stroke-1; stroke-dasharray: 2 3; }
+  .dcap-title { @apply fill-ink font-body text-[12px] font-semibold; }
+  .dcap-slot { @apply fill-bg stroke-line stroke-1; }
+  .dcap-part { @apply fill-accent-soft stroke-accent stroke-[1.2]; transition: y .25s, height .25s, fill .2s, stroke .2s; }
+  .dcap-part.over { @apply fill-bad-soft stroke-bad; }
+  .dcap-ceil { @apply stroke-bad stroke-[1.5]; stroke-dasharray: 6 4; }
+  .dcap-ceil-t { @apply fill-bad stroke-surface stroke-4 font-mono text-[10px] font-bold; paint-order: stroke; stroke-linejoin: round; }
+  /* "throttle" label that flashText() pops over an hour. */
+  .dcap-flash { @apply fill-bad font-mono text-[11px] font-bold; text-anchor: middle; }
 }
