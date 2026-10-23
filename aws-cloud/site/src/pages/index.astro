@@ -4,8 +4,12 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import T from "../app/T.astro";
 import { getCurriculum } from "../data/exam";
 import ArchitectureMap from "../components/home/ArchitectureMap.tsx";
-import DailyGoals from "../components/home/DailyGoals.tsx";
+import FeatureArt from "../components/home/FeatureArt.astro";
 import { practiceCatalog } from "../modules/practice/content/PracticeCatalog";
+import { LABS } from "../lib/labs";
+import { DRILLS } from "../lib/drills";
+import { COMPARE } from "../lib/compare";
+import { GLOSSARY } from "../data/glossary";
 
 const layers = getCurriculum();
 const concepts = layers.flatMap((l) => l.concepts);
@@ -18,12 +22,28 @@ const questions = certs.reduce((s, c) => s + c.examCount * c.questionCount, 0);
 // Lesson titles for the map's links, keyed by lesson id.
 const titles = Object.fromEntries(concepts.map((c) => [c.id, c.title]));
 const titlesEn = Object.fromEntries(concepts.map((c) => [c.id, c.titleEn]));
-const features = [1, 2, 3] as const;
+// Key features, each with a figure from the content and a link to where it lives.
+const cert = certs[0];
+const features = [
+  { id: "lessons", href: first ? `/concepts/${first.id}/` : "/", params: { n: lessons } },
+  { id: "practice", href: "/practice/", params: { exams, questions } },
+  { id: "lab", href: "/lab/", params: { labs: LABS.length, drills: DRILLS.length } },
+  { id: "skills", href: `/practice/${cert.id}/skills/` },
+  { id: "compare", href: `/compare/${COMPARE[0].id}/`, params: { n: COMPARE.length } },
+  { id: "flashcards", href: "/flashcards/", params: { n: GLOSSARY.length } },
+  { id: "notes", href: "/notes/" },
+  { id: "progress", href: "/progress/" },
+] as const;
+// The first four get a large animated scene each; the rest share a grid.
+const showcase = features.slice(0, 4);
+const more = features.slice(4);
+const extras = ["lang", "search", "offline", "theme"] as const;
 // Lessons in study order, for the "Continue" link a returning reader gets instead of "Start learning".
 const order = concepts.filter((c) => ready.has(c.id)).map((c) => ({ id: c.id, vi: c.title, en: c.titleEn }));
 ---
 <BaseLayout title="CloudLab" sidebar={false} wide>
-  <section class="hero">
+  <section class="hero hero-split">
+    <div class="hero-copy">
     <p class="hero-eyebrow"><T k="shell.home.eyebrow" /></p>
     <h1><T k="shell.home.title" /></h1>
     <p class="lede"><T k="shell.home.lede" /></p>
@@ -36,30 +56,53 @@ const order = concepts.filter((c) => ready.has(c.id)).map((c) => ({ id: c.id, vi
       )}
       <a class="btn cta" href="/practice/"><T k="shell.home.practice" /></a>
     </div>
-    <dl class="hero-stats">
-      <div><dt><T k="shell.home.statLessons" /></dt><dd>{lessons}</dd></div>
-      <div><dt><T k="shell.home.statExams" /></dt><dd>{exams}</dd></div>
-      <div><dt><T k="shell.home.statQuestions" /></dt><dd>{questions}</dd></div>
-      <div><dt><T k="shell.home.statLanguages" /></dt><dd>VI · EN</dd></div>
-    </dl>
+    </div>
+    <div class="hero-art"><FeatureArt kind="hero" /></div>
   </section>
 
-  <DailyGoals client:idle />
+  <section class="home-features" aria-labelledby="features-title">
+    <h2 id="features-title"><T k="shell.home.featuresTitle" /></h2>
+    <p class="home-sub"><T k="shell.home.featuresLede" /></p>
+    <div class="showcase">
+      {showcase.map((f) => (
+        <article class="showcase-row" data-feature={f.id}>
+          <div class="showcase-art"><FeatureArt kind={f.id} /></div>
+          <div class="showcase-text">
+            <h3><T k={`shell.home.feat.${f.id}.title`} /></h3>
+            <p><T k={`shell.home.feat.${f.id}.body`} /></p>
+            <p class="feature-meta"><T k={`shell.home.feat.${f.id}.meta`} params={"params" in f ? f.params : undefined} /></p>
+            <a class="btn cta" href={f.href}><T k={`shell.home.feat.${f.id}.cta`} /> →</a>
+          </div>
+        </article>
+      ))}
+    </div>
+    <ul class="feature-grid">
+      {more.map((f) => (
+        <li>
+          <a class="feature" href={f.href} data-feature={f.id}>
+            <span class="feature-art"><FeatureArt kind={f.id} /></span>
+            <h3><T k={`shell.home.feat.${f.id}.title`} /></h3>
+            <p><T k={`shell.home.feat.${f.id}.body`} /></p>
+            <span class="feature-foot">
+              <span class="feature-meta"><T k={`shell.home.feat.${f.id}.meta`} params={"params" in f ? f.params : undefined} /></span>
+              <span class="feature-cta"><T k={`shell.home.feat.${f.id}.cta`} /> →</span>
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <div class="home-extras">
+      <h3><T k="shell.home.extras" /></h3>
+      <ul>
+        {extras.map((x) => <li><T k={`shell.home.extra.${x}`} /></li>)}
+      </ul>
+    </div>
+  </section>
 
   <section class="home-map" aria-labelledby="map-title">
     <h2 id="map-title"><T k="shell.home.mapTitle" /></h2>
     <p class="home-sub"><T k="shell.home.mapLede" /></p>
     <ArchitectureMap client:visible titles={titles} titlesEn={titlesEn} />
-  </section>
-
-  <section class="home-features" aria-label="Cách học trên CloudLab" data-i18n-attr="aria-label:shell.home.features">
-    {features.map((n) => (
-      <article class="feature">
-        <span class="feature-n">0{n}</span>
-        <h3><T k={`shell.home.f${n}Title`} /></h3>
-        <p><T k={`shell.home.f${n}Body`} /></p>
-      </article>
-    ))}
   </section>
 </BaseLayout>
 

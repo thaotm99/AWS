@@ -1,0 +1,30 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import T from "../app/T.astro";
+import DailyGoals from "../components/home/DailyGoals.tsx";
+import { practiceCatalog } from "../modules/practice/content/PracticeCatalog";
+
+const cert = practiceCatalog.listCertifications()[0];
+const links = [
+  { href: `/practice/${cert.id}/skills/`, k: "shell.progress.skills" },
+  { href: `/practice/${cert.id}/review/`, k: "shell.progress.review" },
+  { href: "/pomodoro/", k: "shell.progress.pomodoro" },
+  { href: "/notes/", k: "shell.progress.notes" },
+] as const;
+---
+<BaseLayout title="Tiến độ học tập · CloudLab" titleKey="shell.progress.pageTitle" sidebar={false} section="progress">
+  <header class="gl-head">
+    <span class="gl-eyebrow"><T k="shell.progress.eyebrow" /></span>
+    <h1><T k="shell.progress.heading" /></h1>
+    <p class="lede"><T k="shell.progress.lede" /></p>
+  </header>
+
+  <DailyGoals client:load />
+
+  <section class="progress-more" aria-labelledby="progress-more">
+    <h2 id="progress-more"><T k="shell.progress.more" /></h2>
+    <ul>
+      {links.map((l) => <li><a href={l.href}><T k={l.k} />{" →"}</a></li>)}
+    </ul>
+  </section>
+</BaseLayout>
