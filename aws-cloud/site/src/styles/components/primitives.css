@@ -155,7 +155,7 @@
 
 /* ---------- Form fields ---------- */
 input[type="range"] {
-  @apply h-6 cursor-pointer appearance-none bg-transparent accent-accent;
+  @apply m-0.5 h-6 cursor-pointer appearance-none bg-transparent accent-accent;
   &::-webkit-slider-runnable-track { @apply h-1 rounded-[2px] bg-line; }
   &::-moz-range-track { @apply h-1 rounded-[2px] bg-line; }
   &::-webkit-slider-thumb { @apply -mt-[7px] size-[18px] appearance-none rounded-full border-2 border-solid border-surface bg-accent shadow-[0_0_0_1px_var(--color-accent)]; }

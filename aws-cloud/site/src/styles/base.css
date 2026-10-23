@@ -30,6 +30,12 @@ ul:not([class]) { list-style: disc; }
 ol:not([class]) { list-style: decimal; }
 :where(li) > ul:not([class]) { list-style: circle; margin-block: 0; }
 :where(li) > ol:not([class]) { margin-block: 0; }
+/* Markdown tables keep the browser's spacing between and inside cells. */
+table:not([class]) {
+  border-collapse: separate;
+  border-spacing: 2px;
+}
+:where(table:not([class])) :where(th, td) { padding: 1px; }
 code {
   font-family: var(--font-mono);
   font-size: 0.88em;
