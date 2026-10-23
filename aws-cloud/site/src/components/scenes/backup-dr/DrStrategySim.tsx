@@ -266,16 +266,16 @@ export default function DrStrategySim() {
   const rtoBad = elapsed > T.rto;
 
   return (
-    <div className="stage drs">
-      <div className="drs-row" role="group" aria-label={L({ vi: "Mục tiêu của MFTech", en: "MFTech objectives" })}>
-        <span className="drs-label">{L({ vi: "Mục tiêu", en: "Objective" })}</span>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Mục tiêu của MFTech", en: "MFTech objectives" })}>
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Mục tiêu", en: "Objective" })}</span>
         {(Object.keys(TARGETS) as TargetId[]).map((id) => (
           <button key={id} className="chip" aria-pressed={id === target} disabled={busy && id !== target} onClick={() => change(() => { setTarget(id); reset(); })}>
             {L(TARGETS[id].name)}
           </button>
         ))}
       </div>
-      <p className="drs-about">{L(T.about)} <b>RPO ≤ {fm(T.rpo)}, RTO ≤ {fm(T.rto)}.</b></p>
+      <p className="mx-4 mt-2 mb-2.5 text-step--1 text-muted [&_b]:text-ink">{L(T.about)} <b>RPO ≤ {fm(T.rpo)}, RTO ≤ {fm(T.rto)}.</b></p>
       <div className="stage-bar">
         <span className="label">{L({ vi: "Chiến lược", en: "Strategy" })}</span>
         {ORDER.map((id) => (
@@ -284,16 +284,16 @@ export default function DrStrategySim() {
           </button>
         ))}
       </div>
-      <div className="stage-bar">
+      <div className="stage-bar pt-0">
         {S.usesAmi ? (
-          <label className="drs-toggle">
+          <label className="inline-flex cursor-pointer items-center gap-1.5 text-step--1">
             <input type="checkbox" checked={ami} disabled={busy} onChange={(e) => { setAmi(e.target.checked); reset(strat, e.target.checked); }} />
             {L({ vi: "Đã copy AMI của web sang Tokyo", en: "Web AMI already copied to Tokyo" })}
           </label>
         ) : (
-          <span className="drs-note">{L({ vi: "Web tại Tokyo đã chạy sẵn, không cần launch từ AMI.", en: "The web tier in Tokyo is already running; no launch from an AMI is needed." })}</span>
+          <span className="text-step--1 text-muted">{L({ vi: "Web tại Tokyo đã chạy sẵn, không cần launch từ AMI.", en: "The web tier in Tokyo is already running; no launch from an AMI is needed." })}</span>
         )}
-        <button className="btn primary drs-play" onClick={run} disabled={busy}>{L({ vi: "Mô phỏng sự cố Singapore", en: "Simulate Singapore failure" })}</button>
+        <button className="btn primary ml-auto" onClick={run} disabled={busy}>{L({ vi: "Mô phỏng sự cố Singapore", en: "Simulate Singapore failure" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 0 820 390" role="img" aria-label={L({ vi: "Region Singapore chính và Region Tokyo dự phòng; bên dưới là trục thời gian thể hiện dữ liệu bị mất và thời gian gián đoạn", en: "The primary Singapore Region and the standby Tokyo Region; below, a timeline shows data lost and downtime" })}>
@@ -364,25 +364,25 @@ export default function DrStrategySim() {
         </svg>
       </div>
       <div className="readout" aria-live="polite">
-        <div className="drs-cost">
-          <span className="drs-cost-label">{L({ vi: "Chi phí duy trì Tokyo ở trạng thái sẵn sàng", en: "Cost of keeping Tokyo ready" })}</span>
-          <span className="drs-meter"><i style={{ width: `${(S.cost / COST_MAX) * 100}%` }} /></span>
+        <div className="mb-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <span className="text-step--1 font-semibold">{L({ vi: "Chi phí duy trì Tokyo ở trạng thái sẵn sàng", en: "Cost of keeping Tokyo ready" })}</span>
+          <span className="h-2.5 max-w-[260px] flex-[1_1_120px] overflow-hidden rounded-[999px] border border-line bg-bg"><i className="block h-full bg-accent transition-[width] duration-350 ease-[ease]" style={{ width: `${(S.cost / COST_MAX) * 100}%` }} /></span>
           <span className="count">~{S.cost.toLocaleString("en-US")} {L({ vi: "USD/tháng (minh hoạ)", en: "USD/month (illustrative)" })}</span>
         </div>
         {phase === "ready" ? (
-          <p className="drs-hint">{rich(L(S.about))} {L({ vi: <>Chọn <b>Mô phỏng sự cố Singapore</b> để xem thời gian khôi phục tại Tokyo.</>, en: <>Choose <b>Simulate Singapore failure</b> to see the recovery time in Tokyo.</> })}</p>
+          <p className="m-0 text-step--1 text-muted [&_b]:text-ink">{rich(L(S.about))} {L({ vi: <>Chọn <b>Mô phỏng sự cố Singapore</b> để xem thời gian khôi phục tại Tokyo.</>, en: <>Choose <b>Simulate Singapore failure</b> to see the recovery time in Tokyo.</> })}</p>
         ) : (
           <>
-            <ul className="log drs-log">
+            <ul className="log [&>li]:block">
               {log.map((l, i) => <li key={i}>{rich(L(l))}</li>)}
             </ul>
             {phase === "done" && (
               <>
-                <div className="status drs-status">
+                <div className="status mt-2.5">
                   <span className={"pill " + (rpoBad ? "bad" : "ok")}><i />RPO: {L({ vi: `mất ${fmt(S.rpo)}`, en: `${fmtEn(S.rpo)} lost` })}</span>
                   <span className={"pill " + (rtoBad ? "bad" : "ok")}><i />RTO: {fm(rto)}</span>
                 </div>
-                <p className={"drs-result " + (!ok ? "bad" : best === strat ? "ok" : "warn")}>
+                <p className={"mx-0 mt-2.5 mb-0 rounded-[12px] px-2.5 py-2 text-step--1 " + (!ok ? "bg-bad-soft" : best === strat ? "bg-ok-soft" : "bg-accent-soft")}>
                   {rich(L(
                     !ok
                       ? { vi: `Chưa đạt mục tiêu. ${S.usesAmi && !ami && meets(strat, target, true) ? "Nếu copy AMI sang Tokyo từ trước, mục tiêu sẽ đạt do loại bỏ được bước cài đặt ứng dụng. " : ""}Với mục tiêu này, phương án có chi phí thấp nhất vẫn đạt yêu cầu là **${STRATS[best].name}**.`,

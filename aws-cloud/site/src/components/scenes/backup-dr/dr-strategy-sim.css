@@ -1,57 +1,40 @@
-/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
-@layer legacy {
-/* Four DR strategies against a Region outage (backup-dr/DrStrategySim) */
-.drs-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
-.drs-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
-.drs-about { margin: 8px 16px 10px; font-size: var(--step--1); color: var(--muted); }
-.drs-about b { color: var(--ink); }
-.drs .stage-bar + .stage-bar { border-top: 0; padding-top: 0; }
-.drs-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
-.drs-note { font-size: var(--step--1); color: var(--muted); }
-.drs .stage-bar .drs-play { margin-left: auto; }
-.drs-user circle, .drs-user path { fill: var(--muted); }
-.drs-t { fill: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
-.drs-s { fill: var(--muted); font-family: var(--font-body); font-size: 10px; }
-.drs-link { fill: none; stroke: var(--line); stroke-width: 2; transition: stroke .3s, opacity .3s; }
-.drs-link.on { stroke: var(--ok); }
-.drs-link.off { stroke-dasharray: 4 5; opacity: .5; }
-.drs-region rect { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 5 4; transition: fill .3s, stroke .3s; }
-.drs-region text { fill: var(--muted); font-family: var(--font-body); font-size: 11.5px; font-weight: 600; }
-.drs-region.down rect { fill: var(--bad-soft); fill-opacity: .5; stroke: var(--bad); }
-.drs-region.down text { fill: var(--bad); }
-.drs-region.dr rect { fill: var(--edge-soft); fill-opacity: .25; stroke: var(--edge); }
-.drs-region.dr text { fill: var(--edge); }
-.drs-node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill .25s, stroke .25s, opacity .25s; }
-.drs-node.r53 rect { stroke: var(--accent); }
-.drs-node.run rect { fill: var(--ok-soft); stroke: var(--ok); }
-.drs-node.idle rect { fill: var(--accent-soft); stroke: var(--accent); stroke-dasharray: 5 4; }
-.drs-node.none { opacity: .55; }
-.drs-node.none rect { stroke-dasharray: 3 4; }
-.drs-node.work rect { fill: var(--edge-soft); stroke: var(--edge); }
-.drs-node.down rect { fill: var(--bad-soft); stroke: var(--bad); }
-.drs-node.down .drs-s { fill: var(--bad); }
-.drs-axis { stroke: var(--muted); stroke-width: 1.2; }
-.drs-tick { stroke: var(--muted); stroke-width: 1; }
-.drs-cap { fill: var(--muted); font-family: var(--font-body); font-size: 11px; font-weight: 600; }
-.drs-bar { transition: width .25s, x .25s; }
-.drs-bar.ok { fill: var(--ok-soft); stroke: var(--ok); }
-.drs-bar.bad { fill: var(--bad-soft); stroke: var(--bad); }
-.drs-target { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 4 3; }
-.drs-tl { fill: var(--accent); font-family: var(--font-body); font-size: 10.5px; font-weight: 600; }
-.drs-now { stroke: var(--bad); stroke-width: 2; }
-.drs-clock { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; fill: var(--ink); font-family: var(--font-mono); font-size: 12px; font-weight: 700; }
-.drs-flash { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; fill: var(--ok); font-family: var(--font-mono); font-size: 14px; font-weight: 700; text-anchor: middle; }
-.drs-flash.bad { fill: var(--bad); }
-.drs-cost { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-bottom: 10px; }
-.drs-cost-label { font-size: var(--step--1); font-weight: 600; }
-.drs-meter { flex: 1 1 120px; max-width: 260px; height: 10px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); overflow: hidden; }
-.drs-meter i { display: block; height: 100%; background: var(--accent); transition: width .35s; }
-.drs-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
-.drs-hint b { color: var(--ink); }
-.drs-log li { display: block; }
-.drs-status { margin-top: 10px; }
-.drs-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 12px; font-size: var(--step--1); }
-.drs-result.ok { background: var(--ok-soft); }
-.drs-result.bad { background: var(--bad-soft); }
-.drs-result.warn { background: var(--accent-soft); }
+@reference "../../../styles/app.css";
+
+/* Four DR strategies against a Region outage (backup-dr/DrStrategySim): SVG parts of the Region diagram and the
+   RPO/RTO timeline. Tokyo nodes take the strategy's state: .run, .idle, .none, .work or .down. */
+@layer components {
+  .drs-user circle, .drs-user path { @apply fill-muted; }
+  .drs-t { @apply fill-ink font-body text-[12px] font-semibold; }
+  .drs-s { @apply fill-muted font-body text-[10px]; }
+  .drs-link { @apply fill-none stroke-line stroke-2; transition: stroke .3s, opacity .3s; }
+  .drs-link.on { @apply stroke-ok; }
+  .drs-link.off { @apply opacity-50; stroke-dasharray: 4 5; }
+  .drs-region rect { @apply fill-none stroke-muted stroke-[1.2]; stroke-dasharray: 5 4; transition: fill .3s, stroke .3s; }
+  .drs-region text { @apply fill-muted font-body text-[11.5px] font-semibold; }
+  .drs-region.down rect { @apply fill-bad-soft/50 stroke-bad; }
+  .drs-region.down text { @apply fill-bad; }
+  .drs-region.dr rect { @apply fill-edge-soft/25 stroke-edge; }
+  .drs-region.dr text { @apply fill-edge; }
+  .drs-node rect { @apply fill-surface stroke-line stroke-[1.5]; transition: fill .25s, stroke .25s, opacity .25s; }
+  .drs-node.r53 rect { @apply stroke-accent; }
+  .drs-node.run rect { @apply fill-ok-soft stroke-ok; }
+  .drs-node.idle rect { @apply fill-accent-soft stroke-accent; stroke-dasharray: 5 4; }
+  .drs-node.none { @apply opacity-55; }
+  .drs-node.none rect { stroke-dasharray: 3 4; }
+  .drs-node.work rect { @apply fill-edge-soft stroke-edge; }
+  .drs-node.down rect { @apply fill-bad-soft stroke-bad; }
+  .drs-node.down .drs-s { @apply fill-bad; }
+  .drs-axis { @apply stroke-muted stroke-[1.2]; }
+  .drs-tick { @apply stroke-muted stroke-1; }
+  .drs-cap { @apply fill-muted font-body text-[11px] font-semibold; }
+  .drs-bar { transition: width .25s, x .25s; }
+  .drs-bar.ok { @apply fill-ok-soft stroke-ok; }
+  .drs-bar.bad { @apply fill-bad-soft stroke-bad; }
+  .drs-target { @apply stroke-accent stroke-2; stroke-dasharray: 4 3; }
+  .drs-tl { @apply fill-accent font-body text-[10.5px] font-semibold; }
+  .drs-now { @apply stroke-bad stroke-2; }
+  .drs-clock { @apply fill-ink stroke-surface stroke-4 font-mono text-[12px] font-bold; paint-order: stroke; stroke-linejoin: round; }
+  /* Label that flashText() pops during the failover. */
+  .drs-flash { @apply fill-ok stroke-surface stroke-4 font-mono text-[14px] font-bold; paint-order: stroke; stroke-linejoin: round; text-anchor: middle; }
+  .drs-flash.bad { @apply fill-bad; }
 }

@@ -1,44 +1,35 @@
-/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
-@layer legacy {
-/* One AWS Backup plan against four incidents (backup-dr/BackupPlanSim) */
-.bps .stage-bar + .stage-bar { border-top: 0; padding-top: 0; }
-.bps-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; margin-right: 8px; }
-.bps-events { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
-.bps-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
-.bps-events .bps-play { margin-left: auto; }
-.bps-about { margin: 8px 16px 0; font-size: var(--step--1); color: var(--muted); }
-.bps-cap { fill: var(--muted); font-family: var(--font-body); font-size: 11.5px; font-weight: 600; }
-.bps-axis { stroke: var(--muted); stroke-width: 1.2; }
-.bps-job { stroke: var(--accent); stroke-width: 2; }
-.bps-gap.ok { fill: var(--ok-soft); stroke: var(--ok); }
-.bps-gap.bad { fill: var(--bad-soft); stroke: var(--bad); }
-.bps-gap-t { font-family: var(--font-body); font-size: 11px; font-weight: 600; }
-.bps-gap-t.ok { fill: var(--ok); }
-.bps-gap-t.bad { fill: var(--bad); }
-.bps-box rect { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 5 4; }
-.bps-box text { fill: var(--muted); font-family: var(--font-body); font-size: 11.5px; font-weight: 600; }
-.bps-box.edge rect { fill: var(--edge-soft); fill-opacity: .25; stroke: var(--edge); }
-.bps-box.edge text { fill: var(--edge); }
-.bps-box.acct rect { fill: var(--accent-soft); fill-opacity: .25; stroke: var(--accent); }
-.bps-box.acct text { fill: var(--accent); }
-.bps-link { fill: none; stroke: var(--line); stroke-width: 2; transition: opacity .2s; }
-.bps-link.off { stroke-dasharray: 4 5; opacity: .5; }
-.bps-node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill .25s, stroke .25s, opacity .25s; }
-.bps-node.vault rect { stroke: var(--accent); }
-.bps-node.off { opacity: .45; }
-.bps-node.off rect { stroke: var(--line); stroke-dasharray: 3 4; }
-.bps-node.ok rect, .bps-node.use rect { fill: var(--ok-soft); stroke: var(--ok); }
-.bps-node.bad rect { fill: var(--bad-soft); stroke: var(--bad); }
-.bps-t { fill: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
-.bps-s { fill: var(--muted); font-family: var(--font-body); font-size: 10px; }
-.bps-lock rect { fill: var(--accent); }
-.bps-lock path { fill: none; stroke: var(--accent); stroke-width: 2; }
-.bps-flash { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; fill: var(--ok); font-family: var(--font-mono); font-size: 13px; font-weight: 700; text-anchor: middle; }
-.bps-flash.bad { fill: var(--bad); }
-.bps-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
-.bps-hint b { color: var(--ink); }
-.bps-log li { display: block; }
-.bps-result { margin: 10px 0 0; padding: 8px 10px; border-radius: 12px; font-size: var(--step--1); }
-.bps-result.ok { background: var(--ok-soft); }
-.bps-result.bad { background: var(--bad-soft); }
+@reference "../../../styles/app.css";
+
+/* One AWS Backup plan against four incidents (backup-dr/BackupPlanSim): SVG parts of the job timeline and the
+   vault diagram. Nodes take the incident's result: .ok/.use, .bad, or .off for a vault the plan does not copy to. */
+@layer components {
+  .bps-cap { @apply fill-muted font-body text-[11.5px] font-semibold; }
+  .bps-axis { @apply stroke-muted stroke-[1.2]; }
+  .bps-job { @apply stroke-accent stroke-2; }
+  .bps-gap.ok { @apply fill-ok-soft stroke-ok; }
+  .bps-gap.bad { @apply fill-bad-soft stroke-bad; }
+  .bps-gap-t { @apply font-body text-[11px] font-semibold; }
+  .bps-gap-t.ok { @apply fill-ok; }
+  .bps-gap-t.bad { @apply fill-bad; }
+  .bps-box rect { @apply fill-none stroke-muted stroke-[1.2]; stroke-dasharray: 5 4; }
+  .bps-box text { @apply fill-muted font-body text-[11.5px] font-semibold; }
+  .bps-box.edge rect { @apply fill-edge-soft/25 stroke-edge; }
+  .bps-box.edge text { @apply fill-edge; }
+  .bps-box.acct rect { @apply fill-accent-soft/25 stroke-accent; }
+  .bps-box.acct text { @apply fill-accent; }
+  .bps-link { @apply fill-none stroke-line stroke-2; transition: opacity .2s; }
+  .bps-link.off { @apply opacity-50; stroke-dasharray: 4 5; }
+  .bps-node rect { @apply fill-surface stroke-line stroke-[1.5]; transition: fill .25s, stroke .25s, opacity .25s; }
+  .bps-node.vault rect { @apply stroke-accent; }
+  .bps-node.off { @apply opacity-45; }
+  .bps-node.off rect { @apply stroke-line; stroke-dasharray: 3 4; }
+  .bps-node.ok rect, .bps-node.use rect { @apply fill-ok-soft stroke-ok; }
+  .bps-node.bad rect { @apply fill-bad-soft stroke-bad; }
+  .bps-t { @apply fill-ink font-body text-[12px] font-semibold; }
+  .bps-s { @apply fill-muted font-body text-[10px]; }
+  .bps-lock rect { @apply fill-accent; }
+  .bps-lock path { @apply fill-none stroke-accent stroke-2; }
+  /* Label that flashText() pops on a vault. */
+  .bps-flash { @apply fill-ok stroke-surface stroke-4 font-mono text-[13px] font-bold; paint-order: stroke; stroke-linejoin: round; text-anchor: middle; }
+  .bps-flash.bad { @apply fill-bad; }
 }

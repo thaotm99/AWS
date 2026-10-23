@@ -187,7 +187,7 @@ export default function BackupPlanSim() {
   const points = (Math.round(24 / FREQ[freq].hours) * KEEP[keep].days).toLocaleString("en-US");
 
   return (
-    <div className="stage bps">
+    <div className="stage">
       <div className="stage-bar">
         <span className="label">{L({ vi: "Tần suất", en: "Frequency" })}</span>
         {(Object.keys(FREQ) as FreqId[]).map((id) => (
@@ -199,19 +199,19 @@ export default function BackupPlanSim() {
           <button key={id} className="btn" aria-pressed={id === keep} disabled={busy} onClick={() => edit(() => setKeep(id))}>{L(KEEP[id].name)}</button>
         ))}
       </div>
-      <div className="stage-bar">
-        <label className="bps-toggle"><input type="checkbox" checked={region} disabled={busy} onChange={(e) => edit(() => setRegion(e.target.checked))} />{L({ vi: "Copy sang Tokyo", en: "Copy to Tokyo" })}</label>
-        <label className="bps-toggle"><input type="checkbox" checked={acct} disabled={busy} onChange={(e) => edit(() => setAcct(e.target.checked))} />{L({ vi: "Copy sang account backup", en: "Copy to backup account" })}</label>
-        <label className="bps-toggle"><input type="checkbox" checked={lock} disabled={busy} onChange={(e) => edit(() => setLock(e.target.checked))} />Vault Lock</label>
+      <div className="stage-bar pt-0">
+        <label className="mr-2 inline-flex cursor-pointer items-center gap-1.5 text-step--1"><input type="checkbox" checked={region} disabled={busy} onChange={(e) => edit(() => setRegion(e.target.checked))} />{L({ vi: "Copy sang Tokyo", en: "Copy to Tokyo" })}</label>
+        <label className="mr-2 inline-flex cursor-pointer items-center gap-1.5 text-step--1"><input type="checkbox" checked={acct} disabled={busy} onChange={(e) => edit(() => setAcct(e.target.checked))} />{L({ vi: "Copy sang account backup", en: "Copy to backup account" })}</label>
+        <label className="mr-2 inline-flex cursor-pointer items-center gap-1.5 text-step--1"><input type="checkbox" checked={lock} disabled={busy} onChange={(e) => edit(() => setLock(e.target.checked))} />Vault Lock</label>
       </div>
-      <div className="bps-events" role="group" aria-label={L({ vi: "Sự cố", en: "Incidents" })}>
-        <span className="bps-label">{L({ vi: "Sự cố", en: "Incident" })}</span>
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Sự cố", en: "Incidents" })}>
+        <span className="mr-1 text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Sự cố", en: "Incident" })}</span>
         {(Object.keys(EVENTS) as EventId[]).map((id) => (
           <button key={id} className="chip" aria-pressed={id === ev} disabled={busy && id !== ev} onClick={() => edit(() => setEv(id))}>{L(EVENTS[id].name)}</button>
         ))}
-        <button className="btn primary bps-play" onClick={run} disabled={busy}>{L({ vi: "Chạy mô phỏng", en: "Run simulation" })}</button>
+        <button className="btn primary ml-auto" onClick={run} disabled={busy}>{L({ vi: "Chạy mô phỏng", en: "Run simulation" })}</button>
       </div>
-      <p className="bps-about">{L(EVENTS[ev].about)}</p>
+      <p className="mx-4 mt-2 mb-0 text-step--1 text-muted">{L(EVENTS[ev].about)}</p>
       <div className="svg-wrap">
         <svg viewBox="0 0 820 300" role="img" aria-label={L({ vi: "Backup plan: EFS được backup vào vault chính, có thể copy sang Tokyo và sang account backup", en: "Backup plan: EFS is backed up to the main vault and can be copied to Tokyo and to a backup account" })}>
           <text className="bps-cap" x={X0} y={14}>{L({ vi: `Một ngày của backup plan · mục tiêu RPO ${RPO_HOURS} giờ`, en: `One day of the backup plan · RPO objective ${RPO_HOURS} hours` })}</text>
@@ -258,11 +258,11 @@ export default function BackupPlanSim() {
       </div>
       <div className="readout" aria-live="polite">
         {out === null ? (
-          <p className="bps-hint">{L({ vi: <>Điều chỉnh backup plan, chọn một sự cố, sau đó chọn <b>Chạy mô phỏng</b>. Mô phỏng thể hiện backup job ghi vào vault chính và các bản copy được chuyển sang vault khác.</>, en: <>Adjust the backup plan, choose an incident, then choose <b>Run simulation</b>. The simulation shows backup jobs writing to the main vault and copies moving to other vaults.</> })}</p>
+          <p className="m-0 text-step--1 text-muted [&_b]:text-ink">{L({ vi: <>Điều chỉnh backup plan, chọn một sự cố, sau đó chọn <b>Chạy mô phỏng</b>. Mô phỏng thể hiện backup job ghi vào vault chính và các bản copy được chuyển sang vault khác.</>, en: <>Adjust the backup plan, choose an incident, then choose <b>Run simulation</b>. The simulation shows backup jobs writing to the main vault and copies moving to other vaults.</> })}</p>
         ) : (
           <>
-            <ul className="log bps-log">{out.lines.map((l, i) => <li key={i}>{rich(L(l))}</li>)}</ul>
-            <p className={"bps-result " + (out.ok ? "ok" : "bad")}>
+            <ul className="log [&>li]:block">{out.lines.map((l, i) => <li key={i}>{rich(L(l))}</li>)}</ul>
+            <p className={"mx-0 mt-2.5 mb-0 rounded-[12px] px-2.5 py-2 text-step--1 " + (out.ok ? "bg-ok-soft" : "bg-bad-soft")}>
               <b>{out.ok ? L({ vi: "Khôi phục thành công.", en: "Recovery succeeded." }) : L({ vi: "Chưa đáp ứng.", en: "Not met yet." })}</b> {out.ok ? L({ vi: "Backup plan này chịu được sự cố vừa mô phỏng. Tiếp tục với sự cố khác.", en: "This backup plan survives the simulated incident. Try another incident." }) : L({ vi: "Thay đổi cấu hình phía trên và chạy lại.", en: "Change the settings above and run again." })}
             </p>
           </>
