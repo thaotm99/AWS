@@ -109,6 +109,9 @@ export const vi = {
   },
   result: {
     heading: "Kết quả",
+    weakest: "yếu nhất",
+    learnAgain: "Nên học lại",
+    misses: "sai {n} câu",
     passed: "Đạt",
     failed: "Chưa đạt",
     summary: "Trả lời đúng {correct}/{total} câu · ngưỡng đạt ≈{percent}% ({score}/1000)",

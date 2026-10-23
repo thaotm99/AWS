@@ -1,6 +1,6 @@
 import type { Dispatch } from "../app/events";
 import { Scoring } from "../domain/Scoring";
-import type { Attempt, CertificationDetail, Exam } from "../domain/types";
+import type { Attempt, CertificationDetail, Exam, LearnLink } from "../domain/types";
 import { domainLabel } from "./domainLabel";
 import { routes } from "./routes";
 import { useT } from "./useT";
@@ -19,7 +19,7 @@ interface Props {
 
 export default function ResultPanel({ cert, exam, attempt, topic, review, saving, dispatch }: Props) {
   const tr = useT();
-  const { t } = tr;
+  const { t, locale } = tr;
   const score = Scoring.score(attempt, cert, exam.questions.map((q) => q.id));
   const wrong = exam.questions.filter((q) => attempt.answers[q.id] && !attempt.answers[q.id].correct).length;
   const next = topic || review ? undefined : cert.exams[cert.exams.findIndex((e) => e.id === exam.id) + 1];
@@ -31,6 +31,24 @@ export default function ResultPanel({ cert, exam, attempt, topic, review, saving
     if (attempt.answers[q.id]?.correct) d.right++;
     domains.set(q.domain, d);
   }
+
+  // Weakest domain: the lowest share of right answers among domains with at least two questions.
+  const weakest = [...domains]
+    .filter(([, d]) => d.total >= 2 && d.right < d.total)
+    .sort(([, a], [, b]) => a.right / a.total - b.right / b.total)[0]?.[0];
+
+  // Lesson parts to learn again: those teaching the questions answered wrong, most missed first.
+  const toLearn = new Map<string, { link: LearnLink; misses: number }>();
+  for (const q of exam.questions) {
+    const a = attempt.answers[q.id];
+    if (!a || a.correct) continue;
+    for (const link of q.learn ?? []) {
+      const entry = toLearn.get(link.url) ?? { link, misses: 0 };
+      entry.misses++;
+      toLearn.set(link.url, entry);
+    }
+  }
+  const suggestions = [...toLearn.values()].sort((a, b) => b.misses - a.misses).slice(0, 5);
 
   return (
     <section aria-labelledby="pr-result">
@@ -47,13 +65,31 @@ export default function ResultPanel({ cert, exam, attempt, topic, review, saving
 
       <div className="pr-domains">
         {[...domains].map(([name, d]) => (
-          <div key={name} className="pr-domain">
-            <span className="pr-domain-name">{name ? domainLabel(tr, name) : t("result.other")}</span>
+          <div key={name} className={`pr-domain${name === weakest ? " weakest" : ""}`}>
+            <span className="pr-domain-name">
+              {name ? domainLabel(tr, name) : t("result.other")}
+              {name === weakest && <span className="pr-weak-tag">{t("result.weakest")}</span>}
+            </span>
             <span className="pr-domain-val">{d.right}/{d.total}</span>
             <span className="pr-meter" aria-hidden="true"><span style={{ width: `${(d.right / d.total) * 100}%` }} /></span>
           </div>
         ))}
       </div>
+
+      {suggestions.length > 0 && (
+        <div className="pr-suggest">
+          <h3>{t("result.learnAgain")}</h3>
+          <ol>
+            {suggestions.map(({ link, misses }) => (
+              <li key={link.url}>
+                <a href={link.url}>{link.title[locale]}</a>
+                {link.title[locale] !== link.lesson[locale] && <span className="pr-muted"> · {link.lesson[locale]}</span>}
+                <span className="pr-suggest-n">{t("result.misses", { n: misses })}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
 
       <div className="pr-actions">
         <button type="button" className="btn" disabled={saving} onClick={() => dispatch({ type: "exam/restart" })}>{review ? t("review.again") : t("result.retake")}</button>

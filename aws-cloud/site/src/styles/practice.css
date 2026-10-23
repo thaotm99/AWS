@@ -208,3 +208,12 @@
 .pr-review-card-n { min-width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; background: var(--edge); color: var(--on-accent); font-family: var(--font-mono); font-weight: 700; }
 .pr-empty-review { margin-top: 12px; padding: 20px; border-radius: 12px; border: 1px dashed var(--line); background: var(--surface); }
 .pr-empty-review p { margin: 0 0 8px; }
+
+/* Result: weakest domain and the lesson parts to learn again. */
+.pr-domain.weakest .pr-domain-name { font-weight: 700; }
+.pr-weak-tag { margin-left: 8px; padding: 1px 7px; border-radius: 99px; background: var(--bad-soft, var(--edge-soft)); color: var(--bad, var(--edge)); font-size: 0.75rem; font-weight: 600; }
+.pr-suggest { margin: 18px 0 6px; padding: 14px 16px; border-radius: 12px; background: var(--accent-soft); }
+.pr-suggest h3 { margin: 0 0 8px; font-size: 1rem; color: var(--accent); }
+.pr-suggest ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; font-size: 0.9rem; }
+.pr-suggest a { font-weight: 600; }
+.pr-suggest-n { margin-left: 8px; font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }

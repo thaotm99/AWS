@@ -111,6 +111,9 @@ export const en: Messages<typeof vi> = {
   },
   result: {
     heading: "Results",
+    weakest: "weakest",
+    learnAgain: "Learn these again",
+    misses: "{n} wrong",
     passed: "Pass",
     failed: "Fail",
     summary: "{correct}/{total} correct · ≈{percent}% needed to pass ({score}/1000)",
