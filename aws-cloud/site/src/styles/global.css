@@ -1315,3 +1315,51 @@ main.article:focus { outline: none; }
   .lab-svc small { display: none; }
   .lab-palette { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* ---------- Incident drills (/lab/drills/) ---------- */
+.drill { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 24px; margin-bottom: 40px; align-items: start; }
+.drill-state { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.drill-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.drill-metric { padding: 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; gap: 2px; }
+.drill-metric span, .drill-metric small { font-size: 0.75rem; color: var(--muted); }
+.drill-metric b { font-family: var(--font-mono); font-size: 1.6rem; font-weight: 600; transition: color .4s; }
+.drill-metric[data-bad] { border-color: var(--edge); }
+.drill-metric[data-bad] b { color: var(--edge); }
+.drill-panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.drill-panel { padding: 12px 14px; border-radius: 12px; border: 1px dashed var(--line); background: var(--bg); }
+.drill-panel h3, .drill-log h3 { margin: 0 0 8px; font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500; color: var(--muted); }
+.drill-panel ul, .drill-log ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; font-size: 0.8125rem; }
+.drill-panel li { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; background: var(--surface); }
+.drill-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; background: var(--ok); }
+.drill-panel li[data-state="down"] .drill-dot { background: var(--bad); }
+.drill-panel li[data-state="hot"] .drill-dot { background: var(--edge); }
+.drill-panel li[data-state="busy"] .drill-dot { background: var(--accent); }
+.drill-log { padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
+.drill-log b { font-family: var(--font-mono); font-weight: 600; margin-right: 6px; }
+.drill-play { position: sticky; top: 76px; display: flex; flex-direction: column; gap: 12px; padding: 18px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); }
+.drill-step { margin: 0; font-size: 0.8125rem; color: var(--muted); }
+.drill-at { font-family: var(--font-mono); color: var(--edge); font-weight: 600; margin-right: 6px; }
+.drill-situation { margin: 0; font-size: 0.9375rem; line-height: 1.6; }
+.drill-options { margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 8px; }
+.drill-options legend { font-weight: 700; font-size: 1rem; margin-bottom: 10px; padding: 0; }
+.drill-option { min-height: 52px; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; font-size: 0.875rem; line-height: 1.45; text-align: left; cursor: pointer; }
+.drill-option:hover:not(:disabled) { border-color: var(--accent); }
+.drill-option:disabled { cursor: default; opacity: .6; }
+.drill-option[aria-pressed="true"] { opacity: 1; }
+.drill-option[data-verdict="good"] { border-color: var(--ok); background: var(--ok-soft); }
+.drill-option[data-verdict="partial"], .drill-option[data-verdict="bad"] { border-color: var(--edge); }
+.drill-option[data-verdict="bad"] { text-decoration: line-through; text-decoration-color: var(--edge); }
+.drill-feedback { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--edge); background: var(--edge-soft); display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.drill-feedback[data-verdict="good"] { border-color: var(--ok); background: var(--ok-soft); }
+.drill-feedback p { margin: 0; font-size: 0.875rem; line-height: 1.6; }
+.drill-feedback .btn { min-height: 44px; padding: 0 18px; margin-top: 4px; }
+.drill-retry { color: var(--muted); }
+.drill-end h2 { margin: 0 0 6px; font-size: 1.25rem; }
+.drill-end p { margin: 0 0 10px; line-height: 1.6; }
+.drill-score { font-family: var(--font-mono); color: var(--accent); font-weight: 600; }
+.drill-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.drill-actions .btn { min-height: 44px; text-decoration: none; }
+@media (max-width: 900px) {
+  .drill { grid-template-columns: minmax(0, 1fr); }
+  .drill-play { position: static; order: -1; }
+}

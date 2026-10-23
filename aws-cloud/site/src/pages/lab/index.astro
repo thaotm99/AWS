@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import T from "../../app/T.astro";
 import L from "../../components/L.astro";
 import { LABS } from "../../lib/labs";
+import { DRILLS } from "../../lib/drills";
 ---
 <BaseLayout title="Lab · CloudLab" titleKey="shell.lab.pageTitle" description="Dựng kiến trúc ShopViet trên AWS theo yêu cầu và kiểm tra thiết kế." section="lab" sidebar={false}>
   <header class="gl-head">
@@ -28,13 +29,42 @@ import { LABS } from "../../lib/labs";
       ))}
     </ol>
   </section>
+
+  <section class="lab-hub" aria-labelledby="lab-drills">
+    <h2 id="lab-drills"><T k="shell.drill.hub" /></h2>
+    <ol class="lab-list">
+      {DRILLS.map((drill, i) => (
+        <li>
+          <a href={`/lab/drills/${drill.id}/`} data-drill={drill.id} data-steps={drill.steps.length}>
+            <span class="lab-list-no">{String(i + 1).padStart(2, "0")}</span>
+            <span class="lab-list-text">
+              <b><L vi={drill.title.vi} en={drill.title.en} /></b>
+              <small><L vi={drill.brief.vi} en={drill.brief.en} /></small>
+            </span>
+            <span class="lab-list-done" hidden></span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </section>
 </BaseLayout>
 
 <script>
   import { readLabs } from "../../lib/labs";
+  import { readDrills } from "../../lib/drills";
 
   const labs = readLabs();
   for (const a of document.querySelectorAll<HTMLElement>("[data-lab]")) {
     if (labs[a.dataset.lab!]?.done) a.querySelector<HTMLElement>(".lab-list-done")!.hidden = false;
+  }
+  // A drill played shows its best first-try score.
+  const drills = readDrills();
+  for (const a of document.querySelectorAll<HTMLElement>("[data-drill]")) {
+    const d = drills[a.dataset.drill!];
+    const tag = a.querySelector<HTMLElement>(".lab-list-done")!;
+    if (d) {
+      tag.textContent = `${d.best}/${d.steps}`;
+      tag.hidden = false;
+    }
   }
 </script>
