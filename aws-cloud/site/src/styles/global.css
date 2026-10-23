@@ -1030,3 +1030,7 @@ input[type="checkbox"]:disabled, input[type="range"]:disabled { opacity: .5; cur
   .part-next b { font-size: 0.9rem; }
   body:has(.part-pager) .article { padding-bottom: 84px; }
 }
+@media (max-width: 640px) {
+  /* Keep focused or scrolled-to controls clear of the pager pinned to the bottom of the screen. */
+  html:has(.part-pager) { scroll-padding-bottom: 96px; }
+}
