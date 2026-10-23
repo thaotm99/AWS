@@ -48,6 +48,7 @@ export const en: Messages<typeof vi> = {
     yourAnswer: "you chose {keys}",
     explanation: "Explanation",
     noteTitle: "Note from the current AWS documentation:",
+    learnAgain: "Learn it again",
     showOriginal: "Show original (EN)",
     showTranslation: "Show translation",
     notTranslated: "This question has no Vietnamese translation yet; showing the original.",

@@ -194,3 +194,9 @@
 .pr-crash pre { white-space: pre-wrap; font-size: 0.75rem; max-height: 240px; overflow: auto; background: var(--bg); padding: 10px; border-radius: 6px; }
 .pr-note { margin-top: 10px; padding: 10px 12px; border-left: 3px solid var(--edge); background: var(--edge-soft); border-radius: 0 8px 8px 0; font-size: 0.875rem; }
 .pr-note a { margin-left: 4px; }
+
+/* Lesson parts that teach the question, shown with the verdict. */
+.pr-learn { margin-top: 12px; padding: 10px 12px; border-radius: 10px; background: var(--accent-soft); font-size: 0.875rem; }
+.pr-learn b { display: block; margin-bottom: 4px; color: var(--accent); }
+.pr-learn ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.pr-learn a { font-weight: 600; }

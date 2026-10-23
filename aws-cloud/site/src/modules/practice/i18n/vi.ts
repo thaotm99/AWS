@@ -46,6 +46,7 @@ export const vi = {
     yourAnswer: "phương án đã chọn: {keys}",
     explanation: "Giải thích",
     noteTitle: "Lưu ý theo tài liệu AWS hiện tại:",
+    learnAgain: "Học lại trong bài",
     showOriginal: "Xem bản gốc (EN)",
     showTranslation: "Xem bản dịch",
     notTranslated: "Câu này chưa có bản dịch tiếng Việt, đang hiển thị bản gốc.",

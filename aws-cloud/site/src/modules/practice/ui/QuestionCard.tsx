@@ -33,6 +33,8 @@ export default function QuestionCard({ question: translated, original, total, an
   const [showOriginal, setShowOriginal] = useState(false);
   // Same id, option keys and answers in both languages; only the text differs.
   const q = showOriginal && original ? original : translated;
+  // Lesson parts that teach this question; the links follow the site language, not the question's.
+  const learn = translated.learn ?? original?.learn ?? [];
   const multi = q.selectCount > 1;
   const count = lookup(`count.${q.selectCount}`);
   // Tolerates answers saved without `chosen` (damaged or older records).
@@ -107,6 +109,19 @@ export default function QuestionCard({ question: translated, original, total, an
                 <a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer">{s.title}</a>
               ))}
             </aside>
+          )}
+          {learn.length > 0 && (
+            <nav className="pr-learn" aria-label={t("exam.learnAgain")}>
+              <b>{t("exam.learnAgain")}</b>
+              <ul>
+                {learn.map((l) => (
+                  <li key={l.url}>
+                    <a href={l.url}>{l.title[locale]}</a>
+                    {l.title[locale] !== l.lesson[locale] && <span className="pr-muted"> · {l.lesson[locale]}</span>}
+                  </li>
+                ))}
+              </ul>
+            </nav>
           )}
         </div>
       )}

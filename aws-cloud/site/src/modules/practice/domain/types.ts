@@ -40,6 +40,13 @@ export interface QuestionOption {
   html: string;
 }
 
+/** A lesson part (or lesson overview) that teaches a question, in both site languages. */
+export interface LearnLink {
+  url: string;
+  title: { vi: string; en: string };
+  lesson: { vi: string; en: string };
+}
+
 export interface Question {
   id: QuestionId;
   /** False when this question has no translation yet and shows the English original. */
@@ -53,6 +60,8 @@ export interface Question {
   options: QuestionOption[];
   correct: OptionKey[];
   explanationHtml: string;
+  /** Where the lessons teach this question; attached by the content endpoints, absent in older data. */
+  learn?: LearnLink[];
 }
 
 /** A set of questions to work through: a practice test, or every question about one service ("topic"). */
