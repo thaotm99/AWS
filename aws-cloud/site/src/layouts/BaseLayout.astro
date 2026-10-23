@@ -94,7 +94,6 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
         </a>
         <nav class="topnav" aria-label="Chính" data-i18n-attr="aria-label:shell.nav.main">
           <a href="/" aria-current={section === "theory" ? "page" : undefined}><T k="shell.nav.theory" /></a>
-          <a href="#" class="soon" data-soon="shell.nav.scenarios"><T k="shell.nav.scenarios" /></a>
           <a href="/practice/" aria-current={section === "practice" ? "page" : undefined}><T k="shell.nav.practice" /></a>
           <a href="/glossary/" aria-current={section === "glossary" ? "page" : undefined}><T k="shell.nav.glossary" /></a>
         </nav>
@@ -109,7 +108,6 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
       <aside class:list={["sidebar", { "nav-only": !sidebar }]} id="drawer" aria-label="Menu" data-i18n-attr="aria-label:shell.nav.menu">
         <nav class="drawer-nav" aria-label="Chính" data-i18n-attr="aria-label:shell.nav.main">
           <a href="/" aria-current={section === "theory" ? "page" : undefined}><T k="shell.nav.theory" /></a>
-          <a href="#" class="soon" data-soon="shell.nav.scenarios"><T k="shell.nav.scenarios" /></a>
           <a href="/practice/" aria-current={section === "practice" ? "page" : undefined}><T k="shell.nav.practice" /></a>
           <a href="/glossary/" aria-current={section === "glossary" ? "page" : undefined}><T k="shell.nav.glossary" /></a>
         </nav>
