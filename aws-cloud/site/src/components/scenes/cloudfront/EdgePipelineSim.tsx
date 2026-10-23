@@ -237,7 +237,7 @@ export default function EdgePipelineSim() {
         <button className="btn primary" onClick={send} disabled={busy}>{L({ vi: "Gửi request", en: "Send request" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 30 820 222" role="img" aria-label={L({ vi: "Request đi từ khách qua các trạm kiểm tra của CloudFront tại edge, rồi tới origin S3 hoặc ALB", en: "The request goes from the customer through CloudFront's checks at the edge, then to the S3 or ALB origin" })}>
+        <svg viewBox="0 30 820 222" role="img" aria-label={L({ vi: "Request đi từ viewer qua các bước xử lý của CloudFront tại edge location, rồi tới origin S3 hoặc ALB", en: "The request goes from the viewer through CloudFront's processing steps at the edge location, then to the S3 or ALB origin" })}>
           <path d={`M60 ${LANE} H610`} stroke="var(--line)" strokeWidth={2} fill="none" />
           {(Object.keys(ORIGINS) as OriginId[]).map((id) => (
             <path key={id} d={`M610 ${LANE} V${ORIGINS[id].y} H640`} stroke="var(--line)" strokeWidth={2} fill="none" />

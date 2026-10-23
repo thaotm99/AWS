@@ -88,7 +88,7 @@ function scenarios(L: Lang): Scenario[] {
           reqs: [{ line: IMG, ok: true, hops: [
             popMiss(),
             { at: "rec", state: "miss", msg: L({ vi: "Regional edge cache cũng không có object; request được chuyển tới origin.", en: "The regional edge cache does not have it either; the request goes to the origin." }) },
-            { at: "origin", state: "ok", msg: L({ vi: "S3 trả object. CloudFront lưu object tại **cả regional edge cache và POP**; các POP trong khu vực dùng chung cache vùng nên giảm số request lặp lại tới origin.", en: "S3 returns the object. CloudFront caches it at **both the regional edge cache and the POP**; the POPs of an area share the regional cache, which removes repeated requests to the origin." }) },
+            { at: "origin", state: "ok", msg: L({ vi: "S3 trả object. CloudFront lưu object tại **cả regional edge cache và POP**; các POP trong cùng khu vực địa lý dùng chung regional edge cache nên giảm số request lặp lại tới origin.", en: "S3 returns the object. CloudFront caches it at **both the regional edge cache and the POP**; the POPs in a geographic area share the regional edge cache, which removes repeated requests to the origin." }) },
           ] }],
           ok: true,
           result: L({ vi: "200 OK. Lần truy cập tiếp theo từ bất kỳ POP nào trong khu vực có thể được phục vụ từ regional edge cache.", en: "200 OK. The next request from any POP in the area can be served from the regional edge cache." }),
