@@ -10,6 +10,12 @@ import LanguageSwitch from "../modules/shell/ui/LanguageSwitch.astro";
 import ThemeToggle from "../modules/shell/ui/ThemeToggle.astro";
 import { DEFAULT_LOCALE } from "../core/i18n/types";
 import { DEFAULT_THEME, THEMES } from "../core/theme/types";
+import islandScript from "astro/runtime/server/astro-island.prebuilt.js";
+import { ISLAND_STYLES } from "astro/runtime/server/astro-island-styles.js";
+import loadScript from "astro/client/load.prebuilt.js";
+import idleScript from "astro/client/idle.prebuilt.js";
+import visibleScript from "astro/client/visible.prebuilt.js";
+import onlyScript from "astro/client/only.prebuilt.js";
 
 interface Props {
   title: string;
@@ -61,6 +67,13 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
     <meta name="description" content={description} />
     <title>{title}</title>
     <script is:inline set:html={earlyPreferences} />
+    {/* Island bootstrap, always in the head. Astro emits it next to the first island it renders, but a
+        lesson page renders every part of the lesson MDX and keeps only one, so the copy Astro emits
+        can be thrown away with a hidden part and the visible islands would never hydrate. The scripts
+        are idempotent, so Astro's own copies on the page do no harm. */}
+    <style is:inline set:html={ISLAND_STYLES} />
+    <script is:inline set:html={loadScript + idleScript + visibleScript + onlyScript} />
+    <script is:inline set:html={islandScript} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
