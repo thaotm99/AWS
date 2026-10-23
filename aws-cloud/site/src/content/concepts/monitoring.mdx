@@ -106,22 +106,22 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 
 <Story toc={[
-  { href: "#s1", label: "1 · Metric và alarm" },
-  { href: "#s2", label: "2 · Tự động khôi phục bằng alarm action" },
-  { href: "#s3", label: "3 · Bảo toàn log" },
-  { href: "#s4", label: "4 · Truy vết API và tuân thủ cấu hình" },
-  { href: "#s5", label: "5 · Vá instance bằng Systems Manager" },
-  { href: "#s6", label: "6 · Phân biệt nhanh" },
+  { href: "#s1", label: "1 · CloudWatch metric và alarm" },
+  { href: "#s2", label: "2 · Status check và alarm action" },
+  { href: "#s3", label: "3 · CloudWatch Logs và CloudTrail" },
+  { href: "#s4", label: "4 · CloudTrail và AWS Config" },
+  { href: "#s5", label: "5 · Patch Manager và Maintenance Windows" },
+  { href: "#s6", label: "6 · So sánh các tính năng dễ nhầm lẫn" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
 Hệ thống ShopViet đã có load balancer, Auto Scaling group, container và Lambda. Hệ thống đã vận hành ổn định, nhưng đội vận hành thường xuyên cần trả lời các câu hỏi: mức sử dụng CPU hiện tại là bao nhiêu, ai vừa xoá security group, log của instance ngày hôm trước được lưu ở đâu, khi nào thực hiện vá hệ điều hành. Bốn dịch vụ tương ứng với bốn nhóm câu hỏi này: **CloudWatch** (metric, log, alarm), **CloudTrail** (ai đã gọi API nào), **AWS Config** (cấu hình và mức tuân thủ), **Systems Manager** (thao tác trực tiếp trên các instance).
 </Story>
 
-<Scene id="s1" label="Phần 1/6" title="Độ trễ phát hiện của alarm" questions={["exam5_q20", "exam4_q25", "exam3_q15"]}>
+<Scene id="s1" label="Phần 1/6" title="Basic monitoring và detailed monitoring cho EC2 instance" questions={["exam5_q20", "exam4_q25", "exam3_q15"]}>
 
-<p class="scene-intro">Hệ thống cần tự phát hiện khi có vấn đề thay vì chờ khách hàng báo; việc này dựa trên các chỉ số đo liên tục và ngưỡng cảnh báo.</p>
+<p class="scene-intro">Hệ thống cần tự phát hiện sự cố thay vì chờ khách hàng báo lỗi; cơ chế này dựa trên CloudWatch metric được thu thập liên tục và CloudWatch alarm với ngưỡng (threshold) xác định.</p>
 
-Mỗi dịch vụ AWS gửi **metric** lên CloudWatch: CPU của EC2, số lần gọi của Lambda, CPU của một ECS service. Một **alarm** theo dõi một metric, so sánh với ngưỡng, và khi metric vượt ngưỡng trong khoảng thời gian đủ dài thì thực thi **action**: gửi thông báo qua SNS, scale một nhóm tài nguyên, hoặc thao tác trên EC2.
+Mỗi dịch vụ AWS gửi **metric** lên CloudWatch: CPU của EC2, số lần gọi của Lambda, CPU của một ECS service. Một **alarm** theo dõi một metric, so sánh với ngưỡng (threshold), và khi metric vượt ngưỡng trong số evaluation period đã cấu hình thì thực thi **action**: gửi thông báo tới SNS topic, thực thi scaling policy của Auto Scaling group, hoặc thực thi EC2 action.
 
 Một điểm thường bị bỏ qua: theo mặc định, EC2 chỉ gửi metric **mỗi 5 phút** (basic monitoring, không tính phí); detailed monitoring gửi metric mỗi 1 phút và có tính phí. Chạy tình huống livestream hai lần, một lần tắt và một lần bật detailed monitoring:
 
@@ -133,9 +133,9 @@ Lựa chọn metric phù hợp quan trọng tương đương lựa chọn ngư�
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/6" title="Tự động khôi phục instance bằng alarm action" questions={["exam3_q38", "exam3_q57", "exam5_q19", "exam4_q16"]}>
+<Scene id="s2" label="Phần 2/6" title="Status check và CloudWatch alarm action: reboot, recover" questions={["exam3_q38", "exam3_q57", "exam5_q19", "exam4_q16"]}>
 
-<p class="scene-intro">Khi phát hiện máy chủ gặp sự cố, hệ thống có thể tự khởi động lại hoặc khôi phục máy chủ mà không cần người trực.</p>
+<p class="scene-intro">Khi status check của EC2 instance thất bại, CloudWatch alarm có thể tự động reboot hoặc recover instance mà không cần thao tác thủ công.</p>
 
 Trang quản lý kho của ShopViet chạy trên **một** EC2 instance, quy mô chưa cần tới Auto Scaling group. Instance thỉnh thoảng gặp sự cố và việc khởi động lại thủ công ngoài giờ làm việc (ví dụ lúc 3h sáng) là không mong muốn. CloudWatch alarm có thể gọi trực tiếp bốn action của EC2: **stop**, **terminate**, **reboot**, **recover**, không cần Lambda hay script. Ngoài ra, với instance type được hỗ trợ, **simplified automatic recovery** được bật mặc định khi launch; CloudWatch action based recovery là cơ chế cấu hình thêm và không áp dụng cho instance thuộc Auto Scaling group.
 
@@ -147,25 +147,25 @@ EC2 có hai loại status check. **Instance status check** thất bại khi lỗ
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/6" title="Bảo toàn log khi instance bị thay thế" questions={["exam5_q33", "exam1_q61", "exam1_q27"]}>
+<Scene id="s3" label="Phần 3/6" title="Tập trung log bằng CloudWatch Logs và metric filter" questions={["exam5_q33", "exam1_q61", "exam1_q27"]}>
 
-<p class="scene-intro">Máy chủ có thể bị thay thế bất cứ lúc nào, và log lưu trên máy chủ sẽ mất theo; log cần được gửi về một nơi lưu trữ tập trung.</p>
+<p class="scene-intro">EC2 instance trong Auto Scaling group có thể bị terminate bất cứ lúc nào, và log lưu trên instance bị mất theo; log cần được gửi tới CloudWatch Logs để lưu trữ tập trung.</p>
 
 Auto Scaling group của ShopViet scale với tần suất cao, gần như mỗi ngày đều có instance mới thay thế. Một người dùng báo lỗi thanh toán xảy ra hai ngày trước, nhưng instance liên quan đã bị terminate. Trong một sự cố khác, một access key bị lộ được dùng để gọi API liên tục vào ban đêm. Hai sự cố có chung giải pháp: chuyển log ra khỏi instance và để CloudWatch xử lý log.
 
 <LogPipelineSim client:visible />
 
-Trail gửi event tới một S3 bucket, và có thể gửi thêm tới **CloudWatch Logs** và **EventBridge**; Kinesis không nằm trong các đích này. CloudTrail gửi log trung bình khoảng 5 phút sau lệnh gọi API (thời gian này không được đảm bảo). Ngưỡng cảnh báo trong tình huống trên đã được xác định trước (số lệnh gọi bị `AccessDenied`), do đó metric filter và alarm là cơ chế trực tiếp nhất.
+Trail gửi event tới một S3 bucket, và có thể gửi thêm tới **CloudWatch Logs** và **EventBridge**; Kinesis không nằm trong các đích này. CloudTrail gửi log trung bình khoảng 5 phút sau lệnh gọi API (thời gian này không được đảm bảo). Ngưỡng của alarm trong tình huống trên đã được xác định trước (số lệnh gọi bị `AccessDenied`), do đó metric filter và alarm là cơ chế trực tiếp nhất.
 
 **CloudTrail Insights** giải quyết bài toán khác, khi chưa biết trước ngưỡng: Insights phân tích management event và data event trong quá khứ để xác lập **baseline** của tốc độ gọi API và tỷ lệ lỗi API, sau đó sinh **Insights event** khi hoạt động hiện tại lệch khỏi baseline. Insights tính phí riêng; lần đầu bật trên một trail, CloudTrail có thể mất tới 36 giờ mới bắt đầu gửi Insights event. Insights event cũng có thể được gửi vào CloudWatch Logs cùng với các event khác của trail.
 
-Một yêu cầu khác liên quan tới vị trí triển khai: ShopViet mở rộng sang mảng ví điện tử, và quy định bắt buộc dữ liệu cùng workload phải nằm trong data center của công ty. Đội kỹ thuật vẫn cần Kubernetes do AWS quản lý, cùng IAM và CloudWatch như trên cloud. Giải pháp là **AWS Outposts**: AWS lắp đặt Outpost tại site của khách hàng, mở rộng hạ tầng, dịch vụ, API và công cụ của AWS tới đó; EC2, EBS, ECS, RDS và Amazon EKS chạy tại chỗ, còn AWS vận hành và giám sát capacity này như một phần của Region. Direct Connect và Local Zone vẫn đặt workload trên hạ tầng của AWS; Snowball Edge là thiết bị chuyển dữ liệu và xử lý tại biên, và hiện không còn cung cấp cho khách hàng mới.
+Một yêu cầu khác liên quan tới vị trí triển khai: ShopViet mở rộng sang mảng ví điện tử, và quy định bắt buộc dữ liệu cùng workload phải nằm trong on-premises data center của công ty. Đội kỹ thuật vẫn cần Kubernetes do AWS quản lý, cùng IAM và CloudWatch như trên cloud. Giải pháp là **AWS Outposts**: AWS lắp đặt Outpost tại on-premises site của khách hàng, mở rộng hạ tầng, dịch vụ, API và công cụ của AWS tới đó; EC2, EBS, ECS, RDS và Amazon EKS chạy tại chỗ, còn AWS vận hành và giám sát capacity này như một phần của Region. Direct Connect và Local Zone vẫn đặt workload trên hạ tầng của AWS; Snowball Edge là thiết bị chuyển dữ liệu và xử lý tại biên, và hiện không còn cung cấp cho khách hàng mới.
 
 <Takeaway>Log phải được chuyển ra khỏi instance trước khi instance bị terminate: cài đặt CloudWatch agent để gửi log lên CloudWatch Logs. Cảnh báo gần thời gian thực về API call bất thường: CloudTrail gửi vào CloudWatch Logs, metric filter đếm lỗi, alarm gửi thông báo qua SNS. Đích của trail: S3, CloudWatch Logs, EventBridge (không có Kinesis). Phát hiện tốc độ gọi API hoặc tỷ lệ lỗi lệch khỏi baseline mà không cần đặt ngưỡng: CloudTrail Insights (tính phí riêng). Dữ liệu bắt buộc lưu tại chỗ nhưng vẫn cần dịch vụ AWS: Outposts.</Takeaway>
 
 </Scene>
 
-<Scene id="s4" label="Phần 4/6" title="Truy vết thao tác và đánh giá tuân thủ cấu hình" questions={["exam1_q16", "exam3_q29", "exam2_q43", "exam2_q9"]}>
+<Scene id="s4" label="Phần 4/6" title="Ghi nhận API activity bằng CloudTrail, đánh giá compliance bằng AWS Config" questions={["exam1_q16", "exam3_q29", "exam2_q43", "exam2_q9"]}>
 
 <p class="scene-intro">Sau một sự cố, cần trả lời được ai đã làm gì, lúc nào, và cấu hình hiện tại có tuân thủ quy định hay không; mỗi câu hỏi có một dịch vụ cung cấp dữ liệu tương ứng.</p>
 
@@ -173,7 +173,7 @@ Sau một sự cố, đội vận hành ShopViet cần trả lời nhiều câu 
 
 <WhoAnswersSim client:visible />
 
-**CloudTrail** là nhật ký hoạt động: mỗi API call được ghi thành một event; theo mặc định, trail ghi management event, còn data event (ví dụ thao tác trên object S3) phải được bật thêm. **AWS Config** lưu lịch sử cấu hình: mỗi khi tài nguyên thay đổi, Config ghi lại một **configuration item**, và **Config rule** đánh giá cấu hình đó tuân thủ hay không tuân thủ. Hai dịch vụ bổ trợ cho nhau. Chọn từng mốc thời gian trong tuần của security group `sg-web`:
+**CloudTrail** ghi lại hoạt động của user, role và dịch vụ AWS trong account: mỗi API call được ghi thành một event; theo mặc định, trail ghi management event, còn data event (ví dụ thao tác trên S3 object) phải được bật thêm. **AWS Config** lưu lịch sử cấu hình: mỗi khi tài nguyên thay đổi, Config ghi lại một **configuration item**, và **Config rule** đánh giá cấu hình đó tuân thủ hay không tuân thủ. Hai dịch vụ bổ trợ cho nhau. Chọn từng mốc thời gian trong tuần của security group `sg-web`:
 
 <ConfigTimelineSim client:visible />
 
@@ -191,9 +191,9 @@ Khi cần áp dụng cùng một bộ Config rule cho nhiều account, ShopViet 
 
 </Scene>
 
-<Scene id="s5" label="Phần 5/6" title="Vá hàng trăm instance mà không gián đoạn dịch vụ" questions={["exam3_q6", "exam5_q34"]}>
+<Scene id="s5" label="Phần 5/6" title="Vá EC2 instance bằng Patch Manager và Maintenance Windows" questions={["exam3_q6", "exam5_q34"]}>
 
-<p class="scene-intro">Với hàng trăm máy chủ, việc vá lỗi và chạy lệnh thủ công trên từng máy không còn khả thi; cần công cụ thực hiện đồng loạt, theo lịch và có kiểm soát.</p>
+<p class="scene-intro">Với hàng trăm EC2 instance, việc vá và chạy lệnh thủ công trên từng instance không còn khả thi; cần thực hiện đồng loạt trên các managed node, theo lịch và có kiểm soát.</p>
 
 ShopViet có hơn 200 EC2 instance; mỗi tháng đều có bản vá bảo mật cho hệ điều hành. **Systems Manager** thực hiện việc này thông qua **SSM Agent** chạy trên instance: Patch Manager vá theo lịch, Run Command thực thi lệnh trên cả nhóm instance, Automation thực thi runbook nhiều bước. Bước đầu tiên là cấp quyền để agent giao tiếp với Systems Manager. Các instance đã có IAM role riêng để truy cập RDS và Secrets Manager:
 
@@ -232,7 +232,7 @@ Trong đợt vá trước, mọi bản vá đều báo thành công nhưng ngư�
 
 </Scene>
 
-<Scene id="s6" label="Phần 6/6" title="Phân biệt nhanh: các tính năng dễ nhầm trong giám sát và vận hành" questions={["exam1_q61", "exam2_q9", "exam2_q43", "exam3_q6", "exam4_q39", "exam5_q31", "exam6_q41"]}>
+<Scene id="s6" label="Phần 6/6" title="So sánh các tính năng giám sát và vận hành dễ nhầm lẫn" questions={["exam1_q61", "exam2_q9", "exam2_q43", "exam3_q6", "exam4_q39", "exam5_q31", "exam6_q41"]}>
 
 <p class="scene-intro">Nhiều tính năng giám sát và vận hành có tên gần giống nhau; phân biệt được chúng giúp chọn đúng công cụ cho từng nhu cầu.</p>
 
@@ -264,13 +264,13 @@ Một số tính năng của CloudTrail, Config, Systems Manager và Trusted Adv
     notHere: "Các máy cần vá là EC2 instance. Hybrid activation không gắn role cho EC2, và một instance profile chỉ chứa một IAM role.",
     instead: "Default Host Management Configuration, hoặc thêm `AmazonSSMManagedInstanceCore` vào role hiện có của instance (phần 5)." },
   { name: "SSM Parameter Store",
-    use: "Kho cấu hình tập trung dạng tham số có tên: String, StringList, SecureString (mã hoá bằng AWS KMS). Phù hợp với AMI ID, endpoint URL, biến môi trường. Parameter Store không có cơ chế xoay vòng thông tin xác thực; với mật khẩu cơ sở dữ liệu, AWS khuyến nghị Secrets Manager.",
+    use: "Nơi lưu trữ phân cấp, tập trung cho dữ liệu cấu hình dưới dạng parameter có tên: String, StringList, SecureString (mã hoá bằng AWS KMS). Phù hợp với AMI ID, endpoint URL, biến môi trường. Parameter Store không có cơ chế xoay vòng thông tin xác thực; với mật khẩu cơ sở dữ liệu, AWS khuyến nghị Secrets Manager.",
     notHere: "Lambda cần thông tin xác thực ngắn hạn để kết nối RDS PostgreSQL. Lưu mật khẩu vào Parameter Store và tự viết logic xoay vòng vẫn là xác thực bằng mật khẩu dài hạn.",
     instead: "IAM database authentication: Lambda dùng IAM role của function để tạo authentication token (hiệu lực 15 phút) thay cho mật khẩu." },
   { name: "Session Manager",
     use: "Mở shell trên managed node từ console hoặc AWS CLI mà không cần mở inbound port, không cần bastion host và không cần quản lý SSH key; quyền truy cập kiểm soát bằng IAM policy, hoạt động được ghi lại qua CloudTrail, S3 hoặc CloudWatch Logs. Instance phải chạy SSM Agent và là managed node.",
-    notHere: "Đội DevOps cần phiên **SSH** tạm thời từ Console tới instance đã có public IP, bằng khoá chỉ dùng cho phiên đó.",
-    instead: "EC2 Instance Connect: API đẩy SSH public key vào instance metadata, khoá tồn tại 60 giây; mọi yêu cầu kết nối được ghi vào CloudTrail; không tính phí thêm." },
+    notHere: "Đội DevOps cần phiên **SSH** tạm thời từ Console tới instance đã có public IP address, bằng SSH key chỉ dùng cho phiên đó.",
+    instead: "EC2 Instance Connect: API đẩy SSH public key vào instance metadata, key tồn tại 60 giây; mọi yêu cầu kết nối được ghi vào CloudTrail; không tính phí thêm." },
 ]} />
 
 </Scene>
@@ -288,7 +288,7 @@ Phân loại từng tác vụ của ShopViet vào dịch vụ đáp ứng tác v
   cards={[
     ["Metric chu kỳ 1 phút cho EC2", "cw"], ["Tự động reboot instance khi status check thất bại", "cw"], ["Tập trung log của mọi instance", "cw"],
     ["Ai đã xoá security group", "trail"], ["Ghi mọi IAM action của admin mới", "trail"], ["Nguồn event cho metric filter AccessDenied", "trail"], ["Phát hiện tốc độ gọi API lệch khỏi baseline", "trail"],
-    ["Cấu hình security group tại tuần trước", "config"], ["Chứng chỉ import sắp hết hạn", "config"], ["Tự động đóng cổng SSH mở ra Internet", "config"], ["Một bộ rule và remediation cho mọi account", "config"],
+    ["Cấu hình security group tại tuần trước", "config"], ["Chứng chỉ import sắp hết hạn", "config"], ["Tự động đóng port SSH mở ra internet trong security group", "config"], ["Một bộ rule và remediation cho mọi account", "config"],
   ]}
 />
 

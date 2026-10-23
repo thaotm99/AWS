@@ -128,7 +128,7 @@ export default function PatchWindowSim() {
       <div className="svg-wrap">
         <svg viewBox="0 0 820 264" role="img" aria-label={L({ vi: "ALB định tuyến request tới ba EC2 instance trong khi Systems Manager vá lần lượt từng instance", en: "The ALB routes requests to three EC2 instances while Systems Manager patches them one at a time" })}>
           <rect className="dbox dbox-region" x={490} y={12} width={318} height={242} rx={10} />
-          <text className="ts" x={502} y={32}>{L({ vi: "Maintenance Window · CN 02:00 · 1 máy/lượt", en: "Maintenance Window · Sun 02:00 · 1 at a time" })}</text>
+          <text className="ts" x={502} y={32}>{L({ vi: "Maintenance Window · CN 02:00 · 1 instance/lượt", en: "Maintenance Window · Sun 02:00 · 1 instance at a time" })}</text>
           <text className="pws-clock" x={20} y={30}>{tick < 0 ? "01:59" : `02:${String(tick).padStart(2, "0")}`}</text>
           <text className="ts" x={20} y={48}>{doc}</text>
           <circle cx={USERS[0]} cy={USERS[1] - 10} r={7} className="pws-user" />

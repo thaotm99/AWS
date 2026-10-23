@@ -52,7 +52,7 @@ const ITEMS: Item[] = [
     usedBy: "i-web1, i-web2",
     compliant: true,
     event: "RevokeSecurityGroupIngress\nuser: an (console)",
-    note: { vi: "Buổi sáng, An gỡ rule; tài nguyên trở lại trạng thái COMPLIANT. Lịch sử vẫn lưu lại toàn bộ 7 giờ cổng 22 bị mở.", en: "In the morning, An removes the rule; the resource is COMPLIANT again. The history still keeps all 7 hours during which port 22 was open." },
+    note: { vi: "Buổi sáng, An gỡ rule; tài nguyên trở lại trạng thái COMPLIANT. Lịch sử vẫn lưu lại toàn bộ 7 giờ port 22 bị mở.", en: "In the morning, An removes the rule; the resource is COMPLIANT again. The history still keeps all 7 hours during which port 22 was open." },
   },
   {
     day: { vi: "Thứ Sáu", en: "Friday" }, time: "16:40",

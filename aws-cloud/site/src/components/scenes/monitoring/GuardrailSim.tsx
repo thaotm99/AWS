@@ -60,7 +60,7 @@ const SCENARIOS: PScenario[] = [
             { at: "sns", state: "pass", msg: "Email được gửi qua topic của đội bảo mật." },
             { at: "team", state: "pass", msg: "Còn gần một tháng để mua và import chứng chỉ mới." }],
           ok: true, back: false,
-          result: "Không cần viết script hay bảo trì máy chủ. Managed rule đã có sẵn; tham số `daysToExpiration` mặc định 14 ngày và có thể cấu hình lại." }
+          result: "Không cần viết script hay vận hành EC2 instance để chạy script. Managed rule đã có sẵn; tham số `daysToExpiration` mặc định 14 ngày và có thể cấu hình lại." }
       : { steps: [
             { at: "acm", jump: true, state: "wait", tag: "25 NGÀY", msg: "Chứng chỉ import không được tự động gia hạn và ngày hết hạn không được giám sát." },
             { at: "config", state: "skip", msg: "Chưa có rule nào đánh giá." }],
@@ -87,7 +87,7 @@ const SCENARIOS: PScenario[] = [
             { at: "sg", jump: true, state: "change", tag: "THAY ĐỔI", msg: "Cấu hình mới được ghi lại thành một configuration item." },
             { at: "config", state: "change", tag: "NON_COMPLIANT", flash: "22 mở", msg: "Rule `restricted-ssh` (identifier `INCOMING_SSH_DISABLED`) đánh giá NON_COMPLIANT vì SSH được mở cho 0.0.0.0/0." },
             { at: "ssm", state: "pass", msg: "**Remediation action** thực thi runbook, gỡ rule SSH mở ra Internet." },
-            { at: "sg", from: "ssm", state: "pass", tag: "COMPLIANT", relabel: { l2: "đã đóng cổng 22" }, msg: "Security group trở lại trạng thái tuân thủ." }],
+            { at: "sg", from: "ssm", state: "pass", tag: "COMPLIANT", relabel: { l2: "đã đóng port 22" }, msg: "Security group trở lại trạng thái tuân thủ." }],
           ok: true, back: false,
           result: "Cổng 22 chỉ bị mở trong vài phút. Config lưu toàn bộ lịch sử: thời điểm mở và thời điểm đóng." }
       : { steps: [
@@ -95,7 +95,7 @@ const SCENARIOS: PScenario[] = [
             { at: "config", state: "change", tag: "NON_COMPLIANT", flash: "22 mở", msg: "Rule đánh dấu NON_COMPLIANT trên dashboard." },
             { at: "ssm", state: "skip", msg: "Chưa cấu hình remediation, chỉ có cảnh báo." }],
           ok: false, back: false,
-          result: "Config phát hiện được vi phạm, nhưng cổng vẫn mở cho tới khi được khắc phục thủ công. Cần cấu hình **remediation** để tự động khắc phục." },
+          result: "Config phát hiện được vi phạm, nhưng port 22 vẫn mở cho tới khi được khắc phục thủ công. Cần cấu hình **remediation** để tự động khắc phục." },
   },
 ];
 
@@ -153,7 +153,7 @@ const SCENARIOS_EN: PScenario[] = [
             { at: "sns", state: "pass", msg: "An email is sent through the security team's topic." },
             { at: "team", state: "pass", msg: "There is almost a month left to buy and import a new certificate." }],
           ok: true, back: false,
-          result: "No script to write and no server to maintain. The managed rule is ready to use; the `daysToExpiration` parameter defaults to 14 days and can be reconfigured." }
+          result: "No script to write and no EC2 instance to run it on. The managed rule is ready to use; the `daysToExpiration` parameter defaults to 14 days and can be reconfigured." }
       : { steps: [
             { at: "acm", jump: true, state: "wait", tag: "25 DAYS", msg: "The imported certificate is not renewed automatically, and its expiration date is not monitored." },
             { at: "config", state: "skip", msg: "No rule is evaluating yet." }],

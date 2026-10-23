@@ -40,7 +40,7 @@ const SCENARIOS: PScenario[] = [
   ask("Admin mới thao tác gì trên IAM?", "Ghi lại mọi thao tác IAM của tài khoản admin mới", "trail", "IAM",
     "Trail ghi `CreateUser`, `AttachUserPolicy`, `CreateAccessKey`… của từng người dùng.",
     "Thao tác IAM là **management event**, được **CloudTrail** trail ghi theo mặc định. Nên tạo trail ngay từ đầu, cùng với **MFA** cho người dùng có đặc quyền cao."),
-  ask("Tuần trước sg-web mở cổng nào?", "Vào thứ Hai tuần trước, sg-web có những inbound rule nào?", "config", "lịch sử",
+  ask("Tuần trước sg-web mở port nào?", "Vào thứ Hai tuần trước, sg-web có những inbound rule nào?", "config", "lịch sử",
     "**Configuration history** của sg-web: bản ghi cấu hình tại mỗi lần thay đổi, có thể xem lại tại từng thời điểm.",
     "**AWS Config** ghi lại cấu hình mỗi khi tài nguyên thay đổi, kèm quan hệ với tài nguyên khác (instance nào đang sử dụng sg-web)."),
   ask("Có bucket nào đang public?", "Toàn bộ S3 bucket có tuân thủ tiêu chuẩn \"không public\" không?", "config", "3 vi phạm",

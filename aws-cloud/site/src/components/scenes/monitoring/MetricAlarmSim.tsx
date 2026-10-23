@@ -50,9 +50,9 @@ const ramp = (pts: [number, number][]) => {
 const SCENARIOS: Record<ScenarioId, Scenario> = {
   ec2: {
     name: { vi: "Livestream bán hàng", en: "Sales livestream" },
-    about: { vi: "Tại phút thứ 10, phiên livestream của ShopViet bắt đầu. CPU của nhóm web tăng đột biến trong khoảng 10 phút rồi giảm.",
-      en: "At minute 10, ShopViet's livestream starts. The web group's CPU spikes for about 10 minutes, then drops." },
-    metric: { vi: "CPUUtilization (EC2, trung bình nhóm web)", en: "CPUUtilization (EC2, web group average)" },
+    about: { vi: "Tại phút thứ 10, phiên livestream của ShopViet bắt đầu. CPU của Auto Scaling group web tăng đột biến trong khoảng 10 phút rồi giảm.",
+      en: "At minute 10, ShopViet's livestream starts. The web Auto Scaling group CPU spikes for about 10 minutes, then drops." },
+    metric: { vi: "CPUUtilization (EC2, trung bình của Auto Scaling group web)", en: "CPUUtilization (EC2, web Auto Scaling group average)" },
     unit: "%",
     max: 100,
     threshold: 70,

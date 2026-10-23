@@ -106,22 +106,22 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 
 <Story toc={[
-  { href: "#en-s1", label: "1 · Metrics and alarms" },
-  { href: "#en-s2", label: "2 · Automatic recovery with alarm actions" },
-  { href: "#en-s3", label: "3 · Preserving logs" },
-  { href: "#en-s4", label: "4 · API tracing and configuration compliance" },
-  { href: "#en-s5", label: "5 · Patching instances with Systems Manager" },
-  { href: "#en-s6", label: "6 · Quick comparison" },
+  { href: "#en-s1", label: "1 · CloudWatch metrics and alarms" },
+  { href: "#en-s2", label: "2 · Status checks and alarm actions" },
+  { href: "#en-s3", label: "3 · CloudWatch Logs and CloudTrail" },
+  { href: "#en-s4", label: "4 · CloudTrail and AWS Config" },
+  { href: "#en-s5", label: "5 · Patch Manager and Maintenance Windows" },
+  { href: "#en-s6", label: "6 · Comparing easily confused features" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
 The ShopViet system already has load balancers, Auto Scaling groups, containers and Lambda. It runs stably, but the operations team regularly needs to answer questions: what is the current CPU utilization, who just deleted a security group, where are yesterday's instance logs stored, when should operating system patches be applied. Four services correspond to these four groups of questions: **CloudWatch** (metrics, logs, alarms), **CloudTrail** (who called which API), **AWS Config** (configuration and compliance), **Systems Manager** (acting directly on instances).
 </Story>
 
-<Scene id="en-s1" label="Part 1/6" title="The detection delay of an alarm" questions={["exam5_q20", "exam4_q25", "exam3_q15"]}>
+<Scene id="en-s1" label="Part 1/6" title="Basic monitoring and detailed monitoring for EC2 instances" questions={["exam5_q20", "exam4_q25", "exam3_q15"]}>
 
-<p class="scene-intro">A system should detect problems itself instead of waiting for customers to report them; this relies on continuously measured metrics and alert thresholds.</p>
+<p class="scene-intro">A system should detect incidents itself instead of waiting for customers to report them; this relies on continuously collected CloudWatch metrics and CloudWatch alarms with defined thresholds.</p>
 
-Each AWS service sends **metrics** to CloudWatch: EC2 CPU, Lambda invocations, the CPU of an ECS service. An **alarm** watches one metric, compares it with a threshold, and when the metric breaches the threshold for long enough it performs an **action**: sending a notification through SNS, scaling a group of resources, or acting on EC2.
+Each AWS service sends **metrics** to CloudWatch: EC2 CPU, Lambda invocations, the CPU of an ECS service. An **alarm** watches one metric, compares it with a threshold, and when the metric breaches the threshold for the configured number of evaluation periods it performs an **action**: sending a notification to an SNS topic, running a scaling policy of an Auto Scaling group, or performing an EC2 action.
 
 A point that is often overlooked: by default, EC2 sends metrics only **every 5 minutes** (basic monitoring, free of charge); detailed monitoring sends metrics every 1 minute and is charged. Run the livestream scenario twice, once with detailed monitoring off and once with it on:
 
@@ -133,9 +133,9 @@ Choosing the right metric matters as much as choosing the threshold. An ECS serv
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/6" title="Recovering instances automatically with alarm actions" questions={["exam3_q38", "exam3_q57", "exam5_q19", "exam4_q16"]}>
+<Scene id="en-s2" label="Part 2/6" title="Status checks and CloudWatch alarm actions: reboot, recover" questions={["exam3_q38", "exam3_q57", "exam5_q19", "exam4_q16"]}>
 
-<p class="scene-intro">When a server failure is detected, the system can restart or recover the server itself without anyone on call.</p>
+<p class="scene-intro">When an EC2 instance fails a status check, a CloudWatch alarm can reboot or recover the instance automatically, with no manual intervention.</p>
 
 ShopViet's warehouse management page runs on **one** EC2 instance; its scale does not yet need an Auto Scaling group. The instance occasionally fails, and restarting it manually outside working hours (for example at 3:00 a.m.) is undesirable. A CloudWatch alarm can call four EC2 actions directly: **stop**, **terminate**, **reboot**, **recover**, with no Lambda or script. In addition, for supported instance types, **simplified automatic recovery** is enabled by default at launch; CloudWatch action based recovery is an additional mechanism you configure, and it does not apply to instances in an Auto Scaling group.
 
@@ -147,25 +147,25 @@ EC2 has two kinds of status checks. An **instance status check** fails when the 
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/6" title="Preserving logs when instances are replaced" questions={["exam5_q33", "exam1_q61", "exam1_q27"]}>
+<Scene id="en-s3" label="Part 3/6" title="Centralizing logs with CloudWatch Logs and metric filters" questions={["exam5_q33", "exam1_q61", "exam1_q27"]}>
 
-<p class="scene-intro">Servers can be replaced at any time, taking their local logs with them; logs must be shipped to a central store.</p>
+<p class="scene-intro">EC2 instances in an Auto Scaling group can be terminated at any time, and logs stored on an instance are lost with it; logs must be sent to CloudWatch Logs for central storage.</p>
 
 ShopViet's Auto Scaling group scales very frequently, with new instances replacing old ones almost every day. A user reports a payment error that happened two days ago, but the instance involved has already been terminated. In another incident, a leaked access key was used to call APIs continuously at night. Both incidents share a solution: move logs off the instance and let CloudWatch process them.
 
 <LogPipelineSim client:visible />
 
-A trail delivers events to an S3 bucket, and can also deliver them to **CloudWatch Logs** and **EventBridge**; Kinesis is not one of these destinations. CloudTrail delivers logs within an average of about 5 minutes of an API call (this time is not guaranteed). The alert threshold in the scenario above is known in advance (the number of calls denied with `AccessDenied`), so a metric filter and an alarm are the most direct mechanism.
+A trail delivers events to an S3 bucket, and can also deliver them to **CloudWatch Logs** and **EventBridge**; Kinesis is not one of these destinations. CloudTrail delivers logs within an average of about 5 minutes of an API call (this time is not guaranteed). The alarm threshold in the scenario above is known in advance (the number of calls denied with `AccessDenied`), so a metric filter and an alarm are the most direct mechanism.
 
 **CloudTrail Insights** solves a different problem, for when the threshold is not known in advance: Insights analyzes past management and data events to establish a **baseline** of API call rates and API error rates, then generates **Insights events** when current activity deviates from the baseline. Insights is charged separately; after Insights is enabled on a trail for the first time, CloudTrail may take up to 36 hours to begin delivering Insights events. Insights events can also be sent to CloudWatch Logs together with the trail's other events.
 
-Another requirement concerns the deployment location: ShopViet is expanding into e-wallets, and regulations require the data and workloads to stay in the company's data center. The engineering team still needs AWS-managed Kubernetes, along with IAM and CloudWatch as in the cloud. The solution is **AWS Outposts**: AWS installs an Outpost at the customer's site, extending AWS infrastructure, services, APIs and tools there; EC2, EBS, ECS, RDS and Amazon EKS run on premises, while AWS operates and monitors this capacity as part of the Region. Direct Connect and Local Zones still place workloads on AWS infrastructure; Snowball Edge is a device for data transfer and edge processing, and it is no longer available to new customers.
+Another requirement concerns the deployment location: ShopViet is expanding into e-wallets, and regulations require the data and workloads to stay in the company's on-premises data center. The engineering team still needs AWS-managed Kubernetes, along with IAM and CloudWatch as in the cloud. The solution is **AWS Outposts**: AWS installs an Outpost at the customer's on-premises site, extending AWS infrastructure, services, APIs and tools there; EC2, EBS, ECS, RDS and Amazon EKS run on premises, while AWS operates and monitors this capacity as part of the Region. Direct Connect and Local Zones still place workloads on AWS infrastructure; Snowball Edge is a device for data transfer and edge processing, and it is no longer available to new customers.
 
 <Takeaway>Logs must be moved off an instance before it is terminated: install the CloudWatch agent to send logs to CloudWatch Logs. Near-real-time alerts on unusual API calls: CloudTrail sends to CloudWatch Logs, a metric filter counts the errors, an alarm notifies through SNS. Trail destinations: S3, CloudWatch Logs, EventBridge (not Kinesis). Detect API call rates or error rates that deviate from a baseline without setting a threshold: CloudTrail Insights (charged separately). Data that must stay on premises but still needs AWS services: Outposts.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/6" title="Tracing actions and evaluating configuration compliance" questions={["exam1_q16", "exam3_q29", "exam2_q43", "exam2_q9"]}>
+<Scene id="en-s4" label="Part 4/6" title="Recording API activity with CloudTrail, evaluating compliance with AWS Config" questions={["exam1_q16", "exam3_q29", "exam2_q43", "exam2_q9"]}>
 
 <p class="scene-intro">After an incident, you need to know who did what and when, and whether the current configuration complies with policy; each question has a service that provides the data.</p>
 
@@ -173,7 +173,7 @@ After an incident, the ShopViet operations team needs to answer many questions; 
 
 <WhoAnswersSim client:visible />
 
-**CloudTrail** is the activity log: each API call is recorded as an event; by default, a trail records management events, while data events (for example operations on S3 objects) must be enabled additionally. **AWS Config** keeps the configuration history: each time a resource changes, Config records a **configuration item**, and a **Config rule** evaluates whether that configuration is compliant or noncompliant. The two services complement each other. Choose each point in time during the week of security group `sg-web`:
+**CloudTrail** records the activity of users, roles and AWS services in an account: each API call is recorded as an event; by default, a trail records management events, while data events (for example operations on S3 objects) must be enabled additionally. **AWS Config** keeps the configuration history: each time a resource changes, Config records a **configuration item**, and a **Config rule** evaluates whether that configuration is compliant or noncompliant. The two services complement each other. Choose each point in time during the week of security group `sg-web`:
 
 <ConfigTimelineSim client:visible />
 
@@ -191,9 +191,9 @@ To apply the same set of Config rules to many accounts, ShopViet uses a **confor
 
 </Scene>
 
-<Scene id="en-s5" label="Part 5/6" title="Patching hundreds of instances without service disruption" questions={["exam3_q6", "exam5_q34"]}>
+<Scene id="en-s5" label="Part 5/6" title="Patching EC2 instances with Patch Manager and Maintenance Windows" questions={["exam3_q6", "exam5_q34"]}>
 
-<p class="scene-intro">With hundreds of servers, patching and running commands by hand on each one is no longer feasible; you need a tool that does it in bulk, on a schedule and under control.</p>
+<p class="scene-intro">With hundreds of EC2 instances, patching and running commands by hand on each instance is no longer feasible; the work must run in bulk across managed nodes, on a schedule and under control.</p>
 
 ShopViet has more than 200 EC2 instances; every month brings security patches for the operating system. **Systems Manager** does this through the **SSM Agent** running on the instances: Patch Manager patches on a schedule, Run Command runs commands on a whole group of instances, Automation runs multi-step runbooks. The first step is to grant the agent permission to communicate with Systems Manager. The instances already have their own IAM role to access RDS and Secrets Manager:
 
@@ -232,7 +232,7 @@ In the previous patch cycle, every patch reported success but users still saw er
 
 </Scene>
 
-<Scene id="en-s6" label="Part 6/6" title="Quick comparison: monitoring and operations features that are easy to confuse" questions={["exam1_q61", "exam2_q9", "exam2_q43", "exam3_q6", "exam4_q39", "exam5_q31", "exam6_q41"]}>
+<Scene id="en-s6" label="Part 6/6" title="Comparing easily confused monitoring and operations features" questions={["exam1_q61", "exam2_q9", "exam2_q43", "exam3_q6", "exam4_q39", "exam5_q31", "exam6_q41"]}>
 
 <p class="scene-intro">Many monitoring and operations features have similar names; telling them apart helps you pick the right tool for each need.</p>
 
@@ -264,12 +264,12 @@ Some CloudTrail, Config, Systems Manager and Trusted Advisor features have names
     notHere: "The machines to patch are EC2 instances. A hybrid activation does not attach roles to EC2, and an instance profile contains only one IAM role.",
     instead: "Default Host Management Configuration, or add `AmazonSSMManagedInstanceCore` to the instance's existing role (part 5)." },
   { name: "SSM Parameter Store",
-    use: "A centralized configuration store of named parameters: String, StringList, SecureString (encrypted with AWS KMS). Suited to AMI IDs, endpoint URLs and environment variables. Parameter Store has no credential rotation; for database passwords, AWS recommends Secrets Manager.",
+    use: "Centralized, hierarchical storage for configuration data as named parameters: String, StringList, SecureString (encrypted with AWS KMS). Suited to AMI IDs, endpoint URLs and environment variables. Parameter Store has no credential rotation; for database passwords, AWS recommends Secrets Manager.",
     notHere: "Lambda needs short-lived credentials to connect to RDS PostgreSQL. Storing a password in Parameter Store and writing your own rotation logic is still authentication with a long-lived password.",
     instead: "IAM database authentication: Lambda uses the function's IAM role to generate an authentication token (lifetime 15 minutes) instead of a password." },
   { name: "Session Manager",
     use: "Opens a shell on a managed node from the console or the AWS CLI with no open inbound ports, no bastion hosts and no SSH keys to manage; access is controlled with IAM policies, and activity is logged through CloudTrail, S3 or CloudWatch Logs. The instance must run SSM Agent and be a managed node.",
-    notHere: "The DevOps team needs a temporary **SSH** session from the Console to an instance that already has a public IP, with a key used only for that session.",
+    notHere: "The DevOps team needs a temporary **SSH** session from the Console to an instance that already has a public IP address, with an SSH key used only for that session.",
     instead: "EC2 Instance Connect: the API pushes an SSH public key to the instance metadata, where it remains for 60 seconds; every connection request is logged to CloudTrail; no additional cost." },
 ]} />
 
@@ -288,7 +288,7 @@ Sort each ShopViet task into the service that handles it. On mobile devices: cho
   cards={[
     ["1-minute metrics for EC2", "cw"], ["Reboot an instance automatically when a status check fails", "cw"], ["Centralize the logs of every instance", "cw"],
     ["Who deleted the security group", "trail"], ["Record every IAM action of a new admin", "trail"], ["Event source for an AccessDenied metric filter", "trail"], ["Detect API call rates that deviate from a baseline", "trail"],
-    ["Security group configuration last week", "config"], ["Imported certificate about to expire", "config"], ["Automatically close SSH ports open to the internet", "config"], ["One set of rules and remediations for every account", "config"],
+    ["Security group configuration last week", "config"], ["Imported certificate about to expire", "config"], ["Automatically close SSH ports open to the internet in security groups", "config"], ["One set of rules and remediations for every account", "config"],
   ]}
 />
 
