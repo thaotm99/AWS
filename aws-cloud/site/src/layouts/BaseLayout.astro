@@ -52,6 +52,12 @@ const {
 // Keys match the preference fields in modules/shell (localStorage "theme", "locale").
 const earlyPreferences = `(function(){var h=document.documentElement,t=${JSON.stringify(DEFAULT_THEME)};try{var s=localStorage.getItem("theme");if(${JSON.stringify(THEMES)}.indexOf(s)>=0)t=s;var l=localStorage.getItem("locale");if(l&&l!==${JSON.stringify(DEFAULT_LOCALE)}){h.lang=l;h.classList.add("i18n-pending");setTimeout(function(){h.classList.remove("i18n-pending")},2000)}}catch(e){}h.dataset.theme=t})();`;
 const toc = Astro.slots.has("toc");
+// Shell columns: sidebar | content (| lesson contents from xl up), or one centred column without the sidebar.
+const shellColumns = toc
+  ? "gap-9 grid-cols-[260px_minmax(0,1fr)_236px] max-xl:max-w-[1240px] max-xl:gap-10 max-xl:grid-cols-[270px_minmax(0,1fr)] max-lg:grid-cols-[minmax(0,1fr)]"
+  : !sidebar
+    ? ["gap-10 justify-center", wide ? "grid-cols-[minmax(0,1208px)]" : "grid-cols-[minmax(0,860px)]"].join(" ")
+    : "gap-10 grid-cols-[270px_minmax(0,1fr)] max-lg:grid-cols-[minmax(0,1fr)]";
 const ready = (await getCollection("concepts")).map((e) => e.id);
 // Only what the roadmap shows reaches the browser.
 const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
@@ -62,7 +68,7 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
 }));
 ---
 <!doctype html>
-<html lang="vi" data-i18n-title={titleKey} data-i18n-params={titleParams ? JSON.stringify(titleParams) : undefined}>
+<html lang="vi" class="max-lg:drawer-open:overflow-hidden" data-i18n-title={titleKey} data-i18n-params={titleParams ? JSON.stringify(titleParams) : undefined}>
   <head>
     <meta charset="utf-8" />
     {/* Declares the cascade layer order before any bundled stylesheet, whatever order Astro emits them in. */}
@@ -114,10 +120,10 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
         <LanguageSwitch />
         <ThemeToggle />
       </div>
-      {toc && <div class="read-bar" aria-hidden="true"><i /></div>}
+      {toc && <div class="read-bar absolute inset-x-0 -bottom-px hidden h-0.75 overflow-hidden max-xl:block" aria-hidden="true"><i class="block h-full w-[var(--read,0%)] bg-accent transition-[width] duration-120 ease-linear" /></div>}
     </header>
 
-    <div class:list={["shell", { single: !sidebar, wide: !sidebar && wide, "with-toc": toc }]}>
+    <div class:list={["mx-auto grid max-w-[1520px] pt-7 pr-[max(16px,env(safe-area-inset-right,0px))] pb-16 pl-[max(16px,env(safe-area-inset-left,0px))] max-lg:gap-5 max-lg:pt-4 max-lg:pb-12", shellColumns]}>
       <!-- Sidebar on desktop; on phones the same element is the ☰ drawer, which also carries the main links. -->
       <aside class:list={["sidebar", { "nav-only lg:hidden": !sidebar }]} id="drawer" aria-label="Menu" data-i18n-attr="aria-label:shell.nav.menu">
         <nav class="mb-3.5 hidden gap-0.5 border-b border-line pb-3 max-lg:grid" aria-label="Chính" data-i18n-attr="aria-label:shell.nav.main">
@@ -130,13 +136,13 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
         </nav>
         {sidebar && <Roadmap client:load layers={layers} current={current} currentQuiz={currentQuiz} ready={ready} />}
       </aside>
-      <div class="scrim" id="scrim" hidden></div>
-      <main class="article" id="content" tabindex="-1">
+      <div class="fixed inset-x-0 top-[calc(env(safe-area-inset-top,0px)+57px)] bottom-0 z-7 hidden bg-black/45 max-lg:drawer-open:block" id="scrim"></div>
+      <main class:list={["article min-w-0 focus:outline-none", !sidebar && wide ? "max-w-none" : "max-w-[860px]"]} id="content" tabindex="-1">
         <slot />
       </main>
-      {toc && <aside class="toc-col"><slot name="toc" /></aside>}
+      {toc && <aside class="toc-col sticky top-[calc(env(safe-area-inset-top,0px)+76px)] min-w-0 self-start max-xl:hidden"><slot name="toc" /></aside>}
     </div>
-    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+    <div class="fixed bottom-[calc(20px+env(safe-area-inset-bottom,0px))] left-1/2 z-20 max-w-[calc(100%-32px)] -translate-x-1/2 rounded-sm bg-ink px-4 py-2.5 text-step--1 text-bg" id="toast" role="status" aria-live="polite" hidden></div>
     <dialog class="search" id="search" aria-label="Tìm kiếm" data-i18n-attr="aria-label:shell.search.open">
       <div class="search-panel">
         <div class="search-field">

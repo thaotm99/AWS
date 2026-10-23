@@ -77,3 +77,4 @@
 }
 
 @import "./components/controls.css" layer(components);
+@import "./components/shell.css" layer(components);

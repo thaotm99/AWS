@@ -41,20 +41,20 @@ const after = next
     : { href: `/concepts/${id}/`, vi: "Tổng quan bài học", en: "Lesson overview" };
 ---
 <BaseLayout title={`${head(part.title.vi)} · ${concept.title} · CloudLab`} description={entry.data.lede} current={id}>
-  <nav slot="toc" class="ltoc pnav" aria-label="Các phần của bài học" data-i18n-attr="aria-label:lesson.parts.label">
-    <a class="pnav-back" href={`/concepts/${id}/`}>← <T k="lesson.parts.overview" /></a>
-    <p class="toc-lesson"><L vi={title} en={titleEn} /></p>
-    <ol>
+  <nav slot="toc" class="pnav flex max-h-[calc(100vh-100px)] flex-col" aria-label="Các phần của bài học" data-i18n-attr="aria-label:lesson.parts.label">
+    <a class="mb-2 text-[0.8125rem] text-muted no-underline hover:text-ink" href={`/concepts/${id}/`}>← <T k="lesson.parts.overview" /></a>
+    <p class="mt-1.5 mb-3.5 text-[0.875rem] leading-[1.4] font-semibold"><L vi={title} en={titleEn} /></p>
+    <ol class="m-0 list-none overflow-y-auto border-l border-line p-0">
       {parts.map((p) => (
         <li>
-          <a href={href(p)} aria-current={p.slug === part.slug ? "true" : undefined} data-slug={p.slug} data-kind={p.kind}>
+          <a class="toc-link" href={href(p)} aria-current={p.slug === part.slug ? "true" : undefined} data-slug={p.slug} data-kind={p.kind}>
             <small><L vi={p.label.vi} en={p.label.en} /></small>
             <L vi={head(p.title.vi)} en={head(p.title.en)} />
           </a>
         </li>
       ))}
       {quiz > 0 && (
-        <li><a href={`/concepts/${id}/quiz/`} data-kind="quiz"><small><T k="lesson.parts.quiz" /></small><T k="lesson.parts.quizCount" params={{ n: quiz }} /></a></li>
+        <li><a class="toc-link" href={`/concepts/${id}/quiz/`} data-kind="quiz"><small><T k="lesson.parts.quiz" /></small><T k="lesson.parts.quizCount" params={{ n: quiz }} /></a></li>
       )}
     </ol>
   </nav>
