@@ -1,6 +1,6 @@
 ---
 title: "Elastic Load Balancing: ALB, NLB and how load is distributed"
-lede: "The ShopViet system already has many servers and needs a load balancer in front of them. This lesson covers: choosing an ALB or an NLB for each requirement, the share of traffic each target receives, routing requests with listener rules, fixing targets marked unhealthy, HTTPS for multiple domain names, and sending traffic through firewalls with a Gateway Load Balancer."
+lede: "The ShopViet system already runs many EC2 instances and needs a load balancer in front of them. This lesson covers: choosing an ALB or an NLB for each requirement, the share of traffic each target receives, routing requests with listener rules, health checks and why targets are marked unhealthy, HTTPS listeners for multiple domain names with SNI, and sending traffic through firewalls with a Gateway Load Balancer."
 minutes: 35
 scenes: 7
 prerequisites: ["vpc", "ec2"]
@@ -82,11 +82,11 @@ import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
-  { href: "#en-s1", label: "1 · Choosing ALB or NLB" },
+  { href: "#en-s1", label: "1 · Load balancer types" },
   { href: "#en-s2", label: "2 · Cross-zone load balancing" },
-  { href: "#en-s3", label: "3 · Listener rules and AWS WAF" },
-  { href: "#en-s4", label: "4 · Handling unhealthy targets" },
-  { href: "#en-s5", label: "5 · HTTPS for multiple domains" },
+  { href: "#en-s3", label: "3 · Listener rules" },
+  { href: "#en-s4", label: "4 · Health checks for target groups" },
+  { href: "#en-s5", label: "5 · HTTPS listeners and SNI" },
   { href: "#en-s6", label: "6 · Gateway Load Balancer" },
   { href: "#en-s7", label: "7 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
@@ -94,11 +94,11 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 ShopViet already runs many EC2 instances across two AZs. Users do not need to know which instance is serving them, so a **load balancer** is needed in front. The next design questions are: which type of load balancer to use, how much load each instance takes, how one load balancer serves many services and many domain names, why an instance that works normally is removed from the target group, and how to send all traffic entering the system through a third-party firewall.
 </Story>
 
-<Scene id="en-s1" label="Part 1/7" title="Choosing an ALB or an NLB for each requirement" questions={["exam1_q2", "exam1_q48", "exam4_q9", "exam6_q43", "exam1_q39", "exam6_q56", "exam6_q7", "exam5_q4"]}>
+<Scene id="en-s1" label="Part 1/7" title="Load balancer types: ALB and NLB" questions={["exam1_q2", "exam1_q48", "exam4_q9", "exam6_q43", "exam1_q39", "exam6_q56", "exam6_q7", "exam5_q4"]}>
 
-<p class="scene-intro">A load balancer is the shared entry point that receives requests and spreads them over many servers; the two main types differ in whether they read the request content or only forward connections.</p>
+<p class="scene-intro">A load balancer is the shared entry point: it receives requests from clients and distributes them across multiple targets, such as EC2 instances. The two main types differ in whether they inspect the request content or only forward connections.</p>
 
-An **Application Load Balancer** (ALB) inspects the content of HTTP requests: path, domain name, headers. A **Network Load Balancer** (NLB) works at layer 4 (TCP, UDP, TLS and QUIC listeners) and does not inspect HTTP content; an NLB has one IP per AZ (which can be an Elastic IP) and can handle millions of requests per second. Besides EC2, a target group with the **ip** target type also accepts on-premises servers connected through Direct Connect or Site-to-Site VPN (private IPs only). Try each ShopViet requirement, first with an ALB and then with an NLB:
+An **Application Load Balancer** (ALB) inspects the content of HTTP requests: path, domain name, headers. A **Network Load Balancer** (NLB) works at layer 4 (TCP, UDP, TLS and QUIC listeners) and does not inspect HTTP content; an NLB has one IP per AZ (which can be an Elastic IP) and can handle millions of requests per second. Besides EC2, a target group with the **ip** target type also accepts on-premises resources connected through Direct Connect or Site-to-Site VPN (private IPs only). Try each ShopViet requirement, first with an ALB and then with an NLB:
 
 <LbTypeSim client:visible />
 
@@ -123,23 +123,23 @@ ShopViet plans to expand to a Region in the United States. The question: can one
     ] },
 ]} />
 
-<Takeaway>Web applications that need routing by URL or domain name: ALB. Plain TCP/UDP, a fixed IP for partners, PrivateLink: NLB. UDP servers in a data center: NLB with a UDP listener and the ip target type (private IPs, over Direct Connect or VPN). Servers sit in private subnets; only the load balancer is in public subnets. Multiple Regions: one load balancer per Region, with Route 53 or Global Accelerator in front.</Takeaway>
+<Takeaway>Web applications that need routing by URL or domain name: ALB. Plain TCP/UDP, a fixed IP for partners, PrivateLink: NLB. UDP servers in a data center: NLB with a UDP listener and the ip target type (private IPs, over Direct Connect or VPN). EC2 instances sit in private subnets; only the load balancer is in public subnets. Multiple Regions: one load balancer per Region, with Route 53 or Global Accelerator in front.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/7" title="Share of traffic per target" questions={["exam3_q14", "exam4_q59"]}>
+<Scene id="en-s2" label="Part 2/7" title="Cross-zone load balancing" questions={["exam3_q14", "exam4_q59"]}>
 
-<p class="scene-intro">A load balancer sits in several AZs; how it splits traffic between those AZs decides whether a given server gets many requests or few.</p>
+<p class="scene-intro">A load balancer has nodes in several AZs; how traffic is distributed between those AZs decides whether each target receives many requests or few.</p>
 
-During a sale, ShopViet urgently adds servers in AZ B, while AZ A still has only 1 server. The question: is the single server in AZ A overloaded? Adjust the sliders and turn cross-zone on or off. Try 1 server in AZ A and 4 in AZ B; then 4 and 6.
+During a sale, ShopViet urgently adds EC2 instances in AZ B, while AZ A still has only 1 instance. The question: is the single target in AZ A overloaded? Adjust the sliders and turn cross-zone load balancing on or off. Try 1 target in AZ A and 4 targets in AZ B; then 4 and 6.
 
 <CrossZoneCalc client:visible />
 
-<Takeaway>DNS splits traffic evenly between the load balancer nodes in each AZ. With cross-zone on: load is spread evenly across all targets. With cross-zone off: each AZ gets an equal share, which is then spread across the targets in that AZ, so an AZ with fewer servers gets overloaded. Defaults: ALB always has cross-zone on at the load balancer level (it can be turned off at the target group level); NLB and GWLB have it off.</Takeaway>
+<Takeaway>DNS splits traffic evenly between the load balancer nodes in each AZ. With cross-zone on: load is spread evenly across all targets. With cross-zone off: each AZ gets an equal share, which is then spread across the targets in that AZ, so targets in an AZ with fewer targets receive more load. Defaults: ALB always has cross-zone on at the load balancer level (it can be turned off at the target group level); NLB and GWLB have it off.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/7" title="One ALB for many services and many domain names" questions={["exam1_q48", "exam4_q40", "exam4_q57", "exam2_q17", "exam1_q6", "exam3_q53", "exam6_q60"]}>
+<Scene id="en-s3" label="Part 3/7" title="Listener rules for your Application Load Balancer" questions={["exam1_q48", "exam4_q40", "exam4_q57", "exam2_q17", "exam1_q6", "exam3_q53", "exam6_q60"]}>
 
 <p class="scene-intro">When a system splits into several services, one load balancer can still front them all and send each request to the right service by path or domain name.</p>
 
@@ -155,19 +155,19 @@ Besides path and host, listener rules have four more condition types: **http-hea
 
 </Scene>
 
-<Scene id="en-s4" label="Part 4/7" title="Targets that work normally but are marked unhealthy" questions={["exam4_q26", "exam5_q1", "exam2_q18", "exam3_q13"]}>
+<Scene id="en-s4" label="Part 4/7" title="Health checks for target groups" questions={["exam4_q26", "exam5_q1", "exam2_q18", "exam3_q13"]}>
 
-<p class="scene-intro">A load balancer only sends requests to servers it considers healthy, and it judges that by calling each server periodically.</p>
+<p class="scene-intro">A load balancer routes requests only to targets in the healthy state; that state is determined by health checks sent periodically to each target.</p>
 
 The ALB marks i-2 as unhealthy, while an engineer who connects to the instance over SSH confirms the application still works. The load balancer relies only on **health check** results: it calls a path on each target periodically (every 30 seconds by default for the instance or ip target type). Follow the health check's path and see where it is blocked:
 
 <HealthCheckSim client:visible />
 
-<Takeaway>Target unhealthy while the application still works: check whether the security group allows traffic from the load balancer and whether the health check path is correct. For the ASG to replace instances the load balancer marks as failed: switch the ASG's health check to the ELB type.</Takeaway>
+<Takeaway>Target unhealthy while the application still works: check whether the security group allows traffic from the load balancer and whether the health check path is correct. For the Auto Scaling group to replace instances the load balancer marks as unhealthy: turn on ELB health checks for the Auto Scaling group.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s5" label="Part 5/7" title="HTTPS for multiple domain names on one ALB" questions={["exam4_q40", "exam4_q57"]}>
+<Scene id="en-s5" label="Part 5/7" title="SSL/TLS certificates for HTTPS listeners (SNI)" questions={["exam4_q40", "exam4_q57"]}>
 
 <p class="scene-intro">Every HTTPS domain needs a certificate; when many domains share one load balancer, it needs a way to present the right certificate for each.</p>
 
@@ -181,9 +181,9 @@ An HTTPS listener always has one **default certificate**. When you add a certifi
 
 </Scene>
 
-<Scene id="en-s6" label="Part 6/7" title="Sending all traffic through firewalls with a Gateway Load Balancer" questions={["exam3_q53", "exam3_q47", "exam6_q41"]}>
+<Scene id="en-s6" label="Part 6/7" title="Gateway Load Balancers for third-party virtual appliances" questions={["exam3_q53", "exam3_q47", "exam6_q41"]}>
 
-<p class="scene-intro">Some companies require all traffic to pass through security appliances such as firewalls; those appliances must also scale with load and survive failures, just like application servers.</p>
+<p class="scene-intro">Some companies require all traffic to pass through security appliances such as firewalls; those appliances must also scale with load and be fault tolerant, just like the application tier.</p>
 
 ShopViet's security team requires all internet traffic to the application to pass the firewall and IPS of a third-party vendor, running on EC2. The number of appliances must grow with the load and survive the failure of one appliance. A **Gateway Load Balancer** (GWLB) meets this requirement: it works at layer 3, accepts every IP packet on every port, exchanges traffic with the appliances using the **GENEVE protocol on port 6081**, keeps every packet of a flow on the same appliance (5-tuple by default), and sends traffic only to healthy appliances. The application in another VPC connects to the GWLB through a **Gateway Load Balancer endpoint** (a VPC endpoint powered by AWS PrivateLink), and route tables decide which traffic goes through that endpoint.
 
@@ -193,7 +193,7 @@ ShopViet's security team requires all internet traffic to the application to pas
 
 </Scene>
 
-<Scene id="en-s7" label="Part 7/7" title="Quick comparison: options that are easy to confuse with a load balancer" questions={["exam3_q47", "exam3_q53", "exam6_q60", "exam6_q41", "exam4_q9"]}>
+<Scene id="en-s7" label="Part 7/7" title="Quick comparison: services and features often confused with a load balancer" questions={["exam3_q47", "exam3_q53", "exam6_q60", "exam6_q41", "exam4_q9"]}>
 
 <p class="scene-intro">Several services and features seem to share the job of spreading load; telling them apart helps you choose the right one for each requirement.</p>
 
@@ -217,9 +217,9 @@ Some services and features are often considered together with a load balancer bu
     notHere: "It cannot be attached to an ALB and does not count requests; it can only block IP ranges known in advance, while attacking IPs keep changing.",
     instead: "An AWS WAF rate-based rule blocks every IP over the limit automatically." },
   { name: "Sticky sessions",
-    use: "Binds a user's session to the same target with a cookie (`AWSALB` generated by the ALB, duration 1 second to 7 days, or an application cookie). Useful for servers that keep session state in memory. Turned on at the target group level; the client must support cookies.",
+    use: "Binds a user's session to the same target with a cookie (`AWSALB` generated by the ALB, duration 1 second to 7 days, or an application cookie). Useful for applications that keep session state in the target's memory. Turned on at the target group level; the client must support cookies.",
     notHere: "It does not limit requests; if an attacker keeps the cookie, all of its requests pile onto one target.",
-    instead: "Block abnormal request rates: an AWS WAF rate-based rule. Session state: store it outside the servers (ElastiCache, DynamoDB) so it does not depend on sticky sessions." },
+    instead: "Block abnormal request rates: an AWS WAF rate-based rule. Session state: store it outside the instances (ElastiCache, DynamoDB) so it does not depend on sticky sessions." },
   { name: "Gateway Load Balancer endpoint",
     use: "Sends traffic from the application VPC to the inspection appliances behind a GWLB, according to route tables. Billed hourly and per GB of data processed.",
     notHere: "EC2 instances in a private subnet read and write large volumes of S3 data through a NAT gateway. A GWLB endpoint is not a path to S3 and does not reduce cost.",
@@ -231,7 +231,7 @@ Some services and features are often considered together with a load balancer bu
   { name: "Classic Load Balancer",
     use: "The previous generation of Elastic Load Balancing load balancers, operating at both layer 4 and layer 7, intended for applications built in the old EC2-Classic network. AWS recommends migrating to a current generation load balancer.",
     notHere: "Clients reach it through its **DNS name**, which resolves to the public IP addresses of the load balancer nodes. The ELB feature comparison marks static and Elastic IP addresses only for the Network Load Balancer; the Classic Load Balancer and the ALB have neither, so they cannot give a partner one fixed IP address to allow-list.",
-    instead: "A partner bank allows only a fixed list of public IP addresses: a Network Load Balancer, with one static IP address per AZ and an optional Elastic IP; the servers behind it still scale with an Auto Scaling group." },
+    instead: "A partner bank allows only a fixed list of public IP addresses: a Network Load Balancer, with one static IP address per AZ and an optional Elastic IP; the EC2 instances behind it still scale with an Auto Scaling group." },
 ]} />
 
 </Scene>
@@ -257,10 +257,10 @@ Sort each feature into the matching load balancer type. On a mobile device: tap 
 Check your understanding: as the designer of the ShopViet system, which option fits?
 
 <Quiz client:visible items={[
-  { q: "ShopViet has 1 server in AZ A and 4 servers in AZ B, with cross-zone turned off. What percentage of traffic does the server in AZ A receive?",
+  { q: "ShopViet has 1 target in AZ A and 4 targets in AZ B, with cross-zone load balancing turned off. What percentage of traffic does the target in AZ A receive?",
     opts: ["20%", "50%", "12.5%"],
     a: 1,
-    why: "Each AZ gets 50%; AZ A has only 1 server, so that server receives the whole 50%. With cross-zone on, each server gets 20%." },
+    why: "Each AZ gets 50%; AZ A has only 1 target, so that target receives the whole 50%. With cross-zone load balancing on, each target gets 20%." },
   { q: "A partner bank opens its firewall only to one fixed ShopViet IP. The service must still be fault tolerant and scale to 10 instances. Which architecture fits?",
     opts: ["ALB + Auto Scaling group", "NLB + Auto Scaling group", "Auto Scaling group with dynamically attached Elastic IPs"],
     a: 1,

@@ -97,11 +97,11 @@ const scenarios = (L: Lang): PScenario[] => {
     toggle: { label: L({ vi: "Liên kết AWS WAF có geo match rule", en: "Associate AWS WAF with a geo match rule" }), initial: true },
     run: (waf) => waf
       ? { steps: [SNI, { at: "waf", state: "block", flash: "403", msg: L({ vi: "Rule **geo match** của AWS WAF chặn request từ quốc gia này; phản hồi Block mặc định là 403 (Forbidden).", en: "The AWS WAF **geo match** rule blocks requests from this country; the default Block response is 403 (Forbidden)." }) }],
-          ok: true, result: L({ vi: "403 Forbidden: request bị chặn tại ALB, không phát sinh tải cho máy chủ.", en: "403 Forbidden: the request is blocked at the ALB and puts no load on the servers." }) }
+          ok: true, result: L({ vi: "403 Forbidden: request bị chặn tại ALB, không phát sinh tải cho target.", en: "403 Forbidden: the request is blocked at the ALB and puts no load on the targets." }) }
       : { steps: [SNI, { at: "waf", state: "skip", msg: L({ vi: "Chưa liên kết web ACL nào.", en: "No web ACL is associated." }) }, PUBLIC,
             { at: "rule", state: "pass", msg: L({ vi: "Default rule chuyển request tới trang chủ.", en: "The default rule sends the request to the home page." }) },
-            { at: "products", state: "pass", msg: L({ vi: "Máy chủ vẫn phải xử lý request.", en: "The servers still have to process the request." }) }],
-          ok: false, result: L({ vi: "Request được chuyển tới máy chủ. Cần liên kết AWS WAF với ALB để chặn theo quốc gia.", en: "The request reaches the servers. Associate AWS WAF with the ALB to block by country." }) },
+            { at: "products", state: "pass", msg: L({ vi: "Target vẫn phải xử lý request.", en: "The targets still have to process the request." }) }],
+          ok: false, result: L({ vi: "Request được chuyển tới target. Cần liên kết AWS WAF với ALB để chặn theo quốc gia.", en: "The request reaches the targets. Associate AWS WAF with the ALB to block by country." }) },
   },
   {
     name: L({ vi: "Một IP gửi 100 request mỗi giây", en: "One IP sends 100 requests per second" }),
@@ -112,10 +112,10 @@ const scenarios = (L: Lang): PScenario[] => {
       ? { steps: [SNI,
             { at: "waf", state: "block", flash: "403", msg: L({ vi: "**Rate-based rule** của AWS WAF đếm request theo IP nguồn trong evaluation window 5 phút: IP này gửi khoảng 30.000 request, vượt ngưỡng 3.000; khách hàng thông thường chỉ khoảng 1.500. Request vượt ngưỡng nhận action Block (403).",
               en: "The AWS WAF **rate-based rule** counts requests per source IP over a 5-minute evaluation window: this IP sends about 30,000 requests, above the 3,000 limit; a normal customer sends only about 1,500. Requests over the limit get the Block action (403)." }) }],
-          ok: true, result: L({ vi: "Request vượt ngưỡng bị chặn tại ALB, máy chủ không bị quá tải; khách hàng thông thường không bị ảnh hưởng. Rate-based rule là tính năng của AWS WAF, không phải của ALB.", en: "Requests over the limit are blocked at the ALB and the servers are not overloaded; normal customers are not affected. The rate-based rule is an AWS WAF feature, not an ALB feature." }) }
+          ok: true, result: L({ vi: "Request vượt ngưỡng bị chặn tại ALB, target không bị quá tải; khách hàng thông thường không bị ảnh hưởng. Rate-based rule là tính năng của AWS WAF, không phải của ALB.", en: "Requests over the limit are blocked at the ALB and the targets are not overloaded; normal customers are not affected. The rate-based rule is an AWS WAF feature, not an ALB feature." }) }
       : { steps: [SNI, { at: "waf", state: "skip", msg: L({ vi: "Web ACL chưa có rule giới hạn tốc độ.", en: "The web ACL has no rate-limiting rule." }) }, PUBLIC,
             { at: "rule", state: "pass", msg: L({ vi: "Listener rule chỉ có điều kiện (host, path, header, method, query string, source IP) và action (forward, redirect, fixed-response, authenticate); không có thiết lập nào giới hạn số request.", en: "Listener rules only have conditions (host, path, header, method, query string, source IP) and actions (forward, redirect, fixed-response, authenticate); none of them limits the number of requests." }) },
-            { at: "products", state: "block", flash: "503", msg: L({ vi: "Toàn bộ 100 request mỗi giây tới máy chủ sản phẩm; máy chủ quá tải và khách hàng thật bị ảnh hưởng.", en: "All 100 requests per second reach the product servers; the servers are overloaded and real customers are affected." }) }],
+            { at: "products", state: "block", flash: "503", msg: L({ vi: "Toàn bộ 100 request mỗi giây tới target group products; các target quá tải và khách hàng thông thường bị ảnh hưởng.", en: "All 100 requests per second reach the products target group; the targets are overloaded and normal customers are affected." }) }],
           ok: false, result: L({ vi: "ALB không có cơ chế giới hạn tốc độ request. Liên kết AWS WAF với ALB và thêm rate-based rule.", en: "The ALB has no built-in request rate limiting. Associate AWS WAF with the ALB and add a rate-based rule." }) },
   },
   ];

@@ -58,7 +58,7 @@ const scenarios = (L: Lang): PScenario[] => {
   {
     name: L({ vi: "Gói tin khớp chữ ký tấn công", en: "Packet matches an attack signature" }),
     request: "TCP 443 → 10.0.2.15 (exploit)",
-    from: L({ vi: "nguồn: máy chủ độc hại", en: "source: malicious host" }),
+    from: L({ vi: "nguồn: host độc hại", en: "source: malicious host" }),
     run: () => ({
       steps: [IGW, EP, LB("Firewall A"),
         { at: "fw1", state: "block", flash: "DROP", msg: L({ vi: "Hệ thống IPS trên appliance phát hiện chữ ký tấn công và huỷ gói tin. GWLB không tự lọc nội dung: quyết định do phần mềm appliance đưa ra.", en: "The IPS software on the appliance detects the attack signature and drops the packet. The GWLB itself does not filter content: the appliance software decides." }) }],

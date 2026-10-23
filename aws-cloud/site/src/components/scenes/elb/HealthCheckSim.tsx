@@ -50,7 +50,7 @@ const scenarios = (L: Lang): PScenario[] => {
       ? { steps: [SG_OK, { at: "i2", state: "pass", flash: "200", roundTrip: true, msg: L({ vi: "Ứng dụng có path `/health`, trả về 200 OK.", en: "The application has the `/health` path and returns 200 OK." }) }],
           ok: true, result: L({ vi: "i-2 trở lại trạng thái healthy.", en: "i-2 is healthy again." }) }
       : { steps: [SG_OK, { at: "i2", state: "block", flash: "404", msg: L({ vi: "Ứng dụng không có path `/healthz`, trả về 404. Success code mặc định là 200 nên ALB xem 404 là health check thất bại.", en: "The application has no `/healthz` path and returns 404. The default success code is 200, so the ALB treats 404 as a failed health check." }) }],
-          ok: false, result: L({ vi: "Target unhealthy dù máy chủ không có lỗi. Cần kiểm tra path và mã phản hồi kỳ vọng (success codes) của health check.", en: "The target is unhealthy although the server has no fault. Check the health check path and the expected response codes (success codes)." }) },
+          ok: false, result: L({ vi: "Target unhealthy dù instance không có lỗi. Cần kiểm tra path và mã phản hồi kỳ vọng (success codes) của health check.", en: "The target is unhealthy although the instance has no fault. Check the health check path and the expected response codes (success codes)." }) },
   },
   {
     name: L({ vi: "ALB loại instance nhưng không được thay thế", en: "ALB drops an instance, nothing replaces it" }),

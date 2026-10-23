@@ -33,11 +33,11 @@ const scenarios = (L: Lang): PScenario[] => {
     run: (nlb) => nlb
       ? { steps: [
             { at: "lb", state: "pass", msg: L({ vi: "NLB chỉ nhận biết kết nối TCP cổng 443; không phân tích được URL nên không xác định được path `/products`.", en: "The NLB sees only a TCP connection on port 443; it cannot parse the URL, so it cannot identify the `/products` path." }) },
-            { at: "t2", state: "block", flash: "404", msg: L({ vi: "Kết nối được chuyển tới máy chủ **orders**, vốn không phục vụ trang sản phẩm.", en: "The connection goes to the **orders** server, which does not serve product pages." }) },
-          ], ok: false, result: L({ vi: "Người dùng nhận lỗi khi request được chuyển tới sai máy chủ. Định tuyến theo path của URL yêu cầu **ALB**.", en: "The user gets an error because the request went to the wrong server. Routing by URL path requires an **ALB**." }) }
+            { at: "t2", state: "block", flash: "404", msg: L({ vi: "Kết nối được chuyển tới target **orders**, vốn không phục vụ trang sản phẩm.", en: "The connection goes to the **orders** target, which does not serve product pages." }) },
+          ], ok: false, result: L({ vi: "Người dùng nhận lỗi khi request được chuyển tới sai target. Định tuyến theo path của URL yêu cầu **ALB**.", en: "The user gets an error because the request went to the wrong target. Routing by URL path requires an **ALB**." }) }
       : { steps: [
             { at: "lb", state: "pass", msg: L({ vi: "ALB phân tích path `/products/*` và định tuyến tới target group **products**.", en: "The ALB parses the `/products/*` path and routes to the **products** target group." }) },
-            { at: "t1", state: "pass", msg: L({ vi: "Máy chủ sản phẩm trả về trang.", en: "The products server returns the page." }) },
+            { at: "t1", state: "pass", msg: L({ vi: "Target thuộc service sản phẩm trả về trang.", en: "A products target returns the page." }) },
           ], ok: true, result: L({ vi: "200 OK: ALB hoạt động ở tầng 7 nên định tuyến được theo path, host và header.", en: "200 OK: the ALB works at layer 7, so it can route by path, host and header." }) },
   },
   {
@@ -50,7 +50,7 @@ const scenarios = (L: Lang): PScenario[] => {
     run: (nlb) => nlb
       ? { steps: [
             { at: "fw", state: "pass", msg: L({ vi: "NLB có **một IP cho mỗi AZ**; với NLB internet-facing, chọn một Elastic IP cho mỗi AZ để có IP tĩnh. Ngân hàng đã đưa hai IP này vào allow list.", en: "An NLB has **one IP per AZ**; for an internet-facing NLB, choose one Elastic IP per AZ to get static IPs. The bank has added these two IPs to its allow list." }) },
-            { at: "lb", state: "pass", msg: L({ vi: "Chuyển kết nối tới máy chủ thanh toán healthy.", en: "Forwards the connection to a healthy payment server." }) },
+            { at: "lb", state: "pass", msg: L({ vi: "Chuyển kết nối tới một target thanh toán healthy.", en: "Forwards the connection to a healthy payment target." }) },
             { at: "t1", state: "pass", msg: L({ vi: "Callback được tiếp nhận. ASG phía sau vẫn tự động scale.", en: "The callback is received. The ASG behind it still scales automatically." }) },
           ], ok: true, result: L({ vi: "Ngân hàng kết nối thành công. **NLB + Auto Scaling group** cung cấp IP cố định, đồng thời đảm bảo khả năng chịu lỗi và khả năng mở rộng.", en: "The bank connects successfully. **NLB + Auto Scaling group** provides fixed IPs while keeping fault tolerance and scalability." }) }
       : { steps: [
@@ -118,7 +118,7 @@ const scenarios = (L: Lang): PScenario[] => {
           ], ok: false, result: L({ vi: "Dịch vụ UDP không dùng được ALB. Cần **NLB** với target group kiểu ip.", en: "A UDP service cannot use an ALB. Use an **NLB** with an ip target group." }) },
   },
   {
-    name: L({ vi: "Ẩn máy chủ khỏi Internet", en: "Hide servers from the internet" }),
+    name: L({ vi: "Ẩn EC2 instance khỏi Internet", en: "Hide EC2 instances from the internet" }),
     request: L({ vi: "HTTPS (TLS) tới api.shopviet.vn", en: "HTTPS (TLS) to api.shopviet.vn" }),
     from: L({ vi: "nguồn: người dùng và một client không xác định", en: "source: users and an unknown client" }),
     toggle: { label: L({ vi: "EC2 nằm trong private subnet", en: "EC2 in a private subnet" }), initial: false },
@@ -139,7 +139,7 @@ const scenarios = (L: Lang): PScenario[] => {
     run: (priv) => ({
       steps: [
         { at: "lb", state: "change", tag: L({ vi: "GIẢI MÃ", en: "DECRYPT" }), msg: L({ vi: "NLB có listener **TLS**: công việc mã hoá và giải mã được chuyển cho load balancer, ứng dụng trên EC2 tập trung vào nghiệp vụ.", en: "The NLB has a **TLS** listener: encryption and decryption are offloaded to the load balancer, and the application on EC2 focuses on business logic." }) },
-        { at: "t1", state: "pass", msg: L({ vi: "Máy chủ tiếp nhận request đã giải mã.", en: "The server receives the decrypted request." }) },
+        { at: "t1", state: "pass", msg: L({ vi: "EC2 instance tiếp nhận request đã giải mã.", en: "The EC2 instance receives the decrypted request." }) },
         priv
           ? { at: "t2", from: "x", state: "block", flash: "✕", msg: L({ vi: "EC2 trong **private subnet** không có public IP; client bên ngoài không có đường truy cập trực tiếp.", en: "EC2 in a **private subnet** has no public IP; an outside client has no direct path to it." }) }
           : { at: "t2", from: "x", state: "pass", msg: L({ vi: "EC2 trong public subnet có public IP; client bên ngoài truy cập trực tiếp được và bỏ qua load balancer.", en: "EC2 in a public subnet has a public IP; an outside client can reach it directly and bypass the load balancer." }) },
@@ -147,7 +147,7 @@ const scenarios = (L: Lang): PScenario[] => {
       ok: priv,
       result: priv
         ? L({ vi: "Cấu hình an toàn: chỉ NLB tại public subnet tiếp nhận traffic; ASG nằm trong private subnet.", en: "Secure configuration: only the NLB in the public subnet receives traffic; the ASG is in a private subnet." })
-        : L({ vi: "Máy chủ bị lộ ra Internet. Cần chuyển Auto Scaling group sang private subnet, chỉ giữ NLB tại public subnet.", en: "The servers are exposed to the internet. Move the Auto Scaling group to a private subnet and keep only the NLB in the public subnet." }),
+        : L({ vi: "EC2 instance bị lộ ra Internet. Cần chuyển Auto Scaling group sang private subnet, chỉ giữ NLB tại public subnet.", en: "The EC2 instances are exposed to the internet. Move the Auto Scaling group to a private subnet and keep only the NLB in the public subnet." }),
     }),
   },
   ];
