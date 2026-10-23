@@ -12,7 +12,7 @@ if (!pattern) {
   process.exit(1);
 }
 const re = new RegExp(pattern);
-const files = globSync("src/**/*.css").filter((f) => !f.endsWith("app.css") && !f.endsWith("tokens.css"));
+const files = globSync("src/**/*.css").filter((f) => !/styles\/(app|tokens|base)\.css$|styles\/components\//.test(f));
 
 let total = 0;
 for (const file of files) {
