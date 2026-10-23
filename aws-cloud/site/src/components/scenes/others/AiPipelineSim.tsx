@@ -21,7 +21,7 @@ const SCENARIOS: PScenario[] = [
     layout: (sqs) => chain("Ứng dụng gửi đánh giá qua API Gateway, SQS, Lambda, Comprehend rồi lưu vào DynamoDB", [
       { id: "app", x: 60, y: 135, w: 96, l1: "Ứng dụng", l2: "form đánh giá" },
       { id: "api", x: 190, y: 135, w: 112, l1: "API Gateway", l2: "REST API" },
-      { id: "sqs", x: 320, y: 135, w: 104, l1: sqs ? "SQS" : "(không có)", l2: sqs ? "hàng đợi" : "gọi trực tiếp" },
+      { id: "sqs", x: 320, y: 135, w: 104, l1: sqs ? "SQS" : "(không có)", l2: sqs ? "queue" : "gọi trực tiếp" },
       { id: "fn", x: 450, y: 135, w: 104, l1: "Lambda", l2: "đọc theo batch" },
       { id: "cmp", x: 590, y: 135, w: 124, l1: "Comprehend", l2: "DetectSentiment" },
       { id: "ddb", x: 740, y: 135, w: 116, l1: "DynamoDB", l2: "TTL 365 ngày" },
@@ -30,8 +30,8 @@ const SCENARIOS: PScenario[] = [
       ? {
           steps: [
             { at: "api", state: "pass", msg: "Tiếp nhận đánh giá và phản hồi ứng dụng ngay lập tức." },
-            { at: "sqs", state: "wait", tag: "ĐỆM", flash: "3.000", msg: "Đánh giá được lưu trong hàng đợi SQS; không có đánh giá nào bị mất dù lưu lượng tăng đột biến." },
-            { at: "fn", state: "pass", msg: "Lambda đọc hàng đợi theo batch và tự động tăng số lần thực thi song song." },
+            { at: "sqs", state: "wait", tag: "ĐỆM", flash: "3.000", msg: "Đánh giá được lưu trong SQS queue; không có đánh giá nào bị mất dù lưu lượng tăng đột biến." },
+            { at: "fn", state: "pass", msg: "Lambda đọc queue theo batch và tự động tăng số lần thực thi đồng thời (concurrency)." },
             { at: "cmp", state: "change", tag: "PHÂN TÍCH", flash: "NEGATIVE", msg: "\"Delivered 5 days late, box was dented\" → **NEGATIVE**. Không cần huấn luyện model." },
             { at: "ddb", state: "pass", msg: "Lưu kết quả kèm thuộc tính **TTL** bằng thời điểm ghi cộng 365 ngày. Sau thời điểm đó, DynamoDB tự động xoá item hết hạn, thường trong vòng vài ngày, không tiêu tốn write throughput." },
           ],
@@ -95,7 +95,7 @@ const SCENARIOS: PScenario[] = [
           ],
           ok: true,
           back: false,
-          result: "Không cần quản lý máy chủ. Đội chăm sóc khách hàng tự viết SQL để xác định nguyên nhân khách hàng không hài lòng.",
+          result: "Kiến trúc serverless, không cần quản lý EC2 instance. Đội chăm sóc khách hàng tự viết SQL để xác định nguyên nhân khách hàng không hài lòng.",
         }
       : {
           steps: [
@@ -222,7 +222,7 @@ const SCENARIOS_EN: PScenario[] = [
           ],
           ok: true,
           back: false,
-          result: "No servers to manage. The customer care team writes its own SQL to find out why customers are unhappy.",
+          result: "A serverless architecture with no EC2 instances to manage. The customer care team writes its own SQL to find out why customers are unhappy.",
         }
       : {
           steps: [

@@ -39,7 +39,7 @@ function verdict(sel: PlanId[]): { ok: boolean; text: Bi } {
   const covered = new Set(sel.flatMap((p) => COVERS[p]));
   const missing = WORKS.filter((w) => !covered.has(w.id)).map((w) => w.l1.vi);
   const missingEn = WORKS.filter((w) => !covered.has(w.id)).map((w) => w.l1.en);
-  if (sel.length === 0) return { ok: false, text: { vi: "Chưa mua plan nào: mọi workload chạy theo giá on-demand.", en: "No plan bought yet: every workload runs at on-demand prices." } };
+  if (sel.length === 0) return { ok: false, text: { vi: "Chưa mua plan nào: mọi workload chạy theo giá On-Demand.", en: "No plan bought yet: every workload runs at On-Demand prices." } };
   if (missing.length) {
     let why = "";
     let whyEn = "";
@@ -55,7 +55,7 @@ function verdict(sel: PlanId[]): { ok: boolean; text: Bi } {
       why += " **SageMaker không thuộc phạm vi Compute Savings Plans** mà có SageMaker AI Savings Plans riêng.";
       whyEn += " **SageMaker is outside the scope of Compute Savings Plans** and has its own SageMaker AI Savings Plans.";
     }
-    return { ok: false, text: { vi: `Vẫn chạy theo giá on-demand: ${missing.join(", ")}.${why}`, en: `Still running at on-demand prices: ${missingEn.join(", ")}.${whyEn}` } };
+    return { ok: false, text: { vi: `Vẫn chạy theo giá On-Demand: ${missing.join(", ")}.${why}`, en: `Still running at On-Demand prices: ${missingEn.join(", ")}.${whyEn}` } };
   }
   if (sel.includes("ec2i")) return { ok: false, text: { vi: "Đã áp dụng cho mọi workload nhưng **dư một plan**: Compute Savings Plans đã giảm giá cho EC2 web. Bỏ EC2 Instance Savings Plans để giảm số plan cần quản lý.",
     en: "Applied to every workload, but with **one plan too many**: Compute Savings Plans already discount EC2 web. Drop EC2 Instance Savings Plans to reduce the number of plans to manage." } };
@@ -144,7 +144,7 @@ export default function SavingsPlanSim() {
             <g key={w.id} className={"sav-node" + (lit.includes(w.id) ? " ok" : done ? " bad" : "")}>
               <rect x={WX - WW / 2} y={w.y - 19} width={WW} height={38} rx={8} />
               <text className="sav-t" x={WX} y={w.y - 3} textAnchor="middle">{L(w.l1)}</text>
-              <text className="sav-s" x={WX} y={w.y + 12} textAnchor="middle">{lit.includes(w.id) ? L({ vi: "giá Savings Plans", en: "Savings Plans price" }) : done ? L({ vi: "giá on-demand", en: "on-demand price" }) : L(w.l2)}</text>
+              <text className="sav-s" x={WX} y={w.y + 12} textAnchor="middle">{lit.includes(w.id) ? L({ vi: "giá Savings Plans", en: "Savings Plans price" }) : done ? L({ vi: "giá On-Demand", en: "On-Demand price" }) : L(w.l2)}</text>
             </g>
           ))}
           <g ref={fx} />
