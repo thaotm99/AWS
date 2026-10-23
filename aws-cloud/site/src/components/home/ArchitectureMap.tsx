@@ -105,6 +105,9 @@ const FLOWS: Flow[] = [
 const d = (pts: Pt[]) => "M" + pts.map((p) => p.join(",")).join(" L");
 const lessonUrl = (id: string) => `/concepts/${N[id].lesson}/`;
 
+/** Legend swatch in the category hue (--cat from the cat-* class around it). */
+const SWATCH = "mr-1.5 inline-block size-2.5 rounded-[3px] bg-(--cat) align-[-1px]";
+
 export default function ArchitectureMap({ titles, titlesEn }: { titles: Record<string, string>; titlesEn: Record<string, string> }) {
   const { t, locale } = useI18n();
   const L = (x: Tx) => x[locale];
@@ -196,20 +199,20 @@ export default function ArchitectureMap({ titles, titlesEn }: { titles: Record<s
   }
 
   return (
-    <div className="amap" ref={root}>
-      <div className="amap-bar">
-        <span className="amap-label">{t("shell.home.map.flows")}</span>
-        <div className="amap-chips" role="group" aria-label={t("shell.home.map.pickFlow")}>
+    <div className="mt-[18px] mb-2 overflow-hidden rounded-[20px] border border-line bg-surface shadow-soft" ref={root}>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-b border-line px-3.5 py-3">
+        <span className="mr-1 text-[0.75rem] font-bold tracking-[0.08em] text-muted uppercase">{t("shell.home.map.flows")}</span>
+        <div className="col-span-full row-2 flex flex-wrap gap-1.5" role="group" aria-label={t("shell.home.map.pickFlow")}>
           {FLOWS.map((f, i) => (
             <button key={f.name.vi} type="button" className="chip" aria-pressed={i === flow} onClick={() => pick(i)}>{L(f.name)}</button>
           ))}
         </div>
-        <button type="button" className="btn amap-play" aria-pressed={auto} onClick={toggleAuto}>
+        <button type="button" className="btn col-2 row-1" aria-pressed={auto} onClick={toggleAuto}>
           {auto ? t("shell.home.map.pause") : t("shell.home.map.play")}
         </button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 0 1180 712" role="group" aria-label={t("shell.home.map.label")}>
+        <svg className="min-w-[860px]" viewBox="0 0 1180 712" role="group" aria-label={t("shell.home.map.label")}>
           <rect className="amap-frame region" x={300} y={40} width={745} height={588} rx={14} />
           <text className="amap-ft" x={316} y={60}>{t("shell.home.map.region")}</text>
           <a href="/concepts/vpc/">
@@ -241,18 +244,18 @@ export default function ArchitectureMap({ titles, titlesEn }: { titles: Record<s
           <g ref={layer} />
         </svg>
       </div>
-      <div className="amap-legend">
-        <span className="cat-net"><i />{t("shell.home.map.net")}</span>
-        <span className="cat-cmp"><i />{t("shell.home.map.cmp")}</span>
-        <span className="cat-dat"><i />{t("shell.home.map.dat")}</span>
-        <span className="cat-int"><i />{t("shell.home.map.int")}</span>
-        <span className="cat-sec"><i />{t("shell.home.map.sec")}</span>
+      <div className="flex flex-wrap gap-x-3.5 gap-y-1.5 px-4 pt-1 pb-3 text-[0.75rem] text-muted">
+        <span className="cat-net"><i className={SWATCH} />{t("shell.home.map.net")}</span>
+        <span className="cat-cmp"><i className={SWATCH} />{t("shell.home.map.cmp")}</span>
+        <span className="cat-dat"><i className={SWATCH} />{t("shell.home.map.dat")}</span>
+        <span className="cat-int"><i className={SWATCH} />{t("shell.home.map.int")}</span>
+        <span className="cat-sec"><i className={SWATCH} />{t("shell.home.map.sec")}</span>
       </div>
       {/* Announce only a flow the reader picked; the auto tour changes the caption every second or two. */}
-      <div className="amap-caption" aria-live={auto ? "off" : "polite"}>
-        <span className="amap-step">{caption.step}</span>
+      <div className="grid min-h-[58px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-t border-line px-4 py-3 text-[0.9375rem] max-sm:grid-cols-[minmax(0,1fr)] max-sm:gap-1" aria-live={auto ? "off" : "polite"}>
+        <span className="font-mono text-[0.75rem] text-muted">{caption.step}</span>
         <span>{caption.text ? L(caption.text) : ""}</span>
-        <a href={lessonUrl(caption.node)}>{t("shell.home.map.lesson", { title: titleOf(N[caption.node].lesson) })}</a>
+        <a className="inline-flex min-h-7 items-center text-[0.8125rem] whitespace-nowrap" href={lessonUrl(caption.node)}>{t("shell.home.map.lesson", { title: titleOf(N[caption.node].lesson) })}</a>
       </div>
     </div>
   );
