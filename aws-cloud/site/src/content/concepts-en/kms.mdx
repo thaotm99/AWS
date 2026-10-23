@@ -1,6 +1,6 @@
 ---
 title: "KMS and ACM: encryption and certificates"
-lede: "ShopViet stores invoices, orders and customer data. This lesson covers real encryption requirements: giving auditors information about key usage, reducing KMS cost, rotating keys periodically, using one key in two Regions, sharing an encrypted database copy with auditors, protecting data in transit preventing HTTPS certificates from expiring unexpectedly, and telling apart easily confused encryption choices."
+lede: "ShopViet stores invoices, orders and customer data. This lesson covers real encryption requirements: giving auditors information about key usage, reducing KMS cost, rotating keys periodically, using one key in two Regions, sharing an encrypted DB snapshot with auditors, protecting data in transit, preventing SSL/TLS certificates for HTTPS from expiring unexpectedly, and telling apart easily confused encryption choices."
 minutes: 25
 scenes: 4
 prerequisites: ["iam"]
@@ -57,16 +57,16 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 
 <Story toc={[
-  { href: "#en-s1", label: "1 · Encrypting data on S3" },
-  { href: "#en-s2", label: "2 · Sharing an encrypted database" },
+  { href: "#en-s1", label: "1 · Server-side encryption on S3" },
+  { href: "#en-s2", label: "2 · Sharing an encrypted DB snapshot" },
   { href: "#en-s3", label: "3 · Encryption at rest and in transit" },
   { href: "#en-s4", label: "4 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-ShopViet's customer data must be encrypted, and the audit team requires information on **which principal used a key and when**. **AWS KMS** stores and manages encryption keys. **ACM** issues and renews TLS certificates for HTTPS.
+ShopViet's customer data must be encrypted, and the audit team requires information on **which principal used a key and when**. **AWS KMS** stores and manages encryption keys. **AWS Certificate Manager (ACM)** issues and renews SSL/TLS certificates for HTTPS.
 </Story>
 
-<Scene id="en-s1" label="Part 1/4" title="Encrypting invoices stored on S3" questions={["exam1_q22", "exam2_q50", "exam4_q6", "exam5_q46", "exam5_q11", "exam2_q46", "exam3_q24"]}>
+<Scene id="en-s1" label="Part 1/4" title="Server-side encryption for invoices on Amazon S3" questions={["exam1_q22", "exam2_q50", "exam4_q6", "exam5_q46", "exam5_q11", "exam2_q46", "exam3_q24"]}>
 
 <p class="scene-intro">Encrypted data cannot be read without the key, so the key questions are who holds the key and who may use it.</p>
 
@@ -78,32 +78,32 @@ Every new object on S3 is encrypted. The decision to make is **who manages the k
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/4" title="Sharing a copy of an encrypted database with the auditors" questions={["exam2_q57"]}>
+<Scene id="en-s2" label="Part 2/4" title="Sharing an encrypted DB snapshot with the audit account" questions={["exam2_q57"]}>
 
-<p class="scene-intro">Sharing encrypted data with another account only works if that account may also use the key to decrypt it.</p>
+<p class="scene-intro">Sharing encrypted data with another AWS account only works if that account may also use the KMS key to decrypt it.</p>
 
-The auditors have their own AWS account and need a copy of an RDS database encrypted with KMS. Perform each step in turn:
+The auditors have their own AWS account and need a copy of an RDS DB instance encrypted with KMS. Perform each step in turn:
 
 <StepSim client:visible height={240}
-  intro="ShopViet's database is encrypted with a customer managed key in KMS. The auditors in another account need a copy."
+  intro="ShopViet's RDS DB instance is encrypted with a customer managed key in KMS. The auditors in another account need a copy."
   boxes={[{ x: 20, y: 20, w: 420, h: 200, label: "ShopViet account" }, { x: 470, y: 20, w: 270, h: 200, label: "Audit account" }]}
   nodes={[
     { id: "db", x: 50, y: 70, label: "RDS", sub: "encrypted with KMS", kind: "db" },
     { id: "key", x: 50, y: 150, label: "KMS key", sub: "customer managed", kind: "net" },
-    { id: "snap", x: 270, y: 70, label: "Snapshot", sub: "encrypted", kind: "edge" },
-    { id: "copy", x: 520, y: 70, label: "Snapshot copy", kind: "edge" },
-    { id: "audit", x: 520, y: 150, label: "Auditors' RDS", kind: "db" },
+    { id: "snap", x: 270, y: 70, label: "DB snapshot", sub: "encrypted", kind: "edge" },
+    { id: "copy", x: 520, y: 70, label: "Shared snapshot", kind: "edge" },
+    { id: "audit", x: 520, y: 150, label: "Audit DB instance", kind: "db" },
   ]}
   initial={["db", "key"]}
   steps={[
-    { button: "1. Create a snapshot", show: ["snap"], flows: [{ path: ["db", "snap"], tone: "neutral" }],
-      note: "A snapshot of an encrypted database is also encrypted with the same KMS key." },
+    { button: "1. Create a DB snapshot", show: ["snap"], flows: [{ path: ["db", "snap"], tone: "neutral" }],
+      note: "A snapshot of an encrypted DB instance is also encrypted with the same KMS key." },
     { button: "2. Share the snapshot with the audit account", show: ["copy"], flows: [{ path: ["snap", "copy"], tone: "good", label: "share" }],
       note: "Sharing the snapshot alone is **not enough**: the audit account sees the snapshot but cannot decrypt it." },
     { button: "3. Grant the audit account use of the KMS key", flows: [{ path: ["key", "copy"], tone: "good", label: "key policy" }],
       note: "Update the **key policy** so that the audit account can use the key. That is why the snapshot must be encrypted with a **customer managed key**: RDS does not allow sharing a snapshot encrypted with the account's default KMS key (AWS managed key)." },
-    { button: "4. The auditors restore it", show: ["audit"], flows: [{ path: ["copy", "audit"], tone: "good" }],
-      note: "The auditors have their own copy of the database; the data stays encrypted throughout the process." },
+    { button: "4. The auditors restore a DB instance", show: ["audit"], flows: [{ path: ["copy", "audit"], tone: "good" }],
+      note: "The auditors have their own DB instance restored from the snapshot; the data stays encrypted throughout the process." },
   ]} />
 
 <Takeaway>Sharing encrypted data with another account: share the snapshot **and** grant that account use of the KMS key through the key policy. Without the key permission, the recipient only sees a snapshot it cannot decrypt.</Takeaway>
@@ -112,13 +112,13 @@ The auditors have their own AWS account and need a copy of an RDS database encry
 
 <Scene id="en-s3" label="Part 3/4" title="Encryption at rest and in transit" questions={["exam2_q40", "exam4_q31", "exam2_q45", "exam5_q40", "exam5_q15", "exam2_q9"]}>
 
-<p class="scene-intro">Data needs protection in two states: while stored on disk and while moving over the network; each state uses a different encryption mechanism.</p>
+<p class="scene-intro">Data needs protection in two states: at rest (stored) and in transit (moving over the network); each state uses a different encryption mechanism.</p>
 
-KMS protects data **at rest**. Data **in transit** between machines needs SSL/TLS, and HTTPS requires a valid certificate. A simulation of six situations ShopViet meets in operations:
+KMS protects data **at rest**. Data **in transit** between clients, applications and databases needs SSL/TLS, and HTTPS requires a valid SSL/TLS certificate. A simulation of six situations ShopViet meets in operations:
 
 <DataGuardSim client:visible />
 
-<Takeaway>At rest: KMS. In transit: SSL/TLS. Encryption cannot be turned on directly for a running RDS instance: snapshot → encrypted copy → restore. Certificate for CloudFront: ACM in us-east-1. Imported certificates: ACM does not renew them automatically; track expiration with the AWS Config rule `acm-certificate-expiration-check` (14 days by default, configured through `daysToExpiration`) + SNS, or the EventBridge event "ACM Certificate Approaching Expiration" (from 45 days before by default).</Takeaway>
+<Takeaway>At rest: KMS. In transit: SSL/TLS. Encryption cannot be turned on directly for an existing unencrypted RDS DB instance: DB snapshot → encrypted snapshot copy → restore. Certificate for CloudFront: an ACM certificate in us-east-1. Imported certificates: ACM does not renew them automatically; track expiration with the AWS Config rule `acm-certificate-expiration-check` (14 days by default, configured through `daysToExpiration`) + SNS, or the EventBridge event "ACM Certificate Approaching Expiration" (from 45 days before by default).</Takeaway>
 
 </Scene>
 
@@ -183,7 +183,7 @@ Check your understanding: as the designer of the ShopViet system, which option i
     opts: ["SSE-C, rotating the keys yourself", "SSE-KMS with a customer managed key and automatic rotation turned on", "SSE-S3"],
     a: 1,
     why: "A customer managed key with automatic rotation is rotated automatically according to its rotation period, 365 days by default (configurable from 90 to 2560 days); CloudTrail logs key usage." },
-  { q: "Auditors in another AWS account need a copy of ShopViet's encrypted RDS database. Which option meets the requirement?",
+  { q: "Auditors in another AWS account need a copy of ShopViet's encrypted RDS DB instance. Which option meets the requirement?",
     opts: ["Share the encrypted snapshot and grant that account use of the KMS key", "Turn off encryption, then share", "Export the database to CSV and send it by email"],
     a: 0,
     why: "The receiving account needs both the snapshot and permission to decrypt with the KMS key." },

@@ -1,6 +1,6 @@
 ---
 title: "KMS và ACM: mã hóa và chứng chỉ"
-lede: "ShopViet lưu trữ hoá đơn, đơn hàng và dữ liệu khách hàng. Bài học trình bày các yêu cầu mã hoá thực tế: cung cấp cho kiểm toán thông tin về việc sử dụng key, giảm chi phí KMS, xoay key định kỳ, sử dụng một key tại hai Region, chia sẻ bản sao database đã mã hoá cho kiểm toán viên, bảo vệ dữ liệu khi truyền ngăn chứng chỉ HTTPS hết hạn ngoài dự kiến, và phân biệt các lựa chọn mã hoá dễ nhầm lẫn."
+lede: "ShopViet lưu trữ hoá đơn, đơn hàng và dữ liệu khách hàng. Bài học trình bày các yêu cầu mã hoá thực tế: cung cấp cho kiểm toán thông tin về việc sử dụng key, giảm chi phí KMS, xoay key định kỳ, sử dụng một key tại hai Region, chia sẻ DB snapshot đã mã hoá cho kiểm toán viên, bảo vệ dữ liệu khi truyền, ngăn SSL/TLS certificate cho HTTPS hết hạn ngoài dự kiến, và phân biệt các lựa chọn mã hoá dễ nhầm lẫn."
 minutes: 25
 scenes: 4
 prerequisites: ["iam"]
@@ -57,16 +57,16 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
 
 <Story toc={[
-  { href: "#s1", label: "1 · Mã hoá dữ liệu trên S3" },
-  { href: "#s2", label: "2 · Chia sẻ database đã mã hoá" },
+  { href: "#s1", label: "1 · Server-side encryption trên S3" },
+  { href: "#s2", label: "2 · Chia sẻ DB snapshot đã mã hoá" },
   { href: "#s3", label: "3 · Mã hoá khi lưu trữ và khi truyền" },
   { href: "#s4", label: "4 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-Dữ liệu khách hàng của ShopViet phải được mã hoá, và bộ phận kiểm toán yêu cầu thông tin **principal nào đã sử dụng key và vào thời điểm nào**. **AWS KMS** lưu trữ và quản lý key mã hoá. **ACM** cấp và gia hạn chứng chỉ TLS cho HTTPS.
+Dữ liệu khách hàng của ShopViet phải được mã hoá, và bộ phận kiểm toán yêu cầu thông tin **principal nào đã sử dụng key và vào thời điểm nào**. **AWS KMS** lưu trữ và quản lý key mã hoá. **AWS Certificate Manager (ACM)** cấp và gia hạn SSL/TLS certificate cho HTTPS.
 </Story>
 
-<Scene id="s1" label="Phần 1/4" title="Mã hoá hoá đơn lưu trữ trên S3" questions={["exam1_q22", "exam2_q50", "exam4_q6", "exam5_q46", "exam5_q11", "exam2_q46", "exam3_q24"]}>
+<Scene id="s1" label="Phần 1/4" title="Server-side encryption cho hoá đơn trên Amazon S3" questions={["exam1_q22", "exam2_q50", "exam4_q6", "exam5_q46", "exam5_q11", "exam2_q46", "exam3_q24"]}>
 
 <p class="scene-intro">Dữ liệu được mã hoá thì không đọc được nếu không có key; vì vậy câu hỏi quan trọng là ai giữ key và ai được phép dùng key.</p>
 
@@ -78,32 +78,32 @@ Mọi object mới trên S3 đều được mã hoá. Quyết định cần đư
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/4" title="Chia sẻ bản sao database đã mã hoá cho kiểm toán viên" questions={["exam2_q57"]}>
+<Scene id="s2" label="Phần 2/4" title="Chia sẻ DB snapshot đã mã hoá với account kiểm toán" questions={["exam2_q57"]}>
 
-<p class="scene-intro">Chia sẻ dữ liệu đã mã hoá cho một tài khoản khác chỉ có tác dụng khi tài khoản đó cũng được phép dùng key giải mã.</p>
+<p class="scene-intro">Chia sẻ dữ liệu đã mã hoá cho một AWS account khác chỉ có tác dụng khi account đó cũng được phép dùng KMS key để giải mã.</p>
 
-Kiểm toán viên có account AWS riêng và cần một bản sao database RDS đã mã hoá bằng KMS. Thực hiện lần lượt từng bước:
+Kiểm toán viên có AWS account riêng và cần một bản sao của RDS DB instance đã mã hoá bằng KMS. Thực hiện lần lượt từng bước:
 
 <StepSim client:visible height={240}
-  intro="Database của ShopViet được mã hoá bằng một customer managed key trong KMS. Kiểm toán viên tại account khác cần một bản sao."
+  intro="RDS DB instance của ShopViet được mã hoá bằng một customer managed key trong KMS. Kiểm toán viên tại account khác cần một bản sao."
   boxes={[{ x: 20, y: 20, w: 420, h: 200, label: "Account ShopViet" }, { x: 470, y: 20, w: 270, h: 200, label: "Account kiểm toán" }]}
   nodes={[
     { id: "db", x: 50, y: 70, label: "RDS", sub: "mã hoá bằng KMS", kind: "db" },
     { id: "key", x: 50, y: 150, label: "KMS key", sub: "customer managed", kind: "net" },
-    { id: "snap", x: 270, y: 70, label: "Snapshot", sub: "đã mã hoá", kind: "edge" },
-    { id: "copy", x: 520, y: 70, label: "Bản sao snapshot", kind: "edge" },
-    { id: "audit", x: 520, y: 150, label: "RDS của kiểm toán", kind: "db" },
+    { id: "snap", x: 270, y: 70, label: "DB snapshot", sub: "đã mã hoá", kind: "edge" },
+    { id: "copy", x: 520, y: 70, label: "Snapshot được share", kind: "edge" },
+    { id: "audit", x: 520, y: 150, label: "DB instance kiểm toán", kind: "db" },
   ]}
   initial={["db", "key"]}
   steps={[
-    { button: "1. Tạo snapshot", show: ["snap"], flows: [{ path: ["db", "snap"], tone: "neutral" }],
-      note: "Snapshot của database mã hoá cũng được mã hoá bằng cùng KMS key." },
+    { button: "1. Tạo DB snapshot", show: ["snap"], flows: [{ path: ["db", "snap"], tone: "neutral" }],
+      note: "Snapshot của DB instance đã mã hoá cũng được mã hoá bằng cùng KMS key." },
     { button: "2. Share snapshot cho account kiểm toán", show: ["copy"], flows: [{ path: ["snap", "copy"], tone: "good", label: "share" }],
       note: "Chỉ share snapshot là **chưa đủ**: account kiểm toán thấy snapshot nhưng không giải mã được." },
     { button: "3. Cấp quyền sử dụng KMS key cho account kiểm toán", flows: [{ path: ["key", "copy"], tone: "good", label: "key policy" }],
       note: "Cập nhật **key policy** để account kiểm toán được sử dụng key. Do đó snapshot phải được mã hoá bằng **customer managed key**: RDS không cho phép chia sẻ snapshot được mã hoá bằng default KMS key (AWS managed key) của account." },
-    { button: "4. Kiểm toán viên restore", show: ["audit"], flows: [{ path: ["copy", "audit"], tone: "good" }],
-      note: "Kiểm toán viên có bản database riêng; dữ liệu được mã hoá trong suốt quá trình." },
+    { button: "4. Kiểm toán viên restore DB instance", show: ["audit"], flows: [{ path: ["copy", "audit"], tone: "good" }],
+      note: "Kiểm toán viên có DB instance riêng được restore từ snapshot; dữ liệu được mã hoá trong suốt quá trình." },
   ]} />
 
 <Takeaway>Chia sẻ dữ liệu đã mã hoá sang account khác: share snapshot **và** cấp quyền sử dụng KMS key cho account đó qua key policy. Khi thiếu bước cấp quyền key, bên nhận chỉ thấy một snapshot không giải mã được.</Takeaway>
@@ -112,13 +112,13 @@ Kiểm toán viên có account AWS riêng và cần một bản sao database RDS
 
 <Scene id="s3" label="Phần 3/4" title="Mã hoá khi lưu trữ và khi truyền" questions={["exam2_q40", "exam4_q31", "exam2_q45", "exam5_q40", "exam5_q15", "exam2_q9"]}>
 
-<p class="scene-intro">Dữ liệu cần được bảo vệ ở hai trạng thái: khi đang nằm trên ổ đĩa và khi đang di chuyển trên mạng; mỗi trạng thái dùng một cơ chế mã hoá khác nhau.</p>
+<p class="scene-intro">Dữ liệu cần được bảo vệ ở hai trạng thái: khi lưu trữ (at rest) và khi truyền qua mạng (in transit); mỗi trạng thái dùng một cơ chế mã hoá khác nhau.</p>
 
-KMS bảo vệ dữ liệu **khi lưu trữ** (at rest). Dữ liệu **khi truyền** giữa các máy (in transit) cần SSL/TLS, và HTTPS yêu cầu chứng chỉ còn hiệu lực. Mô phỏng sáu tình huống ShopViet gặp trong vận hành:
+KMS bảo vệ dữ liệu **khi lưu trữ** (at rest). Dữ liệu **khi truyền** (in transit) giữa client, ứng dụng và database cần SSL/TLS, và HTTPS yêu cầu SSL/TLS certificate còn hiệu lực. Mô phỏng sáu tình huống ShopViet gặp trong vận hành:
 
 <DataGuardSim client:visible />
 
-<Takeaway>At rest: KMS. In transit: SSL/TLS. RDS đang chạy không bật encryption trực tiếp được: snapshot → copy có encryption → restore. Chứng chỉ cho CloudFront: ACM tại us-east-1. Chứng chỉ import: ACM không tự động gia hạn; theo dõi thời hạn bằng AWS Config rule `acm-certificate-expiration-check` (mặc định 14 ngày, cấu hình qua `daysToExpiration`) + SNS, hoặc sự kiện EventBridge "ACM Certificate Approaching Expiration" (mặc định từ 45 ngày trước).</Takeaway>
+<Takeaway>At rest: KMS. In transit: SSL/TLS. RDS DB instance chưa mã hoá không bật encryption trực tiếp được: DB snapshot → copy snapshot có encryption → restore. Certificate cho CloudFront: ACM certificate tại us-east-1. Imported certificate: ACM không tự động gia hạn; theo dõi thời hạn bằng AWS Config rule `acm-certificate-expiration-check` (mặc định 14 ngày, cấu hình qua `daysToExpiration`) + SNS, hoặc sự kiện EventBridge "ACM Certificate Approaching Expiration" (mặc định từ 45 ngày trước).</Takeaway>
 
 </Scene>
 
@@ -183,7 +183,7 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["SSE-C, tự xoay key", "SSE-KMS với customer managed key, bật automatic rotation", "SSE-S3"],
     a: 1,
     why: "Customer managed key với automatic rotation được tự động xoay theo rotation period, mặc định 365 ngày (cấu hình được từ 90 đến 2560 ngày); CloudTrail ghi lại việc sử dụng key." },
-  { q: "Kiểm toán viên tại một account AWS khác cần bản sao database RDS đã mã hoá của ShopViet. Phương án nào đáp ứng yêu cầu?",
+  { q: "Kiểm toán viên tại một AWS account khác cần bản sao RDS DB instance đã mã hoá của ShopViet. Phương án nào đáp ứng yêu cầu?",
     opts: ["Share snapshot đã mã hoá và cấp quyền sử dụng KMS key cho account đó", "Tắt mã hoá rồi share", "Export database ra CSV và gửi qua email"],
     a: 0,
     why: "Account nhận cần cả snapshot lẫn quyền giải mã bằng KMS key." },

@@ -9,8 +9,8 @@ type Lang = ReturnType<typeof useLang>;
 function scenarios(L: Lang): HopScenario[] {
 return [
   {
-    name: L({ vi: "Ứng dụng đọc đơn hàng từ database", en: "The application reads orders from the database" }),
-    story: L({ vi: "Database RDS của ShopViet đã được mã hoá bằng KMS. Câu hỏi đặt ra: dữ liệu **khi truyền** từ ứng dụng tới database có được bảo vệ không?", en: "ShopViet's RDS database is already encrypted with KMS. The question: is data **in transit** from the application to the database protected?" }),
+    name: L({ vi: "Ứng dụng đọc đơn hàng từ RDS DB instance", en: "The application reads orders from the RDS DB instance" }),
+    story: L({ vi: "RDS DB instance của ShopViet đã được mã hoá bằng KMS. Câu hỏi đặt ra: dữ liệu **khi truyền** từ ứng dụng tới DB instance có được bảo vệ không?", en: "ShopViet's RDS DB instance is already encrypted with KMS. The question: is data **in transit** from the application to the DB instance protected?" }),
     request: "SELECT * FROM don_hang",
     toggle: { label: L({ vi: "Kết nối bằng SSL/TLS", en: "Connect with SSL/TLS" }), initial: false },
     start: "app",
@@ -25,47 +25,47 @@ return [
         msg: on ? L({ vi: "Gói tin đã được mã hoá bằng TLS, không đọc được.", en: "The packets are encrypted with TLS and cannot be read." }) : L({ vi: "Gói tin truyền ở dạng plaintext: lộ tên và số điện thoại khách hàng.", en: "The packets travel in plaintext: customer names and phone numbers are exposed." }) },
       { from: "app", to: "rds", state: on ? "pass" : "alert", tag: on ? "TLS" : L({ vi: "KHÔNG TLS", en: "NO TLS" }),
         msg: on ? L({ vi: "Kết nối SSL/TLS tới endpoint của RDS.", en: "SSL/TLS connection to the RDS endpoint." }) : L({ vi: "Kết nối không mã hoá.", en: "Unencrypted connection." }) },
-      { to: "kms", state: "change", tag: "AT REST", msg: L({ vi: "Dữ liệu trên đĩa, backup và snapshot được mã hoá bằng KMS key.", en: "Data on disk, backups and snapshots are encrypted with the KMS key." }) },
+      { to: "kms", state: "change", tag: "AT REST", msg: L({ vi: "Storage của DB instance, automated backup và snapshot được mã hoá bằng KMS key.", en: "The DB instance storage, automated backups and snapshots are encrypted with the KMS key." }) },
     ], ok: on, result: on
       ? L({ vi: "Đủ hai lớp bảo vệ: **at rest** bằng KMS, **in transit** bằng SSL/TLS.", en: "Both layers of protection: **at rest** with KMS, **in transit** with SSL/TLS." })
-      : L({ vi: "KMS chỉ bảo vệ dữ liệu khi lưu trữ. Dữ liệu khi truyền cần **SSL/TLS** giữa ứng dụng và database.", en: "KMS protects only data at rest. Data in transit needs **SSL/TLS** between the application and the database." }) }),
+      : L({ vi: "KMS chỉ bảo vệ dữ liệu khi lưu trữ. Dữ liệu khi truyền cần **SSL/TLS** giữa ứng dụng và DB instance.", en: "KMS protects only data at rest. Data in transit needs **SSL/TLS** between the application and the DB instance." }) }),
   },
   {
-    name: L({ vi: "Database hiện có chưa mã hoá", en: "An existing database is not encrypted" }),
-    story: L({ vi: "Đợt rà soát bảo mật phát hiện một RDS được tạo từ năm trước **chưa bật encryption**. Database này cần được mã hoá.", en: "A security review finds an RDS instance created last year **without encryption**. This database must be encrypted." }),
-    request: L({ vi: "Mã hoá RDS shop-db-cu", en: "Encrypt RDS shop-db-cu" }),
+    name: L({ vi: "DB instance hiện có chưa mã hoá", en: "An existing DB instance is not encrypted" }),
+    story: L({ vi: "Đợt rà soát bảo mật phát hiện một RDS DB instance được tạo từ năm trước **chưa bật encryption**. DB instance này cần được mã hoá.", en: "A security review finds an RDS DB instance created last year **without encryption**. This DB instance must be encrypted." }),
+    request: L({ vi: "Mã hoá DB instance shop-db-cu", en: "Encrypt DB instance shop-db-cu" }),
     toggle: { label: L({ vi: "Sử dụng quy trình snapshot", en: "Use the snapshot procedure" }), initial: false },
     start: "ops",
     nodes: [
       { id: "ops", x: 90, y: 60, label: L({ vi: "Kỹ sư ShopViet", en: "ShopViet engineer" }), kind: "user" },
-      { id: "rds", x: 90, y: 190, label: L({ vi: "RDS hiện có", en: "Existing RDS" }), sub: L({ vi: "chưa mã hoá", en: "unencrypted" }), kind: "store" },
+      { id: "rds", x: 90, y: 190, label: L({ vi: "DB instance hiện có", en: "Existing DB instance" }), sub: L({ vi: "chưa mã hoá", en: "unencrypted" }), kind: "store" },
       { id: "snap", x: 300, y: 190, label: "Snapshot", sub: L({ vi: "chưa mã hoá", en: "unencrypted" }), kind: "store" },
-      { id: "copy", x: 520, y: 190, label: L({ vi: "Bản copy snapshot", en: "Snapshot copy" }), sub: L({ vi: "mã hoá bằng KMS key", en: "encrypted with KMS key" }), kind: "key" },
-      { id: "new", x: 720, y: 190, w: 120, label: L({ vi: "RDS mới", en: "New RDS" }), sub: L({ vi: "đã mã hoá", en: "encrypted" }), kind: "store" },
+      { id: "copy", x: 520, y: 190, label: L({ vi: "Bản copy của snapshot", en: "Snapshot copy" }), sub: L({ vi: "mã hoá bằng KMS key", en: "encrypted with KMS key" }), kind: "key" },
+      { id: "new", x: 720, y: 190, w: 120, label: L({ vi: "DB instance mới", en: "New DB instance" }), sub: L({ vi: "đã mã hoá", en: "encrypted" }), kind: "store" },
       { id: "app", x: 720, y: 60, w: 120, label: "App ShopViet", kind: "app" },
     ],
     hidden: (on) => (on ? [] : ["snap", "copy", "new"]),
     run: (on) => on
       ? { hops: [
-          { from: "rds", to: "snap", state: "pass", tag: "1", msg: L({ vi: "Tạo snapshot của RDS hiện có.", en: "Create a snapshot of the existing RDS instance." }) },
+          { from: "rds", to: "snap", state: "pass", tag: "1", msg: L({ vi: "Tạo DB snapshot của DB instance hiện có.", en: "Create a DB snapshot of the existing DB instance." }) },
           { to: "copy", state: "change", tag: "2", msg: L({ vi: "Copy snapshot và **bật encryption** với KMS key.", en: "Copy the snapshot and **enable encryption** with a KMS key." }) },
-          { to: "new", state: "pass", tag: "3", msg: L({ vi: "Restore bản copy thành một RDS mới, đã mã hoá.", en: "Restore the copy to a new, encrypted RDS instance." }) },
-          { from: "app", to: "new", state: "pass", tag: "4", msg: L({ vi: "Chuyển endpoint của ứng dụng sang RDS mới.", en: "Point the application's endpoint to the new RDS instance." }) },
+          { to: "new", state: "pass", tag: "3", msg: L({ vi: "Restore bản copy thành một DB instance mới, đã mã hoá.", en: "Restore the copy to a new, encrypted DB instance." }) },
+          { from: "app", to: "new", state: "pass", tag: "4", msg: L({ vi: "Chuyển ứng dụng sang endpoint của DB instance mới.", en: "Point the application to the endpoint of the new DB instance." }) },
         ], ok: true, result: L({ vi: "Quy trình được tài liệu RDS mô tả: snapshot → copy có encryption → restore. Không thể bật encryption trực tiếp trên instance đã tạo.", en: "The procedure described in the RDS documentation: snapshot → encrypted copy → restore. Encryption cannot be turned on directly for an existing instance." }) }
       : { hops: [
-          { to: "rds", state: "block", tag: L({ vi: "KHÔNG ĐƯỢC", en: "NOT ALLOWED" }), flash: "✕", msg: L({ vi: "RDS không cho bật encryption trên instance đang chạy.", en: "RDS does not allow turning on encryption for a running instance." }) },
+          { to: "rds", state: "block", tag: L({ vi: "KHÔNG ĐƯỢC", en: "NOT ALLOWED" }), flash: "✕", msg: L({ vi: "RDS không cho bật encryption trên DB instance hiện có chưa mã hoá.", en: "RDS does not allow turning on encryption for an existing unencrypted DB instance." }) },
         ], ok: false, result: L({ vi: "Encryption chỉ được chọn khi tạo instance. Bật tuỳ chọn để sử dụng quy trình snapshot.", en: "Encryption can be chosen only when the instance is created. Turn on the option to use the snapshot procedure." }) },
   },
   {
     name: L({ vi: "Chuyển SQL Server lên AWS", en: "Moving SQL Server to AWS" }),
     story: L({ vi: "ShopViet chuyển database SQL Server của bộ phận kế toán lên AWS. Yêu cầu: mã hoá at rest, **tối thiểu tác vụ quản trị**.", en: "ShopViet moves the accounting department's SQL Server database to AWS. Requirements: encryption at rest, **minimal administrative tasks**." }),
     request: "Migrate SQL Server",
-    toggle: { label: L({ vi: "Sử dụng Amazon RDS (tắt: tự cài đặt trên EC2)", en: "Use Amazon RDS (off: self-install on EC2)" }), initial: false },
+    toggle: { label: L({ vi: "Sử dụng Amazon RDS (tắt: tự cài đặt trên EC2 instance)", en: "Use Amazon RDS (off: self-install on an EC2 instance)" }), initial: false },
     start: "dc",
     nodes: [
       { id: "dc", x: 100, y: 130, label: "SQL Server", sub: L({ vi: "server tại văn phòng", en: "server at the office" }), kind: "user" },
       { id: "rds", x: 400, y: 70, label: "RDS for SQL Server", sub: L({ vi: "Multi-AZ, mã hoá KMS", en: "Multi-AZ, KMS-encrypted" }), kind: "store" },
-      { id: "stb", x: 680, y: 70, label: L({ vi: "Bản standby", en: "Standby" }), sub: L({ vi: "AZ khác", en: "another AZ" }), kind: "store" },
+      { id: "stb", x: 680, y: 70, label: L({ vi: "Standby instance", en: "Standby instance" }), sub: L({ vi: "AZ khác", en: "another AZ" }), kind: "store" },
       { id: "ec2", x: 400, y: 200, label: L({ vi: "SQL Server trên EC2", en: "SQL Server on EC2" }), sub: L({ vi: "tự cài đặt, tự vá lỗi", en: "self-installed, self-patched" }), kind: "app" },
       { id: "ops", x: 680, y: 200, label: L({ vi: "Kỹ sư ShopViet", en: "ShopViet engineer" }), kind: "user" },
     ],
@@ -76,17 +76,17 @@ return [
           { to: "stb", state: "pass", tag: L({ vi: "AWS QUẢN LÝ", en: "AWS MANAGED" }), msg: L({ vi: "AWS quản lý bản standby, backup và vá lỗi.", en: "AWS manages the standby, backups and patching." }) },
         ], ok: true, result: L({ vi: "Mã hoá at rest có sẵn, phần vận hành do AWS đảm nhận.", en: "Encryption at rest is built in, and AWS handles operations." }) }
       : { hops: [
-          { to: "ec2", state: "change", tag: L({ vi: "TỰ VẬN HÀNH", en: "SELF-MANAGED" }), msg: L({ vi: "Tự cài đặt SQL Server, tự mã hoá ổ đĩa.", en: "Install SQL Server and encrypt the disks yourself." }) },
+          { to: "ec2", state: "change", tag: L({ vi: "TỰ VẬN HÀNH", en: "SELF-MANAGED" }), msg: L({ vi: "Tự cài đặt SQL Server, tự mã hoá EBS volume.", en: "Install SQL Server and encrypt the EBS volumes yourself." }) },
           { to: "ops", state: "alert", tag: L({ vi: "THÊM TÁC VỤ", en: "MORE TASKS" }), msg: L({ vi: "Backup, vá lỗi và failover đều do ShopViet đảm nhận.", en: "Backups, patching and failover are all ShopViet's job." }) },
         ], ok: false, result: L({ vi: "Hoạt động được nhưng phát sinh nhiều tác vụ quản trị. Sử dụng RDS for SQL Server Multi-AZ, mã hoá bằng KMS.", en: "It works but adds many administrative tasks. Use RDS for SQL Server Multi-AZ, encrypted with KMS." }) },
   },
   {
     name: L({ vi: "Phạm vi bảo vệ của EBS encryption", en: "What EBS encryption protects" }),
-    story: L({ vi: "Server xử lý đơn hàng sử dụng một EBS volume đã bật encryption. Mô phỏng dưới đây cho thấy các vị trí dữ liệu được bảo vệ.", en: "The order-processing server uses an EBS volume with encryption turned on. The simulation below shows where data is protected." }),
+    story: L({ vi: "EC2 instance xử lý đơn hàng sử dụng một EBS volume đã bật encryption. Mô phỏng dưới đây cho thấy các vị trí dữ liệu được bảo vệ.", en: "The order-processing EC2 instance uses an EBS volume with encryption turned on. The simulation below shows where data is protected." }),
     request: L({ vi: "Ghi file đơn hàng xuống EBS", en: "Write an order file to EBS" }),
     start: "ec2",
     nodes: [
-      { id: "ec2", x: 100, y: 130, label: "EC2", sub: L({ vi: "server đơn hàng", en: "order server" }), kind: "app" },
+      { id: "ec2", x: 100, y: 130, label: "EC2", sub: L({ vi: "instance xử lý đơn hàng", en: "order-processing instance" }), kind: "app" },
       { id: "ebs", x: 380, y: 130, label: "EBS volume", sub: "encrypted", kind: "store" },
       { id: "kms", x: 650, y: 60, label: "AWS KMS", sub: L({ vi: "key của volume", en: "volume key" }), kind: "key" },
       { id: "snap", x: 650, y: 200, label: "EBS snapshot", kind: "store" },
