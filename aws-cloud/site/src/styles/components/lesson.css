@@ -93,6 +93,213 @@
   }
 }
 
+/* ---------- Highlights and notes on a lesson part (modules/notes/Highlighter.ts) ---------- */
+mark.hl {
+  @apply cursor-pointer rounded-[3px] py-px text-inherit;
+  transition: box-shadow 0.3s;
+  &[data-color="yellow"] {
+    background: color-mix(in srgb, var(--hl-yellow) 45%, transparent);
+  }
+  &[data-color="blue"] {
+    background: color-mix(in srgb, var(--hl-blue) 35%, transparent);
+  }
+  &[data-color="violet"] {
+    background: color-mix(in srgb, var(--hl-violet) 40%, transparent);
+  }
+  &.flash {
+    @apply shadow-[0_0_0_3px_var(--color-edge)];
+  }
+}
+/* Highlight colours stay the same in both themes, so they are fixed values rather than theme tokens. */
+:root {
+  --hl-yellow: #f0c75a;
+  --hl-blue: #4cc2df;
+  --hl-violet: #b29cff;
+  --hl-yellow-line: #e0b33f;
+}
+
+/* Floating toolbar over a selection or a highlight: colour swatches, note, remove. */
+.hl-bar {
+  @apply fixed z-40 flex max-w-[min(360px,calc(100vw-16px))] flex-wrap items-center gap-1 rounded-[18px] border border-line bg-surface p-1.5 text-ink shadow-[0_12px_30px_rgb(0_0_0/0.3)];
+  &[hidden] {
+    @apply hidden;
+  }
+}
+.hl-swatch {
+  @apply size-9 cursor-pointer rounded-sm border border-line;
+  &[data-color="yellow"] {
+    background: var(--hl-yellow);
+  }
+  &[data-color="blue"] {
+    background: var(--hl-blue);
+  }
+  &[data-color="violet"] {
+    background: var(--hl-violet);
+  }
+  @apply aria-pressed:shadow-[0_0_0_2px_var(--color-surface),0_0_0_4px_var(--color-ink)];
+}
+.hl-sep {
+  @apply mx-1 h-6 w-px bg-line;
+}
+.hl-act {
+  @apply min-h-9 cursor-pointer rounded-sm border-0 bg-transparent px-2.5 text-[0.8125rem] text-ink hover:bg-bg;
+  &.primary {
+    @apply bg-accent font-semibold text-on-accent;
+  }
+}
+.hl-note {
+  @apply flex w-full flex-col gap-1.5 text-[0.75rem] text-muted;
+}
+.hl-note-actions {
+  @apply flex w-full justify-end gap-1.5;
+}
+.hl-note textarea,
+.notes-panel textarea {
+  @apply box-border w-full resize-y rounded-sm border border-line bg-bg px-2.5 py-2 text-[0.875rem] text-ink;
+}
+
+/* Notes of the part, listed after the text. */
+.notes-panel {
+  @apply mt-7 mb-2 rounded-[20px] border border-dashed border-line px-[18px] py-4;
+  & > p {
+    @apply mt-2 mb-0 text-[0.8125rem] text-muted;
+  }
+  & ul {
+    @apply mt-3 flex list-none flex-col gap-3 p-0;
+  }
+  & li {
+    @apply flex flex-col gap-2 rounded-[14px] border border-line bg-surface p-3;
+  }
+  & blockquote {
+    @apply m-0 border-l-[3px] pl-2.5 text-[0.875rem] leading-[1.55];
+  }
+  & li[data-color="yellow"] > blockquote {
+    border-color: var(--hl-yellow-line);
+  }
+  & li[data-color="blue"] > blockquote {
+    @apply border-accent;
+  }
+  & li[data-color="violet"] > blockquote {
+    @apply border-violet;
+  }
+  & li > div {
+    @apply flex gap-2;
+  }
+  & li button {
+    @apply min-h-9 cursor-pointer rounded-sm border border-line bg-bg px-2.5 text-[0.8125rem] text-ink;
+  }
+}
+.notes-head {
+  @apply flex items-baseline justify-between gap-3;
+  & h2 {
+    @apply m-0 text-[0.95rem];
+  }
+  & a {
+    @apply text-[0.8125rem];
+  }
+}
+
+/* ---------- Full-screen diagrams (modules/shell/ui/DiagramZoom.ts) ---------- */
+.zoom-bar {
+  @apply -mb-1.5 mt-2.5 flex justify-end;
+}
+.zoom-bar-img {
+  @apply mt-1.5 mb-2.5 flex justify-start;
+}
+.zoom-btn {
+  @apply inline-flex min-h-8 cursor-pointer items-center gap-1.5 rounded-sm border border-line bg-surface px-2.5 py-1 text-[0.8125rem] font-semibold text-muted;
+  @apply hover:border-accent hover:text-ink;
+  &::before {
+    @apply size-3 flex-none bg-current content-[''];
+    -webkit-mask: var(--zoom-icon) center / contain no-repeat;
+    mask: var(--zoom-icon) center / contain no-repeat;
+  }
+  &[data-icon="expand"] {
+    --zoom-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M10 2h4v4M6 14H2v-4M14 2 9 7M2 14l5-5'/%3E%3C/svg%3E");
+  }
+  &[data-icon="rotate"] {
+    --zoom-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.8' stroke-linejoin='round'%3E%3Crect x='1.5' y='5' width='13' height='8' rx='1.5'/%3E%3Cpath d='M4 3.2A6 6 0 0 1 12 3' stroke-linecap='round'/%3E%3Cpath d='M12 1v2.2H9.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  }
+}
+html.zoom-open {
+  @apply overflow-hidden;
+}
+/* The open view covers the screen. Controls keep their height; the drawing takes the rest and scales to fit.
+   Islands are display: contents by default, hence the !important. The safe areas clear the notch and status bar. */
+.zoomed {
+  position: fixed !important;
+  display: flex !important;
+  margin: 0 !important;
+  @apply inset-0 z-60 flex-col overflow-auto bg-bg;
+  padding: calc(56px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px))
+    calc(20px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  & :has(.svg-wrap, .pr-illus-frame) {
+    @apply flex min-h-0 flex-auto flex-col;
+  }
+  & .svg-wrap,
+  & .pr-illus-frame {
+    @apply flex min-h-[120px] flex-auto overflow-hidden;
+  }
+  & .svg-wrap svg,
+  & .pr-illus-frame svg {
+    min-width: 0 !important;
+    @apply size-full max-h-none;
+  }
+  & > .zoom-btn,
+  & .pr-illus-head .zoom-btn {
+    @apply hidden;
+  }
+  &.zoom-image {
+    @apply items-center justify-center;
+  }
+}
+.zoom-image img {
+  @apply block size-full object-contain;
+}
+.zoom-close {
+  @apply fixed z-61 grid size-[34px] cursor-pointer place-items-center rounded-full border border-line bg-surface p-0 text-ink shadow-soft;
+  @apply hover:border-accent hover:text-accent;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: calc(12px + env(safe-area-inset-right, 0px));
+}
+/* Phone held upright and no orientation lock: turn the view a quarter turn so it reads landscape.
+   Sized by the dynamic viewport (iOS Safari's 100vh includes the area under its toolbars), with a
+   100vh fallback. After the turn the box's left edge (its leading edge) lies under the status bar
+   and its right edge over the home indicator, so the safe areas pad the rotated sides:
+   box left = screen top, box top = screen right, box right = screen bottom, box bottom = screen left. */
+html.zoom-rotate {
+  & .zoomed {
+    inset: auto;
+    top: 0;
+    left: 100vw;
+    left: 100dvw;
+    width: 100vh;
+    width: 100dvh;
+    height: 100vw;
+    height: 100dvw;
+    transform: rotate(90deg);
+    transform-origin: top left;
+    padding: calc(16px + env(safe-area-inset-right, 0px)) calc(64px + env(safe-area-inset-bottom, 0px))
+      calc(16px + env(safe-area-inset-left, 0px)) calc(16px + env(safe-area-inset-top, 0px));
+  }
+  & .zoomed .stage-bar,
+  & .zoomed .pr-illus-head {
+    @apply gap-x-1.5 gap-y-1 py-1;
+  }
+  & .zoomed .btn,
+  & .zoomed .chip,
+  & .zoomed .pr-illus-tab {
+    @apply px-[9px] py-[3px] text-[0.75rem];
+  }
+  & .zoom-close {
+    top: auto;
+    right: calc(8px + env(safe-area-inset-right, 0px));
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    transform: rotate(90deg);
+    transform-origin: center;
+  }
+}
+
 /* ---------- Part pages ---------- */
 /* On phones the part pager is pinned to the bottom of the screen: keep the end of the text, and focused or
    scrolled-to controls, clear of it. */
