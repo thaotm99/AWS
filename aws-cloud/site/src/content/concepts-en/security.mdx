@@ -1,6 +1,6 @@
 ---
 title: "WAF, Shield, GuardDuty, Macie: protection and detection"
-lede: "The ShopViet system is starting to become a target for attacks. This lesson covers the protection layer in front of the application with AWS WAF, then simulates six real incidents (DDoS, a server infected with cryptocurrency mining software, software vulnerabilities, customer data files stored in the wrong place, a new account missing rules, scattered logs) to identify the service that prevents or detects each incident."
+lede: "The ShopViet system is starting to become a target for attacks. This lesson covers the protection layer in front of the application with AWS WAF, then simulates six real incidents (DDoS, an EC2 instance infected with cryptocurrency mining software, software vulnerabilities, customer data files stored in the wrong place, a new account missing rules, scattered logs) to identify the service that prevents or detects each incident."
 minutes: 18
 scenes: 3
 prerequisites: ["cloudfront", "vpc"]
@@ -55,12 +55,12 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s3", label: "3 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-The ShopViet system records attack activity: bots probing for SQL injection, one IP scanning continuously and DDoS traffic. This lesson covers the protection layer in front of the application (**AWS WAF**, **Shield**) and the services that **detect** unusual activity inside the account.
+The ShopViet system records attack activity: bots probing for SQL injection, one IP scanning continuously and DDoS traffic. This lesson covers the protection layer in front of the application (**AWS WAF**, **AWS Shield**) and the services that **detect** unusual activity inside the account.
 </Story>
 
 <Scene id="en-s1" label="Part 1/3" title="AWS WAF: filtering malicious requests before they reach the application" questions={["exam5_q13", "exam1_q6", "exam5_q45", "exam2_q30", "exam6_q60", "exam5_q57", "exam2_q32"]}>
 
-<p class="scene-intro">Part of the traffic reaching a website is malicious; a filter placed in front of the application can block those requests before they reach the servers.</p>
+<p class="scene-intro">Part of the traffic reaching a website is malicious; a web application firewall placed in front of the application can block those requests before they reach the application.</p>
 
 Six kinds of requests are being sent to ShopViet, including a legitimate shipping partner calling from abroad with a fixed IP address. Turn on each rule, choose the resource associated with AWS WAF, then send the requests.
 
@@ -74,13 +74,13 @@ AWS WAF evaluates the rules in a web ACL by **priority**, from the lowest numeri
 
 <Scene id="en-s2" label="Part 2/3" title="Six security incidents and the matching services" questions={["exam3_q58", "exam6_q4", "exam1_q36", "exam3_q1", "exam6_q14", "exam2_q44"]}>
 
-<p class="scene-intro">Not every security incident comes from web requests; many happen inside the account, and each kind has a service built to detect or prevent it.</p>
+<p class="scene-intro">Not every security incident comes from web requests; many happen inside the AWS account, and each kind has a service built to detect or prevent it.</p>
 
-AWS WAF filters only web requests. Many other incidents happen **inside** the account: a compromised server, a sensitive file stored in the wrong place, a new account missing its configuration. Choose an incident, turn the matching service on or off, then simulate the incident.
+AWS WAF filters only web requests. Many other incidents happen **inside** the account: a compromised EC2 instance, a sensitive file stored in the wrong place, a new account missing its configuration. Choose an incident, turn the matching service on or off, then simulate the incident.
 
 <IncidentSim client:visible />
 
-<Takeaway>Large-scale DDoS, with support from the AWS team and reports: Shield Advanced. A compromised server mining cryptocurrency: GuardDuty. Software vulnerabilities on EC2: Inspector. Personal data in S3: Macie. Applying consistent rules across many accounts: Firewall Manager. Centralizing security logs: Security Lake.</Takeaway>
+<Takeaway>Large-scale DDoS, with support from the Shield Response Team (SRT) and reports: AWS Shield Advanced. A compromised EC2 instance mining cryptocurrency: Amazon GuardDuty. Software vulnerabilities on EC2 instances: Amazon Inspector. Personal data in S3: Amazon Macie. Applying consistent rules across many accounts: AWS Firewall Manager. Centralizing security logs: Amazon Security Lake.</Takeaway>
 
 </Scene>
 
@@ -106,7 +106,7 @@ Some services are often considered alongside AWS WAF but solve a different probl
   { name: "AWS WAF for SFTP",
     use: "AWS WAF monitors **HTTP and HTTPS** requests to protected resources: CloudFront, API Gateway REST APIs, ALB, AppSync, Cognito user pools, App Runner, Verified Access, Amplify.",
     notHere: "ShopViet's partners upload files over SFTP to AWS Transfer Family. SFTP runs over SSH, not HTTP, and a Transfer Family endpoint is not a resource type AWS WAF protects, so a WAF IP set cannot restrict the source IPs.",
-    instead: "A **VPC hosted, Internet Facing** endpoint with an Elastic IP address per subnet; the endpoint's **security group** allows SSH (port 22 by default) only from the partners' IP ranges. Storage backend choices for Transfer Family are covered in the data migration lesson, part 2." },
+    instead: "A **VPC hosted endpoint** with **Internet Facing** access and an Elastic IP address per subnet; the endpoint's **security group** allows SSH (port 22 by default) only from the partners' IP ranges. Storage backend choices for Transfer Family are covered in the data migration lesson, part 2." },
 ]} />
 
 AWS Transfer Family and its storage backend choices (Amazon S3 or Amazon EFS) are covered in the [data migration lesson, part 2](/concepts/storage-migration/data-transfer/).
@@ -133,7 +133,7 @@ Sort the services that stop traffic and the services that detect problems. On a 
 Check your understanding: as the designer of the ShopViet system, which option is right?
 
 <Quiz client:visible items={[
-  { q: "ShopViet's web application runs on EC2 and is being probed for SQL injection and cross-site scripting. What is the most effective way to stop it?",
+  { q: "ShopViet's web application runs on EC2 instances and is being probed for SQL injection and cross-site scripting. What is the most effective way to stop it?",
     opts: ["AWS WAF on CloudFront in front of the application", "A security group blocking port 80", "Amazon Inspector"],
     a: 0,
     why: "AWS WAF has managed rules for SQLi/XSS. A security group does not inspect request content; Inspector only scans for vulnerabilities." },
@@ -145,7 +145,7 @@ Check your understanding: as the designer of the ShopViet system, which option i
     opts: ["GuardDuty and Macie", "Inspector and Shield", "WAF and Firewall Manager"],
     a: 0,
     why: "GuardDuty detects threats; Macie discovers sensitive data." },
-  { q: "EC2 costs rise unusually, and a server is suspected of running cryptocurrency mining software. Which service can detect this behavior?",
+  { q: "EC2 costs rise unusually, and an EC2 instance is suspected of running cryptocurrency mining software. Which service can detect this behavior?",
     opts: ["Amazon GuardDuty", "AWS Config", "Amazon Macie"],
     a: 0,
     why: "GuardDuty has a dedicated finding type for cryptocurrency mining activity on EC2." },

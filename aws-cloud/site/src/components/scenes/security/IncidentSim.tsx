@@ -32,17 +32,17 @@ return [
           { from: "srt", to: "adv", state: "pass", tag: L({ vi: "HỖ TRỢ", en: "SUPPORT" }), msg: L({ vi: "Shield Response Team (SRT) hỗ trợ bổ sung rule WAF chặn nguồn tấn công; sử dụng SRT yêu cầu gói Business Support hoặc Enterprise Support.", en: "The Shield Response Team (SRT) helps add WAF rules that block the attack sources; using the SRT requires a Business Support or Enterprise Support plan." }) },
           { from: "adv", to: "cf", state: "pass", msg: L({ vi: "Chỉ traffic hợp lệ được chuyển tiếp.", en: "Only legitimate traffic is forwarded." }) },
           { to: "app", state: "pass", msg: L({ vi: "Hệ thống vẫn tiếp nhận đơn hàng.", en: "The system keeps taking orders." }) },
-        ], ok: true, result: L({ vi: "Shield Advanced: có đội ngũ AWS hỗ trợ, báo cáo và log chi tiết về cuộc tấn công, và cost protection dưới dạng service credit khi chi phí tăng đột biến do DDoS.", en: "Shield Advanced: support from the AWS team, detailed reports and logs on the attack, and cost protection in the form of service credits when costs spike because of DDoS." }) }
+        ], ok: true, result: L({ vi: "Shield Advanced: có Shield Response Team (SRT) hỗ trợ, báo cáo và log chi tiết về cuộc tấn công, và cost protection dưới dạng service credit khi chi phí tăng đột biến do DDoS.", en: "Shield Advanced: support from the Shield Response Team (SRT), detailed reports and logs on the attack, and cost protection in the form of service credits when costs spike because of DDoS." }) }
       : { hops: [
           { to: "std", state: "change", times: 4, tag: L({ vi: "LỌC MỘT PHẦN", en: "PARTLY FILTERED" }), msg: L({ vi: "Chặn các kiểu tấn công tầng mạng phổ biến.", en: "Blocks common network-layer attacks." }) },
           { to: "cf", state: "alert", times: 2, tag: L({ vi: "LỌT QUA", en: "GETS THROUGH" }), msg: L({ vi: "Đợt tấn công quy mô lớn ở tầng ứng dụng vẫn đi qua.", en: "The large-scale application-layer attack still gets through." }) },
           { to: "app", state: "alert", tag: L({ vi: "CHẬM", en: "SLOW" }), flash: "503", msg: L({ vi: "Hệ thống phản hồi chậm, người dùng bỏ giỏ hàng.", en: "The system responds slowly, and users abandon their carts." }) },
-        ], ok: false, result: L({ vi: "Shield Standard có sẵn và miễn phí, nhưng không có đội ngũ hỗ trợ và báo cáo chi tiết. Cần **AWS Shield Advanced**.", en: "Shield Standard is built in and free, but has no support team and no detailed reports. **AWS Shield Advanced** is needed." }) },
+        ], ok: false, result: L({ vi: "Shield Standard có sẵn và miễn phí, nhưng không có hỗ trợ từ SRT và báo cáo chi tiết. Cần **AWS Shield Advanced**.", en: "Shield Standard is built in and free, but has no SRT support and no detailed reports. **AWS Shield Advanced** is needed." }) },
   },
   {
-    name: L({ vi: "Server bị cài phần mềm đào tiền mã hoá", en: "A server is infected with crypto mining software" }),
-    story: L({ vi: "Một EC2 của ShopViet bị chiếm quyền và bị cài phần mềm đào tiền mã hoá. CPU luôn ở mức 100% nhưng chưa được phát hiện.", en: "One of ShopViet's EC2 instances is compromised and has cryptocurrency mining software installed. CPU is always at 100%, but nobody has noticed." }),
-    request: L({ vi: "EC2 kết nối tới pool.mining.example", en: "EC2 connects to pool.mining.example" }),
+    name: L({ vi: "EC2 instance bị cài phần mềm đào tiền mã hoá", en: "An EC2 instance is infected with cryptocurrency mining software" }),
+    story: L({ vi: "Một EC2 instance của ShopViet bị chiếm quyền và bị cài phần mềm đào tiền mã hoá. CPU luôn ở mức 100% nhưng chưa được phát hiện.", en: "One of ShopViet's EC2 instances is compromised and has cryptocurrency mining software installed. CPU is always at 100%, but nobody has noticed." }),
+    request: L({ vi: "EC2 instance kết nối tới pool.mining.example", en: "The EC2 instance connects to pool.mining.example" }),
     toggle: { label: L({ vi: "Kích hoạt Amazon GuardDuty", en: "Enable Amazon GuardDuty" }), initial: false },
     start: "ec2",
     nodes: [
@@ -54,7 +54,7 @@ return [
     ],
     hidden: (on) => (on ? [] : ["gd"]),
     run: (on) => ({ hops: [
-      { to: "pool", state: "alert", tag: "CRYPTO MINING", msg: L({ vi: "EC2 liên tục gửi kết quả tới mining pool.", en: "The EC2 instance keeps sending results to the mining pool." }) },
+      { to: "pool", state: "alert", tag: "CRYPTO MINING", msg: L({ vi: "EC2 instance liên tục gửi kết quả tới mining pool.", en: "The EC2 instance keeps sending results to the mining pool." }) },
       { from: "ec2", to: "logs", state: "change", tag: L({ vi: "CÓ LOG", en: "LOGGED" }), msg: L({ vi: "Kết nối và truy vấn DNS đều được ghi trong log.", en: "The connections and DNS queries are all recorded in the logs." }) },
       ...(on ? [
         { to: "gd", state: "alert" as const, tag: "FINDING", flash: "!", msg: "Finding `CryptoCurrency:EC2/BitcoinTool.B!DNS`." },
@@ -66,8 +66,8 @@ return [
   },
   {
     name: L({ vi: "Thư viện phiên bản cũ có lỗ hổng", en: "An outdated library with a vulnerability" }),
-    story: L({ vi: "Server web của ShopViet vẫn chạy một phiên bản OpenSSL cũ có lỗ hổng đã được công bố. Đội phát triển chưa nắm được thông tin này.", en: "ShopViet's web server still runs an old OpenSSL version with a published vulnerability. The development team is not aware of it." }),
-    request: L({ vi: "Quét EC2 web-01", en: "Scan EC2 web-01" }),
+    story: L({ vi: "EC2 instance web của ShopViet vẫn chạy một phiên bản OpenSSL cũ có lỗ hổng đã được công bố. Đội phát triển chưa nắm được thông tin này.", en: "ShopViet's web EC2 instance still runs an old OpenSSL version with a published vulnerability. The development team is not aware of it." }),
+    request: L({ vi: "Quét EC2 instance web-01", en: "Scan EC2 instance web-01" }),
     toggle: { label: L({ vi: "Kích hoạt Amazon Inspector", en: "Enable Amazon Inspector" }), initial: false },
     start: "ins",
     nodes: [
@@ -79,18 +79,18 @@ return [
     hidden: (on) => (on ? [] : ["ins"]),
     run: (on) => on
       ? { hops: [
-          { to: "ec2", state: "change", tag: L({ vi: "QUÉT", en: "SCAN" }), msg: L({ vi: "Quét gói phần mềm và cổng mạng đang mở trên EC2.", en: "Scans the software packages and open network ports on EC2." }) },
+          { to: "ec2", state: "change", tag: L({ vi: "QUÉT", en: "SCAN" }), msg: L({ vi: "Quét gói phần mềm và network reachability của EC2 instance.", en: "Scans the software packages and network reachability of the EC2 instance." }) },
           { to: "ins", state: "alert", tag: "CVE", flash: "!", msg: L({ vi: "Phát hiện lỗ hổng mức **Critical** trong gói openssl.", en: "Finds a **Critical** vulnerability in the openssl package." }), packet: "pkt-bad" },
           { to: "team", state: "pass", tag: L({ vi: "VÁ", en: "PATCH" }), msg: L({ vi: "Đội phát triển nhận danh sách lỗ hổng sắp xếp theo mức độ nghiêm trọng và vá lỗi chủ động.", en: "The development team gets a list of vulnerabilities sorted by severity and patches proactively." }) },
           { from: "att", to: "ec2", state: "block", tag: L({ vi: "THẤT BẠI", en: "FAILED" }), msg: L({ vi: "Lỗ hổng đã được vá, khai thác thất bại.", en: "The vulnerability has been patched, so the exploit fails." }) },
-        ], ok: true, result: L({ vi: "Inspector quét liên tục lỗ hổng phần mềm và mức độ phơi nhiễm mạng của EC2, container image và Lambda.", en: "Inspector continuously scans EC2, container images and Lambda for software vulnerabilities and network exposure." }) }
+        ], ok: true, result: L({ vi: "Inspector quét liên tục lỗ hổng phần mềm và mức độ phơi nhiễm mạng (network exposure) của EC2 instance, container image và Lambda function.", en: "Inspector continuously scans EC2 instances, container images and Lambda functions for software vulnerabilities and network exposure." }) }
       : { hops: [
           { from: "att", to: "ec2", state: "alert", tag: L({ vi: "KHAI THÁC", en: "EXPLOITED" }), flash: "!", msg: L({ vi: "Bên tấn công phát hiện lỗ hổng trước ShopViet.", en: "The attacker finds the vulnerability before ShopViet does." }) },
-        ], ok: false, result: L({ vi: "Khi không quét, lỗ hổng không được phát hiện. Kích hoạt **Amazon Inspector** để phát hiện lỗ hổng trên EC2.", en: "Without scanning, the vulnerability goes undetected. Enable **Amazon Inspector** to find vulnerabilities on EC2." }) },
+        ], ok: false, result: L({ vi: "Khi không quét, lỗ hổng không được phát hiện. Kích hoạt **Amazon Inspector** để phát hiện lỗ hổng trên EC2 instance.", en: "Without scanning, the vulnerability goes undetected. Enable **Amazon Inspector** to find vulnerabilities on EC2 instances." }) },
   },
   {
     name: L({ vi: "Tệp dữ liệu khách hàng lưu sai vị trí", en: "A customer data file stored in the wrong place" }),
-    story: L({ vi: "Một developer xuất danh sách khách hàng ra tệp CSV để kiểm thử và để lại trong một bucket S3. Tệp chứa số điện thoại và số CCCD.", en: "A developer exports the customer list to a CSV file for testing and leaves it in an S3 bucket. The file contains phone numbers and national ID numbers." }),
+    story: L({ vi: "Một developer xuất danh sách khách hàng ra tệp CSV để kiểm thử và để lại trong một S3 bucket. Tệp chứa số điện thoại và số CCCD.", en: "A developer exports the customer list to a CSV file for testing and leaves it in an S3 bucket. The file contains phone numbers and national ID numbers." }),
     request: "PUT exports/khach-hang.csv",
     toggle: { label: L({ vi: "Kích hoạt Amazon Macie", en: "Enable Amazon Macie" }), initial: false },
     start: "dev",
@@ -132,7 +132,7 @@ return [
           { to: "a1", state: "pass", tag: L({ vi: "ÁP DỤNG", en: "APPLIED" }), msg: L({ vi: "Áp dụng tự động.", en: "Applied automatically." }) },
           { from: "fm", to: "a2", state: "pass", tag: L({ vi: "ÁP DỤNG", en: "APPLIED" }), msg: L({ vi: "Áp dụng tự động.", en: "Applied automatically." }) },
           { from: "fm", to: "a3", state: "pass", tag: L({ vi: "ÁP DỤNG", en: "APPLIED" }), msg: L({ vi: "Account vừa tạo cũng được áp dụng ngay.", en: "The newly created account gets it right away too." }) },
-        ], ok: true, result: L({ vi: "Firewall Manager quản lý tập trung AWS WAF, Shield Advanced, Security Group và network ACL, AWS Network Firewall, Route 53 Resolver DNS Firewall cho các account trong AWS Organizations.", en: "Firewall Manager centrally manages AWS WAF, Shield Advanced, security groups and network ACLs, AWS Network Firewall, and Route 53 Resolver DNS Firewall for the accounts in AWS Organizations." }) }
+        ], ok: true, result: L({ vi: "Firewall Manager quản lý tập trung AWS WAF, Shield Advanced, security group và network ACL, AWS Network Firewall, Route 53 Resolver DNS Firewall cho các account trong AWS Organizations.", en: "Firewall Manager centrally manages AWS WAF, Shield Advanced, security groups and network ACLs, AWS Network Firewall, and Route 53 Resolver DNS Firewall for the accounts in AWS Organizations." }) }
       : { hops: [
           { to: "a1", state: "change", tag: L({ vi: "THỦ CÔNG", en: "MANUAL" }), msg: L({ vi: "Cấu hình WAF tại từng account.", en: "Configure WAF in each account." }) },
           { from: "sec", to: "a2", state: "change", tag: L({ vi: "THỦ CÔNG", en: "MANUAL" }), msg: L({ vi: "Lặp lại tại account thứ hai.", en: "Repeat in the second account." }) },

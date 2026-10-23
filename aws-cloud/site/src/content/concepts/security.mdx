@@ -1,6 +1,6 @@
 ---
 title: "WAF, Shield, GuardDuty, Macie: bảo vệ và phát hiện"
-lede: "Hệ thống ShopViet bắt đầu trở thành mục tiêu tấn công. Bài học trình bày lớp bảo vệ phía trước ứng dụng bằng AWS WAF, sau đó mô phỏng sáu sự cố thực tế (DDoS, server bị cài phần mềm đào tiền mã hoá, lỗ hổng phần mềm, tệp dữ liệu khách hàng bị lưu sai vị trí, account mới thiếu rule, log phân tán) để xác định dịch vụ ngăn chặn hoặc phát hiện từng sự cố."
+lede: "Hệ thống ShopViet bắt đầu trở thành mục tiêu tấn công. Bài học trình bày lớp bảo vệ phía trước ứng dụng bằng AWS WAF, sau đó mô phỏng sáu sự cố thực tế (DDoS, EC2 instance bị cài phần mềm đào tiền mã hoá, lỗ hổng phần mềm, tệp dữ liệu khách hàng bị lưu sai vị trí, account mới thiếu rule, log phân tán) để xác định dịch vụ ngăn chặn hoặc phát hiện từng sự cố."
 minutes: 18
 scenes: 3
 prerequisites: ["cloudfront", "vpc"]
@@ -55,12 +55,12 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s3", label: "3 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-Hệ thống ShopViet ghi nhận các hành vi tấn công: bot dò SQL injection, một IP quét liên tục và lưu lượng DDoS. Bài học trình bày lớp bảo vệ phía trước ứng dụng (**AWS WAF**, **Shield**) và các dịch vụ **phát hiện** hoạt động bất thường bên trong account.
+Hệ thống ShopViet ghi nhận các hành vi tấn công: bot dò SQL injection, một IP quét liên tục và traffic DDoS. Bài học trình bày lớp bảo vệ phía trước ứng dụng (**AWS WAF**, **AWS Shield**) và các dịch vụ **phát hiện** hoạt động bất thường bên trong account.
 </Story>
 
 <Scene id="s1" label="Phần 1/3" title="AWS WAF: lọc request độc hại trước khi tới ứng dụng" questions={["exam5_q13", "exam1_q6", "exam5_q45", "exam2_q30", "exam6_q60", "exam5_q57", "exam2_q32"]}>
 
-<p class="scene-intro">Một phần traffic tới website là traffic độc hại; bộ lọc đặt trước ứng dụng có thể chặn các request này trước khi chúng tới máy chủ.</p>
+<p class="scene-intro">Một phần traffic tới website là traffic độc hại; một web application firewall đặt trước ứng dụng có thể chặn các request này trước khi chúng tới ứng dụng.</p>
 
 Sáu loại request đang được gửi tới ShopViet, trong đó có một đối tác vận chuyển hợp lệ gọi từ nước ngoài bằng IP cố định. Kích hoạt từng rule, chọn tài nguyên liên kết với AWS WAF, sau đó gửi request.
 
@@ -68,19 +68,19 @@ AWS WAF đánh giá các rule trong web ACL theo **priority** từ số nhỏ nh
 
 <WafSim client:visible />
 
-<Takeaway>SQL injection, XSS: managed rule. Giới hạn theo quốc gia: geo match. Một IP độc hại: IP set với action Block. Ngoại lệ cho IP đối tác trong một quốc gia bị chặn: IP set với action Allow, priority nhỏ hơn rule geo match. Request với tần suất bất thường: rate-based rule (evaluation window 1, 2, 5 hoặc 10 phút, mặc định 5 phút; ngưỡng tối thiểu 10 request). AWS WAF được liên kết với CloudFront, ALB, API Gateway REST API và một số dịch vụ khác (AppSync, Cognito, App Runner, Verified Access, Amplify), không gắn trực tiếp vào EC2. AWS WAF chỉ kiểm tra request **HTTP và HTTPS**; traffic SFTP (SSH) tới endpoint AWS Transfer Family không đi qua AWS WAF, nên giới hạn IP nguồn cho SFTP được thực hiện bằng security group của endpoint VPC hosted.</Takeaway>
+<Takeaway>SQL injection, XSS: managed rule. Giới hạn theo quốc gia: geo match. Một IP độc hại: IP set với action Block. Ngoại lệ cho IP đối tác trong một quốc gia bị chặn: IP set với action Allow, priority nhỏ hơn rule geo match. Request với tần suất bất thường: rate-based rule (evaluation window 1, 2, 5 hoặc 10 phút, mặc định 5 phút; ngưỡng tối thiểu 10 request). AWS WAF được liên kết với CloudFront, ALB, API Gateway REST API và một số dịch vụ khác (AppSync, Cognito, App Runner, Verified Access, Amplify), không gắn trực tiếp vào EC2. AWS WAF chỉ kiểm tra request **HTTP và HTTPS**; traffic SFTP (SSH) tới endpoint AWS Transfer Family không đi qua AWS WAF, nên giới hạn IP nguồn cho SFTP được thực hiện bằng security group của VPC hosted endpoint.</Takeaway>
 
 </Scene>
 
 <Scene id="s2" label="Phần 2/3" title="Sáu sự cố bảo mật và dịch vụ tương ứng" questions={["exam3_q58", "exam6_q4", "exam1_q36", "exam3_q1", "exam6_q14", "exam2_q44"]}>
 
-<p class="scene-intro">Không phải mọi sự cố bảo mật đều đến từ request web; nhiều sự cố xảy ra bên trong tài khoản, và mỗi loại sự cố có một dịch vụ chuyên phát hiện hoặc ngăn chặn.</p>
+<p class="scene-intro">Không phải mọi sự cố bảo mật đều đến từ request web; nhiều sự cố xảy ra bên trong AWS account, và mỗi loại sự cố có một dịch vụ chuyên phát hiện hoặc ngăn chặn.</p>
 
-AWS WAF chỉ lọc request web. Nhiều sự cố khác xảy ra **bên trong** account: một server bị chiếm quyền, một tệp nhạy cảm bị lưu sai vị trí, một account mới thiếu cấu hình. Chọn một sự cố, bật hoặc tắt dịch vụ tương ứng, sau đó mô phỏng sự cố.
+AWS WAF chỉ lọc request web. Nhiều sự cố khác xảy ra **bên trong** account: một EC2 instance bị chiếm quyền (compromised), một tệp nhạy cảm bị lưu sai vị trí, một account mới thiếu cấu hình. Chọn một sự cố, bật hoặc tắt dịch vụ tương ứng, sau đó mô phỏng sự cố.
 
 <IncidentSim client:visible />
 
-<Takeaway>DDoS quy mô lớn, cần hỗ trợ từ đội ngũ AWS và báo cáo: Shield Advanced. Server bị chiếm quyền, đào tiền mã hoá: GuardDuty. Lỗ hổng phần mềm trên EC2: Inspector. Dữ liệu cá nhân trong S3: Macie. Áp dụng rule thống nhất cho nhiều account: Firewall Manager. Tập trung log bảo mật: Security Lake.</Takeaway>
+<Takeaway>DDoS quy mô lớn, cần hỗ trợ từ Shield Response Team (SRT) và báo cáo: AWS Shield Advanced. EC2 instance bị chiếm quyền, đào tiền mã hoá: Amazon GuardDuty. Lỗ hổng phần mềm trên EC2 instance: Amazon Inspector. Dữ liệu cá nhân trong S3: Amazon Macie. Áp dụng rule thống nhất cho nhiều account: AWS Firewall Manager. Tập trung log bảo mật: Amazon Security Lake.</Takeaway>
 
 </Scene>
 
@@ -106,7 +106,7 @@ Một số dịch vụ thường được cân nhắc cùng AWS WAF nhưng giả
   { name: "AWS WAF cho SFTP",
     use: "AWS WAF giám sát các request **HTTP và HTTPS** tới tài nguyên được bảo vệ: CloudFront, API Gateway REST API, ALB, AppSync, Cognito user pool, App Runner, Verified Access, Amplify.",
     notHere: "Đối tác của ShopViet tải tệp lên qua SFTP tới AWS Transfer Family. SFTP chạy trên SSH, không phải HTTP, và endpoint Transfer Family không nằm trong danh sách tài nguyên AWS WAF bảo vệ, nên không thể dùng IP set của WAF để giới hạn IP.",
-    instead: "Endpoint **VPC hosted, Internet Facing** gắn Elastic IP cho từng subnet; **security group** của endpoint chỉ cho phép SSH (cổng 22 mặc định) từ dải IP của đối tác. Lựa chọn backend lưu trữ cho Transfer Family được trình bày trong bài Di chuyển dữ liệu, Phần 2." },
+    instead: "**VPC hosted endpoint** với access **Internet Facing**, gắn Elastic IP address cho từng subnet; **security group** của endpoint chỉ cho phép SSH (cổng 22 mặc định) từ dải IP của đối tác. Lựa chọn backend lưu trữ cho Transfer Family được trình bày trong bài Di chuyển dữ liệu, Phần 2." },
 ]} />
 
 AWS Transfer Family và lựa chọn backend lưu trữ (Amazon S3 hoặc Amazon EFS) được trình bày tại [bài Di chuyển dữ liệu, Phần 2](/concepts/storage-migration/data-transfer/).
@@ -133,26 +133,26 @@ Phân loại dịch vụ ngăn chặn traffic và dịch vụ phát hiện vấn
 Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "Ứng dụng web của ShopViet chạy trên EC2 và đang bị dò SQL injection, cross-site scripting. Phương án ngăn chặn hiệu quả nhất là gì?",
+  { q: "Ứng dụng web của ShopViet chạy trên EC2 instance và đang bị dò SQL injection, cross-site scripting. Phương án ngăn chặn hiệu quả nhất là gì?",
     opts: ["AWS WAF gắn vào CloudFront đặt trước ứng dụng", "Security group chặn cổng 80", "Amazon Inspector"],
     a: 0,
-    why: "AWS WAF có managed rule cho SQLi/XSS. Security Group không kiểm tra nội dung request; Inspector chỉ quét lỗ hổng." },
+    why: "AWS WAF có managed rule cho SQLi/XSS. Security group không kiểm tra nội dung request; Inspector chỉ quét lỗ hổng." },
   { q: "Log cho thấy một IP gửi hơn 100 request mỗi giây, trong khi người dùng thực chỉ gửi vài request. Cơ chế nào chặn được IP đó?",
-    opts: ["WAF rate-based rule", "Tăng số EC2", "Shield Standard"],
+    opts: ["WAF rate-based rule", "Tăng số EC2 instance", "Shield Standard"],
     a: 0,
     why: "Rate-based rule chặn IP vượt ngưỡng số request trong một khoảng thời gian xác định." },
   { q: "ShopViet cần nhận cảnh báo khi có hoạt động độc hại trên S3, đồng thời xác định bucket nào chứa dữ liệu cá nhân. Cặp dịch vụ nào đáp ứng yêu cầu?",
     opts: ["GuardDuty và Macie", "Inspector và Shield", "WAF và Firewall Manager"],
     a: 0,
     why: "GuardDuty phát hiện mối đe doạ; Macie phát hiện dữ liệu nhạy cảm." },
-  { q: "Chi phí EC2 tăng bất thường, nghi ngờ có server bị cài phần mềm đào tiền mã hoá. Dịch vụ nào phát hiện được hành vi này?",
+  { q: "Chi phí EC2 tăng bất thường, nghi ngờ có EC2 instance bị cài phần mềm đào tiền mã hoá. Dịch vụ nào phát hiện được hành vi này?",
     opts: ["Amazon GuardDuty", "AWS Config", "Amazon Macie"],
     a: 0,
     why: "GuardDuty có loại finding riêng cho hoạt động đào tiền mã hoá trên EC2." },
   { q: "Đối tác của ShopViet tải dữ liệu qua SFTP tới AWS Transfer Family; chỉ dải IP của đối tác được phép kết nối. Cơ chế nào giới hạn IP nguồn?",
-    opts: ["Endpoint VPC hosted với Elastic IP, security group chỉ cho phép dải IP của đối tác", "AWS WAF IP set gắn vào endpoint SFTP", "AWS Security Hub"],
+    opts: ["VPC hosted endpoint với Elastic IP address, security group chỉ cho phép dải IP của đối tác", "AWS WAF IP set gắn vào endpoint SFTP", "AWS Security Hub"],
     a: 0,
-    why: "AWS WAF chỉ kiểm tra request HTTP và HTTPS; SFTP chạy trên SSH. Security group của endpoint VPC hosted lọc theo IP nguồn, protocol và cổng." },
+    why: "AWS WAF chỉ kiểm tra request HTTP và HTTPS; SFTP chạy trên SSH. Security group của VPC hosted endpoint lọc theo IP nguồn, protocol và cổng." },
   { q: "Bộ phận an ninh muốn một nơi duy nhất xem và ưu tiên finding từ GuardDuty, Inspector, Macie của mọi account, kèm kiểm tra cấu hình theo AWS Foundational Security Best Practices. Dịch vụ nào phù hợp?",
     opts: ["AWS Security Hub", "AWS WAF", "AWS Shield Advanced"],
     a: 0,
