@@ -7,7 +7,7 @@ import { getCurriculum } from "../data/exam";
 // Only the layer names reach the page; the cards load from /flashcards.json.
 const layers = getCurriculum().map(({ n, name, nameEn }) => ({ n, name, nameEn }));
 ---
-<BaseLayout title="Thẻ ôn tập · CloudLab" titleKey="shell.flashcards.pageTitle" section="flashcards" sidebar={false}>
+<BaseLayout title="Thẻ ghi nhớ · CloudLab" titleKey="shell.flashcards.pageTitle" section="flashcards" sidebar={false}>
   <header class="gl-head">
     <p class="gl-eyebrow"><T k="shell.flashcards.eyebrow" /></p>
     <h1><T k="shell.flashcards.title" /></h1>

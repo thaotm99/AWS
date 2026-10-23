@@ -49,19 +49,21 @@ export const LAYERS: { n: number; name: string; nameEn: string; ids: string[] }[
   { n: 3, name: "Compute", nameEn: "Compute", ids: ["ec2", "elb", "asg", "containers", "lambda"] },
   { n: 4, name: "Storage", nameEn: "Storage", ids: ["s3", "storage", "storage-migration"] },
   { n: 5, name: "Database", nameEn: "Database", ids: ["rds", "dynamodb", "analytics"] },
-  { n: 6, name: "Integration, Monitoring & vận hành", nameEn: "Integration, Monitoring & Operations", ids: ["messaging", "kinesis", "monitoring", "iac", "backup-dr", "others"] },
+  { n: 6, name: "Integration, Monitoring & Operations", nameEn: "Integration, Monitoring & Operations", ids: ["messaging", "kinesis", "monitoring", "iac", "backup-dr", "others"] },
 ];
 
-/** English titles where the overview.md title is not already English. */
+/** English titles where the Vietnamese title is not already English. */
 export const TITLES_EN: Record<string, string> = {
-  "aws-map": "Start here: an AWS map for newcomers",
-  others: "Cost tools + AI/ML + other services",
+  "aws-map": "Getting started: AWS services overview",
+  "global-infra": "AWS Global Infrastructure: Regions, AZs and edge locations",
+  others: "Cost management, AI/ML and other services",
 };
 
-/** Lessons that are not a row in overview.md. */
+/** Lessons that are not a row in overview.md, or whose overview.md title is replaced for the site. */
 export const EXTRA_TITLES: Record<string, string> = {
-  "aws-map": "Bắt đầu: Bản đồ AWS cho người mới",
-  "global-infra": "Global Infrastructure: Region, AZ, Edge",
+  "aws-map": "Bắt đầu: Tổng quan dịch vụ AWS",
+  "global-infra": "AWS Global Infrastructure: Region, AZ và edge location",
+  others: "Cost management, AI/ML và các dịch vụ khác",
 };
 
 /** Orientation lessons: they map the services instead of teaching one, so they rank no importance. */

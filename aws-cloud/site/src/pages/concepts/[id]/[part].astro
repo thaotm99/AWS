@@ -37,8 +37,8 @@ const head = (s: string) => s.split(": ")[0];
 const after = next
   ? { href: href(next), vi: head(next.title.vi), en: head(next.title.en) }
   : quiz
-    ? { href: `/concepts/${id}/quiz/`, vi: "Câu hỏi kiểm tra", en: "Quiz" }
-    : { href: `/concepts/${id}/`, vi: "Tổng quan bài", en: "Lesson overview" };
+    ? { href: `/concepts/${id}/quiz/`, vi: "Bài kiểm tra", en: "Quiz" }
+    : { href: `/concepts/${id}/`, vi: "Tổng quan bài học", en: "Lesson overview" };
 ---
 <BaseLayout title={`${head(part.title.vi)} · ${concept.title} · CloudLab`} description={entry.data.lede} current={id}>
   <nav slot="toc" class="ltoc pnav" aria-label="Các phần của bài học" data-i18n-attr="aria-label:lesson.parts.label">

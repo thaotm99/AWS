@@ -16,10 +16,10 @@ const { id } = Astro.params;
 const { cert, title } = Astro.props;
 ---
 <BaseLayout
-  title={`Kiểm tra ${title} · CloudLab`}
+  title={`Bài kiểm tra · ${title} · CloudLab`}
   titleKey="practice.topic.pageTitle"
   titleParams={{ title }}
-  description={`Các câu hỏi luyện tập về ${title}.`}
+  description={`Bài kiểm tra gồm các câu hỏi về ${title}.`}
   current={id}
   currentQuiz
 >

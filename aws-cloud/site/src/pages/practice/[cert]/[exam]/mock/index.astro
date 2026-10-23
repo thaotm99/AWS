@@ -15,7 +15,7 @@ const { cert, exam } = Astro.params;
 const { code, number } = Astro.props;
 ---
 <BaseLayout
-  title={`Thi thử ${code} · Đề ${number} · CloudLab`}
+  title={`Thi thử · Đề ${number} · ${code} · CloudLab`}
   titleKey="practice.mock.pageTitle"
   titleParams={{ code, n: number }}
   section="practice"
