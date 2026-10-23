@@ -118,7 +118,7 @@ function evaluate(w: Workload, c: { mem: number; tmp: number; timeout: number; p
       msg: { vi: `Tác vụ cần khoảng ${f(w.dur)} giây nhưng timeout là ${f(c.timeout)} giây (mặc định 3 giây): Lambda dừng lần gọi với lỗi timeout.`, en: `The task needs about ${f(w.dur)} seconds but the timeout is ${f(c.timeout)} seconds (default 3 seconds): Lambda stops the invocation with a timeout error.` } });
   } else if (c.timeout > w.dur * 5) {
     out.push({ level: "warn", label: "Timeout",
-      msg: { vi: `Timeout ${f(c.timeout)} giây quá cao so với thời gian chạy đo được (${f(w.dur)} giây). Khi một dependency bị treo, mỗi lần gọi giữ môi trường thực thi tới hết timeout: thời gian tính phí và concurrency tăng. Đặt timeout theo kết quả load test.`, en: `A ${f(c.timeout)}-second timeout is far above the measured run time (${f(w.dur)} seconds). When a dependency hangs, each invocation holds its execution environment until the timeout: billed duration and concurrency go up. Set the timeout from load-test results.` } });
+      msg: { vi: `Timeout ${f(c.timeout)} giây quá cao so với thời gian chạy đo được (${f(w.dur)} giây). Khi một dependency bị treo, mỗi lần gọi giữ execution environment tới hết timeout: thời gian tính phí và concurrency tăng. Đặt timeout theo kết quả load test.`, en: `A ${f(c.timeout)}-second timeout is far above the measured run time (${f(w.dur)} seconds). When a dependency hangs, each invocation holds its execution environment until the timeout: billed duration and concurrency go up. Set the timeout from load-test results.` } });
   } else {
     out.push({ level: "ok", label: "Timeout",
       msg: { vi: `${f(c.timeout)} giây, có khoảng dự phòng so với thời gian chạy đo được (${f(w.dur)} giây).`, en: `${f(c.timeout)} seconds, with headroom over the measured run time (${f(w.dur)} seconds).` } });
@@ -205,8 +205,8 @@ export default function FunctionConfigSim() {
           {w.state && chips(L({ vi: "Lưu báo cáo tại", en: "Store reports in" }), ["tmp", "layer", "efs"] as Store[], store, change(setStore), (v) => (v === "tmp" ? "/tmp" : v === "layer" ? "Lambda layer" : "Amazon EFS"))}
         </div>
 
-        <div className="lfx-env" aria-label={L({ vi: "Môi trường thực thi của function", en: "The function's execution environment" })}>
-          <span className="lfx-lbl">{L({ vi: "Môi trường thực thi", en: "Execution environment" })}</span>
+        <div className="lfx-env" aria-label={L({ vi: "Execution environment của function", en: "The function's execution environment" })}>
+          <span className="lfx-lbl">{L({ vi: "Execution environment", en: "Execution environment" })}</span>
           {meter("Memory", `${f(mem)} MB`, (mem / 10240) * 100, "", w.minMem ? (w.minMem / 10240) * 100 : undefined)}
           {meter("CPU", `${vcpuLabel(mem, vi)} vCPU`, (mem / 10240) * 100, "cpu")}
           {meter("/tmp", `${f(tmp)} MB`, (tmp / 10240) * 100, w.tmp && tmp < w.tmp ? "bad" : "", w.tmp ? (w.tmp / 10240) * 100 : undefined)}

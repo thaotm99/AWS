@@ -80,14 +80,14 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s3", label: "4 · Providing APIs with API Gateway" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-Many ShopViet tasks run only when an event occurs: a new image, a new order, a scheduled data cleanup. Instead of keeping EC2 running and waiting all day, **Lambda** runs exactly when an event arrives, and **API Gateway** provides APIs for applications to call.
+Many ShopViet tasks run only when an event occurs: a new image, a new order, a scheduled data cleanup. Instead of keeping an EC2 instance running all day, **Lambda** runs exactly when an event arrives, and **API Gateway** provides APIs for applications to call.
 </Story>
 
-<Scene id="en-s1" label="Part 1/4" title="Running code when an event occurs" questions={["exam5_q23", "exam2_q14", "exam1_q60", "exam5_q35", "exam6_q31", "exam3_q30", "exam1_q33"]}>
+<Scene id="en-s1" label="Part 1/4" title="Event-driven architectures with AWS Lambda" questions={["exam5_q23", "exam2_q14", "exam1_q60", "exam5_q35", "exam6_q31", "exam3_q30", "exam1_q33"]}>
 
-<p class="scene-intro">Many tasks only need to run when something happens, such as a new image or a new order; keeping a server waiting all day for them is wasteful.</p>
+<p class="scene-intro">Many tasks only need to run when an event occurs, such as a new image or a new order; keeping an EC2 instance running all day for them wastes money.</p>
 
-Three ShopViet tasks: create a thumbnail when a seller uploads an image, update a leaderboard from page views, and clean up old data every week. Compare the "keep a server waiting" option with letting events trigger Lambda:
+Three ShopViet tasks: create a thumbnail when a seller uploads an image, update a leaderboard from page views, and clean up old data every week. Compare the "keep an EC2 instance running" option with letting events trigger Lambda:
 
 <ScenarioFlow client:visible height={220} legend={["Recommended", "High cost or operational effort"]} scenarios={[
   { name: "Process images on upload",
@@ -131,10 +131,10 @@ Three ShopViet tasks: create a thumbnail when a seller uploads an image, update 
     options: [
       { name: "EC2 + crontab", verdict: "bad", hide: ["eb", "fn"],
         flows: [{ path: ["ec2", "db"], tone: "bad", label: "pay all week for a few minutes" }],
-        text: "A server runs all week just to perform a task that lasts a few minutes." },
+        text: "An EC2 instance runs all week just to perform a task that lasts a few minutes." },
       { name: "EventBridge cron → Lambda", verdict: "good", hide: ["ec2"],
         flows: [{ path: ["eb", "fn"], tone: "good", label: "schedule" }, { path: ["fn", "db"], tone: "good" }],
-        text: "**EventBridge** (a rule or Scheduler) with a cron expression triggers Lambda on schedule. No server sits waiting; Lambda costs arise only for the few minutes of execution each week." },
+        text: "**EventBridge** (a rule or Scheduler) with a cron expression triggers Lambda on schedule. No EC2 instance runs idle; Lambda costs arise only for the few minutes of execution each week." },
     ] },
 ]} />
 
@@ -142,11 +142,11 @@ Three ShopViet tasks: create a thumbnail when a seller uploads an image, update 
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/4" title="Running Lambda in production" questions={["exam4_q25", "exam1_q50", "exam3_q20", "exam6_q35", "exam4_q39", "exam2_q16"]}>
+<Scene id="en-s2" label="Part 2/4" title="Running Lambda functions in production" questions={["exam4_q25", "exam1_q50", "exam3_q20", "exam6_q35", "exam4_q39", "exam2_q16"]}>
 
-<p class="scene-intro">A function that works in testing can still run into problems in production: networking, start-up time, limits on concurrent runs and how secrets are stored.</p>
+<p class="scene-intro">A function that works in testing can still run into problems in production: networking after VPC attachment, cold starts, concurrency quotas and how credentials are stored.</p>
 
-Some problems appear only after deploying to production: a function attached to a VPC cannot reach the internet, users wait a long time at peak hours, notifications are throttled when the concurrency quota is exceeded, the database password is stored in configuration. Pick each scenario, try it, then turn on the option to fix it:
+Some problems appear only after deploying to production: a function attached to a VPC cannot reach the internet, latency rises at peak hours because of cold starts, notifications are throttled when the concurrency quota is exceeded, the database password is stored in configuration. Pick each scenario, try it, then turn on the option to fix it:
 
 <LambdaRunSim client:visible />
 
@@ -156,9 +156,9 @@ Two more notes. Each invocation of a standard Lambda function runs at most **15 
 
 </Scene>
 
-<Scene id="en-sizing" label="Part 3/4" title="Function resources and packaging" questions={["exam4_q25", "exam3_q32", "exam1_q9"]}>
+<Scene id="en-sizing" label="Part 3/4" title="Configuring memory, ephemeral storage, timeout and function packaging" questions={["exam4_q25", "exam3_q32", "exam1_q9"]}>
 
-<p class="scene-intro">Each function gets a fixed amount of resources for every run; choosing that amount well directly affects speed and cost.</p>
+<p class="scene-intro">Each function gets a fixed amount of resources for every invocation; configuring those resources correctly directly affects performance and cost.</p>
 
 A few settings of each Lambda function decide the resources of its execution environment:
 
@@ -179,9 +179,9 @@ A layer is not a place to keep data. When the recommendations team needs to read
 
 </Scene>
 
-<Scene id="en-s3" label="Part 4/4" title="Providing APIs to applications and partners" questions={["exam1_q49", "exam3_q52", "exam3_q53", "exam2_q58", "exam4_q44", "exam5_q32", "exam1_q57", "exam1_q11"]}>
+<Scene id="en-s3" label="Part 4/4" title="Amazon API Gateway for applications and partners" questions={["exam1_q49", "exam3_q52", "exam3_q53", "exam2_q58", "exam4_q44", "exam5_q32", "exam1_q57", "exam1_q11"]}>
 
-<p class="scene-intro">Mobile apps and partners need one address to call the system; that entry point is also where permissions are checked and request volume is limited before any code runs.</p>
+<p class="scene-intro">Mobile apps and partners need one endpoint to call the system; that endpoint is also where requests are authenticated, authorized and throttled before they reach the backend integration.</p>
 
 The mobile app, sales partners and the admin site all call `api.shopviet.vn`. **API Gateway** runs a series of checks before a request reaches the application code. Pick a scenario and send a request:
 
@@ -189,7 +189,7 @@ The mobile app, sales partners and the admin site all call `api.shopviet.vn`. **
 
 Some other requirements:
 
-- Chat between buyers and sellers needs a two-way connection where the server pushes messages to clients: **WebSocket API**. With a REST API, each request is independent and no connection is kept open.
+- Chat between buyers and sellers needs a two-way connection where the backend pushes messages to clients: **WebSocket API**. With a REST API, each request is independent and no connection is kept open.
 - Couriers send their location continuously for order tracking (the "Couriers stream their locations" scenario in the simulation): a REST API uses an **AWS service integration** to call Kinesis Data Streams `PutRecord` directly, with no Lambda in between, for **Amazon Managed Service for Apache Flink** (formerly Amazon Kinesis Data Analytics) to analyze the stream. Lambda only handles individual requests; it is not where data is stored or analyzed.
 - Receive transactions from the app, run simple data validation, then process them, with the lowest operational cost: **REST API + Lambda** for validation, with a serverless backend behind it. There are no servers or containers to patch.
 
@@ -243,14 +243,14 @@ Check your understanding: as the designer of the ShopViet system, which option f
     a: 1,
     why: "An S3 event triggers Lambda as soon as a new object arrives; you pay only when it runs." },
   { q: "After attaching Lambda to a VPC to read a database, the function can no longer call a delivery API on the internet. What is the cause?",
-    opts: ["Lambda in a VPC needs a NAT gateway to reach the internet", "Lambda does not support HTTPS", "A Lambda Layer is missing"],
+    opts: ["Lambda in a VPC needs a NAT gateway to reach the internet", "Lambda does not support HTTPS", "A Lambda layer is missing"],
     a: 0,
-    why: "Lambda's ENI in a private subnet has only a private IP; internet access must go through NAT." },
+    why: "Lambda's ENI in a private subnet has only a private IP; internet access must go through a NAT gateway." },
   { q: "Each ShopViet partner may call the API a different number of times per day depending on its service plan. Which configuration fits?",
     opts: ["Usage plans with API keys", "WAF rate-based rule", "Lambda reserved concurrency"],
     a: 0,
     why: "A usage plan sets throttling and quotas per API key." },
-  { q: "ShopViet needs to clean up old data once a week, a task that lasts a few minutes. Requirements: no server kept waiting, and costs only while the task runs. Which option fits?",
+  { q: "ShopViet needs to clean up old data once a week, a task that lasts a few minutes. Requirements: no EC2 instance kept running, and costs only while the task runs. Which option fits?",
     opts: ["EC2 running crontab", "EventBridge cron invokes Lambda", "Lambda runs continuously and sleeps"],
     a: 1,
     why: "An EventBridge cron schedule triggers Lambda at the right time; Lambda costs arise only for a few minutes of execution each week. EC2 running crontab has to run all week; a standard Lambda function cannot run continuously because each invocation lasts at most 15 minutes." },
