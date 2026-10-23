@@ -46,7 +46,7 @@
 .pr-grid button.w { background: var(--bad-soft); border-color: var(--bad); color: var(--bad); }
 .pr-grid button.cur { outline: 2px solid var(--accent); outline-offset: 1px; }
 
-.pr-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 22px; box-shadow: var(--shadow); }
+.pr-card { background: var(--surface); border: 2px solid var(--line); border-radius: 18px; padding: 22px; box-shadow: var(--shadow); }
 .pr-q-meta { display: flex; gap: 6px 14px; flex-wrap: wrap; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-bottom: 8px; }
 .pr-multi { color: var(--edge); }
 .pr-html { min-width: 0; overflow-wrap: anywhere; }

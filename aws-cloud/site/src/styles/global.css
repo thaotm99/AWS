@@ -1671,3 +1671,13 @@ details.deep { border-width: 2px; border-radius: var(--r-md); }
   .home-cta { padding: 28px 20px; border-radius: 24px; }
   .home-cta .btn { flex: 1 1 100%; }
 }
+
+/* UI refresh: cards across Lab, Glossary, Flashcards, Progress, Pomodoro and Compare get the 2 px border and ledge. */
+.lab-list a, .gl-card, .fc-card, .ps-tile, .ps-card, .lab-board, .drill-metric, .drill-play, .cmp-verdict, .dg, .dg-goal, .progress-more a, .drill-option, .lab-svc, .lab-rules li {
+  border-width: 2px;
+}
+.lab-list a, .fc-card, .ps-tile, .ps-card, .dg-goal, .progress-more a, .drill-option, .lab-svc { box-shadow: 0 4px 0 var(--line); }
+.lab-list a:hover, .progress-more a:hover, .dg-goal:hover, .drill-option:hover:not(:disabled), .lab-svc:hover { border-color: var(--accent); }
+.dg { box-shadow: var(--shadow); }
+.cmp-needs button { border-width: 2px; }
+.cmp-needs button[aria-pressed="true"] { box-shadow: 0 3px 0 var(--accent-strong); }
