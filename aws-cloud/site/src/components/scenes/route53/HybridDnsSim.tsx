@@ -35,8 +35,8 @@ export default function HybridDnsSim() {
       } else {
         await travel(layer, [EC2, RESOLVER, OUTBOUND, ONPREM_DNS], 1600, "pkt", 6);
         await travel(layer, [ONPREM_DNS, OUTBOUND, RESOLVER, EC2], 1400, "pkt-back", 6);
-        setMsg({ vi: <>EC2 truy vấn <code>db.corp.local</code>. Forwarding rule của Resolver chuyển truy vấn qua <b>outbound endpoint</b> tới DNS server on-premises. Cấu hình này áp dụng khi workload trong VPC cần phân giải tên miền nội bộ của văn phòng.</>,
-          en: <>EC2 queries <code>db.corp.local</code>. A Resolver forwarding rule sends the query through the <b>outbound endpoint</b> to the on-premises DNS server. This configuration applies when workloads in the VPC need to resolve the office&apos;s internal domain names.</> });
+        setMsg({ vi: <>EC2 instance truy vấn <code>db.corp.local</code>. Forwarding rule của Resolver chuyển truy vấn qua <b>outbound endpoint</b> tới DNS server on-premises. Cấu hình này áp dụng khi workload trong VPC cần phân giải tên miền nội bộ của văn phòng.</>,
+          en: <>The EC2 instance queries <code>db.corp.local</code>. A Resolver forwarding rule sends the query through the <b>outbound endpoint</b> to the on-premises DNS server. This configuration applies when workloads in the VPC need to resolve the office&apos;s internal domain names.</> });
       }
     } else {
       await travel(layer, [ONPREM_DNS, INBOUND, RESOLVER], 1200, "pkt", 6);
@@ -65,7 +65,7 @@ export default function HybridDnsSim() {
         </button>
       </div>
       <div className="stage-bar">
-        <button className="btn primary" onClick={() => ask("toOnPrem")} disabled={busy}>{L({ vi: "EC2 truy vấn db.corp.local", en: "EC2 queries db.corp.local" })}</button>
+        <button className="btn primary" onClick={() => ask("toOnPrem")} disabled={busy}>{L({ vi: "EC2 instance truy vấn db.corp.local", en: "EC2 instance queries db.corp.local" })}</button>
         <button className="btn primary" onClick={() => ask("fromOnPrem")} disabled={busy}>{L({ vi: "On-premises truy vấn api.shopviet.internal", en: "On premises queries api.shopviet.internal" })}</button>
       </div>
       <div className="svg-wrap">

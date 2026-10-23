@@ -58,7 +58,7 @@ ShopViet has deployed its VPC and ALB. The next requirements: users reach the sy
 
 <Scene id="en-s1" label="Part 1/4" title="Alias and CNAME records" questions={["exam2_q2", "exam3_q19", "exam3_q64"]}>
 
-<p class="scene-intro">People remember names such as shopviet.vn, not IP addresses; DNS is the system that turns names into addresses, and each such mapping is called a record.</p>
+<p class="scene-intro">People remember names such as shopviet.vn, not IP addresses; DNS is the system that resolves names to addresses, and each such mapping is stored as a DNS record in a hosted zone.</p>
 
 ShopViet needs four records: the main domain pointing to CloudFront, the main domain pointing to www, www pointing to the ALB, and blog pointing to an external WordPress site. Both **Alias** and **CNAME** records map a name to another target, but not every case can be created. Choose each record and record type, then press create to see Route 53's response.
 
@@ -72,9 +72,9 @@ Alias and CNAME are only two of the record types in a hosted zone. Each record t
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/4" title="TTL: users still reach the old target after a DNS record changes" questions={["exam4_q3"]}>
+<Scene id="en-s2" label="Part 2/4" title="TTL and DNS caching: clients still reach the old target after a record changes" questions={["exam4_q3"]}>
 
-<p class="scene-intro">To cut down on lookups, DNS answers are cached in several places along the way; that is why a record change does not reach every user at once.</p>
+<p class="scene-intro">To cut down on lookups, DNS responses are cached by resolvers and clients; that is why a record change does not reach every user at once.</p>
 
 ShopViet moves to a new load balancer and updates the record in Route 53. Choose a TTL value, then change the record and watch when each client switches to the new target.
 
@@ -84,15 +84,15 @@ ShopViet moves to a new load balancer and updates the record in Route 53. Choose
 
 </Scene>
 
-<Scene id="en-s3" label="Part 3/4" title="Routing policies: a DNS response per user" questions={["exam2_q6", "exam1_q38", "exam4_q61", "exam5_q56", "exam2_q59"]}>
+<Scene id="en-s3" label="Part 3/4" title="Routing policies: latency, geolocation, geoproximity and failover" questions={["exam2_q6", "exam1_q38", "exam4_q61", "exam5_q56", "exam2_q59"]}>
 
 <p class="scene-intro">When a system runs in several places, DNS can return a different address to each user, such as the closest one or one that is still working.</p>
 
-ShopViet runs ALBs in Singapore, Frankfurt and N. Virginia. Choose a routing policy, then simulate access by three users in three regions.
+ShopViet runs ALBs in Singapore, Frankfurt and N. Virginia. Choose a routing policy, then simulate access by users in three geographic locations.
 
 <RoutingPolicySim client:visible />
 
-<Takeaway>Latency: the Region with the lowest latency. Geolocation: by the user's location, used to restrict content by region. Geoproximity: by geographic distance, with bias to adjust the size of a region. Active-passive failover: switches to the standby resource when health checks mark the primary as unhealthy.</Takeaway>
+<Takeaway>Latency-based routing: the Region with the lowest latency. Geolocation routing: by the user's location, used to restrict content by geographic location. Geoproximity routing: by geographic distance, with bias to adjust the size of a geographic area. Failover routing (active-passive): switches to the standby resource when health checks mark the primary as unhealthy.</Takeaway>
 
 </Scene>
 
@@ -100,7 +100,7 @@ ShopViet runs ALBs in Singapore, Frankfurt and N. Virginia. Choose a routing pol
 
 <p class="scene-intro">The VPC and the office network each have their own DNS; for each side to resolve the other's internal names, DNS queries must be forwarded between them.</p>
 
-Servers in the VPC need to resolve the address of the database at the office (`db.corp.local`), while systems at the office need to call an internal API in the VPC (`api.shopviet.internal`, in a private hosted zone). **Route 53 Resolver** provides two endpoint types for these two directions of resolution.
+EC2 instances in the VPC need to resolve the domain name of the on-premises database (`db.corp.local`), while systems at the office need to call an internal API in the VPC (`api.shopviet.internal`, in a private hosted zone). **Route 53 Resolver** provides two endpoint types for these two directions of resolution.
 
 <HybridDnsSim client:visible />
 
@@ -110,7 +110,7 @@ Servers in the VPC need to resolve the address of the database at the office (`d
 
 <Scene id="en-confuse" label="Common mistakes" title="Five common DNS configuration mistakes" questions={["exam4_q59", "exam5_q56", "exam1_q38", "exam4_q61", "exam4_q53"]}>
 
-<p class="scene-intro">DNS mistakes usually show up as “the website is unreachable” while the servers are running fine, so the mechanism must be understood to find the cause.</p>
+<p class="scene-intro">DNS mistakes usually show up as “the website is unreachable” while the application and its targets are running fine, so the mechanism must be understood to find the cause.</p>
 
 Five situations that come up as ShopViet operates its DNS. Try the option that is usually chosen first, then switch to another option to compare.
 
@@ -156,9 +156,9 @@ Check your understanding: as the designer of the ShopViet system, which option i
     a: 1,
     why: "Clients and resolvers keep the old response in their cache until the TTL expires." },
   { q: "ShopViet expects 10 times its usual traffic during a weekend flash sale, and the website content is dynamic. Which configuration lets the system handle the load?",
-    opts: ["A multivalue answer record pointing to the existing web servers", "An ALB with an Auto Scaling group", "CloudFront caching every page"],
+    opts: ["A multivalue answer record pointing to the existing EC2 instances", "An ALB with an Auto Scaling group", "CloudFront caching every page"],
     a: 1,
-    why: "The Auto Scaling group adds instances according to its scaling policy. Multivalue answer only returns up to 8 healthy IPs of the existing servers and adds no capacity; the content changes constantly, so CloudFront caching does not absorb the dynamic load." },
+    why: "The Auto Scaling group adds instances according to its scaling policy. Multivalue answer only returns up to 8 healthy IPs of the existing instances and adds no capacity; the content changes constantly, so CloudFront caching does not absorb the dynamic load." },
   { q: "The operations team needs email sent to @shopviet.vn to go to mail server mx1, and to mx2 only when mx1 is unavailable. Which record type is needed?",
     opts: ["NS", "MX with priority 10 for mx1 and 20 for mx2", "A CNAME from shopviet.vn to mx1"],
     a: 1,

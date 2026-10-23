@@ -105,7 +105,7 @@ export default function RoutingPolicySim() {
         <button className="btn primary" onClick={resolve} disabled={busy}>{L({ vi: "Người dùng truy cập shopviet.vn", en: "Users visit shopviet.vn" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 0 760 370" role="img" aria-label={L({ vi: `Route 53 ${POLICIES[policy].label} routing phản hồi người dùng tại ba khu vực`, en: `Route 53 ${POLICIES[policy].label} routing answers users in three regions` })}>
+        <svg viewBox="0 0 760 370" role="img" aria-label={L({ vi: `Route 53 ${POLICIES[policy].label} routing trả lời truy vấn của người dùng tại ba vị trí địa lý`, en: `Route 53 ${POLICIES[policy].label} routing answers users in three geographic locations` })}>
           <rect className="r53" x={290} y={30} width={80} height={290} rx={12} />
           <text className="tw" x={330} y={170} textAnchor="middle">Route 53</text>
           {USERS.map((u) => {

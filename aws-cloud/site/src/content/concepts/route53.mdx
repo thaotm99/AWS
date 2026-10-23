@@ -56,11 +56,11 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 ShopViet đã triển khai VPC và ALB. Các yêu cầu tiếp theo: người dùng truy cập được hệ thống qua tên miền **shopviet.vn**, người dùng tại châu Âu được phục vụ từ Region gần nhất, và khi ALB gặp sự cố, hệ thống hiển thị trang thông báo lỗi thay vì trang trắng. Toàn bộ các yêu cầu này được thực hiện bằng **Amazon Route 53**.
 </Story>
 
-<Scene id="s1" label="Phần 1/4" title="Bản ghi Alias và CNAME" questions={["exam2_q2", "exam3_q19", "exam3_q64"]}>
+<Scene id="s1" label="Phần 1/4" title="Alias record và CNAME record" questions={["exam2_q2", "exam3_q19", "exam3_q64"]}>
 
-<p class="scene-intro">Người dùng ghi nhớ tên miền như shopviet.vn chứ không ghi nhớ địa chỉ IP; DNS là hệ thống chuyển tên miền thành địa chỉ, và mỗi dòng ánh xạ đó được gọi là một bản ghi (record).</p>
+<p class="scene-intro">Người dùng ghi nhớ tên miền như shopviet.vn chứ không ghi nhớ địa chỉ IP; DNS là hệ thống phân giải tên miền thành địa chỉ, và mỗi ánh xạ đó được lưu thành một DNS record (bản ghi) trong hosted zone.</p>
 
-ShopViet cần bốn record: tên miền chính trỏ tới CloudFront, tên miền chính trỏ theo www, www trỏ tới ALB, và blog trỏ tới trang WordPress bên ngoài. Cả **Alias** và **CNAME** đều ánh xạ một tên tới một đích khác, nhưng không phải trường hợp nào cũng tạo được. Chọn từng record và loại bản ghi, sau đó nhấn tạo để xem phản hồi của Route 53.
+ShopViet cần bốn record: tên miền chính trỏ tới CloudFront, tên miền chính trỏ theo www, www trỏ tới ALB, và blog trỏ tới trang WordPress bên ngoài. Cả **Alias** và **CNAME** đều ánh xạ một tên tới một đích khác, nhưng không phải trường hợp nào cũng tạo được. Chọn từng record và record type, sau đó nhấn tạo để xem phản hồi của Route 53.
 
 <AliasCnameSim client:visible />
 
@@ -72,9 +72,9 @@ Alias và CNAME chỉ là hai trong số các loại record của một hosted z
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/4" title="TTL: người dùng vẫn truy cập đích cũ sau khi thay đổi bản ghi DNS" questions={["exam4_q3"]}>
+<Scene id="s2" label="Phần 2/4" title="TTL và DNS cache: client vẫn truy cập đích cũ sau khi record thay đổi" questions={["exam4_q3"]}>
 
-<p class="scene-intro">Để giảm số lần truy vấn, kết quả DNS được lưu tạm (cache) ở nhiều nơi trên đường đi; vì vậy một thay đổi bản ghi không có hiệu lực ngay với mọi người dùng.</p>
+<p class="scene-intro">Để giảm số lần truy vấn, phản hồi DNS được lưu trong cache tại resolver và client; vì vậy một thay đổi record không có hiệu lực ngay với mọi người dùng.</p>
 
 ShopViet chuyển sang một load balancer mới và cập nhật record trên Route 53. Chọn giá trị TTL, sau đó thay đổi record và quan sát thời điểm từng client chuyển sang đích mới.
 
@@ -84,15 +84,15 @@ ShopViet chuyển sang một load balancer mới và cập nhật record trên R
 
 </Scene>
 
-<Scene id="s3" label="Phần 3/4" title="Routing policy: phản hồi DNS theo từng người dùng" questions={["exam2_q6", "exam1_q38", "exam4_q61", "exam5_q56", "exam2_q59"]}>
+<Scene id="s3" label="Phần 3/4" title="Routing policy: latency, geolocation, geoproximity và failover" questions={["exam2_q6", "exam1_q38", "exam4_q61", "exam5_q56", "exam2_q59"]}>
 
 <p class="scene-intro">Khi hệ thống chạy ở nhiều nơi, DNS có thể trả về địa chỉ khác nhau cho từng người dùng, ví dụ địa chỉ gần họ nhất hoặc địa chỉ còn hoạt động.</p>
 
-ShopViet vận hành ALB tại Singapore, Frankfurt và N. Virginia. Chọn một routing policy, sau đó mô phỏng truy cập của ba người dùng tại ba khu vực.
+ShopViet vận hành ALB tại Singapore, Frankfurt và N. Virginia. Chọn một routing policy, sau đó mô phỏng truy cập của người dùng tại ba vị trí địa lý.
 
 <RoutingPolicySim client:visible />
 
-<Takeaway>Latency: Region có độ trễ thấp nhất. Geolocation: theo vị trí của người dùng, dùng để giới hạn nội dung theo khu vực. Geoproximity: theo khoảng cách địa lý, điều chỉnh phạm vi khu vực bằng bias. Failover active-passive: chuyển sang tài nguyên dự phòng khi health check xác định primary unhealthy.</Takeaway>
+<Takeaway>Latency-based routing: Region có độ trễ thấp nhất. Geolocation routing: theo vị trí của người dùng, dùng để giới hạn nội dung theo khu vực. Geoproximity routing: theo khoảng cách địa lý, điều chỉnh phạm vi khu vực bằng bias. Failover routing (active-passive): chuyển sang tài nguyên dự phòng khi health check xác định primary unhealthy.</Takeaway>
 
 </Scene>
 
@@ -100,7 +100,7 @@ ShopViet vận hành ALB tại Singapore, Frankfurt và N. Virginia. Chọn mộ
 
 <p class="scene-intro">Mạng trong VPC và mạng văn phòng mỗi bên có hệ thống DNS riêng; để hai bên gọi được tên miền nội bộ của nhau, các truy vấn DNS cần được chuyển tiếp qua lại.</p>
 
-Server trong VPC cần phân giải địa chỉ database tại văn phòng (`db.corp.local`), trong khi hệ thống tại văn phòng cần gọi API nội bộ trong VPC (`api.shopviet.internal`, thuộc private hosted zone). **Route 53 Resolver** cung cấp hai loại endpoint tương ứng với hai chiều phân giải này.
+EC2 instance trong VPC cần phân giải tên miền của database on-premises (`db.corp.local`), trong khi hệ thống tại văn phòng cần gọi API nội bộ trong VPC (`api.shopviet.internal`, thuộc private hosted zone). **Route 53 Resolver** cung cấp hai loại endpoint tương ứng với hai chiều phân giải này.
 
 <HybridDnsSim client:visible />
 
@@ -110,7 +110,7 @@ Server trong VPC cần phân giải địa chỉ database tại văn phòng (`db
 
 <Scene id="confuse" label="Lỗi thường gặp" title="Năm lỗi cấu hình DNS thường gặp" questions={["exam4_q59", "exam5_q56", "exam1_q38", "exam4_q61", "exam4_q53"]}>
 
-<p class="scene-intro">Lỗi DNS thường biểu hiện thành “website không truy cập được” dù máy chủ vẫn hoạt động bình thường, nên cần hiểu đúng cơ chế để xác định nguyên nhân.</p>
+<p class="scene-intro">Lỗi DNS thường biểu hiện thành “website không truy cập được” dù ứng dụng và các target vẫn hoạt động bình thường, nên cần hiểu đúng cơ chế để xác định nguyên nhân.</p>
 
 Năm tình huống phát sinh khi ShopViet vận hành DNS. Thử phương án thường được lựa chọn đầu tiên, sau đó chuyển sang phương án khác để so sánh.
 
@@ -120,7 +120,7 @@ Năm tình huống phát sinh khi ShopViet vận hành DNS. Thử phương án t
 
 </Scene>
 
-<Scene id="challenge" label="Bài tập" title="Phân loại bản ghi: Alias và CNAME" questions={["exam2_q6", "exam4_q61", "exam5_q56", "exam4_q3"]}>
+<Scene id="challenge" label="Bài tập" title="Phân loại record: Alias và CNAME" questions={["exam2_q6", "exam4_q61", "exam5_q56", "exam4_q3"]}>
 
 Phân loại từng tình huống vào loại record phù hợp. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
@@ -156,9 +156,9 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     a: 1,
     why: "Client và resolver lưu phản hồi cũ trong cache cho tới khi hết TTL." },
   { q: "ShopViet dự kiến lưu lượng tăng gấp 10 lần trong đợt flash sale cuối tuần; nội dung website là nội dung động. Cấu hình nào giúp hệ thống đáp ứng được tải?",
-    opts: ["Record multivalue answer trỏ tới các web server hiện có", "ALB kết hợp Auto Scaling group", "CloudFront cache toàn bộ trang"],
+    opts: ["Record multivalue answer trỏ tới các EC2 instance hiện có", "ALB kết hợp Auto Scaling group", "CloudFront cache toàn bộ trang"],
     a: 1,
-    why: "Auto Scaling group tăng số instance theo scaling policy. Multivalue answer chỉ trả về tối đa 8 IP healthy của các server hiện có, không bổ sung năng lực; nội dung thay đổi liên tục nên cache CloudFront không giải quyết được tải động." },
+    why: "Auto Scaling group tăng số instance theo scaling policy. Multivalue answer chỉ trả về tối đa 8 IP healthy của các instance hiện có, không bổ sung năng lực; nội dung thay đổi liên tục nên cache CloudFront không giải quyết được tải động." },
   { q: "Đội vận hành cần các email gửi tới @shopviet.vn được chuyển tới mail server mx1, và chỉ chuyển sang mx2 khi mx1 không khả dụng. Loại record nào cần tạo?",
     opts: ["NS", "MX với priority 10 cho mx1 và 20 cho mx2", "CNAME từ shopviet.vn tới mx1"],
     a: 1,

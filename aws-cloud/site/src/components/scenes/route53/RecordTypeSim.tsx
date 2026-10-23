@@ -69,7 +69,7 @@ const NEEDS: Need[] = [
     answer: "MX",
     ok: { vi: "MX với priority `10 mx1.shopviet.vn` và `20 mx2.shopviet.vn`: server có giá trị priority **thấp nhất** được ưu tiên; nếu hai giá trị bằng nhau, email được phân phối xấp xỉ đều.", en: "MX with priorities `10 mx1.shopviet.vn` and `20 mx2.shopviet.vn`: the server with the **lowest** priority value takes precedence; with equal values, email is routed approximately equally." },
     why: {
-      A: { vi: "Record A cho biết IP của một máy, nhưng không cho hệ thống email biết server nào nhận email của tên miền và theo thứ tự nào.", en: "An A record gives a host's IP, but it does not tell mail systems which servers accept the domain's email or in what order." },
+      A: { vi: "Record A cho biết IP của một host, nhưng không cho hệ thống email biết mail server nào nhận email của tên miền và theo thứ tự nào.", en: "An A record gives a host's IP, but it does not tell mail systems which mail servers accept the domain's email or in what order." },
     },
   },
   {
