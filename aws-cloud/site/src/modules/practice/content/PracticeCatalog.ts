@@ -5,11 +5,13 @@ import type { Certification, CertificationDetail, ContentLocale, Exam, Question 
 import type { ExamSource } from "./ExamSource";
 import { QuizHtmlSource } from "./QuizHtmlSource";
 import { getCurriculum, readListQa } from "../../../data/exam";
+import type { SkillMapData } from "../domain/Skills";
 
 /** Every question about one service, as "examN_qM" references into the practice tests. */
 export interface TopicConfig {
   id: string;
   title: string;
+  titleEn?: string;
   refs: string[];
 }
 
@@ -17,6 +19,8 @@ export interface CertificationConfig extends Omit<Certification, "examCount"> {
   source: ExamSource;
   /** Per-service question sets, built from the study folder's list_qa.md files. */
   topics?: () => TopicConfig[];
+  /** Exam domains (English names, as in the practice tests) and their share of the exam, from the exam guide. */
+  domains?: { name: string; weight: number }[];
 }
 
 const REPO = resolve(process.cwd(), "../..");
@@ -32,10 +36,17 @@ export const CERTIFICATIONS: CertificationConfig[] = [
     questionCount: 65,
     passingScore: 720,
     source: new QuizHtmlSource(resolve(REPO, "solution-architect-aws")),
+    // SAA-C03 exam guide, content domains and weighting.
+    domains: [
+      { name: "Design Secure Architectures", weight: 0.3 },
+      { name: "Design Resilient Architectures", weight: 0.26 },
+      { name: "Design High-Performing Architectures", weight: 0.24 },
+      { name: "Design Cost-Optimized Architectures", weight: 0.2 },
+    ],
     topics: () =>
       getCurriculum()
         .flatMap((l) => l.concepts)
-        .map((c) => ({ id: c.id, title: c.title, refs: readListQa(c.id) ?? [] }))
+        .map((c) => ({ id: c.id, title: c.title, titleEn: c.titleEn, refs: readListQa(c.id) ?? [] }))
         .filter((t) => t.refs.length > 0),
   },
 ];
@@ -65,14 +76,14 @@ export class PracticeCatalog {
 
   listCertifications(): Certification[] {
     return this.configs.map((config) => {
-      const { source, topics, ...c } = config;
+      const { source, topics, domains, ...c } = config;
       return { ...c, examCount: this.examsOf(config).length };
     });
   }
 
   getCertification(certId: string): CertificationDetail {
     const config = this.config(certId);
-    const { source, topics, ...cert } = config;
+    const { source, topics, domains, ...cert } = config;
     const exams = this.examsOf(config);
     return {
       ...cert,
@@ -130,6 +141,26 @@ export class PracticeCatalog {
     return this.configs.flatMap((c) =>
       this.topicsOf(c).flatMap((t) => PracticeCatalog.LOCALES.map((lang) => ({ cert: c.id, topic: t.id, lang }))),
     );
+  }
+
+  /**
+   * The exam domain and the lesson topic of every question, for the skill map. A question listed under
+   * several topics belongs to the first in study-path order.
+   */
+  skillMap(certId: string): SkillMapData {
+    const config = this.config(certId);
+    const domains = config.domains ?? [];
+    const topicOf = new Map<string, string>();
+    for (const t of this.topicsOf(config)) for (const ref of t.refs) if (!topicOf.has(ref)) topicOf.set(ref, t.id);
+    const questions: SkillMapData["questions"] = {};
+    for (const exam of this.examsOf(config)) {
+      for (const q of exam.questions) {
+        const d = domains.findIndex((x) => x.name === q.domain);
+        if (d >= 0) questions[q.id] = [d, topicOf.get(`exam${exam.number}_q${q.number}`) ?? null];
+      }
+    }
+    const topics = this.topicsOf(config).map((t) => ({ id: t.id, title: { vi: t.title, en: t.titleEn ?? t.title } }));
+    return { domains, questions, topics };
   }
 
   /** Question count of each service's set, keyed by service id. */
