@@ -1,6 +1,6 @@
 ---
 title: "Storage Gateway, Snow, DataSync, DMS: lưu trữ hybrid và di chuyển dữ liệu"
-lede: "Bài học trình bày ba nội dung: tích hợp ứng dụng on-premises với lưu trữ AWS thông qua Storage Gateway, lựa chọn giữa truyền dữ liệu qua mạng và vận chuyển bằng thiết bị Snowball, và di chuyển server cùng database lên AWS."
+lede: "Bài học trình bày ba nội dung: tích hợp ứng dụng on-premises với lưu trữ AWS thông qua Storage Gateway, lựa chọn giữa online data transfer qua mạng và offline data transfer bằng thiết bị Snowball, và di chuyển server cùng database lên AWS."
 minutes: 28
 scenes: 4
 prerequisites: ["s3", "storage", "vpc"]
@@ -65,26 +65,26 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#s1", label: "1 · Storage Gateway" },
-  { href: "#s2", label: "2 · Truyền qua mạng và vận chuyển thiết bị" },
+  { href: "#s2", label: "2 · Online và offline data transfer" },
   { href: "#s3", label: "3 · Di chuyển server và database" },
   { href: "#s4", label: "4 · SFTP được quản lý với Transfer Family" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-Kho hàng của ShopViet vẫn vận hành hệ thống cũ tại văn phòng, bao gồm cả thư viện băng từ dùng cho sao lưu. Một phần hệ thống cần sử dụng lưu trữ AWS mà không thay đổi ứng dụng; phần còn lại cần được di chuyển hoàn toàn lên AWS.
+Kho hàng của ShopViet vẫn vận hành hệ thống cũ on-premises, bao gồm cả thư viện băng từ (tape library) dùng cho backup. Một phần hệ thống cần sử dụng lưu trữ AWS mà không thay đổi ứng dụng; phần còn lại cần được di chuyển hoàn toàn lên AWS.
 </Story>
 
 <Scene id="s1" label="Phần 1/4" title="Storage Gateway: ứng dụng on-premises sử dụng lưu trữ AWS" questions={["exam1_q35", "exam5_q28", "exam3_q31", "exam4_q37", "exam2_q59", "exam4_q36", "exam3_q56"]}>
 
-<p class="scene-intro">Không phải hệ thống nào cũng chuyển ngay lên cloud được; một thiết bị trung gian có thể cho ứng dụng tại văn phòng dùng lưu trữ trên AWS mà không phải thay đổi cách hoạt động.</p>
+<p class="scene-intro">Không phải hệ thống nào cũng chuyển ngay lên cloud được; một gateway triển khai on-premises cho phép ứng dụng hiện có sử dụng lưu trữ trên AWS mà không phải thay đổi ứng dụng.</p>
 
-Storage Gateway là một máy ảo triển khai tại kho. Đối với ứng dụng hiện có, gateway được trình bày dưới dạng ổ đĩa, file share hoặc thư viện băng từ, trong khi dữ liệu thực tế được lưu trên AWS. Chọn từng loại gateway để xem luồng dữ liệu:
+Storage Gateway được triển khai tại kho dưới dạng máy ảo (VM). Đối với ứng dụng hiện có, gateway cung cấp iSCSI volume, file share NFS/SMB hoặc virtual tape library (VTL), trong khi dữ liệu thực tế được lưu trên AWS. Chọn từng loại gateway để xem luồng dữ liệu:
 
 <ScenarioFlow client:visible height={230} legend={["Phù hợp", "Không phù hợp"]} scenarios={[
   { name: "Các loại Storage Gateway",
     boxes: [{ x: 20, y: 20, w: 330, h: 190, label: "Kho ShopViet", tone: "onprem" }, { x: 430, y: 20, w: 310, h: 190, label: "AWS" }],
     nodes: [
       { id: "app", x: 40, y: 60, label: "Ứng dụng hiện có", sub: "NFS / SMB / iSCSI / băng từ", kind: "site" },
-      { id: "gw", x: 200, y: 130, label: "Gateway", sub: "cache tại chỗ", kind: "net" },
+      { id: "gw", x: 200, y: 130, label: "Gateway", sub: "local cache", kind: "net" },
       { id: "s3", x: 470, y: 45, label: "S3", kind: "store" },
       { id: "snap", x: 470, y: 150, label: "EBS snapshot", kind: "edge" },
       { id: "glacier", x: 620, y: 95, w: 110, label: "Glacier", sub: "tape archive", kind: "store" },
@@ -92,28 +92,28 @@ Storage Gateway là một máy ảo triển khai tại kho. Đối với ứng d
     options: [
       { name: "S3 File Gateway", verdict: "good", verdictLabel: "File share NFS/SMB",
         flows: [{ path: ["app", "gw"], tone: "good", label: "NFS / SMB" }, { path: ["gw", "s3"], tone: "good", label: "mỗi tệp = 1 object" }],
-        text: "Ứng dụng truy cập một file share NFS hoặc SMB; mỗi tệp được lưu thành một object trên S3, do đó áp dụng được lifecycle, Athena… Các tệp thường xuyên truy cập được cache tại chỗ." },
+        text: "Ứng dụng truy cập một file share NFS hoặc SMB; mỗi tệp được lưu thành một object trên S3, do đó áp dụng được lifecycle, Athena… Các tệp thường xuyên truy cập được giữ trong local cache của gateway." },
       { name: "Volume Gateway: cached", verdict: "good", verdictLabel: "Dữ liệu chính trên AWS",
         flows: [{ path: ["app", "gw"], tone: "good", label: "iSCSI" }, { path: ["gw", "s3"], tone: "good", label: "toàn bộ volume" }],
-        text: "Toàn bộ dữ liệu được lưu trên AWS; chỉ **dữ liệu thường xuyên truy cập** được giữ tại kho. Giảm dung lượng ổ cứng cần trang bị tại chỗ." },
+        text: "Toàn bộ dữ liệu được lưu trên AWS; chỉ **dữ liệu thường xuyên truy cập** được giữ tại kho. Giảm dung lượng lưu trữ cần trang bị on-premises." },
       { name: "Volume Gateway: stored", verdict: "good", verdictLabel: "Dữ liệu chính tại chỗ",
         flows: [{ path: ["app", "gw"], tone: "good", label: "iSCSI" }, { path: ["gw", "snap"], tone: "good", label: "backup bất đồng bộ" }],
-        text: "**Toàn bộ** dữ liệu được lưu tại kho để truy cập với độ trễ thấp; AWS lưu bản sao lưu dưới dạng EBS snapshot." },
+        text: "**Toàn bộ** dữ liệu được lưu tại kho để truy cập với độ trễ thấp; gateway backup bất đồng bộ lên AWS dưới dạng Amazon EBS snapshot." },
       { name: "Tape Gateway", verdict: "good", verdictLabel: "Thay thế thư viện băng từ",
         flows: [{ path: ["app", "gw"], tone: "good", label: "giữ nguyên phần mềm backup" }, { path: ["gw", "glacier"], tone: "good", label: "virtual tape" }],
-        text: "Phần mềm backup ghi vào băng từ ảo; băng được lưu trên S3 và lưu trữ sang các lớp Glacier, chi phí thấp cho thời hạn lưu giữ nhiều năm." },
+        text: "Phần mềm backup ghi vào virtual tape; tape được lưu trên S3 và archive sang S3 Glacier Flexible Retrieval hoặc S3 Glacier Deep Archive, chi phí thấp cho retention period nhiều năm." },
     ] },
 ]} />
 
-<Takeaway>File share lưu trên S3: S3 File Gateway. Ổ đĩa iSCSI với dữ liệu chính trên AWS: cached volumes; dữ liệu chính tại chỗ: stored volumes. Thay thế thư viện băng từ: Tape Gateway.</Takeaway>
+<Takeaway>File share lưu trên S3: S3 File Gateway. iSCSI volume với dữ liệu chính trên AWS: Volume Gateway cached volumes; dữ liệu chính on-premises: stored volumes. Thay thế tape library vật lý: Tape Gateway.</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/4" title="Truyền dữ liệu qua mạng hay vận chuyển thiết bị" questions={["exam3_q3", "exam2_q11", "exam5_q48", "exam5_q5", "exam2_q41", "exam3_q61", "exam2_q4", "exam5_q62", "exam4_q29"]}>
+<Scene id="s2" label="Phần 2/4" title="Online và offline data transfer" questions={["exam3_q3", "exam2_q11", "exam5_q48", "exam5_q5", "exam2_q41", "exam3_q61", "exam2_q4", "exam5_q62", "exam4_q29"]}>
 
 <p class="scene-intro">Chuyển dữ liệu lên AWS có thể qua đường mạng hoặc bằng thiết bị vật lý gửi đi; lựa chọn phụ thuộc vào khối lượng dữ liệu, băng thông và thời hạn.</p>
 
-NAS hiện có tại kho chứa ảnh sản phẩm và dữ liệu backup tích luỹ nhiều năm. Câu hỏi đầu tiên cần trả lời: băng thông đường truyền có đáp ứng được thời hạn hay không. Thay đổi dung lượng, băng thông và đích nhận, sau đó so sánh thời gian của hai phương án:
+NAS hiện có tại kho chứa ảnh sản phẩm và dữ liệu backup tích luỹ nhiều năm. Yếu tố cần xác định trước tiên là băng thông mạng có đáp ứng được thời hạn di chuyển hay không. Thay đổi dung lượng, băng thông và đích nhận, sau đó so sánh thời gian của hai phương án:
 
 <TransferPlannerSim client:visible />
 
@@ -122,8 +122,8 @@ Ngoài đợt di chuyển dữ liệu lớn, ShopViet còn một số nhu cầu 
 <RequirementPicker client:visible items={[
   { need: "Nhà cung cấp gửi bảng giá hằng ngày qua SFTP; ShopViet không muốn tự quản lý server SFTP", answer: "AWS Transfer Family (SFTP) lưu vào S3 hoặc EFS",
     why: "Endpoint SFTP do AWS quản lý; tệp được ghi trực tiếp vào S3 hoặc EFS. Cấu hình endpoint, giới hạn IP và phân quyền được trình bày ở phần 4." },
-  { need: "Đã bật replication sang Region khác, nhưng ảnh đã có sẵn trong bucket không được sao chép", answer: "S3 Batch Replication (hoặc aws s3 sync)",
-    why: "Replication rule chỉ áp dụng cho object mới. Batch Replication sao chép các object đã tồn tại." },
+  { need: "Đã bật S3 Cross-Region Replication (CRR), nhưng ảnh đã có sẵn trong bucket không được replicate", answer: "S3 Batch Replication (hoặc aws s3 sync)",
+    why: "Replication rule chỉ áp dụng cho object mới. Batch Replication replicate các object đã tồn tại." },
   { need: "Đã di chuyển xong dữ liệu cũ, nhưng phần mềm tại kho vẫn cần tiếp tục đọc ghi", answer: "DataSync để di chuyển, sau đó S3 File Gateway để tiếp tục sử dụng",
     why: "DataSync thực hiện đợt di chuyển lớn; File Gateway cho phép ứng dụng tại kho tiếp tục làm việc với dữ liệu đã nằm trên S3." },
 ]} />
@@ -136,7 +136,7 @@ Snowball Edge hiện **không còn nhận khách hàng mới**. Thiết bị Sto
 
 <Scene id="s3" label="Phần 3/4" title="Di chuyển server và database lên AWS" questions={["exam6_q48", "exam3_q4", "exam1_q47", "exam5_q8", "exam4_q27"]}>
 
-<p class="scene-intro">Máy chủ và database đang vận hành có thể được chuyển lên AWS mà không cần cài đặt lại từ đầu, với thời gian gián đoạn ngắn.</p>
+<p class="scene-intro">Server và database đang vận hành có thể được di chuyển lên AWS mà không cần cài đặt lại từ đầu, với downtime ngắn.</p>
 
 Server quản lý kho là máy ảo đã vận hành nhiều năm và không thể cài đặt lại. Quy trình di chuyển server này lên EC2 bằng **Application Migration Service (MGN)** gồm các bước sau:
 
@@ -144,7 +144,7 @@ Server quản lý kho là máy ảo đã vận hành nhiều năm và không th�
   intro="Kho có các máy ảo chạy ứng dụng. Mục tiêu: chuyển lên EC2 nguyên trạng (lift-and-shift) với downtime tối thiểu."
   boxes={[{ x: 20, y: 20, w: 300, h: 180, label: "Kho ShopViet", tone: "onprem" }, { x: 380, y: 20, w: 360, h: 180, label: "AWS" }]}
   nodes={[
-    { id: "vm", x: 50, y: 90, label: "Máy ảo nguồn", sub: "cài Replication Agent", kind: "site" },
+    { id: "vm", x: 50, y: 90, label: "Source server", sub: "cài Replication Agent", kind: "site" },
     { id: "stage", x: 400, y: 85, label: "Staging area", sub: "tiếp nhận dữ liệu", kind: "net" },
     { id: "test", x: 600, y: 35, w: 130, label: "Test instance", kind: "ec2" },
     { id: "cut", x: 600, y: 145, w: 130, label: "Cutover instance", kind: "ec2" },
@@ -152,7 +152,7 @@ Server quản lý kho là máy ảo đã vận hành nhiều năm và không th�
   initial={["vm"]}
   steps={[
     { button: "1. Cài agent, replicate", show: ["stage"], flows: [{ path: ["vm", "stage"], tone: "good", label: "replication liên tục" }],
-      note: "Cài đặt **AWS Replication Agent** trên máy nguồn. Dữ liệu được sao chép liên tục lên AWS trong khi máy nguồn vẫn hoạt động." },
+      note: "Cài đặt **AWS Replication Agent** trên source server. Dữ liệu được replicate liên tục lên staging area trên AWS trong khi source server vẫn hoạt động." },
     { button: "2. Launch test instance", show: ["test"], flows: [{ path: ["stage", "test"], tone: "neutral", label: "kiểm thử" }],
       note: "Sau khi replication lần đầu hoàn tất, launch **test instance** để kiểm tra ứng dụng hoạt động đúng trên AWS." },
     { button: "3. Cutover", show: ["cut"], flows: [{ path: ["stage", "cut"], tone: "good", label: "cutover" }],
@@ -174,7 +174,7 @@ Khi target table preparation mode là "Drop tables on target", DMS chỉ tạo *
 Với database Oracle tại kho, ShopViet cần chuyển **dữ liệu hiện có** sang RDS for Oracle và tiếp tục đồng bộ **các giao dịch mới** cho tới ngày chuyển đổi; khối lượng thay đổi biến động mạnh trong ngày. Chạy từng bước của một **DMS Serverless replication**:
 
 <StepSim client:visible height={220}
-  intro="Oracle tại kho vẫn tiếp nhận phiếu nhập hàng. Mục tiêu: RDS for Oracle có đủ dữ liệu cũ và liên tục nhận thay đổi mới, không phải chọn kích thước máy chủ sao chép."
+  intro="Oracle tại kho vẫn tiếp nhận phiếu nhập hàng. Mục tiêu: RDS for Oracle có đủ dữ liệu cũ và liên tục nhận thay đổi mới, không phải chọn kích thước replication instance."
   boxes={[{ x: 20, y: 20, w: 220, h: 180, label: "Kho ShopViet", tone: "onprem" }, { x: 300, y: 20, w: 440, h: 180, label: "AWS" }]}
   nodes={[
     { id: "ora", x: 45, y: 85, label: "Oracle", sub: "redo log", kind: "db" },
@@ -201,9 +201,9 @@ Các phương án khác đều thiếu một phần của yêu cầu. **DMS Stan
 
 <Scene id="s4" label="Phần 4/4" title="SFTP được quản lý với AWS Transfer Family" questions={["exam5_q62"]}>
 
-<p class="scene-intro">Đối tác quen gửi file qua SFTP; thay vì tự vận hành máy chủ SFTP, có thể dùng dịch vụ managed giữ nguyên cách làm việc của đối tác nhưng lưu file thẳng vào AWS.</p>
+<p class="scene-intro">Đối tác quen gửi file qua SFTP; thay vì tự vận hành SFTP server trên EC2, có thể dùng một fully managed service giữ nguyên cách làm việc của đối tác nhưng lưu tệp trực tiếp vào AWS.</p>
 
-Các nhà cung cấp gửi bảng giá và chứng từ cho ShopViet qua SFTP. Hệ thống hiện tại gồm hai EC2 Linux, mỗi máy có một Elastic IP để nhà cung cấp cho phép trên firewall của họ; tài khoản Linux được tạo thủ công và phân quyền theo tệp; dữ liệu nằm trên một file system dùng chung được mount vào cả hai máy. ShopViet muốn chuyển sang dịch vụ được quản lý nhưng giữ nguyên ba đặc điểm: địa chỉ IP cố định, chỉ IP của nhà cung cấp được kết nối, và phân quyền theo tệp.
+Các nhà cung cấp gửi bảng giá và chứng từ cho ShopViet qua SFTP. Hệ thống hiện tại gồm hai EC2 instance Linux, mỗi instance có một Elastic IP để nhà cung cấp cho phép trên firewall của họ; tài khoản Linux được tạo thủ công và phân quyền theo tệp; dữ liệu nằm trên một shared file system được mount vào cả hai instance. ShopViet muốn chuyển sang dịch vụ được quản lý nhưng giữ nguyên ba đặc điểm: địa chỉ IP cố định, chỉ IP của nhà cung cấp được kết nối, và phân quyền theo tệp.
 
 **AWS Transfer Family** cung cấp server SFTP, FTPS, FTP và AS2 do AWS quản lý, lưu dữ liệu vào **Amazon S3** hoặc **Amazon EFS**. Có ba quyết định cấu hình:
 
@@ -215,7 +215,7 @@ Thử các tổ hợp cấu hình:
 
 <SftpExchangeSim client:visible />
 
-<Takeaway>SFTP được quản lý, IP cố định để đối tác cho phép trên firewall, chỉ nhận kết nối từ IP đã biết: Transfer Family với endpoint VPC hosted, internet-facing (Elastic IP) và security group. Giữ phân quyền theo tệp kiểu Linux trên file system dùng chung: EFS với POSIX profile (UID/GID) cho từng user. Transfer Family chỉ lưu vào S3 hoặc EFS; AWS WAF chỉ kiểm tra request HTTP(S), không lọc SFTP.</Takeaway>
+<Takeaway>SFTP được quản lý, IP cố định để đối tác cho phép trên firewall, chỉ nhận kết nối từ IP đã biết: Transfer Family với endpoint VPC hosted, internet-facing (Elastic IP) và security group. Giữ phân quyền theo tệp kiểu Linux trên shared file system: EFS với POSIX profile (UID/GID) cho từng user. Transfer Family chỉ lưu vào S3 hoặc EFS; AWS WAF chỉ kiểm tra request HTTP(S), không lọc SFTP.</Takeaway>
 
 </Scene>
 
@@ -225,7 +225,7 @@ Phân loại từng tác vụ vào nhóm công cụ tương ứng. Trên thiết
 
 <SortGame client:visible
   bins={[
-    { id: "gw", title: "Storage Gateway", sub: "Ứng dụng tại chỗ dùng lưu trữ AWS", hint: "Gợi ý: hệ thống on-premises vẫn hoạt động, chỉ thay đổi nơi lưu trữ." },
+    { id: "gw", title: "Storage Gateway", sub: "Ứng dụng on-premises dùng lưu trữ AWS", hint: "Gợi ý: hệ thống on-premises vẫn hoạt động, chỉ thay đổi nơi lưu trữ." },
     { id: "move", title: "Truyền dữ liệu", sub: "DataSync, Snow, Transfer Family", hint: "Gợi ý: mục tiêu là đưa dữ liệu lên AWS." },
     { id: "mig", title: "Di chuyển hệ thống", sub: "MGN, DMS, SCT", hint: "Gợi ý: di chuyển toàn bộ server hoặc database." },
   ]}
@@ -242,11 +242,11 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
   { q: "Ứng dụng ghi log tại kho chỉ cần giữ log thường xuyên truy cập tại chỗ, toàn bộ log được lưu trên AWS. Phương án nào phù hợp?",
     opts: ["Volume Gateway stored volumes", "Volume Gateway cached volumes", "Snowball"],
     a: 1,
-    why: "Cached volumes giữ dữ liệu thường xuyên truy cập tại chỗ, toàn bộ volume được lưu trên S3." },
+    why: "Cached volumes giữ dữ liệu thường xuyên truy cập trong local cache on-premises, toàn bộ volume được lưu trên S3." },
   { q: "Thư viện băng từ tại kho chứa hàng PB dữ liệu backup. Yêu cầu: loại bỏ thư viện băng từ nhưng giữ nguyên phần mềm backup, với chi phí thấp nhất. Phương án nào phù hợp?",
     opts: ["Tape Gateway", "S3 File Gateway", "DataSync"],
     a: 0,
-    why: "Tape Gateway thay thế thư viện băng từ; băng ảo được lưu trên S3 và các lớp Glacier." },
+    why: "Tape Gateway thay thế tape library vật lý; virtual tape được lưu trên S3 và archive sang các storage class S3 Glacier." },
   { q: "Cần di chuyển dữ liệu tại kho vào S3, EFS và FSx for Windows qua mạng một cách nhanh chóng và tự động. Dịch vụ nào phù hợp?",
     opts: ["AWS DataSync", "Snowball Edge", "S3 Transfer Acceleration"],
     a: 0,
@@ -255,7 +255,7 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Cutover rồi mới test", "Cài Replication Agent, replicate, launch test, rồi cutover", "Tạo AMI thủ công rồi copy"],
     a: 1,
     why: "Replicate liên tục, kiểm thử bằng test instance, cuối cùng thực hiện cutover." },
-  { q: "Oracle tại kho cần được sao chép cả dữ liệu hiện có lẫn các giao dịch mới sang RDS for Oracle; khối lượng thay đổi biến động trong ngày và đội vận hành không muốn chọn kích thước máy chủ sao chép. Phương án nào phù hợp?",
+  { q: "Oracle tại kho cần được sao chép cả dữ liệu hiện có lẫn các giao dịch mới sang RDS for Oracle; khối lượng thay đổi biến động trong ngày và đội vận hành không muốn chọn kích thước replication instance. Phương án nào phù hợp?",
     opts: ["DMS replication instance cùng script tự thay đổi kích thước", "DMS Serverless replication với migration type full load + CDC", "AWS Glue job chạy mỗi khi phát hiện thay đổi"],
     a: 1,
     why: "Full load + CDC chuyển dữ liệu hiện có rồi áp dụng thay đổi từ redo log theo transaction; DMS Serverless tự cấp phát và scale capacity trong khoảng Min–Max DCU." },

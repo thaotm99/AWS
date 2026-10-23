@@ -139,11 +139,11 @@ export default function TransferPlannerSim() {
         ))}
       </div>
       <div className="stage-bar">
-        <span className="mgx-hint">{tr({ vi: "So sánh hai phương án: truyền qua mạng và vận chuyển thiết bị.", en: "Compare two options: transfer over the network or ship devices." })}</span>
+        <span className="mgx-hint">{tr({ vi: "So sánh hai phương án: online data transfer qua mạng và offline data transfer bằng thiết bị Snowball.", en: "Compare two options: online data transfer over the network or offline data transfer on Snowball devices." })}</span>
         <button className="btn primary" onClick={start} disabled={busy}>{tr({ vi: "Bắt đầu di chuyển", en: "Start migration" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 20 820 220" role="img" aria-label={tr({ vi: "Dữ liệu từ kho được chuyển lên AWS theo hai phương án: truyền qua mạng bằng DataSync và vận chuyển thiết bị Snowball", en: "Warehouse data moves to AWS in two ways: over the network with DataSync, and by shipping Snowball devices" })}>
+        <svg viewBox="0 20 820 220" role="img" aria-label={tr({ vi: "Dữ liệu từ kho được chuyển lên AWS theo hai phương án: online data transfer bằng DataSync và offline data transfer bằng thiết bị Snowball", en: "Warehouse data moves to AWS in two ways: over the network with DataSync, and by shipping Snowball devices" })}>
           <path className="mgx-wire" d={`M${SRC_X} ${L1} H${AGENT[0] - 60} M${AGENT[0] + 60} ${L1} H${AWS_X}`} />
           <path className="mgx-road" d={`M${SRC_X} ${L2} H${AWS_X}`} />
           <g className="mgx-node on">
