@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./iac-sims.css";
 
-// The ShopViet web app on Elastic Beanstalk takes 45 minutes to install, so a new
+// The MFTech web app on Elastic Beanstalk takes 45 minutes to install, so a new
 // instance joins far too late when the environment scales out. Four ways to launch an
 // instance race on the same clock. Only a golden AMI with the static part already
 // installed, plus user data for the dynamic part, gets a correct instance in under

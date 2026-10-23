@@ -3,7 +3,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./iam-sims.css";
 
-// The ShopViet finance team must list the reports bucket and delete old reports, nothing more.
+// The MFTech finance team must list the reports bucket and delete old reports, nothing more.
 // The current policy only names the bucket ARN, so DeleteObject never matches an object.
 // Pick the statement to add and see which requests each one lets through. Matching follows the
 // IAM docs: wildcards are allowed inside action names (iam:*AccessKey*) and a trailing * in a
@@ -13,7 +13,7 @@ interface Stmt { actions: string[]; resources: string[] }
 interface Fix { id: string; label: Bi; stmt: Stmt | null; note: Bi }
 interface Req { action: string; resource: string; label: Bi; needed: boolean }
 
-const BUCKET = "arn:aws:s3:::shopviet-reports";
+const BUCKET = "arn:aws:s3:::mftech-reports";
 const BASE: Stmt = { actions: ["s3:ListBucket", "s3:DeleteObject"], resources: [BUCKET] };
 
 const FIXES: Fix[] = [
@@ -24,7 +24,7 @@ const FIXES: Fix[] = [
   { id: "exact", label: { vi: "s3:DeleteObject trên bucket/*", en: "s3:DeleteObject on bucket/*" }, stmt: { actions: ["s3:DeleteObject"], resources: [BUCKET + "/*"] },
     note: { vi: "Đúng một action cần thiết, trên đúng các object của bucket này. Cùng với `s3:ListBucket` trên ARN của bucket, policy cấp đúng hai quyền nhóm cần: **least privilege**.", en: "Exactly the one action needed, on exactly the objects of this bucket. Together with `s3:ListBucket` on the bucket ARN, the policy grants exactly the two permissions the team needs: **least privilege**." } },
   { id: "prefix", label: { vi: "s3:DeleteObject trên bucket*", en: "s3:DeleteObject on bucket*" }, stmt: { actions: ["s3:DeleteObject"], resources: [BUCKET + "*"] },
-    note: { vi: "Dấu `*` ở cuối một segment của ARN khớp mọi ký tự, kể cả `/`. Vì vậy xoá được object trong bucket này, nhưng cũng xoá được object trong **mọi bucket có tên bắt đầu bằng** shopviet-reports, như shopviet-reports-archive: **thừa quyền**.", en: "A `*` at the end of an ARN segment matches any characters, including `/`. Deleting objects in this bucket works, but so does deleting objects in **every bucket whose name starts with** shopviet-reports, such as shopviet-reports-archive: **excess permissions**." } },
+    note: { vi: "Dấu `*` ở cuối một segment của ARN khớp mọi ký tự, kể cả `/`. Vì vậy xoá được object trong bucket này, nhưng cũng xoá được object trong **mọi bucket có tên bắt đầu bằng** mftech-reports, như mftech-reports-archive: **thừa quyền**.", en: "A `*` at the end of an ARN segment matches any characters, including `/`. Deleting objects in this bucket works, but so does deleting objects in **every bucket whose name starts with** mftech-reports, such as mftech-reports-archive: **excess permissions**." } },
   { id: "all", label: { vi: "s3:* trên bucket/*", en: "s3:* on bucket/*" }, stmt: { actions: ["s3:*"], resources: [BUCKET + "/*"] },
     note: { vi: "`s3:*` cấp mọi thao tác S3 trên object của bucket: đọc, ghi, đổi ACL, xoá. Nhóm chỉ cần xoá: **thừa quyền**.", en: "`s3:*` grants every S3 operation on the bucket's objects: read, write, change ACLs, delete. The team only needs delete: **excess permissions**." } },
 ];
@@ -36,7 +36,7 @@ const REQS: Req[] = [
   { action: "s3:GetObject", resource: OBJ, needed: false, label: { vi: "Tải báo cáo xuống", en: "Download a report" } },
   { action: "s3:PutObject", resource: OBJ, needed: false, label: { vi: "Ghi đè báo cáo", en: "Overwrite a report" } },
   { action: "s3:PutObjectAcl", resource: OBJ, needed: false, label: { vi: "Đổi ACL của báo cáo", en: "Change a report's ACL" } },
-  { action: "s3:DeleteObject", resource: "arn:aws:s3:::shopviet-reports-archive/2025/q4.csv", needed: false, label: { vi: "Xoá object ở bucket lưu trữ khác", en: "Delete an object in another archive bucket" } },
+  { action: "s3:DeleteObject", resource: "arn:aws:s3:::mftech-reports-archive/2025/q4.csv", needed: false, label: { vi: "Xoá object ở bucket lưu trữ khác", en: "Delete an object in another archive bucket" } },
 ];
 
 function glob(pattern: string, value: string, caseInsensitive: boolean): boolean {

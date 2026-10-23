@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./lake-cost-sim.css";
 
-// ShopViet's S3 data lake grows 1 TB a day in each zone. Raw data must be kept five
+// MFTech's S3 data lake grows 1 TB a day in each zone. Raw data must be kept five
 // years and is almost never read; refined data is queried by Athena every day. Pick a
 // storage choice per zone and a file format, run twelve months, and watch the monthly
 // storage bill and the two rules (keep raw data, Athena can still read refined data).

@@ -3,7 +3,7 @@ import CaseSim, { type CaseScenario } from "../global-infra/CaseSim";
 
 type Lang = ReturnType<typeof useLang>;
 
-// Five habits that decide whether ShopViet's account stays safe: no root access
+// Five habits that decide whether MFTech's account stays safe: no root access
 // keys, groups instead of per-user policies, MFA + CloudTrail, permissions
 // boundaries against privilege escalation, and contacts that reach a team.
 
@@ -11,7 +11,7 @@ function scenarios(L: Lang): CaseScenario[] {
 return [
   {
     name: L({ vi: "Account mới: bảo vệ root user", en: "New account: protecting the root user" }),
-    request: "aws s3 rb s3://shopviet-orders --force",
+    request: "aws s3 rb s3://mftech-orders --force",
     from: L({ vi: "từ bên thứ ba có được thông tin root", en: "from a third party holding the root credentials" }),
     nodes: [
       { id: "bad", x: 20, y: 97, w: 80, l1: L({ vi: "Bên thứ ba", en: "Third party" }), user: true },
@@ -142,5 +142,5 @@ return [
 
 export default function IamMythsSim() {
   const L = useLang();
-  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Security best practices cho AWS account ShopViet", en: "Security best practices for ShopViet's AWS account" })} action={L({ vi: "Chạy mô phỏng", en: "Run simulation" })} />;
+  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Security best practices cho AWS account MFTech", en: "Security best practices for MFTech's AWS account" })} action={L({ vi: "Chạy mô phỏng", en: "Run simulation" })} />;
 }

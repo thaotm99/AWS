@@ -4,7 +4,7 @@ import { useLang, type Bi } from "../../../lib/lang";
 import "./s3-sims.css";
 
 // Lifecycle rule filters (prefix, object tags, empty filter = whole bucket).
-// ShopViet's product bucket: originals under images/ go cold after 45 days, thumbnails/
+// MFTech's product bucket: originals under images/ go cold after 45 days, thumbnails/
 // stay hot; everything is archived after 180 days; the data must survive the loss of an AZ.
 // Facts: intro-lifecycle-filters.html, storage-class-intro.html. Source question: exam4_q43.
 

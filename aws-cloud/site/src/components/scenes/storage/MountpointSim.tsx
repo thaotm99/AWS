@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./storage-sims.css";
 
-// The ShopViet data team mounts an S3 bucket with Mountpoint for Amazon S3 and runs everyday file
+// The MFTech data team mounts an S3 bucket with Mountpoint for Amazon S3 and runs everyday file
 // operations against it, then repeats them on Amazon EFS. Mountpoint reads large files at S3 throughput
 // and can create new files, but cannot modify existing files, delete directories, lock files, or run on
 // Windows (AmazonS3/latest/userguide/mountpoint.html). EFS: NFSv4 with file locking; no Windows clients

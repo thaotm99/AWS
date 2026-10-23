@@ -38,8 +38,8 @@ function explain(mode: Mode, down: Set<Az>, alive: number, total: number): Bi {
   if (alive < total)
     return { vi: "Health check của load balancer đánh dấu target tại AZ gặp sự cố là unhealthy, và load balancer chuyển toàn bộ request sang target healthy còn lại. Người dùng vẫn đặt hàng bình thường; chỉ tổng năng lực xử lý giảm.",
       en: "The load balancer health checks mark the target in the failed AZ as unhealthy, and the load balancer sends all requests to the remaining healthy target. Users still place orders normally; only total capacity is reduced." };
-  return { vi: "AZ gặp sự cố không chứa EC2 instance nào của ShopViet nên hệ thống không bị ảnh hưởng.",
-    en: "The failed AZ contains none of ShopViet's EC2 instances, so the system is not affected." };
+  return { vi: "AZ gặp sự cố không chứa EC2 instance nào của MFTech nên hệ thống không bị ảnh hưởng.",
+    en: "The failed AZ contains none of MFTech's EC2 instances, so the system is not affected." };
 }
 
 export default function AzFailureSim() {
@@ -171,7 +171,7 @@ export default function AzFailureSim() {
       <div className="readout">
         <div className="status">
           <span className={"pill " + (alive.length ? "ok" : "bad")}>
-            <i />{alive.length ? L({ vi: "ShopViet hoạt động", en: "ShopViet is up" }) : L({ vi: "ShopViet gián đoạn", en: "ShopViet is down" })}
+            <i />{alive.length ? L({ vi: "MFTech hoạt động", en: "MFTech is up" }) : L({ vi: "MFTech gián đoạn", en: "MFTech is down" })}
           </span>
           <span className="count">
             {L({ vi: "Target healthy: ", en: "Healthy targets: " })}{alive.length}/{servers.length} · {L({ vi: "request thành công", en: "successful requests" })} {ok} · {L({ vi: "lỗi", en: "errors" })} {err}

@@ -55,7 +55,7 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s5", label: "5 · Triển khai nhiều Region" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-Dữ liệu đơn hàng và báo cáo của ShopViet đã được lưu trên Aurora. Giỏ hàng, phiên đăng nhập và vị trí shipper có đặc điểm khác: cấu trúc dữ liệu đơn giản, tần suất đọc ghi liên tục, lưu lượng biến động mạnh. **Amazon DynamoDB** là cơ sở dữ liệu NoSQL serverless: không có server cần quản lý, tự động mở rộng theo chiều ngang, độ trễ mili giây một chữ số (single-digit millisecond) ở mọi quy mô.
+Dữ liệu đơn hàng và báo cáo của MFTech đã được lưu trên Aurora. Giỏ hàng, phiên đăng nhập và vị trí shipper có đặc điểm khác: cấu trúc dữ liệu đơn giản, tần suất đọc ghi liên tục, lưu lượng biến động mạnh. **Amazon DynamoDB** là cơ sở dữ liệu NoSQL serverless: không có server cần quản lý, tự động mở rộng theo chiều ngang, độ trễ mili giây một chữ số (single-digit millisecond) ở mọi quy mô.
 </Story>
 
 <Scene id="s1" label="Phần 1/5" title="Table, item và primary key" questions={["exam4_q10", "exam2_q29", "exam3_q11", "exam6_q17", "exam4_q23", "exam6_q65"]}>
@@ -67,7 +67,7 @@ Một **table** chứa các **item**; mỗi item là một tập hợp **attribu
 - **Partition key**: DynamoDB băm giá trị này để xác định partition chứa item.
 - **Sort key** (không bắt buộc): sắp xếp các item có cùng partition key theo thứ tự, ví dụ theo ngày đặt hàng.
 
-Dữ liệu được lưu trên SSD và tự động replicate trên nhiều AZ trong Region. AWS mô tả DynamoDB có hiệu năng mili giây một chữ số ở mọi quy mô, nên truy vấn theo key không chậm đi khi bảng lớn lên. Thử năm tác vụ của ShopViet:
+Dữ liệu được lưu trên SSD và tự động replicate trên nhiều AZ trong Region. AWS mô tả DynamoDB có hiệu năng mili giây một chữ số ở mọi quy mô, nên truy vấn theo key không chậm đi khi bảng lớn lên. Thử năm tác vụ của MFTech:
 
 <KeyAccessSim client:visible />
 
@@ -109,7 +109,7 @@ Bản thân DynamoDB lưu dữ liệu trên SSD, **không phải** cơ sở dữ
 
 <p class="scene-intro">Một database không vận hành độc lập: dữ liệu cần được nạp vào, dữ liệu hết hạn cần được xoá, và các thành phần khác cần được thông báo khi dữ liệu thay đổi.</p>
 
-Khi tích hợp DynamoDB với các thành phần khác, ShopViet cần trả lời ba câu hỏi: dữ liệu được đưa vào bằng phương thức nào, dữ liệu cũ được xoá như thế nào, và thành phần nào được thông báo khi dữ liệu thay đổi.
+Khi tích hợp DynamoDB với các thành phần khác, MFTech cần trả lời ba câu hỏi: dữ liệu được đưa vào bằng phương thức nào, dữ liệu cũ được xoá như thế nào, và thành phần nào được thông báo khi dữ liệu thay đổi.
 
 <DataFlowSim client:visible />
 
@@ -124,7 +124,7 @@ Khi tích hợp DynamoDB với các thành phần khác, ShopViet cần trả l�
 
 <p class="scene-intro">Sự cố dữ liệu phổ biến nhất thường đến từ thao tác của con người như ghi sai hay xoá nhầm; cần chuẩn bị sẵn cách khôi phục về thời điểm trước sự cố.</p>
 
-Hai sự cố dữ liệu phổ biến nhất không xuất phát từ phần cứng mà từ thao tác của con người: một lần deployment ghi sai dữ liệu, và một thao tác xoá nhầm. Chọn biện pháp ShopViet đã chuẩn bị, sau đó chạy mô phỏng:
+Hai sự cố dữ liệu phổ biến nhất không xuất phát từ phần cứng mà từ thao tác của con người: một lần deployment ghi sai dữ liệu, và một thao tác xoá nhầm. Chọn biện pháp MFTech đã chuẩn bị, sau đó chạy mô phỏng:
 
 <RecoverySim client:visible />
 
@@ -135,7 +135,7 @@ Hai sự cố dữ liệu phổ biến nhất không xuất phát từ phần c�
 | **Deletion protection** | Ngăn xoá nhầm | Không cần khôi phục: request xoá bị từ chối |
 | **Export to S3** | Phân tích bằng Athena, Glue, EMR; chuyển dữ liệu sang bucket của account hoặc Region khác | Một thời điểm bất kỳ trong cửa sổ PITR, ghi ra tệp DynamoDB JSON hoặc Amazon Ion trên S3 |
 
-**Export to S3** là tính năng được quản lý hoàn toàn: xuất toàn bộ bảng (full export) hoặc phần dữ liệu thay đổi trong một khoảng thời gian (incremental export) tại một thời điểm bất kỳ trong cửa sổ PITR, do đó **bảng phải bật PITR**. Export chạy bất đồng bộ, **không tiêu tốn RCU** và không ảnh hưởng hiệu năng hay tính sẵn sàng của bảng; AWS không cam kết thời gian hoàn tất. Đây là bản sao dữ liệu phục vụ phân tích, không phải cơ chế bảo vệ bảng: export không ngăn được thao tác xoá bảng, và để dùng lại dữ liệu cần **import from S3**, thao tác luôn tạo một **bảng mới**. Nếu ShopViet chỉ export thủ công mỗi tuần, một sự cố xoá bảng có thể làm mất dữ liệu của tối đa một tuần, cộng thêm thời gian import và chuyển ứng dụng sang bảng mới.
+**Export to S3** là tính năng được quản lý hoàn toàn: xuất toàn bộ bảng (full export) hoặc phần dữ liệu thay đổi trong một khoảng thời gian (incremental export) tại một thời điểm bất kỳ trong cửa sổ PITR, do đó **bảng phải bật PITR**. Export chạy bất đồng bộ, **không tiêu tốn RCU** và không ảnh hưởng hiệu năng hay tính sẵn sàng của bảng; AWS không cam kết thời gian hoàn tất. Đây là bản sao dữ liệu phục vụ phân tích, không phải cơ chế bảo vệ bảng: export không ngăn được thao tác xoá bảng, và để dùng lại dữ liệu cần **import from S3**, thao tác luôn tạo một **bảng mới**. Nếu MFTech chỉ export thủ công mỗi tuần, một sự cố xoá bảng có thể làm mất dữ liệu của tối đa một tuần, cộng thêm thời gian import và chuyển ứng dụng sang bảng mới.
 
 <Takeaway>Khôi phục về một thời điểm chính xác tới từng giây: PITR. Ngăn xoá nhầm với chi phí vận hành thấp nhất: deletion protection. Phân tích dữ liệu bảng bằng Athena mà không tiêu tốn RCU: export to S3 (cần bật PITR). Streams, global tables và export to S3 không thay thế cho deletion protection và PITR.</Takeaway>
 
@@ -145,7 +145,7 @@ Hai sự cố dữ liệu phổ biến nhất không xuất phát từ phần c�
 
 <p class="scene-intro">Khi ứng dụng phục vụ khách hàng ở nhiều châu lục, dữ liệu cũng cần nằm gần họ và được đồng bộ giữa các Region.</p>
 
-ShopViet mở rộng sang thị trường châu Âu và Hoa Kỳ. Ứng dụng được triển khai tại mỗi Region; vấn đề cần giải quyết là cách tổ chức dữ liệu.
+MFTech mở rộng sang thị trường châu Âu và Hoa Kỳ. Ứng dụng được triển khai tại mỗi Region; vấn đề cần giải quyết là cách tổ chức dữ liệu.
 
 <MultiRegionSim client:visible />
 
@@ -158,7 +158,7 @@ ShopViet mở rộng sang thị trường châu Âu và Hoa Kỳ. Ứng dụng �
 
 <Scene id="challenge" label="Bài tập" title="Phân loại yêu cầu theo tính năng DynamoDB" questions={["exam4_q62", "exam4_q54", "exam3_q49", "exam4_q42", "exam5_q59", "exam5_q32"]}>
 
-Phân loại từng yêu cầu của ShopViet vào tính năng giải quyết yêu cầu đó. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
+Phân loại từng yêu cầu của MFTech vào tính năng giải quyết yêu cầu đó. Trên thiết bị di động: chọn thẻ, sau đó chọn ô đích.
 
 <SortGame client:visible
   bins={[
@@ -173,7 +173,7 @@ Phân loại từng yêu cầu của ShopViet vào tính năng giải quyết y�
   ]}
 />
 
-Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTech, phương án nào phù hợp?
 
 <Quiz client:visible items={[
   { q: "Ứng dụng shipper chỉ hoạt động ban ngày; tải tăng đột biến trong vài phút mà không báo trước. Bảng DynamoDB nên sử dụng capacity mode nào?",
@@ -188,7 +188,7 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["On-demand backup tối qua", "Point-in-time recovery", "Replica global table ở Region khác"],
     a: 1,
     why: "PITR khôi phục về bất kỳ giây nào trong tối đa 35 ngày. Backup từ tối hôm trước làm mất dữ liệu hợp lệ của cả ngày; replica đã nhận dữ liệu lỗi." },
-  { q: "Một kỹ sư suýt xoá bảng production. ShopViet cần ngăn chặn hoàn toàn tình huống này với chi phí vận hành thấp nhất. Cần bật tính năng nào?",
+  { q: "Một kỹ sư suýt xoá bảng production. MFTech cần ngăn chặn hoàn toàn tình huống này với chi phí vận hành thấp nhất. Cần bật tính năng nào?",
     opts: ["Deletion protection", "PITR", "EventBridge bắt DeleteTable rồi tạo lại bảng"],
     a: 0,
     why: "Deletion protection chặn request xoá ngay từ đầu: khi bật, không ai xoá được bảng. PITR chỉ khôi phục được sau khi bảng đã bị xoá và ứng dụng đã ngừng hoạt động." },

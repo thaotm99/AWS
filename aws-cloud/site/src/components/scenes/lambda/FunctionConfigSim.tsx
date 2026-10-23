@@ -3,7 +3,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./lambda-sims.css";
 
-// ShopViet sizes a Lambda function for five workloads: memory (CPU is proportional, 1,769 MB = one vCPU),
+// MFTech sizes a Lambda function for five workloads: memory (CPU is proportional, 1,769 MB = one vCPU),
 // /tmp ephemeral storage (512–10,240 MB, per execution environment, not persistent), timeout (default 3 s,
 // max 900 s), package type (.zip ≤ 250 MB unzipped including layers; container image ≤ 10 GB in Amazon ECR),
 // layers (.zip only, up to 5, immutable versions) and where data that must outlive an invocation lives (EFS).

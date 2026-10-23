@@ -102,7 +102,7 @@ export default function RoutingPolicySim() {
             {unhealthy ? L({ vi: "Khôi phục ALB", en: "Restore ALB" }) : "ALB unhealthy"}
           </button>
         )}
-        <button className="btn primary" onClick={resolve} disabled={busy}>{L({ vi: "Người dùng truy cập shopviet.vn", en: "Users visit shopviet.vn" })}</button>
+        <button className="btn primary" onClick={resolve} disabled={busy}>{L({ vi: "Người dùng truy cập mftech.vn", en: "Users visit mftech.vn" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 0 760 370" role="img" aria-label={L({ vi: `Route 53 ${POLICIES[policy].label} routing trả lời truy vấn của người dùng tại ba vị trí địa lý`, en: `Route 53 ${POLICIES[policy].label} routing answers users in three geographic locations` })}>

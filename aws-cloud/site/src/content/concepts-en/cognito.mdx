@@ -1,6 +1,6 @@
 ---
 title: "Cognito, IAM Identity Center and Directory Service"
-lede: "ShopViet's customers, employees and partners have different authentication requirements. This lesson covers authentication for web and mobile applications with Amazon Cognito (user pools versus identity pools), single sign-on for employees into multiple AWS accounts, reusing on-premises Active Directory, and receiving partner files over SFTP."
+lede: "MFTech's customers, employees and partners have different authentication requirements. This lesson covers authentication for web and mobile applications with Amazon Cognito (user pools versus identity pools), single sign-on for employees into multiple AWS accounts, reusing on-premises Active Directory, and receiving partner files over SFTP."
 minutes: 18
 scenes: 3
 prerequisites: ["iam"]
@@ -41,17 +41,17 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s3", label: "3 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-The ShopViet system has two groups of identities to authenticate: **customers** who use the web and mobile applications, and **employees** who need access to AWS accounts and to internal systems that use Active Directory. Each group uses its own set of services.
+The MFTech system has two groups of identities to authenticate: **customers** who use the web and mobile applications, and **employees** who need access to AWS accounts and to internal systems that use Active Directory. Each group uses its own set of services.
 </Story>
 
 <Scene id="en-s1" label="Part 1/3" title="Authenticating customers: Cognito user pools and identity pools" questions={["exam2_q17", "exam6_q50"]}>
 
 <p class="scene-intro">An application must know who the customer is before showing orders or accepting uploads; sign-up, sign-in and temporary access can be handed to a managed service instead of being built from scratch.</p>
 
-A **user pool** is a user directory: it provides sign-up and sign-in and returns tokens (JWTs). An **identity pool** exchanges an authenticated identity for **temporary AWS credentials** to call AWS services such as S3 directly. ShopViet has both requirements. Pick a scenario and compare the two options:
+A **user pool** is a user directory: it provides sign-up and sign-in and returns tokens (JWTs). An **identity pool** exchanges an authenticated identity for **temporary AWS credentials** to call AWS services such as S3 directly. MFTech has both requirements. Pick a scenario and compare the two options:
 
 <ScenarioFlow client:visible height={230} scenarios={[
-  { name: "A user signs in to the ShopViet website",
+  { name: "A user signs in to the MFTech website",
     nodes: [
       { id: "user", x: 30, y: 90, label: "User", kind: "user" },
       { id: "alb", x: 230, y: 90, label: "ALB", sub: "HTTPS listener", kind: "net" },
@@ -65,7 +65,7 @@ A **user pool** is a user directory: it provides sign-up and sign-in and returns
         text: "Every EC2 instance has to handle sign-in, session management and passwords itself, which raises development cost and the risk of mistakes." },
       { name: "ALB + Cognito user pool", verdict: "good", hide: ["code"],
         flows: [{ path: ["user", "alb"], tone: "good" }, { path: ["alb", "pool"], tone: "good", label: "authenticate" }, { path: ["alb", "app"], tone: "good", label: "authenticated" }],
-        text: "Configure an **authenticate-cognito** action in a listener rule of the HTTPS listener on the ALB. The ALB handles authentication; the application only receives authenticated requests. ShopViet's development team **does not need to write authentication code**." },
+        text: "Configure an **authenticate-cognito** action in a listener rule of the HTTPS listener on the ALB. The ALB handles authentication; the application only receives authenticated requests. MFTech's development team **does not need to write authentication code**." },
     ] },
   { name: "The mobile app uploads review photos to S3",
     nodes: [
@@ -104,7 +104,7 @@ Cognito serves the application's customers. Employees and partners have differen
 
 <p class="scene-intro">Several user-directory services have similar names; each serves a different group of users and a different kind of integration.</p>
 
-ShopViet's accounting application runs SQL Server on AWS and needs an Active Directory domain on AWS with a **trust** to the on-premises AD, so employees get single sign-on to resources in either domain. The right option is AWS Managed Microsoft AD (Part 2). The options below also carry the word "directory" or "AD" but do not meet this requirement. Select each item to see what it is for.
+MFTech's accounting application runs SQL Server on AWS and needs an Active Directory domain on AWS with a **trust** to the on-premises AD, so employees get single sign-on to resources in either domain. The right option is AWS Managed Microsoft AD (Part 2). The options below also carry the word "directory" or "AD" but do not meet this requirement. Select each item to see what it is for.
 
 <QuickCompare client:visible items={[
   { name: "AD Connector",
@@ -146,22 +146,22 @@ Sort each requirement into the matching service. On a mobile device: tap a card,
   ]}
 />
 
-Check your understanding: as the designer of the ShopViet system, which option fits?
+Check your understanding: as the designer of the MFTech system, which option fits?
 
 <Quiz client:visible items={[
-  { q: "The ShopViet development team wants the ALB to handle authentication so that EC2 instances only run business logic, with the least code to write. Which option fits?",
+  { q: "The MFTech development team wants the ALB to handle authentication so that EC2 instances only run business logic, with the least code to write. Which option fits?",
     opts: ["Cognito user pool integrated with the ALB", "Write a sign-in module on each EC2 instance", "An IAM user for each customer"],
     a: 0,
     why: "An ALB listener rule (HTTPS listener) supports the authenticate-cognito action to authenticate with a Cognito user pool." },
-  { q: "ShopViet's accounting application needs to join a domain on AWS, and that domain must have a trust with the on-premises AD. Which service meets the requirement?",
+  { q: "MFTech's accounting application needs to join a domain on AWS, and that domain must have a trust with the on-premises AD. Which service meets the requirement?",
     opts: ["AD Connector", "AWS Managed Microsoft AD", "Simple AD"],
     a: 1,
     why: "AWS Managed Microsoft AD is an Active Directory operated by AWS that supports trusts with on-premises AD. AD Connector is only a directory gateway that forwards requests to the on-premises AD; it does not create a domain on AWS and does not support transitive trusts. Simple AD does not support trust relationships with other domains." },
-  { q: "40 ShopViet employees need single sign-on into multiple AWS accounts, with each group granted only the permissions it needs. Which option has the lowest administrative overhead?",
+  { q: "40 MFTech employees need single sign-on into multiple AWS accounts, with each group granted only the permissions it needs. Which option has the lowest administrative overhead?",
     opts: ["A separate IAM user in each account", "IAM Identity Center with permission sets", "Cognito identity pool"],
     a: 1,
     why: "IAM Identity Center centralizes authentication; permission sets grant permissions by group and by account." },
-  { q: "ShopViet's mobile app must let signed-in users upload review photos directly to S3, without embedding an access key in the app. Which solution fits?",
+  { q: "MFTech's mobile app must let signed-in users upload review photos directly to S3, without embedding an access key in the app. Which solution fits?",
     opts: ["Cognito identity pool issuing temporary credentials", "One shared IAM user for all users", "Cognito user pool returns a JWT, then call S3 with the JWT"],
     a: 0,
     why: "An identity pool exchanges an authenticated identity for temporary AWS credentials to call S3. A user pool token (JWT) proves sign-in; to access AWS services, the app exchanges that token for credentials through an identity pool." },

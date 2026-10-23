@@ -1,6 +1,6 @@
 ---
 title: "Kinesis + MSK: xử lý luồng dữ liệu liên tục"
-lede: "Mỗi giây, hệ thống ShopViet phát sinh hàng nghìn sự kiện click, lượt xem, giao dịch và vị trí shipper. Bài học trình bày cách đưa luồng dữ liệu này vào Kinesis để nhiều ứng dụng cùng đọc theo đúng thứ tự, duy trì thông lượng của stream khi tải tăng đột biến, và kết nối stream tới các dịch vụ phân tích, tìm kiếm và lưu trữ."
+lede: "Mỗi giây, hệ thống MFTech phát sinh hàng nghìn sự kiện click, lượt xem, giao dịch và vị trí shipper. Bài học trình bày cách đưa luồng dữ liệu này vào Kinesis để nhiều ứng dụng cùng đọc theo đúng thứ tự, duy trì thông lượng của stream khi tải tăng đột biến, và kết nối stream tới các dịch vụ phân tích, tìm kiếm và lưu trữ."
 minutes: 24
 scenes: 4
 prerequisites: ["messaging", "lambda"]
@@ -69,14 +69,14 @@ import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
   { href: "#s4", label: "4 · Dữ liệu không phải streaming" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-Bài Messaging sử dụng SQS để phân phối **tác vụ** cho worker: mỗi đơn hàng chỉ cần một worker xử lý. Dữ liệu click và giao dịch của ShopViet có yêu cầu khác: bảng xếp hạng, gợi ý sản phẩm và phát hiện gian lận đều cần đọc **cùng một luồng sự kiện**, đúng thứ tự, với độ trễ gần như tức thời. Đây là phạm vi của **stream**.
+Bài Messaging sử dụng SQS để phân phối **tác vụ** cho worker: mỗi đơn hàng chỉ cần một worker xử lý. Dữ liệu click và giao dịch của MFTech có yêu cầu khác: bảng xếp hạng, gợi ý sản phẩm và phát hiện gian lận đều cần đọc **cùng một luồng sự kiện**, đúng thứ tự, với độ trễ gần như tức thời. Đây là phạm vi của **stream**.
 </Story>
 
 <Scene id="s1" label="Phần 1/4" title="So sánh Amazon SQS queue và Kinesis data stream" questions={["exam3_q10", "exam3_q46", "exam1_q60", "exam2_q42"]}>
 
 <p class="scene-intro">SQS queue giao mỗi message cho một consumer và message bị xoá sau khi xử lý; khi nhiều ứng dụng cùng cần đọc toàn bộ luồng sự kiện, cần một data stream lưu giữ record để mọi consumer cùng đọc.</p>
 
-Ba ứng dụng của ShopViet đều cần nhận toàn bộ sự kiện mua hàng. Mô phỏng dưới đây gửi 6 sự kiện của ba người dùng (A, B, C) lần lượt vào SQS và Kinesis Data Streams để so sánh dữ liệu mà mỗi ứng dụng nhận được:
+Ba ứng dụng của MFTech đều cần nhận toàn bộ sự kiện mua hàng. Mô phỏng dưới đây gửi 6 sự kiện của ba người dùng (A, B, C) lần lượt vào SQS và Kinesis Data Streams để so sánh dữ liệu mà mỗi ứng dụng nhận được:
 
 <ShardStreamSim client:visible />
 
@@ -84,10 +84,10 @@ Các đặc điểm của **Kinesis Data Streams** thể hiện trong mô phỏn
 
 - Stream được chia thành các **shard**. Producer gửi mỗi record kèm một **partition key**; Kinesis băm key bằng MD5 để xác định shard. Các record cùng key được ghi vào cùng một shard, do đó các sự kiện của một người dùng luôn giữ đúng thứ tự.
 - Record **không bị xoá** sau khi được đọc. Mỗi ứng dụng (consumer) tự quản lý vị trí đọc. Record được lưu giữ mặc định 24 giờ, có thể tăng tới 365 ngày (tính phí bổ sung khi vượt 24 giờ), do đó ứng dụng gặp lỗi có thể đọc lại dữ liệu.
-- Consumer có thể là ứng dụng tự phát triển hoặc **Lambda**: event source mapping của Lambda tự động poll từng shard, đọc record theo batch và gọi function với từng batch. Bảng xếp hạng của chương trình khuyến mãi ShopViet chỉ cần kiến trúc serverless Kinesis → Lambda → DynamoDB, không cần quản lý EC2 instance.
+- Consumer có thể là ứng dụng tự phát triển hoặc **Lambda**: event source mapping của Lambda tự động poll từng shard, đọc record theo batch và gọi function với từng batch. Bảng xếp hạng của chương trình khuyến mãi MFTech chỉ cần kiến trúc serverless Kinesis → Lambda → DynamoDB, không cần quản lý EC2 instance.
 - **Số consumer xử lý song song bị giới hạn bởi số shard.** Với Kinesis Client Library (KCL), mỗi shard tại một thời điểm chỉ gắn với **một worker** thông qua một *lease* (một worker có thể giữ nhiều lease); thêm worker nhiều hơn số shard không làm tăng độ song song. Với Lambda, event source mapping xử lý record của mỗi shard theo thứ tự; thiết lập `ParallelizationFactor` (từ 1 mặc định tới 10) cho phép tối đa 10 batch đồng thời trên mỗi shard, và Lambda vẫn giữ thứ tự ở cấp partition key. Để xử lý nhanh hơn, cần thêm shard.
 
-ShopViet giám sát 5.000 máy POS tại các cửa hàng, mỗi máy gửi dữ liệu mỗi phút. Dữ liệu của từng máy phải được xử lý theo thứ tự, độc lập với máy khác, và số consumer cần mở rộng tới xấp xỉ số máy. Kinesis với partition key là mã máy giữ đúng thứ tự, nhưng số consumer song song chỉ bằng số shard (ít hơn nhiều so với 5.000 máy). **SQS FIFO** với **message group ID** là mã máy phù hợp hơn: các message cùng group luôn được xử lý lần lượt, đúng thứ tự, không có hai message cùng group được xử lý đồng thời; các group khác nhau được nhiều consumer đọc cùng lúc, nên độ song song tăng theo số group. Nếu mọi message dùng chung một group ID, toàn bộ queue chỉ được xử lý tuần tự; SQS standard không đảm bảo thứ tự.
+MFTech giám sát 5.000 máy POS tại các cửa hàng, mỗi máy gửi dữ liệu mỗi phút. Dữ liệu của từng máy phải được xử lý theo thứ tự, độc lập với máy khác, và số consumer cần mở rộng tới xấp xỉ số máy. Kinesis với partition key là mã máy giữ đúng thứ tự, nhưng số consumer song song chỉ bằng số shard (ít hơn nhiều so với 5.000 máy). **SQS FIFO** với **message group ID** là mã máy phù hợp hơn: các message cùng group luôn được xử lý lần lượt, đúng thứ tự, không có hai message cùng group được xử lý đồng thời; các group khác nhau được nhiều consumer đọc cùng lúc, nên độ song song tăng theo số group. Nếu mọi message dùng chung một group ID, toàn bộ queue chỉ được xử lý tuần tự; SQS standard không đảm bảo thứ tự.
 
 <Takeaway>Phân phối tác vụ, mỗi tác vụ do một worker xử lý: SQS. Nhiều ứng dụng cùng đọc một luồng dữ liệu, đúng thứ tự theo key, có khả năng đọc lại: Kinesis Data Streams. Partition key xác định shard; thứ tự chỉ được đảm bảo trong phạm vi một shard, và số consumer song song bị giới hạn bởi số shard. Thứ tự riêng cho từng thiết bị với số consumer tăng theo số thiết bị: SQS FIFO, message group ID là mã thiết bị.</Takeaway>
 
@@ -97,7 +97,7 @@ ShopViet giám sát 5.000 máy POS tại các cửa hàng, mỗi máy gửi dữ
 
 <p class="scene-intro">Mỗi shard có quota thông lượng; khi lượng record vượt quota, request ghi bị throttle hoặc độ trễ đọc tăng dần nếu không điều chỉnh capacity của stream.</p>
 
-Mỗi shard có giới hạn thông lượng: ghi **1.000 record hoặc 1 MB mỗi giây**, đọc **2 MB mỗi giây** (tổng cho mọi consumer dùng `GetRecords`). Mô phỏng dưới đây trình bày ba sự cố ShopViet đã gặp và giải pháp tương ứng. Chạy mô phỏng trong 10 giây, sau đó bật cấu hình khắc phục:
+Mỗi shard có giới hạn thông lượng: ghi **1.000 record hoặc 1 MB mỗi giây**, đọc **2 MB mỗi giây** (tổng cho mọi consumer dùng `GetRecords`). Mô phỏng dưới đây trình bày ba sự cố MFTech đã gặp và giải pháp tương ứng. Chạy mô phỏng trong 10 giây, sau đó bật cấu hình khắc phục:
 
 <ShardThroughputSim client:visible />
 
@@ -111,7 +111,7 @@ Stream có hai loại **capacity mode**. **Provisioned**: người vận hành t
 
 <p class="scene-intro">Dữ liệu streaming chỉ có giá trị khi được phân phối tới nơi sử dụng: dịch vụ phân tích, dịch vụ tìm kiếm hoặc nơi lưu trữ lâu dài như Amazon S3.</p>
 
-Kinesis Data Streams đóng vai trò lớp tiếp nhận dữ liệu (ingestion): phía trước là producer, phía sau là các dịch vụ phân tích, tìm kiếm và lưu trữ. Với mỗi yêu cầu của ShopViet, chọn dịch vụ cho từng bước và chạy mô phỏng:
+Kinesis Data Streams đóng vai trò lớp tiếp nhận dữ liệu (ingestion): phía trước là producer, phía sau là các dịch vụ phân tích, tìm kiếm và lưu trữ. Với mỗi yêu cầu của MFTech, chọn dịch vụ cho từng bước và chạy mô phỏng:
 
 <StreamPipelineSim client:visible />
 
@@ -130,7 +130,7 @@ Với các ứng dụng đã được phát triển cho **Apache Kafka**, sử d
 
 <p class="scene-intro">Không phải dữ liệu nào cũng là luồng sự kiện liên tục; với tệp đã lưu trên Amazon S3, xử lý theo batch hoặc AI service do AWS quản lý thường phù hợp hơn.</p>
 
-Bộ phận chăm sóc khách hàng của ShopViet lưu tệp ghi âm cuộc gọi trên S3 và muốn tự động phân tích cảm xúc của khách hàng, sau đó để analyst chạy **truy vấn SQL tuỳ ý (ad-hoc)** trên kết quả. Dữ liệu ở đây là các **tệp âm thanh đã lưu**, không phải luồng sự kiện liên tục, nên các dịch vụ stream trong bài này không phải lựa chọn chính. Chọn từng mục để xem phạm vi sử dụng và phương án phù hợp.
+Bộ phận chăm sóc khách hàng của MFTech lưu tệp ghi âm cuộc gọi trên S3 và muốn tự động phân tích cảm xúc của khách hàng, sau đó để analyst chạy **truy vấn SQL tuỳ ý (ad-hoc)** trên kết quả. Dữ liệu ở đây là các **tệp âm thanh đã lưu**, không phải luồng sự kiện liên tục, nên các dịch vụ stream trong bài này không phải lựa chọn chính. Chọn từng mục để xem phạm vi sử dụng và phương án phù hợp.
 
 <QuickCompare client:visible items={[
   { name: "Amazon Managed Service for Apache Flink",
@@ -170,10 +170,10 @@ Phân loại từng đặc tính vào dịch vụ tương ứng. Trên thiết b
   ]}
 />
 
-Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTech, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "ShopViet cần tự phát triển ba ứng dụng phân tích chạy song song trên cùng một luồng click theo thời gian thực. Dịch vụ nào phù hợp?",
+  { q: "MFTech cần tự phát triển ba ứng dụng phân tích chạy song song trên cùng một luồng click theo thời gian thực. Dịch vụ nào phù hợp?",
     opts: ["Amazon SQS", "Kinesis Data Streams", "Amazon Data Firehose"],
     a: 1,
     why: "Data Streams cho phép nhiều consumer tự phát triển cùng đọc một stream, mỗi consumer quản lý vị trí đọc riêng." },

@@ -70,7 +70,7 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s4", label: "4 · Managed SFTP with Transfer Family" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-ShopViet's warehouse still runs its legacy systems on premises, including a tape library used for backups. Part of the system needs to use AWS storage without changing the applications; the rest needs to move entirely to AWS.
+MFTech's warehouse still runs its legacy systems on premises, including a tape library used for backups. Part of the system needs to use AWS storage without changing the applications; the rest needs to move entirely to AWS.
 </Story>
 
 <Scene id="en-s1" label="Part 1/4" title="Storage Gateway: on-premises applications using AWS storage" questions={["exam1_q35", "exam5_q28", "exam3_q31", "exam4_q37", "exam2_q59", "exam4_q36", "exam3_q56"]}>
@@ -81,7 +81,7 @@ Storage Gateway is deployed at the warehouse as a virtual machine (VM). To exist
 
 <ScenarioFlow client:visible height={230} legend={["Fits", "Does not fit"]} scenarios={[
   { name: "Storage Gateway types",
-    boxes: [{ x: 20, y: 20, w: 330, h: 190, label: "ShopViet warehouse", tone: "onprem" }, { x: 430, y: 20, w: 310, h: 190, label: "AWS" }],
+    boxes: [{ x: 20, y: 20, w: 330, h: 190, label: "MFTech warehouse", tone: "onprem" }, { x: 430, y: 20, w: 310, h: 190, label: "AWS" }],
     nodes: [
       { id: "app", x: 40, y: 60, label: "Existing application", sub: "NFS / SMB / iSCSI / tape", kind: "site" },
       { id: "gw", x: 200, y: 130, label: "Gateway", sub: "local cache", kind: "net" },
@@ -117,10 +117,10 @@ The existing NAS at the warehouse holds product images and backup data accumulat
 
 <TransferPlannerSim client:visible />
 
-Besides the large data migration, ShopViet has some other data transfer needs:
+Besides the large data migration, MFTech has some other data transfer needs:
 
 <RequirementPicker client:visible items={[
-  { need: "Suppliers send daily price lists over SFTP; ShopViet does not want to manage its own SFTP server", answer: "AWS Transfer Family (SFTP) storing to S3 or EFS",
+  { need: "Suppliers send daily price lists over SFTP; MFTech does not want to manage its own SFTP server", answer: "AWS Transfer Family (SFTP) storing to S3 or EFS",
     why: "An SFTP endpoint managed by AWS; files are written directly to S3 or EFS. Endpoint type, IP restriction and permissions are covered in part 4." },
   { need: "S3 Cross-Region Replication (CRR) is enabled, but images already in the bucket are not replicated", answer: "S3 Batch Replication (or aws s3 sync)",
     why: "A replication rule applies only to new objects. Batch Replication replicates existing objects." },
@@ -142,7 +142,7 @@ The warehouse management server is a virtual machine that has been running for m
 
 <StepSim client:visible height={220}
   intro="The warehouse has virtual machines running applications. Goal: move them to EC2 as is (lift-and-shift) with minimal downtime."
-  boxes={[{ x: 20, y: 20, w: 300, h: 180, label: "ShopViet warehouse", tone: "onprem" }, { x: 380, y: 20, w: 360, h: 180, label: "AWS" }]}
+  boxes={[{ x: 20, y: 20, w: 300, h: 180, label: "MFTech warehouse", tone: "onprem" }, { x: 380, y: 20, w: 360, h: 180, label: "AWS" }]}
   nodes={[
     { id: "vm", x: 50, y: 90, label: "Source server", sub: "Replication Agent installed", kind: "site" },
     { id: "stage", x: 400, y: 85, label: "Staging area", sub: "receives data", kind: "net" },
@@ -159,7 +159,7 @@ The warehouse management server is a virtual machine that has been running for m
       note: "Once testing is done and replication is still keeping up, launch the **cutover instance** and switch users over. Downtime occurs only at the moment of the switch." },
   ]} />
 
-Databases are migrated with a separate set of tools. Choose each ShopViet scenario:
+Databases are migrated with a separate set of tools. Choose each MFTech scenario:
 
 <RequirementPicker client:visible items={[
   { need: "An existing Oracle database must move to Aurora PostgreSQL (a different engine)", answer: "AWS SCT + AWS DMS", why: "SCT converts the schema and code; DMS migrates the data." },
@@ -171,11 +171,11 @@ Databases are migrated with a separate set of tools. Choose each ShopViet scenar
 
 With the "Drop tables on target" target table preparation mode, DMS creates only **tables, primary keys and in some cases unique indexes** on the target (basic schema migration); DMS does **not** create secondary indexes, foreign keys, nonprimary key constraints, column data defaults or user accounts. So when a database has secondary indexes, foreign keys and stored procedures: for the same engine, migrate the schema with native tools (Oracle SQL Developer, MySQL Workbench, pgAdmin 4); for a different engine, use **DMS Schema Conversion** (a DMS feature) or **AWS SCT** to convert tables, views, stored procedures and functions, then DMS migrates the data. For full load + CDC, AWS recommends leaving out indexes and referential integrity constraints during the full load, then pausing the task before the CDC phase to build the secondary indexes and referential integrity constraints before resuming.
 
-For the Oracle database at the warehouse, ShopViet must move the **existing data** to RDS for Oracle and keep replicating **new transactions** until the cutover date; the volume of changes fluctuates strongly during the day. Run each step of a **DMS Serverless replication**:
+For the Oracle database at the warehouse, MFTech must move the **existing data** to RDS for Oracle and keep replicating **new transactions** until the cutover date; the volume of changes fluctuates strongly during the day. Run each step of a **DMS Serverless replication**:
 
 <StepSim client:visible height={220}
   intro="The warehouse Oracle database still receives goods receipts. Goal: RDS for Oracle holds all existing data and keeps receiving new changes, without sizing a replication instance."
-  boxes={[{ x: 20, y: 20, w: 220, h: 180, label: "ShopViet warehouse", tone: "onprem" }, { x: 300, y: 20, w: 440, h: 180, label: "AWS" }]}
+  boxes={[{ x: 20, y: 20, w: 220, h: 180, label: "MFTech warehouse", tone: "onprem" }, { x: 300, y: 20, w: 440, h: 180, label: "AWS" }]}
   nodes={[
     { id: "ora", x: 45, y: 85, label: "Oracle", sub: "redo log", kind: "db" },
     { id: "dms", x: 340, y: 85, w: 170, label: "DMS Serverless", sub: "Min–Max DCU", kind: "net" },
@@ -193,7 +193,7 @@ For the Oracle database at the warehouse, ShopViet must move the **existing data
       note: "When utilization stays above an upper threshold for a period, the replication **scales up**; when utilization stays low for longer, DMS gradually deprovisions resources. Capacity stays within the Min–Max DCU range and you pay for the DCUs in use. AWS recommends setting Max DCU to the highest value and Min DCU high enough for sudden spikes, because provisioning more resources takes time." },
   ]} />
 
-The other options each miss part of the requirement. **DMS Standard** uses a replication instance (an EC2 instance that DMS creates in a VPC): the operations team must estimate capacity, pick an instance class and resize it as the load changes, which are exactly the tasks DMS Serverless removes; the replication instance is also not an EC2 instance in one of ShopViet's Auto Scaling groups that could take a scaling policy. AWS Glue (ETL) and Lambda have no built-in way to read the Oracle redo logs and replicate changes transaction by transaction; ShopViet would have to build the change capture itself.
+The other options each miss part of the requirement. **DMS Standard** uses a replication instance (an EC2 instance that DMS creates in a VPC): the operations team must estimate capacity, pick an instance class and resize it as the load changes, which are exactly the tasks DMS Serverless removes; the replication instance is also not an EC2 instance in one of MFTech's Auto Scaling groups that could take a scaling policy. AWS Glue (ETL) and Lambda have no built-in way to read the Oracle redo logs and replicate changes transaction by transaction; MFTech would have to build the change capture itself.
 
 <Takeaway>Servers: MGN (agent → test → cutover). Databases with a different engine: SCT (or DMS Schema Conversion) + DMS; DMS alone creates only tables and primary keys, not secondary indexes, foreign keys or stored procedures. SQL Server to Aurora PostgreSQL with minimal code changes: Babelfish. Existing data plus ongoing changes: the full load + CDC migration type (DMS reads the source transaction logs). A fluctuating volume of changes and no wish to size a replication instance: DMS Serverless (scales within the Min–Max DCU range).</Takeaway>
 
@@ -203,7 +203,7 @@ The other options each miss part of the requirement. **DMS Standard** uses a rep
 
 <p class="scene-intro">Partners are used to sending files over SFTP; instead of running your own SFTP servers on EC2, a fully managed service keeps their workflow unchanged while storing files directly in AWS.</p>
 
-Suppliers send price lists and documents to ShopViet over SFTP. Today this runs on two Linux EC2 instances, each with an Elastic IP that the suppliers allow in their firewalls; Linux accounts are created by hand with file-level permissions; the data sits on a shared file system mounted on both instances. ShopViet wants a managed service but must keep three properties: fixed IP addresses, connections only from supplier IPs, and file-level permissions.
+Suppliers send price lists and documents to MFTech over SFTP. Today this runs on two Linux EC2 instances, each with an Elastic IP that the suppliers allow in their firewalls; Linux accounts are created by hand with file-level permissions; the data sits on a shared file system mounted on both instances. MFTech wants a managed service but must keep three properties: fixed IP addresses, connections only from supplier IPs, and file-level permissions.
 
 **AWS Transfer Family** provides AWS-managed SFTP, FTPS, FTP and AS2 servers that store data in **Amazon S3** or **Amazon EFS**. There are three configuration decisions:
 
@@ -236,7 +236,7 @@ Sort each task into the matching tool group. On a mobile device: tap a card, the
   ]}
 />
 
-Check question: as the designer of the ShopViet system, which option fits?
+Check question: as the designer of the MFTech system, which option fits?
 
 <Quiz client:visible items={[
   { q: "A logging application at the warehouse only needs to keep frequently accessed logs on premises, with all logs stored on AWS. Which option fits?",
@@ -259,7 +259,7 @@ Check question: as the designer of the ShopViet system, which option fits?
     opts: ["A DMS replication instance with scripts that resize it", "A DMS Serverless replication with the full load + CDC migration type", "An AWS Glue job that runs whenever changes are detected"],
     a: 1,
     why: "Full load + CDC moves the existing data, then applies changes from the redo logs transaction by transaction; DMS Serverless provisions and scales capacity within the Min–Max DCU range." },
-  { q: "Suppliers only allow SFTP connections to fixed IP addresses, and ShopViet only wants connections from supplier IPs. Which Transfer Family endpoint fits?",
+  { q: "Suppliers only allow SFTP connections to fixed IP addresses, and MFTech only wants connections from supplier IPs. Which Transfer Family endpoint fits?",
     opts: ["A public endpoint with a security group", "A VPC hosted, internet-facing endpoint with Elastic IPs and a security group", "A VPC hosted, internal endpoint with AWS WAF"],
     a: 1,
     why: "Only an endpoint hosted in a VPC can use security groups, and internet-facing access lets you attach fixed Elastic IPs. A public endpoint cannot use security groups; an internal endpoint does not accept connections from the internet; WAF does not filter SFTP." },

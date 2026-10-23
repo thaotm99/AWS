@@ -7,9 +7,9 @@ const C = { user: "#e4ecf0", net: "#4cc2df", cmp: "#f0a95a", db: "#7fb0ff", int:
 
 const STEPS: { name: Bi; mono: string; group: Bi; c: string; text: Bi; lesson?: { id: string } & Bi }[] = [
   { name: { vi: "Khách hàng", en: "Customer" }, mono: "◉", group: { vi: "Người dùng", en: "User" }, c: C.user,
-    text: { vi: "gửi request đặt hàng tới shopviet.vn.", en: "sends an order request to shopviet.vn." } },
+    text: { vi: "gửi request đặt hàng tới mftech.vn.", en: "sends an order request to mftech.vn." } },
   { name: { vi: "Route 53", en: "Route 53" }, mono: "53", group: { vi: "Mạng", en: "Networking" }, c: C.net,
-    text: { vi: "phân giải tên miền shopviet.vn thành địa chỉ của hệ thống.", en: "resolves shopviet.vn to the system's address." },
+    text: { vi: "phân giải tên miền mftech.vn thành địa chỉ của hệ thống.", en: "resolves mftech.vn to the system's address." },
     lesson: { id: "route53", vi: "Route 53", en: "Route 53" } },
   { name: { vi: "CloudFront", en: "CloudFront" }, mono: "CF", group: { vi: "Mạng", en: "Networking" }, c: C.net,
     text: { vi: "trả ảnh và trang tĩnh từ edge location gần khách, chuyển request đặt hàng tới origin.", en: "serves images and static pages from an edge location near the customer and forwards the order request to the origin." },
@@ -18,7 +18,7 @@ const STEPS: { name: Bi; mono: string; group: Bi; c: string; text: Bi; lesson?: 
     text: { vi: "định tuyến request tới một target healthy (EC2 instance đạt health check).", en: "routes the request to a healthy target (an EC2 instance that passes health checks)." },
     lesson: { id: "elb", vi: "Elastic Load Balancing", en: "Elastic Load Balancing" } },
   { name: { vi: "EC2", en: "EC2" }, mono: "EC2", group: { vi: "Tính toán", en: "Compute" }, c: C.cmp,
-    text: { vi: "chạy ứng dụng ShopViet: kiểm tra tồn kho và tạo đơn.", en: "runs the ShopViet application: checks stock and creates the order." },
+    text: { vi: "chạy ứng dụng MFTech: kiểm tra tồn kho và tạo đơn.", en: "runs the MFTech application: checks stock and creates the order." },
     lesson: { id: "ec2", vi: "EC2", en: "EC2" } },
   { name: { vi: "RDS", en: "RDS" }, mono: "DB", group: { vi: "Database", en: "Database" }, c: C.db,
     text: { vi: "lưu đơn hàng bền vững; AWS đảm nhận sao lưu và failover.", en: "stores the order durably; AWS handles backups and failover." },
@@ -65,7 +65,7 @@ export default function OrderJourney() {
 
   return (
     <div className="am-stage" ref={root}>
-      <p className="am-sub">{L({ vi: "Khách bấm “Đặt hàng” trên shopviet.vn. Theo dõi đơn hàng đi qua từng dịch vụ.", en: "A customer clicks “Place order” on shopviet.vn. Follow the order through each service." })}</p>
+      <p className="am-sub">{L({ vi: "Khách bấm “Đặt hàng” trên mftech.vn. Theo dõi đơn hàng đi qua từng dịch vụ.", en: "A customer clicks “Place order” on mftech.vn. Follow the order through each service." })}</p>
       <div className="am-track" role="img" aria-label={L({ vi: "Đơn hàng đi qua: khách hàng, Route 53, CloudFront, load balancer, EC2, RDS, SQS, Lambda", en: "The order passes through: customer, Route 53, CloudFront, load balancer, EC2, RDS, SQS, Lambda" })}>
         <span className="am-line" style={{ left: "12.5%", width: "75%", top: TOP - 1, height: 2 }} />
         <span className="am-line" style={{ left: "87.5%", width: 2, top: TOP, height: BOTTOM - TOP }} />

@@ -1,7 +1,7 @@
 import PacketSim, { type PLayout, type PScenario, type PStep } from "./PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// Why a healthy ShopViet server is marked unhealthy: the security group does not let
+// Why a healthy MFTech server is marked unhealthy: the security group does not let
 // the ALB in, or the health check path is wrong. Then: the ALB drops a target but the
 // Auto Scaling group does not replace it (EC2 vs ELB health check). Last: which IP an
 // NLB sends to when the target is registered by instance ID.
@@ -69,7 +69,7 @@ const scenarios = (L: Lang): PScenario[] => {
       back: false,
       result: elb
         ? L({ vi: "Nhóm tự phục hồi: i-4 được đăng ký vào target group, khôi phục đủ 3 instance.", en: "The group heals itself: i-4 is registered with the target group, restoring all 3 instances." })
-        : L({ vi: "ALB đã loại i-2 nhưng ASG vẫn giữ instance này. ShopViet vận hành thiếu một instance cho tới khi có can thiệp thủ công.", en: "The ALB has dropped i-2, but the ASG keeps the instance. ShopViet runs one instance short until someone intervenes manually." }),
+        : L({ vi: "ALB đã loại i-2 nhưng ASG vẫn giữ instance này. MFTech vận hành thiếu một instance cho tới khi có can thiệp thủ công.", en: "The ALB has dropped i-2, but the ASG keeps the instance. MFTech runs one instance short until someone intervenes manually." }),
     }),
   },
   {

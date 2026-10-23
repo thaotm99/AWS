@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./messaging-sims.css";
 
-// ShopViet's wallet sends five balance changes for two customers, one of them sent
+// MFTech's wallet sends five balance changes for two customers, one of them sent
 // twice after a network timeout. A standard queue may deliver out of order and more
 // than once, so a balance ends up wrong. A FIFO queue keeps the order and drops the
 // duplicate, but with one message group only one message is in flight at a time.
@@ -190,7 +190,7 @@ export default function FifoSim() {
           </g>
           <g className="mls-lane">
             <rect x={150} y={LANE - 24} width={380} height={48} rx={10} />
-            <text x={156} y={LANE - 30}>{type === "fifo" ? "shopviet-vi.fifo" : "shopviet-vi (standard)"}</text>
+            <text x={156} y={LANE - 30}>{type === "fifo" ? "mftech-vi.fifo" : "mftech-vi (standard)"}</text>
           </g>
           {(["c1", "c2"] as const).map((c) => (
             <g key={c} className={"mls-worker " + (busyC[c] !== undefined ? "busy" : "idle")}>

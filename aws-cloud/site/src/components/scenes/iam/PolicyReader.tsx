@@ -53,10 +53,10 @@ const policies = (L: Lang): Pol[] => [
   "Statement": [
     { "Effect": "Allow",
       "Action": "s3:ListBucket",
-      "Resource": "arn:aws:s3:::shopviet-images" },
+      "Resource": "arn:aws:s3:::mftech-images" },
     { "Effect": "Allow",
       "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::shopviet-images/*" }
+      "Resource": "arn:aws:s3:::mftech-images/*" }
   ]
 }`,
     requests: [
@@ -72,11 +72,11 @@ const policies = (L: Lang): Pol[] => [
   "Statement": [{
     "Effect": "Allow",
     "Action": "s3:DeleteObject",
-    "Resource": "arn:aws:s3:::shopviet-images"
+    "Resource": "arn:aws:s3:::mftech-images"
   }]
 }`,
     requests: [
-      { label: L({ vi: "Xóa một ảnh", en: "Delete an image" }), allowed: false, why: L({ vi: "DeleteObject là thao tác trên object nhưng Resource lại là ARN của bucket. Resource phải được sửa thành arn:aws:s3:::shopviet-images/* để thao tác xóa được phép.", en: "DeleteObject is an object operation, but the Resource is the bucket ARN. The Resource must be changed to arn:aws:s3:::shopviet-images/* for the delete to be allowed." }) },
+      { label: L({ vi: "Xóa một ảnh", en: "Delete an image" }), allowed: false, why: L({ vi: "DeleteObject là thao tác trên object nhưng Resource lại là ARN của bucket. Resource phải được sửa thành arn:aws:s3:::mftech-images/* để thao tác xóa được phép.", en: "DeleteObject is an object operation, but the Resource is the bucket ARN. The Resource must be changed to arn:aws:s3:::mftech-images/* for the delete to be allowed." }) },
     ],
   },
 ];

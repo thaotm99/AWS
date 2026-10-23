@@ -1,6 +1,6 @@
 ---
 title: "Kinesis + MSK: processing continuous data streams"
-lede: "Every second, the ShopViet system produces thousands of clicks, views, transactions and courier locations. This lesson shows how to bring this data stream into Kinesis so that several applications can read it in order, how to keep the stream's throughput up when load spikes, and how to connect the stream to analytics, search and storage services."
+lede: "Every second, the MFTech system produces thousands of clicks, views, transactions and courier locations. This lesson shows how to bring this data stream into Kinesis so that several applications can read it in order, how to keep the stream's throughput up when load spikes, and how to connect the stream to analytics, search and storage services."
 minutes: 24
 scenes: 4
 prerequisites: ["messaging", "lambda"]
@@ -69,14 +69,14 @@ import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
   { href: "#en-s4", label: "4 · Data that is not streaming" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-The Messaging lesson used SQS to distribute **tasks** to workers: each order needs only one worker to process it. ShopViet's click and transaction data has different requirements: the leaderboard, product recommendations and fraud detection all need to read **the same event stream**, in order, with near-instant latency. This is the domain of **streams**.
+The Messaging lesson used SQS to distribute **tasks** to workers: each order needs only one worker to process it. MFTech's click and transaction data has different requirements: the leaderboard, product recommendations and fraud detection all need to read **the same event stream**, in order, with near-instant latency. This is the domain of **streams**.
 </Story>
 
 <Scene id="en-s1" label="Part 1/4" title="Comparing Amazon SQS queues and Kinesis data streams" questions={["exam3_q10", "exam3_q46", "exam1_q60", "exam2_q42"]}>
 
 <p class="scene-intro">An SQS queue hands each message to one consumer, and the message is deleted after processing; when many applications all need the full stream of events, you need a data stream that retains records for every consumer to read.</p>
 
-Three ShopViet applications all need to receive every purchase event. The simulation below sends 6 events from three users (A, B, C) to SQS and to Kinesis Data Streams in turn, to compare the data each application receives:
+Three MFTech applications all need to receive every purchase event. The simulation below sends 6 events from three users (A, B, C) to SQS and to Kinesis Data Streams in turn, to compare the data each application receives:
 
 <ShardStreamSim client:visible />
 
@@ -84,10 +84,10 @@ The characteristics of **Kinesis Data Streams** shown in the simulation:
 
 - A stream is divided into **shards**. The producer sends each record with a **partition key**; Kinesis hashes the key with MD5 to determine the shard. Records with the same key are written to the same shard, so one user's events always stay in order.
 - Records are **not deleted** after being read. Each application (consumer) manages its own read position. Records are retained for 24 hours by default, extendable up to 365 days (with additional charges beyond 24 hours), so a failed application can reread the data.
-- A consumer can be a self-developed application or **Lambda**: the Lambda event source mapping automatically polls each shard, reads records in batches and invokes the function with each batch. The ShopViet promotion leaderboard needs only a serverless Kinesis → Lambda → DynamoDB architecture, with no EC2 instances to manage.
+- A consumer can be a self-developed application or **Lambda**: the Lambda event source mapping automatically polls each shard, reads records in batches and invokes the function with each batch. The MFTech promotion leaderboard needs only a serverless Kinesis → Lambda → DynamoDB architecture, with no EC2 instances to manage.
 - **The number of parallel consumers is bounded by the shard count.** With the Kinesis Client Library (KCL), each shard is bound to only **one worker** at any given time by a *lease* (a worker can hold several leases); adding more workers than shards does not increase parallelism. With Lambda, the event source mapping processes the records in each shard in order; the `ParallelizationFactor` setting (1 by default, up to 10) allows up to 10 concurrent batches per shard, and Lambda still processes records in order at the partition-key level. To process faster, add shards.
 
-ShopViet monitors 5,000 point-of-sale terminals in its stores, each sending data every minute. Each terminal's data must be processed in order, independently of the others, and the number of consumers must scale to roughly the number of terminals. Kinesis with the terminal ID as the partition key keeps the order, but the number of parallel consumers only equals the number of shards (far fewer than 5,000 terminals). An **SQS FIFO** queue with the terminal ID as the **message group ID** fits better: messages in the same group are always processed one at a time, in strict order, never two at once; different groups are read by several consumers simultaneously, so parallelism grows with the number of groups. If every message uses the same group ID, the whole queue is processed sequentially; an SQS standard queue does not guarantee order.
+MFTech monitors 5,000 point-of-sale terminals in its stores, each sending data every minute. Each terminal's data must be processed in order, independently of the others, and the number of consumers must scale to roughly the number of terminals. Kinesis with the terminal ID as the partition key keeps the order, but the number of parallel consumers only equals the number of shards (far fewer than 5,000 terminals). An **SQS FIFO** queue with the terminal ID as the **message group ID** fits better: messages in the same group are always processed one at a time, in strict order, never two at once; different groups are read by several consumers simultaneously, so parallelism grows with the number of groups. If every message uses the same group ID, the whole queue is processed sequentially; an SQS standard queue does not guarantee order.
 
 <Takeaway>Distributing tasks, each handled by one worker: SQS. Several applications reading one data stream, in order by key, with the ability to reread: Kinesis Data Streams. The partition key determines the shard; ordering is guaranteed only within one shard, and the number of parallel consumers is bounded by the shard count. Per-device ordering with consumers scaling to the number of devices: SQS FIFO with the device ID as the message group ID.</Takeaway>
 
@@ -97,7 +97,7 @@ ShopViet monitors 5,000 point-of-sale terminals in its stores, each sending data
 
 <p class="scene-intro">Every shard has a throughput quota; when records exceed it, write requests are throttled or read latency keeps growing unless the stream's capacity is adjusted.</p>
 
-Each shard has throughput limits: writes of **1,000 records or 1 MB per second**, reads of **2 MB per second** (total for all consumers using `GetRecords`). The simulation below shows three problems ShopViet ran into and the matching solutions. Run the simulation for 10 seconds, then turn on the fix:
+Each shard has throughput limits: writes of **1,000 records or 1 MB per second**, reads of **2 MB per second** (total for all consumers using `GetRecords`). The simulation below shows three problems MFTech ran into and the matching solutions. Run the simulation for 10 seconds, then turn on the fix:
 
 <ShardThroughputSim client:visible />
 
@@ -111,7 +111,7 @@ A stream has two **capacity modes**. **Provisioned**: the operator sets the numb
 
 <p class="scene-intro">Streaming data is only valuable once it is delivered to where it is used: analytics services, search services or long-term storage such as Amazon S3.</p>
 
-Kinesis Data Streams acts as the data ingestion layer: producers in front, analytics, search and storage services behind. For each ShopViet requirement, choose a service for each step and run the simulation:
+Kinesis Data Streams acts as the data ingestion layer: producers in front, analytics, search and storage services behind. For each MFTech requirement, choose a service for each step and run the simulation:
 
 <StreamPipelineSim client:visible />
 
@@ -130,7 +130,7 @@ For applications already developed for **Apache Kafka**, use **Amazon MSK**: a f
 
 <p class="scene-intro">Not all data is a continuous stream of events; for files already stored in Amazon S3, batch processing or AWS managed AI services usually fit better.</p>
 
-ShopViet's customer service department stores call recordings on S3 and wants to analyze customer sentiment automatically, then let analysts run **ad-hoc SQL queries** on the results. The data here is **stored audio files**, not a continuous event stream, so the streaming services in this lesson are not the main choice. Choose each item to see what it is for and what fits instead.
+MFTech's customer service department stores call recordings on S3 and wants to analyze customer sentiment automatically, then let analysts run **ad-hoc SQL queries** on the results. The data here is **stored audio files**, not a continuous event stream, so the streaming services in this lesson are not the main choice. Choose each item to see what it is for and what fits instead.
 
 <QuickCompare client:visible items={[
   { name: "Amazon Managed Service for Apache Flink",
@@ -170,10 +170,10 @@ Sort each characteristic into the matching service. On mobile devices: choose a 
   ]}
 />
 
-Check your understanding: as the designer of the ShopViet system, which option fits?
+Check your understanding: as the designer of the MFTech system, which option fits?
 
 <Quiz client:visible items={[
-  { q: "ShopViet needs to develop three analytics applications in-house that run in parallel on the same real-time click stream. Which service fits?",
+  { q: "MFTech needs to develop three analytics applications in-house that run in parallel on the same real-time click stream. Which service fits?",
     opts: ["Amazon SQS", "Kinesis Data Streams", "Amazon Data Firehose"],
     a: 1,
     why: "Data Streams lets several self-developed consumers read one stream, each managing its own read position." },

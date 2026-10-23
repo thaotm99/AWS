@@ -1,4 +1,4 @@
-// Incident drills: an outage or a surprise at ShopViet, played as a few decisions. Each choice is
+// Incident drills: an outage or a surprise at MFTech, played as a few decisions. Each choice is
 // judged, explained, and moves the metrics the way the real system would. Plain data, imported by the
 // island and by the build.
 import type { Text } from "./labs";
@@ -174,8 +174,8 @@ export const DRILLS: Drill[] = [
     id: "flash-sale",
     title: t("Lưu lượng tăng 8 lần khi mở bán", "Traffic jumps eightfold at a product launch"),
     brief: t(
-      "10:00, ShopViet mở bán một mẫu điện thoại mới. Lưu lượng tăng 8 lần trong 10 phút; trang tải chậm và một phần khách hàng gặp lỗi.",
-      "10:00, ShopViet opens sales of a new phone. Traffic grows eightfold in 10 minutes; pages are slow and some customers get errors.",
+      "10:00, MFTech mở bán một mẫu điện thoại mới. Lưu lượng tăng 8 lần trong 10 phút; trang tải chậm và một phần khách hàng gặp lỗi.",
+      "10:00, MFTech opens sales of a new phone. Traffic grows eightfold in 10 minutes; pages are slow and some customers get errors.",
     ),
     metrics: [
       { id: "p95", label: t("Độ trễ p95", "p95 latency"), unit: "ms", value: 3100, normal: t("bình thường 180 ms", "normally 180 ms"), worse: "up", alert: 800 },
@@ -289,8 +289,8 @@ export const DRILLS: Drill[] = [
     id: "cost-spike",
     title: t("Hoá đơn AWS tăng 40% trong một tháng", "The AWS bill grows 40% in a month"),
     brief: t(
-      "Hoá đơn tháng này của ShopViet tăng 40% dù lưu lượng khách hàng gần như không đổi. Bộ phận tài chính cần biết nguyên nhân trước cuối tuần.",
-      "ShopViet's bill this month is up 40% although customer traffic is nearly flat. Finance wants the cause before the weekend.",
+      "Hoá đơn tháng này của MFTech tăng 40% dù lưu lượng khách hàng gần như không đổi. Bộ phận tài chính cần biết nguyên nhân trước cuối tuần.",
+      "MFTech's bill this month is up 40% although customer traffic is nearly flat. Finance wants the cause before the weekend.",
     ),
     metrics: [
       { id: "day", label: t("Chi phí mỗi ngày", "Cost per day"), unit: "$", value: 420, normal: t("tháng trước $300", "$300 last month"), worse: "up", alert: 340 },

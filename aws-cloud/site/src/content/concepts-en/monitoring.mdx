@@ -1,6 +1,6 @@
 ---
 title: "Monitoring and operations: CloudWatch, CloudTrail, Config, Systems Manager"
-lede: "The ShopViet system now runs in production and needs to observe the state of the system and trace actions. This lesson covers five topics: configuring alarms with a low enough detection delay, using alarm actions to recover instances automatically, preserving logs when instances are replaced, tracing changes and evaluating configuration compliance, and patching hundreds of instances without causing errors for users; the last part tells apart features that are easy to confuse."
+lede: "The MFTech system now runs in production and needs to observe the state of the system and trace actions. This lesson covers five topics: configuring alarms with a low enough detection delay, using alarm actions to recover instances automatically, preserving logs when instances are replaced, tracing changes and evaluating configuration compliance, and patching hundreds of instances without causing errors for users; the last part tells apart features that are easy to confuse."
 minutes: 35
 scenes: 6
 prerequisites: ["ec2", "asg", "iam"]
@@ -114,7 +114,7 @@ import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
   { href: "#en-s6", label: "6 · Comparing easily confused features" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-The ShopViet system already has load balancers, Auto Scaling groups, containers and Lambda. It runs stably, but the operations team regularly needs to answer questions: what is the current CPU utilization, who just deleted a security group, where are yesterday's instance logs stored, when should operating system patches be applied. Four services correspond to these four groups of questions: **CloudWatch** (metrics, logs, alarms), **CloudTrail** (who called which API), **AWS Config** (configuration and compliance), **Systems Manager** (acting directly on instances).
+The MFTech system already has load balancers, Auto Scaling groups, containers and Lambda. It runs stably, but the operations team regularly needs to answer questions: what is the current CPU utilization, who just deleted a security group, where are yesterday's instance logs stored, when should operating system patches be applied. Four services correspond to these four groups of questions: **CloudWatch** (metrics, logs, alarms), **CloudTrail** (who called which API), **AWS Config** (configuration and compliance), **Systems Manager** (acting directly on instances).
 </Story>
 
 <Scene id="en-s1" label="Part 1/6" title="Basic monitoring and detailed monitoring for EC2 instances" questions={["exam5_q20", "exam4_q25", "exam3_q15"]}>
@@ -137,7 +137,7 @@ Choosing the right metric matters as much as choosing the threshold. An ECS serv
 
 <p class="scene-intro">When an EC2 instance fails a status check, a CloudWatch alarm can reboot or recover the instance automatically, with no manual intervention.</p>
 
-ShopViet's warehouse management page runs on **one** EC2 instance; its scale does not yet need an Auto Scaling group. The instance occasionally fails, and restarting it manually outside working hours (for example at 3:00 a.m.) is undesirable. A CloudWatch alarm can call four EC2 actions directly: **stop**, **terminate**, **reboot**, **recover**, with no Lambda or script. In addition, for supported instance types, **simplified automatic recovery** is enabled by default at launch; CloudWatch action based recovery is an additional mechanism you configure, and it does not apply to instances in an Auto Scaling group.
+MFTech's warehouse management page runs on **one** EC2 instance; its scale does not yet need an Auto Scaling group. The instance occasionally fails, and restarting it manually outside working hours (for example at 3:00 a.m.) is undesirable. A CloudWatch alarm can call four EC2 actions directly: **stop**, **terminate**, **reboot**, **recover**, with no Lambda or script. In addition, for supported instance types, **simplified automatic recovery** is enabled by default at launch; CloudWatch action based recovery is an additional mechanism you configure, and it does not apply to instances in an Auto Scaling group.
 
 EC2 has two kinds of status checks. An **instance status check** fails when the problem is inside the instance (the operating system hangs, memory is exhausted). A **system status check** fails when the AWS infrastructure the instance runs on has a problem (loss of network connectivity, loss of power, hardware or software failure on the physical host). Each kind needs a different action:
 
@@ -151,7 +151,7 @@ EC2 has two kinds of status checks. An **instance status check** fails when the 
 
 <p class="scene-intro">EC2 instances in an Auto Scaling group can be terminated at any time, and logs stored on an instance are lost with it; logs must be sent to CloudWatch Logs for central storage.</p>
 
-ShopViet's Auto Scaling group scales very frequently, with new instances replacing old ones almost every day. A user reports a payment error that happened two days ago, but the instance involved has already been terminated. In another incident, a leaked access key was used to call APIs continuously at night. Both incidents share a solution: move logs off the instance and let CloudWatch process them.
+MFTech's Auto Scaling group scales very frequently, with new instances replacing old ones almost every day. A user reports a payment error that happened two days ago, but the instance involved has already been terminated. In another incident, a leaked access key was used to call APIs continuously at night. Both incidents share a solution: move logs off the instance and let CloudWatch process them.
 
 <LogPipelineSim client:visible />
 
@@ -159,7 +159,7 @@ A trail delivers events to an S3 bucket, and can also deliver them to **CloudWat
 
 **CloudTrail Insights** solves a different problem, for when the threshold is not known in advance: Insights analyzes past management and data events to establish a **baseline** of API call rates and API error rates, then generates **Insights events** when current activity deviates from the baseline. Insights is charged separately; after Insights is enabled on a trail for the first time, CloudTrail may take up to 36 hours to begin delivering Insights events. Insights events can also be sent to CloudWatch Logs together with the trail's other events.
 
-Another requirement concerns the deployment location: ShopViet is expanding into e-wallets, and regulations require the data and workloads to stay in the company's on-premises data center. The engineering team still needs AWS-managed Kubernetes, along with IAM and CloudWatch as in the cloud. The solution is **AWS Outposts**: AWS installs an Outpost at the customer's on-premises site, extending AWS infrastructure, services, APIs and tools there; EC2, EBS, ECS, RDS and Amazon EKS run on premises, while AWS operates and monitors this capacity as part of the Region. Direct Connect and Local Zones still place workloads on AWS infrastructure; Snowball Edge is a device for data transfer and edge processing, and it is no longer available to new customers.
+Another requirement concerns the deployment location: MFTech is expanding into e-wallets, and regulations require the data and workloads to stay in the company's on-premises data center. The engineering team still needs AWS-managed Kubernetes, along with IAM and CloudWatch as in the cloud. The solution is **AWS Outposts**: AWS installs an Outpost at the customer's on-premises site, extending AWS infrastructure, services, APIs and tools there; EC2, EBS, ECS, RDS and Amazon EKS run on premises, while AWS operates and monitors this capacity as part of the Region. Direct Connect and Local Zones still place workloads on AWS infrastructure; Snowball Edge is a device for data transfer and edge processing, and it is no longer available to new customers.
 
 <Takeaway>Logs must be moved off an instance before it is terminated: install the CloudWatch agent to send logs to CloudWatch Logs. Near-real-time alerts on unusual API calls: CloudTrail sends to CloudWatch Logs, a metric filter counts the errors, an alarm notifies through SNS. Trail destinations: S3, CloudWatch Logs, EventBridge (not Kinesis). Detect API call rates or error rates that deviate from a baseline without setting a threshold: CloudTrail Insights (charged separately). Data that must stay on premises but still needs AWS services: Outposts.</Takeaway>
 
@@ -169,7 +169,7 @@ Another requirement concerns the deployment location: ShopViet is expanding into
 
 <p class="scene-intro">After an incident, you need to know who did what and when, and whether the current configuration complies with policy; each question has a service that provides the data.</p>
 
-After an incident, the ShopViet operations team needs to answer many questions; each question can be answered by only one service. Choose each question and send the query:
+After an incident, the MFTech operations team needs to answer many questions; each question can be answered by only one service. Choose each question and send the query:
 
 <WhoAnswersSim client:visible />
 
@@ -177,7 +177,7 @@ After an incident, the ShopViet operations team needs to answer many questions; 
 
 <ConfigTimelineSim client:visible />
 
-Detecting a violation is different from preventing it or remediating it automatically. Three layers of guardrails that ShopViet applies to its accounts:
+Detecting a violation is different from preventing it or remediating it automatically. Three layers of guardrails that MFTech applies to its accounts:
 
 <GuardrailSim client:visible />
 
@@ -185,7 +185,7 @@ The `org-audit-trail` trail in the scenario above can be created as an **organiz
 
 For certificates, ACM offers two more signal sources besides the Config rule. The **`DaysToExpiry`** metric (namespace `AWS/CertificateManager`, dimension `CertificateArn`) is published by ACM to CloudWatch twice per day for every certificate until it expires; because the metric is tied to a single ARN, each certificate needs its own alarm, and every certificate imported later needs one more alarm. EventBridge receives a daily **ACM Certificate Approaching Expiration** event, starting 45 days before expiration for private or imported certificates and 30 days for public certificates. The `acm-certificate-expiration-check` managed rule evaluates every certificate in the account against the same threshold and keeps a compliance history, with no alarm to create per certificate.
 
-To apply the same set of Config rules to many accounts, ShopViet uses a **conformance pack**: a collection of Config rules and remediation actions, written in a YAML template and deployed as a single entity in an account and Region or across the whole organization. When it is deployed from the management account, member accounts cannot modify those rules and remediation actions. A conformance pack only evaluates and remediates configuration; it does not create accounts and does not build shared network infrastructure.
+To apply the same set of Config rules to many accounts, MFTech uses a **conformance pack**: a collection of Config rules and remediation actions, written in a YAML template and deployed as a single entity in an account and Region or across the whole organization. When it is deployed from the management account, member accounts cannot modify those rules and remediation actions. A conformance pack only evaluates and remediates configuration; it does not create accounts and does not build shared network infrastructure.
 
 <Takeaway>Who called which API, and when: CloudTrail (IAM operations are management events, recorded by a trail by default). Resource configuration over time and compliance: AWS Config. Make sure a trail always keeps running even when developers have root access: SCP. An organization trail can only be created from the management account or a delegated administrator; member accounts cannot change it. Certificates imported into ACM are not renewed automatically: the acm-certificate-expiration-check managed rule warns in advance (the DaysToExpiry metric needs one alarm per certificate). Config rules combined with remediation fix violations automatically; a conformance pack deploys one set of rules and remediations to the whole organization.</Takeaway>
 
@@ -195,7 +195,7 @@ To apply the same set of Config rules to many accounts, ShopViet uses a **confor
 
 <p class="scene-intro">With hundreds of EC2 instances, patching and running commands by hand on each instance is no longer feasible; the work must run in bulk across managed nodes, on a schedule and under control.</p>
 
-ShopViet has more than 200 EC2 instances; every month brings security patches for the operating system. **Systems Manager** does this through the **SSM Agent** running on the instances: Patch Manager patches on a schedule, Run Command runs commands on a whole group of instances, Automation runs multi-step runbooks. The first step is to grant the agent permission to communicate with Systems Manager. The instances already have their own IAM role to access RDS and Secrets Manager:
+MFTech has more than 200 EC2 instances; every month brings security patches for the operating system. **Systems Manager** does this through the **SSM Agent** running on the instances: Patch Manager patches on a schedule, Run Command runs commands on a whole group of instances, Automation runs multi-step runbooks. The first step is to grant the agent permission to communicate with Systems Manager. The instances already have their own IAM role to access RDS and Secrets Manager:
 
 <ScenarioFlow client:visible height={230} legend={["Few steps, no application disruption", "Many steps or application disruption"]} scenarios={[
   { name: "Managing 200 EC2 instances with Systems Manager",
@@ -236,7 +236,7 @@ In the previous patch cycle, every patch reported success but users still saw er
 
 <p class="scene-intro">Many monitoring and operations features have similar names; telling them apart helps you pick the right tool for each need.</p>
 
-Some CloudTrail, Config, Systems Manager and Trusted Advisor features have names close to the right solution but serve a different purpose. Choose each item to see what it is for and what fits the ShopViet situation.
+Some CloudTrail, Config, Systems Manager and Trusted Advisor features have names close to the right solution but serve a different purpose. Choose each item to see what it is for and what fits the MFTech situation.
 
 <QuickCompare client:visible items={[
   { name: "Trusted Advisor: Service limits",
@@ -245,7 +245,7 @@ Some CloudTrail, Config, Systems Manager and Trusted Advisor features have names
     instead: "CloudTrail sends events to CloudWatch Logs, a metric filter counts `errorCode`, and an alarm notifies through SNS (part 3)." },
   { name: "CloudTrail Insights",
     use: "Analyzes management and data events to establish a baseline of API call rates and API error rates; generates Insights events when activity deviates from the baseline. Suited to cases where the abnormal threshold is not known in advance.",
-    notHere: "ShopViet already knows exactly which error codes and which threshold to watch. Insights is charged separately, and after it is first enabled it may take up to 36 hours to begin delivering Insights events.",
+    notHere: "MFTech already knows exactly which error codes and which threshold to watch. Insights is charged separately, and after it is first enabled it may take up to 36 hours to begin delivering Insights events.",
     instead: "A metric filter on the trail's log group and an alarm with a fixed threshold. A trail delivers events to S3, CloudWatch Logs and EventBridge; Kinesis is not a trail destination." },
   { name: "ACM: DaysToExpiry metric",
     use: "ACM publishes the `DaysToExpiry` metric (namespace `AWS/CertificateManager`, dimension `CertificateArn`) twice per day for every certificate until it expires. EventBridge also receives a daily ACM Certificate Approaching Expiration event, starting 45 days before expiration for imported certificates.",
@@ -277,7 +277,7 @@ Some CloudTrail, Config, Systems Manager and Trusted Advisor features have names
 
 <Scene id="en-challenge" label="Exercise" title="Sort the tasks by monitoring service" questions={["exam1_q16", "exam3_q29", "exam5_q20", "exam1_q61", "exam3_q38", "exam5_q34"]}>
 
-Sort each ShopViet task into the service that handles it. On mobile devices: choose a card, then choose the target box.
+Sort each MFTech task into the service that handles it. On mobile devices: choose a card, then choose the target box.
 
 <SortGame client:visible
   bins={[
@@ -292,7 +292,7 @@ Sort each ShopViet task into the service that handles it. On mobile devices: cho
   ]}
 />
 
-Check your understanding: as the designer of the ShopViet system, which option fits?
+Check your understanding: as the designer of the MFTech system, which option fits?
 
 <Quiz client:visible items={[
   { q: "The warehouse management page runs on one EC2 instance (EBS volume). The physical host occasionally fails. Requirement: recover automatically within minutes at the lowest cost. Which option meets the requirement?",
@@ -319,7 +319,7 @@ Check your understanding: as the designer of the ShopViet system, which option f
     opts: ["Feasible, because a hybrid activation allows multiple roles", "Not feasible: an instance profile contains only one role, and hybrid activations are for non-EC2 machines", "Feasible if the instances use IMDSv1"],
     a: 1,
     why: "An instance profile can contain only one IAM role, and this limit cannot be increased. A hybrid activation registers on-premises servers, edge devices or VMs in other clouds. For EC2: Default Host Management Configuration, or add AmazonSSMManagedInstanceCore to the existing role." },
-  { q: "ShopViet needs an alert within minutes when the number of API calls denied with AccessDenied exceeds 10 in 5 minutes. Which option is the most direct?",
+  { q: "MFTech needs an alert within minutes when the number of API calls denied with AccessDenied exceeds 10 in 5 minutes. Which option is the most direct?",
     opts: ["Enable CloudTrail Insights", "A metric filter on the trail's log group and a CloudWatch alarm", "An alarm on the Trusted Advisor service limits metric"],
     a: 1,
     why: "The threshold is known in advance, so a metric filter that counts errorCode and a threshold alarm are enough. Insights detects deviations from a baseline, is charged separately and may take up to 36 hours to start; Trusted Advisor measures quota usage." },

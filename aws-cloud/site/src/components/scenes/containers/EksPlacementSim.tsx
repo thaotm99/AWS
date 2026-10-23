@@ -3,7 +3,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./containers-sims.css";
 
-// Where a ShopViet Kubernetes workload runs, checked against the requirements of each situation.
+// Where a MFTech Kubernetes workload runs, checked against the requirements of each situation.
 // Facts: eks/latest/userguide/eks-deployment-options.html (EKS in Regions, Outposts, Hybrid Nodes,
 // EKS Anywhere customer-managed and air-gapped), eks-outposts.html (extended vs local clusters,
 // control plane fully managed by AWS for both, local clusters for disconnects and data residency),
@@ -46,8 +46,8 @@ const OPTS: { id: Opt; name: string; has: Record<Req, boolean>; note: Bi }[] = [
 ];
 
 const CASES: { name: Bi; story: Bi; needs: Req[]; fit: Opt }[] = [
-  { name: { vi: "ShopViet Pay: dữ liệu phải ở lại", en: "ShopViet Pay: data must stay" },
-    story: { vi: "Quy định ngành tài chính yêu cầu mọi workload và dữ liệu của ShopViet Pay nằm trong data center. Đội ngũ muốn AWS quản lý control plane, nâng cấp Kubernetes tự động và dùng CloudWatch, IAM.", en: "Financial regulation requires every ShopViet Pay workload and its data to stay in the data center. The team wants AWS to manage the control plane, automate Kubernetes upgrades, and use CloudWatch and IAM." },
+  { name: { vi: "MFTech Pay: dữ liệu phải ở lại", en: "MFTech Pay: data must stay" },
+    story: { vi: "Quy định ngành tài chính yêu cầu mọi workload và dữ liệu của MFTech Pay nằm trong data center. Đội ngũ muốn AWS quản lý control plane, nâng cấp Kubernetes tự động và dùng CloudWatch, IAM.", en: "Financial regulation requires every MFTech Pay workload and its data to stay in the data center. The team wants AWS to manage the control plane, automate Kubernetes upgrades, and use CloudWatch and IAM." },
     needs: ["onprem", "awscp"], fit: "outLocal" },
   { name: { vi: "Kho hàng không có internet", en: "Warehouse with no internet" },
     story: { vi: "Kho hàng tại khu công nghiệp có mạng nội bộ cách ly hoàn toàn (air-gapped) và sẵn cụm máy chủ VMware vSphere. Cần chạy Kubernetes ngay trên cụm này.", en: "A warehouse in an industrial park has a fully isolated (air-gapped) network and an existing VMware vSphere cluster. Kubernetes must run on that cluster." },

@@ -1,6 +1,6 @@
 ---
 title: "AWS Lambda and Amazon API Gateway: event-driven serverless architecture"
-lede: "Many ShopViet tasks only need to run when an event occurs. This lesson covers event-driven processing flows (new images, stream data, periodic tasks), common mistakes when running Lambda in production (VPC, cold starts, quotas, permissions), and how to provide APIs to applications and partners with API Gateway."
+lede: "Many MFTech tasks only need to run when an event occurs. This lesson covers event-driven processing flows (new images, stream data, periodic tasks), common mistakes when running Lambda in production (VPC, cold starts, quotas, permissions), and how to provide APIs to applications and partners with API Gateway."
 minutes: 27
 scenes: 4
 prerequisites: ["iam", "vpc"]
@@ -80,14 +80,14 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#en-s3", label: "4 · Providing APIs with API Gateway" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-Many ShopViet tasks run only when an event occurs: a new image, a new order, a scheduled data cleanup. Instead of keeping an EC2 instance running all day, **Lambda** runs exactly when an event arrives, and **API Gateway** provides APIs for applications to call.
+Many MFTech tasks run only when an event occurs: a new image, a new order, a scheduled data cleanup. Instead of keeping an EC2 instance running all day, **Lambda** runs exactly when an event arrives, and **API Gateway** provides APIs for applications to call.
 </Story>
 
 <Scene id="en-s1" label="Part 1/4" title="Event-driven architectures with AWS Lambda" questions={["exam5_q23", "exam2_q14", "exam1_q60", "exam5_q35", "exam6_q31", "exam3_q30", "exam1_q33"]}>
 
 <p class="scene-intro">Many tasks only need to run when an event occurs, such as a new image or a new order; keeping an EC2 instance running all day for them wastes money.</p>
 
-Three ShopViet tasks: create a thumbnail when a seller uploads an image, update a leaderboard from page views, and clean up old data every week. Compare the "keep an EC2 instance running" option with letting events trigger Lambda:
+Three MFTech tasks: create a thumbnail when a seller uploads an image, update a leaderboard from page views, and clean up old data every week. Compare the "keep an EC2 instance running" option with letting events trigger Lambda:
 
 <ScenarioFlow client:visible height={220} legend={["Recommended", "High cost or operational effort"]} scenarios={[
   { name: "Process images on upload",
@@ -169,7 +169,7 @@ A few settings of each Lambda function decide the resources of its execution env
 
 Initialization time (the cold start) depends on the package size, including libraries, dependencies and layers. Moving a library into a layer keeps the package small and shareable, but does not remove the library's initialization time; to reduce cold starts, import only what the function needs, or use provisioned concurrency (part 2).
 
-Pick each ShopViet workload, adjust the configuration and deploy it:
+Pick each MFTech workload, adjust the configuration and deploy it:
 
 <FunctionConfigSim client:visible />
 
@@ -183,7 +183,7 @@ A layer is not a place to keep data. When the recommendations team needs to read
 
 <p class="scene-intro">Mobile apps and partners need one endpoint to call the system; that endpoint is also where requests are authenticated, authorized and throttled before they reach the backend integration.</p>
 
-The mobile app, sales partners and the admin site all call `api.shopviet.vn`. **API Gateway** runs a series of checks before a request reaches the application code. Pick a scenario and send a request:
+The mobile app, sales partners and the admin site all call `api.mftech.vn`. **API Gateway** runs a series of checks before a request reaches the application code. Pick a scenario and send a request:
 
 <ApiGatewaySim client:visible />
 
@@ -193,7 +193,7 @@ Some other requirements:
 - Couriers send their location continuously for order tracking (the "Couriers stream their locations" scenario in the simulation): a REST API uses an **AWS service integration** to call Kinesis Data Streams `PutRecord` directly, with no Lambda in between, for **Amazon Managed Service for Apache Flink** (formerly Amazon Kinesis Data Analytics) to analyze the stream. Lambda only handles individual requests; it is not where data is stored or analyzed.
 - Receive transactions from the app, run simple data validation, then process them, with the lowest operational cost: **REST API + Lambda** for validation, with a serverless backend behind it. There are no servers or containers to patch.
 
-API Gateway offers several ways to authorize users. ShopViet's new mobile app signs users in through an external OIDC-compliant identity provider; the backend must validate JWTs and scopes with low latency and cost, without writing authentication code. An **HTTP API with a JWT authorizer** meets this: API Gateway checks the token signature with the public key from the issuer's `jwks_uri`, validates the `iss`, `aud` and `exp` claims, and requires the token to include at least one of the route's scopes; valid claims are passed to the backend. Compare the other mechanisms:
+API Gateway offers several ways to authorize users. MFTech's new mobile app signs users in through an external OIDC-compliant identity provider; the backend must validate JWTs and scopes with low latency and cost, without writing authentication code. An **HTTP API with a JWT authorizer** meets this: API Gateway checks the token signature with the public key from the issuer's `jwks_uri`, validates the `iss`, `aud` and `exp` claims, and requires the token to include at least one of the route's scopes; valid claims are passed to the backend. Compare the other mechanisms:
 
 <QuickCompare client:visible items={[
   { name: "REST API + Lambda authorizer",
@@ -235,7 +235,7 @@ Sort each feature into where it is configured. On a mobile device: tap a card, t
   ]}
 />
 
-Check your understanding: as the designer of the ShopViet system, which option fits?
+Check your understanding: as the designer of the MFTech system, which option fits?
 
 <Quiz client:visible items={[
   { q: "Sellers upload product images to S3. Requirements: create thumbnails immediately, at low cost, without managing servers. Which architecture fits?",
@@ -246,11 +246,11 @@ Check your understanding: as the designer of the ShopViet system, which option f
     opts: ["Lambda in a VPC needs a NAT gateway to reach the internet", "Lambda does not support HTTPS", "A Lambda layer is missing"],
     a: 0,
     why: "Lambda's ENI in a private subnet has only a private IP; internet access must go through a NAT gateway." },
-  { q: "Each ShopViet partner may call the API a different number of times per day depending on its service plan. Which configuration fits?",
+  { q: "Each MFTech partner may call the API a different number of times per day depending on its service plan. Which configuration fits?",
     opts: ["Usage plans with API keys", "WAF rate-based rule", "Lambda reserved concurrency"],
     a: 0,
     why: "A usage plan sets throttling and quotas per API key." },
-  { q: "ShopViet needs to clean up old data once a week, a task that lasts a few minutes. Requirements: no EC2 instance kept running, and costs only while the task runs. Which option fits?",
+  { q: "MFTech needs to clean up old data once a week, a task that lasts a few minutes. Requirements: no EC2 instance kept running, and costs only while the task runs. Which option fits?",
     opts: ["EC2 running crontab", "EventBridge cron invokes Lambda", "Lambda runs continuously and sleeps"],
     a: 1,
     why: "An EventBridge cron schedule triggers Lambda at the right time; Lambda costs arise only for a few minutes of execution each week. EC2 running crontab has to run all week; a standard Lambda function cannot run continuously because each invocation lasts at most 15 minutes." },

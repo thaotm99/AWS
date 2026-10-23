@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./recovery-sim.css";
 
-// A day on ShopViet's Orders table, 00:00 to 18:00. Two accidents: a bad deploy that
+// A day on MFTech's Orders table, 00:00 to 18:00. Two accidents: a bad deploy that
 // writes corrupt data at 14:32 (found at 15:10), and an engineer deleting the table at
 // 16:05. For each, pick what was set up beforehand and watch what can be recovered.
 

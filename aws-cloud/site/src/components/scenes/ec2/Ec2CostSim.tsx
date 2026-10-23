@@ -1,7 +1,7 @@
 import HopSim, { type HopScenario } from "../security/HopSim";
 import { useLang } from "../../../lib/lang";
 
-// Buying EC2 for real ShopViet workloads: Spot interruptions and persistent requests,
+// Buying EC2 for real MFTech workloads: Spot interruptions and persistent requests,
 // Spot Fleet across instance pools, Dedicated Instances vs Dedicated Hosts, Compute
 // Savings Plans and right-sizing with Compute Optimizer.
 // Practice-test sources (build-time only): exam1_q21, exam4_q46, exam2_q49, exam6_q18, exam2_q23, exam6_q21, exam6_q33, exam6_q38, exam4_q30.
@@ -40,8 +40,8 @@ const scenarios = (L: Lang): HopScenario[] => [
   },
   {
     name: L({ vi: "Batch đêm cần đủ 10 instance", en: "Nightly batch needs 10 instances" }),
-    story: L({ vi: "Hằng đêm ShopViet chạy batch tổng hợp báo cáo, yêu cầu đúng **10 instance**. Job có thể chia nhỏ và chạy được trên mọi instance type.",
-      en: "Every night ShopViet runs a reporting batch that needs exactly **10 instances**. The job can be split up and runs on any instance type." }),
+    story: L({ vi: "Hằng đêm MFTech chạy batch tổng hợp báo cáo, yêu cầu đúng **10 instance**. Job có thể chia nhỏ và chạy được trên mọi instance type.",
+      en: "Every night MFTech runs a reporting batch that needs exactly **10 instances**. The job can be split up and runs on any instance type." }),
     request: L({ vi: "Giữ target capacity = 10", en: "Keep target capacity = 10" }),
     toggle: { label: L({ vi: "Spot Fleet kết hợp nhiều instance type", en: "Spot Fleet with multiple instance types" }), initial: false },
     start: "aws",
@@ -72,14 +72,14 @@ const scenarios = (L: Lang): HopScenario[] => [
   },
   {
     name: L({ vi: "Yêu cầu phần cứng không dùng chung", en: "Non-shared hardware required" }),
-    story: L({ vi: "Đối tác ngân hàng yêu cầu các EC2 instance xử lý thanh toán của ShopViet chạy trên **phần cứng single-tenant**. Không có yêu cầu license đặc biệt; mục tiêu là chi phí thấp nhất.",
-      en: "A banking partner requires ShopViet's payment EC2 instances to run on **single-tenant hardware**. There are no special licensing requirements; the goal is the lowest cost." }),
+    story: L({ vi: "Đối tác ngân hàng yêu cầu các EC2 instance xử lý thanh toán của MFTech chạy trên **phần cứng single-tenant**. Không có yêu cầu license đặc biệt; mục tiêu là chi phí thấp nhất.",
+      en: "A banking partner requires MFTech's payment EC2 instances to run on **single-tenant hardware**. There are no special licensing requirements; the goal is the lowest cost." }),
     request: L({ vi: "Launch 4 instance thanh toán", en: "Launch 4 payment instances" }),
     toggle: { label: L({ vi: "Dedicated Instances (tắt: Dedicated Hosts)", en: "Dedicated Instances (off: Dedicated Hosts)" }), initial: false },
     start: "pay",
     nodes: [
       { id: "pay", x: 100, y: 130, label: L({ vi: "Instance thanh toán", en: "Payment instances" }), sub: L({ vi: "4 instance", en: "4 instances" }), kind: "app" },
-      { id: "di", x: 400, y: 130, label: "Dedicated Instances", sub: L({ vi: "phần cứng riêng của ShopViet", en: "hardware dedicated to ShopViet" }), kind: "svc" },
+      { id: "di", x: 400, y: 130, label: "Dedicated Instances", sub: L({ vi: "phần cứng riêng của MFTech", en: "hardware dedicated to MFTech" }), kind: "svc" },
       { id: "dh", x: 400, y: 130, label: "Dedicated Host", sub: L({ vi: "thuê toàn bộ máy chủ vật lý", en: "rent the whole physical server" }), kind: "svc" },
       { id: "bill", x: 680, y: 130, w: 120, label: L({ vi: "Hoá đơn", en: "Bill" }), kind: "store" },
     ],
@@ -98,8 +98,8 @@ const scenarios = (L: Lang): HopScenario[] => [
   },
   {
     name: L({ vi: "License tính theo socket", en: "Per-socket licensing" }),
-    story: L({ vi: "Phần mềm quản lý kho hiện tại của ShopViet có license tính theo **số socket và core** của máy chủ vật lý. Yêu cầu: tái sử dụng license đã mua (BYOL).",
-      en: "ShopViet's current warehouse management software is licensed by the **number of sockets and cores** of the physical server. Requirement: reuse the licenses already purchased (BYOL)." }),
+    story: L({ vi: "Phần mềm quản lý kho hiện tại của MFTech có license tính theo **số socket và core** của máy chủ vật lý. Yêu cầu: tái sử dụng license đã mua (BYOL).",
+      en: "MFTech's current warehouse management software is licensed by the **number of sockets and cores** of the physical server. Requirement: reuse the licenses already purchased (BYOL)." }),
     request: L({ vi: "Cài đặt phần mềm kho", en: "Install warehouse software" }),
     toggle: { label: L({ vi: "Dedicated Hosts (tắt: Dedicated Instances)", en: "Dedicated Hosts (off: Dedicated Instances)" }), initial: false },
     start: "lic",
@@ -122,8 +122,8 @@ const scenarios = (L: Lang): HopScenario[] => [
   },
   {
     name: L({ vi: "Hoá đơn gồm EC2, Fargate và Lambda", en: "Bill covers EC2, Fargate and Lambda" }),
-    story: L({ vi: "ShopViet chạy ứng dụng web trên EC2, các job nhỏ trên Fargate và Lambda. Yêu cầu: một cam kết duy nhất áp dụng chiết khấu cho **tất cả** các dịch vụ này.",
-      en: "ShopViet runs its web application on EC2 and small jobs on Fargate and Lambda. Requirement: a single commitment that applies a discount to **all** of these services." }),
+    story: L({ vi: "MFTech chạy ứng dụng web trên EC2, các job nhỏ trên Fargate và Lambda. Yêu cầu: một cam kết duy nhất áp dụng chiết khấu cho **tất cả** các dịch vụ này.",
+      en: "MFTech runs its web application on EC2 and small jobs on Fargate and Lambda. Requirement: a single commitment that applies a discount to **all** of these services." }),
     request: L({ vi: "Cam kết 10 USD/giờ trong 1 năm", en: "Commit 10 USD/hour for 1 year" }),
     toggle: { label: L({ vi: "Compute Savings Plan (tắt: EC2 Instance Savings Plan)", en: "Compute Savings Plan (off: EC2 Instance Savings Plan)" }), initial: false },
     start: "plan",
@@ -171,6 +171,6 @@ const scenarios = (L: Lang): HopScenario[] => [
 export default function Ec2CostSim() {
   const L = useLang();
   return <HopSim scenarios={scenarios(L)} action={L({ vi: "Chạy", en: "Run" })} height={250}
-    label={L({ vi: "Các tình huống mua EC2 của ShopViet: Spot, Spot Fleet, Dedicated, Savings Plans và thay đổi instance type",
-      en: "ShopViet EC2 purchasing scenarios: Spot, Spot Fleet, Dedicated, Savings Plans and changing instance types" })} />;
+    label={L({ vi: "Các tình huống mua EC2 của MFTech: Spot, Spot Fleet, Dedicated, Savings Plans và thay đổi instance type",
+      en: "MFTech EC2 purchasing scenarios: Spot, Spot Fleet, Dedicated, Savings Plans and changing instance types" })} />;
 }

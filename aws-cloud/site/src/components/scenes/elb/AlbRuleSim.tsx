@@ -1,7 +1,7 @@
 import PacketSim, { type PLayout, type PScenario, type PStep } from "./PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// One HTTPS request through the listener of ShopViet's ALB: certificate chosen by SNI,
+// One HTTPS request through the listener of MFTech's ALB: certificate chosen by SNI,
 // AWS WAF, login with a Cognito user pool, then listener rules (path, host, wildcard
 // host) pick a target group.
 
@@ -21,20 +21,20 @@ const layout = (L: Lang): PLayout => ({
     { id: "rule", x: 478, y: 155, ...G, l1: "Rule", l2: "forward" },
     { id: "orders", x: 710, y: 82, w: 170, l1: "TG orders", l2: "path /orders/*" },
     { id: "products", x: 710, y: 155, w: 170, l1: "TG products", l2: "path /products/*" },
-    { id: "sub", x: 710, y: 228, w: 170, l1: "TG microsite", l2: "host *.shopviet.vn" },
+    { id: "sub", x: 710, y: 228, w: 170, l1: "TG microsite", l2: "host *.mftech.vn" },
   ],
   links: [["c", "sni"], ["sni", "waf"], ["waf", "auth"], ["auth", "rule"], ["rule", "orders"], ["rule", "products"], ["rule", "sub"]],
 });
 
 const scenarios = (L: Lang): PScenario[] => {
-  const SNI: PStep = { at: "sni", state: "pass", msg: L({ vi: "Client gửi tên miền `shopviet.vn` qua SNI; ALB chọn chứng chỉ tương ứng.", en: "The client sends the domain name `shopviet.vn` through SNI; the ALB picks the matching certificate." }) };
+  const SNI: PStep = { at: "sni", state: "pass", msg: L({ vi: "Client gửi tên miền `mftech.vn` qua SNI; ALB chọn chứng chỉ tương ứng.", en: "The client sends the domain name `mftech.vn` through SNI; the ALB picks the matching certificate." }) };
   const WAF: PStep = { at: "waf", state: "pass", msg: L({ vi: "Request không khớp rule chặn nào trong web ACL.", en: "The request matches no blocking rule in the web ACL." }) };
   const PUBLIC: PStep = { at: "auth", state: "skip", msg: L({ vi: "Trang công khai, không yêu cầu xác thực.", en: "Public page; no authentication required." }) };
   const VN = L({ vi: "nguồn: Việt Nam", en: "source: Vietnam" });
   return [
   {
     name: L({ vi: "Truy xuất trang sản phẩm", en: "Fetch a product page" }),
-    request: "GET https://shopviet.vn/products/ao-thun",
+    request: "GET https://mftech.vn/products/ao-thun",
     from: VN,
     run: () => ({
       steps: [SNI, WAF, PUBLIC,
@@ -45,7 +45,7 @@ const scenarios = (L: Lang): PScenario[] => {
   },
   {
     name: L({ vi: "Truy xuất đơn hàng cá nhân", en: "Fetch a personal order" }),
-    request: "GET https://shopviet.vn/orders/1024",
+    request: "GET https://mftech.vn/orders/1024",
     from: VN,
     toggle: { label: L({ vi: "Người dùng đã đăng nhập", en: "User is signed in" }), initial: false },
     run: (logged) => logged
@@ -60,39 +60,39 @@ const scenarios = (L: Lang): PScenario[] => {
   },
   {
     name: L({ vi: "Blog trên tên miền riêng", en: "Blog on its own domain" }),
-    request: "GET https://blog.shopviet.vn/",
+    request: "GET https://blog.mftech.vn/",
     from: VN,
-    toggle: { label: L({ vi: "Đã thêm chứng chỉ blog.shopviet.vn vào listener", en: "blog.shopviet.vn certificate added to the listener" }), initial: false },
+    toggle: { label: L({ vi: "Đã thêm chứng chỉ blog.mftech.vn vào listener", en: "blog.mftech.vn certificate added to the listener" }), initial: false },
     run: (cert) => cert
       ? { steps: [
-            { at: "sni", state: "pass", msg: L({ vi: "Listener có nhiều chứng chỉ. Thông qua **SNI**, client gửi tên miền `blog.shopviet.vn` và ALB chọn chứng chỉ tương ứng.", en: "The listener has multiple certificates. Through **SNI**, the client sends the domain name `blog.shopviet.vn` and the ALB picks the matching certificate." }) },
+            { at: "sni", state: "pass", msg: L({ vi: "Listener có nhiều chứng chỉ. Thông qua **SNI**, client gửi tên miền `blog.mftech.vn` và ALB chọn chứng chỉ tương ứng.", en: "The listener has multiple certificates. Through **SNI**, the client sends the domain name `blog.mftech.vn` and the ALB picks the matching certificate." }) },
             WAF, PUBLIC,
-            { at: "rule", state: "pass", msg: L({ vi: "Request khớp rule **host** `*.shopviet.vn`.", en: "The request matches the **host** rule `*.shopviet.vn`." }) },
+            { at: "rule", state: "pass", msg: L({ vi: "Request khớp rule **host** `*.mftech.vn`.", en: "The request matches the **host** rule `*.mftech.vn`." }) },
             { at: "sub", state: "pass", msg: L({ vi: "Blog thuộc target group microsite, trả về trang chủ.", en: "The blog belongs to the microsite target group and returns its home page." }) }],
           ok: true, result: L({ vi: "200 OK: một ALB, một listener HTTPS phục vụ nhiều tên miền; không cần tạo thêm load balancer.", en: "200 OK: one ALB and one HTTPS listener serve multiple domains; no extra load balancer needed." }) }
       : { steps: [
-            { at: "sni", state: "block", flash: "TLS", msg: L({ vi: "Listener chỉ có chứng chỉ `shopviet.vn`. Tên miền không khớp nên trình duyệt báo lỗi bảo mật.", en: "The listener has only the `shopviet.vn` certificate. The domain does not match, so the browser shows a security error." }) }],
+            { at: "sni", state: "block", flash: "TLS", msg: L({ vi: "Listener chỉ có chứng chỉ `mftech.vn`. Tên miền không khớp nên trình duyệt báo lỗi bảo mật.", en: "The listener has only the `mftech.vn` certificate. The domain does not match, so the browser shows a security error." }) }],
           ok: false, result: L({ vi: "Người dùng nhận cảnh báo chứng chỉ. Cần thêm chứng chỉ của blog vào listener; ALB sử dụng SNI để lựa chọn.", en: "The user gets a certificate warning. Add the blog's certificate to the listener; the ALB uses SNI to choose." }) },
   },
   {
     name: L({ vi: "Wildcard trong host rule", en: "Wildcard in a host rule" }),
-    request: (apex) => (apex ? "GET https://shopviet.vn/" : "GET https://khuyenmai.shopviet.vn/"),
+    request: (apex) => (apex ? "GET https://mftech.vn/" : "GET https://khuyenmai.mftech.vn/"),
     from: VN,
-    toggle: { label: L({ vi: "Chuyển sang tên miền gốc shopviet.vn", en: "Switch to the apex domain shopviet.vn" }), initial: false },
+    toggle: { label: L({ vi: "Chuyển sang tên miền gốc mftech.vn", en: "Switch to the apex domain mftech.vn" }), initial: false },
     run: (apex) => apex
       ? { steps: [SNI, WAF, PUBLIC,
-            { at: "rule", state: "pass", msg: L({ vi: "Theo tài liệu ALB, rule `*.shopviet.vn` **không khớp** tên miền gốc `shopviet.vn`: `*` khớp 0 hoặc nhiều ký tự, nhưng tên miền gốc không chứa chuỗi `.shopviet.vn` (có dấu chấm đứng trước). Request được xử lý bởi default action.",
-              en: "According to the ALB documentation, the rule `*.shopviet.vn` **does not match** the apex domain `shopviet.vn`: `*` matches 0 or more characters, but the apex domain does not contain the string `.shopviet.vn` (with the leading dot). The request is handled by the default action." }) },
+            { at: "rule", state: "pass", msg: L({ vi: "Theo tài liệu ALB, rule `*.mftech.vn` **không khớp** tên miền gốc `mftech.vn`: `*` khớp 0 hoặc nhiều ký tự, nhưng tên miền gốc không chứa chuỗi `.mftech.vn` (có dấu chấm đứng trước). Request được xử lý bởi default action.",
+              en: "According to the ALB documentation, the rule `*.mftech.vn` **does not match** the apex domain `mftech.vn`: `*` matches 0 or more characters, but the apex domain does not contain the string `.mftech.vn` (with the leading dot). The request is handled by the default action." }) },
             { at: "products", state: "pass", msg: L({ vi: "Default action chuyển request tới trang chủ cửa hàng.", en: "The default action sends the request to the store's home page." }) }],
-          ok: true, result: L({ vi: "200 OK: tên miền gốc được xử lý bởi default action. Để định tuyến tên miền gốc tới microsite, cần thêm rule riêng cho `shopviet.vn`.", en: "200 OK: the apex domain is handled by the default action. To route the apex domain to a microsite, add a separate rule for `shopviet.vn`." }) }
+          ok: true, result: L({ vi: "200 OK: tên miền gốc được xử lý bởi default action. Để định tuyến tên miền gốc tới microsite, cần thêm rule riêng cho `mftech.vn`.", en: "200 OK: the apex domain is handled by the default action. To route the apex domain to a microsite, add a separate rule for `mftech.vn`." }) }
       : { steps: [SNI, WAF, PUBLIC,
-            { at: "rule", state: "pass", msg: L({ vi: "Rule **host** `*.shopviet.vn` khớp `khuyenmai.shopviet.vn` (ký tự `*` khớp 0 hoặc nhiều ký tự).", en: "The **host** rule `*.shopviet.vn` matches `khuyenmai.shopviet.vn` (the `*` character matches 0 or more characters)." }) },
+            { at: "rule", state: "pass", msg: L({ vi: "Rule **host** `*.mftech.vn` khớp `khuyenmai.mftech.vn` (ký tự `*` khớp 0 hoặc nhiều ký tự).", en: "The **host** rule `*.mftech.vn` matches `khuyenmai.mftech.vn` (the `*` character matches 0 or more characters)." }) },
             { at: "sub", state: "pass", msg: L({ vi: "Microsite khuyến mãi trả về nội dung.", en: "The promotion microsite returns its content." }) }],
           ok: true, result: L({ vi: "200 OK: một host rule áp dụng cho mọi subdomain; không cần thêm rule cho từng trang khuyến mãi mới.", en: "200 OK: one host rule covers every subdomain; no new rule is needed for each new promotion site." }) },
   },
   {
     name: L({ vi: "Truy cập từ quốc gia chưa kinh doanh", en: "Access from an unserved country" }),
-    request: "GET https://shopviet.vn/",
+    request: "GET https://mftech.vn/",
     from: L({ vi: "nguồn: quốc gia chưa kinh doanh", en: "source: unserved country" }),
     toggle: { label: L({ vi: "Liên kết AWS WAF có geo match rule", en: "Associate AWS WAF with a geo match rule" }), initial: true },
     run: (waf) => waf
@@ -105,7 +105,7 @@ const scenarios = (L: Lang): PScenario[] => {
   },
   {
     name: L({ vi: "Một IP gửi 100 request mỗi giây", en: "One IP sends 100 requests per second" }),
-    request: L({ vi: "GET https://shopviet.vn/products/ao-thun × 100/giây", en: "GET https://shopviet.vn/products/ao-thun × 100/second" }),
+    request: L({ vi: "GET https://mftech.vn/products/ao-thun × 100/giây", en: "GET https://mftech.vn/products/ao-thun × 100/second" }),
     from: L({ vi: "nguồn: một IP (khách hàng thông thường: khoảng 5 request/giây)", en: "source: one IP (a normal customer: about 5 requests/second)" }),
     toggle: { label: L({ vi: "Web ACL có rate-based rule: 3.000 request / 5 phút / IP", en: "Web ACL has a rate-based rule: 3,000 requests / 5 minutes / IP" }), initial: false },
     run: (rate) => rate

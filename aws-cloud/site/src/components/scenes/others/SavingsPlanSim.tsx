@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./savings-plan-sim.css";
 
-// ShopViet's steady workloads after launch: EC2 in two Regions, Fargate, Lambda and a
+// MFTech's steady workloads after launch: EC2 in two Regions, Fargate, Lambda and a
 // SageMaker inference endpoint. Tick the Savings Plans to buy, press apply, and the
 // discount travels from each plan to every workload it covers. Goal: every workload
 // discounted with as few plans as possible.
@@ -123,7 +123,7 @@ export default function SavingsPlanSim() {
         <button className="btn primary sav-play" onClick={apply} disabled={busy}>{L({ vi: "Áp dụng giảm giá", en: "Apply discounts" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg viewBox="0 0 820 290" role="img" aria-label={L({ vi: "Các Savings Plans ở bên trái, workload của ShopViet ở bên phải; đường nối thể hiện plan giảm giá cho workload", en: "Savings Plans on the left, ShopViet workloads on the right; lines show which plan discounts which workload" })}>
+        <svg viewBox="0 0 820 290" role="img" aria-label={L({ vi: "Các Savings Plans ở bên trái, workload của MFTech ở bên phải; đường nối thể hiện plan giảm giá cho workload", en: "Savings Plans on the left, MFTech workloads on the right; lines show which plan discounts which workload" })}>
           <text className="sav-cap" x={PX} y={22} textAnchor="middle">Savings Plans</text>
           <text className="sav-cap" x={WX} y={22} textAnchor="middle">{L({ vi: "Workload có tải ổn định", en: "Steady-state workloads" })}</text>
           {PLANS.filter((p) => sel.includes(p.id)).flatMap((p) => COVERS[p.id].map((w) => {

@@ -1,6 +1,6 @@
 ---
 title: "KMS và ACM: mã hóa và chứng chỉ"
-lede: "ShopViet lưu trữ hoá đơn, đơn hàng và dữ liệu khách hàng. Bài học trình bày các yêu cầu mã hoá thực tế: cung cấp cho kiểm toán thông tin về việc sử dụng key, giảm chi phí KMS, xoay key định kỳ, sử dụng một key tại hai Region, chia sẻ DB snapshot đã mã hoá cho kiểm toán viên, bảo vệ dữ liệu khi truyền, ngăn SSL/TLS certificate cho HTTPS hết hạn ngoài dự kiến, và phân biệt các lựa chọn mã hoá dễ nhầm lẫn."
+lede: "MFTech lưu trữ hoá đơn, đơn hàng và dữ liệu khách hàng. Bài học trình bày các yêu cầu mã hoá thực tế: cung cấp cho kiểm toán thông tin về việc sử dụng key, giảm chi phí KMS, xoay key định kỳ, sử dụng một key tại hai Region, chia sẻ DB snapshot đã mã hoá cho kiểm toán viên, bảo vệ dữ liệu khi truyền, ngăn SSL/TLS certificate cho HTTPS hết hạn ngoài dự kiến, và phân biệt các lựa chọn mã hoá dễ nhầm lẫn."
 minutes: 25
 scenes: 4
 prerequisites: ["iam"]
@@ -63,14 +63,14 @@ import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
   { href: "#s4", label: "4 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-Dữ liệu khách hàng của ShopViet phải được mã hoá, và bộ phận kiểm toán yêu cầu thông tin **principal nào đã sử dụng key và vào thời điểm nào**. **AWS KMS** lưu trữ và quản lý key mã hoá. **AWS Certificate Manager (ACM)** cấp và gia hạn SSL/TLS certificate cho HTTPS.
+Dữ liệu khách hàng của MFTech phải được mã hoá, và bộ phận kiểm toán yêu cầu thông tin **principal nào đã sử dụng key và vào thời điểm nào**. **AWS KMS** lưu trữ và quản lý key mã hoá. **AWS Certificate Manager (ACM)** cấp và gia hạn SSL/TLS certificate cho HTTPS.
 </Story>
 
 <Scene id="s1" label="Phần 1/4" title="Server-side encryption cho hoá đơn trên Amazon S3" questions={["exam1_q22", "exam2_q50", "exam4_q6", "exam5_q46", "exam5_q11", "exam2_q46", "exam3_q24"]}>
 
 <p class="scene-intro">Dữ liệu được mã hoá thì không đọc được nếu không có key; vì vậy câu hỏi quan trọng là ai giữ key và ai được phép dùng key.</p>
 
-Mọi object mới trên S3 đều được mã hoá. Quyết định cần đưa ra là **bên nào quản lý key** và **bên nào theo dõi được việc sử dụng key**. Mỗi tình huống dưới đây là một yêu cầu thực tế của ShopViet. Chọn tình huống, thay đổi cấu hình và nhấn Chạy để quan sát đường đi của object và các dịch vụ được gọi.
+Mọi object mới trên S3 đều được mã hoá. Quyết định cần đưa ra là **bên nào quản lý key** và **bên nào theo dõi được việc sử dụng key**. Mỗi tình huống dưới đây là một yêu cầu thực tế của MFTech. Chọn tình huống, thay đổi cấu hình và nhấn Chạy để quan sát đường đi của object và các dịch vụ được gọi.
 
 <S3EncryptSim client:visible />
 
@@ -85,8 +85,8 @@ Mọi object mới trên S3 đều được mã hoá. Quyết định cần đư
 Kiểm toán viên có AWS account riêng và cần một bản sao của RDS DB instance đã mã hoá bằng KMS. Thực hiện lần lượt từng bước:
 
 <StepSim client:visible height={240}
-  intro="RDS DB instance của ShopViet được mã hoá bằng một customer managed key trong KMS. Kiểm toán viên tại account khác cần một bản sao."
-  boxes={[{ x: 20, y: 20, w: 420, h: 200, label: "Account ShopViet" }, { x: 470, y: 20, w: 270, h: 200, label: "Account kiểm toán" }]}
+  intro="RDS DB instance của MFTech được mã hoá bằng một customer managed key trong KMS. Kiểm toán viên tại account khác cần một bản sao."
+  boxes={[{ x: 20, y: 20, w: 420, h: 200, label: "Account MFTech" }, { x: 470, y: 20, w: 270, h: 200, label: "Account kiểm toán" }]}
   nodes={[
     { id: "db", x: 50, y: 70, label: "RDS", sub: "mã hoá bằng KMS", kind: "db" },
     { id: "key", x: 50, y: 150, label: "KMS key", sub: "customer managed", kind: "net" },
@@ -114,7 +114,7 @@ Kiểm toán viên có AWS account riêng và cần một bản sao của RDS DB
 
 <p class="scene-intro">Dữ liệu cần được bảo vệ ở hai trạng thái: khi lưu trữ (at rest) và khi truyền qua mạng (in transit); mỗi trạng thái dùng một cơ chế mã hoá khác nhau.</p>
 
-KMS bảo vệ dữ liệu **khi lưu trữ** (at rest). Dữ liệu **khi truyền** (in transit) giữa client, ứng dụng và database cần SSL/TLS, và HTTPS yêu cầu SSL/TLS certificate còn hiệu lực. Mô phỏng sáu tình huống ShopViet gặp trong vận hành:
+KMS bảo vệ dữ liệu **khi lưu trữ** (at rest). Dữ liệu **khi truyền** (in transit) giữa client, ứng dụng và database cần SSL/TLS, và HTTPS yêu cầu SSL/TLS certificate còn hiệu lực. Mô phỏng sáu tình huống MFTech gặp trong vận hành:
 
 <DataGuardSim client:visible />
 
@@ -126,7 +126,7 @@ KMS bảo vệ dữ liệu **khi lưu trữ** (at rest). Dữ liệu **khi truy�
 
 <p class="scene-intro">Nhiều tính năng có tên gắn với mã hoá nhưng giải quyết các vấn đề khác nhau; phân biệt được chúng giúp tránh chọn phương án phức tạp hơn mức cần thiết.</p>
 
-Một số tính năng có tên gần với yêu cầu mã hoá của ShopViet nhưng giải quyết một vấn đề khác, hoặc làm tăng khối lượng vận hành. Chọn từng tính năng để xem trường hợp sử dụng, lý do không phù hợp trong tình huống ShopViet tương ứng, và phương án nên chọn:
+Một số tính năng có tên gần với yêu cầu mã hoá của MFTech nhưng giải quyết một vấn đề khác, hoặc làm tăng khối lượng vận hành. Chọn từng tính năng để xem trường hợp sử dụng, lý do không phù hợp trong tình huống MFTech tương ứng, và phương án nên chọn:
 
 <QuickCompare client:visible items={[
   { name: "Encryption context",
@@ -134,16 +134,16 @@ Một số tính năng có tên gần với yêu cầu mã hoá của ShopViet n
     notHere: "Bộ phận pháp chế muốn mỗi hoá đơn có key riêng trong một bucket duy nhất. Encryption context không tạo ra key nào: nó chỉ ràng buộc ciphertext với thông tin mô tả dữ liệu, và không được chứa thông tin nhạy cảm vì không được mã hoá.",
     instead: "**SSE-S3**: S3 tự mã hoá mỗi object bằng một key riêng, không cần chia bucket hay cấu hình thêm." },
   { name: "KMS key với imported key material",
-    use: "Bring your own key (BYOK): tạo KMS key không có key material rồi import key material của mình, khi cần chứng minh nguồn entropy, giữ bản gốc key material ngoài AWS, hoặc đặt thời hạn hết hiệu lực cho key material. ShopViet chịu trách nhiệm về key material đó.",
-    notHere: "Kho hoá đơn lưu trữ dài hạn cần xoay key hằng năm với ít thao tác nhất. **Automatic key rotation chỉ hỗ trợ** symmetric KMS key có key material do KMS sinh ra (origin `AWS_KMS`). Với key material import (origin `EXTERNAL`), ShopViet phải tự import key material mới rồi chạy on-demand rotation.",
+    use: "Bring your own key (BYOK): tạo KMS key không có key material rồi import key material của mình, khi cần chứng minh nguồn entropy, giữ bản gốc key material ngoài AWS, hoặc đặt thời hạn hết hiệu lực cho key material. MFTech chịu trách nhiệm về key material đó.",
+    notHere: "Kho hoá đơn lưu trữ dài hạn cần xoay key hằng năm với ít thao tác nhất. **Automatic key rotation chỉ hỗ trợ** symmetric KMS key có key material do KMS sinh ra (origin `AWS_KMS`). Với key material import (origin `EXTERNAL`), MFTech phải tự import key material mới rồi chạy on-demand rotation.",
     instead: "**Customer managed key** do KMS sinh key material, bật **automatic rotation** (mặc định 365 ngày), đặt làm default encryption của bucket." },
   { name: "AWS CloudHSM",
-    use: "Hardware security module (HSM) single-tenant trên AWS, đạt FIPS 140-2/140-3 level 3 ở FIPS mode. ShopViet toàn quyền với key và thuật toán, tự quản lý user trong HSM; phù hợp ứng dụng dùng PKCS #11, JCE, CNG/KSP. Có thể làm custom key store cho KMS.",
-    notHere: "Với cùng yêu cầu xoay key hằng năm và chi phí thấp, CloudHSM làm tăng phần việc ShopViet phải tự làm: theo AWS, đánh đổi cho quyền kiểm soát này là trách nhiệm nhiều hơn so với dịch vụ managed. KMS key trong custom key store cũng không hỗ trợ automatic rotation, chỉ xoay thủ công.",
+    use: "Hardware security module (HSM) single-tenant trên AWS, đạt FIPS 140-2/140-3 level 3 ở FIPS mode. MFTech toàn quyền với key và thuật toán, tự quản lý user trong HSM; phù hợp ứng dụng dùng PKCS #11, JCE, CNG/KSP. Có thể làm custom key store cho KMS.",
+    notHere: "Với cùng yêu cầu xoay key hằng năm và chi phí thấp, CloudHSM làm tăng phần việc MFTech phải tự làm: theo AWS, đánh đổi cho quyền kiểm soát này là trách nhiệm nhiều hơn so với dịch vụ managed. KMS key trong custom key store cũng không hỗ trợ automatic rotation, chỉ xoay thủ công.",
     instead: "**AWS KMS customer managed key** với automatic rotation, dùng qua SSE-KMS." },
   { name: "Client-side encryption",
     use: "Mã hoá dữ liệu **trước khi gửi lên S3** bằng Amazon S3 Encryption Client; mỗi object một data key riêng. S3 nhận object đã mã hoá, không tham gia mã hoá hay giải mã, và không nhận biết object đã được mã hoá. AWS không thấy được plaintext.",
-    notHere: "ShopViet muốn giảm phí KMS nhưng vẫn giữ SSE-KMS. Client-side encryption chuyển việc mã hoá và quản lý key về ứng dụng; S3 Encryption Client cũng không dùng S3 Bucket Keys kể cả khi wrapping key là KMS key. Lưu key trong metadata của object thì bất kỳ ai đọc được object đều giải mã được.",
+    notHere: "MFTech muốn giảm phí KMS nhưng vẫn giữ SSE-KMS. Client-side encryption chuyển việc mã hoá và quản lý key về ứng dụng; S3 Encryption Client cũng không dùng S3 Bucket Keys kể cả khi wrapping key là KMS key. Lưu key trong metadata của object thì bất kỳ ai đọc được object đều giải mã được.",
     instead: "Giữ SSE-KMS và bật **S3 Bucket Keys**." },
   { name: "Chuyển key hiện tại thành multi-Region",
     use: "Không có thao tác này: thuộc tính multi-Region được chọn **khi tạo key** và không thay đổi được sau đó. KMS key cũng không chia sẻ được sang Region khác.",
@@ -172,18 +172,18 @@ Phân loại từng đặc tính vào kiểu mã hoá tương ứng. Trên thi�
   ]}
 />
 
-Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTech, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "ShopViet không muốn tự cung cấp key, nhưng kiểm toán cần biết key được sử dụng vào thời điểm nào và bởi principal nào. Hoá đơn trên S3 nên được mã hoá theo phương thức nào?",
+  { q: "MFTech không muốn tự cung cấp key, nhưng kiểm toán cần biết key được sử dụng vào thời điểm nào và bởi principal nào. Hoá đơn trên S3 nên được mã hoá theo phương thức nào?",
     opts: ["SSE-S3", "SSE-KMS", "SSE-C"],
     a: 1,
-    why: "SSE-KMS ghi lại việc sử dụng key vào CloudTrail mà ShopViet không phải tự lưu giữ key material." },
+    why: "SSE-KMS ghi lại việc sử dụng key vào CloudTrail mà MFTech không phải tự lưu giữ key material." },
   { q: "Chính sách mới yêu cầu: mã hoá at rest, có log việc sử dụng key, xoay key hằng năm, giảm thiểu thao tác thủ công. Phương án nào phù hợp?",
     opts: ["SSE-C, tự xoay key", "SSE-KMS với customer managed key, bật automatic rotation", "SSE-S3"],
     a: 1,
     why: "Customer managed key với automatic rotation được tự động xoay theo rotation period, mặc định 365 ngày (cấu hình được từ 90 đến 2560 ngày); CloudTrail ghi lại việc sử dụng key." },
-  { q: "Kiểm toán viên tại một AWS account khác cần bản sao RDS DB instance đã mã hoá của ShopViet. Phương án nào đáp ứng yêu cầu?",
+  { q: "Kiểm toán viên tại một AWS account khác cần bản sao RDS DB instance đã mã hoá của MFTech. Phương án nào đáp ứng yêu cầu?",
     opts: ["Share snapshot đã mã hoá và cấp quyền sử dụng KMS key cho account đó", "Tắt mã hoá rồi share", "Export database ra CSV và gửi qua email"],
     a: 0,
     why: "Account nhận cần cả snapshot lẫn quyền giải mã bằng KMS key." },
@@ -191,11 +191,11 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Hai key riêng tại hai Region", "KMS multi-Region key", "SSE-S3"],
     a: 1,
     why: "Multi-Region key có cùng key ID và key material tại nhiều Region." },
-  { q: "Chi phí request tới KMS của ShopViet tăng mạnh trong mùa khuyến mãi. Giải pháp nào giảm chi phí mà vẫn giữ SSE-KMS?",
+  { q: "Chi phí request tới KMS của MFTech tăng mạnh trong mùa khuyến mãi. Giải pháp nào giảm chi phí mà vẫn giữ SSE-KMS?",
     opts: ["Chuyển sang SSE-S3", "Bật S3 Bucket Keys", "Tắt CloudTrail"],
     a: 1,
     why: "S3 Bucket Keys giảm số request tới KMS mà vẫn giữ nguyên SSE-KMS và log. Chuyển sang SSE-S3 sẽ mất audit trail." },
-  { q: "Hoá đơn tại us-east-1 đang mã hoá bằng single-Region key. ShopViet cần dùng cùng một key tại us-west-1 cho bản replicate. Phương án nào khả thi?",
+  { q: "Hoá đơn tại us-east-1 đang mã hoá bằng single-Region key. MFTech cần dùng cùng một key tại us-west-1 cho bản replicate. Phương án nào khả thi?",
     opts: ["Chuyển key hiện tại thành multi-Region key", "Tạo multi-Region key mới, bucket dùng key đó và bật replication, copy dữ liệu hiện có vào", "Chia sẻ key hiện tại sang us-west-1"],
     a: 1,
     why: "Single-Region key không chuyển thành multi-Region được và KMS key không chia sẻ sang Region khác. Dữ liệu phải được mã hoá lại bằng multi-Region key mới." },

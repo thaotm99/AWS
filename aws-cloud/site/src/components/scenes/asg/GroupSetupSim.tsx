@@ -3,7 +3,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./asg-sims.css";
 
-// Building the ShopViet web Auto Scaling group: launch template vs launch configuration,
+// Building the MFTech web Auto Scaling group: launch template vs launch configuration,
 // subnets (AZs of one Region only), and purchase options of a mixed instances group
 // (On-Demand base capacity + On-Demand percentage above base, the rest Spot).
 
@@ -62,7 +62,7 @@ export default function GroupSetupSim() {
         <button className="btn" aria-pressed={!lt} onClick={() => setLt(false)}>{L({ vi: "Launch configuration (cũ)", en: "Launch configuration (legacy)" })}</button>
       </div>
       <p className="sps-about">{lt
-        ? L({ vi: "Launch template lt-shopviet-web, phiên bản 3: AMI của ứng dụng, instance type, key pair, security group, user data. Mỗi lần đổi AMI, tạo phiên bản mới thay vì tạo lại từ đầu.", en: "Launch template lt-shopviet-web, version 3: the application AMI, instance type, key pair, security group, user data. Each AMI change becomes a new version instead of a new resource." })
+        ? L({ vi: "Launch template lt-mftech-web, phiên bản 3: AMI của ứng dụng, instance type, key pair, security group, user data. Mỗi lần đổi AMI, tạo phiên bản mới thay vì tạo lại từ đầu.", en: "Launch template lt-mftech-web, version 3: the application AMI, instance type, key pair, security group, user data. Each AMI change becomes a new version instead of a new resource." })
         : L({ vi: "Launch configuration chứa cùng loại thông tin nhưng không có phiên bản và không sửa được sau khi tạo.", en: "A launch configuration holds the same kind of information, but has no versions and cannot be modified after creation." })}</p>
       <div className="stage-bar">
         <span className="label">Subnets</span>

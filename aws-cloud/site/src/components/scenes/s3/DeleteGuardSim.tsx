@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./s3-sims.css";
 
-// ShopViet keeps invoices in S3 for years. Pick how the bucket is protected and who
+// MFTech keeps invoices in S3 for years. Pick how the bucket is protected and who
 // tries to delete an invoice, then watch which layer stops the request:
 // versioning (delete marker), MFA Delete, Object Lock governance/compliance, legal hold.
 // Source questions: exam1_q20, exam5_q50, exam1_q56, exam4_q64, exam5_q39.
@@ -202,7 +202,7 @@ export default function DeleteGuardSim() {
             </g>
           ))}
           <rect className="s3x-box" x={510} y={30} width={300} height={186} rx={12} />
-          <text className="s3x-m" x={524} y={48}>bucket shopviet-hoadon</text>
+          <text className="s3x-m" x={524} y={48}>bucket mftech-hoadon</text>
           {effect === "marker" && (
             <g className="s3x-node warn s3x-pop">
               <rect x={OBJ[0]} y={66} width={220} height={34} rx={7} />

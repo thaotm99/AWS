@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./dr-strategy-sim.css";
 
-// ShopViet runs in Singapore and keeps a disaster recovery copy in Tokyo. Pick how much
+// MFTech runs in Singapore and keeps a disaster recovery copy in Tokyo. Pick how much
 // the business can lose (a target), pick one of the four DR strategies, then take
 // Singapore down. The Tokyo side comes up step by step while a clock runs; the timeline
 // below shows the data lost before the outage (RPO) and the downtime after it (RTO)
@@ -267,7 +267,7 @@ export default function DrStrategySim() {
 
   return (
     <div className="stage drs">
-      <div className="drs-row" role="group" aria-label={L({ vi: "Mục tiêu của ShopViet", en: "ShopViet objectives" })}>
+      <div className="drs-row" role="group" aria-label={L({ vi: "Mục tiêu của MFTech", en: "MFTech objectives" })}>
         <span className="drs-label">{L({ vi: "Mục tiêu", en: "Objective" })}</span>
         {(Object.keys(TARGETS) as TargetId[]).map((id) => (
           <button key={id} className="chip" aria-pressed={id === target} disabled={busy && id !== target} onClick={() => change(() => { setTarget(id); reset(); })}>
@@ -300,7 +300,7 @@ export default function DrStrategySim() {
           <g className="drs-user">
             <circle cx={USER[0]} cy={USER[1] - 8} r={7} />
             <path d={`M${USER[0] - 13} ${USER[1] + 14} a13 13 0 0 1 26 0 z`} />
-            <text className="drs-t" x={USER[0] + 22} y={USER[1] + 6}>{L({ vi: "Người dùng ShopViet", en: "ShopViet users" })}</text>
+            <text className="drs-t" x={USER[0] + 22} y={USER[1] + 6}>{L({ vi: "Người dùng MFTech", en: "MFTech users" })}</text>
           </g>
           <path className="drs-link" d={`M${USER[0]} ${USER[1] + 16} V${R53[1] - 18}`} />
           <path className={"drs-link" + (phase === "ready" || strat === "multi" ? "" : " off")} d={`M${R53[0] - 60} ${R53[1]} H180 V${ROW - NH / 2}`} />

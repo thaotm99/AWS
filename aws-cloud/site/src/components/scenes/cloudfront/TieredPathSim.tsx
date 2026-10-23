@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./cloudfront-sims.css";
 
-// Path of a ShopViet request through CloudFront: POP (edge location) → regional edge cache → origin.
+// Path of a MFTech request through CloudFront: POP (edge location) → regional edge cache → origin.
 // Facts (AmazonCloudFront/latest/DeveloperGuide):
 // - HowCloudFrontWorks.html: a POP miss typically goes to the nearest regional edge cache (REC), which has a
 //   larger cache; an origin response is cached at both. PUT/POST/PATCH/OPTIONS/DELETE go directly from the POP
@@ -144,7 +144,7 @@ function scenarios(L: Lang): Scenario[] {
           reqs: [{ line: PUT, ok: false, hops: [putPop, SKIP_PROXY,
             { at: "origin", direct: true, state: "bad", msg: L({ vi: "Website endpoint chỉ hỗ trợ **GET và HEAD** trên object, chỉ phục vụ nội dung public và không hỗ trợ HTTPS. CloudFront xem endpoint này là custom origin nên **không dùng được OAC**.", en: "A website endpoint supports only **GET and HEAD** on objects, serves only public content and does not support HTTPS. CloudFront treats it as a custom origin, so **OAC cannot be used**." }) }] }],
           ok: false,
-          result: L({ vi: "Tải lên thất bại. Origin cho luồng tải lên phải là **REST endpoint** của bucket (ví dụ `shopviet-uploads.s3.ap-southeast-1.amazonaws.com`) kèm OAC.", en: "The upload fails. The origin for uploads must be the bucket's **REST endpoint** (for example `shopviet-uploads.s3.ap-southeast-1.amazonaws.com`) with OAC." }),
+          result: L({ vi: "Tải lên thất bại. Origin cho luồng tải lên phải là **REST endpoint** của bucket (ví dụ `mftech-uploads.s3.ap-southeast-1.amazonaws.com`) kèm OAC.", en: "The upload fails. The origin for uploads must be the bucket's **REST endpoint** (for example `mftech-uploads.s3.ap-southeast-1.amazonaws.com`) with OAC." }),
         },
       ],
     },

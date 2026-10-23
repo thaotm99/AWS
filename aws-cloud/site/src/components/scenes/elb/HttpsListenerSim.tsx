@@ -3,9 +3,9 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./elb-sims.css";
 
-// ShopViet serves checkout.shopviet.vn, www.shopviet.vn and shopviet.com.vn/{profile,search} over
+// MFTech serves checkout.mftech.vn, www.mftech.vn and mftech.com.vn/{profile,search} over
 // HTTPS from one ALB. The learner sets three independent things and sees every client's result:
-// - certificates: one certificate, a wildcard *.shopviet.vn (one subdomain level, not the apex,
+// - certificates: one certificate, a wildcard *.mftech.vn (one subdomain level, not the apex,
 //   not another domain), or a certificate list chosen by SNI (https-listener-certificates.html);
 // - an HTTP :80 listener whose default rule redirects to HTTPS (rule-action-types.html);
 // - the security policy: protocols and ciphers only. ELBSecurityPolicy-TLS13-1-2-Res-PQ-2025-09
@@ -17,9 +17,9 @@ type Policy = "res" | "old";
 type Verdict = "ok" | "bad" | "warn";
 
 const CERT_NAMES: Record<Cert, string[]> = {
-  one: ["www.shopviet.vn"],
-  wild: ["*.shopviet.vn"],
-  sni: ["*.shopviet.vn", "shopviet.com.vn"],
+  one: ["www.mftech.vn"],
+  wild: ["*.mftech.vn"],
+  sni: ["*.mftech.vn", "mftech.com.vn"],
 };
 
 // "*.d" covers exactly one extra label in front of d; it does not cover d itself.
@@ -35,12 +35,12 @@ const covers = (names: string[], host: string) =>
 interface Client { url: string; host: string; who: Bi; tls: "1.3" | "1.0"; http?: boolean }
 
 const CLIENTS: Client[] = [
-  { url: "https://checkout.shopviet.vn/", host: "checkout.shopviet.vn", who: { vi: "Trình duyệt (TLS 1.3)", en: "Browser (TLS 1.3)" }, tls: "1.3" },
-  { url: "https://www.shopviet.vn/", host: "www.shopviet.vn", who: { vi: "Trình duyệt (TLS 1.3)", en: "Browser (TLS 1.3)" }, tls: "1.3" },
-  { url: "https://shopviet.com.vn/profile", host: "shopviet.com.vn", who: { vi: "Trình duyệt (TLS 1.3)", en: "Browser (TLS 1.3)" }, tls: "1.3" },
-  { url: "https://shopviet.com.vn/search", host: "shopviet.com.vn", who: { vi: "Trình duyệt (TLS 1.3)", en: "Browser (TLS 1.3)" }, tls: "1.3" },
-  { url: "http://www.shopviet.vn/", host: "www.shopviet.vn", who: { vi: "Người dùng gõ http://", en: "User types http://" }, tls: "1.3", http: true },
-  { url: "https://checkout.shopviet.vn/", host: "checkout.shopviet.vn", who: { vi: "Máy POS cũ (chỉ TLS 1.0)", en: "Old POS terminal (TLS 1.0 only)" }, tls: "1.0" },
+  { url: "https://checkout.mftech.vn/", host: "checkout.mftech.vn", who: { vi: "Trình duyệt (TLS 1.3)", en: "Browser (TLS 1.3)" }, tls: "1.3" },
+  { url: "https://www.mftech.vn/", host: "www.mftech.vn", who: { vi: "Trình duyệt (TLS 1.3)", en: "Browser (TLS 1.3)" }, tls: "1.3" },
+  { url: "https://mftech.com.vn/profile", host: "mftech.com.vn", who: { vi: "Trình duyệt (TLS 1.3)", en: "Browser (TLS 1.3)" }, tls: "1.3" },
+  { url: "https://mftech.com.vn/search", host: "mftech.com.vn", who: { vi: "Trình duyệt (TLS 1.3)", en: "Browser (TLS 1.3)" }, tls: "1.3" },
+  { url: "http://www.mftech.vn/", host: "www.mftech.vn", who: { vi: "Người dùng gõ http://", en: "User types http://" }, tls: "1.3", http: true },
+  { url: "https://checkout.mftech.vn/", host: "checkout.mftech.vn", who: { vi: "Máy POS cũ (chỉ TLS 1.0)", en: "Old POS terminal (TLS 1.0 only)" }, tls: "1.0" },
 ];
 
 function judge(c: Client, cert: Cert, redirect: boolean, policy: Policy): { v: Verdict; label: Bi; why: Bi } {
@@ -50,7 +50,7 @@ function judge(c: Client, cert: Cert, redirect: boolean, policy: Policy): { v: V
   }
   const names = CERT_NAMES[cert];
   const prefix: Bi = c.http
-    ? { vi: "Listener :80 trả về redirect 301 sang `https://www.shopviet.vn/`. ", en: "The :80 listener returns a 301 redirect to `https://www.shopviet.vn/`. " }
+    ? { vi: "Listener :80 trả về redirect 301 sang `https://www.mftech.vn/`. ", en: "The :80 listener returns a 301 redirect to `https://www.mftech.vn/`. " }
     : { vi: "", en: "" };
   if (policy === "res" && c.tls === "1.0") {
     return { v: "bad", label: { vi: "Handshake thất bại", en: "Handshake fails" },
@@ -58,8 +58,8 @@ function judge(c: Client, cert: Cert, redirect: boolean, policy: Policy): { v: V
   }
   if (!covers(names, c.host)) {
     const why: Bi = cert === "wild"
-      ? { vi: `Wildcard \`*.shopviet.vn\` chỉ bảo vệ một cấp subdomain của shopviet.vn; \`${c.host}\` là tên miền khác nên trình duyệt báo lỗi chứng chỉ.`, en: `The wildcard \`*.shopviet.vn\` protects only one subdomain level of shopviet.vn; \`${c.host}\` is a different domain, so the browser shows a certificate error.` }
-      : { vi: `Không chứng chỉ nào khớp \`${c.host}\`; ALB trả về default certificate \`www.shopviet.vn\` và trình duyệt báo lỗi chứng chỉ.`, en: `No certificate matches \`${c.host}\`; the ALB presents the default certificate \`www.shopviet.vn\` and the browser shows a certificate error.` };
+      ? { vi: `Wildcard \`*.mftech.vn\` chỉ bảo vệ một cấp subdomain của mftech.vn; \`${c.host}\` là tên miền khác nên trình duyệt báo lỗi chứng chỉ.`, en: `The wildcard \`*.mftech.vn\` protects only one subdomain level of mftech.vn; \`${c.host}\` is a different domain, so the browser shows a certificate error.` }
+      : { vi: `Không chứng chỉ nào khớp \`${c.host}\`; ALB trả về default certificate \`www.mftech.vn\` và trình duyệt báo lỗi chứng chỉ.`, en: `No certificate matches \`${c.host}\`; the ALB presents the default certificate \`www.mftech.vn\` and the browser shows a certificate error.` };
     return { v: "bad", label: { vi: "Lỗi chứng chỉ", en: "Certificate error" }, why: { vi: prefix.vi + why.vi, en: prefix.en + why.en } };
   }
   const match = names.find((n) => covers([n], c.host))!;
@@ -87,11 +87,11 @@ export default function HttpsListenerSim() {
 
   return (
     <div className="stage elbx">
-      <p className="elbx-goal">{rich(L({ vi: "Yêu cầu: mọi URL của ShopViet chạy HTTPS trên **một** ALB, với cấu hình tối thiểu.", en: "Requirement: every ShopViet URL runs over HTTPS on **one** ALB, with minimal configuration." }))}</p>
+      <p className="elbx-goal">{rich(L({ vi: "Yêu cầu: mọi URL của MFTech chạy HTTPS trên **một** ALB, với cấu hình tối thiểu.", en: "Requirement: every MFTech URL runs over HTTPS on **one** ALB, with minimal configuration." }))}</p>
       <div className="elbx-row" role="group" aria-label={L({ vi: "Chứng chỉ trên listener HTTPS", en: "Certificates on the HTTPS listener" })}>
         <span className="elbx-lbl">{L({ vi: "Chứng chỉ", en: "Certificates" })}</span>
-        <button className="chip" aria-pressed={cert === "one"} onClick={() => setCert("one")}>www.shopviet.vn</button>
-        <button className="chip" aria-pressed={cert === "wild"} onClick={() => setCert("wild")}>{L({ vi: "Wildcard *.shopviet.vn", en: "Wildcard *.shopviet.vn" })}</button>
+        <button className="chip" aria-pressed={cert === "one"} onClick={() => setCert("one")}>www.mftech.vn</button>
+        <button className="chip" aria-pressed={cert === "wild"} onClick={() => setCert("wild")}>{L({ vi: "Wildcard *.mftech.vn", en: "Wildcard *.mftech.vn" })}</button>
         <button className="chip" aria-pressed={cert === "sni"} onClick={() => setCert("sni")}>{L({ vi: "Certificate list + SNI", en: "Certificate list + SNI" })}</button>
       </div>
       <div className="elbx-row" role="group" aria-label={L({ vi: "Listener HTTP", en: "HTTP listener" })}>

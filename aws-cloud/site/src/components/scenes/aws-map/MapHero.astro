@@ -1,5 +1,5 @@
 ---
-// Lesson 0 opening visual: the six service groups orbiting ShopViet. CSS-only motion (aws-map.css).
+// Lesson 0 opening visual: the six service groups orbiting MFTech. CSS-only motion (aws-map.css).
 import "./aws-map.css";
 import L from "../../L.astro";
 import { lessonRoute } from "../../../data/lesson-parts";
@@ -25,13 +25,13 @@ const GROUPS = [
   <div>
     <span class="am-hero-eyebrow"><L vi="LỚP 0 · BẮT ĐẦU" en="LAYER 0 · START HERE" /></span>
     <h2><L vi="Bản đồ AWS cho người mới" en="An AWS map for newcomers" /></h2>
-    <p><L vi="Nhìn toàn cảnh trước khi đi vào từng dịch vụ: cloud khác gì tự vận hành máy chủ, mỗi nhóm dịch vụ làm gì, và một đơn hàng của ShopViet đi qua những đâu." en="See the whole picture before the individual services: how cloud differs from running your own servers, what each group of services does, and where one ShopViet order travels." /></p>
+    <p><L vi="Nhìn toàn cảnh trước khi đi vào từng dịch vụ: cloud khác gì tự vận hành máy chủ, mỗi nhóm dịch vụ làm gì, và một đơn hàng của MFTech đi qua những đâu." en="See the whole picture before the individual services: how cloud differs from running your own servers, what each group of services does, and where one MFTech order travels." /></p>
   </div>
-  <div class="am-orbit" role="img" aria-label="Sáu nhóm dịch vụ AWS quanh hệ thống ShopViet" data-i18n-attr="aria-label:lesson.awsMap.heroLabel">
+  <div class="am-orbit" role="img" aria-label="Sáu nhóm dịch vụ AWS quanh hệ thống MFTech" data-i18n-attr="aria-label:lesson.awsMap.heroLabel">
     <span class="am-orbit-ring"></span>
     {GROUPS.map((g) => <span class="am-spoke" style={`--a:${g.a}deg; --c:${g.c}; --d:${g.d}s`}><i></i></span>)}
     <span class="am-sat"></span>
-    <span class="am-core">ShopViet</span>
+    <span class="am-core">MFTech</span>
     {GROUPS.map((g) => (
       <span class="am-orb" style={`left:${g.x.toFixed(1)}%; top:${g.y.toFixed(1)}%; --c:${g.c}; --d:${g.d}s; --f:${g.f}s`}><L vi={g.vi} en={g.en} /></span>
     ))}

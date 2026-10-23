@@ -4,7 +4,7 @@ import { useLang } from "../../lib/lang";
 
 type Lang = ReturnType<typeof useLang>;
 
-// Three places where ShopViet pays for data transfer, each with a cheaper layout.
+// Three places where MFTech pays for data transfer, each with a cheaper layout.
 type Node = { x: number; y: number; w: number; label: string; sub?: string; kind: "db" | "ec2" | "net" | "store" | "site" };
 type Flow = { d: string; paid: boolean; heavy?: boolean; label: string; lx: number; ly: number };
 type Option = { name: string; verdict: "cheap" | "costly"; flows: Flow[]; hide?: string[]; text: ReactNode };
@@ -95,8 +95,8 @@ const patterns = (L: Lang): Pattern[] => [
           { d: "M180 132 H280", paid: false, heavy: true, label: L({ vi: "lưu lượng nằm trong AWS", en: "stays in AWS" }), lx: 230, ly: 122 },
           { d: "M430 150 C 480 212, 540 212, 580 182", paid: true, label: L({ vi: "trang kết quả qua internet", en: "result pages over the internet" }), lx: 505, ly: 222 },
         ],
-        text: L({ vi: <>Lượng dữ liệu truyền ra vẫn chỉ là các trang kết quả nhỏ, nhưng đi qua internet nên được tính theo <b>đơn giá data transfer out ra internet</b> của EC2, cao hơn đơn giá Direct Connect data transfer. Khi ShopViet đã có Direct Connect, truy cập công cụ qua Direct Connect cho chi phí data transfer out thấp nhất.</>,
-          en: <>The outbound volume is still only small result pages, but it crosses the internet, so it is billed at the EC2 <b>data transfer out to the internet</b> rate, which is higher than the Direct Connect data transfer rate. When ShopViet already has Direct Connect, reaching the tool over Direct Connect gives the lowest data transfer out cost.</> }) },
+        text: L({ vi: <>Lượng dữ liệu truyền ra vẫn chỉ là các trang kết quả nhỏ, nhưng đi qua internet nên được tính theo <b>đơn giá data transfer out ra internet</b> của EC2, cao hơn đơn giá Direct Connect data transfer. Khi MFTech đã có Direct Connect, truy cập công cụ qua Direct Connect cho chi phí data transfer out thấp nhất.</>,
+          en: <>The outbound volume is still only small result pages, but it crosses the internet, so it is billed at the EC2 <b>data transfer out to the internet</b> rate, which is higher than the Direct Connect data transfer rate. When MFTech already has Direct Connect, reaching the tool over Direct Connect gives the lowest data transfer out cost.</> }) },
     ],
   },
 ];

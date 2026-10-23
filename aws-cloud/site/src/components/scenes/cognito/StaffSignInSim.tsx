@@ -1,7 +1,7 @@
 import HopSim, { type HopScenario } from "../security/HopSim";
 import { useLang } from "../../../lib/lang";
 
-// How ShopViet staff and partners sign in: IAM Identity Center with permission sets,
+// How MFTech staff and partners sign in: IAM Identity Center with permission sets,
 // AD Connector, AWS Managed Microsoft AD, FSx for Windows File Server joined to AD,
 // and Transfer Family with a custom identity provider.
 // Practice-test sources (build-time only): exam6_q10, exam4_q4, exam1_q10, exam3_q28, exam6_q44, exam3_q5, exam2_q4.
@@ -9,12 +9,12 @@ import { useLang } from "../../../lib/lang";
 type Lang = ReturnType<typeof useLang>;
 
 const scenarios = (L: Lang): HopScenario[] => {
-  const ONPREM = { x: 20, y: 150, w: 210, h: 92, label: L({ vi: "Văn phòng ShopViet", en: "ShopViet office" }), tone: "onprem" as const };
+  const ONPREM = { x: 20, y: 150, w: 210, h: 92, label: L({ vi: "Văn phòng MFTech", en: "MFTech office" }), tone: "onprem" as const };
   return [
   {
     name: L({ vi: "Truy cập nhiều AWS account", en: "Access to multiple AWS accounts" }),
-    story: L({ vi: "Nhân viên Lan thuộc nhóm Kho cần truy cập tài nguyên tại account **Kho hàng** và **Báo cáo**, nhưng không được truy cập account **Thanh toán**. ShopViet có 40 nhân viên với yêu cầu tương tự.",
-      en: "Lan, an employee in the Warehouse group, needs access to resources in the **Warehouse** and **Reporting** accounts, but must not access the **Payments** account. ShopViet has 40 employees with similar requirements." }),
+    story: L({ vi: "Nhân viên Lan thuộc nhóm Kho cần truy cập tài nguyên tại account **Kho hàng** và **Báo cáo**, nhưng không được truy cập account **Thanh toán**. MFTech có 40 nhân viên với yêu cầu tương tự.",
+      en: "Lan, an employee in the Warehouse group, needs access to resources in the **Warehouse** and **Reporting** accounts, but must not access the **Payments** account. MFTech has 40 employees with similar requirements." }),
     request: L({ vi: "Lan đăng nhập AWS", en: "Lan signs in to AWS" }),
     toggle: { label: L({ vi: "Sử dụng IAM Identity Center", en: "Use IAM Identity Center" }), initial: false },
     start: "lan",
@@ -45,7 +45,7 @@ const scenarios = (L: Lang): HopScenario[] => {
     name: L({ vi: "Tái sử dụng danh tính trong Active Directory", en: "Reuse Active Directory identities" }),
     story: L({ vi: "Nhân viên đã là user trong Active Directory on-premises. Yêu cầu: sử dụng chính thông tin đăng nhập AD đó để truy cập AWS và **không lưu trữ dữ liệu thư mục trên AWS**.",
       en: "Employees are already users in the on-premises Active Directory. Requirement: use those same AD credentials to access AWS and **store no directory data on AWS**." }),
-    request: L({ vi: "Đăng nhập bằng lan@shopviet.local", en: "Sign in as lan@shopviet.local" }),
+    request: L({ vi: "Đăng nhập bằng lan@mftech.local", en: "Sign in as lan@mftech.local" }),
     toggle: { label: L({ vi: "Sử dụng AD Connector (tắt: tạo lại user trên AWS)", en: "Use AD Connector (off: recreate users on AWS)" }), initial: false },
     start: "lan",
     boxes: [ONPREM],
@@ -77,7 +77,7 @@ const scenarios = (L: Lang): HopScenario[] => {
     name: L({ vi: "Ứng dụng kế toán cần AD trên AWS", en: "Accounting app needs AD on AWS" }),
     story: L({ vi: "Ứng dụng kế toán chạy trên EC2 instance Windows, phải **join domain** và xác thực Kerberos trên AWS. Domain mới cần thiết lập **trust** với AD on-premises.",
       en: "The accounting application runs on a Windows EC2 instance and must **join a domain** and use Kerberos authentication on AWS. The new domain needs a **trust** with the on-premises AD." }),
-    request: L({ vi: "EC2 instance join domain corp.shopviet", en: "EC2 instance joins domain corp.shopviet" }),
+    request: L({ vi: "EC2 instance join domain corp.mftech", en: "EC2 instance joins domain corp.mftech" }),
     toggle: { label: L({ vi: "AWS Managed Microsoft AD (tắt: AD Connector)", en: "AWS Managed Microsoft AD (off: AD Connector)" }), initial: false },
     start: "app",
     boxes: [ONPREM],
@@ -129,8 +129,8 @@ const scenarios = (L: Lang): HopScenario[] => {
   },
   {
     name: L({ vi: "Đối tác truyền tệp qua SFTP", en: "Partner file transfer over SFTP" }),
-    story: L({ vi: "Nhà cung cấp gửi bảng giá cho ShopViet qua SFTP hằng đêm. Tệp phải được lưu vào S3; xác thực được thực hiện bởi **identity provider riêng** của ShopViet.",
-      en: "A supplier sends ShopViet a price list over SFTP every night. The files must be stored in S3; authentication is handled by ShopViet's **own identity provider**." }),
+    story: L({ vi: "Nhà cung cấp gửi bảng giá cho MFTech qua SFTP hằng đêm. Tệp phải được lưu vào S3; xác thực được thực hiện bởi **identity provider riêng** của MFTech.",
+      en: "A supplier sends MFTech a price list over SFTP every night. The files must be stored in S3; authentication is handled by MFTech's **own identity provider**." }),
     request: "sftp> put bang-gia.csv",
     toggle: { label: "Transfer Family + custom identity provider", initial: false },
     start: "ptn",
@@ -145,7 +145,7 @@ const scenarios = (L: Lang): HopScenario[] => {
     run: (on) => on
       ? { hops: [
           { to: "tf", state: "pass", tag: "SFTP", msg: L({ vi: "Đối tác tiếp tục sử dụng SFTP client hiện có.", en: "The partner keeps using its existing SFTP client." }) },
-          { to: "idp", state: "change", tag: L({ vi: "XÁC THỰC", en: "AUTHN" }), msg: L({ vi: "Transfer Family gọi Lambda function (có thể qua API Gateway); Lambda xác thực tên đăng nhập và mật khẩu tại identity provider của ShopViet.", en: "Transfer Family invokes a Lambda function (optionally through API Gateway); Lambda verifies the user name and password against ShopViet's identity provider." }) },
+          { to: "idp", state: "change", tag: L({ vi: "XÁC THỰC", en: "AUTHN" }), msg: L({ vi: "Transfer Family gọi Lambda function (có thể qua API Gateway); Lambda xác thực tên đăng nhập và mật khẩu tại identity provider của MFTech.", en: "Transfer Family invokes a Lambda function (optionally through API Gateway); Lambda verifies the user name and password against MFTech's identity provider." }) },
           { from: "tf", to: "s3", state: "pass", tag: L({ vi: "GHI", en: "WRITE" }), msg: L({ vi: "Tệp được ghi vào S3 bằng quyền của một IAM role.", en: "The file is written to S3 with the permissions of an IAM role." }) },
         ], ok: true, result: L({ vi: "Transfer Family đảm nhận giao thức SFTP; danh tính được quản lý tại IdP riêng (ví dụ Amazon Cognito), tích hợp qua Lambda function; quyền ghi S3 được định nghĩa trong IAM role.",
           en: "Transfer Family handles the SFTP protocol; identities are managed in your own IdP (for example Amazon Cognito), integrated through a Lambda function; S3 write permissions are defined in an IAM role." }) }
@@ -161,6 +161,6 @@ const scenarios = (L: Lang): HopScenario[] => {
 export default function StaffSignInSim() {
   const L = useLang();
   return <HopSim scenarios={scenarios(L)} action={L({ vi: "Đăng nhập", en: "Sign in" })} height={250}
-    label={L({ vi: "Nhân viên và đối tác của ShopViet đăng nhập qua IAM Identity Center, Active Directory hoặc Transfer Family",
-      en: "ShopViet employees and partners sign in through IAM Identity Center, Active Directory or Transfer Family" })} />;
+    label={L({ vi: "Nhân viên và đối tác của MFTech đăng nhập qua IAM Identity Center, Active Directory hoặc Transfer Family",
+      en: "MFTech employees and partners sign in through IAM Identity Center, Active Directory or Transfer Family" })} />;
 }

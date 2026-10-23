@@ -5,7 +5,7 @@ import { useLang, type Bi } from "../../../lib/lang";
 
 type Lang = ReturnType<typeof useLang>;
 
-// One request of ShopViet walks through the checks CloudFront runs at the edge,
+// One request of MFTech walks through the checks CloudFront runs at the edge,
 // then reaches an origin. Each scenario turns on the feature that solves one real
 // problem: HTTPS certificate, WAF, geo restriction, signed cookies, field-level
 // encryption, cache behaviors and origin-group failover.
@@ -50,7 +50,7 @@ interface Scenario {
 }
 
 function scenarios(L: Lang): Scenario[] {
-const PASS_TLS = { state: "pass" as const, msg: L({ vi: "TLS termination bằng chứng chỉ ACM của **shopviet.vn** (us-east-1).", en: "TLS termination with the ACM certificate for **shopviet.vn** (us-east-1)." }) };
+const PASS_TLS = { state: "pass" as const, msg: L({ vi: "TLS termination bằng chứng chỉ ACM của **mftech.vn** (us-east-1).", en: "TLS termination with the ACM certificate for **mftech.vn** (us-east-1)." }) };
 const PASS_WAF = { state: "pass" as const, msg: L({ vi: "Request không khớp rule chặn nào trong web ACL.", en: "The request matches no blocking rule in the web ACL." }) };
 const PASS_GEO = { state: "pass" as const, msg: L({ vi: "Quốc gia nguồn (VN) thuộc allow list.", en: "The source country (VN) is on the allow list." }) };
 const OPEN = { state: "skip" as const, msg: L({ vi: "Nội dung công khai, không yêu cầu chữ ký.", en: "Public content, no signature required." }) };
@@ -133,7 +133,7 @@ return [
   },
   {
     name: L({ vi: "Tên miền tuỳ chỉnh", en: "Custom domain name" }),
-    request: "GET https://shopviet.vn/",
+    request: "GET https://mftech.vn/",
     from: L({ vi: "Việt Nam", en: "Vietnam" }),
     toggle: { label: L({ vi: "Chứng chỉ ACM tạo tại us-east-1", en: "ACM certificate created in us-east-1" }), initial: false },
     run: (on) => on

@@ -3,7 +3,7 @@ import CaseSim, { type CaseBox, type CaseLink, type CaseNode, type CaseScenario 
 
 type Lang = ReturnType<typeof useLang>;
 
-// ShopViet now runs several AWS accounts in one Organization. Each situation is a
+// MFTech now runs several AWS accounts in one Organization. Each situation is a
 // governance problem; pick a tool and watch what happens: SCP, tag policy,
 // Budgets actions, IAM Access Analyzer, StackSets, Control Tower.
 
@@ -102,9 +102,9 @@ return [
     nodes: [
       { id: "sec", x: 20, y: 97, w: 80, l1: L({ vi: "Đội bảo mật", en: "Security team" }), user: true },
       { id: "aa", x: 190, y: 97, w: 180, l1: "IAM Access Analyzer", l2: "zone of trust: Organization" },
-      { id: "b1", x: 470, y: 20, w: 170, l1: "shopviet-images" },
-      { id: "b2", x: 470, y: 97, w: 170, l1: "shopviet-reports" },
-      { id: "b3", x: 470, y: 174, w: 170, l1: "shopviet-backup" },
+      { id: "b1", x: 470, y: 20, w: 170, l1: "mftech-images" },
+      { id: "b2", x: 470, y: 97, w: 170, l1: "mftech-reports" },
+      { id: "b3", x: 470, y: 174, w: 170, l1: "mftech-backup" },
       { id: "ext", x: 690, y: 97, w: 110, l1: L({ vi: "Account bên ngoài", en: "External account" }), l2: L({ vi: "ngoài Organization", en: "outside the organization" }) },
     ],
     links: [
@@ -118,7 +118,7 @@ return [
             { at: "b1", state: "skip", tag: L({ vi: "THỦ CÔNG", en: "MANUAL" }), msg: L({ vi: "Mở policy và đọc từng statement.", en: "Open the policy and read each statement." }) },
             { at: "b3", state: "skip", tag: L({ vi: "THỦ CÔNG", en: "MANUAL" }), msg: L({ vi: "Còn 297 bucket, chưa kể KMS key, IAM role, Lambda…", en: "297 buckets left, not counting KMS keys, IAM roles, Lambda…" }) },
           ],
-          ok: false, result: L({ vi: "Tốn thời gian và dễ bỏ sót. Bucket shopviet-reports vẫn đang chia sẻ cho account bên ngoài mà chưa được phát hiện.", en: "Time-consuming and easy to miss things. The shopviet-reports bucket is still shared with an external account and has not been found." }) }
+          ok: false, result: L({ vi: "Tốn thời gian và dễ bỏ sót. Bucket mftech-reports vẫn đang chia sẻ cho account bên ngoài mà chưa được phát hiện.", en: "Time-consuming and easy to miss things. The mftech-reports bucket is still shared with an external account and has not been found." }) }
       : { steps: [
             { at: "aa", state: "pass", msg: L({ vi: "Phân tích mọi resource policy với zone of trust là toàn bộ Organization.", en: "Analyzes every resource policy, with the whole organization as the zone of trust." }) },
             { at: "b2", state: "change", tag: "FINDING", msg: L({ vi: "Bucket policy cấp quyền đọc cho một account **ngoài Organization**.", en: "The bucket policy grants read access to an account **outside the organization**." }) },
@@ -182,5 +182,5 @@ return [
 
 export default function OrgGuardSim() {
   const L = useLang();
-  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Quản lý nhiều AWS account của ShopViet bằng AWS Organizations", en: "Managing ShopViet's AWS accounts with AWS Organizations" })} action={L({ vi: "Chạy mô phỏng", en: "Run simulation" })} />;
+  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Quản lý nhiều AWS account của MFTech bằng AWS Organizations", en: "Managing MFTech's AWS accounts with AWS Organizations" })} action={L({ vi: "Chạy mô phỏng", en: "Run simulation" })} />;
 }

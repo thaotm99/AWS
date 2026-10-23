@@ -28,7 +28,7 @@ const T = {
   allKnown: { vi: "Bạn đã hiểu mọi từ khóa của phần này", en: "You know every key term in this section" },
   review: { vi: "Xem lại", en: "Review" },
   more: { vi: "Xem thêm", en: "Show more" },
-  example: { vi: "Ở ShopViet:", en: "At ShopViet:" },
+  example: { vi: "Ở MFTech:", en: "At MFTech:" },
   learn: { vi: "Học kỹ ở bài", en: "Covered in" },
   glossary: { vi: "Mở trong trang Thuật ngữ", en: "Open in the glossary" },
   docs: { vi: "Tài liệu AWS", en: "AWS documentation" },

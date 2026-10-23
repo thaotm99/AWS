@@ -99,7 +99,7 @@ export default function WafSim() {
           ))}
           <rect className={where === "ec2" ? "waf-gate off" : "waf-gate"} x={WAF_X - 14} y={20} width={28} height={290} rx={8} />
           <text className="edge-t" x={WAF_X} y={14} textAnchor="middle">{where === "ec2" ? L({ vi: "WAF (không gắn được)", en: "WAF (cannot attach)" }) : L({ vi: `AWS WAF trên ${where === "alb" ? "ALB" : "CloudFront"}`, en: `AWS WAF on ${where === "alb" ? "ALB" : "CloudFront"}` })}</text>
-          <g className="res res-ec2"><rect x={APP[0] - 60} y={APP[1] - 24} width={120} height={48} rx={8} /><text className="res-t" x={APP[0]} y={APP[1] - 3} textAnchor="middle">ShopViet</text><text className="res-s" x={APP[0]} y={APP[1] + 13} textAnchor="middle">EC2</text></g>
+          <g className="res res-ec2"><rect x={APP[0] - 60} y={APP[1] - 24} width={120} height={48} rx={8} /><text className="res-t" x={APP[0]} y={APP[1] - 3} textAnchor="middle">MFTech</text><text className="res-s" x={APP[0]} y={APP[1] + 13} textAnchor="middle">EC2</text></g>
           <g ref={pk} />
         </svg>
       </div>

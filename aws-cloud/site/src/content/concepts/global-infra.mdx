@@ -101,14 +101,14 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s6", label: "7 · Chi phí data transfer" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-**ShopViet** là hệ thống thương mại điện tử phục vụ người dùng tại nhiều quốc gia. Mỗi phần dưới đây tương ứng với một quyết định thiết kế hạ tầng; các mô phỏng cho phép thử từng phương án và quan sát phương án nào hoạt động đúng, phương án nào dẫn tới sự cố.
+**MFTech** là hệ thống thương mại điện tử phục vụ người dùng tại nhiều quốc gia. Mỗi phần dưới đây tương ứng với một quyết định thiết kế hạ tầng; các mô phỏng cho phép thử từng phương án và quan sát phương án nào hoạt động đúng, phương án nào dẫn tới sự cố.
 </Story>
 
 <Scene id="s1" label="Phần 1/7" title="Phạm vi Region: tài nguyên không tự động khả dụng tại Region khác" questions={["exam1_q41", "exam4_q5"]}>
 
 <p class="scene-intro">AWS đặt data center ở nhiều nơi trên thế giới và gom chúng thành từng Region; tài nguyên tạo ở Region nào thì chỉ nằm ở Region đó, không tự xuất hiện ở Region khác.</p>
 
-**Region** là một khu vực địa lý độc lập, ví dụ Singapore hoặc Tokyo. Nhiều tài nguyên như **AMI** và **EBS snapshot** chỉ tồn tại trong Region nơi chúng được tạo. ShopViet cần chuẩn bị phương án khôi phục tại Tokyo. Thực hiện lần lượt từng bước, hoặc thử launch trực tiếp tại Tokyo để quan sát kết quả.
+**Region** là một khu vực địa lý độc lập, ví dụ Singapore hoặc Tokyo. Nhiều tài nguyên như **AMI** và **EBS snapshot** chỉ tồn tại trong Region nơi chúng được tạo. MFTech cần chuẩn bị phương án khôi phục tại Tokyo. Thực hiện lần lượt từng bước, hoặc thử launch trực tiếp tại Tokyo để quan sát kết quả.
 
 <AmiCopySim client:visible />
 
@@ -120,7 +120,7 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 
 <p class="scene-intro">Mỗi loại tài nguyên AWS có một phạm vi tồn tại: có loại chỉ nằm trong một AZ, có loại thuộc cả Region, có loại dùng chung toàn cầu. Phạm vi này quyết định tài nguyên còn dùng được hay không khi một AZ gặp sự cố.</p>
 
-Một Region gồm nhiều **Availability Zone (AZ)**: các data center độc lập về nguồn điện và mạng, kết nối với nhau bằng mạng riêng có độ trễ thấp. Phạm vi của tài nguyên quyết định mức độ chịu lỗi của tài nguyên đó. Chọn từng tài nguyên của ShopViet để xem phạm vi tương ứng.
+Một Region gồm nhiều **Availability Zone (AZ)**: các data center độc lập về nguồn điện và mạng, kết nối với nhau bằng mạng riêng có độ trễ thấp. Phạm vi của tài nguyên quyết định mức độ chịu lỗi của tài nguyên đó. Chọn từng tài nguyên của MFTech để xem phạm vi tương ứng.
 
 <ScopeExplorer client:visible />
 
@@ -132,7 +132,7 @@ Một Region gồm nhiều **Availability Zone (AZ)**: các data center độc l
 
 <p class="scene-intro">Khi mọi EC2 instance của một ứng dụng nằm trong cùng một AZ, sự cố tại AZ đó làm toàn bộ ứng dụng ngừng hoạt động; phân bổ instance trên nhiều AZ loại bỏ rủi ro này.</p>
 
-ShopViet vận hành 2 EC2 instance chạy web server, đăng ký làm target của một load balancer. Mỗi chấm biểu diễn một request của người dùng. Chọn cách bố trí instance, sau đó tạo sự cố để quan sát ảnh hưởng.
+MFTech vận hành 2 EC2 instance chạy web server, đăng ký làm target của một load balancer. Mỗi chấm biểu diễn một request của người dùng. Chọn cách bố trí instance, sau đó tạo sự cố để quan sát ảnh hưởng.
 
 <AzFailureSim client:visible />
 
@@ -144,7 +144,7 @@ ShopViet vận hành 2 EC2 instance chạy web server, đăng ký làm target c�
 
 <p class="scene-intro">Người dùng ở xa origin chịu độ trễ cao hơn vì dữ liệu đi qua quãng đường dài; AWS rút ngắn quãng đường này bằng các point of presence đặt gần người dùng, gọi là edge location.</p>
 
-**Edge location** là các point of presence (điểm hiện diện) của AWS đặt gần người dùng, với số lượng lớn hơn nhiều so với số Region. **CloudFront** cache nội dung tại các điểm này; origin có thể là S3 bucket, ALB hoặc HTTP server on-premises (custom origin). Ảnh sản phẩm của ShopViet được lưu tại S3 Singapore. Truy xuất ảnh hai lần để so sánh kết quả.
+**Edge location** là các point of presence (điểm hiện diện) của AWS đặt gần người dùng, với số lượng lớn hơn nhiều so với số Region. **CloudFront** cache nội dung tại các điểm này; origin có thể là S3 bucket, ALB hoặc HTTP server on-premises (custom origin). Ảnh sản phẩm của MFTech được lưu tại S3 Singapore. Truy xuất ảnh hai lần để so sánh kết quả.
 
 <EdgeCacheDemo client:visible />
 
@@ -162,7 +162,7 @@ ShopViet vận hành 2 EC2 instance chạy web server, đăng ký làm target c�
 
 <GlobalAcceleratorSim client:visible />
 
-Ba dịch vụ cùng sử dụng edge location nhưng giải quyết ba bài toán khác nhau. Chọn một tình huống của ShopViet, lần lượt áp dụng từng dịch vụ và nhấn **Gửi traffic** để xác định dịch vụ đáp ứng yêu cầu.
+Ba dịch vụ cùng sử dụng edge location nhưng giải quyết ba bài toán khác nhau. Chọn một tình huống của MFTech, lần lượt áp dụng từng dịch vụ và nhấn **Gửi traffic** để xác định dịch vụ đáp ứng yêu cầu.
 
 <EdgeChoiceSim client:visible />
 
@@ -174,7 +174,7 @@ Ba dịch vụ cùng sử dụng edge location nhưng giải quyết ba bài to�
 
 <p class="scene-intro">Khi phát hành phiên bản mới, có thể chạy song song bản cũ (blue) và bản mới (green) rồi chuyển dần traffic sang bản mới; cách chuyển traffic quyết định tốc độ chuyển đổi và khả năng quay lại.</p>
 
-Hai ngày trước đợt khuyến mãi lớn, ShopViet cần thử phiên bản mới (green) của ứng dụng toàn cầu trên càng nhiều người dùng càng tốt, trong khi phần lớn người dùng truy cập bằng điện thoại. Phiên bản hiện tại (blue) và green chạy song song. Có hai cơ chế chuyển một phần traffic sang green:
+Hai ngày trước đợt khuyến mãi lớn, MFTech cần thử phiên bản mới (green) của ứng dụng toàn cầu trên càng nhiều người dùng càng tốt, trong khi phần lớn người dùng truy cập bằng điện thoại. Phiên bản hiện tại (blue) và green chạy song song. Có hai cơ chế chuyển một phần traffic sang green:
 
 - **Route 53 weighted routing**: Route 53 trả lời truy vấn DNS theo trọng số của các record. Thay đổi chỉ tới được một thiết bị khi câu trả lời DNS trong cache của thiết bị hoặc resolver hết hạn; một số thiết bị và resolver giữ cache trong thời gian dài, nên không xác định được khi nào mọi người dùng nhận địa chỉ mới.
 - **Global Accelerator**: người dùng luôn kết nối tới 2 địa chỉ IP anycast tĩnh. **Endpoint weight** (0–255, mặc định 128) quyết định tỷ lệ traffic giữa các endpoint trong một endpoint group; weight bằng 0 dừng gửi traffic tới endpoint đó. **Traffic dial** (0–100%, mặc định 100%) quyết định tỷ lệ traffic tới cả một endpoint group (một Region) và chỉ áp dụng cho kết nối mới. Thay đổi weight và traffic dial có hiệu lực trong vài giây, không phụ thuộc DNS cache.
@@ -191,7 +191,7 @@ Chọn cơ chế, đặt tỷ lệ chuyển sang green và áp dụng thay đổ
 
 <p class="scene-intro">AWS tính phí không chỉ cho compute và storage mà cả cho dữ liệu di chuyển giữa các AZ, các Region và ra internet; luồng dữ liệu thiết kế chưa hợp lý có thể làm chi phí tăng đáng kể.</p>
 
-Chi phí AWS của ShopViet tăng thường không do đơn giá dịch vụ mà do luồng dữ liệu được thiết kế chưa phù hợp. Dưới đây là ba tình huống thường phát sinh chi phí. Chọn một tình huống và so sánh các phương án.
+Chi phí AWS của MFTech tăng thường không do đơn giá dịch vụ mà do luồng dữ liệu được thiết kế chưa phù hợp. Dưới đây là ba tình huống thường phát sinh chi phí. Chọn một tình huống và so sánh các phương án.
 
 <CostPatterns client:visible />
 
@@ -203,7 +203,7 @@ Chi phí AWS của ShopViet tăng thường không do đơn giá dịch vụ mà
 
 <p class="scene-intro">Khi mở rộng sang nhiều AZ hoặc nhiều Region, một số cấu hình tưởng như được áp dụng tự động nhưng thực tế phải thực hiện riêng.</p>
 
-Bốn yêu cầu dưới đây có vẻ đơn giản nhưng thường bị cấu hình sai khi ShopViet mở rộng hạ tầng. Chọn tình huống, thử phương án thường được áp dụng trước, sau đó so sánh với phương án đúng.
+Bốn yêu cầu dưới đây có vẻ đơn giản nhưng thường bị cấu hình sai khi MFTech mở rộng hạ tầng. Chọn tình huống, thử phương án thường được áp dụng trước, sau đó so sánh với phương án đúng.
 
 <GlobalMythsSim client:visible />
 
@@ -228,26 +228,26 @@ Kéo từng thẻ vào nhóm tương ứng. Trên thiết bị di động: chọ
   ]}
 />
 
-Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTech, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "ShopViet tạo AMI từ EBS snapshot của EC2 instance chạy web server tại Singapore, copy AMI sang Tokyo, sau đó launch một EC2 instance từ AMI đó tại Tokyo. Region Tokyo khi đó có những tài nguyên nào?",
+  { q: "MFTech tạo AMI từ EBS snapshot của EC2 instance chạy web server tại Singapore, copy AMI sang Tokyo, sau đó launch một EC2 instance từ AMI đó tại Tokyo. Region Tokyo khi đó có những tài nguyên nào?",
     opts: ["1 EC2 instance và 1 AMI", "1 EC2 instance, 1 AMI và 1 snapshot", "1 EC2 instance và 1 snapshot"],
     a: 1,
     why: "Thao tác copy AMI sang Tokyo tự động tạo snapshot tương ứng tại Tokyo, cùng với AMI và EC2 instance vừa launch." },
-  { q: "ShopViet triển khai minigame khuyến mãi sử dụng UDP, người chơi ở nhiều châu lục, và ứng dụng phải chuyển Region nhanh chóng khi một Region gặp sự cố. Dịch vụ nào phù hợp?",
+  { q: "MFTech triển khai minigame khuyến mãi sử dụng UDP, người chơi ở nhiều châu lục, và ứng dụng phải chuyển Region nhanh chóng khi một Region gặp sự cố. Dịch vụ nào phù hợp?",
     opts: ["Amazon CloudFront", "AWS Global Accelerator", "S3 Transfer Acceleration"],
     a: 1,
     why: "CloudFront chỉ tiếp nhận request HTTP/HTTPS (bao gồm WebSocket và gRPC). Global Accelerator hỗ trợ UDP và tự động chuyển traffic sang endpoint healthy tại Region khác." },
-  { q: "ShopViet bổ sung RDS Read Replica cho tác vụ báo cáo. Nhận định nào đúng về chi phí data transfer?",
+  { q: "MFTech bổ sung RDS Read Replica cho tác vụ báo cáo. Nhận định nào đúng về chi phí data transfer?",
     opts: ["Replicate trong cùng Region bị tính phí", "Replicate giữa hai Region bị tính phí", "Replicate giữa hai Region miễn phí"],
     a: 1,
     why: "Replication tới Read Replica trong cùng Region không tính phí data transfer; Cross-Region Read Replica thì có." },
-  { q: "Các worker instance của ShopViet trong private subnet đọc ghi khối lượng lớn ảnh với S3 cùng Region, hiện đi qua NAT gateway, và chi phí NAT gateway rất cao. Giải pháp nào giảm chi phí?",
+  { q: "Các worker instance của MFTech trong private subnet đọc ghi khối lượng lớn ảnh với S3 cùng Region, hiện đi qua NAT gateway, và chi phí NAT gateway rất cao. Giải pháp nào giảm chi phí?",
     opts: ["Thêm một NAT gateway nữa", "Tạo S3 gateway endpoint và cập nhật route table", "Chuyển EC2 instance sang public subnet"],
     a: 1,
     why: "Gateway endpoint cho S3 không tính phí bổ sung; traffic không còn đi qua NAT gateway nên không phát sinh phí xử lý dữ liệu của NAT gateway." },
-  { q: "VPC của ShopViet có public subnet và private subnet tại 3 AZ. Các EC2 instance trong private subnet cần truy cập internet để tải bản cập nhật, kể cả khi một AZ gặp sự cố. Kiến trúc nào phù hợp?",
+  { q: "VPC của MFTech có public subnet và private subnet tại 3 AZ. Các EC2 instance trong private subnet cần truy cập internet để tải bản cập nhật, kể cả khi một AZ gặp sự cố. Kiến trúc nào phù hợp?",
     opts: ["Một NAT gateway dùng chung cho cả 3 AZ", "Mỗi AZ một NAT gateway trong public subnet, mỗi AZ một route table riêng", "Mỗi AZ một NAT gateway trong private subnet"],
     a: 1,
     why: "Public NAT gateway ở chế độ zonal phải được đặt trong public subnet và gắn với một AZ; do đó mỗi AZ cần một NAT gateway, với route table riêng trỏ tới NAT gateway trong cùng AZ. Chế độ regional NAT gateway là phương án thay thế: một NAT gateway tự động mở rộng sang các AZ có workload, không cần public subnet." },
@@ -259,7 +259,7 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
 
 <p class="scene-intro">Một số dữ liệu bắt buộc phải nằm trong data center của doanh nghiệp (on-premises) theo quy định pháp lý; AWS có thể đưa hạ tầng và dịch vụ của mình tới chính địa điểm đó.</p>
 
-Công ty con xử lý thanh toán của ShopViet vận hành Kubernetes trong data center riêng. Quy định bắt buộc toàn bộ dữ liệu và workload phải nằm vật lý trong data center này, nhưng đội hạ tầng muốn sử dụng Kubernetes control plane do AWS quản lý, CloudWatch và IAM.
+Công ty con xử lý thanh toán của MFTech vận hành Kubernetes trong data center riêng. Quy định bắt buộc toàn bộ dữ liệu và workload phải nằm vật lý trong data center này, nhưng đội hạ tầng muốn sử dụng Kubernetes control plane do AWS quản lý, CloudWatch và IAM.
 
 **AWS Outposts** là dịch vụ được quản lý toàn phần, mở rộng hạ tầng, dịch vụ, API và công cụ của AWS tới cơ sở của khách hàng; AWS vận hành, giám sát và quản lý năng lực của Outpost như một phần của Region. **Amazon EKS trên Outposts** có hai lựa chọn: *extended cluster* (control plane tại Region, node trên Outpost) và *local cluster* (cả control plane và node trên Outpost); với cả hai, control plane do AWS quản lý toàn phần. AWS khuyến nghị local cluster khi cần tiếp tục vận hành Kubernetes trong lúc mất kết nối tới Region hoặc khi quy định về lưu trú dữ liệu yêu cầu.
 
@@ -268,11 +268,11 @@ Các dịch vụ dưới đây cũng đưa tài nguyên tới gần người dù
 <QuickCompare client:visible items={[
   { name: "AWS Local Zones",
     use: "Đặt compute, storage, database và một số dịch vụ AWS gần các trung tâm dân cư và công nghiệp lớn, cung cấp độ trễ thấp cho người dùng tại khu vực đó mà không cần tự sở hữu và vận hành data center. Tài nguyên được quản lý qua console và API của Region mẹ.",
-    notHere: "Local Zone là hạ tầng do AWS vận hành tại khu đô thị, không nằm trong data center của ShopViet; dữ liệu và workload rời khỏi on-premises.",
+    notHere: "Local Zone là hạ tầng do AWS vận hành tại khu đô thị, không nằm trong data center của MFTech; dữ liệu và workload rời khỏi on-premises.",
     instead: "Outposts rack trong data center, chạy Amazon EKS local cluster." },
   { name: "AWS Wavelength",
     use: "Triển khai compute và storage của AWS tại rìa mạng của nhà mạng (communications service provider) để cung cấp độ trễ thấp cho thiết bị di động. Wavelength Zone là phần mở rộng logic của Region.",
-    notHere: "Hạ tầng nằm trong mạng của nhà mạng, không nằm trong data center của ShopViet.",
+    notHere: "Hạ tầng nằm trong mạng của nhà mạng, không nằm trong data center của MFTech.",
     instead: "Outposts rack trong data center." },
   { name: "Amazon EKS Anywhere",
     use: "Kubernetes do khách hàng quản lý, chạy trên hạ tầng của khách hàng (VMware vSphere, bare metal, Nutanix…), có thể hoạt động khi không kết nối với Region.",

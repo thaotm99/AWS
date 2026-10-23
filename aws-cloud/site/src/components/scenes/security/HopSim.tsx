@@ -57,7 +57,7 @@ export interface HopRun {
 
 export interface HopScenario {
   name: string;
-  /** One line shown before running: what is going on at ShopViet. */
+  /** One line shown before running: what is going on at MFTech. */
   story: string;
   /** Short code-style label of what is being sent. */
   request: string;

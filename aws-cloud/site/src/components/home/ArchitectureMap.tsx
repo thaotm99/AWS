@@ -3,7 +3,7 @@ import { flashText, prefersReducedMotion, travel, type Pt } from "../../lib/anim
 import { useI18n } from "../../app/i18n";
 import "./architecture-map.css";
 
-// Home-page hero: ShopViet's whole architecture on one map. Seven flows play in
+// Home-page hero: MFTech's whole architecture on one map. Seven flows play in
 // turn (or on demand); a packet walks the services involved, each one lights up
 // and the caption links to the lesson about it. Clicking a service opens its lesson.
 
@@ -63,7 +63,7 @@ interface Flow { name: Tx; dr?: boolean; steps: Step[] }
 
 const FLOWS: Flow[] = [
   { name: tx("Phân phối nội dung tĩnh", "Static content delivery"), steps: [
-    { path: [[95, 300], [120, 300], [120, 130], [151, 130]], on: ["route53"], text: tx("Trình duyệt phân giải shopviet.vn; Route 53 trả về bản ghi Alias trỏ tới CloudFront distribution.", "The browser resolves shopviet.vn; Route 53 answers with an alias record that points to the CloudFront distribution.") },
+    { path: [[95, 300], [120, 300], [120, 130], [151, 130]], on: ["route53"], text: tx("Trình duyệt phân giải mftech.vn; Route 53 trả về bản ghi Alias trỏ tới CloudFront distribution.", "The browser resolves mftech.vn; Route 53 answers with an alias record that points to the CloudFront distribution.") },
     { path: [[210, 150], [210, 280]], on: ["cf"], text: tx("Request được định tuyến tới edge location có độ trễ thấp nhất; AWS WAF đánh giá request trước khi xử lý.", "The request is routed to the edge location with the lowest latency; AWS WAF inspects it before it is processed.") },
     { path: [[269, 300], [285, 300], [285, 62], [700, 62], [700, 90]], on: ["s3", "kms"], text: tx("Cache miss: CloudFront truy xuất object từ origin S3 thông qua OAC. Bucket ở chế độ private, dữ liệu được mã hoá bằng KMS key.", "Cache miss: CloudFront fetches the object from the S3 origin through OAC. The bucket is private and the data is encrypted with a KMS key.") },
     { path: [[700, 90], [700, 62], [285, 62], [285, 300], [95, 300]], on: ["cf"], back: true, text: tx("Object được lưu tại edge cache theo TTL; các request tiếp theo trong khu vực được phục vụ trực tiếp từ cache.", "The object is cached at the edge for its TTL; later requests in the area are served straight from the cache.") },

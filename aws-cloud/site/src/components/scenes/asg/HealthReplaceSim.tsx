@@ -91,7 +91,7 @@ const CASES: Case[] = [
   {
     id: "custom",
     name: { vi: "Custom health check", en: "Custom health check" },
-    intro: { vi: "Worker i-4 đọc đơn hàng từ SQS, không nhận request từ ALB. Script giám sát của ShopViet phát hiện worker ngừng xử lý message và gọi `SetInstanceHealth` với trạng thái Unhealthy.", en: "Worker i-4 reads orders from SQS and receives no ALB requests. ShopViet's monitoring script detects that the worker stopped processing messages and calls `SetInstanceHealth` with status Unhealthy." },
+    intro: { vi: "Worker i-4 đọc đơn hàng từ SQS, không nhận request từ ALB. Script giám sát của MFTech phát hiện worker ngừng xử lý message và gọi `SetInstanceHealth` với trạng thái Unhealthy.", en: "Worker i-4 reads orders from SQS and receives no ALB requests. MFTech's monitoring script detects that the worker stopped processing messages and calls `SetInstanceHealth` with status Unhealthy." },
     toggle: [{ vi: "i-4 vừa launch, còn trong health check grace period", en: "i-4 just launched and is within the health check grace period" }, { vi: "i-4 đã qua health check grace period", en: "i-4 is past the health check grace period" }],
     steps: (grace) => {
       const s1 = set(base(), "i-4", { state: grace ? "pending" : "ok", note: { vi: "set-instance-health: Unhealthy", en: "set-instance-health: Unhealthy" } });

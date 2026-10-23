@@ -1,7 +1,7 @@
 {
   "name": "CloudLab",
   "short_name": "CloudLab",
-  "description": "Học kiến trúc AWS qua hệ thống ShopViet: bài học, mô phỏng và luyện đề song ngữ.",
+  "description": "Học kiến trúc AWS qua hệ thống MFTech: bài học, mô phỏng và luyện đề song ngữ.",
   "lang": "vi",
   "start_url": "/",
   "scope": "/",

@@ -1,7 +1,7 @@
 import PacketSim, { type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// Five things that go wrong when ShopViet's Lambda functions meet real traffic:
+// Five things that go wrong when MFTech's Lambda functions meet real traffic:
 // no NAT gateway after joining a VPC, cold starts at peak, the account concurrency
 // quota, a hard-coded database password, and reading a bucket in another account.
 
@@ -20,7 +20,7 @@ const scenarios = (L: Lang): PScenario[] => {
     layout: (nat) => ({
       viewBox: VB,
       aria: L({ vi: "Lambda trong private subnet gọi API bên ngoài qua route table và NAT gateway", en: "Lambda in a private subnet calls an external API through the route table and a NAT gateway" }),
-      boxes: [{ x: 30, y: 54, w: 520, h: 188, label: L({ vi: "VPC của ShopViet", en: "ShopViet VPC" }) }],
+      boxes: [{ x: 30, y: 54, w: 520, h: 188, label: L({ vi: "VPC của MFTech", en: "MFTech VPC" }) }],
       nodes: [
         { id: "fn", x: 120, y: 148, w: 140, l1: "Lambda", l2: "private subnet" },
         { id: "rt", x: 300, y: 148, w: 130, l1: "Route table", l2: nat ? "0.0.0.0/0 → NAT" : L({ vi: "chỉ có route local", en: "local route only" }) },
@@ -47,7 +47,7 @@ const scenarios = (L: Lang): PScenario[] => {
       viewBox: VB,
       aria: L({ vi: "Ứng dụng gọi API Gateway, API Gateway gọi Lambda", en: "The app calls API Gateway, and API Gateway invokes Lambda" }),
       nodes: [
-        { id: "app", x: 70, y: 148, l1: L({ vi: "Ứng dụng ShopViet", en: "ShopViet app" }), user: true },
+        { id: "app", x: 70, y: 148, l1: L({ vi: "Ứng dụng MFTech", en: "MFTech app" }), user: true },
         { id: "apigw", x: 320, y: 148, w: 150, l1: "API Gateway" },
         { id: "fn", x: 620, y: 148, w: 200, l1: L({ vi: "Lambda giỏ hàng", en: "Cart Lambda" }), l2: pc ? L({ vi: "50 môi trường khởi tạo sẵn", en: "50 pre-initialized environments" }) : L({ vi: "chưa có môi trường khởi tạo sẵn", en: "no pre-initialized environments" }) },
       ],
@@ -121,7 +121,7 @@ const scenarios = (L: Lang): PScenario[] => {
     layout: () => ({
       viewBox: VB,
       aria: L({ vi: "Lambda ở account A dùng execution role để đọc bucket S3 ở account B", en: "Lambda in account A uses its execution role to read an S3 bucket in account B" }),
-      boxes: [{ x: 30, y: 54, w: 400, h: 188, label: "Account A · ShopViet" }, { x: 470, y: 54, w: 330, h: 188, label: L({ vi: "Account B · đối tác", en: "Account B · partner" }) }],
+      boxes: [{ x: 30, y: 54, w: 400, h: 188, label: "Account A · MFTech" }, { x: 470, y: 54, w: 330, h: 188, label: L({ vi: "Account B · đối tác", en: "Account B · partner" }) }],
       nodes: [
         { id: "fn", x: 130, y: 148, w: 150, l1: L({ vi: "Lambda nhập kho", en: "Stock-in Lambda" }) },
         { id: "role", x: 320, y: 148, w: 160, l1: "Execution role", l2: L({ vi: "cho phép s3:GetObject", en: "allows s3:GetObject" }) },
@@ -147,5 +147,5 @@ const scenarios = (L: Lang): PScenario[] => {
 export default function LambdaRunSim() {
   const L = useLang();
   return <PacketSim scenarios={scenarios(L)}
-    hint={L({ vi: "Chọn một tình huống vận hành Lambda của ShopViet và chạy thử; sau đó bật tuỳ chọn khắc phục và chạy lại.", en: "Pick a ShopViet Lambda operations scenario and try it; then turn on the fix and run again." })} />;
+    hint={L({ vi: "Chọn một tình huống vận hành Lambda của MFTech và chạy thử; sau đó bật tuỳ chọn khắc phục và chạy lại.", en: "Pick a MFTech Lambda operations scenario and try it; then turn on the fix and run again." })} />;
 }

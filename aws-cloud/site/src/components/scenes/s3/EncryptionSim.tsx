@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./s3-sims.css";
 
-// ShopViet uploads three invoices with each S3 encryption option and watches where the
+// MFTech uploads three invoices with each S3 encryption option and watches where the
 // data is encrypted, where the key lives, and how many times KMS is called (and logged).
 // Source questions: exam2_q10, exam6_q51, exam3_q24, exam1_q22, exam5_q46.
 
@@ -39,7 +39,7 @@ const POS: Record<NodeId, Pt> = {
   app: [100, 120], keys: [100, 212], s3: [410, 120], kms: [410, 38], trail: [700, 38], disk: [700, 120],
 };
 const LABEL: Record<NodeId, { l1: Bi; l2: Bi; w: number }> = {
-  app: { l1: { vi: "App ShopViet", en: "ShopViet app" }, l2: { vi: "tải lên hoá đơn", en: "uploads invoices" }, w: 140 },
+  app: { l1: { vi: "App MFTech", en: "MFTech app" }, l2: { vi: "tải lên hoá đơn", en: "uploads invoices" }, w: 140 },
   keys: { l1: { vi: "Kho key nội bộ", en: "Internal key store" }, l2: { vi: "on-premises", en: "on-premises" }, w: 140 },
   s3: { l1: { vi: "Amazon S3", en: "Amazon S3" }, l2: { vi: "tiếp nhận object", en: "receives objects" }, w: 150 },
   kms: { l1: { vi: "AWS KMS", en: "AWS KMS" }, l2: { vi: "KMS key", en: "KMS key" }, w: 150 },

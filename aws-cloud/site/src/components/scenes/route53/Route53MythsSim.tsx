@@ -4,7 +4,7 @@ import CaseSim, { type CaseScenario } from "../global-infra/CaseSim";
 
 type Lang = ReturnType<typeof useLang>;
 
-// Four Route 53 settings that ShopViet can easily get wrong: how an NLB splits
+// Four Route 53 settings that MFTech can easily get wrong: how an NLB splits
 // traffic when cross-zone is off, failover vs weighted, geolocation vs
 // geoproximity bias, the two layers that can block content by country, and
 // why a multivalue answer record does not add capacity for a traffic spike.
@@ -49,7 +49,7 @@ return [
   },
   {
     name: L({ vi: "Hiển thị trang thông báo lỗi khi ALB gặp sự cố", en: "Show an error notice page when the ALB fails" }),
-    request: "dig shopviet.vn",
+    request: "dig mftech.vn",
     from: L({ vi: "từ người dùng", en: "from users" }),
     nodes: [
       { id: "user", x: 20, y: 97, w: 60, l1: L({ vi: "Người dùng", en: "Users" }), user: true },
@@ -83,7 +83,7 @@ return [
   },
   {
     name: L({ vi: "Mở rộng khu vực phục vụ của Singapore", en: "Expand Singapore's service area" }),
-    request: "dig shopviet.vn",
+    request: "dig mftech.vn",
     from: L({ vi: "từ người dùng tại Ấn Độ", en: "from users in India" }),
     nodes: [
       { id: "user", x: 20, y: 97, w: 60, l1: L({ vi: "Người dùng Ấn Độ", en: "Users in India" }), user: true },
@@ -108,7 +108,7 @@ return [
   },
   {
     name: L({ vi: "Giới hạn video tại quốc gia ngoài phạm vi bản quyền", en: "Restrict video in countries outside the licensed territory" }),
-    request: "GET https://shopviet.vn/videos/1.mp4",
+    request: "GET https://mftech.vn/videos/1.mp4",
     from: L({ vi: "từ quốc gia ngoài phạm vi bản quyền", en: "from a country outside the licensed territory" }),
     nodes: [
       { id: "user", x: 20, y: 97, w: 60, l1: L({ vi: "Người dùng", en: "Users" }), user: true },
@@ -130,7 +130,7 @@ return [
   },
   {
     name: L({ vi: "Flash sale: lưu lượng tăng 10 lần, nội dung động", en: "Flash sale: 10x traffic, dynamic content" }),
-    request: "GET https://shopviet.vn/flash-sale",
+    request: "GET https://mftech.vn/flash-sale",
     from: L({ vi: "lưu lượng gấp 10 lần ngày thường", en: "10 times the usual traffic" }),
     nodes: [
       { id: "user", x: 20, y: 97, w: 60, l1: L({ vi: "Người dùng", en: "Users" }), user: true },

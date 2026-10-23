@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./storage-sims.css";
 
-// A customer uploads a product video to one of ShopViet's three web servers (two AZs).
+// A customer uploads a product video to one of MFTech's three web servers (two AZs).
 // With EBS only that instance sees it; with EFS or S3 every instance does, and the data
 // survives losing an AZ. Source questions: exam2_q29, exam6_q15, exam1_q46, exam1_q9.
 
@@ -144,7 +144,7 @@ export default function SharedStorageSim() {
       <div className="svg-wrap">
         <svg viewBox="0 10 820 250" role="img" aria-label={tr({ vi: "Ba EC2 instance chạy web server tại hai AZ cùng cần đọc một video; video được lưu trên EBS, EFS hoặc S3", en: "Three EC2 web server instances in two AZs all need to read one video; the video is stored on EBS, EFS or S3" })}>
           <rect className="stx-region" x={20} y={40} width={780} height={214} rx={12} />
-          <text className="stx-m" x={32} y={57}>{tr({ vi: "Region Singapore · VPC của ShopViet", en: "Singapore Region · ShopViet VPC" })}</text>
+          <text className="stx-m" x={32} y={57}>{tr({ vi: "Region Singapore · VPC của MFTech", en: "Singapore Region · MFTech VPC" })}</text>
           <rect className={`stx-az ${azDown ? "down" : ""}`} x={40} y={66} width={370} height={120} rx={10} />
           <text className="stx-m" x={52} y={82}>AZ a</text>
           <rect className="stx-az" x={430} y={66} width={350} height={120} rx={10} />

@@ -6,7 +6,7 @@ import "./messaging-sims.css";
 
 // The life of one SQS message, played as a short script. Messages are small cards that
 // slide between the producer, one or two queue lanes, the workers and the "deleted"
-// column. Each scenario is one ShopViet problem and the queue setting that solves it:
+// column. Each scenario is one MFTech problem and the queue setting that solves it:
 // visibility timeout with Spot workers, a dead-letter queue, long polling, a delay
 // queue, and two queues for two priorities.
 

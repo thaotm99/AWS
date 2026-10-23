@@ -3,7 +3,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./elb-sims.css";
 
-// ShopViet's ALB has two listeners. HTTP :80 has only a default rule that redirects to HTTPS
+// MFTech's ALB has two listeners. HTTP :80 has only a default rule that redirects to HTTPS
 // (redirect action, HTTP 301; HTTPS to HTTP is not allowed). HTTPS :443 has rules with the six
 // condition types (host-header, http-header, http-request-method, path-pattern, query-string,
 // source-ip), evaluated from the lowest priority value to the highest, the default rule last.
@@ -93,7 +93,7 @@ export default function RuleMatchSim() {
 
   const preset = PRESETS[pick];
   const r = { ...preset.req, scheme };
-  const url = `${r.scheme}://shopviet.vn${r.path}${r.query ? "?" + r.query : ""}`;
+  const url = `${r.scheme}://mftech.vn${r.path}${r.query ? "?" + r.query : ""}`;
 
   function choose(i: number) {
     gen.current++;

@@ -3,14 +3,14 @@ import HopSim, { type HopScenario, type HNode } from "../security/HopSim";
 
 type Lang = ReturnType<typeof useLang>;
 
-// ShopViet stores invoices in S3. Each situation turns on the encryption option that solves
+// MFTech stores invoices in S3. Each situation turns on the encryption option that solves
 // one real need: an audit trail of key use (SSE-KMS), a lower KMS bill (S3 Bucket Keys),
 // yearly rotation, one key in two Regions (multi-Region keys), one key per object with no
 // work (SSE-S3) and keys kept outside AWS (SSE-C).
 // Practice-test sources (build-time only): exam1_q22, exam2_q50, exam4_q6, exam5_q46, exam5_q11, exam2_q46, exam3_q24.
 
 function scenarios(L: Lang): HopScenario[] {
-const APP: HNode = { id: "app", x: 95, y: 130, label: "App ShopViet", sub: L({ vi: "lưu trữ hoá đơn", en: "stores invoices" }), kind: "app" };
+const APP: HNode = { id: "app", x: 95, y: 130, label: "App MFTech", sub: L({ vi: "lưu trữ hoá đơn", en: "stores invoices" }), kind: "app" };
 const S3: HNode = { id: "s3", x: 340, y: 130, label: "S3 bucket", sub: "hoa-don/", kind: "store" };
 const KMS: HNode = { id: "kms", x: 625, y: 70, label: "AWS KMS", sub: "customer managed key", kind: "key" };
 const TRAIL: HNode = { id: "trail", x: 625, y: 195, label: "CloudTrail", sub: L({ vi: "ghi lại API call", en: "records API calls" }), kind: "log" };
@@ -18,7 +18,7 @@ const TRAIL: HNode = { id: "trail", x: 625, y: 195, label: "CloudTrail", sub: L(
 return [
   {
     name: L({ vi: "Kiểm toán việc sử dụng key", en: "Auditing key usage" }),
-    story: L({ vi: "Kiểm toán viên yêu cầu ShopViet cung cấp thông tin: **key nào** đã mã hoá hoá đơn, **principal nào** sử dụng key và **vào thời điểm nào**. ShopViet không muốn tự lưu giữ key.", en: "The auditors ask ShopViet for information: **which key** encrypted the invoices, **which principal** used the key and **when**. ShopViet does not want to keep the keys itself." }),
+    story: L({ vi: "Kiểm toán viên yêu cầu MFTech cung cấp thông tin: **key nào** đã mã hoá hoá đơn, **principal nào** sử dụng key và **vào thời điểm nào**. MFTech không muốn tự lưu giữ key.", en: "The auditors ask MFTech for information: **which key** encrypted the invoices, **which principal** used the key and **when**. MFTech does not want to keep the keys itself." }),
     request: "PUT hoa-don/0912.pdf",
     toggle: { label: L({ vi: "Mã hoá bằng SSE-KMS (tắt: SSE-S3)", en: "Encrypt with SSE-KMS (off: SSE-S3)" }), initial: false },
     start: "app",
@@ -30,15 +30,15 @@ return [
           { to: "kms", state: "change", tag: "DATA KEY", msg: L({ vi: "S3 gọi `GenerateDataKey`, kèm **encryption context** mặc định là ARN của object. KMS kiểm tra key policy rồi trả về data key.", en: "S3 calls `GenerateDataKey` with the object ARN as the default **encryption context**. KMS checks the key policy, then returns a data key." }) },
           { to: "s3", state: "change", tag: L({ vi: "MÃ HOÁ", en: "ENCRYPTED" }), msg: L({ vi: "Object được mã hoá bằng data key.", en: "The object is encrypted with the data key." }), packet: "pkt-back" },
           { from: "kms", to: "trail", state: "pass", tag: L({ vi: "GHI LOG", en: "LOGGED" }), msg: L({ vi: "Ghi lại role, thời điểm, key được sử dụng và encryption context (không được mã hoá, nên không chứa thông tin nhạy cảm). Khi giải mã phải gửi đúng encryption context đó.", en: "Records the role, the time, the key used and the encryption context (which is not encrypted, so it must hold no sensitive data). Decryption must supply the same encryption context." }) },
-        ], ok: true, result: L({ vi: "Kiểm toán viên tra cứu được thông tin trực tiếp trong CloudTrail. Key được lưu trong KMS, ShopViet không phải tự cung cấp key, và quyền sử dụng key được quy định trong key policy.", en: "The auditors can look up the information directly in CloudTrail. The key is stored in KMS, ShopViet does not have to supply the key itself, and permission to use the key is defined in the key policy." }) }
+        ], ok: true, result: L({ vi: "Kiểm toán viên tra cứu được thông tin trực tiếp trong CloudTrail. Key được lưu trong KMS, MFTech không phải tự cung cấp key, và quyền sử dụng key được quy định trong key policy.", en: "The auditors can look up the information directly in CloudTrail. The key is stored in KMS, MFTech does not have to supply the key itself, and permission to use the key is defined in the key policy." }) }
       : { hops: [
           { to: "s3", state: "change", tag: L({ vi: "MÃ HOÁ", en: "ENCRYPTED" }), msg: L({ vi: "**SSE-S3**: S3 tự động mã hoá bằng key do S3 quản lý.", en: "**SSE-S3**: S3 automatically encrypts with a key that S3 manages." }) },
           { to: "trail", state: "alert", tag: L({ vi: "THIẾU", en: "MISSING" }), msg: L({ vi: "Chỉ có bản ghi `PutObject`; không có log riêng cho việc sử dụng key.", en: "There is only the `PutObject` record; there is no separate log of key usage." }) },
-        ], ok: false, result: L({ vi: "Dữ liệu vẫn được mã hoá, nhưng không đáp ứng yêu cầu kiểm toán. SSE-S3 không có audit trail theo từng key và không cho phép ShopViet kiểm soát principal nào được sử dụng key. Cần bật SSE-KMS.", en: "The data is still encrypted, but the audit requirement is not met. SSE-S3 has no per-key audit trail and does not let ShopViet control which principals can use the key. SSE-KMS must be turned on." }) },
+        ], ok: false, result: L({ vi: "Dữ liệu vẫn được mã hoá, nhưng không đáp ứng yêu cầu kiểm toán. SSE-S3 không có audit trail theo từng key và không cho phép MFTech kiểm soát principal nào được sử dụng key. Cần bật SSE-KMS.", en: "The data is still encrypted, but the audit requirement is not met. SSE-S3 has no per-key audit trail and does not let MFTech control which principals can use the key. SSE-KMS must be turned on." }) },
   },
   {
     name: L({ vi: "Chi phí KMS tăng đột biến", en: "KMS costs spike" }),
-    story: L({ vi: "Trong mùa khuyến mãi, mỗi phút có hàng nghìn ảnh đơn hàng được lưu vào S3 với SSE-KMS. Chi phí request tới KMS tăng mạnh. ShopViet cần **giữ SSE-KMS** nhưng giảm chi phí.", en: "During the sales season, thousands of order images are stored in S3 with SSE-KMS every minute. The cost of requests to KMS rises sharply. ShopViet needs to **keep SSE-KMS** but reduce the cost." }),
+    story: L({ vi: "Trong mùa khuyến mãi, mỗi phút có hàng nghìn ảnh đơn hàng được lưu vào S3 với SSE-KMS. Chi phí request tới KMS tăng mạnh. MFTech cần **giữ SSE-KMS** nhưng giảm chi phí.", en: "During the sales season, thousands of order images are stored in S3 with SSE-KMS every minute. The cost of requests to KMS rises sharply. MFTech needs to **keep SSE-KMS** but reduce the cost." }),
     request: L({ vi: "PUT 5 ảnh đơn hàng", en: "PUT 5 order images" }),
     toggle: { label: L({ vi: "Bật S3 Bucket Keys", en: "Turn on S3 Bucket Keys" }), initial: false },
     start: "app",
@@ -64,7 +64,7 @@ return [
     start: "cal",
     nodes: [
       { id: "cal", x: 110, y: 70, label: L({ vi: "Lịch xoay key", en: "Rotation schedule" }), sub: L({ vi: "mặc định 365 ngày", en: "365 days by default" }), kind: "aws" },
-      { id: "ops", x: 110, y: 195, label: L({ vi: "Kỹ sư ShopViet", en: "ShopViet engineer" }), kind: "user" },
+      { id: "ops", x: 110, y: 195, label: L({ vi: "Kỹ sư MFTech", en: "MFTech engineer" }), kind: "user" },
       { ...KMS, x: 380, y: 130 },
       { ...S3, x: 650, y: 70, sub: L({ vi: "hoá đơn cũ và mới", en: "old and new invoices" }) },
       { ...TRAIL, x: 650, y: 195 },
@@ -82,7 +82,7 @@ return [
   },
   {
     name: L({ vi: "Replicate sang Region khác", en: "Replicating to another Region" }),
-    story: L({ vi: "Hoá đơn tại us-east-1 đang được mã hoá bằng một **single-Region key**. ShopViet cần replicate sang us-west-1 để dự phòng, với yêu cầu **cùng một key** mã hoá và giải mã tại cả hai Region.", en: "Invoices in us-east-1 are encrypted with a **single-Region key**. ShopViet needs to replicate them to us-west-1 for redundancy, and **the same key** must encrypt and decrypt in both Regions." }),
+    story: L({ vi: "Hoá đơn tại us-east-1 đang được mã hoá bằng một **single-Region key**. MFTech cần replicate sang us-west-1 để dự phòng, với yêu cầu **cùng một key** mã hoá và giải mã tại cả hai Region.", en: "Invoices in us-east-1 are encrypted with a **single-Region key**. MFTech needs to replicate them to us-west-1 for redundancy, and **the same key** must encrypt and decrypt in both Regions." }),
     request: "Replicate hoa-don/ → us-west-1",
     toggle: { label: L({ vi: "Tạo multi-Region key mới (tắt: giữ key hiện tại)", en: "Create a new multi-Region key (off: keep the current key)" }), initial: false },
     start: "s3",
@@ -102,7 +102,7 @@ return [
     hidden: (on) => (on ? ["kmsb", "kmsa0"] : ["kmsr", "kmsa"]),
     run: (on) => on
       ? { hops: [
-          { to: "kmsa", state: "change", tag: L({ vi: "KEY MỚI", en: "NEW KEY" }), flash: "mrk-", msg: L({ vi: "Key hiện tại không chuyển thành multi-Region được, nên ShopViet tạo một **multi-Region key mới** và một replica key tại us-west-1.", en: "The current key cannot become multi-Region, so ShopViet creates a **new multi-Region key** and a replica key in us-west-1." }) },
+          { to: "kmsa", state: "change", tag: L({ vi: "KEY MỚI", en: "NEW KEY" }), flash: "mrk-", msg: L({ vi: "Key hiện tại không chuyển thành multi-Region được, nên MFTech tạo một **multi-Region key mới** và một replica key tại us-west-1.", en: "The current key cannot become multi-Region, so MFTech creates a **new multi-Region key** and a replica key in us-west-1." }) },
           { from: "kmsa", to: "s3", state: "change", tag: "COPY", msg: L({ vi: "Bucket đặt multi-Region key làm default encryption và bật replication. Hoá đơn hiện có được **copy** (CopyObject hoặc Batch Operations Copy) để mã hoá lại bằng key mới; mỗi bản copy là object mới nên được replicate. Object cũ không copy thì cần S3 Batch Replication.", en: "The bucket uses the multi-Region key as default encryption and has replication turned on. Existing invoices are **copied** (CopyObject or Batch Operations Copy) to re-encrypt them under the new key; each copy is a new object, so it is replicated. Objects left uncopied would need S3 Batch Replication." }) },
           { from: "s3", to: "s3b", state: "pass", tag: "REPLICATE", msg: L({ vi: "Object được replicate sang us-west-1; replication rule chỉ định replica key tại Region đích.", en: "The object is replicated to us-west-1; the replication rule names the replica key in the destination Region." }) },
           { to: "kmsr", state: "pass", tag: L({ vi: "GIẢI MÃ", en: "DECRYPTED" }), msg: L({ vi: "Replica key có **cùng key ID và key material** với key tại us-east-1.", en: "The replica key has **the same key ID and key material** as the key in us-east-1." }) },
@@ -139,7 +139,7 @@ return [
       { to: "app", state: on ? "pass" : "block", packet: on ? "pkt-back" : "pkt-bad", tag: on ? "200" : "400",
         msg: on ? L({ vi: "Trả về object.", en: "Returns the object." }) : L({ vi: "Từ chối request.", en: "Rejects the request." }) },
     ], ok: on, result: on
-      ? L({ vi: "Đây là **SSE-C**: S3 không bao giờ lưu key. Đổi lại, mỗi request phải gửi kèm key và ShopViet chịu trách nhiệm bảo quản key. Từ tháng 4/2026, SSE-C bị chặn mặc định trên bucket mới; phải bật lại bằng `PutBucketEncryption`.", en: "This is **SSE-C**: S3 never stores the key. In return, every request must carry the key, and ShopViet is responsible for safeguarding it. Since April 2026, SSE-C is blocked by default on new buckets; it must be re-enabled with `PutBucketEncryption`." })
+      ? L({ vi: "Đây là **SSE-C**: S3 không bao giờ lưu key. Đổi lại, mỗi request phải gửi kèm key và MFTech chịu trách nhiệm bảo quản key. Từ tháng 4/2026, SSE-C bị chặn mặc định trên bucket mới; phải bật lại bằng `PutBucketEncryption`.", en: "This is **SSE-C**: S3 never stores the key. In return, every request must carry the key, and MFTech is responsible for safeguarding it. Since April 2026, SSE-C is blocked by default on new buckets; it must be re-enabled with `PutBucketEncryption`." })
       : L({ vi: "Với SSE-C, mất key đồng nghĩa với mất dữ liệu. Mọi thao tác ghi và đọc đều phải gửi kèm đúng key.", en: "With SSE-C, losing the key means losing the data. Every write and read must carry the right key." }) }),
   },
 ];
@@ -148,5 +148,5 @@ return [
 export default function S3EncryptSim() {
   const L = useLang();
   return <HopSim scenarios={scenarios(L)} action={L({ vi: "Chạy", en: "Run" })} height={250}
-    label={L({ vi: "Một object của ShopViet được ghi vào S3 và mã hoá; S3 có thể gọi KMS và ghi log vào CloudTrail", en: "A ShopViet object is written to S3 and encrypted; S3 can call KMS and log to CloudTrail" })} />;
+    label={L({ vi: "Một object của MFTech được ghi vào S3 và mã hoá; S3 có thể gọi KMS và ghi log vào CloudTrail", en: "A MFTech object is written to S3 and encrypted; S3 can call KMS and log to CloudTrail" })} />;
 }

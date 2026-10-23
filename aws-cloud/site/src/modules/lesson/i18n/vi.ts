@@ -79,7 +79,7 @@ export const vi = {
     optionGroup: "Chọn phương án",
   },
   awsMap: {
-    heroLabel: "Sáu nhóm dịch vụ AWS quanh hệ thống ShopViet",
+    heroLabel: "Sáu nhóm dịch vụ AWS quanh hệ thống MFTech",
   },
   notFound: {
     title: "Không tìm thấy trang",

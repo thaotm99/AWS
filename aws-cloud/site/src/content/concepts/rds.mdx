@@ -82,7 +82,7 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s6", label: "6 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-Database đơn hàng của ShopViet phải đáp ứng ba yêu cầu: không mất dữ liệu, không gián đoạn dịch vụ, và không suy giảm hiệu năng khi phòng kế toán chạy báo cáo. **Amazon RDS** và **Amazon Aurora** giải quyết ba yêu cầu này bằng các cơ chế khác nhau; nắm rõ sự khác biệt giữa các cơ chế là cơ sở để lựa chọn cấu hình phù hợp.
+Database đơn hàng của MFTech phải đáp ứng ba yêu cầu: không mất dữ liệu, không gián đoạn dịch vụ, và không suy giảm hiệu năng khi phòng kế toán chạy báo cáo. **Amazon RDS** và **Amazon Aurora** giải quyết ba yêu cầu này bằng các cơ chế khác nhau; nắm rõ sự khác biệt giữa các cơ chế là cơ sở để lựa chọn cấu hình phù hợp.
 </Story>
 
 <Scene id="s1" label="Phần 1/6" title="Multi-AZ deployment và Read Replica" questions={["exam1_q52", "exam5_q25", "exam6_q49", "exam2_q25", "exam3_q63", "exam3_q41"]}>
@@ -103,7 +103,7 @@ Mô phỏng trên là **Multi-AZ DB instance deployment** (một standby). RDS c
 
 <p class="scene-intro">Khi hệ thống lớn lên, database gặp những vấn đề mới như truy vấn báo cáo làm chậm website hay quá nhiều database connection cùng lúc; RDS có tính năng riêng cho từng vấn đề.</p>
 
-Khi quy mô ShopViet tăng, database phát sinh nhiều vấn đề hơn: báo cáo làm chậm website, Lambda function mở quá nhiều database connection, storage hết dung lượng, sự cố cấp Region. Chọn từng sự cố, chạy để quan sát hậu quả, sau đó bật tính năng RDS tương ứng và chạy lại:
+Khi quy mô MFTech tăng, database phát sinh nhiều vấn đề hơn: báo cáo làm chậm website, Lambda function mở quá nhiều database connection, storage hết dung lượng, sự cố cấp Region. Chọn từng sự cố, chạy để quan sát hậu quả, sau đó bật tính năng RDS tương ứng và chạy lại:
 
 <RdsOpsSim client:visible />
 
@@ -117,11 +117,11 @@ Hai biện pháp bổ sung giúp giảm tải cho đội vận hành. Hệ thố
 
 <p class="scene-intro">Aurora là relational database engine tương thích MySQL và PostgreSQL với tầng storage do AWS thiết kế lại, giúp Aurora Replica có replica lag thấp hơn và cluster mở rộng sang nhiều Region dễ hơn.</p>
 
-Read Replica của RDS for MySQL bắt đầu có replica lag vài phút vào giờ cao điểm, do đó ShopViet chuyển sang **Aurora MySQL**. Khác biệt lớn nhất: mọi instance dùng chung một **cluster volume**, nên replica không phải sao chép lại dữ liệu. Thử lần lượt các thao tác:
+Read Replica của RDS for MySQL bắt đầu có replica lag vài phút vào giờ cao điểm, do đó MFTech chuyển sang **Aurora MySQL**. Khác biệt lớn nhất: mọi instance dùng chung một **cluster volume**, nên replica không phải sao chép lại dữ liệu. Thử lần lượt các thao tác:
 
 <AuroraSim client:visible />
 
-Một số quyết định khác của ShopViet liên quan tới Aurora:
+Một số quyết định khác của MFTech liên quan tới Aurora:
 
 <RequirementPicker client:visible items={[
   { need: "Team phát triển cần một database có dữ liệu giống production để kiểm thử tính năng mới", answer: "Restore từ automated backup của Aurora (hoặc tạo clone)",
@@ -164,7 +164,7 @@ Một số quyết định khác của ShopViet liên quan tới Aurora:
       note: "Restore snapshot đã mã hoá thành DB instance mới đã mã hoá, chuyển ứng dụng sang endpoint của DB instance mới, sau đó xoá DB instance cũ." },
   ]} />
 
-Encryption at rest chỉ là một phần. Các yêu cầu bảo mật khác của ShopViet:
+Encryption at rest chỉ là một phần. Các yêu cầu bảo mật khác của MFTech:
 
 <RequirementPicker client:visible items={[
   { need: "Database đã được mã hoá khi lưu trữ; cần bảo vệ dữ liệu khi truyền từ ứng dụng tới database", answer: "Kết nối bằng SSL/TLS", why: "KMS chỉ bảo vệ dữ liệu khi lưu trữ (at rest)." },
@@ -188,7 +188,7 @@ Phòng kế toán cần một bản sao của database đơn hàng (RDS for MySQ
 
 <ReplicaLab client:visible />
 
-Với DR, ShopViet kết hợp hai cơ chế ở Region khác: **cross-Region read replica** (promote thành DB instance độc lập khi Region chính gặp sự cố) và **cross-Region automated backups** (RDS sao chép snapshot và transaction log sang Region đích ngay khi chúng sẵn sàng). Loại storage, ví dụ Provisioned IOPS, chỉ quyết định hiệu năng I/O và không phải biện pháp DR.
+Với DR, MFTech kết hợp hai cơ chế ở Region khác: **cross-Region read replica** (promote thành DB instance độc lập khi Region chính gặp sự cố) và **cross-Region automated backups** (RDS sao chép snapshot và transaction log sang Region đích ngay khi chúng sẵn sàng). Loại storage, ví dụ Provisioned IOPS, chỉ quyết định hiệu năng I/O và không phải biện pháp DR.
 
 <Takeaway>Báo cáo: Read Replica cùng Region, cùng compute và storage như source (khi scale source thì scale cả replica). Mã hoá của replica theo source. Standby của Multi-AZ DB instance deployment không phục vụ đọc và chỉ ở cùng Region, nhưng là nơi lấy automated backup và snapshot. DR cho RDS: cross-Region read replica và cross-Region automated backups.</Takeaway>
 
@@ -198,7 +198,7 @@ Với DR, ShopViet kết hợp hai cơ chế ở Region khác: **cross-Region re
 
 <p class="scene-intro">Nhiều tính năng của RDS và Aurora có tên gần với nhu cầu thực tế; phân biệt được chúng giúp chọn đúng tính năng cho từng tình huống.</p>
 
-Một số tính năng có tên gần với nhu cầu thực tế nhưng giải quyết vấn đề khác. Chọn từng tính năng để xem trường hợp sử dụng, lý do không phù hợp trong tình huống ShopViet tương ứng, và phương án nên chọn:
+Một số tính năng có tên gần với nhu cầu thực tế nhưng giải quyết vấn đề khác. Chọn từng tính năng để xem trường hợp sử dụng, lý do không phù hợp trong tình huống MFTech tương ứng, và phương án nên chọn:
 
 <QuickCompare client:visible items={[
   { name: "Aurora machine learning",
@@ -250,7 +250,7 @@ Phân loại từng đặc tính vào tính năng tương ứng. Trên thiết b
   ]}
 />
 
-Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTech, phương án nào phù hợp?
 
 <Quiz client:visible items={[
   { q: "Phát biểu nào mô tả đúng sự khác biệt giữa Multi-AZ DB instance deployment và Read Replica?",
@@ -265,7 +265,7 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Read Replica cùng Region, chạy báo cáo trên đó", "Bật Multi-AZ", "Chuyển sang DB instance class lớn gấp đôi"],
     a: 0,
     why: "Replica cùng Region tách tải đọc và không tính phí truyền dữ liệu replication." },
-  { q: "ShopViet sử dụng Aurora và yêu cầu RPO tính bằng giây, RTO tính bằng phút khi toàn bộ Region Singapore gặp sự cố. Phương án nào phù hợp?",
+  { q: "MFTech sử dụng Aurora và yêu cầu RPO tính bằng giây, RTO tính bằng phút khi toàn bộ Region Singapore gặp sự cố. Phương án nào phù hợp?",
     opts: ["Aurora Replica trong cùng Region", "Aurora Global Database", "Snapshot hằng ngày copy sang Region khác"],
     a: 1,
     why: "Global Database sao chép sang Region khác với độ trễ thường dưới một giây; khi failover, RPO thường tính bằng giây và RTO có thể tính bằng phút." },

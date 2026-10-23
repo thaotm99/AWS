@@ -86,20 +86,20 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s5", label: "5 · Truy cập S3 qua giao diện file" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-Hệ thống ShopViet có bốn nhu cầu lưu trữ khác nhau: database yêu cầu block storage hiệu năng cao, các web server cần shared file system, văn phòng cần file share SMB cho Windows, và team dữ liệu cần file system hiệu năng cao cho workload high performance computing (HPC). Mỗi nhu cầu tương ứng với một loại dịch vụ lưu trữ khác nhau.
+Hệ thống MFTech có bốn nhu cầu lưu trữ khác nhau: database yêu cầu block storage hiệu năng cao, các web server cần shared file system, văn phòng cần file share SMB cho Windows, và team dữ liệu cần file system hiệu năng cao cho workload high performance computing (HPC). Mỗi nhu cầu tương ứng với một loại dịch vụ lưu trữ khác nhau.
 </Story>
 
 <Scene id="s1" label="Phần 1/5" title="Shared storage cho nhiều EC2 instance" questions={["exam2_q29", "exam6_q15", "exam1_q46", "exam1_q9"]}>
 
 <p class="scene-intro">Khi nhiều EC2 instance cùng phục vụ một website, dữ liệu do người dùng tải lên phải được lưu ở nơi mọi instance đều đọc được.</p>
 
-ShopViet vận hành ba EC2 instance chạy web server tại hai Availability Zone (AZ) phía sau một load balancer. Người dùng tải video giới thiệu sản phẩm lên một instance bất kỳ, và người dùng khác được định tuyến tới instance nào cũng phải xem được video đó. Thử lưu video tại ba vị trí:
+MFTech vận hành ba EC2 instance chạy web server tại hai Availability Zone (AZ) phía sau một load balancer. Người dùng tải video giới thiệu sản phẩm lên một instance bất kỳ, và người dùng khác được định tuyến tới instance nào cũng phải xem được video đó. Thử lưu video tại ba vị trí:
 
 <SharedStorageSim client:visible />
 
 Khi nhiều AWS account (ví dụ account của từng shop con) cần mount chung một thư mục, EFS vẫn đáp ứng được: bổ sung file system policy cấp quyền cho account còn lại, và kết nối mạng giữa hai VPC bằng VPC peering hoặc transit gateway. Phần 3 trình bày cấu hình này cho Lambda function, sử dụng EFS access point.
 
-Ba loại dịch vụ cũng khác nhau về cách tính phí lưu trữ. Đội vận hành ShopViet cần ước tính chi phí lưu cùng một lượng dữ liệu trên mỗi dịch vụ; điều chỉnh lượng dữ liệu và dung lượng EBS volume:
+Ba loại dịch vụ cũng khác nhau về cách tính phí lưu trữ. Đội vận hành MFTech cần ước tính chi phí lưu cùng một lượng dữ liệu trên mỗi dịch vụ; điều chỉnh lượng dữ liệu và dung lượng EBS volume:
 
 <StorageBillSim client:visible />
 
@@ -111,7 +111,7 @@ Ba loại dịch vụ cũng khác nhau về cách tính phí lưu trữ. Đội 
 
 <p class="scene-intro">EBS volume của database quyết định IOPS và throughput của toàn hệ thống; Amazon EBS cung cấp nhiều volume type, khác nhau về hiệu năng và giá.</p>
 
-Database đơn hàng của ShopViet chạy trên EC2 instance với nhu cầu IOPS tăng dần. Điều chỉnh thanh IOPS và bật các yêu cầu để xem loại volume phù hợp:
+Database đơn hàng của MFTech chạy trên EC2 instance với nhu cầu IOPS tăng dần. Điều chỉnh thanh IOPS và bật các yêu cầu để xem loại volume phù hợp:
 
 <VolumeChooser client:visible />
 
@@ -140,7 +140,7 @@ Ngoài việc lựa chọn loại volume, vận hành EBS còn bao gồm các t�
 
 <p class="scene-intro">Shared file system cũng cần được điều chỉnh khi tải thay đổi, khi dữ liệu ít được truy cập dần và khi phải kiểm soát quyền truy cập.</p>
 
-Sau khi triển khai Amazon EFS, ShopViet cần giải quyết các vấn đề vận hành: điều chỉnh performance mode và throughput mode khi tải lớn, tối ưu chi phí lưu trữ tệp cũ, và kiểm soát quyền mount. Chọn từng tình huống:
+Sau khi triển khai Amazon EFS, MFTech cần giải quyết các vấn đề vận hành: điều chỉnh performance mode và throughput mode khi tải lớn, tối ưu chi phí lưu trữ tệp cũ, và kiểm soát quyền mount. Chọn từng tình huống:
 
 <RequirementPicker client:visible items={[
   { need: "Job big data chạy song song trên rất nhiều instance, cùng đọc ghi EFS", answer: "Performance mode: General Purpose", why: "AWS khuyến nghị General Purpose cho mọi file system. Max I/O là performance mode thế hệ trước, dành cho tải song song cao chịu được độ trễ lớn hơn; Max I/O không hỗ trợ Elastic throughput và One Zone file system." },
@@ -158,17 +158,17 @@ Sau khi triển khai Amazon EFS, ShopViet cần giải quyết các vấn đề 
 
 <BurstCreditSim client:visible kind="efs" />
 
-Về performance mode: tài liệu ôn tập cũ thường chọn **Max I/O** cho job big data chạy song song. Hướng dẫn hiện hành của AWS ([Amazon EFS performance specifications](https://docs.aws.amazon.com/efs/latest/ug/performance.html)) xếp Max I/O vào thế hệ trước, có độ trễ mỗi thao tác cao hơn, và khuyến nghị **General Purpose** cho mọi file system, kết hợp **Elastic throughput** cho tải biến động. ShopViet áp dụng cấu hình hiện hành này.
+Về performance mode: tài liệu ôn tập cũ thường chọn **Max I/O** cho job big data chạy song song. Hướng dẫn hiện hành của AWS ([Amazon EFS performance specifications](https://docs.aws.amazon.com/efs/latest/ug/performance.html)) xếp Max I/O vào thế hệ trước, có độ trễ mỗi thao tác cao hơn, và khuyến nghị **General Purpose** cho mọi file system, kết hợp **Elastic throughput** cho tải biến động. MFTech áp dụng cấu hình hiện hành này.
 
-Team gợi ý sản phẩm của ShopViet chạy Lambda function trong VPC, cần đọc bộ dữ liệu trên EFS thuộc account của một đối tác dữ liệu. Lambda mount EFS qua **access point**; dựng cấu hình theo từng bước:
+Team gợi ý sản phẩm của MFTech chạy Lambda function trong VPC, cần đọc bộ dữ liệu trên EFS thuộc account của một đối tác dữ liệu. Lambda mount EFS qua **access point**; dựng cấu hình theo từng bước:
 
 <StepSim client:visible height={240}
-  intro="Lambda function nằm trong VPC của account ShopViet; file system EFS nằm trong VPC của account đối tác."
-  boxes={[{ x: 10, y: 20, w: 260, h: 200, label: "Account ShopViet" }, { x: 300, y: 20, w: 450, h: 200, label: "Account đối tác dữ liệu" }]}
+  intro="Lambda function nằm trong VPC của account MFTech; file system EFS nằm trong VPC của account đối tác."
+  boxes={[{ x: 10, y: 20, w: 260, h: 200, label: "Account MFTech" }, { x: 300, y: 20, w: 450, h: 200, label: "Account đối tác dữ liệu" }]}
   nodes={[
     { id: "lam", x: 30, y: 95, label: "Lambda function", sub: "trong VPC · /mnt/data", kind: "ec2" },
     { id: "mt", x: 330, y: 150, label: "Mount target", sub: "mỗi AZ · NFS 2049", kind: "net" },
-    { id: "ap", x: 330, y: 50, label: "Access point", sub: "/shopviet · UID 1001", kind: "edge" },
+    { id: "ap", x: 330, y: 50, label: "Access point", sub: "/mftech · UID 1001", kind: "edge" },
     { id: "efs", x: 560, y: 100, label: "Amazon EFS", sub: "file system policy", kind: "store" },
   ]}
   initial={["lam", "efs"]}
@@ -176,11 +176,11 @@ Team gợi ý sản phẩm của ShopViet chạy Lambda function trong VPC, cầ
     { button: "1. Tạo mount target tại mỗi AZ", show: ["mt"], flows: [{ path: ["mt", "efs"], tone: "neutral" }],
       note: "Mount target cung cấp kết nối mạng tới file system. Tài liệu Lambda khuyến nghị mount target tại mọi AZ mà function kết nối (ít nhất hai AZ), và security group của function và mount target cho phép NFS (port 2049)." },
     { button: "2. Kết nối hai VPC", flows: [{ path: ["lam", "mt"], tone: "good", label: "VPC peering" }],
-      note: "Kết nối VPC của ShopViet với VPC của đối tác bằng **VPC peering** hoặc transit gateway (hoặc dùng shared VPC). Lambda tính phí data transfer giữa hai VPC được peering." },
+      note: "Kết nối VPC của MFTech với VPC của đối tác bằng **VPC peering** hoặc transit gateway (hoặc dùng shared VPC). Lambda tính phí data transfer giữa hai VPC được peering." },
     { button: "3. Cấp quyền bằng file system policy",
-      note: "Đối tác bổ sung **file system policy** cho phép account ShopViet mount (`elasticfilesystem:ClientMount`, thêm `ClientWrite` nếu cần ghi). Execution role của function cũng phải có các quyền này." },
+      note: "Đối tác bổ sung **file system policy** cho phép account MFTech mount (`elasticfilesystem:ClientMount`, thêm `ClientWrite` nếu cần ghi). Execution role của function cũng phải có các quyền này." },
     { button: "4. Tạo access point", show: ["ap"], flows: [{ path: ["ap", "efs"], tone: "good" }],
-      note: "Access point áp đặt root directory `/shopviet` và user identity POSIX (UID/GID 1001) cho mọi request đi qua nó: function chỉ thấy thư mục được cấp, không cần quản lý quyền POSIX trong code." },
+      note: "Access point áp đặt root directory `/mftech` và user identity POSIX (UID/GID 1001) cho mọi request đi qua nó: function chỉ thấy thư mục được cấp, không cần quản lý quyền POSIX trong code." },
     { button: "5. Gắn file system vào Lambda", flows: [{ path: ["lam", "ap"], tone: "good", label: "access point" }], move: ["lam", "mt", "efs"],
       note: "Trong cấu hình function, chọn **access point** và local mount path bắt đầu bằng `/mnt/`. Function đọc ghi tệp trực tiếp, không cần sao chép dữ liệu sang S3 hay gọi qua function trung gian." },
   ]} />
@@ -195,13 +195,13 @@ Các lưu ý khác khi Lambda chạy trong VPC (truy cập Internet, NAT gateway
 
 <p class="scene-intro">Ngoài shared file system cho Linux, nhiều nhóm người dùng có yêu cầu riêng, ví dụ file share SMB cho Windows hoặc HPC; mỗi yêu cầu có một loại file system phù hợp.</p>
 
-Ngoài EFS, AWS cung cấp bốn loại **Amazon FSx** file system cho các nhu cầu chuyên biệt. Mỗi nhóm trong bốn nhóm người dùng của ShopViet có ba yêu cầu bắt buộc. Thử mount từng file system cho từng nhóm để xác định file system đáp ứng đầy đủ yêu cầu:
+Ngoài EFS, AWS cung cấp bốn loại **Amazon FSx** file system cho các nhu cầu chuyên biệt. Mỗi nhóm trong bốn nhóm người dùng của MFTech có ba yêu cầu bắt buộc. Thử mount từng file system cho từng nhóm để xác định file system đáp ứng đầy đủ yêu cầu:
 
 <FsxSim client:visible />
 
 Khi văn phòng cần duy trì file share SMB tại chỗ nhưng lưu dữ liệu trên S3, sử dụng **S3 File Gateway** (xem bài Storage Gateway).
 
-Các tính năng quản lý dữ liệu của FSx for NetApp ONTAP và FSx for OpenZFS trong các tình huống vận hành của ShopViet:
+Các tính năng quản lý dữ liệu của FSx for NetApp ONTAP và FSx for OpenZFS trong các tình huống vận hành của MFTech:
 
 <RequirementPicker client:visible items={[
   { need: "Kho hàng dùng FSx for ONTAP; phần lớn tệp chỉ truy cập trong tháng đầu, cần giảm chi phí SSD", answer: "Volume tiering sang capacity pool", why: "ONTAP có hai storage tier: SSD tier cấp phát trước cho dữ liệu hoạt động, và capacity pool co giãn, chi phí thấp cho dữ liệu ít truy cập. Tiering policy đặt theo volume: Auto chuyển dữ liệu lạnh sau cooling period (mặc định 31 ngày, cấu hình 2 đến 183 ngày), Snapshot Only chỉ chuyển snapshot, All lưu mọi dữ liệu ở capacity pool. Metadata luôn ở SSD tier." },
@@ -220,7 +220,7 @@ Các tính năng quản lý dữ liệu của FSx for NetApp ONTAP và FSx for O
 
 <p class="scene-intro">Một số ứng dụng cũ chỉ biết đọc ghi file trong thư mục, trong khi dữ liệu lại nằm trên S3; cần một lớp chuyển đổi để ứng dụng dùng được dữ liệu đó mà không phải viết lại.</p>
 
-Team dữ liệu ShopViet lưu toàn bộ ảnh sản phẩm và dữ liệu huấn luyện mô hình gợi ý trên S3. Một số ứng dụng cũ chỉ đọc ghi tệp, không gọi S3 API. **Mountpoint for Amazon S3** là file client mã nguồn mở, mount bucket thành thư mục cục bộ trên Linux và chuyển thao tác tệp (`open`, `read`) thành lời gọi S3 API. Mountpoint không phải file system POSIX đầy đủ: chạy thử các thao tác thường gặp trên Mountpoint và trên EFS:
+Team dữ liệu MFTech lưu toàn bộ ảnh sản phẩm và dữ liệu huấn luyện mô hình gợi ý trên S3. Một số ứng dụng cũ chỉ đọc ghi tệp, không gọi S3 API. **Mountpoint for Amazon S3** là file client mã nguồn mở, mount bucket thành thư mục cục bộ trên Linux và chuyển thao tác tệp (`open`, `read`) thành lời gọi S3 API. Mountpoint không phải file system POSIX đầy đủ: chạy thử các thao tác thường gặp trên Mountpoint và trên EFS:
 
 <MountpointSim client:visible />
 
@@ -258,7 +258,7 @@ Phân loại từng đặc tính vào dịch vụ tương ứng. Trên thiết b
   ]}
 />
 
-Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTech, phương án nào phù hợp?
 
 <Quiz client:visible items={[
   { q: "Database đơn hàng trên EC2 yêu cầu 25.000 IOPS ổn định cho mỗi volume. Loại volume nào phù hợp?",
@@ -273,7 +273,7 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Amazon EFS", "FSx for Windows File Server", "FSx for Lustre"],
     a: 1,
     why: "FSx for Windows hỗ trợ SMB, NTFS và AD; máy Linux mount qua SMB." },
-  { q: "Job phân tích của ShopViet chạy song song trên rất nhiều instance, cùng đọc ghi một EFS. Performance mode nào phù hợp?",
+  { q: "Job phân tích của MFTech chạy song song trên rất nhiều instance, cùng đọc ghi một EFS. Performance mode nào phù hợp?",
     opts: ["General Purpose", "Max I/O", "Provisioned throughput"],
     a: 0,
     why: "AWS khuyến nghị General Purpose cho mọi file system vì Max I/O (thế hệ trước) có độ trễ mỗi thao tác cao hơn và không hỗ trợ Elastic throughput. Provisioned throughput là throughput mode, không phải performance mode." },

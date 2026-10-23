@@ -47,8 +47,8 @@ export default function HybridDnsSim() {
           en: <>A private hosted zone works only when the VPC enables <b>both</b> enableDnsHostnames and enableDnsSupport. When either attribute is missing, the private hosted zone does not resolve.</> });
       } else {
         await travel(layer, [RESOLVER, PHZ, RESOLVER, INBOUND, ONPREM_DNS], 1800, "pkt-back", 6);
-        setMsg({ vi: <>DNS server on-premises chuyển truy vấn <code>api.shopviet.internal</code> tới <b>inbound endpoint</b>. Resolver phản hồi từ private hosted zone. Cấu hình này áp dụng khi hệ thống tại văn phòng cần phân giải tên miền trong VPC.</>,
-          en: <>The on-premises DNS server forwards the query for <code>api.shopviet.internal</code> to the <b>inbound endpoint</b>. Resolver answers from the private hosted zone. This configuration applies when systems at the office need to resolve domain names in the VPC.</> });
+        setMsg({ vi: <>DNS server on-premises chuyển truy vấn <code>api.mftech.internal</code> tới <b>inbound endpoint</b>. Resolver phản hồi từ private hosted zone. Cấu hình này áp dụng khi hệ thống tại văn phòng cần phân giải tên miền trong VPC.</>,
+          en: <>The on-premises DNS server forwards the query for <code>api.mftech.internal</code> to the <b>inbound endpoint</b>. Resolver answers from the private hosted zone. This configuration applies when systems at the office need to resolve domain names in the VPC.</> });
       }
     }
     setBusy(false);
@@ -66,7 +66,7 @@ export default function HybridDnsSim() {
       </div>
       <div className="stage-bar">
         <button className="btn primary" onClick={() => ask("toOnPrem")} disabled={busy}>{L({ vi: "EC2 instance truy vấn db.corp.local", en: "EC2 instance queries db.corp.local" })}</button>
-        <button className="btn primary" onClick={() => ask("fromOnPrem")} disabled={busy}>{L({ vi: "On-premises truy vấn api.shopviet.internal", en: "On premises queries api.shopviet.internal" })}</button>
+        <button className="btn primary" onClick={() => ask("fromOnPrem")} disabled={busy}>{L({ vi: "On-premises truy vấn api.mftech.internal", en: "On premises queries api.mftech.internal" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 0 760 310" role="img" aria-label={L({ vi: "VPC với Route 53 Resolver, inbound endpoint, outbound endpoint và DNS server on-premises", en: "VPC with Route 53 Resolver, an inbound endpoint, an outbound endpoint and an on-premises DNS server" })}>
@@ -74,7 +74,7 @@ export default function HybridDnsSim() {
           <text className="t" x={46} y={54}>VPC</text>
           <g className="res res-ec2"><rect x={EC2[0] - 40} y={EC2[1] - 18} width={80} height={36} rx={6} /><text className="res-t" x={EC2[0]} y={EC2[1] + 5} textAnchor="middle">EC2</text></g>
           <g className="res res-db"><rect x={RESOLVER[0] - 60} y={RESOLVER[1] - 22} width={120} height={44} rx={7} /><text className="res-t" x={RESOLVER[0]} y={RESOLVER[1] - 2} textAnchor="middle">Route 53</text><text className="res-s" x={RESOLVER[0]} y={RESOLVER[1] + 13} textAnchor="middle">Resolver</text></g>
-          <g className="res res-site"><rect x={PHZ[0] - 70} y={PHZ[1] - 18} width={140} height={36} rx={6} /><text className="res-t" x={PHZ[0]} y={PHZ[1] - 2} textAnchor="middle">Private hosted zone</text><text className="res-s" x={PHZ[0]} y={PHZ[1] + 12} textAnchor="middle">shopviet.internal</text></g>
+          <g className="res res-site"><rect x={PHZ[0] - 70} y={PHZ[1] - 18} width={140} height={36} rx={6} /><text className="res-t" x={PHZ[0]} y={PHZ[1] - 2} textAnchor="middle">Private hosted zone</text><text className="res-s" x={PHZ[0]} y={PHZ[1] + 12} textAnchor="middle">mftech.internal</text></g>
           <g className="res res-net"><rect x={OUTBOUND[0] - 55} y={OUTBOUND[1] - 18} width={110} height={36} rx={6} /><text className="res-t" x={OUTBOUND[0]} y={OUTBOUND[1] + 5} textAnchor="middle">Outbound EP</text></g>
           <g className="res res-net"><rect x={INBOUND[0] - 55} y={INBOUND[1] - 18} width={110} height={36} rx={6} /><text className="res-t" x={INBOUND[0]} y={INBOUND[1] + 5} textAnchor="middle">Inbound EP</text></g>
           <path className="dx-line" d="M495 110 H590 M495 200 H590" />

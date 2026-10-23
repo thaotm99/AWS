@@ -2,7 +2,7 @@ import PacketSim, { type PLayout, type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 import "./iac-sims.css";
 
-// Reading the SecurityGroupIngress block of a ShopViet template by sending traffic at
+// Reading the SecurityGroupIngress block of a MFTech template by sending traffic at
 // it. Rule 1 lets anyone reach port 80; rule 2 lets one office IP reach port 22.
 // Anything not allowed is dropped (security groups only have allow rules), and
 // outbound traffic is allowed by default because the block says nothing about egress.
@@ -71,7 +71,7 @@ const SCENARIOS: PScenario[] = [
 const SNIPPET = `WebSecurityGroup:
   Type: AWS::EC2::SecurityGroup
   Properties:
-    GroupDescription: web của ShopViet
+    GroupDescription: web của MFTech
     VpcId: !Ref Vpc
     SecurityGroupIngress:
       - IpProtocol: tcp      # rule 1
@@ -140,7 +140,7 @@ const SCENARIOS_EN: PScenario[] = [
   },
 ];
 
-const SNIPPET_EN = SNIPPET.replace("GroupDescription: web của ShopViet", "GroupDescription: ShopViet web");
+const SNIPPET_EN = SNIPPET.replace("GroupDescription: web của MFTech", "GroupDescription: MFTech web");
 
 export default function SgRuleSim() {
   const L = useLang();

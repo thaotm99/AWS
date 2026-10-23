@@ -1,6 +1,6 @@
 ---
 title: "IAM và Organizations: xác thực và ủy quyền"
-lede: "Khi ShopViet mở rộng về nhân sự, ứng dụng và số lượng account, việc kiểm soát quyền truy cập trở nên cần thiết. Bài học trình bày cách đọc một policy JSON, cơ chế đánh giá request qua nhiều lớp quyền (SCP, permissions boundary, identity policy, resource policy), việc sử dụng IAM role thay cho access key cho ứng dụng, và quản trị nhiều account bằng AWS Organizations."
+lede: "Khi MFTech mở rộng về nhân sự, ứng dụng và số lượng account, việc kiểm soát quyền truy cập trở nên cần thiết. Bài học trình bày cách đọc một policy JSON, cơ chế đánh giá request qua nhiều lớp quyền (SCP, permissions boundary, identity policy, resource policy), việc sử dụng IAM role thay cho access key cho ứng dụng, và quản trị nhiều account bằng AWS Organizations."
 minutes: 45
 scenes: 6
 prerequisites: ["global-infra"]
@@ -94,18 +94,18 @@ import QuickCompare from "../../components/scenes/s3/QuickCompare.tsx";
   { href: "#s6", label: "6 · Phân biệt nhanh" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-ShopViet bổ sung developer, account production và kiểm toán viên. Mỗi người dùng và mỗi ứng dụng chỉ được cấp quyền đúng với nhiệm vụ của mình. Yêu cầu này được đáp ứng bằng **IAM** trong phạm vi một account và **AWS Organizations** khi có nhiều account.
+MFTech bổ sung developer, account production và kiểm toán viên. Mỗi người dùng và mỗi ứng dụng chỉ được cấp quyền đúng với nhiệm vụ của mình. Yêu cầu này được đáp ứng bằng **IAM** trong phạm vi một account và **AWS Organizations** khi có nhiều account.
 </Story>
 
 <Scene id="s1" label="Phần 1/6" title="Phân tích phạm vi quyền của một policy" questions={["exam2_q37", "exam2_q38", "exam2_q48", "exam2_q54", "exam1_q58"]}>
 
 <p class="scene-intro">Mỗi quyền trên AWS được mô tả bằng một policy, tức một tài liệu JSON liệt kê action nào được phép hoặc bị từ chối trên resource nào; đọc được policy là kỹ năng cần có trước khi cấp quyền.</p>
 
-Trước khi gắn một policy do người khác soạn vào user hoặc role của ShopViet, cần xác định chính xác phạm vi quyền mà policy đó cấp. Chọn policy, dự đoán kết quả, sau đó gửi từng request để kiểm tra.
+Trước khi gắn một policy do người khác soạn vào user hoặc role của MFTech, cần xác định chính xác phạm vi quyền mà policy đó cấp. Chọn policy, dự đoán kết quả, sau đó gửi từng request để kiểm tra.
 
 <PolicyReader client:visible />
 
-Đọc đúng policy mới là một nửa yêu cầu; nửa còn lại là cấp **đúng và đủ** quyền (least privilege). Nhóm tài chính của ShopViet cần liệt kê bucket shopviet-reports và xoá báo cáo cũ, không hơn. Policy hiện tại chưa xoá được object. Chọn statement bổ sung và quan sát những request nào được phép.
+Đọc đúng policy mới là một nửa yêu cầu; nửa còn lại là cấp **đúng và đủ** quyền (least privilege). Nhóm tài chính của MFTech cần liệt kê bucket mftech-reports và xoá báo cáo cũ, không hơn. Policy hiện tại chưa xoá được object. Chọn statement bổ sung và quan sát những request nào được phép.
 
 <LeastPrivilegeSim client:visible />
 
@@ -129,7 +129,7 @@ Một request có thể bị chặn tại nhiều lớp: **SCP** của Organizat
 
 <p class="scene-intro">Ứng dụng cần quyền để gọi dịch vụ AWS; thay vì lưu thông tin xác thực cố định (access key) trong mã nguồn, ứng dụng nên nhận quyền tạm thời thông qua một IAM role.</p>
 
-Ứng dụng của ShopViet chạy trên EC2 instance cần đọc dữ liệu từ một bảng DynamoDB. Phương án đơn giản nhưng rủi ro là lưu access key trong mã nguồn: khi mã nguồn bị lộ, access key cũng bị lộ. Phương án an toàn:
+Ứng dụng của MFTech chạy trên EC2 instance cần đọc dữ liệu từ một bảng DynamoDB. Phương án đơn giản nhưng rủi ro là lưu access key trong mã nguồn: khi mã nguồn bị lộ, access key cũng bị lộ. Phương án an toàn:
 
 <StepSim client:visible height={220}
   intro="EC2 instance web-1 cần đọc bảng orders trong DynamoDB. Thực hiện lần lượt từng bước để cấp quyền mà không lưu access key trên instance."
@@ -152,11 +152,11 @@ Một request có thể bị chặn tại nhiều lớp: **SCP** của Organizat
 Nguyên tắc tương tự áp dụng cho các trường hợp khác:
 
 <RequirementPicker client:visible items={[
-  { need: "Developer của ShopViet tại account dev cần xem log tại account production", answer: "Tạo role tại production, developer assume role đó",
+  { need: "Developer của MFTech tại account dev cần xem log tại account production", answer: "Tạo role tại production, developer assume role đó",
     why: "Role tại account đích có trust policy tin cậy account dev. Developer sử dụng credentials tạm thời của role, không cần tạo user mới tại production." },
   { need: "Lambda xử lý đơn hàng tại account A đọc ảnh trong S3 tại account B", answer: "Execution role của Lambda + bucket policy tại account B",
     why: "Execution role cấp quyền phía Lambda; bucket policy phía account B phải cho phép role đó." },
-  { need: "Mỗi Pod trên cluster Amazon EKS của ShopViet chỉ được gọi đúng dịch vụ mà Pod đó cần", answer: "IAM Roles for Service Accounts (IRSA)",
+  { need: "Mỗi Pod trên cluster Amazon EKS của MFTech chỉ được gọi đúng dịch vụ mà Pod đó cần", answer: "IAM Roles for Service Accounts (IRSA)",
     why: "Mỗi Kubernetes service account được ánh xạ tới một IAM role riêng, đảm bảo least privilege cho từng Pod." },
   { need: "Lambda kết nối RDS PostgreSQL mà không lưu mật khẩu trong mã nguồn", answer: "IAM database authentication + IAM role cho Lambda",
     why: "Lambda sử dụng role để lấy token xác thực ngắn hạn khi kết nối RDS." },
@@ -164,7 +164,7 @@ Nguyên tắc tương tự áp dụng cho các trường hợp khác:
     why: "Trust policy là resource-based policy duy nhất của chính IAM: gắn vào role và xác định principal nào được assume role đó." },
   { need: "Các EC2 instance đã có role đọc RDS và Secrets Manager, nay cần thêm quyền để Systems Manager patch hệ điều hành", answer: "Bật Default Host Management Configuration, hoặc thêm policy vào role hiện có",
     why: "Không gắn được role thứ hai vào instance. Default Host Management Configuration của Systems Manager tạo và áp dụng một IAM role mặc định cho mọi instance trong account và Region, không cần sửa instance profile (yêu cầu IMDSv2 và SSM Agent 3.2.582.0 trở lên). Instance profile hiện có không được cho phép ssm:UpdateInstanceInformation, nếu không SSM Agent dùng quyền của instance profile trước." },
-  { need: "Một dịch vụ AWS cần quyền gọi dịch vụ khác thay mặt ShopViet", answer: "Service-linked role",
+  { need: "Một dịch vụ AWS cần quyền gọi dịch vụ khác thay mặt MFTech", answer: "Service-linked role",
     why: "Service-linked role do dịch vụ định nghĩa sẵn, gồm trust policy và permissions policy. Chỉ dịch vụ đó assume được role (trừ khi dịch vụ quy định khác); quản trị viên xem được nhưng không sửa được quyền, và permissions policy này không gắn được cho identity khác." },
 ]} />
 
@@ -176,7 +176,7 @@ Nguyên tắc tương tự áp dụng cho các trường hợp khác:
 
 <p class="scene-intro">Khi doanh nghiệp dùng nhiều AWS account cho các môi trường và team khác nhau, cần một điểm quản lý tập trung để áp dụng policy chung và dùng consolidated billing.</p>
 
-ShopViet hiện có nhiều account: dev, staging, prod, sandbox, marketing. Quản trị thủ công từng account không thể duy trì khi quy mô tăng. Mỗi tình huống dưới đây là một tác vụ quản trị thực tế. Thử phương án thủ công trước, sau đó chuyển sang công cụ của AWS để so sánh.
+MFTech hiện có nhiều account: dev, staging, prod, sandbox, marketing. Quản trị thủ công từng account không thể duy trì khi quy mô tăng. Mỗi tình huống dưới đây là một tác vụ quản trị thực tế. Thử phương án thủ công trước, sau đó chuyển sang công cụ của AWS để so sánh.
 
 <OrgGuardSim client:visible />
 
@@ -188,7 +188,7 @@ ShopViet hiện có nhiều account: dev, staging, prod, sandbox, marketing. Qu�
 
 <p class="scene-intro">Nhân viên đã có danh tính trong identity provider (IdP) của công ty; thay vì tạo thêm thông tin đăng nhập AWS riêng cho từng người, federation cho phép họ đăng nhập AWS bằng chính danh tính đó.</p>
 
-ShopViet có 6 account trong Organizations và quản lý nhân sự trong Active Directory on-premises; một công ty con dùng Microsoft Entra ID. Nhân viên cần vào đúng account theo vai trò công việc, bằng chính danh tính công ty. AWS khuyến nghị người dùng là con người truy cập AWS qua **federation** với một identity provider và dùng credentials tạm thời; để quản lý tập trung nhiều account, AWS khuyến nghị **IAM Identity Center**.
+MFTech có 6 account trong Organizations và quản lý nhân sự trong Active Directory on-premises; một công ty con dùng Microsoft Entra ID. Nhân viên cần vào đúng account theo vai trò công việc, bằng chính danh tính công ty. AWS khuyến nghị người dùng là con người truy cập AWS qua **federation** với một identity provider và dùng credentials tạm thời; để quản lý tập trung nhiều account, AWS khuyến nghị **IAM Identity Center**.
 
 Identity Center có đúng một identity source cho mỗi organization: Identity Center directory, Active Directory (qua **AD Connector** hoặc **AWS Managed Microsoft AD**), hoặc IdP bên ngoài qua **SAML 2.0**. Quyền được định nghĩa bằng **permission set** (tập hợp IAM policy) và gán cho user hoặc group trên từng account. Chọn tình huống và so sánh các phương án.
 
@@ -204,7 +204,7 @@ Directory dùng cho Identity Center phải nằm trong management account của 
 
 <p class="scene-intro">Phần lớn sự cố mất quyền kiểm soát AWS account bắt nguồn từ việc bỏ qua một vài nguyên tắc cơ bản về quản lý danh tính và thông tin đăng nhập.</p>
 
-Năm best practice dưới đây quyết định mức độ an toàn của AWS account ShopViet. Chọn tình huống, thử phương án không được khuyến nghị trước, sau đó chuyển sang phương án đúng.
+Năm best practice dưới đây quyết định mức độ an toàn của AWS account MFTech. Chọn tình huống, thử phương án không được khuyến nghị trước, sau đó chuyển sang phương án đúng.
 
 <IamMythsSim client:visible />
 
@@ -216,7 +216,7 @@ Năm best practice dưới đây quyết định mức độ an toàn của AWS 
 
 <p class="scene-intro">IAM và các dịch vụ liên quan có nhiều công cụ tên gần giống nhau; mỗi công cụ giải quyết một nhu cầu riêng về quyền truy cập.</p>
 
-Các công cụ dưới đây có tên hoặc chức năng gần nhau. Mỗi mục nêu công cụ dùng khi nào, vì sao không phù hợp với tình huống của ShopViet, và phương án phù hợp.
+Các công cụ dưới đây có tên hoặc chức năng gần nhau. Mỗi mục nêu công cụ dùng khi nào, vì sao không phù hợp với tình huống của MFTech, và phương án phù hợp.
 
 <QuickCompare client:visible items={[
   { name: "IAM last accessed information (access advisor)",
@@ -225,7 +225,7 @@ Các công cụ dưới đây có tên hoặc chức năng gần nhau. Mỗi m�
     instead: "**IAM Access Analyzer** với external access analyzer, zone of trust là Organization (phần 4)." },
   { name: "IAM Access Analyzer for S3",
     use: "Tạo finding cho bucket cho phép truy cập public hoặc từ account khác (qua bucket policy, ACL, access point policy); chặn public access bằng một thao tác. Cần tạo external access analyzer cho từng Region; không tính thêm phí trên console S3.",
-    notHere: "ShopViet cần tạo thumbnail mỗi khi có ảnh mới tải lên. Access Analyzer phân tích policy, không phát sự kiện khi có object mới nên không kích hoạt được Lambda.",
+    notHere: "MFTech cần tạo thumbnail mỗi khi có ảnh mới tải lên. Access Analyzer phân tích policy, không phát sự kiện khi có object mới nên không kích hoạt được Lambda.",
     instead: "**S3 Event Notifications** (đích: SNS, SQS, Lambda, EventBridge) gọi Lambda tạo thumbnail và ghi sang bucket thứ hai, tránh vòng lặp kích hoạt." },
   { name: "AWS Config",
     use: "Ghi lại cấu hình tài nguyên, quan hệ giữa các tài nguyên và lịch sử thay đổi; đánh giá tuân thủ bằng rule.",
@@ -241,7 +241,7 @@ Các công cụ dưới đây có tên hoặc chức năng gần nhau. Mỗi m�
     instead: "Mỗi dịch vụ một **S3 access point**, access point policy giới hạn theo prefix (bài S3). Policy dùng lại cho nhiều role: customer managed policy." },
   { name: "Service-linked role",
     use: "Role do một dịch vụ AWS định nghĩa sẵn để gọi dịch vụ khác thay mặt account. Quản trị viên xem được nhưng không sửa được quyền; chỉ dịch vụ đó assume được; permissions policy không gắn được cho identity khác. SCP không ảnh hưởng service-linked role.",
-    notHere: "Developer có quyền root user trong account riêng, ShopViet cần giữ nguyên trail CloudTrail bắt buộc. Service-linked role không phải cơ chế giới hạn quyền của người dùng, và quyền của nó do dịch vụ định nghĩa.",
+    notHere: "Developer có quyền root user trong account riêng, MFTech cần giữ nguyên trail CloudTrail bắt buộc. Service-linked role không phải cơ chế giới hạn quyền của người dùng, và quyền của nó do dịch vụ định nghĩa.",
     instead: "**SCP** deny các thao tác thay đổi CloudTrail, gắn vào OU chứa account của developer (phần 4)." },
 ]} />
 
@@ -266,14 +266,14 @@ Phân loại từng chức năng vào loại policy tương ứng. Trên thiết
   ]}
 />
 
-Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTech, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "Ứng dụng của ShopViet trên EC2 instance cần đọc ảnh trên S3 và đơn hàng trên DynamoDB. Phương án cấp quyền nào an toàn nhất?",
+  { q: "Ứng dụng của MFTech trên EC2 instance cần đọc ảnh trên S3 và đơn hàng trên DynamoDB. Phương án cấp quyền nào an toàn nhất?",
     opts: ["Lưu access key của một IAM user trong file cấu hình", "Gắn IAM role vào EC2 instance qua instance profile", "Dùng access key của root user"],
     a: 1,
     why: "Role cấp credentials tạm thời, tự động xoay vòng, không lưu access key nào trên instance." },
-  { q: "Một policy cho phép ec2:RunInstances với điều kiện aws:RequestedRegion = eu-west-1. Developer của ShopViet đang ở Việt Nam. Nhận định nào đúng?",
+  { q: "Một policy cho phép ec2:RunInstances với điều kiện aws:RequestedRegion = eu-west-1. Developer của MFTech đang ở Việt Nam. Nhận định nào đúng?",
     opts: ["Chỉ khởi chạy được EC2 instance ở eu-west-1, gọi API từ đâu cũng được", "Chỉ gọi được API khi người dùng ở châu Âu", "Khởi chạy được EC2 instance ở mọi Region nhưng phải gọi API từ eu-west-1"],
     a: 0,
     why: "aws:RequestedRegion là Region mà API call hướng tới, không phải vị trí của bên gọi." },
@@ -281,11 +281,11 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["Được phép vì identity policy cho phép", "Bị từ chối", "Được phép nếu user là admin"],
     a: 1,
     why: "SCP đặt giới hạn quyền tối đa cho toàn bộ account. Thao tác nằm ngoài giới hạn này không được phép với bất kỳ principal nào, kể cả admin và root user của member account." },
-  { q: "ShopViet cho phép developer tự gắn managed policy khi cần, nhưng developer không được tự nâng quyền lên admin. Cơ chế nào đáp ứng yêu cầu?",
+  { q: "MFTech cho phép developer tự gắn managed policy khi cần, nhưng developer không được tự nâng quyền lên admin. Cơ chế nào đáp ứng yêu cầu?",
     opts: ["Gắn permissions boundary cho mỗi developer", "Dùng SCP chặn cả account", "Xóa quyền IAM của developer"],
     a: 0,
     why: "Permissions boundary giới hạn quyền tối đa; kể cả khi developer tự gắn AdministratorAccess, quyền hiệu lực vẫn không vượt quá boundary." },
-  { q: "Một công ty con của ShopViet quản lý nhân sự trên Okta và có 8 account trong Organizations. Phương án nào cấp quyền theo nhóm với ít công vận hành nhất?",
+  { q: "Một công ty con của MFTech quản lý nhân sự trên Okta và có 8 account trong Organizations. Phương án nào cấp quyền theo nhóm với ít công vận hành nhất?",
     opts: ["Tạo IAM SAML identity provider và role tại từng account", "IAM Identity Center kết nối Okta qua SAML 2.0 và SCIM, gán permission set cho group", "Tạo IAM user cho từng nhân viên tại từng account"],
     a: 1,
     why: "Identity Center quản lý quyền tập trung cho mọi account; SCIM tự động provision user và group, permission set tạo role tại từng account được gán. IAM SAML identity provider phải nằm cùng account với role nên phải cấu hình lặp lại." },

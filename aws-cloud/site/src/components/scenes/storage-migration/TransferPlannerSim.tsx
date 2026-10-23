@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./migration-sims.css";
 
-// ShopViet moves the old warehouse NAS to AWS. Pick how much data, which link and which
+// MFTech moves the old warehouse NAS to AWS. Pick how much data, which link and which
 // destination, then race the two ways in: online with AWS DataSync, or shipping Snowball
 // Edge devices. Days are illustrative assumptions (80% link utilisation, ~10 days per Snowball
 // round), not AWS figures. Capacity: Storage Optimized 210 TB (snowball/device-differences.html).
@@ -148,7 +148,7 @@ export default function TransferPlannerSim() {
           <path className="mgx-road" d={`M${SRC_X} ${L2} H${AWS_X}`} />
           <g className="mgx-node on">
             <rect x={20} y={50} width={140} height={170} rx={10} />
-            <text className="mgx-t" x={90} y={128} textAnchor="middle">{tr({ vi: "Kho ShopViet", en: "ShopViet warehouse" })}</text>
+            <text className="mgx-t" x={90} y={128} textAnchor="middle">{tr({ vi: "Kho MFTech", en: "MFTech warehouse" })}</text>
             <text className="mgx-s" x={90} y={146} textAnchor="middle">{tr({ vi: "NAS hiện có · ", en: "existing NAS · " })}{fmtSize(tb)}</text>
           </g>
           <g className={`mgx-node ${lit.net ?? ""}`}>

@@ -4,19 +4,19 @@ import CaseSim, { type CaseScenario } from "../global-infra/CaseSim";
 type Lang = ReturnType<typeof useLang>;
 
 // Seven VPC settings that look fine but behave differently from what people expect,
-// each tried on ShopViet's network.
+// each tried on MFTech's network.
 
 function scenarios(L: Lang): CaseScenario[] {
 return [
   {
     name: L({ vi: "Tên miền nội bộ không phân giải được", en: "Internal domain name does not resolve" }),
-    request: "dig api.shopviet.internal",
+    request: "dig api.mftech.internal",
     from: L({ vi: "từ EC2 instance trong VPC", en: "from an EC2 instance in the VPC" }),
-    boxes: [{ x: 20, y: 30, w: 520, h: 180, label: "VPC ShopViet" }],
+    boxes: [{ x: 20, y: 30, w: 520, h: 180, label: "VPC MFTech" }],
     nodes: [
       { id: "ec2", x: 50, y: 97, w: 130, l1: "EC2 web", l2: L({ vi: "gửi truy vấn DNS", en: "sends DNS query" }) },
       { id: "res", x: 280, y: 97, w: 180, l1: "Route 53 Resolver", l2: L({ vi: "địa chỉ VPC +2", en: "VPC base address +2" }) },
-      { id: "phz", x: 620, y: 97, w: 170, l1: "Private hosted zone", l2: "shopviet.internal" },
+      { id: "phz", x: 620, y: 97, w: 170, l1: "Private hosted zone", l2: "mftech.internal" },
     ],
     links: [{ a: "ec2", b: "res" }, { a: "res", b: "phz" }],
     start: "ec2",
@@ -24,7 +24,7 @@ return [
     run: (on) => on
       ? { steps: [
             { at: "res", state: "pass", msg: L({ vi: "VPC đã bật cả hai thuộc tính DNS.", en: "The VPC has both DNS attributes enabled." }) },
-            { at: "phz", state: "pass", msg: L({ vi: "Trả về `10.0.2.40` cho `api.shopviet.internal`.", en: "Returns `10.0.2.40` for `api.shopviet.internal`." }) },
+            { at: "phz", state: "pass", msg: L({ vi: "Trả về `10.0.2.40` cho `api.mftech.internal`.", en: "Returns `10.0.2.40` for `api.mftech.internal`." }) },
           ],
           ok: true, result: L({ vi: "Phân giải thành công. Private hosted zone yêu cầu VPC bật **cả** enableDnsHostnames và enableDnsSupport.", en: "Resolution succeeds. A private hosted zone requires the VPC to enable **both** enableDnsHostnames and enableDnsSupport." }) }
       : { steps: [{ at: "res", state: "block", flash: "NXDOMAIN", msg: L({ vi: "VPC chưa bật đồng thời `enableDnsHostnames` và `enableDnsSupport`.", en: "The VPC does not have both `enableDnsHostnames` and `enableDnsSupport` enabled." }) }],
@@ -54,7 +54,7 @@ return [
   },
   {
     name: L({ vi: "Yêu cầu port forwarding trên thiết bị NAT", en: "Port forwarding required on the NAT device" }),
-    request: "ssh -p 2222 nat.shopviet.vn",
+    request: "ssh -p 2222 nat.mftech.vn",
     from: L({ vi: "từ máy quản trị", en: "from the admin machine" }),
     nodes: [
       { id: "admin", x: 30, y: 97, w: 60, l1: L({ vi: "Quản trị viên", en: "Administrator" }), user: true },
@@ -80,7 +80,7 @@ return [
     from: L({ vi: "từ Auto Scaling group", en: "from the Auto Scaling group" }),
     nodes: [
       { id: "lt", x: 30, y: 97, w: 170, l1: "Launch template", l2: "tenancy: default" },
-      { id: "vpc", x: 300, y: 97, w: 180, l1: "VPC ShopViet" },
+      { id: "vpc", x: 300, y: 97, w: 180, l1: "VPC MFTech" },
       { id: "ec2", x: 600, y: 97, w: 190, l1: L({ vi: "EC2 mới", en: "New EC2" }) },
     ],
     links: [{ a: "lt", b: "vpc" }, { a: "vpc", b: "ec2" }],
@@ -100,7 +100,7 @@ return [
   },
   {
     name: L({ vi: "Cho phép truy cập web bằng security group", en: "Allow web access with a security group" }),
-    request: "GET https://shopviet.vn",
+    request: "GET https://mftech.vn",
     from: L({ vi: "từ người dùng", en: "from users" }),
     nodes: [
       { id: "user", x: 30, y: 97, w: 60, l1: L({ vi: "Người dùng", en: "Users" }), user: true },
@@ -128,7 +128,7 @@ return [
     name: L({ vi: "Hai EC2 instance đồng bộ dữ liệu", en: "Two EC2 instances synchronize data" }),
     request: L({ vi: "rsync 200 GB/ngày", en: "rsync 200 GB/day" }),
     from: L({ vi: "giữa hai EC2 instance cùng Region", en: "between two EC2 instances in the same Region" }),
-    boxes: [{ x: 20, y: 70, w: 780, h: 160, label: "VPC ShopViet" }],
+    boxes: [{ x: 20, y: 70, w: 780, h: 160, label: "VPC MFTech" }],
     nodes: [
       { id: "a", x: 60, y: 140, w: 150, l1: "EC2 A" },
       { id: "igw", x: 335, y: 16, w: 150, h: 40, l1: "Internet Gateway" },

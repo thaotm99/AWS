@@ -20,7 +20,7 @@ const ZONE_TIERS: Tier[] = ["public", "app", "data"];
 
 /**
  * One architecture lab: pick a service, then a slot (or drag the service onto it), and check the design
- * against ShopViet's requirements. The design is kept in this browser.
+ * against MFTech's requirements. The design is kept in this browser.
  */
 export default function ArchitectureLab({ id, n, total, learn, next }: Props) {
   const { t, locale } = useI18n();

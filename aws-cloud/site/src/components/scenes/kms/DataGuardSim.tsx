@@ -3,19 +3,19 @@ import HopSim, { type HopScenario } from "../security/HopSim";
 
 type Lang = ReturnType<typeof useLang>;
 
-// Data of ShopViet at rest (KMS on RDS and EBS) and in transit (SSL/TLS, ACM certificates).
+// Data of MFTech at rest (KMS on RDS and EBS) and in transit (SSL/TLS, ACM certificates).
 // Practice-test sources (build-time only): exam2_q40, exam4_q31, exam2_q45, exam5_q40, exam5_q15, exam2_q9.
 
 function scenarios(L: Lang): HopScenario[] {
 return [
   {
     name: L({ vi: "Ứng dụng đọc đơn hàng từ RDS DB instance", en: "The application reads orders from the RDS DB instance" }),
-    story: L({ vi: "RDS DB instance của ShopViet đã được mã hoá bằng KMS. Câu hỏi đặt ra: dữ liệu **khi truyền** từ ứng dụng tới DB instance có được bảo vệ không?", en: "ShopViet's RDS DB instance is already encrypted with KMS. The question: is data **in transit** from the application to the DB instance protected?" }),
+    story: L({ vi: "RDS DB instance của MFTech đã được mã hoá bằng KMS. Câu hỏi đặt ra: dữ liệu **khi truyền** từ ứng dụng tới DB instance có được bảo vệ không?", en: "MFTech's RDS DB instance is already encrypted with KMS. The question: is data **in transit** from the application to the DB instance protected?" }),
     request: "SELECT * FROM don_hang",
     toggle: { label: L({ vi: "Kết nối bằng SSL/TLS", en: "Connect with SSL/TLS" }), initial: false },
     start: "app",
     nodes: [
-      { id: "app", x: 100, y: 120, label: "App ShopViet", sub: "EC2", kind: "app" },
+      { id: "app", x: 100, y: 120, label: "App MFTech", sub: "EC2", kind: "app" },
       { id: "spy", x: 380, y: 215, label: L({ vi: "Bên nghe lén mạng", en: "Network eavesdropper" }), kind: "bad" },
       { id: "rds", x: 420, y: 70, label: "RDS", sub: L({ vi: "mã hoá at rest", en: "encrypted at rest" }), kind: "store" },
       { id: "kms", x: 690, y: 70, label: "AWS KMS", sub: L({ vi: "key của RDS", en: "RDS key" }), kind: "key" },
@@ -37,12 +37,12 @@ return [
     toggle: { label: L({ vi: "Sử dụng quy trình snapshot", en: "Use the snapshot procedure" }), initial: false },
     start: "ops",
     nodes: [
-      { id: "ops", x: 90, y: 60, label: L({ vi: "Kỹ sư ShopViet", en: "ShopViet engineer" }), kind: "user" },
+      { id: "ops", x: 90, y: 60, label: L({ vi: "Kỹ sư MFTech", en: "MFTech engineer" }), kind: "user" },
       { id: "rds", x: 90, y: 190, label: L({ vi: "DB instance hiện có", en: "Existing DB instance" }), sub: L({ vi: "chưa mã hoá", en: "unencrypted" }), kind: "store" },
       { id: "snap", x: 300, y: 190, label: "Snapshot", sub: L({ vi: "chưa mã hoá", en: "unencrypted" }), kind: "store" },
       { id: "copy", x: 520, y: 190, label: L({ vi: "Bản copy của snapshot", en: "Snapshot copy" }), sub: L({ vi: "mã hoá bằng KMS key", en: "encrypted with KMS key" }), kind: "key" },
       { id: "new", x: 720, y: 190, w: 120, label: L({ vi: "DB instance mới", en: "New DB instance" }), sub: L({ vi: "đã mã hoá", en: "encrypted" }), kind: "store" },
-      { id: "app", x: 720, y: 60, w: 120, label: "App ShopViet", kind: "app" },
+      { id: "app", x: 720, y: 60, w: 120, label: "App MFTech", kind: "app" },
     ],
     hidden: (on) => (on ? [] : ["snap", "copy", "new"]),
     run: (on) => on
@@ -58,7 +58,7 @@ return [
   },
   {
     name: L({ vi: "Chuyển SQL Server lên AWS", en: "Moving SQL Server to AWS" }),
-    story: L({ vi: "ShopViet chuyển database SQL Server của bộ phận kế toán lên AWS. Yêu cầu: mã hoá at rest, **tối thiểu tác vụ quản trị**.", en: "ShopViet moves the accounting department's SQL Server database to AWS. Requirements: encryption at rest, **minimal administrative tasks**." }),
+    story: L({ vi: "MFTech chuyển database SQL Server của bộ phận kế toán lên AWS. Yêu cầu: mã hoá at rest, **tối thiểu tác vụ quản trị**.", en: "MFTech moves the accounting department's SQL Server database to AWS. Requirements: encryption at rest, **minimal administrative tasks**." }),
     request: "Migrate SQL Server",
     toggle: { label: L({ vi: "Sử dụng Amazon RDS (tắt: tự cài đặt trên EC2 instance)", en: "Use Amazon RDS (off: self-install on an EC2 instance)" }), initial: false },
     start: "dc",
@@ -67,7 +67,7 @@ return [
       { id: "rds", x: 400, y: 70, label: "RDS for SQL Server", sub: L({ vi: "Multi-AZ, mã hoá KMS", en: "Multi-AZ, KMS-encrypted" }), kind: "store" },
       { id: "stb", x: 680, y: 70, label: L({ vi: "Standby instance", en: "Standby instance" }), sub: L({ vi: "AZ khác", en: "another AZ" }), kind: "store" },
       { id: "ec2", x: 400, y: 200, label: L({ vi: "SQL Server trên EC2", en: "SQL Server on EC2" }), sub: L({ vi: "tự cài đặt, tự vá lỗi", en: "self-installed, self-patched" }), kind: "app" },
-      { id: "ops", x: 680, y: 200, label: L({ vi: "Kỹ sư ShopViet", en: "ShopViet engineer" }), kind: "user" },
+      { id: "ops", x: 680, y: 200, label: L({ vi: "Kỹ sư MFTech", en: "MFTech engineer" }), kind: "user" },
     ],
     hidden: (on) => (on ? ["ec2", "ops"] : ["rds", "stb"]),
     run: (on) => on
@@ -77,7 +77,7 @@ return [
         ], ok: true, result: L({ vi: "Mã hoá at rest có sẵn, phần vận hành do AWS đảm nhận.", en: "Encryption at rest is built in, and AWS handles operations." }) }
       : { hops: [
           { to: "ec2", state: "change", tag: L({ vi: "TỰ VẬN HÀNH", en: "SELF-MANAGED" }), msg: L({ vi: "Tự cài đặt SQL Server, tự mã hoá EBS volume.", en: "Install SQL Server and encrypt the EBS volumes yourself." }) },
-          { to: "ops", state: "alert", tag: L({ vi: "THÊM TÁC VỤ", en: "MORE TASKS" }), msg: L({ vi: "Backup, vá lỗi và failover đều do ShopViet đảm nhận.", en: "Backups, patching and failover are all ShopViet's job." }) },
+          { to: "ops", state: "alert", tag: L({ vi: "THÊM TÁC VỤ", en: "MORE TASKS" }), msg: L({ vi: "Backup, vá lỗi và failover đều do MFTech đảm nhận.", en: "Backups, patching and failover are all MFTech's job." }) },
         ], ok: false, result: L({ vi: "Hoạt động được nhưng phát sinh nhiều tác vụ quản trị. Sử dụng RDS for SQL Server Multi-AZ, mã hoá bằng KMS.", en: "It works but adds many administrative tasks. Use RDS for SQL Server Multi-AZ, encrypted with KMS." }) },
   },
   {
@@ -98,21 +98,21 @@ return [
     ], ok: true, result: L({ vi: "Một tuỳ chọn encryption trên volume bảo vệ cả ba: dữ liệu at rest, snapshot, và dữ liệu truyền giữa volume với instance.", en: "One encryption option on the volume protects all three: data at rest, snapshots, and data moving between the volume and the instance." }) }),
   },
   {
-    name: L({ vi: "HTTPS cho shopviet.vn trên CloudFront", en: "HTTPS for shopviet.vn on CloudFront" }),
-    story: L({ vi: "ShopViet cấu hình tên miền **shopviet.vn** cho CloudFront. Origin đặt tại Singapore.", en: "ShopViet configures the domain **shopviet.vn** for CloudFront. The origin is in Singapore." }),
-    request: "GET https://shopviet.vn/",
+    name: L({ vi: "HTTPS cho mftech.vn trên CloudFront", en: "HTTPS for mftech.vn on CloudFront" }),
+    story: L({ vi: "MFTech cấu hình tên miền **mftech.vn** cho CloudFront. Origin đặt tại Singapore.", en: "MFTech configures the domain **mftech.vn** for CloudFront. The origin is in Singapore." }),
+    request: "GET https://mftech.vn/",
     toggle: { label: L({ vi: "Chứng chỉ ACM tạo tại us-east-1", en: "ACM certificate created in us-east-1" }), initial: false },
     start: "user",
     nodes: [
       { id: "user", x: 90, y: 130, label: L({ vi: "Người dùng", en: "Users" }), kind: "user" },
-      { id: "cf", x: 360, y: 130, label: "CloudFront", sub: "shopviet.vn", kind: "svc" },
+      { id: "cf", x: 360, y: 130, label: "CloudFront", sub: "mftech.vn", kind: "svc" },
       { id: "acm", x: 360, y: 220, label: "ACM", sub: L({ vi: "chứng chỉ TLS", en: "TLS certificate" }), kind: "key" },
       { id: "origin", x: 660, y: 130, label: "Origin", sub: "ap-southeast-1", kind: "store" },
     ],
     run: (on) => on
       ? { hops: [
           { from: "acm", to: "cf", state: "pass", tag: "us-east-1", msg: L({ vi: "Chứng chỉ tại **us-east-1** được liên kết với distribution.", en: "A certificate in **us-east-1** is associated with the distribution." }) },
-          { from: "user", to: "cf", state: "pass", tag: "TLS", msg: L({ vi: "Trình duyệt nhận chứng chỉ hợp lệ của shopviet.vn.", en: "The browser receives a valid certificate for shopviet.vn." }) },
+          { from: "user", to: "cf", state: "pass", tag: "TLS", msg: L({ vi: "Trình duyệt nhận chứng chỉ hợp lệ của mftech.vn.", en: "The browser receives a valid certificate for mftech.vn." }) },
           { to: "origin", state: "pass", msg: L({ vi: "Request được chuyển tới origin.", en: "The request is forwarded to the origin." }) },
           { to: "user", state: "pass", packet: "pkt-back", tag: "200", msg: L({ vi: "Trang chủ được phục vụ qua HTTPS.", en: "The home page is served over HTTPS." }) },
         ], ok: true, result: L({ vi: "CloudFront chỉ sử dụng chứng chỉ ACM tại **us-east-1** (N. Virginia), không phụ thuộc Region của origin.", en: "CloudFront uses only ACM certificates in **us-east-1** (N. Virginia), regardless of the origin's Region." }) }
@@ -123,7 +123,7 @@ return [
   },
   {
     name: L({ vi: "Chứng chỉ import sắp hết hạn", en: "An imported certificate is about to expire" }),
-    story: L({ vi: "Một chứng chỉ mua từ bên ngoài được **import** vào ACM. ACM không tự động gia hạn loại chứng chỉ này. ShopViet cần nhận cảnh báo trước 30 ngày, với lượng script tối thiểu.", en: "A certificate bought from a third party is **imported** into ACM. ACM does not renew this kind of certificate automatically. ShopViet needs an alert 30 days ahead, with minimal scripting." }),
+    story: L({ vi: "Một chứng chỉ mua từ bên ngoài được **import** vào ACM. ACM không tự động gia hạn loại chứng chỉ này. MFTech cần nhận cảnh báo trước 30 ngày, với lượng script tối thiểu.", en: "A certificate bought from a third party is **imported** into ACM. ACM does not renew this kind of certificate automatically. MFTech needs an alert 30 days ahead, with minimal scripting." }),
     request: L({ vi: "Chứng chỉ còn 30 ngày", en: "Certificate has 30 days left" }),
     toggle: { label: L({ vi: "Kích hoạt AWS Config rule + SNS", en: "Enable AWS Config rule + SNS" }), initial: false },
     start: "acm",
@@ -150,5 +150,5 @@ return [
 export default function DataGuardSim() {
   const L = useLang();
   return <HopSim scenarios={scenarios(L)} action={L({ vi: "Chạy", en: "Run" })} height={250}
-    label={L({ vi: "Dữ liệu của ShopViet khi truyền và khi lưu trữ: TLS, KMS, snapshot và chứng chỉ ACM", en: "ShopViet's data in transit and at rest: TLS, KMS, snapshots and ACM certificates" })} />;
+    label={L({ vi: "Dữ liệu của MFTech khi truyền và khi lưu trữ: TLS, KMS, snapshot và chứng chỉ ACM", en: "MFTech's data in transit and at rest: TLS, KMS, snapshots and ACM certificates" })} />;
 }

@@ -1,7 +1,7 @@
 import PacketSim, { type PLayout, type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// Six ShopViet events and the service that should carry each one: SNS fan-out to
+// Six MFTech events and the service that should carry each one: SNS fan-out to
 // several SQS queues, an EventBridge partner event bus for a SaaS CRM, EventBridge
 // Scheduler starting a long Fargate job, Step Functions retrying an AWS Batch step,
 // Amazon MQ for an app that speaks AMQP, and AWS Config + SNS for an expiring cert.
@@ -66,7 +66,7 @@ const SCENARIOS: PScenario[] = [
     toggle: { label: "Sử dụng EventBridge (partner event source)", initial: false },
     layout: (eb): PLayout => ({
       viewBox: VB,
-      aria: "Sự kiện từ phần mềm CRM được chuyển tới ShopViet qua EventBridge hoặc qua script tự phát triển",
+      aria: "Sự kiện từ phần mềm CRM được chuyển tới MFTech qua EventBridge hoặc qua script tự phát triển",
       nodes: [
         { id: "crm", x: 80, y: Y, w: 120, l1: "CRM (SaaS)", l2: "đối tác" },
         { id: "mid", x: 280, y: Y, w: 170, l1: eb ? "EventBridge" : "Script trên EC2", l2: eb ? "partner event bus" : "poll API CRM mỗi 5 phút" },
@@ -120,7 +120,7 @@ const SCENARIOS: PScenario[] = [
   {
     name: "Xử lý video sản phẩm nhiều bước",
     action: "Tải video lên",
-    request: "s3://shopviet-video/ao-khoac.mov",
+    request: "s3://mftech-video/ao-khoac.mov",
     toggle: { label: "Cấu hình Retry cho bước chuyển mã trong state machine", initial: false },
     layout: {
       viewBox: VB,
@@ -179,7 +179,7 @@ const SCENARIOS: PScenario[] = [
   {
     name: "Chứng chỉ import sắp hết hạn",
     action: "Chạy đánh giá",
-    request: "Chứng chỉ của shopviet.vn còn hiệu lực 29 ngày",
+    request: "Chứng chỉ của mftech.vn còn hiệu lực 29 ngày",
     toggle: { label: "Kích hoạt AWS Config managed rule (daysToExpiration = 30) + SNS", initial: false },
     layout: {
       viewBox: VB,
@@ -194,7 +194,7 @@ const SCENARIOS: PScenario[] = [
     },
     run: (on) => on
       ? { back: false, steps: [
-            { at: "cfg", state: "change", tag: "NON_COMPLIANT", msg: "Managed rule đánh giá chứng chỉ là NON_COMPLIANT vì còn hiệu lực dưới 30 ngày. Tham số `daysToExpiration` có giá trị mặc định 14; ShopViet đã cấu hình thành 30." },
+            { at: "cfg", state: "change", tag: "NON_COMPLIANT", msg: "Managed rule đánh giá chứng chỉ là NON_COMPLIANT vì còn hiệu lực dưới 30 ngày. Tham số `daysToExpiration` có giá trị mặc định 14; MFTech đã cấu hình thành 30." },
             { at: "sns", state: "pass", msg: "Kết quả đánh giá được gửi tới SNS topic." },
             { at: "team", state: "pass", msg: "Đội bảo mật nhận email thông báo, còn khoảng một tháng để thay thế chứng chỉ." },
           ], ok: true,
@@ -264,7 +264,7 @@ const SCENARIOS_EN: PScenario[] = [
     toggle: { label: "Use EventBridge (partner event source)", initial: false },
     layout: (eb): PLayout => ({
       viewBox: VB,
-      aria: "Events from the CRM software reach ShopViet through EventBridge or through a self-developed script",
+      aria: "Events from the CRM software reach MFTech through EventBridge or through a self-developed script",
       nodes: [
         { id: "crm", x: 80, y: Y, w: 120, l1: "CRM (SaaS)", l2: "partner" },
         { id: "mid", x: 280, y: Y, w: 170, l1: eb ? "EventBridge" : "Script on EC2", l2: eb ? "partner event bus" : "polls CRM API every 5 min" },
@@ -318,7 +318,7 @@ const SCENARIOS_EN: PScenario[] = [
   {
     name: "Multi-step product video processing",
     action: "Upload video",
-    request: "s3://shopviet-video/ao-khoac.mov",
+    request: "s3://mftech-video/ao-khoac.mov",
     toggle: { label: "Configure Retry for the transcoding step in the state machine", initial: false },
     layout: {
       viewBox: VB,
@@ -377,7 +377,7 @@ const SCENARIOS_EN: PScenario[] = [
   {
     name: "Imported certificate about to expire",
     action: "Run evaluation",
-    request: "The shopviet.vn certificate is valid for 29 more days",
+    request: "The mftech.vn certificate is valid for 29 more days",
     toggle: { label: "Enable an AWS Config managed rule (daysToExpiration = 30) + SNS", initial: false },
     layout: {
       viewBox: VB,
@@ -392,7 +392,7 @@ const SCENARIOS_EN: PScenario[] = [
     },
     run: (on) => on
       ? { back: false, steps: [
-            { at: "cfg", state: "change", tag: "NON_COMPLIANT", msg: "The managed rule evaluates the certificate as NON_COMPLIANT because it is valid for fewer than 30 days. The `daysToExpiration` parameter defaults to 14; ShopViet has set it to 30." },
+            { at: "cfg", state: "change", tag: "NON_COMPLIANT", msg: "The managed rule evaluates the certificate as NON_COMPLIANT because it is valid for fewer than 30 days. The `daysToExpiration` parameter defaults to 14; MFTech has set it to 30." },
             { at: "sns", state: "pass", msg: "The evaluation result is sent to the SNS topic." },
             { at: "team", state: "pass", msg: "The security team receives an email notification and has about a month to replace the certificate." },
           ], ok: true,

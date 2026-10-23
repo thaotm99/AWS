@@ -1,6 +1,6 @@
 ---
 title: "Route 53: bản ghi, TTL, routing policy và DNS lai"
-lede: "Bài học trình bày cấu hình DNS cho tên miền shopviet.vn: lựa chọn giữa bản ghi Alias và CNAME, nguyên nhân người dùng vẫn truy cập đích cũ sau khi thay đổi bản ghi DNS, routing policy phù hợp với từng yêu cầu, và cơ chế phân giải tên miền hai chiều giữa VPC và văn phòng."
+lede: "Bài học trình bày cấu hình DNS cho tên miền mftech.vn: lựa chọn giữa bản ghi Alias và CNAME, nguyên nhân người dùng vẫn truy cập đích cũ sau khi thay đổi bản ghi DNS, routing policy phù hợp với từng yêu cầu, và cơ chế phân giải tên miền hai chiều giữa VPC và văn phòng."
 minutes: 24
 scenes: 4
 prerequisites: ["vpc"]
@@ -53,18 +53,18 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s4", label: "4 · Hybrid DNS" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-ShopViet đã triển khai VPC và ALB. Các yêu cầu tiếp theo: người dùng truy cập được hệ thống qua tên miền **shopviet.vn**, người dùng tại châu Âu được phục vụ từ Region gần nhất, và khi ALB gặp sự cố, hệ thống hiển thị trang thông báo lỗi thay vì trang trắng. Toàn bộ các yêu cầu này được thực hiện bằng **Amazon Route 53**.
+MFTech đã triển khai VPC và ALB. Các yêu cầu tiếp theo: người dùng truy cập được hệ thống qua tên miền **mftech.vn**, người dùng tại châu Âu được phục vụ từ Region gần nhất, và khi ALB gặp sự cố, hệ thống hiển thị trang thông báo lỗi thay vì trang trắng. Toàn bộ các yêu cầu này được thực hiện bằng **Amazon Route 53**.
 </Story>
 
 <Scene id="s1" label="Phần 1/4" title="Alias record và CNAME record" questions={["exam2_q2", "exam3_q19", "exam3_q64"]}>
 
-<p class="scene-intro">Người dùng ghi nhớ tên miền như shopviet.vn chứ không ghi nhớ địa chỉ IP; DNS là hệ thống phân giải tên miền thành địa chỉ, và mỗi ánh xạ đó được lưu thành một DNS record (bản ghi) trong hosted zone.</p>
+<p class="scene-intro">Người dùng ghi nhớ tên miền như mftech.vn chứ không ghi nhớ địa chỉ IP; DNS là hệ thống phân giải tên miền thành địa chỉ, và mỗi ánh xạ đó được lưu thành một DNS record (bản ghi) trong hosted zone.</p>
 
-ShopViet cần bốn record: tên miền chính trỏ tới CloudFront, tên miền chính trỏ theo www, www trỏ tới ALB, và blog trỏ tới trang WordPress bên ngoài. Cả **Alias** và **CNAME** đều ánh xạ một tên tới một đích khác, nhưng không phải trường hợp nào cũng tạo được. Chọn từng record và record type, sau đó nhấn tạo để xem phản hồi của Route 53.
+MFTech cần bốn record: tên miền chính trỏ tới CloudFront, tên miền chính trỏ theo www, www trỏ tới ALB, và blog trỏ tới trang WordPress bên ngoài. Cả **Alias** và **CNAME** đều ánh xạ một tên tới một đích khác, nhưng không phải trường hợp nào cũng tạo được. Chọn từng record và record type, sau đó nhấn tạo để xem phản hồi của Route 53.
 
 <AliasCnameSim client:visible />
 
-Alias và CNAME chỉ là hai trong số các loại record của một hosted zone. Mỗi loại record trả lời một loại truy vấn khác nhau: A và AAAA trả về địa chỉ IP, MX chỉ định mail server, NS xác định name server, PTR tra cứu ngược từ địa chỉ IP về tên miền. Chọn từng yêu cầu của ShopViet, sau đó thử các loại record để xác định loại phù hợp và lý do các loại còn lại không đáp ứng.
+Alias và CNAME chỉ là hai trong số các loại record của một hosted zone. Mỗi loại record trả lời một loại truy vấn khác nhau: A và AAAA trả về địa chỉ IP, MX chỉ định mail server, NS xác định name server, PTR tra cứu ngược từ địa chỉ IP về tên miền. Chọn từng yêu cầu của MFTech, sau đó thử các loại record để xác định loại phù hợp và lý do các loại còn lại không đáp ứng.
 
 <RecordTypeSim client:visible />
 
@@ -76,7 +76,7 @@ Alias và CNAME chỉ là hai trong số các loại record của một hosted z
 
 <p class="scene-intro">Để giảm số lần truy vấn, phản hồi DNS được lưu trong cache tại resolver và client; vì vậy một thay đổi record không có hiệu lực ngay với mọi người dùng.</p>
 
-ShopViet chuyển sang một load balancer mới và cập nhật record trên Route 53. Chọn giá trị TTL, sau đó thay đổi record và quan sát thời điểm từng client chuyển sang đích mới.
+MFTech chuyển sang một load balancer mới và cập nhật record trên Route 53. Chọn giá trị TTL, sau đó thay đổi record và quan sát thời điểm từng client chuyển sang đích mới.
 
 <TtlSim client:visible />
 
@@ -88,7 +88,7 @@ ShopViet chuyển sang một load balancer mới và cập nhật record trên R
 
 <p class="scene-intro">Khi hệ thống chạy ở nhiều nơi, DNS có thể trả về địa chỉ khác nhau cho từng người dùng, ví dụ địa chỉ gần họ nhất hoặc địa chỉ còn hoạt động.</p>
 
-ShopViet vận hành ALB tại Singapore, Frankfurt và N. Virginia. Chọn một routing policy, sau đó mô phỏng truy cập của người dùng tại ba vị trí địa lý.
+MFTech vận hành ALB tại Singapore, Frankfurt và N. Virginia. Chọn một routing policy, sau đó mô phỏng truy cập của người dùng tại ba vị trí địa lý.
 
 <RoutingPolicySim client:visible />
 
@@ -100,7 +100,7 @@ ShopViet vận hành ALB tại Singapore, Frankfurt và N. Virginia. Chọn mộ
 
 <p class="scene-intro">Mạng trong VPC và mạng văn phòng mỗi bên có hệ thống DNS riêng; để hai bên gọi được tên miền nội bộ của nhau, các truy vấn DNS cần được chuyển tiếp qua lại.</p>
 
-EC2 instance trong VPC cần phân giải tên miền của database on-premises (`db.corp.local`), trong khi hệ thống tại văn phòng cần gọi API nội bộ trong VPC (`api.shopviet.internal`, thuộc private hosted zone). **Route 53 Resolver** cung cấp hai loại endpoint tương ứng với hai chiều phân giải này.
+EC2 instance trong VPC cần phân giải tên miền của database on-premises (`db.corp.local`), trong khi hệ thống tại văn phòng cần gọi API nội bộ trong VPC (`api.mftech.internal`, thuộc private hosted zone). **Route 53 Resolver** cung cấp hai loại endpoint tương ứng với hai chiều phân giải này.
 
 <HybridDnsSim client:visible />
 
@@ -112,7 +112,7 @@ EC2 instance trong VPC cần phân giải tên miền của database on-premises
 
 <p class="scene-intro">Lỗi DNS thường biểu hiện thành “website không truy cập được” dù ứng dụng và các target vẫn hoạt động bình thường, nên cần hiểu đúng cơ chế để xác định nguyên nhân.</p>
 
-Năm tình huống phát sinh khi ShopViet vận hành DNS. Thử phương án thường được lựa chọn đầu tiên, sau đó chuyển sang phương án khác để so sánh.
+Năm tình huống phát sinh khi MFTech vận hành DNS. Thử phương án thường được lựa chọn đầu tiên, sau đó chuyển sang phương án khác để so sánh.
 
 <Route53MythsSim client:visible />
 
@@ -130,37 +130,37 @@ Phân loại từng tình huống vào loại record phù hợp. Trên thiết b
     { id: "cname", title: "CNAME", sub: "Áp dụng khi Alias không hỗ trợ", hint: "Gợi ý: Alias chỉ trỏ tới tài nguyên AWS hoặc record trong cùng hosted zone." },
   ]}
   cards={[
-    ["shopviet.vn → ALB", "alias"], ["shopviet.vn → CloudFront", "alias"], ["shopviet.vn → www.shopviet.vn", "alias"],
+    ["mftech.vn → ALB", "alias"], ["mftech.vn → CloudFront", "alias"], ["mftech.vn → www.mftech.vn", "alias"],
     ["Không tính phí truy vấn tới tài nguyên AWS", "alias"],
-    ["blog.shopviet.vn → shopviet.wordpress.com", "cname"], ["docs.shopviet.vn → tên miền của nhà cung cấp SaaS", "cname"],
+    ["blog.mftech.vn → mftech.wordpress.com", "cname"], ["docs.mftech.vn → tên miền của nhà cung cấp SaaS", "cname"],
   ]}
 />
 
-Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTech, phương án nào phù hợp?
 
 <Quiz client:visible items={[
-  { q: "ShopViet vận hành tại us-east-1, người dùng châu Âu gặp độ trễ cao. Một web tier bổ sung được triển khai tại eu-west-1. Routing policy nào định tuyến mỗi người dùng tới Region có độ trễ thấp nhất?",
+  { q: "MFTech vận hành tại us-east-1, người dùng châu Âu gặp độ trễ cao. Một web tier bổ sung được triển khai tại eu-west-1. Routing policy nào định tuyến mỗi người dùng tới Region có độ trễ thấp nhất?",
     opts: ["Weighted", "Latency", "Geoproximity"],
     a: 1,
     why: "Latency routing trả về Region có độ trễ thấp nhất tới người dùng. Để giảm độ trễ cho tác vụ đọc database, bổ sung Aurora read replica tại eu-west-1." },
-  { q: "ShopViet cần Region Singapore phục vụ thêm người dùng tại các quốc gia lân cận, tức là mở rộng khu vực địa lý mà Route 53 định tuyến tới Singapore. Cơ chế nào phù hợp?",
+  { q: "MFTech cần Region Singapore phục vụ thêm người dùng tại các quốc gia lân cận, tức là mở rộng khu vực địa lý mà Route 53 định tuyến tới Singapore. Cơ chế nào phù hợp?",
     opts: ["Geolocation routing", "Geoproximity routing với bias", "Multivalue answer"],
     a: 1,
     why: "Bias của geoproximity mở rộng hoặc thu hẹp khu vực phục vụ của tài nguyên." },
-  { q: "Khi ALB của ShopViet gặp sự cố, người dùng phải nhận trang thông báo lỗi tĩnh trên S3 thay vì trang trắng, với mức thay đổi cấu hình tối thiểu. Cấu hình nào đáp ứng yêu cầu?",
+  { q: "Khi ALB của MFTech gặp sự cố, người dùng phải nhận trang thông báo lỗi tĩnh trên S3 thay vì trang trắng, với mức thay đổi cấu hình tối thiểu. Cấu hình nào đáp ứng yêu cầu?",
     opts: ["Failover routing active-passive, secondary là S3", "Weighted routing, S3 nhận trọng số nhỏ", "Latency routing trỏ tới S3"],
     a: 0,
     why: "Khi health check xác định ALB unhealthy, Route 53 trả về record secondary trỏ tới trang lỗi trên S3." },
-  { q: "ShopViet đã cập nhật record trỏ sang load balancer mới, nhưng sau một giờ nhiều người dùng vẫn truy cập load balancer cũ. Nguyên nhân là gì?",
+  { q: "MFTech đã cập nhật record trỏ sang load balancer mới, nhưng sau một giờ nhiều người dùng vẫn truy cập load balancer cũ. Nguyên nhân là gì?",
     opts: ["Load balancer mới chưa có target", "TTL của record cũ vẫn còn hiệu lực", "Phải xóa hosted zone và tạo lại"],
     a: 1,
     why: "Client và resolver lưu phản hồi cũ trong cache cho tới khi hết TTL." },
-  { q: "ShopViet dự kiến lưu lượng tăng gấp 10 lần trong đợt flash sale cuối tuần; nội dung website là nội dung động. Cấu hình nào giúp hệ thống đáp ứng được tải?",
+  { q: "MFTech dự kiến lưu lượng tăng gấp 10 lần trong đợt flash sale cuối tuần; nội dung website là nội dung động. Cấu hình nào giúp hệ thống đáp ứng được tải?",
     opts: ["Record multivalue answer trỏ tới các EC2 instance hiện có", "ALB kết hợp Auto Scaling group", "CloudFront cache toàn bộ trang"],
     a: 1,
     why: "Auto Scaling group tăng số instance theo scaling policy. Multivalue answer chỉ trả về tối đa 8 IP healthy của các instance hiện có, không bổ sung năng lực; nội dung thay đổi liên tục nên cache CloudFront không giải quyết được tải động." },
-  { q: "Đội vận hành cần các email gửi tới @shopviet.vn được chuyển tới mail server mx1, và chỉ chuyển sang mx2 khi mx1 không khả dụng. Loại record nào cần tạo?",
-    opts: ["NS", "MX với priority 10 cho mx1 và 20 cho mx2", "CNAME từ shopviet.vn tới mx1"],
+  { q: "Đội vận hành cần các email gửi tới @mftech.vn được chuyển tới mail server mx1, và chỉ chuyển sang mx2 khi mx1 không khả dụng. Loại record nào cần tạo?",
+    opts: ["NS", "MX với priority 10 cho mx1 và 20 cho mx2", "CNAME từ mftech.vn tới mx1"],
     a: 1,
     why: "MX chỉ định mail server và thứ tự ưu tiên; giá trị priority thấp hơn được ưu tiên. NS chỉ xác định name server; CNAME không tạo được tại zone apex." },
 ]} />

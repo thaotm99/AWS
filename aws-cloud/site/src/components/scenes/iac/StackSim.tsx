@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./iac-sims.css";
 
-// A CloudFormation stack of ShopViet, event by event. Create: every database comes
+// A CloudFormation stack of MFTech, event by event. Create: every database comes
 // out of the same template with the same safe settings. Update: one line of the
 // template changes the EBS volume type, and the change set shows it before it runs.
 // Failure: one resource cannot be created, so the stack rolls back and deletes what

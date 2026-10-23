@@ -1,7 +1,7 @@
 import PacketSim, { type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// ShopViet's data jobs, each with the AWS service that fits it: Athena for SQL straight
+// MFTech's data jobs, each with the AWS service that fits it: Athena for SQL straight
 // on S3, Glue + Redshift Serverless (+ Redshift ML) for a daily warehouse load, Glue
 // DataBrew for code-free cleaning, Transcribe + Athena for call recordings, Kinesis +
 // OpenSearch + QuickSight for live search, Neptune for friend graphs, cold warehouse
@@ -153,7 +153,7 @@ const scenarios = (L: Lang): PScenario[] => [
       aria: L({ vi: "Ứng dụng truy vấn database quan hệ hoặc graph database về bạn bè và lượt thích", en: "The application queries a relational database or a graph database about friends and likes" }),
       nodes: [
         { id: "user", x: 70, y: Y, l1: L({ vi: "Người dùng", en: "User" }), user: true },
-        { id: "app", x: 280, y: Y, w: 140, l1: L({ vi: "App ShopViet", en: "ShopViet app" }) },
+        { id: "app", x: 280, y: Y, w: 140, l1: L({ vi: "App MFTech", en: "MFTech app" }) },
         { id: "db", x: 580, y: Y, w: 230, l1: neptune ? "Amazon Neptune" : "Aurora", l2: neptune ? L({ vi: "graph: người dùng → bạn → thích", en: "graph: user → friend → likes" }) : L({ vi: "JOIN bảng bạn bè nhiều tầng", en: "multi-level JOINs on friends table" }) },
       ],
       links: [["user", "app"], ["app", "db"]],
@@ -225,8 +225,8 @@ const scenarios = (L: Lang): PScenario[] => [
     action: L({ vi: "UNLOAD, sau đó đối tác đọc", en: "UNLOAD, then partner reads" }),
     layout: () => ({
       viewBox: VB,
-      aria: L({ vi: "Redshift tại account ShopViet ghi tệp vào bucket tại account đối tác, đối tác đọc tệp", en: "Redshift in the ShopViet account writes files to a bucket in the partner account, and the partner reads them" }),
-      boxes: [{ x: 20, y: 52, w: 300, h: 196, label: L({ vi: "Account ShopViet", en: "ShopViet account" }) }, { x: 360, y: 52, w: 440, h: 196, label: L({ vi: "Account đối tác", en: "Partner account" }) }],
+      aria: L({ vi: "Redshift tại account MFTech ghi tệp vào bucket tại account đối tác, đối tác đọc tệp", en: "Redshift in the MFTech account writes files to a bucket in the partner account, and the partner reads them" }),
+      boxes: [{ x: 20, y: 52, w: 300, h: 196, label: L({ vi: "Account MFTech", en: "MFTech account" }) }, { x: 360, y: 52, w: 440, h: 196, label: L({ vi: "Account đối tác", en: "Partner account" }) }],
       nodes: [
         { id: "rs", x: 170, y: Y, w: 170, l1: "Redshift", l2: "UNLOAD" },
         { id: "s3", x: 500, y: Y, w: 170, l1: "S3 bucket", l2: "doi-tac-bao-cao" },
@@ -240,7 +240,7 @@ const scenarios = (L: Lang): PScenario[] => [
             { at: "partner", from: "s3", state: "pass", msg: L({ vi: "Đối tác sở hữu mọi object nên đọc được bằng quyền IAM của mình.", en: "The partner owns every object, so it can read them with its own IAM permissions." }) },
           ], ok: true, back: false, result: L({ vi: "Đọc thành công. Bucket mới mặc định sử dụng Bucket owner enforced.", en: "The read succeeds. New buckets use Bucket owner enforced by default." }) }
       : { steps: [
-            { at: "s3", state: "change", tag: L({ vi: "GHI", en: "WRITE" }), msg: L({ vi: "Tệp được ghi vào bucket, nhưng bucket vẫn bật ACL (Object writer): object thuộc về **account đã ghi**, tức ShopViet.", en: "The files are written to the bucket, but the bucket still has ACLs enabled (Object writer): the objects belong to **the account that wrote them**, which is ShopViet." }) },
+            { at: "s3", state: "change", tag: L({ vi: "GHI", en: "WRITE" }), msg: L({ vi: "Tệp được ghi vào bucket, nhưng bucket vẫn bật ACL (Object writer): object thuộc về **account đã ghi**, tức MFTech.", en: "The files are written to the bucket, but the bucket still has ACLs enabled (Object writer): the objects belong to **the account that wrote them**, which is MFTech." }) },
             { at: "partner", from: "s3", state: "block", tag: "403", flash: "403", msg: L({ vi: "Chủ sở hữu bucket không mặc nhiên có quyền trên object do account khác ghi vào.", en: "The bucket owner does not automatically have permissions on objects written by another account." }) },
           ], ok: false, back: false, result: L({ vi: "AccessDenied dù là bucket của chính đối tác. Cấu hình Object Ownership = Bucket owner enforced để chủ sở hữu bucket sở hữu mọi object.", en: "AccessDenied, even though it is the partner’s own bucket. Set Object Ownership = Bucket owner enforced so the bucket owner owns every object." }) },
   },
@@ -248,5 +248,5 @@ const scenarios = (L: Lang): PScenario[] => [
 
 export default function DataJobSim() {
   const L = useLang();
-  return <PacketSim scenarios={scenarios(L)} hint={L({ vi: "Chọn một tác vụ dữ liệu của ShopViet và chạy mô phỏng, sau đó bật tuỳ chọn để chuyển sang công cụ phù hợp hơn.", en: "Choose a ShopViet data job and run the simulation, then turn on the option to switch to a better-suited tool." })} />;
+  return <PacketSim scenarios={scenarios(L)} hint={L({ vi: "Chọn một tác vụ dữ liệu của MFTech và chạy mô phỏng, sau đó bật tuỳ chọn để chuyển sang công cụ phù hợp hơn.", en: "Choose a MFTech data job and run the simulation, then turn on the option to switch to a better-suited tool." })} />;
 }

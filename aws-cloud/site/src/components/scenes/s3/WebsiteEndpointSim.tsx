@@ -49,8 +49,8 @@ const REQS: Req[] = [
 ];
 
 const HOST: Record<Ep, string> = {
-  rest: "shopviet-promo.s3.ap-southeast-1.amazonaws.com",
-  web: "shopviet-promo.s3-website-ap-southeast-1.amazonaws.com",
+  rest: "mftech-promo.s3.ap-southeast-1.amazonaws.com",
+  web: "mftech-promo.s3-website-ap-southeast-1.amazonaws.com",
 };
 
 const CLIENT: Pt = [80, 110];
@@ -136,7 +136,7 @@ export default function WebsiteEndpointSim() {
           ))}
           <g className="s3x-node on">
             <rect x={BUCKET[0] - 80} y={BUCKET[1] - 30} width={160} height={60} rx={8} />
-            <text className="s3x-t" x={BUCKET[0]} y={BUCKET[1] - 6} textAnchor="middle">shopviet-promo</text>
+            <text className="s3x-t" x={BUCKET[0]} y={BUCKET[1] - 6} textAnchor="middle">mftech-promo</text>
             <text className="s3x-s" x={BUCKET[0]} y={BUCKET[1] + 10} textAnchor="middle">index.html · 404.html</text>
             <text className="s3x-s" x={BUCKET[0]} y={BUCKET[1] + 23} textAnchor="middle">{L({ vi: "hoa-don/ (riêng tư)", en: "hoa-don/ (private)" })}</text>
           </g>

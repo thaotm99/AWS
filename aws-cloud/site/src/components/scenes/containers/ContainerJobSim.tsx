@@ -1,7 +1,7 @@
 import PacketSim, { type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// Five jobs ShopViet runs in containers. Each switch is the AWS feature that fixes the
+// Five jobs MFTech runs in containers. Each switch is the AWS feature that fixes the
 // problem: shared storage with EFS, a cron job with EventBridge Scheduler + Fargate,
 // a 2-hour job on Fargate instead of Lambda, one IAM role per Pod (IRSA), and the
 // Cluster Autoscaler for Pods stuck in Pending.
@@ -103,7 +103,7 @@ const scenarios = (L: Lang): PScenario[] => [
   },
   {
     name: L({ vi: "Pod chỉ được đọc bucket được cấp quyền", en: "Pod reads only its permitted bucket" }),
-    request: L({ vi: "order-service đọc s3://shopviet-orders", en: "order-service reads s3://shopviet-orders" }),
+    request: L({ vi: "order-service đọc s3://mftech-orders", en: "order-service reads s3://mftech-orders" }),
     toggle: { label: L({ vi: "Sử dụng IAM Roles for Service Accounts", en: "Use IAM Roles for Service Accounts" }), initial: false },
     action: L({ vi: "Gọi S3", en: "Call S3" }),
     layout: (irsa) => ({
@@ -112,8 +112,8 @@ const scenarios = (L: Lang): PScenario[] => [
       nodes: [
         { id: "pod", x: 100, y: 148, w: 150, l1: "Pod order-service", l2: L({ vi: "trên EKS", en: "on EKS" }) },
         { id: "role", x: 360, y: 148, w: 170, l1: irsa ? L({ vi: "IAM role riêng", en: "Dedicated IAM role" }) : L({ vi: "IAM role của node", en: "Node IAM role" }), l2: irsa ? L({ vi: "qua service account", en: "via service account" }) : L({ vi: "dùng chung cho mọi Pod", en: "shared by every Pod" }) },
-        { id: "orders", x: 660, y: 95, w: 190, l1: "S3 shopviet-orders" },
-        { id: "pay", x: 660, y: 200, w: 190, l1: "S3 shopviet-payments" },
+        { id: "orders", x: 660, y: 95, w: 190, l1: "S3 mftech-orders" },
+        { id: "pay", x: 660, y: 200, w: 190, l1: "S3 mftech-payments" },
       ],
       links: [["pod", "role"], ["role", "orders"], ["role", "pay"]],
     }),
@@ -168,5 +168,5 @@ const scenarios = (L: Lang): PScenario[] => [
 export default function ContainerJobSim() {
   const L = useLang();
   return <PacketSim scenarios={scenarios(L)}
-    hint={L({ vi: "Chọn một tác vụ ShopViet chạy bằng container và nhấn nút để chạy. Bật tuỳ chọn và chạy lại để so sánh kết quả.", en: "Pick a ShopViet container task and press the button to run it. Turn on the option and run again to compare the results." })} />;
+    hint={L({ vi: "Chọn một tác vụ MFTech chạy bằng container và nhấn nút để chạy. Bật tuỳ chọn và chạy lại để so sánh kết quả.", en: "Pick a MFTech container task and press the button to run it. Turn on the option and run again to compare the results." })} />;
 }

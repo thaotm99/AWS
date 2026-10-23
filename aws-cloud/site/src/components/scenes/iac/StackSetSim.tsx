@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./iac-sims.css";
 
-// ShopViet now has several AWS accounts in AWS Organizations, in several Regions.
+// MFTech now has several AWS accounts in AWS Organizations, in several Regions.
 // The same baseline template (allowed EC2 types, standard IAM roles for Lambda) must
 // land everywhere. A plain stack only reaches one account and one Region; a StackSet
 // deploys the template to every target, and with automatic deployment it also reaches
@@ -12,8 +12,8 @@ import "./iac-sims.css";
 
 type Mode = "stack" | "stackset" | "ram";
 
-const ACCOUNTS = ["shopviet-prod", "shopviet-dev", "shopviet-data"];
-const NEW_ACCOUNT = "shopviet-japan";
+const ACCOUNTS = ["mftech-prod", "mftech-dev", "mftech-data"];
+const NEW_ACCOUNT = "mftech-japan";
 const REGIONS = ["ap-southeast-1", "us-east-1", "ap-northeast-1"];
 
 const MODES: { id: Mode; name: Bi }[] = [

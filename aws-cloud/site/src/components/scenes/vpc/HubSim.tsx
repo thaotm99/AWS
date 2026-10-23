@@ -3,7 +3,7 @@ import CaseSim, { type CaseScenario } from "../global-infra/CaseSim";
 
 type Lang = ReturnType<typeof useLang>;
 
-// ShopViet's network grows to many VPCs, a second data center and a second Region.
+// MFTech's network grows to many VPCs, a second data center and a second Region.
 // - Transit VIF to a Direct Connect gateway associated with a transit gateway; VPC attachments propagate
 //   their CIDRs to the transit gateway route table (directconnect/.../WorkingWithVirtualInterfaces.html,
 //   direct-connect-transit-gateways.html, tgw/how-transit-gateways-work.html). Source: exam3_q16.
@@ -122,5 +122,5 @@ function scenarios(L: Lang): CaseScenario[] {
 
 export default function HubSim() {
   const L = useLang();
-  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Mạng trung tâm của ShopViet: Direct Connect, Transit Gateway và shared services VPC", en: "ShopViet's network hub: Direct Connect, Transit Gateway and a shared services VPC" })} action={L({ vi: "Gửi request", en: "Send request" })} />;
+  return <CaseSim scenarios={scenarios(L)} label={L({ vi: "Mạng trung tâm của MFTech: Direct Connect, Transit Gateway và shared services VPC", en: "MFTech's network hub: Direct Connect, Transit Gateway and a shared services VPC" })} action={L({ vi: "Gửi request", en: "Send request" })} />;
 }

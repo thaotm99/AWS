@@ -1,7 +1,7 @@
 import PacketSim, { type PLayout, type PNode, type PScenario } from "./PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// ALB or NLB for one ShopViet need at a time. The switch swaps the load balancer;
+// ALB or NLB for one MFTech need at a time. The switch swaps the load balancer;
 // the packet shows what each one can and cannot do (layer 7 routing, static IP,
 // TCP-only traffic, PrivateLink, TLS offload with private instances).
 
@@ -26,7 +26,7 @@ const scenarios = (L: Lang): PScenario[] => {
   return [
   {
     name: L({ vi: "Truy xuất trang sản phẩm", en: "Fetch a product page" }),
-    request: "GET https://shopviet.vn/products/ao-thun",
+    request: "GET https://mftech.vn/products/ao-thun",
     from: L({ vi: "nguồn: trình duyệt", en: "source: browser" }),
     toggle: SWITCH,
     layout: (nlb) => twoTargets(L, nlb, { id: "c", x: 70, y: 140, l1: L({ vi: "Người dùng", en: "User" }), user: true }, "EC2 products", "EC2 orders"),
@@ -42,7 +42,7 @@ const scenarios = (L: Lang): PScenario[] => {
   },
   {
     name: L({ vi: "Firewall ngân hàng chỉ chấp nhận IP cố định", en: "Bank firewall accepts only fixed IPs" }),
-    request: "POST https://pay.shopviet.vn/callback",
+    request: "POST https://pay.mftech.vn/callback",
     from: L({ vi: "nguồn: hệ thống ngân hàng", en: "source: bank system" }),
     toggle: SWITCH,
     layout: (nlb) => twoTargets(L, nlb, { id: "c", x: 60, y: 140, l1: L({ vi: "Ngân hàng", en: "Bank" }), user: true }, L({ vi: "EC2 thanh toán", en: "EC2 payments" }), L({ vi: "EC2 thanh toán", en: "EC2 payments" }),
@@ -59,7 +59,7 @@ const scenarios = (L: Lang): PScenario[] => {
   },
   {
     name: L({ vi: "SSH vào bastion", en: "SSH into a bastion" }),
-    request: "ssh ec2-user@bastion.shopviet.vn   # TCP 22",
+    request: "ssh ec2-user@bastion.mftech.vn   # TCP 22",
     from: L({ vi: "nguồn: máy trạm kỹ sư", en: "source: engineer workstation" }),
     toggle: SWITCH,
     layout: (nlb) => twoTargets(L, nlb, { id: "c", x: 70, y: 140, l1: L({ vi: "Kỹ sư", en: "Engineer" }), user: true }, "Bastion", "Bastion"),
@@ -74,14 +74,14 @@ const scenarios = (L: Lang): PScenario[] => {
   },
   {
     name: L({ vi: "VPC đối tác gọi API private", en: "Partner VPC calls a private API" }),
-    request: "GET https://api.shopviet.internal/stock",
+    request: "GET https://api.mftech.internal/stock",
     from: L({ vi: "nguồn: VPC của đối tác", en: "source: partner VPC" }),
     toggle: SWITCH,
     layout: (nlb) => twoTargets(L, nlb, { id: "c", x: 60, y: 140, l1: L({ vi: "VPC đối tác", en: "Partner VPC" }), user: true }, L({ vi: "EC2 kho hàng", en: "EC2 inventory" }), L({ vi: "EC2 kho hàng", en: "EC2 inventory" }),
       [{ id: "ep", x: 170, y: 140, w: 110, l1: "Interface", l2: "endpoint" }], [["ep", "lb"]]),
     run: (nlb) => nlb
       ? { steps: [
-            { at: "ep", state: "pass", msg: L({ vi: "Interface endpoint trong VPC đối tác kết nối tới **endpoint service** (PrivateLink) của ShopViet.", en: "The interface endpoint in the partner VPC connects to ShopViet's **endpoint service** (PrivateLink)." }) },
+            { at: "ep", state: "pass", msg: L({ vi: "Interface endpoint trong VPC đối tác kết nối tới **endpoint service** (PrivateLink) của MFTech.", en: "The interface endpoint in the partner VPC connects to MFTech's **endpoint service** (PrivateLink)." }) },
             { at: "lb", state: "pass", msg: L({ vi: "Endpoint service sử dụng NLB làm backend.", en: "The endpoint service uses the NLB as its backend." }) },
             { at: "t1", state: "pass", msg: L({ vi: "API tồn kho phản hồi. Không cần VPC peering, không đi qua Internet.", en: "The inventory API responds. No VPC peering needed, no traffic over the internet." }) },
           ], ok: true, result: L({ vi: "Đối tác gọi được API qua mạng nội bộ của AWS. Phía cung cấp dịch vụ PrivateLink sử dụng **NLB**.", en: "The partner can call the API over the AWS internal network. The PrivateLink service provider side uses an **NLB**." }) }
@@ -97,7 +97,7 @@ const scenarios = (L: Lang): PScenario[] => {
     layout: (nlb) => ({
       viewBox: "0 40 820 210",
       aria: L({ vi: "Traffic UDP đi qua load balancer, qua Direct Connect tới máy chủ trong data center", en: "UDP traffic goes through the load balancer and over Direct Connect to servers in the data center" }),
-      boxes: [{ x: 520, y: 58, w: 280, h: 172, label: L({ vi: "Data center ShopViet", en: "ShopViet data center" }), edge: true }],
+      boxes: [{ x: 520, y: 58, w: 280, h: 172, label: L({ vi: "Data center MFTech", en: "MFTech data center" }), edge: true }],
       nodes: [
         { id: "c", x: 60, y: 140, l1: L({ vi: "Cửa hàng", en: "Stores" }), user: true },
         lb(L, nlb, 240, 140),
@@ -119,7 +119,7 @@ const scenarios = (L: Lang): PScenario[] => {
   },
   {
     name: L({ vi: "Ẩn EC2 instance khỏi Internet", en: "Hide EC2 instances from the internet" }),
-    request: L({ vi: "HTTPS (TLS) tới api.shopviet.vn", en: "HTTPS (TLS) to api.shopviet.vn" }),
+    request: L({ vi: "HTTPS (TLS) tới api.mftech.vn", en: "HTTPS (TLS) to api.mftech.vn" }),
     from: L({ vi: "nguồn: người dùng và một client không xác định", en: "source: users and an unknown client" }),
     toggle: { label: L({ vi: "EC2 nằm trong private subnet", en: "EC2 in a private subnet" }), initial: false },
     layout: () => ({
@@ -156,6 +156,6 @@ const scenarios = (L: Lang): PScenario[] => {
 export default function LbTypeSim() {
   const L = useLang();
   return <PacketSim scenarios={scenarios(L)} action={L({ vi: "Gửi request", en: "Send request" })}
-    hint={L({ vi: "Chọn một yêu cầu của ShopViet, sau đó nhấn Gửi request (cấu hình hiện tại: ALB). Bật tuỳ chọn để chuyển sang NLB.",
-      en: "Pick a ShopViet requirement, then press Send request (current configuration: ALB). Turn on the option to switch to an NLB." })} />;
+    hint={L({ vi: "Chọn một yêu cầu của MFTech, sau đó nhấn Gửi request (cấu hình hiện tại: ALB). Bật tuỳ chọn để chuyển sang NLB.",
+      en: "Pick a MFTech requirement, then press Send request (current configuration: ALB). Turn on the option to switch to an NLB." })} />;
 }

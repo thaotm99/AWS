@@ -4,7 +4,7 @@ import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
 import "./backup-plan-sim.css";
 
-// The shared EFS file system of ShopViet (seller photos, invoices) protected by one
+// The shared EFS file system of MFTech (seller photos, invoices) protected by one
 // AWS Backup plan. Set how often it runs, how long it keeps recovery points and where
 // copies go, then throw an incident at it: a deleted folder, the whole Region down,
 // stolen admin credentials deleting backups, an audit asking for old data. The plan

@@ -1,7 +1,7 @@
 import PacketSim, { type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
 
-// Two ShopViet stories about logs. First: the Auto Scaling group already terminated
+// Two MFTech stories about logs. First: the Auto Scaling group already terminated
 // the instance that had the bug, so the log is gone unless the CloudWatch agent sent
 // it out. Second: someone keeps calling AWS APIs they are not allowed to; CloudTrail
 // records it, and a metric filter plus an alarm turns it into a warning within minutes.
@@ -20,7 +20,7 @@ const SCENARIOS: PScenario[] = [
         { id: "dev", x: 70, y: 145, l1: "Kỹ sư", user: true },
         { id: "i3", x: 415, y: 100, w: 170, l1: "i-web3", l2: "đã terminate hôm qua" },
         { id: "i9", x: 415, y: 195, w: 170, l1: "i-web9", l2: "instance mới, không có lỗi" },
-        { id: "logs", x: 690, y: 145, w: 190, l1: "CloudWatch Logs", l2: "log group /shopviet/web" },
+        { id: "logs", x: 690, y: 145, w: 190, l1: "CloudWatch Logs", l2: "log group /mftech/web" },
       ],
       links: [["dev", "i3"], ["i3", "logs"], ["i9", "logs"], ["dev", "logs"]],
     },
@@ -92,7 +92,7 @@ const SCENARIOS_EN: PScenario[] = [
         { id: "dev", x: 70, y: 145, l1: "Engineer", user: true },
         { id: "i3", x: 415, y: 100, w: 170, l1: "i-web3", l2: "terminated yesterday" },
         { id: "i9", x: 415, y: 195, w: 170, l1: "i-web9", l2: "new instance, no error" },
-        { id: "logs", x: 690, y: 145, w: 190, l1: "CloudWatch Logs", l2: "log group /shopviet/web" },
+        { id: "logs", x: 690, y: 145, w: 190, l1: "CloudWatch Logs", l2: "log group /mftech/web" },
       ],
       links: [["dev", "i3"], ["i3", "logs"], ["i9", "logs"], ["dev", "logs"]],
     },

@@ -70,7 +70,7 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s4", label: "4 · SFTP được quản lý với Transfer Family" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-Kho hàng của ShopViet vẫn vận hành hệ thống cũ on-premises, bao gồm cả thư viện băng từ (tape library) dùng cho backup. Một phần hệ thống cần sử dụng lưu trữ AWS mà không thay đổi ứng dụng; phần còn lại cần được di chuyển hoàn toàn lên AWS.
+Kho hàng của MFTech vẫn vận hành hệ thống cũ on-premises, bao gồm cả thư viện băng từ (tape library) dùng cho backup. Một phần hệ thống cần sử dụng lưu trữ AWS mà không thay đổi ứng dụng; phần còn lại cần được di chuyển hoàn toàn lên AWS.
 </Story>
 
 <Scene id="s1" label="Phần 1/4" title="Storage Gateway: ứng dụng on-premises sử dụng lưu trữ AWS" questions={["exam1_q35", "exam5_q28", "exam3_q31", "exam4_q37", "exam2_q59", "exam4_q36", "exam3_q56"]}>
@@ -81,7 +81,7 @@ Storage Gateway được triển khai tại kho dưới dạng máy ảo (VM). �
 
 <ScenarioFlow client:visible height={230} legend={["Phù hợp", "Không phù hợp"]} scenarios={[
   { name: "Các loại Storage Gateway",
-    boxes: [{ x: 20, y: 20, w: 330, h: 190, label: "Kho ShopViet", tone: "onprem" }, { x: 430, y: 20, w: 310, h: 190, label: "AWS" }],
+    boxes: [{ x: 20, y: 20, w: 330, h: 190, label: "Kho MFTech", tone: "onprem" }, { x: 430, y: 20, w: 310, h: 190, label: "AWS" }],
     nodes: [
       { id: "app", x: 40, y: 60, label: "Ứng dụng hiện có", sub: "NFS / SMB / iSCSI / băng từ", kind: "site" },
       { id: "gw", x: 200, y: 130, label: "Gateway", sub: "local cache", kind: "net" },
@@ -117,10 +117,10 @@ NAS hiện có tại kho chứa ảnh sản phẩm và dữ liệu backup tích 
 
 <TransferPlannerSim client:visible />
 
-Ngoài đợt di chuyển dữ liệu lớn, ShopViet còn một số nhu cầu truyền dữ liệu khác:
+Ngoài đợt di chuyển dữ liệu lớn, MFTech còn một số nhu cầu truyền dữ liệu khác:
 
 <RequirementPicker client:visible items={[
-  { need: "Nhà cung cấp gửi bảng giá hằng ngày qua SFTP; ShopViet không muốn tự quản lý server SFTP", answer: "AWS Transfer Family (SFTP) lưu vào S3 hoặc EFS",
+  { need: "Nhà cung cấp gửi bảng giá hằng ngày qua SFTP; MFTech không muốn tự quản lý server SFTP", answer: "AWS Transfer Family (SFTP) lưu vào S3 hoặc EFS",
     why: "Endpoint SFTP do AWS quản lý; tệp được ghi trực tiếp vào S3 hoặc EFS. Cấu hình endpoint, giới hạn IP và phân quyền được trình bày ở phần 4." },
   { need: "Đã bật S3 Cross-Region Replication (CRR), nhưng ảnh đã có sẵn trong bucket không được replicate", answer: "S3 Batch Replication (hoặc aws s3 sync)",
     why: "Replication rule chỉ áp dụng cho object mới. Batch Replication replicate các object đã tồn tại." },
@@ -142,7 +142,7 @@ Server quản lý kho là máy ảo đã vận hành nhiều năm và không th�
 
 <StepSim client:visible height={220}
   intro="Kho có các máy ảo chạy ứng dụng. Mục tiêu: chuyển lên EC2 nguyên trạng (lift-and-shift) với downtime tối thiểu."
-  boxes={[{ x: 20, y: 20, w: 300, h: 180, label: "Kho ShopViet", tone: "onprem" }, { x: 380, y: 20, w: 360, h: 180, label: "AWS" }]}
+  boxes={[{ x: 20, y: 20, w: 300, h: 180, label: "Kho MFTech", tone: "onprem" }, { x: 380, y: 20, w: 360, h: 180, label: "AWS" }]}
   nodes={[
     { id: "vm", x: 50, y: 90, label: "Source server", sub: "cài Replication Agent", kind: "site" },
     { id: "stage", x: 400, y: 85, label: "Staging area", sub: "tiếp nhận dữ liệu", kind: "net" },
@@ -159,7 +159,7 @@ Server quản lý kho là máy ảo đã vận hành nhiều năm và không th�
       note: "Sau khi kiểm thử xong và replication vẫn đang cập nhật, launch **cutover instance** và chuyển người dùng sang. Downtime chỉ phát sinh trong thời điểm chuyển đổi." },
   ]} />
 
-Database được di chuyển bằng bộ công cụ riêng. Chọn từng tình huống của ShopViet:
+Database được di chuyển bằng bộ công cụ riêng. Chọn từng tình huống của MFTech:
 
 <RequirementPicker client:visible items={[
   { need: "Database Oracle hiện có cần chuyển sang Aurora PostgreSQL (khác engine)", answer: "AWS SCT + AWS DMS", why: "SCT chuyển đổi schema và code; DMS di chuyển dữ liệu." },
@@ -171,11 +171,11 @@ Database được di chuyển bằng bộ công cụ riêng. Chọn từng tình
 
 Khi target table preparation mode là "Drop tables on target", DMS chỉ tạo **bảng, primary key và trong một số trường hợp unique index** trên đích (basic schema migration); DMS **không** tự tạo secondary index, foreign key, constraint không phải primary key, giá trị mặc định của cột hay user account. Vì vậy, khi database có secondary index, foreign key và stored procedure: cùng engine thì chuyển schema bằng công cụ gốc (Oracle SQL Developer, MySQL Workbench, pgAdmin 4); khác engine thì dùng **DMS Schema Conversion** (tính năng của DMS) hoặc **AWS SCT** để chuyển đổi bảng, view, stored procedure, function, sau đó DMS di chuyển dữ liệu. Với full load + CDC, AWS khuyến nghị bỏ index và ràng buộc tham chiếu trong lúc full load, sau đó tạm dừng task trước pha CDC để tạo secondary index và ràng buộc tham chiếu rồi mới tiếp tục.
 
-Với database Oracle tại kho, ShopViet cần chuyển **dữ liệu hiện có** sang RDS for Oracle và tiếp tục đồng bộ **các giao dịch mới** cho tới ngày chuyển đổi; khối lượng thay đổi biến động mạnh trong ngày. Chạy từng bước của một **DMS Serverless replication**:
+Với database Oracle tại kho, MFTech cần chuyển **dữ liệu hiện có** sang RDS for Oracle và tiếp tục đồng bộ **các giao dịch mới** cho tới ngày chuyển đổi; khối lượng thay đổi biến động mạnh trong ngày. Chạy từng bước của một **DMS Serverless replication**:
 
 <StepSim client:visible height={220}
   intro="Oracle tại kho vẫn tiếp nhận phiếu nhập hàng. Mục tiêu: RDS for Oracle có đủ dữ liệu cũ và liên tục nhận thay đổi mới, không phải chọn kích thước replication instance."
-  boxes={[{ x: 20, y: 20, w: 220, h: 180, label: "Kho ShopViet", tone: "onprem" }, { x: 300, y: 20, w: 440, h: 180, label: "AWS" }]}
+  boxes={[{ x: 20, y: 20, w: 220, h: 180, label: "Kho MFTech", tone: "onprem" }, { x: 300, y: 20, w: 440, h: 180, label: "AWS" }]}
   nodes={[
     { id: "ora", x: 45, y: 85, label: "Oracle", sub: "redo log", kind: "db" },
     { id: "dms", x: 340, y: 85, w: 170, label: "DMS Serverless", sub: "Min–Max DCU", kind: "net" },
@@ -193,7 +193,7 @@ Với database Oracle tại kho, ShopViet cần chuyển **dữ liệu hiện c�
       note: "Khi mức sử dụng vượt ngưỡng trên trong một khoảng thời gian, replication được **scale up**; khi mức sử dụng thấp kéo dài, DMS giảm dần tài nguyên. Capacity luôn nằm trong khoảng Min–Max DCU và chi phí tính theo số DCU đang sử dụng. AWS khuyến nghị đặt Max DCU ở mức cao nhất và Min DCU đủ cho các đợt tăng tải đột ngột, vì cấp phát thêm tài nguyên cần thời gian." },
   ]} />
 
-Các phương án khác đều thiếu một phần của yêu cầu. **DMS Standard** dùng replication instance (EC2 instance do DMS tạo trong VPC): người vận hành phải ước lượng capacity, chọn instance class và thay đổi kích thước khi tải thay đổi, đúng những tác vụ mà DMS Serverless loại bỏ; replication instance cũng không phải EC2 instance thuộc Auto Scaling group của ShopViet để gắn scaling policy. AWS Glue (ETL) và Lambda không có sẵn cơ chế đọc redo log của Oracle để sao chép thay đổi theo transaction; ShopViet sẽ phải tự xây dựng phần ghi nhận thay đổi.
+Các phương án khác đều thiếu một phần của yêu cầu. **DMS Standard** dùng replication instance (EC2 instance do DMS tạo trong VPC): người vận hành phải ước lượng capacity, chọn instance class và thay đổi kích thước khi tải thay đổi, đúng những tác vụ mà DMS Serverless loại bỏ; replication instance cũng không phải EC2 instance thuộc Auto Scaling group của MFTech để gắn scaling policy. AWS Glue (ETL) và Lambda không có sẵn cơ chế đọc redo log của Oracle để sao chép thay đổi theo transaction; MFTech sẽ phải tự xây dựng phần ghi nhận thay đổi.
 
 <Takeaway>Server: MGN (agent → test → cutover). Database khác engine: SCT (hoặc DMS Schema Conversion) + DMS; DMS chỉ tạo bảng và primary key, không tạo secondary index, foreign key hay stored procedure. SQL Server sang Aurora PostgreSQL với mức thay đổi code tối thiểu: Babelfish. Dữ liệu hiện có và thay đổi liên tục: migration type full load + CDC (DMS đọc transaction log của nguồn). Khối lượng thay đổi biến động, không muốn chọn kích thước replication instance: DMS Serverless (tự scale trong khoảng Min–Max DCU).</Takeaway>
 
@@ -203,7 +203,7 @@ Các phương án khác đều thiếu một phần của yêu cầu. **DMS Stan
 
 <p class="scene-intro">Đối tác quen gửi file qua SFTP; thay vì tự vận hành SFTP server trên EC2, có thể dùng một fully managed service giữ nguyên cách làm việc của đối tác nhưng lưu tệp trực tiếp vào AWS.</p>
 
-Các nhà cung cấp gửi bảng giá và chứng từ cho ShopViet qua SFTP. Hệ thống hiện tại gồm hai EC2 instance Linux, mỗi instance có một Elastic IP để nhà cung cấp cho phép trên firewall của họ; tài khoản Linux được tạo thủ công và phân quyền theo tệp; dữ liệu nằm trên một shared file system được mount vào cả hai instance. ShopViet muốn chuyển sang dịch vụ được quản lý nhưng giữ nguyên ba đặc điểm: địa chỉ IP cố định, chỉ IP của nhà cung cấp được kết nối, và phân quyền theo tệp.
+Các nhà cung cấp gửi bảng giá và chứng từ cho MFTech qua SFTP. Hệ thống hiện tại gồm hai EC2 instance Linux, mỗi instance có một Elastic IP để nhà cung cấp cho phép trên firewall của họ; tài khoản Linux được tạo thủ công và phân quyền theo tệp; dữ liệu nằm trên một shared file system được mount vào cả hai instance. MFTech muốn chuyển sang dịch vụ được quản lý nhưng giữ nguyên ba đặc điểm: địa chỉ IP cố định, chỉ IP của nhà cung cấp được kết nối, và phân quyền theo tệp.
 
 **AWS Transfer Family** cung cấp server SFTP, FTPS, FTP và AS2 do AWS quản lý, lưu dữ liệu vào **Amazon S3** hoặc **Amazon EFS**. Có ba quyết định cấu hình:
 
@@ -236,7 +236,7 @@ Phân loại từng tác vụ vào nhóm công cụ tương ứng. Trên thiết
   ]}
 />
 
-Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopViet, phương án nào phù hợp?
+Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống MFTech, phương án nào phù hợp?
 
 <Quiz client:visible items={[
   { q: "Ứng dụng ghi log tại kho chỉ cần giữ log thường xuyên truy cập tại chỗ, toàn bộ log được lưu trên AWS. Phương án nào phù hợp?",
@@ -259,7 +259,7 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["DMS replication instance cùng script tự thay đổi kích thước", "DMS Serverless replication với migration type full load + CDC", "AWS Glue job chạy mỗi khi phát hiện thay đổi"],
     a: 1,
     why: "Full load + CDC chuyển dữ liệu hiện có rồi áp dụng thay đổi từ redo log theo transaction; DMS Serverless tự cấp phát và scale capacity trong khoảng Min–Max DCU." },
-  { q: "Nhà cung cấp chỉ cho phép kết nối SFTP tới các địa chỉ IP cố định, và ShopViet chỉ muốn nhận kết nối từ IP của nhà cung cấp. Endpoint Transfer Family nào phù hợp?",
+  { q: "Nhà cung cấp chỉ cho phép kết nối SFTP tới các địa chỉ IP cố định, và MFTech chỉ muốn nhận kết nối từ IP của nhà cung cấp. Endpoint Transfer Family nào phù hợp?",
     opts: ["Endpoint public kèm security group", "Endpoint VPC hosted, internet-facing, gắn Elastic IP và security group", "Endpoint VPC hosted, internal, kèm AWS WAF"],
     a: 1,
     why: "Chỉ endpoint đặt trong VPC mới dùng được security group, và access internet-facing cho phép gắn Elastic IP cố định. Endpoint public không dùng được security group; endpoint internal không nhận kết nối từ Internet; WAF không lọc SFTP." },
