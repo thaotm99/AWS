@@ -117,13 +117,13 @@ export default function PatchWindowSim() {
   const doc = MODES.find((m) => m.id === mode)!.doc;
 
   return (
-    <div className="stage pws">
+    <div className="stage">
       <div className="stage-bar" role="group" aria-label={L({ vi: "Phương án vá", en: "Patching approach" })}>
         <span className="label">{L({ vi: "Phương án vá", en: "Patching approach" })}</span>
         {MODES.map((m) => (
           <button key={m.id} className="btn" aria-pressed={m.id === mode} disabled={busy && m.id !== mode} onClick={() => pick(m.id)}>{L(m.name)}</button>
         ))}
-        <button className="btn primary pws-play" onClick={play} disabled={busy}>{L({ vi: "Mở Maintenance Window", en: "Open Maintenance Window" })}</button>
+        <button className="btn primary ml-auto" onClick={play} disabled={busy}>{L({ vi: "Mở Maintenance Window", en: "Open Maintenance Window" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 0 820 264" role="img" aria-label={L({ vi: "ALB định tuyến request tới ba EC2 instance trong khi Systems Manager vá lần lượt từng instance", en: "The ALB routes requests to three EC2 instances while Systems Manager patches them one at a time" })}>
@@ -162,7 +162,7 @@ export default function PatchWindowSim() {
       </div>
       <div className="readout" aria-live="polite">
         {tick < 0 ? (
-          <p className="pws-hint">{L({ vi: <>Chọn phương án vá, sau đó chọn <b>Mở Maintenance Window</b>. Người dùng vẫn mua hàng lúc 2h sáng.</>, en: <>Choose a patching approach, then choose <b>Open Maintenance Window</b>. Users are still shopping at 2:00 a.m.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn phương án vá, sau đó chọn <b>Mở Maintenance Window</b>. Người dùng vẫn mua hàng lúc 2h sáng.</>, en: <>Choose a patching approach, then choose <b>Open Maintenance Window</b>. Users are still shopping at 2:00 a.m.</> })}</p>
         ) : (
           <>
             <div className="status">
@@ -171,7 +171,7 @@ export default function PatchWindowSim() {
               <span className={"pill " + (fail ? "bad" : "ok")}><i />{fail} {L({ vi: "request lỗi", en: "failed requests" })}</span>
             </div>
             {done && (
-              <p className={`pws-result ${fail ? "bad" : "ok"}`}>
+              <p className={`mx-0 mt-2.5 mb-0 rounded-[12px] px-2.5 py-2 text-step--1 ${fail ? "bg-bad-soft" : "bg-ok-soft"}`}>
                 {rich(mode === "direct"
                   ? L({ vi: "Bản vá được cài đặt thành công trên cả ba instance, nhưng mỗi instance reboot trong khi ALB **vẫn định tuyến request tới**. Người dùng gặp lỗi 502 và timeout. Vá thành công không đồng nghĩa với vá an toàn.",
                     en: "The patches install successfully on all three instances, but each instance reboots while the ALB **is still routing requests to it**. Users get 502 errors and timeouts. A successful patch is not the same as a safe patch." })

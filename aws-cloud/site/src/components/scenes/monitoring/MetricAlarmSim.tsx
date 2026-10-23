@@ -196,8 +196,8 @@ export default function MetricAlarmSim() {
   const ticks = sc.max === 100 ? [0, 25, 50, 75, 100] : [0, 250, 500, 750, 1000];
 
   return (
-    <div className="stage mas">
-      <div className="mas-row" role="group" aria-label={L({ vi: "Tình huống", en: "Scenarios" })}>
+    <div className="stage">
+      <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Tình huống", en: "Scenarios" })}>
         {(Object.keys(SCENARIOS) as ScenarioId[]).map((k) => (
           <button key={k} className="chip" aria-pressed={k === id} disabled={busy && k !== id} onClick={() => change(() => setId(k))}>
             {L(SCENARIOS[k].name)}
@@ -205,16 +205,16 @@ export default function MetricAlarmSim() {
         ))}
       </div>
       <div className="stage-bar">
-        <code className="mas-metric">{L(sc.metric)} &gt; {sc.threshold}{sc.unit} {L({ vi: "trong 2 datapoint liên tiếp", en: "for 2 consecutive datapoints" })}</code>
+        <code className="rounded-[10px] border border-line bg-bg px-2 py-[3px] text-[0.8125rem] wrap-anywhere">{L(sc.metric)} &gt; {sc.threshold}{sc.unit} {L({ vi: "trong 2 datapoint liên tiếp", en: "for 2 consecutive datapoints" })}</code>
         {sc.canBasic && (
-          <label className="mas-toggle">
+          <label className="inline-flex cursor-pointer items-center gap-1.5 text-step--1">
             <input type="checkbox" checked={detailed} disabled={busy} onChange={(e) => change(() => setDetailed(e.target.checked))} />
             {L({ vi: "Detailed monitoring (1 phút)", en: "Detailed monitoring (1 minute)" })}
           </label>
         )}
-        <button className="btn primary mas-play" onClick={play} disabled={busy}>{L({ vi: "Chạy mô phỏng 30 phút", en: "Run 30-minute simulation" })}</button>
+        <button className="btn primary ml-auto" onClick={play} disabled={busy}>{L({ vi: "Chạy mô phỏng 30 phút", en: "Run 30-minute simulation" })}</button>
       </div>
-      <p className="mas-about">{L(sc.about)}</p>
+      <p className="mx-4 mt-2.5 mb-0 text-step--1 text-muted">{L(sc.about)}</p>
       <div className="svg-wrap">
         <svg viewBox="0 0 820 250" role="img" aria-label={L({ vi: `Biểu đồ ${sc.metric.vi} trong 30 phút, có đường ngưỡng của alarm`, en: `Chart of ${sc.metric.en} over 30 minutes, with the alarm threshold line` })}>
           {ticks.map((v) => (
@@ -240,7 +240,7 @@ export default function MetricAlarmSim() {
             <line className="mas-fire" x1={px(run.fired)} x2={px(run.fired)} y1={Y0} y2={Y0 + H} />
           )}
           {shown >= 0 && shown < MINUTES - 1 && <line className="mas-now" x1={px(shown)} x2={px(shown)} y1={Y0} y2={Y0 + H} />}
-          <g className="mas-legend" transform={`translate(${X0} 240)`}>
+          <g transform={`translate(${X0} 240)`}>
             <line className="mas-raw" x1={0} x2={20} y1={-4} y2={-4} />
             <text className="ts" x={26} y={0}>{L({ vi: "giá trị thực tế", en: "actual value" })}</text>
             <circle className="mas-pt" cx={142} cy={-4} r={4.5} />
@@ -253,15 +253,15 @@ export default function MetricAlarmSim() {
       </div>
       <div className="readout" aria-live="polite">
         {shown < 0 ? (
-          <p className="mas-hint">{L({ vi: <>Chọn tình huống, sau đó chọn <b>Chạy mô phỏng 30 phút</b>.{sc.canBasic ? " Chạy một lần khi tắt detailed monitoring và một lần khi bật để so sánh." : ""}</>, en: <>Choose a scenario, then choose <b>Run 30-minute simulation</b>.{sc.canBasic ? " Run it once with detailed monitoring off and once with it on to compare." : ""}</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn tình huống, sau đó chọn <b>Chạy mô phỏng 30 phút</b>.{sc.canBasic ? " Chạy một lần khi tắt detailed monitoring và một lần khi bật để so sánh." : ""}</>, en: <>Choose a scenario, then choose <b>Run 30-minute simulation</b>.{sc.canBasic ? " Run it once with detailed monitoring off and once with it on to compare." : ""}</> })}</p>
         ) : (
           <>
             <div className="status">
               <span className="count">{L({ vi: "Phút", en: "Minute" })} {shown} · {pts.length} {L({ vi: "datapoint", en: "datapoints" })}</span>
               <span className={"pill " + (firedShown && !backToOk ? "bad" : "ok")}><i />{!firedShown ? "OK" : backToOk ? L({ vi: `OK trở lại (ALARM ở phút ${run.fired})`, en: `OK again (ALARM at minute ${run.fired})` }) : L({ vi: `ALARM từ phút ${run.fired}`, en: `ALARM since minute ${run.fired}` })}</span>
-              {firedShown && <span className="mas-action">Action: {L(sc.action)}</span>}
+              {firedShown && <span className="text-step--1 font-semibold">Action: {L(sc.action)}</span>}
             </div>
-            {done && <p className={`mas-result ${ok ? "ok" : "bad"}`}>{rich(L(sc.note(run.fired, detailed)))}</p>}
+            {done && <p className={`mx-0 mt-2.5 mb-0 rounded-[12px] px-2.5 py-2 text-step--1 ${ok ? "bg-ok-soft" : "bg-bad-soft"}`}>{rich(L(sc.note(run.fired, detailed)))}</p>}
           </>
         )}
       </div>
