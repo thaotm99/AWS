@@ -22,9 +22,9 @@ const learn = { href: `/concepts/${set.learn.lesson}/${set.learn.part}/`, vi: he
     <h1><L vi={set.title.vi} en={set.title.en} /></h1>
     <p class="lede"><L vi={set.lede.vi} en={set.lede.en} /></p>
   </header>
-  <nav class="cmp-tabs" aria-label="So sánh khác" data-i18n-attr="aria-label:shell.compare.others">
+  <nav class="mb-[18px] flex flex-wrap gap-2" aria-label="So sánh khác" data-i18n-attr="aria-label:shell.compare.others">
     {COMPARE.map((c) => (
-      <a href={`/compare/${c.id}/`} aria-current={c.id === set.id ? "page" : undefined}><L vi={c.title.vi} en={c.title.en} /></a>
+      <a class="inline-flex min-h-[38px] items-center rounded-full border border-line bg-surface px-3.5 text-step--1 text-ink no-underline aria-[current=page]:border-ink aria-[current=page]:bg-ink aria-[current=page]:text-bg" href={`/compare/${c.id}/`} aria-current={c.id === set.id ? "page" : undefined}><L vi={c.title.vi} en={c.title.en} /></a>
     ))}
   </nav>
   <ServiceCompare client:load id={set.id} learn={learn} />
