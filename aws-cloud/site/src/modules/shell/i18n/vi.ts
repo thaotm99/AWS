@@ -47,6 +47,7 @@ export const vi = {
     title: "Thiết kế hệ thống trên AWS từ yêu cầu đến kiến trúc hoàn chỉnh",
     lede: "AWS Thực Chiến xây dựng kiến thức kiến trúc AWS thông qua ShopViet, một hệ thống thương mại điện tử giả định. Lộ trình đi từ hạ tầng toàn cầu, mạng và bảo mật đến tính toán, lưu trữ, cơ sở dữ liệu và vận hành; mỗi quyết định thiết kế được phân tích từ yêu cầu và minh hoạ bằng mô phỏng tương tác.",
     start: "Bắt đầu học",
+    resume: "Tiếp tục:",
     practice: "Luyện đề",
     statLessons: "Bài học",
     statExams: "Đề luyện tập",

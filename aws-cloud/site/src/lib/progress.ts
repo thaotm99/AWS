@@ -79,3 +79,25 @@ export function setPartRead(lesson: string, slug: string, all: string[]) {
   if (all.every((p) => finished.has(p)) && !getDone().has(lesson)) setDone(lesson, true);
   else window.dispatchEvent(new Event(PROGRESS_EVENT));
 }
+
+/** The part the reader opened last, for the "Continue" link on the home page. */
+const LAST_KEY = "last-part";
+
+export interface LastPart {
+  lesson: string;
+  slug: string;
+  title: { vi: string; en: string };
+}
+
+export function getLastPart(): LastPart | null {
+  try {
+    const v = JSON.parse(read(LAST_KEY) ?? "null");
+    return v && typeof v.lesson === "string" && typeof v.slug === "string" && v.title ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+export function setLastPart(part: LastPart) {
+  write(LAST_KEY, JSON.stringify(part));
+}

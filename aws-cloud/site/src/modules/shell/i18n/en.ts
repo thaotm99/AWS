@@ -49,6 +49,7 @@ export const en: Messages<typeof vi> = {
     title: "Designing systems on AWS, from requirements to a complete architecture",
     lede: "AWS Thực Chiến teaches AWS architecture through ShopViet, a fictional e-commerce system. The study path runs from global infrastructure, networking and security to compute, storage, databases and operations; each design decision starts from a requirement and is shown with an interactive simulation.",
     start: "Start learning",
+    resume: "Continue:",
     practice: "Practice tests",
     statLessons: "Lessons",
     statExams: "Practice tests",
