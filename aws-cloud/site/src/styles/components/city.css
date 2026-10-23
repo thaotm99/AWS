@@ -121,3 +121,9 @@
   .cc-stat { flex: 1 1 40%; }
   .cc-map { padding: 10px; }
 }
+.cc-locked-list summary { list-style: none; gap: 6px; }
+.cc-locked-list summary::-webkit-details-marker { display: none; }
+.cc-locked-list summary::before { content: ""; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); transition: transform .2s; margin-right: 4px; }
+.cc-locked-list[open] summary::before { transform: rotate(45deg); }
+.cc-locked-list summary:hover { color: var(--ink); }
+@media (max-width: 640px) { .cc-build-head .cc-tip { text-align: left; flex-basis: 100%; } }
