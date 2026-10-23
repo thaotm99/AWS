@@ -39,13 +39,13 @@ const scenarios = (L: Lang): PScenario[] => [
           ], ok: false, result: L({ vi: "Giải pháp hoạt động nhưng phát sinh chi phí cluster cả ngày và tốn công vận hành cho một tác vụ kiểm tra nhỏ.", en: "It works, but it costs a cluster running all day and operational effort for a small check." }) },
   },
   {
-    name: L({ vi: "Nạp kho dữ liệu mỗi sáng, analyst xây dựng ML bằng SQL", en: "Load the warehouse each morning; analysts build ML in SQL" }),
-    request: L({ vi: "06:00  S3 data lake → kho dữ liệu → dashboard và mô hình dự báo", en: "06:00  S3 data lake → data warehouse → dashboards and forecast models" }),
+    name: L({ vi: "Nạp data warehouse mỗi sáng, analyst xây dựng ML bằng SQL", en: "Load the warehouse each morning; analysts build ML in SQL" }),
+    request: L({ vi: "06:00  S3 data lake → data warehouse → dashboard và mô hình dự báo", en: "06:00  S3 data lake → data warehouse → dashboards and forecast models" }),
     toggle: { label: L({ vi: "Sử dụng dịch vụ serverless", en: "Use serverless services" }), initial: false },
     action: L({ vi: "Chạy job sáng", en: "Run morning job" }),
     layout: (sl) => ({
       viewBox: VB,
-      aria: L({ vi: "Dữ liệu từ S3 được biến đổi rồi nạp vào kho dữ liệu; analyst tạo mô hình bằng SQL", en: "Data from S3 is transformed and loaded into the data warehouse; analysts create models in SQL" }),
+      aria: L({ vi: "Dữ liệu từ S3 được biến đổi rồi nạp vào data warehouse; analyst tạo mô hình bằng SQL", en: "Data from S3 is transformed and loaded into the data warehouse; analysts create models in SQL" }),
       nodes: [
         { id: "s3", x: 80, y: Y, w: 130, l1: "S3 data lake", l2: L({ vi: "log giao dịch", en: "transaction logs" }) },
         { id: "etl", x: 280, y: Y, w: 170, l1: sl ? "AWS Glue job" : "EMR cluster (Spark)", l2: sl ? L({ vi: "ETL serverless", en: "serverless ETL" }) : L({ vi: "tự quản lý node", en: "self-managed nodes" }) },
@@ -57,7 +57,7 @@ const scenarios = (L: Lang): PScenario[] => [
     run: (sl) => sl
       ? { steps: [
             { at: "etl", state: "pass", msg: L({ vi: "Glue đọc, làm sạch và biến đổi dữ liệu. Glue là dịch vụ serverless, không có hạ tầng cần quản lý.", en: "Glue reads, cleans and transforms the data. Glue is serverless, with no infrastructure to manage." }) },
-            { at: "dw", state: "pass", msg: L({ vi: "Nạp vào **Redshift Serverless**: kho dữ liệu MPP, tự động co giãn, không cần quản lý node.", en: "Loads into **Redshift Serverless**: an MPP data warehouse that scales automatically, with no nodes to manage." }) },
+            { at: "dw", state: "pass", msg: L({ vi: "Nạp vào **Redshift Serverless**: data warehouse MPP, tự động co giãn, không cần quản lý node.", en: "Loads into **Redshift Serverless**: an MPP data warehouse that scales automatically, with no nodes to manage." }) },
             { at: "ml", state: "pass", msg: L({ vi: "Analyst viết `CREATE MODEL` bằng SQL, không cần code Python.", en: "Analysts write `CREATE MODEL` in SQL, with no Python code." }) },
           ], ok: true, back: false, result: L({ vi: "Toàn bộ pipeline là serverless: không có cluster nào cần chọn kích thước, vá lỗi hay bật tắt.", en: "The whole pipeline is serverless: no cluster to size, patch, or start and stop." }) }
       : { steps: [
@@ -191,7 +191,7 @@ const scenarios = (L: Lang): PScenario[] => [
       : { steps: [
             { at: "engine", state: "pass", msg: L({ vi: "Truy vấn được thực thi.", en: "The query runs." }) },
             { at: "data", state: "change", tag: L({ vi: "TỐN", en: "COST" }), msg: L({ vi: "Cluster phải đủ lớn để chứa cả dữ liệu hầu như không được truy cập.", en: "The cluster must be large enough to also hold data that is almost never accessed." }) },
-          ], ok: false, result: L({ vi: "Giải pháp hoạt động, nhưng dữ liệu ít truy cập phải chịu chi phí của kho dữ liệu hiệu năng cao.", en: "It works, but infrequently accessed data bears the cost of a high-performance data warehouse." }) },
+          ], ok: false, result: L({ vi: "Giải pháp hoạt động, nhưng dữ liệu ít truy cập phải chịu chi phí của data warehouse hiệu năng cao.", en: "It works, but infrequently accessed data bears the cost of a high-performance data warehouse." }) },
   },
   {
     name: L({ vi: "Đồng bộ liên tục Oracle tại văn phòng sang RDS", en: "Continuously sync on-premises Oracle to RDS" }),

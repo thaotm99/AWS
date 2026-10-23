@@ -95,48 +95,48 @@ import SortGame from "../../components/scenes/SortGame.tsx";
 import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
-  { href: "#en-s1", label: "1 · A cache in front of the database" },
-  { href: "#en-s2", label: "2 · Redis and Memcached" },
-  { href: "#en-s5", label: "3 · When a cache node fails" },
-  { href: "#en-s3", label: "4 · Choosing a tool for each data task" },
+  { href: "#en-s1", label: "1 · Caching strategies" },
+  { href: "#en-s2", label: "2 · Valkey, Redis OSS and Memcached" },
+  { href: "#en-s5", label: "3 · Backups, replicas and Multi-AZ" },
+  { href: "#en-s3", label: "4 · Choosing an analytics service" },
   { href: "#en-s4", label: "5 · Optimizing data lake cost" },
   { href: "#en-s6", label: "6 · Quick comparison" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
-ShopViet's user base grows every month. Aurora starts to get overloaded by repeated queries, while the analytics department needs to work with the data without affecting the performance of the sales system. **Amazon ElastiCache** keeps frequently accessed data in memory. **Amazon Athena**, **Amazon Redshift** and **AWS Glue** handle analytics on the S3 data lake.
+ShopViet's user base grows every month. Aurora starts to get overloaded by repeated queries, while the analytics department needs to work with the data without affecting the performance of the sales system. **Amazon ElastiCache** keeps frequently accessed data in an in-memory cache. **Amazon Athena**, **Amazon Redshift** and **AWS Glue** handle analytics on the S3 data lake.
 </Story>
 
-<Scene id="en-s1" label="Part 1/6" title="A cache in front of the database" questions={["exam4_q12", "exam3_q33", "exam5_q37", "exam4_q50", "exam4_q32", "exam6_q6", "exam1_q29", "exam1_q55"]}>
+<Scene id="en-s1" label="Part 1/6" title="Caching strategies with ElastiCache" questions={["exam4_q12", "exam3_q33", "exam5_q37", "exam4_q50", "exam4_q32", "exam6_q6", "exam1_q29", "exam1_q55"]}>
 
-<p class="scene-intro">Many queries return the same result again and again; keeping that result in memory answers faster and takes load off the database.</p>
+<p class="scene-intro">Many queries return the same result again and again; keeping that result in an in-memory cache returns it faster and takes load off the database.</p>
 
-**ElastiCache** is a managed in-memory data store with sub-millisecond response times. The most common usage pattern is **cache-aside** (AWS calls it lazy loading): the application queries the cache first; if the data is not there (a cache miss), the application reads from the database and writes the result to the cache with a TTL. The **write-through** pattern adds this: whenever the application writes to the database, it also updates the cache. In both patterns the database remains the system of record. Try six ShopViet scenarios:
+**ElastiCache** is a fully managed in-memory data store with sub-millisecond latency. The most common usage pattern is **cache-aside** (AWS calls it lazy loading): the application queries the cache first; if the data is not there (a cache miss), the application reads from the database and writes the result to the cache with a TTL. The **write-through** pattern adds this: whenever the application writes to the database, it also updates the cache. In both patterns the database remains the system of record. Try six ShopViet scenarios:
 
 <CacheSim client:visible />
 
-ElastiCache fits two kinds of workload: **heavy read traffic** (the same data is queried repeatedly) and **compute-intensive results** (results that take a lot of resources to compute, such as leaderboards). ElastiCache does not solve heavy write traffic, does not run complex JOINs and does not perform ETL. Cache nodes keep data in memory and replicate to replicas asynchronously, so transactions such as purchases are not written to the cache **instead of** the database: when a write peak makes the database time out, use a queue (SQS) to absorb the peak and RDS Proxy to pool connections. ElastiCache for Valkey offers a **durability** option (a Multi-AZ transactional log) for using ElastiCache as a primary data store; ShopViet's ordinary cache configuration does not turn it on.
+ElastiCache fits two kinds of workload: **heavy read traffic** (the same data is queried repeatedly) and **compute-intensive results** (results that take a lot of resources to compute, such as leaderboards). ElastiCache does not solve heavy write traffic, does not run complex JOINs and does not perform ETL. Cache nodes keep data in memory and replicate to replicas asynchronously, so transactions such as purchases are not written to the cache **instead of** the database: when a write peak makes the database time out, use an Amazon SQS queue to absorb the peak and RDS Proxy for connection pooling. ElastiCache for Valkey offers a **durability** option (a Multi-AZ transactional log) for using ElastiCache as a primary data store; ShopViet's ordinary cache configuration does not turn it on.
 
 For data on DynamoDB, there is also **DAX** (DynamoDB lesson). ElastiCache works with any data source: RDS, Aurora, DynamoDB, or ElastiCache itself acting as a session store.
 
-<Takeaway>Repeated read queries overloading the database: ElastiCache with cache-aside and a TTL. Sessions shared across servers: ElastiCache. Reducing downtime and cache data loss: Multi-AZ with automatic failover.</Takeaway>
+<Takeaway>Repeated read queries overloading the database: ElastiCache with cache-aside and a TTL. Sessions shared across EC2 instances: ElastiCache. Reducing downtime and cache data loss: Multi-AZ with automatic failover.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s2" label="Part 2/6" title="Choosing an engine: Redis and Memcached" questions={["exam6_q47", "exam5_q65", "exam1_q29", "exam4_q32"]}>
+<Scene id="en-s2" label="Part 2/6" title="Choosing an engine: Valkey, Redis OSS and Memcached" questions={["exam6_q47", "exam5_q65", "exam1_q29", "exam4_q32"]}>
 
-<p class="scene-intro">In-memory caching comes with several engines; they differ in the data types they support, in backups and in fault tolerance.</p>
+<p class="scene-intro">ElastiCache supports several engines; they differ in the data types they support, in backups and in fault tolerance.</p>
 
 ElastiCache supports three engines: **Valkey**, **Redis OSS** and **Memcached**. Valkey and Redis OSS support many data structures and high availability features. **Memcached** is simpler but multithreaded. Send the same sequence of commands to two identically configured nodes, then choose ShopViet's requirements:
 
 <CacheEngineSim client:visible />
 
-Examples: caching the results of slow JOIN queries on RDS while making use of many cores: Memcached. Real-time leaderboards, finding the nearest store, requiring failover: Redis OSS. For leaderboards on DynamoDB data, DynamoDB + DAX is also an in-memory option.
+Examples: caching the results of slow JOIN queries on RDS while making use of many CPU cores: Memcached. Real-time leaderboards, finding the nearest store, requiring failover: Redis OSS. For leaderboards on DynamoDB data, DynamoDB + DAX is also an in-memory option.
 
 <Takeaway>Multithreaded, simple key-value: Memcached. Sorted sets, geospatial, pub/sub, replicas, Multi-AZ failover, backups: Valkey or Redis OSS (comparison for node-based clusters; with ElastiCache Serverless, Memcached also supports backup and restore).</Takeaway>
 
 </Scene>
 
-<Scene id="en-s5" label="Part 3/6" title="When a cache node fails: backups, replicas or Multi-AZ" questions={["exam4_q32", "exam1_q55"]}>
+<Scene id="en-s5" label="Part 3/6" title="Backups, read replicas and Multi-AZ for ElastiCache" questions={["exam4_q32", "exam1_q55"]}>
 
 <p class="scene-intro">A cache often holds important data such as shopping carts; when a cache node fails, both the downtime and the data lost must be kept small.</p>
 
@@ -146,7 +146,7 @@ ShopViet's ElastiCache cluster (Redis OSS, node-based) holds carts and query res
 
 Each mechanism solves a different problem:
 
-- **Backups** (.rdb snapshots stored in S3): automatic backups run daily and are kept up to 35 days; manual backups are kept until you delete them. You restore by creating a new cache from a backup, so the data since the last backup is lost. Use them for corrupted or deleted data, or to seed a new cache.
+- **Backups** (.rdb snapshots stored in S3): automatic backups run daily and are kept up to 35 days; manual backups are kept until you delete them. You restore by creating a new cluster from a backup, so the data since the last backup is lost. Use them for corrupted or deleted data, or to seed a new cluster.
 - **Append-only file (AOF)**: not supported from Redis OSS 2.8.22; on older engines, AOF and Multi-AZ are mutually exclusive.
 - **Read replicas** (1 to 5 per shard, replicated asynchronously): scale reads and keep a copy of the data; with Multi-AZ off, a failed primary is replaced by a newly provisioned node, and writes stop in the meantime.
 - **Multi-AZ with automatic failover**: places replicas in other AZs and automatically promotes the replica with the least replication lag; writes resume within seconds and the endpoint stays the same. This is the configuration AWS recommends for high availability. ElastiCache Serverless has a Multi-AZ architecture built in.
@@ -155,9 +155,9 @@ Each mechanism solves a different problem:
 
 </Scene>
 
-<Scene id="en-s3" label="Part 4/6" title="Choosing a tool for each data task" questions={["exam5_q12", "exam1_q26", "exam1_q53", "exam5_q58", "exam5_q6", "exam4_q11", "exam2_q15", "exam6_q26", "exam5_q8"]}>
+<Scene id="en-s3" label="Part 4/6" title="Choosing an analytics service for each task" questions={["exam5_q12", "exam1_q26", "exam1_q53", "exam5_q58", "exam5_q6", "exam4_q11", "exam2_q15", "exam6_q26", "exam5_q8"]}>
 
-<p class="scene-intro">Analytics data is usually gathered into one shared store on S3; each task, such as quick queries, data transformation or reporting, has a best-fit service.</p>
+<p class="scene-intro">Analytics data is usually centralized in a data lake on S3; each task, such as quick queries, data transformation or reporting, has a best-fit service.</p>
 
 ShopViet's data is stored in a data lake on S3. Each task has a best-fit service:
 
@@ -174,9 +174,9 @@ Choose a task, run the simulation, then switch to the better-suited tool. Contin
 
 </Scene>
 
-<Scene id="en-s4" label="Part 5/6" title="Controlling data lake cost over time" questions={["exam2_q34", "exam6_q26", "exam5_q11"]}>
+<Scene id="en-s4" label="Part 5/6" title="Optimizing data lake storage cost on S3" questions={["exam2_q34", "exam6_q26", "exam5_q11"]}>
 
-<p class="scene-intro">An analytics store grows every day; without a storage policy over time, costs keep rising even though most old data is rarely used.</p>
+<p class="scene-intro">A data lake grows every day; without an S3 Lifecycle policy over time, costs keep rising even though most old data is rarely used.</p>
 
 ShopViet's data lake is split into two zones. The **raw zone** stores the original data as it was received. The **refined zone** stores data that Glue has cleaned for analysts to query. Each zone grows by 1 TB a day. Choose a storage option, then simulate one year:
 
@@ -184,15 +184,15 @@ ShopViet's data lake is split into two zones. The **raw zone** stores the origin
 
 When the data lake needs another copy in a different Region for disaster recovery:
 
-- Enable **Cross-Region Replication** on the bucket. CRR replicates only objects written **after** it is enabled; existing objects need S3 Batch Replication. Starting from scratch with a new bucket is the simplest option.
-- Encrypt with **SSE-KMS using a multi-Region key**: the key has a replica in the other Region with the same key material, so the data in both places uses the same set of keys and the same permission configuration.
+- Enable **S3 Cross-Region Replication (CRR)** on the bucket. CRR replicates only objects written **after** it is enabled; existing objects need S3 Batch Replication. Starting from scratch with a new bucket is the simplest option.
+- Encrypt with **SSE-KMS using a multi-Region key**: the multi-Region key has a replica key in the other Region with the same key material, so the data in both places uses the same set of keys and the same permission configuration.
 - Athena can query in the Region that holds the data.
 
-<Takeaway>Original data that must be retained but is rarely read: lifecycle to Glacier Deep Archive. Data that is still queried: keep it in a storage class with immediate access, written in a compressed columnar format (Parquet). Athena cannot read data in Glacier Deep Archive until it is restored.</Takeaway>
+<Takeaway>Original data that must be retained but is rarely read: an S3 Lifecycle transition to S3 Glacier Deep Archive. Data that is still queried: keep it in a storage class with immediate access, written in a compressed columnar format (Parquet). Athena cannot read data in S3 Glacier Deep Archive until it is restored.</Takeaway>
 
 </Scene>
 
-<Scene id="en-s6" label="Part 6/6" title="Quick comparison: data services that are easy to confuse" questions={["exam1_q53", "exam2_q44", "exam4_q50", "exam5_q59", "exam1_q26"]}>
+<Scene id="en-s6" label="Part 6/6" title="Comparing data services that are easy to confuse" questions={["exam1_q53", "exam2_q44", "exam4_q50", "exam5_q59", "exam1_q26"]}>
 
 <p class="scene-intro">Many data services have similar names or features; telling them apart helps you pick the right one for each need.</p>
 
@@ -237,12 +237,12 @@ Sort each ShopViet task into the matching service group. On a mobile device: tap
 
 <SortGame client:visible
   bins={[
-    { id: "cache", title: "ElastiCache", sub: "Redis OSS, Memcached", hint: "Hint: the task needs an instant response to users, from memory." },
+    { id: "cache", title: "ElastiCache", sub: "Redis OSS, Memcached", hint: "Hint: the task needs an instant response to users, from an in-memory cache." },
     { id: "query", title: "SQL analytics", sub: "Athena, Redshift", hint: "Hint: the task is a SQL query over a large volume of data." },
     { id: "prep", title: "Data preparation", sub: "Glue, DataBrew", hint: "Hint: the task transforms data before it is used." },
   ]}
   cards={[
-    ["Login sessions shared across servers", "cache"], ["Top 10 sellers, updated continuously", "cache"], ["The shipper nearest the user", "cache"],
+    ["Login sessions shared across EC2 instances", "cache"], ["Top 10 sellers, updated continuously", "cache"], ["The shipper nearest the user", "cache"],
     ["Check click data just written to S3", "query"], ["A revenue dashboard run every morning on the data warehouse", "query"], ["Count complaint calls in the transcripts", "query"],
     ["Convert CSV to compressed Parquet nightly", "prep"], ["Analysts filter anomalous data in a drag-and-drop interface", "prep"],
   ]}
@@ -264,7 +264,7 @@ Check question: as the designer of the ShopViet system, which option fits?
     a: 1,
     why: "Athena queries S3 directly, is serverless and charges only for the data scanned." },
   { q: "The raw zone must be kept for 5 years but is almost never read; the refined zone is queried daily. Which solution reduces storage cost?",
-    opts: ["Lifecycle both zones to Glacier Deep Archive", "Raw zone to Glacier Deep Archive, Glue writes the refined zone compressed", "Lambda deletes the raw zone after 1 day"],
+    opts: ["Lifecycle both zones to S3 Glacier Deep Archive", "Raw zone to S3 Glacier Deep Archive, Glue writes the refined zone compressed", "Lambda deletes the raw zone after 1 day"],
     a: 1,
     why: "The raw zone is still retained at the lowest cost; the refined zone can still be queried with Athena and is smaller thanks to the compressed format." },
   { q: "Redshift UNLOADs files into a bucket in a partner's account, but the partner itself gets AccessDenied errors. What is the cause?",
@@ -276,7 +276,7 @@ Check question: as the designer of the ShopViet system, which option fits?
     a: 2,
     why: "Multi-AZ automatically promotes the replica with the least lag, and writes resume within seconds. Backups lose the data since the last backup; replicas do not fail over by themselves with Multi-AZ off." },
   { q: "During a flash sale, Aurora times out when taking orders. One proposal is to write orders to ElastiCache first and push them to Aurora later. Which assessment is correct?",
-    opts: ["Fits, because the cache writes faster", "Does not fit: orders in cache memory can be lost when a node fails; use SQS and scalable workers", "Fits if daily backups are on"],
+    opts: ["Fits, because the cache writes faster", "Does not fit: orders in cache memory can be lost when a node fails; use an SQS queue and auto-scaling workers", "Fits if daily backups are on"],
     a: 1,
     why: "A cache speeds up reads; it is not a durable store for transactions. SQS stores messages on multiple servers and absorbs the write peak." },
 ]} />
