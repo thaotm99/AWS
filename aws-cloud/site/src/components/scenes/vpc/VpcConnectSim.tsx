@@ -53,7 +53,7 @@ export default function VpcConnectSim() {
       setMsg({ vi: "Transit Gateway hỗ trợ transitive routing: traffic từ A tới C đi qua hub, không cần kết nối trực tiếp A–C. Route `CIDR của C → attachment C` có trong route table của Transit Gateway nhờ route propagation; route table của subnet trong VPC A vẫn cần route trỏ tới Transit Gateway.", en: "Transit Gateway supports transitive routing: traffic from A to C goes through the hub, without a direct A–C connection. The route `C's CIDR → attachment C` is in the transit gateway route table thanks to route propagation; the subnet route table in VPC A still needs a route that points to the transit gateway." });
     } else if (mode === "tvpc") {
       await travel(layer, [pts[0], CENTER, pts[2]], 1300, "pkt", 6);
-      setMsg({ vi: "Transit VPC: mỗi VPC lập VPN connection (BGP over IPsec) tới các EC2 chạy phần mềm router trong VPC trung tâm. Transitive routing hoạt động, nhưng tổ chức tự vận hành EC2 (vá lỗi, HA, license phần mềm), mỗi tunnel VPN tối đa 1,25 Gbps và mã hoá VPN làm tăng độ trễ. Transit Gateway thay thế mô hình này bằng hub do AWS quản lý.", en: "Transit VPC: each VPC builds a VPN connection (BGP over IPsec) to EC2 instances running router software in a central VPC. Transitive routing works, but the organization runs the EC2 instances itself (patching, HA, software licenses), each VPN tunnel is limited to 1.25 Gbps, and VPN encryption adds latency. Transit Gateway replaces this pattern with an AWS-managed hub." });
+      setMsg({ vi: "Transit VPC: mỗi VPC lập VPN connection (BGP over IPsec) tới các EC2 instance chạy phần mềm router trong VPC trung tâm. Transitive routing hoạt động, nhưng tổ chức tự vận hành các EC2 instance (vá lỗi, HA, license phần mềm), mỗi tunnel VPN tối đa 1,25 Gbps và mã hoá VPN làm tăng độ trễ. Transit Gateway thay thế mô hình này bằng hub do AWS quản lý.", en: "Transit VPC: each VPC builds a VPN connection (BGP over IPsec) to EC2 instances running router software in a central VPC. Transitive routing works, but the organization runs the EC2 instances itself (patching, HA, software licenses), each VPN tunnel is limited to 1.25 Gbps, and VPN encryption adds latency. Transit Gateway replaces this pattern with an AWS-managed hub." });
     } else if (chain) {
       await travel(layer, [pts[0], pts[1]], 600, "pkt", 6);
       await travel(layer, [pts[1], [(pts[1][0] + pts[2][0]) / 2, (pts[1][1] + pts[2][1]) / 2]], 400, "pkt-bad", 6);
@@ -120,13 +120,13 @@ export default function VpcConnectSim() {
             {mode === "tgw"
               ? L({ vi: `${n} attachment vào Transit Gateway${prop ? ", CIDR tự động propagate" : ", chưa có route"}`, en: `${n} Transit Gateway attachments${prop ? ", CIDRs propagated automatically" : ", no routes yet"}` })
               : mode === "tvpc"
-              ? L({ vi: `${n} VPN connection tới EC2 trong Transit VPC`, en: `${n} VPN connections to EC2 in the transit VPC` })
+              ? L({ vi: `${n} VPN connection tới EC2 instance trong Transit VPC`, en: `${n} VPN connections to EC2 in the transit VPC` })
               : L({ vi: `${peeringCount} peering connection${chain ? " (chuỗi A–B–C)" : ` cho full mesh ${n} VPC`}`, en: `${peeringCount} peering connections${chain ? " (chain A–B–C)" : ` for a full mesh of ${n} VPCs`}` })}
           </span>
         </div>
         <p style={{ margin: "8px 0 0" }}>
           {rich(L(msg ?? (mode === "tvpc"
-            ? { vi: "Mô hình hub-and-spoke dựa trên VPN: các VPC kết nối tới EC2 chạy phần mềm router của bên thứ ba trong một VPC trung tâm. Gửi traffic để quan sát chi phí vận hành của mô hình này.", en: "A VPN-based hub-and-spoke design: the VPCs connect to EC2 instances running third-party router software in a central VPC. Send traffic to see what this design costs to operate." }
+            ? { vi: "Mô hình hub-and-spoke dựa trên VPN: các VPC kết nối tới EC2 instance chạy phần mềm router của bên thứ ba trong một VPC trung tâm. Gửi traffic để quan sát chi phí vận hành của mô hình này.", en: "A VPN-based hub-and-spoke design: the VPCs connect to EC2 instances running third-party router software in a central VPC. Send traffic to see what this design costs to operate." }
             : mode === "tgw"
             ? { vi: "Mỗi VPC chỉ cần một attachment vào Transit Gateway. Bổ sung VPC thứ 11 chỉ phát sinh thêm 1 kết nối; Transit Gateway cũng kết nối được VPN và Direct Connect.", en: "Each VPC needs only one Transit Gateway attachment. Adding an 11th VPC adds only 1 connection; Transit Gateway also connects VPN and Direct Connect." }
             : { vi: "Kéo thanh trượt để quan sát tốc độ tăng của số peering connection. VPC peering có chi phí thấp và đơn giản khi số lượng VPC nhỏ.", en: "Drag the slider to see how fast the number of peering connections grows. VPC peering is low-cost and simple when the number of VPCs is small." })))}

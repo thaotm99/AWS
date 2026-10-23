@@ -85,7 +85,7 @@ export default function CidrSim() {
             <div><dt>{L({ vi: "Làm VPC / subnet", en: "As a VPC / subnet" })}</dt><dd>
               {vpcOk
                 ? rich(L({ vi: `Hợp lệ (cho phép từ /16 tới /28). Subnet này có **${(size - 5).toLocaleString("en-US")}** địa chỉ gán được cho tài nguyên.`, en: `Valid (allowed from /16 to /28). As a subnet it has **${(size - 5).toLocaleString("en-US")}** addresses you can assign to resources.` }))
-                : rich(L({ vi: "Không hợp lệ: VPC và subnet chỉ nhận khối từ **/16** (65.536 địa chỉ) tới **/28** (16 địa chỉ). Khối này vẫn dùng được trong rule của Security Group, NACL hoặc policy.", en: "Not valid: a VPC or subnet accepts only blocks from **/16** (65,536 addresses) to **/28** (16 addresses). The block can still be used in security group, NACL or policy rules." }))}
+                : rich(L({ vi: "Không hợp lệ: VPC và subnet chỉ nhận khối từ **/16** (65.536 địa chỉ) tới **/28** (16 địa chỉ). Khối này vẫn dùng được trong rule của security group, NACL hoặc policy.", en: "Not valid: a VPC or subnet accepts only blocks from **/16** (65,536 addresses) to **/28** (16 addresses). The block can still be used in security group, NACL or policy rules." }))}
             </dd></div>
           </dl>
           {vpcOk && (

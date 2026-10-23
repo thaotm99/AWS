@@ -1,6 +1,6 @@
 ---
 title: "VPC: subnets, routing, security and connectivity"
-lede: "This lesson walks through ShopViet's private network on AWS by following a packet's path: the control layers between the internet and EC2, the differences between security groups and network ACLs, how to plan CIDR blocks and route tables, how to place NAT gateways, and the criteria for choosing between VPC endpoints, VPC peering, Transit Gateway, Site-to-Site VPN and Direct Connect."
+lede: "This lesson walks through ShopViet's private network on AWS by following a packet's path: the control layers between the internet and EC2 instances, the differences between security groups and network ACLs, how to plan CIDR blocks and route tables, how to place NAT gateways, and the criteria for choosing between VPC endpoints, VPC peering, Transit Gateway, Site-to-Site VPN and Direct Connect."
 minutes: 42
 scenes: 9
 prerequisites: ["global-infra"]
@@ -144,14 +144,14 @@ import Quiz from "../../components/scenes/Quiz.tsx";
 
 <Story toc={[
   { href: "#en-addr", label: "1 · CIDR and route tables" },
-  { href: "#en-s1", label: "2 · Access from the internet" },
-  { href: "#en-s2", label: "3 · Security group chain" },
+  { href: "#en-s1", label: "2 · Internet gateway, NACL, SG" },
+  { href: "#en-s2", label: "3 · Security group referencing" },
   { href: "#en-s3", label: "4 · NAT gateway" },
   { href: "#en-s4", label: "5 · VPC endpoints" },
   { href: "#en-s5", label: "6 · Connecting many VPCs" },
   { href: "#en-s6", label: "7 · Connecting on premises" },
-  { href: "#en-hub", label: "8 · Network hub" },
-  { href: "#en-compare", label: "9 · Quick comparison" },
+  { href: "#en-hub", label: "8 · Hub-and-spoke" },
+  { href: "#en-compare", label: "9 · Networking components compared" },
   { href: "#en-challenge", label: "Exercise" },
 ]}>
 ShopViet runs its system in the Singapore Region. The next step is to design the **VPC**, ShopViet's private network on AWS: dividing it into subnets, allowing only legitimate traffic from users, blocking unauthorized access, and connecting the VPC to other VPCs and to the office. Each part corresponds to a real deployment task, with a simulation to verify the configuration before applying it in the console.
@@ -159,9 +159,9 @@ ShopViet runs its system in the Singapore Region. The next step is to design the
 
 <Scene id="en-addr" label="Part 1/9" title="Addressing and routing: CIDR, subnets and route tables" questions={["exam4_q8", "exam5_q63"]}>
 
-<p class="scene-intro">Every server on a network needs an IP address; a VPC divides its address range into subnets, and each subnet's route table decides where traffic goes.</p>
+<p class="scene-intro">Every EC2 instance in a VPC needs an IP address; a VPC divides its address range into subnets, and each subnet's route table decides where traffic goes.</p>
 
-Every address in ShopViet's VPC is written in **CIDR notation**: `10.0.0.0/16` means the first 16 bits are fixed and the last 16 bits vary, which gives 65,536 addresses. The same notation appears in security group and NACL rules and in the `aws:SourceIp` condition of a bucket policy. Pick a sample block or drag the prefix slider, then enter a source IP to check whether it falls inside the block.
+Every address in ShopViet's VPC is written in **CIDR notation**: `10.0.0.0/16` means the first 16 bits are fixed and the last 16 bits vary, which gives 65,536 addresses. The same notation appears in security group and network ACL rules and in the `aws:SourceIp` condition of a bucket policy. Pick a sample block or drag the prefix slider, then enter a source IP to check whether it falls inside the block.
 
 <CidrSim client:visible />
 
@@ -175,9 +175,9 @@ Once the subnets exist, each subnet needs a **route table** that decides where i
 
 </Scene>
 
-<Scene id="en-s1" label="Part 2/9" title="Access from the internet: the control layers along the packet's path" questions={["exam5_q63", "exam4_q38", "exam3_q9", "exam3_q25", "exam6_q8"]}>
+<Scene id="en-s1" label="Part 2/9" title="Internet access: internet gateway, network ACL and security group" questions={["exam5_q63", "exam4_q38", "exam3_q9", "exam3_q25", "exam6_q8"]}>
 
-<p class="scene-intro">For a request from the internet to reach a web server in the VPC, it must pass three control layers: the VPC's entry point, the subnet's filter and the server's own firewall.</p>
+<p class="scene-intro">For a request from the internet to reach a web server in the VPC, it must pass three control layers: the VPC's internet gateway, the subnet's network ACL and the instance's security group.</p>
 
 A subnet is a **public subnet** only when its route table has a `0.0.0.0/0` route to an **internet gateway (IGW)**. A request from the internet to ShopViet's web server passes in turn through the IGW, the **network ACL** at the subnet boundary, and the **security group** attached to the instance. Turn each condition on or off and send a request to find the control layer that is blocking traffic.
 
@@ -187,9 +187,9 @@ A subnet is a **public subnet** only when its route table has a `0.0.0.0/0` rout
 
 </Scene>
 
-<Scene id="en-s2" label="Part 3/9" title="Security group chain: ALB → EC2 → RDS" questions={["exam2_q28", "exam2_q55", "exam4_q52", "exam4_q26", "exam5_q29"]}>
+<Scene id="en-s2" label="Part 3/9" title="Security group referencing across tiers: ALB → EC2 → RDS" questions={["exam2_q28", "exam2_q55", "exam4_q52", "exam4_q26", "exam5_q29"]}>
 
-<p class="scene-intro">A web system usually has three tiers: a load balancer receives requests, application servers process them, and a database stores data. Each tier should accept traffic only from the tier just before it.</p>
+<p class="scene-intro">A web system usually has three tiers: a load balancer receives requests, EC2 instances running the application process them, and a database stores data. Each tier should accept traffic only from the tier just before it.</p>
 
 ShopViet's web application has three tiers: an ALB receives user requests, EC2 runs the application, and RDS stores the data. Each tier should allow traffic only from the tier in front of it. Choose the inbound rules for EC2 and RDS, run the simulation, and watch both legitimate user requests and direct access attempts from outside.
 
@@ -201,7 +201,7 @@ ShopViet's web application has three tiers: an ALB receives user requests, EC2 r
 
 <Scene id="en-s3" label="Part 4/9" title="NAT gateway: internet access for private subnets" questions={["exam3_q44", "exam3_q62", "exam6_q13", "exam3_q12"]}>
 
-<p class="scene-intro">Servers in a private subnet accept no connections from the internet, yet still need to reach out, for example to download operating system patches.</p>
+<p class="scene-intro">EC2 instances in a private subnet accept no connections initiated from the internet, yet still need to reach out, for example to download operating system patches.</p>
 
 ShopViet's database and workers are in **private subnets** without public IPs, but they still need to download patches. A **NAT gateway** allows outbound connections but does not allow the internet to initiate inbound connections. Try three placements, then trigger a failure in AZ a.
 
@@ -213,7 +213,7 @@ ShopViet's database and workers are in **private subnets** without public IPs, b
 
 <Scene id="en-s4" label="Part 5/9" title="VPC endpoints: reaching AWS services without the internet" questions={["exam3_q47", "exam5_q24", "exam6_q64", "exam6_q65", "exam3_q7", "exam1_q39", "exam5_q9", "exam2_q11"]}>
 
-<p class="scene-intro">Servers in a VPC call AWS services such as S3 all the time; by default this traffic leaves the VPC for the service's public endpoint, which adds cost and does not stay on a private network.</p>
+<p class="scene-intro">Workloads in a VPC call AWS services such as S3 all the time; by default this traffic leaves the VPC for the service's public endpoint, which adds cost and does not stay on a private network.</p>
 
 EC2 instances in ShopViet's private subnet write images to S3 and send jobs to SQS. By default, this traffic goes through the NAT gateway to the service's public endpoint. Choose each option, send a request and watch the change in the route table.
 
@@ -231,7 +231,7 @@ Cost is the main reason to move S3 traffic to a gateway endpoint. Change the dat
   { need: "Workers send jobs to SQS without going out to the internet", answer: "Interface endpoint (PrivateLink)",
     why: "Creates an ENI with a private IP in the subnet; services other than S3 and DynamoDB use this endpoint type." },
   { need: "A shipping partner calls ShopViet's inventory API from the partner's VPC, without opening access to the whole network", answer: "AWS PrivateLink + NLB on the provider side",
-    why: "The provider places an NLB in front of the service; the consumer creates an interface endpoint (which sends TCP or UDP traffic to the endpoint service). Only one service is exposed, without opening access to the whole network. Access is unidirectional: clients in the partner's VPC initiate connections to the service, and ShopViet's servers cannot initiate connections into the partner's VPC. VPC peering is the opposite: traffic is routed between the two VPCs, and instances on either side can communicate as if they are within the same network." },
+    why: "The provider places an NLB in front of the service; the consumer creates an interface endpoint (which sends TCP or UDP traffic to the endpoint service). Only one service is exposed, without opening access to the whole network. Access is unidirectional: clients in the partner's VPC initiate connections to the service, and ShopViet's side cannot initiate connections into the partner's VPC. VPC peering is the opposite: traffic is routed between the two VPCs, and instances on either side can communicate as if they are within the same network." },
   { need: "A DataSync agent in the on-premises warehouse copies video files to EFS every day over the existing Direct Connect connection, without crossing the internet", answer: "Interface endpoint (PrivateLink) + private VIF",
     why: "An interface endpoint is an ENI with a private IP in the VPC, so it can be reached from on premises over a Direct Connect private VIF or a Site-to-Site VPN (the DataSync agent uses a VPC service endpoint; EFS offers an interface endpoint for the EFS API). A gateway endpoint cannot be used from on premises." },
 ]} />
@@ -263,7 +263,7 @@ ShopViet sets up more teams, each using its own VPC. Increase the number of VPCs
     why: "A transit VPC is the older pattern: EC2 instances run router and VPN software in a central VPC; the organization handles HA and licenses, each VPN tunnel is limited to 1.25 Gbps, and encryption adds latency. Transit Gateway is a hub managed by AWS." },
 ]} />
 
-<Takeaway>A small number of VPCs: VPC peering (low cost, but no transitive routing). Many VPCs, or on-premises connectivity as well: Transit Gateway; enable route propagation so each VPC attachment's CIDR is installed in the transit gateway route table automatically (the subnet route tables in the VPCs still need a route to the transit gateway). A transit VPC (self-managed EC2 routers and VPN) is the older pattern that Transit Gateway replaces. Many accounts in the same organization: VPC sharing.</Takeaway>
+<Takeaway>A small number of VPCs: VPC peering (low cost, but no transitive routing). Many VPCs, or on-premises connectivity as well: Transit Gateway; enable route propagation so each VPC attachment's CIDR is installed in the transit gateway route table automatically (the subnet route tables in the VPCs still need a route to the transit gateway). A transit VPC (self-managed router and VPN software on EC2 instances) is the older pattern that Transit Gateway replaces. Many accounts in the same organization: VPC sharing.</Takeaway>
 
 </Scene>
 
@@ -279,7 +279,7 @@ ShopViet's office needs to connect to the VPC. There are two methods: **Site-to-
 
 </Scene>
 
-<Scene id="en-hub" label="Part 8/9" title="Network hub: Transit Gateway, Direct Connect and a shared services VPC" questions={["exam3_q16", "exam2_q21", "exam4_q7", "exam4_q28"]}>
+<Scene id="en-hub" label="Part 8/9" title="Hub-and-spoke architecture: Transit Gateway, Direct Connect and a shared services VPC" questions={["exam3_q16", "exam2_q21", "exam4_q7", "exam4_q28"]}>
 
 <p class="scene-intro">As the number of VPCs and data centers grows, connecting each pair becomes hard to manage; a central hub lets every network connect through it and share common services.</p>
 
@@ -305,7 +305,7 @@ The configurations below look reasonable in the console, but they behave differe
 
 </Scene>
 
-<Scene id="en-compare" label="Part 9/9" title="Quick comparison: networking components that are easy to confuse" questions={["exam5_q10", "exam5_q45", "exam5_q4", "exam6_q36", "exam4_q28", "exam4_q38"]}>
+<Scene id="en-compare" label="Part 9/9" title="Networking components with similar functions compared" questions={["exam5_q10", "exam5_q45", "exam5_q4", "exam6_q36", "exam4_q28", "exam4_q38"]}>
 
 <p class="scene-intro">Many networking components have similar names or functions; telling them apart helps you pick the right one for each need.</p>
 
@@ -317,9 +317,9 @@ Some networking components have a name or function close to what ShopViet needs 
     notHere: "ShopViet's whole office network needs an encrypted connection to the VPC (network to network). Client VPN serves individual devices; it does not connect two networks.",
     instead: "**Site-to-Site VPN** (IPsec between the customer gateway device and the virtual private gateway), combined with route tables, security groups and network ACLs to restrict traffic." },
   { name: "Bastion host",
-    use: "An EC2 instance in a public subnet that acts as an SSH/RDP jump point for administrators to reach instances in private subnets.",
-    notHere: "It only gives administrative access to individual servers, it does not connect the office network to the VPC, and it needs open inbound ports and a self-managed instance.",
-    instead: "Network connectivity: Site-to-Site VPN or Direct Connect. Server administration without open inbound ports or bastion hosts: AWS Systems Manager **Session Manager**." },
+    use: "An EC2 instance in a public subnet that acts as an SSH/RDP jump host for administrators to reach instances in private subnets.",
+    notHere: "It only gives administrative access to individual instances, it does not connect the office network to the VPC, and it needs open inbound ports and a self-managed instance.",
+    instead: "Network connectivity: Site-to-Site VPN or Direct Connect. Instance administration without open inbound ports or bastion hosts: AWS Systems Manager **Session Manager**." },
   { name: "Transit VPC",
     use: "The older hub-and-spoke pattern: EC2 instances run third-party router software in a central VPC, and the other VPCs connect to it over VPN (BGP over IPsec). Still useful when a third-party appliance's features are needed in the path.",
     notHere: "ShopViet needs a hub with little operational overhead: a transit VPC means managing the EC2 instances' HA and licenses, each VPN tunnel is limited to 1.25 Gbps, and VPN encryption adds latency.",
@@ -342,7 +342,7 @@ Some networking components have a name or function close to what ShopViet needs 
     instead: "**AWS Global Accelerator** in front of an NLB in each Region; the NLBs accept both TCP and UDP and use IP targets to reach on-premises servers." },
 ]} />
 
-<Takeaway>Network-to-network connectivity: Site-to-Site VPN or Direct Connect; individual users: Client VPN; server administration: Session Manager or a bastion host. Blocking by country: AWS WAF geo match, not a NACL. A hub with little operational overhead: Transit Gateway, not a transit VPC.</Takeaway>
+<Takeaway>Network-to-network connectivity: Site-to-Site VPN or Direct Connect; individual users: Client VPN; instance administration: Session Manager or a bastion host. Blocking by country: AWS WAF geo match, not a NACL. A hub with little operational overhead: Transit Gateway, not a transit VPC.</Takeaway>
 
 </Scene>
 
@@ -352,7 +352,7 @@ Sort each feature into the matching component. On a mobile device: select a card
 
 <SortGame client:visible
   bins={[
-    { id: "sg", title: "Security Group", sub: "Instance level (ENI)", hint: "Hint: this feature belongs to the protection layer attached directly to the instance." },
+    { id: "sg", title: "Security group", sub: "Instance level (ENI)", hint: "Hint: this feature belongs to the protection layer attached directly to the instance." },
     { id: "nacl", title: "Network ACL", sub: "Subnet level", hint: "Hint: this feature belongs to the protection layer at the subnet boundary." },
   ]}
   cards={[
@@ -366,8 +366,8 @@ Sort each feature into the matching component. On a mobile device: select a card
 Check your understanding: as the designer of the ShopViet system, which option is right?
 
 <Quiz client:visible items={[
-  { q: "ShopViet's web server is in a subnet with a route to an internet gateway and has a public IP; its security group allows inbound port 443, and the NACL has only an inbound rule for port 443. Users still cannot reach the site. What is the cause?",
-    opts: ["The security group is missing an outbound rule for the response", "The NACL is missing an outbound rule for the ephemeral ports (1024-65535)", "The internet gateway must be placed in the subnet"],
+  { q: "ShopViet's web server is in a subnet with a route to an internet gateway and has a public IP; its security group allows inbound port 443, and the network ACL has only an inbound rule for port 443. Users still cannot reach the site. What is the cause?",
+    opts: ["The security group is missing an outbound rule for the response", "The network ACL is missing an outbound rule for the ephemeral ports (1024-65535)", "The internet gateway must be placed in the subnet"],
     a: 1,
     why: "Security groups are stateful, so responses are allowed automatically. NACLs are stateless, so the return direction must be allowed explicitly." },
   { q: "ShopViet's application in a VPC needs to read images on S3 and shopping-cart data on DynamoDB without going out to the internet. Which configuration meets the requirement?",

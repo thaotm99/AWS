@@ -33,7 +33,7 @@ const MODES: Record<Mode, { label: Bi; target: string; path: Pt[]; cls: string; 
     label: { vi: "Interface endpoint cho SQS", en: "Interface endpoint for SQS" }, target: "SQS", cls: "pkt",
     path: [EC2, ENI, SQS],
     routes: [["10.0.0.0/16", "local"], ["0.0.0.0/0", "nat-0a1b (NAT gateway)"]],
-    text: { vi: <>Interface endpoint (PrivateLink) tạo một <b>ENI có private IP</b> trong subnet. Không bổ sung route: bản ghi DNS của <code>sqs.ap-southeast-1.amazonaws.com</code> phân giải tới private IP của ENI. Loại endpoint này dùng cho các dịch vụ không hỗ trợ gateway endpoint, như SQS. Tính phí theo giờ và theo GB.</>,
+    text: { vi: <>Interface endpoint (PrivateLink) tạo một <b>ENI có private IP</b> trong subnet. Không bổ sung route: DNS record của <code>sqs.ap-southeast-1.amazonaws.com</code> phân giải tới private IP của ENI. Loại endpoint này dùng cho các dịch vụ không hỗ trợ gateway endpoint, như SQS. Tính phí theo giờ và theo GB.</>,
       en: <>An interface endpoint (PrivateLink) creates an <b>ENI with a private IP</b> in the subnet. No route is added: the DNS record for <code>sqs.ap-southeast-1.amazonaws.com</code> resolves to the ENI&apos;s private IP. This endpoint type is used for services that do not support gateway endpoints, such as SQS. Charged per hour and per GB.</> },
   },
 };
@@ -63,7 +63,7 @@ export default function EndpointSim() {
       </div>
       <div className="endpoint-grid">
         <div className="svg-wrap">
-          <svg viewBox="0 0 760 300" role="img" aria-label={L({ vi: `EC2 trong private subnet gửi request tới ${m.target}: ${L(m.label)}`, en: `EC2 in a private subnet sends a request to ${m.target}: ${L(m.label)}` })}>
+          <svg viewBox="0 0 760 300" role="img" aria-label={L({ vi: `EC2 instance trong private subnet gửi request tới ${m.target}: ${L(m.label)}`, en: `An EC2 instance in a private subnet sends a request to ${m.target}: ${L(m.label)}` })}>
             <path className="cloud" d="M340 60 a18 18 0 0 1 10 -32 a24 24 0 0 1 44 -6 a18 18 0 0 1 26 22 a14 14 0 0 1 -6 16 z" />
             <rect className="region" x={30} y={60} width={470} height={230} rx={12} />
             <text className="t" x={46} y={84}>VPC</text>

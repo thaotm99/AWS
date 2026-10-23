@@ -87,7 +87,7 @@ export default function NatHaSim() {
 
   const brokenB = stats.b.err > 0;
   const note = L<string>(mode === "private"
-    ? { vi: "Public NAT gateway ở chế độ zonal phải nằm trong public subnet, nơi có route 0.0.0.0/0 tới Internet Gateway. Khi đặt trong private subnet, NAT gateway cũng không kết nối được internet. Đây là lỗi bố trí thường gặp.", en: "A public NAT gateway in zonal mode must be in a public subnet, which has a 0.0.0.0/0 route to the internet gateway. When placed in a private subnet, the NAT gateway cannot reach the internet either. This is a common placement mistake." }
+    ? { vi: "Public NAT gateway ở chế độ zonal phải nằm trong public subnet, nơi có route 0.0.0.0/0 tới internet gateway. Khi đặt trong private subnet, NAT gateway cũng không kết nối được internet. Đây là lỗi bố trí thường gặp.", en: "A public NAT gateway in zonal mode must be in a public subnet, which has a 0.0.0.0/0 route to the internet gateway. When placed in a private subnet, the NAT gateway cannot reach the internet either. This is a common placement mistake." }
     : mode === "shared"
       ? down
         ? { vi: "Sự cố tại AZ a làm ngừng hoạt động NAT gateway duy nhất. Private subnet tại AZ b vẫn hoạt động nhưng mất kết nối internet vì route table của subnet này trỏ tới NAT gateway tại AZ a.", en: "The failure in AZ a takes down the only NAT gateway. The private subnet in AZ b still works but loses internet access, because its route table points to the NAT gateway in AZ a." }
@@ -109,7 +109,7 @@ export default function NatHaSim() {
         <button className="btn" aria-pressed={paused} onClick={() => setPaused(!paused)}>{paused ? L({ vi: "Chạy tiếp", en: "Resume" }) : L({ vi: "Tạm dừng", en: "Pause" })}</button>
       </div>
       <div className="svg-wrap">
-        <svg ref={svgRef} viewBox="0 0 760 320" role="img" aria-label={L({ vi: "Hai AZ, mỗi AZ có public subnet và private subnet; EC2 private ra internet qua NAT gateway", en: "Two AZs, each with a public subnet and a private subnet; private EC2 reaches the internet through a NAT gateway" })}>
+        <svg ref={svgRef} viewBox="0 0 760 320" role="img" aria-label={L({ vi: "Hai AZ, mỗi AZ có public subnet và private subnet; EC2 instance trong private subnet kết nối ra internet qua NAT gateway", en: "Two AZs, each with a public subnet and a private subnet; EC2 instances in the private subnets reach the internet through a NAT gateway" })}>
           <text className="t" x={NET[0]} y={NET[1] - 6} textAnchor="middle">Internet</text>
           <rect className="gate-igw" x={IGW[0] - 22} y={IGW[1] - 14} width={44} height={28} rx={6} />
           <text className="tw" x={IGW[0]} y={IGW[1] + 5} textAnchor="middle">IGW</text>
