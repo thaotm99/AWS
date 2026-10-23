@@ -173,19 +173,19 @@ export default function ShardThroughputSim() {
   })();
 
   return (
-    <div className="stage kts">
-      <div className="kts-row" role="group" aria-label={L({ vi: "Tình huống", en: "Scenarios" })}>
+    <div className="stage">
+      <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Tình huống", en: "Scenarios" })}>
         {SCENARIOS.map((s, i) => (
           <button key={i} className="chip" aria-pressed={i === index} onClick={() => pick(i)} disabled={busy && i !== index}>{L(s.name)}</button>
         ))}
       </div>
       <div className="stage-bar">
-        <code className="kts-req">{L(sc.request)}</code>
-        <label className="kts-toggle">
+        <code className="rounded-[10px] border border-line bg-bg px-2 py-[3px] text-[0.8125rem] wrap-anywhere">{L(sc.request)}</code>
+        <label className="inline-flex cursor-pointer items-center gap-1.5 text-step--1">
           <input type="checkbox" checked={on} disabled={busy} onChange={(e) => { setOn(e.target.checked); setT(-1); }} />
           {L(sc.toggle)}
         </label>
-        <button className="btn primary" onClick={run} disabled={busy}>{L({ vi: "Chạy mô phỏng 10 giây", en: "Run 10-second simulation" })}</button>
+        <button className="btn primary ml-auto" onClick={run} disabled={busy}>{L({ vi: "Chạy mô phỏng 10 giây", en: "Run 10-second simulation" })}</button>
       </div>
       <div className="svg-wrap">
         {sc.view === "write" && <WriteView fx={fx} agg={on} live={t >= 0} />}
@@ -194,7 +194,7 @@ export default function ShardThroughputSim() {
       </div>
       <div className="readout" aria-live="polite">
         {t < 0 ? (
-          <p className="kts-hint">{L({ vi: <>Chọn <b>Chạy mô phỏng 10 giây</b>, sau đó thay đổi cấu hình và chạy lại để so sánh.</>, en: <>Choose <b>Run 10-second simulation</b>, then change the setting and run again to compare.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn <b>Chạy mô phỏng 10 giây</b>, sau đó thay đổi cấu hình và chạy lại để so sánh.</>, en: <>Choose <b>Run 10-second simulation</b>, then change the setting and run again to compare.</> })}</p>
         ) : (
           <>
             <div className="status">
@@ -212,7 +212,7 @@ export default function ShardThroughputSim() {
                 <span className={"pill " + (on ? "ok" : "bad")}><i />{L({ vi: "độ trễ mỗi ứng dụng", en: "lag per app" })} {on ? "~70 ms" : L({ vi: `${nf(lag, 1)} s và đang tăng`, en: `${nf(lag, 1)} s and growing` })}</span>
               )}
             </div>
-            {done && <p className={`kts-result ${result.ok ? "ok" : "bad"}`}>{rich(result.text)}</p>}
+            {done && <p className={`mx-0 mt-2.5 mb-0 rounded-[12px] px-2.5 py-2 text-step--1 ${result.ok ? "bg-ok-soft" : "bg-bad-soft"}`}>{rich(result.text)}</p>}
           </>
         )}
       </div>
@@ -224,7 +224,7 @@ function Bar({ x, y, w, use }: { x: number; y: number; w: number; use: number })
   const max = 1.5;
   const fill = Math.min(use, max) / max;
   return (
-    <g className="kts-bar">
+    <g>
       <rect className="kts-track" x={x} y={y} width={w} height={14} rx={7} />
       <rect className={"kts-fill" + (use > 1 ? " over" : "")} x={x} y={y} width={Math.max(4, w * fill)} height={14} rx={7} />
       <line className="kts-limit" x1={x + w / max} x2={x + w / max} y1={y - 5} y2={y + 19} />
@@ -286,7 +286,7 @@ function ChartView({ fx, onDemand, shown }: { fx: RefObject<SVGGElement>; onDema
         const ghost = i > shown;
         const okV = Math.min(v, cap[i]);
         return (
-          <g key={i} className={ghost ? "kts-ghost" : ""}>
+          <g key={i} className={ghost ? "opacity-25" : ""}>
             <rect className="kts-col" x={X0 + i * BW + 8} y={y(okV)} width={BW - 16} height={y(0) - y(okV)} rx={3} />
             {v > cap[i] && <rect className="kts-col over" x={X0 + i * BW + 8} y={y(v)} width={BW - 16} height={y(okV) - y(v)} rx={3} />}
             <text className="ts" x={X0 + i * BW + BW / 2} y={y(0) + 16} textAnchor="middle">{i + 1}s</text>
@@ -342,7 +342,7 @@ function ReadView({ fx, efo, live, lag }: { fx: RefObject<SVGGElement>; efo: boo
               <text className="kss-l1" x={552} y={y - 3}>{L(name)}</text>
               <text className="kss-l2" x={552} y={y + 13}>{live ? L({ vi: `đọc ${nf(r.got, 1)} / cần ${nf(WRITE_MB, 1)} MB/s`, en: `reads ${nf(r.got, 1)} / needs ${nf(WRITE_MB, 1)} MB/s` }) : L({ vi: "chưa chạy mô phỏng", en: "not run yet" })}</text>
             </g>
-            <g className="kts-bar">
+            <g>
               <rect className="kts-track" x={700} y={y - 7} width={96} height={14} rx={7} />
               <rect className={"kts-fill" + (r.got < WRITE_MB ? " over" : "")} x={700} y={y - 7} width={live ? 96 * (r.got / WRITE_MB) : 4} height={14} rx={7} />
             </g>

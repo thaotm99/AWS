@@ -356,16 +356,16 @@ export default function StreamPipelineSim() {
   }
 
   return (
-    <div className="stage kpb">
-      <div className="kpb-row" role="group" aria-label={L({ vi: "Yêu cầu của MFTech", en: "MFTech requirements" })}>
+    <div className="stage">
+      <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Yêu cầu của MFTech", en: "MFTech requirements" })}>
         {L({ vi: NEEDS, en: NEEDS_EN }).map((n, i) => (
           <button key={i} className="chip" aria-pressed={i === ni} onClick={() => pickNeed(i)} disabled={busy && i !== ni}>{n.name}</button>
         ))}
       </div>
-      <p className="kpb-about">{need.about}</p>
+      <p className="mx-4 mt-2.5 mb-1.5 text-step--1">{need.about}</p>
       {need.slots.map((s, si) => (
-        <div key={si} className="stage-bar kpb-slot" role="group" aria-label={s.name}>
-          <span className="label">{si + 1} · {s.name}</span>
+        <div key={si} className="stage-bar border-b-0 pb-1" role="group" aria-label={s.name}>
+          <span className="label min-w-[120px]">{si + 1} · {s.name}</span>
           {shown(s.opts.length, si + ni).map((oi) => {
             const o = s.opts[oi];
             return (
@@ -377,8 +377,8 @@ export default function StreamPipelineSim() {
         </div>
       ))}
       <div className="stage-bar">
-        <span className="kpb-note">{ready ? L({ vi: "Đã chọn dịch vụ cho tất cả các bước.", en: "A service is chosen for every step." }) : L({ vi: "Chọn một dịch vụ cho mỗi bước.", en: "Choose one service for each step." })}</span>
-        <button className="btn primary" onClick={run} disabled={busy || !ready}>{L({ vi: "Chạy mô phỏng", en: "Run simulation" })}</button>
+        <span className="text-step--1 text-muted">{ready ? L({ vi: "Đã chọn dịch vụ cho tất cả các bước.", en: "A service is chosen for every step." }) : L({ vi: "Chọn một dịch vụ cho mỗi bước.", en: "Choose one service for each step." })}</span>
+        <button className="btn primary ml-auto" onClick={run} disabled={busy || !ready}>{L({ vi: "Chạy mô phỏng", en: "Run simulation" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 40 820 120" role="img" aria-label={L({ vi: `Pipeline: ${need.source[0]}, sau đó ${need.slots.map((s) => s.name).join(", ")}`, en: `Pipeline: ${need.source[0]}, then ${need.slots.map((s) => s.name).join(", ")}` })}>
@@ -404,12 +404,12 @@ export default function StreamPipelineSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="kss-hint">{L({ vi: <>Chọn dịch vụ cho từng bước, sau đó chọn <b>Chạy mô phỏng</b>.</>, en: <>Choose a service for each step, then choose <b>Run simulation</b>.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn dịch vụ cho từng bước, sau đó chọn <b>Chạy mô phỏng</b>.</>, en: <>Choose a service for each step, then choose <b>Run simulation</b>.</> })}</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) =>
               e.state === undefined ? (
-                <li key={i} className={`kss-result ${e.ok ? "ok" : "bad"}`}>{L(e.msg)}</li>
+                <li key={i} className={`mt-1.5 block rounded-[12px] px-2.5 py-2 ${e.ok ? "bg-ok-soft" : "bg-bad-soft"}`}>{L(e.msg)}</li>
               ) : (
                 <li key={i}>
                   <span className={`tag kss-tag ${e.state === "pass" ? "hit" : "bad"}`}>{e.state === "pass" ? L({ vi: "PHÙ HỢP", en: "FIT" }) : L({ vi: "KHÔNG PHÙ HỢP", en: "NOT A FIT" })}</span>
