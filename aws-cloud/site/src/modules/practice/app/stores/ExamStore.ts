@@ -20,11 +20,13 @@ export interface ExamState {
   /** Options picked for the current, not yet submitted question. */
   selection: OptionKey[];
   saving: boolean;
+  /** The review set was opened with nothing to review. */
+  empty: boolean;
 }
 
 export class ExamStore extends Store<ExamState> {
   constructor() {
-    super({ status: "idle", error: null, cert: null, exam: null, original: null, locale: "vi", attempt: null, view: "question", index: 0, selection: [], saving: false });
+    super({ status: "idle", error: null, cert: null, exam: null, original: null, locale: "vi", attempt: null, view: "question", index: 0, selection: [], saving: false, empty: false });
   }
 
   get question(): Question | null {
@@ -50,8 +52,13 @@ export class ExamStore extends Store<ExamState> {
   }
 
   loaded(cert: CertificationDetail, exam: Exam, attempt: Attempt, view: ExamView): void {
-    this.setState({ status: "ready", error: null, cert, exam, attempt, view, selection: [], saving: false });
+    this.setState({ status: "ready", error: null, cert, exam, attempt, view, selection: [], saving: false, empty: false });
     this.setState({ index: Math.min(this.frontier, exam.questions.length - 1) });
+  }
+
+  /** Nothing to review: the page says so instead of showing questions. */
+  nothingToReview(cert: CertificationDetail): void {
+    this.setState({ status: "ready", error: null, cert, exam: null, original: null, attempt: null, empty: true, saving: false });
   }
 
   failed(error: PracticeError): void {

@@ -1,0 +1,22 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import ExamPage from "../../../modules/practice/ui/ExamPage.tsx";
+import { practiceCatalog } from "../../../modules/practice/content/PracticeCatalog";
+import "../../../styles/practice.css";
+
+export function getStaticPaths() {
+  return practiceCatalog.listCertifications().map((c) => ({ params: { cert: c.id }, props: { code: c.code } }));
+}
+
+const { cert } = Astro.params;
+const { code } = Astro.props;
+---
+<BaseLayout
+  title={`Câu cần ôn lại · ${code} · AWS Thực Chiến`}
+  titleKey="practice.review.pageTitle"
+  titleParams={{ code }}
+  section="practice"
+  sidebar={false}
+>
+  <ExamPage client:only="react" certId={cert} review />
+</BaseLayout>

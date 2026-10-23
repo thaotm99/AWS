@@ -1068,3 +1068,53 @@ main.article:focus { outline: none; }
 @media (prefers-reduced-motion: reduce) { .search[open] { animation: none; } }
 .search-close .touch-only { display: none; font-family: var(--font-body); font-size: 0.875rem; }
 @media (hover: none) { .search-close .key-only { display: none; } .search-close .touch-only { display: inline; } .search-close { min-height: 40px; } }
+
+/* Top bar on phones: the brand stays on one line next to search, language and theme. */
+.brand-text { white-space: nowrap; }
+@media (max-width: 560px) {
+  .topbar-inner { gap: 6px; }
+  .brand { gap: 8px; }
+  .brand-text { font-size: 0.94rem; }
+}
+@media (max-width: 370px) {
+  .brand-text { display: none; }
+}
+
+/* ---------- Flashcards ---------- */
+.fc { display: flex; flex-direction: column; gap: 16px; max-width: 720px; }
+.fc-filters { display: flex; flex-wrap: wrap; gap: 6px; }
+@media (max-width: 640px) { .fc-filters { flex-wrap: nowrap; overflow-x: auto; margin: 0 -16px; padding: 2px 16px 6px; scrollbar-width: none; } .fc-filters .gl-filter { flex: none; } }
+.fc-boxes { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+.fc-box { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); }
+.fc-box b { font-family: var(--font-mono); font-size: 1.05rem; }
+.fc-box small { font-size: 0.75rem; color: var(--muted); }
+.fc-box.b5 b { color: var(--ok, var(--accent)); }
+.fc-left { margin: 0; font-size: 0.875rem; color: var(--muted); }
+.fc-card { border-radius: 18px; border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow); overflow: hidden; }
+.fc-card.shown { border-color: var(--accent); }
+.fc-front { width: 100%; min-height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 24px; border: 0; background: none; color: var(--ink); font: inherit; text-align: center; cursor: pointer; }
+.fc-front:disabled { cursor: default; min-height: 0; padding-bottom: 8px; }
+.fc-front small { font-size: 0.8125rem; color: var(--muted); }
+.fc-front b { font-size: clamp(1.4rem, 4vw, 2rem); line-height: 1.2; }
+.fc-hint { font-size: 0.8125rem; color: var(--accent); }
+.fc-back { padding: 4px 22px 20px; border-top: 1px dashed var(--line); animation: fc-in .25s ease; }
+.fc-back p { margin: 12px 0 0; line-height: 1.65; }
+.fc-back .fc-ex { font-size: 0.9rem; color: var(--muted); }
+.fc-back .fc-ex b { color: var(--edge); }
+.fc-back a { display: inline-block; margin-top: 12px; font-size: 0.875rem; }
+@keyframes fc-in { from { opacity: 0; transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .fc-back { animation: none; } }
+.fc-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.fc-actions .btn { min-height: 48px; font-weight: 700; }
+.fc-actions kbd { margin-left: 6px; font-family: var(--font-mono); font-size: 0.75rem; opacity: .7; }
+.fc-again { border-color: var(--edge); color: var(--edge); }
+.fc-done { padding: 22px; border-radius: 14px; border: 1px dashed var(--line); background: var(--surface); }
+.fc-done p { margin: 6px 0 0; color: var(--muted); }
+.fc-msg { color: var(--muted); }
+
+/* Save a lesson for offline reading (lesson overview) and the offline page. */
+.lp-offline { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding-top: 10px; border-top: 1px dashed var(--line); }
+.lp-save { min-height: 40px; font-size: 0.875rem; }
+.lp-save-status { font-size: 0.8125rem; color: var(--muted); }
+.offline-h { margin-top: 24px; font-size: 1.1rem; }
+.offline-list { display: grid; gap: 6px; padding-left: 20px; }

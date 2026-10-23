@@ -1,7 +1,7 @@
 // Build-time only (uses fs). Never import from a client component.
 // Serves the content behind the static /api/certifications… endpoints.
 import { resolve } from "node:path";
-import type { Certification, CertificationDetail, ContentLocale, Exam } from "../domain/types";
+import type { Certification, CertificationDetail, ContentLocale, Exam, Question } from "../domain/types";
 import type { ExamSource } from "./ExamSource";
 import { QuizHtmlSource } from "./QuizHtmlSource";
 import { getCurriculum, readListQa } from "../../../data/exam";
@@ -135,6 +135,22 @@ export class PracticeCatalog {
   /** Question count of each service's set, keyed by service id. */
   topicSizes(certId: string): Record<string, number> {
     return Object.fromEntries(this.topicsOf(this.config(certId)).map((t) => [t.id, t.refs.length]));
+  }
+
+  /** One question in `locale`, for the review set (it loads only the questions the learner got wrong). */
+  getQuestion(certId: string, questionId: string, locale: ContentLocale = "en"): Question {
+    for (const exam of this.examsOf(this.config(certId), locale)) {
+      const q = exam.questions.find((x) => x.id === questionId);
+      if (q) return q;
+    }
+    throw new Error(`Không có câu hỏi ${certId}/${questionId}`);
+  }
+
+  /** Every (certId, questionId, lang) triple, for the single-question endpoint. */
+  questionContentPaths(): Array<{ cert: string; question: string; lang: ContentLocale }> {
+    return this.configs.flatMap((c) =>
+      this.examsOf(c).flatMap((e) => e.questions.flatMap((q) => PracticeCatalog.LOCALES.map((lang) => ({ cert: c.id, question: q.id, lang })))),
+    );
   }
 
   /** Every (certId, examId) pair, for getStaticPaths. */

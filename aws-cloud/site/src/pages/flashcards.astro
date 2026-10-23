@@ -1,0 +1,17 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import T from "../app/T.astro";
+import Flashcards from "../components/Flashcards.tsx";
+import { getCurriculum } from "../data/exam";
+
+// Only the layer names reach the page; the cards load from /flashcards.json.
+const layers = getCurriculum().map(({ n, name, nameEn }) => ({ n, name, nameEn }));
+---
+<BaseLayout title="Thẻ ôn tập · AWS Thực Chiến" titleKey="shell.flashcards.pageTitle" section="flashcards" sidebar={false}>
+  <header class="gl-head">
+    <p class="gl-eyebrow"><T k="shell.flashcards.eyebrow" /></p>
+    <h1><T k="shell.flashcards.title" /></h1>
+    <p class="lede"><T k="shell.flashcards.lede" /></p>
+  </header>
+  <Flashcards client:load layers={layers} />
+</BaseLayout>

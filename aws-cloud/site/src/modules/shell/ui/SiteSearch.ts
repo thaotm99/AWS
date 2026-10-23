@@ -1,12 +1,13 @@
 import type { I18n } from "../../../core/i18n/I18n";
 import type { Locale } from "../../../core/i18n/types";
 
+/** One entry of /search-index/<lang>.json. */
 interface Entry {
   kind: "lesson" | "part" | "term";
   url: string;
-  title: Record<Locale, string>;
-  context: Record<Locale, string>;
-  text: Record<Locale, string>;
+  title: string;
+  context: string;
+  text: string;
 }
 
 /** An entry prepared for one language: original strings plus folded copies of the same length. */
@@ -75,9 +76,9 @@ function highlight(text: string, folded: string, tokens: Token[]): string {
  * (/search-index.json) is fetched the first time the dialog opens.
  */
 export class SiteSearch<M> {
-  private entries?: Entry[];
+  /** Prepared entries and in-flight loads, per language: only the language in use is fetched. */
   private docs = new Map<Locale, Doc[]>();
-  private loading?: Promise<void>;
+  private loading = new Map<Locale, Promise<Doc[]>>();
   private active = -1;
 
   constructor(
@@ -130,31 +131,28 @@ export class SiteSearch<M> {
     this.run();
   }
 
-  private load(): Promise<void> {
-    this.loading ??= fetch("/search-index.json")
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-      .then((data: Entry[]) => {
-        this.entries = data;
-      })
-      .catch(() => {
-        this.loading = undefined; // let the next open try again
-        throw new Error("search index unavailable");
-      });
-    return this.loading;
-  }
-
-  private docsFor(locale: Locale): Doc[] {
-    let docs = this.docs.get(locale);
-    if (!docs) {
-      docs = this.entries!.map((entry) => {
-        const title = entry.title[locale];
-        const context = entry.context[locale];
-        const text = entry.text[locale];
-        return { entry, title, context, text, fTitle: fold(title), fContext: fold(context), fText: fold(text) };
-      });
-      this.docs.set(locale, docs);
+  private load(locale: Locale): Promise<Doc[]> {
+    let p = this.loading.get(locale);
+    if (!p) {
+      p = fetch(`/search-index/${locale}.json`)
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+        .then((data: Entry[]) => {
+          const docs = data.map((entry) => ({
+            entry,
+            title: entry.title,
+            context: entry.context,
+            text: entry.text,
+            fTitle: fold(entry.title),
+            fContext: fold(entry.context),
+            fText: fold(entry.text),
+          }));
+          this.docs.set(locale, docs);
+          return docs;
+        });
+      p.catch(() => this.loading.delete(locale)); // let the next search try again
+      this.loading.set(locale, p);
     }
-    return docs;
+    return p;
   }
 
   private async run(): Promise<void> {
@@ -166,19 +164,21 @@ export class SiteSearch<M> {
       this.status.textContent = this.t("shell.search.hint");
       return;
     }
-    if (!this.entries) {
+    const locale = this.i18n.locale;
+    let docs = this.docs.get(locale);
+    if (!docs) {
       this.status.textContent = this.t("shell.search.loading");
       try {
-        await this.load();
+        docs = await this.load(locale);
       } catch {
         this.status.textContent = this.t("shell.search.error");
         return;
       }
-      if (this.input.value !== query) return; // a newer keystroke runs its own search
+      if (this.input.value !== query || this.i18n.locale !== locale) return; // a newer search runs instead
     }
     const phrase: Token | undefined = words.length > 1 ? { t: words.join(" "), prefix: true } : undefined;
     const hits: { doc: Doc; score: number }[] = [];
-    for (const doc of this.docsFor(this.i18n.locale)) {
+    for (const doc of docs) {
       let score = 0;
       let all = true;
       for (const k of tokens) {

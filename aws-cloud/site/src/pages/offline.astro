@@ -1,0 +1,38 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import T from "../app/T.astro";
+---
+<BaseLayout title="Đang offline · AWS Thực Chiến" titleKey="shell.offline.title" sidebar={false}>
+  <h1><T k="shell.offline.title" /></h1>
+  <p class="lede"><T k="shell.offline.body" /></p>
+  <h2 class="offline-h"><T k="shell.offline.saved" /></h2>
+  <ul class="offline-list" id="offline-list"></ul>
+  <p class="offline-none" id="offline-none" hidden><T k="shell.offline.none" /></p>
+</BaseLayout>
+
+<script>
+  // Lesson pages already in the offline cache, so the reader knows what they can open without a connection.
+  const list = document.getElementById("offline-list")!;
+  const none = document.getElementById("offline-none")!;
+  (async () => {
+    const urls = new Set<string>();
+    if ("caches" in window) {
+      for (const key of await caches.keys()) {
+        if (!key.startsWith("pages-")) continue;
+        for (const req of await (await caches.open(key)).keys()) {
+          const path = new URL(req.url).pathname;
+          if (path.startsWith("/concepts/") || path.startsWith("/glossary/") || path.startsWith("/flashcards/")) urls.add(path);
+        }
+      }
+    }
+    for (const path of [...urls].sort()) {
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = path;
+      a.textContent = path;
+      li.append(a);
+      list.append(li);
+    }
+    none.hidden = urls.size > 0;
+  })();
+</script>

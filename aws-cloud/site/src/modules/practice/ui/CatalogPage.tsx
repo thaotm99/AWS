@@ -74,12 +74,23 @@ function CatalogView({ certId }: { certId: string | null }) {
                       </span>
                       <span className={`pr-badge ${s.cls}`}>{s.text}</span>
                     </a>
+                    <a className="pr-exam-mock" href={routes.mock(cert.id, e.id)}>{t("mock.cta", { minutes: cert.minutes })}</a>
                   </li>
                 );
               })}
             </ul>
           ) : (
             <p className="pr-empty">{t("catalog.noExamsFor", { code: cert.code })}</p>
+          )}
+          {state.reviewCount > 0 && (
+            <a className="pr-review-card" href={routes.review(cert.id)}>
+              <span className="pr-review-card-n">{state.reviewCount}</span>
+              <span>
+                <b>{t("review.title")}</b>
+                <span className="pr-muted">{t("review.cardBody", { n: state.reviewCount })}</span>
+              </span>
+              <span aria-hidden="true">→</span>
+            </a>
           )}
         </section>
       )}

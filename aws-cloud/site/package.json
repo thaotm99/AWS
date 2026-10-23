@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro check && astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "test:unit": "tsx src/modules/practice/domain/Review.test.ts && tsx src/lib/flashcards.test.ts && tsx src/modules/practice/content/HtmlSanitizer.test.ts",
+    "test:e2e": "node e2e/run.mjs"
   },
   "dependencies": {
     "@astrojs/check": "0.9.4",
@@ -22,7 +24,10 @@
     "@types/qrcode": "1.5.6",
     "@types/react": "18.3.18",
     "@types/react-dom": "18.3.5",
-    "qrcode": "1.5.4"
+    "axe-core": "4.10.3",
+    "playwright": "1.56.1",
+    "qrcode": "1.5.4",
+    "tsx": "4.21.0"
   },
   "engines": {
     "node": "22.x"

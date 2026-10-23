@@ -194,3 +194,48 @@
 .pr-crash pre { white-space: pre-wrap; font-size: 0.75rem; max-height: 240px; overflow: auto; background: var(--bg); padding: 10px; border-radius: 6px; }
 .pr-note { margin-top: 10px; padding: 10px 12px; border-left: 3px solid var(--edge); background: var(--edge-soft); border-radius: 0 8px 8px 0; font-size: 0.875rem; }
 .pr-note a { margin-left: 4px; }
+
+/* Lesson parts that teach the question, shown with the verdict. */
+.pr-learn { margin-top: 12px; padding: 10px 12px; border-radius: 10px; background: var(--accent-soft); font-size: 0.875rem; }
+.pr-learn b { display: block; margin-bottom: 4px; color: var(--accent); }
+.pr-learn ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.pr-learn a { font-weight: 600; }
+
+/* Wrong-answer review: the card on the exam list and the empty state. */
+.pr-review-card { display: flex; align-items: center; gap: 14px; margin-top: 16px; padding: 14px 18px; border-radius: 12px; border: 1.5px solid color-mix(in srgb, var(--edge) 45%, var(--line)); background: var(--edge-soft); color: var(--ink); text-decoration: none; }
+.pr-review-card:hover { border-color: var(--edge); }
+.pr-review-card > span:nth-child(2) { flex: 1; display: grid; gap: 2px; font-size: 0.9rem; }
+.pr-review-card-n { min-width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; background: var(--edge); color: var(--on-accent); font-family: var(--font-mono); font-weight: 700; }
+.pr-empty-review { margin-top: 12px; padding: 20px; border-radius: 12px; border: 1px dashed var(--line); background: var(--surface); }
+.pr-empty-review p { margin: 0 0 8px; }
+
+/* Result: weakest domain and the lesson parts to learn again. */
+.pr-domain.weakest .pr-domain-name { font-weight: 700; }
+.pr-weak-tag { margin-left: 8px; padding: 1px 7px; border-radius: 99px; background: var(--bad-soft, var(--edge-soft)); color: var(--bad, var(--edge)); font-size: 0.75rem; font-weight: 600; }
+.pr-suggest { margin: 18px 0 6px; padding: 14px 16px; border-radius: 12px; background: var(--accent-soft); }
+.pr-suggest h3 { margin: 0 0 8px; font-size: 1rem; color: var(--accent); }
+.pr-suggest ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; font-size: 0.9rem; }
+.pr-suggest a { font-weight: 600; }
+.pr-suggest-n { margin-left: 8px; font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }
+
+/* Mock exam: link on the exam list, rules, timer bar, overview grid. */
+.pr-exams > li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: stretch; }
+.pr-exam-mock { display: flex; align-items: center; justify-content: center; padding: 0 14px; min-height: 44px; border-radius: 10px; border: 1.5px dashed var(--line); color: var(--accent); font-size: 0.875rem; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.pr-exam-mock:hover { border-style: solid; border-color: var(--accent); }
+@media (max-width: 640px) { .pr-exams > li { grid-template-columns: minmax(0, 1fr); } }
+.pr-mock-intro { margin-top: 12px; padding: 18px 20px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
+.pr-mock-intro ul { margin: 0 0 16px; padding-left: 20px; display: grid; gap: 6px; }
+.pr-mock-bar { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 60px); z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 8px 0 14px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line); background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(8px); }
+.pr-mock-bar .btn { margin-left: auto; }
+.pr-mock-clock { font-family: var(--font-mono); font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); }
+.pr-mock-bar.low .pr-mock-clock { color: var(--bad, #c0392b); }
+.pr-mock-grid button { min-height: 40px; }
+.pr-mock-grid button.done { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); }
+.pr-mock-grid button.flag { box-shadow: inset 0 -3px 0 var(--edge); }
+.pr-mock-submit { margin-top: 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.pr-flag[aria-pressed="true"] { border-color: var(--edge); color: var(--edge); }
+.pr-scaled { font-family: var(--font-mono); font-size: 0.95rem; color: var(--muted); }
+.pr-mock-legend { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 0.8125rem; }
+.pr-mock-legend .sw { display: inline-block; width: 14px; height: 14px; border-radius: 4px; border: 1px solid var(--line); background: var(--surface); }
+.pr-mock-legend .sw.done { background: var(--accent-soft); border-color: var(--accent); }
+.pr-mock-legend .sw.flag { margin-left: 10px; box-shadow: inset 0 -3px 0 var(--edge); }

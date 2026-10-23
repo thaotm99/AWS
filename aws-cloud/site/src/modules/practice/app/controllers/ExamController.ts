@@ -1,3 +1,4 @@
+import { Review } from "../../domain/Review";
 import { Scoring } from "../../domain/Scoring";
 import type { CertificationId, ContentLocale, Exam, OptionKey, QuestionId, QuestionSetRef } from "../../domain/types";
 import type { AttemptService } from "../../services/AttemptService";
@@ -15,6 +16,8 @@ export class ExamController extends Controller<PracticeEvent, ExamState, ExamSto
   /** Request counters: a response is applied only if no newer request of its kind was made since. */
   private openRequest = 0;
   private contentRequest = 0;
+  /** Questions of the review set, fixed when it opens so a language switch reloads the same ones. */
+  private reviewIds: QuestionId[] = [];
 
   constructor(
     bus: EventBus<PracticeEvent>,
@@ -37,6 +40,12 @@ export class ExamController extends Controller<PracticeEvent, ExamState, ExamSto
 
   /** Question text in `locale`, plus the English original when that is a translation. */
   private content(certId: CertificationId, set: QuestionSetRef, locale: ContentLocale): Promise<[Exam, Exam | null]> {
+    if (set.kind === "review") {
+      return Promise.all([
+        this.catalog.getReviewSet(certId, this.reviewIds, locale),
+        locale === "en" ? Promise.resolve(null) : this.catalog.getReviewSet(certId, this.reviewIds, "en"),
+      ]);
+    }
     return Promise.all([
       this.catalog.getQuestionSet(certId, set, locale),
       locale === "en" ? Promise.resolve(null) : this.catalog.getQuestionSet(certId, set, "en"),
@@ -59,6 +68,14 @@ export class ExamController extends Controller<PracticeEvent, ExamState, ExamSto
     this.requestedLocale = locale;
     this.store.loading();
     try {
+      if (set.kind === "review") {
+        this.reviewIds = Review.wrongIds(await this.attempts.list(certId)).slice(0, Review.ROUND);
+        if (!this.reviewIds.length) {
+          const cert = await this.catalog.getCertification(certId);
+          if (request === this.openRequest) this.store.nothingToReview(cert);
+          return;
+        }
+      }
       const [cert, [exam, original]] = await Promise.all([this.catalog.getCertification(certId), this.content(certId, set, locale)]);
       // Attempts are keyed by the set's id ("3", "topic-s3"), so the two kinds never collide.
       const examId = exam.id;
@@ -149,6 +166,8 @@ export class ExamController extends Controller<PracticeEvent, ExamState, ExamSto
   private async restart(): Promise<void> {
     const { cert, exam, saving } = this.store.getState();
     if (!cert || !exam || saving) return;
+    // A new review round takes the questions still wrong now, not the ones of the round just finished.
+    if (this.set?.kind === "review") return this.open(cert.id, this.set, this.requestedLocale);
     this.store.saving();
     try {
       const attempt = await this.attempts.start({ certId: cert.id, examId: exam.id, questionCount: exam.questions.length });
