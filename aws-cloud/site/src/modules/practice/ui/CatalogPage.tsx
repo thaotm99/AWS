@@ -74,6 +74,7 @@ function CatalogView({ certId }: { certId: string | null }) {
                       </span>
                       <span className={`pr-badge ${s.cls}`}>{s.text}</span>
                     </a>
+                    <a className="pr-exam-mock" href={routes.mock(cert.id, e.id)}>{t("mock.cta", { minutes: cert.minutes })}</a>
                   </li>
                 );
               })}

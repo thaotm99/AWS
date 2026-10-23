@@ -26,6 +26,12 @@ assert.deepEqual(Review.wrongIds(attempts), ["q3", "q2"]);
 attempts.push(attempt("review", [["q1", false, "2026-01-03T09:00:00Z"]]));
 assert.deepEqual(Review.wrongIds(attempts), ["q1", "q3", "q2"]);
 
+// Left blank in a mock exam: neither listed nor overriding an earlier wrong answer.
+const blank: Attempt = attempt("mock-1", [["q2", false, "2026-01-04T09:00:00Z"], ["q9", false, "2026-01-04T09:00:00Z"]]);
+for (const a of Object.values(blank.answers)) a.chosen = [];
+attempts.push(blank);
+assert.deepEqual(Review.wrongIds(attempts), ["q1", "q3", "q2"]);
+
 // Nothing answered yet: nothing to review.
 assert.deepEqual(Review.wrongIds([]), []);
 

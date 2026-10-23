@@ -13,16 +13,18 @@ interface Props {
   topic?: { id: string; title: string };
   /** Set when the questions are the wrong-answer review. */
   review?: boolean;
+  /** Set for a mock exam: show the scaled score; retaking starts a new timed test. */
+  mock?: boolean;
   saving: boolean;
   dispatch: Dispatch;
 }
 
-export default function ResultPanel({ cert, exam, attempt, topic, review, saving, dispatch }: Props) {
+export default function ResultPanel({ cert, exam, attempt, topic, review, mock, saving, dispatch }: Props) {
   const tr = useT();
   const { t, locale } = tr;
   const score = Scoring.score(attempt, cert, exam.questions.map((q) => q.id));
   const wrong = exam.questions.filter((q) => attempt.answers[q.id] && !attempt.answers[q.id].correct).length;
-  const next = topic || review ? undefined : cert.exams[cert.exams.findIndex((e) => e.id === exam.id) + 1];
+  const next = topic || review || mock ? undefined : cert.exams[cert.exams.findIndex((e) => e.id === exam.id) + 1];
 
   const domains = new Map<string, { right: number; total: number }>();
   for (const q of exam.questions) {
@@ -56,6 +58,7 @@ export default function ResultPanel({ cert, exam, attempt, topic, review, saving
       <div className="pr-score">
         <span className="pr-score-big">{score.percent}%</span>
         {!review && <span className={`pr-badge ${score.passed ? "pass" : "fail"}`}>{score.passed ? t("result.passed") : t("result.failed")}</span>}
+        {mock && <span className="pr-scaled">{t("mock.scaled", { score: Math.max(100, score.percent * 10), pass: cert.passingScore })}</span>}
       </div>
       <p className="pr-muted">
         {review
@@ -92,7 +95,7 @@ export default function ResultPanel({ cert, exam, attempt, topic, review, saving
       )}
 
       <div className="pr-actions">
-        <button type="button" className="btn" disabled={saving} onClick={() => dispatch({ type: "exam/restart" })}>{review ? t("review.again") : t("result.retake")}</button>
+        <button type="button" className="btn" disabled={saving} onClick={() => dispatch({ type: "exam/restart" })}>{review ? t("review.again") : mock ? t("mock.retake") : t("result.retake")}</button>
         {!review && wrong > 0 && <a className="btn" href={routes.review(cert.id)}>{t("review.cta", { n: wrong })}</a>}
         {review ? (
           <a className="btn primary" href={routes.catalog(cert.id)}>{t("exam.backToList")}</a>

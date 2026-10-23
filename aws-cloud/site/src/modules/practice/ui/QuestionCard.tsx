@@ -20,6 +20,8 @@ interface Props {
   error: PracticeError | null;
   isLast: boolean;
   dispatch: Dispatch;
+  /** Mock exam: no verdict while answering; move freely and flag questions to come back to. */
+  mock?: { flagged: boolean; onFlag: () => void; canPrev: boolean };
 }
 
 const label = (key: string) => key.toUpperCase();
@@ -27,7 +29,7 @@ const label = (key: string) => key.toUpperCase();
 // The diagram engine and each question's data download only after an illustrated question is answered.
 const IllustrationPanel = lazy(() => import("../illustrations/IllustrationPanel"));
 
-export default function QuestionCard({ question: translated, original, total, answer, selection, saving, error, isLast, dispatch }: Props) {
+export default function QuestionCard({ question: translated, original, total, answer, selection, saving, error, isLast, dispatch, mock }: Props) {
   const tr = useT();
   const { t, lookup, locale } = tr;
   const [showOriginal, setShowOriginal] = useState(false);
@@ -129,7 +131,19 @@ export default function QuestionCard({ question: translated, original, total, an
       {error && <p className="pr-error" role="alert">{errorText(t, error)}</p>}
 
       <div className="pr-actions">
-        {answer ? (
+        {mock && !answer ? (
+          <>
+            <button type="button" className="btn" disabled={!mock.canPrev} onClick={() => dispatch({ type: "exam/goTo", index: q.number - 2 })}>
+              {t("mock.prev")}
+            </button>
+            <button type="button" className="btn pr-flag" aria-pressed={mock.flagged} onClick={mock.onFlag}>
+              {mock.flagged ? t("mock.unflag") : t("mock.flag")}
+            </button>
+            <button type="button" className="btn primary" onClick={() => dispatch({ type: "exam/next" })}>
+              {isLast ? t("mock.overview") : t("mock.next")}
+            </button>
+          </>
+        ) : answer ? (
           <>
             <span className="pr-muted pr-keys-hint">{t("exam.pressEnter")}</span>
             <button type="button" className="btn primary" onClick={() => dispatch({ type: "exam/next" })}>

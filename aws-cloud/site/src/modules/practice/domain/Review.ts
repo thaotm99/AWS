@@ -3,7 +3,8 @@ import type { AnswerRecord, Attempt, QuestionId } from "./types";
 /**
  * The wrong-answer review: every question whose most recent answer, in any attempt (practice test,
  * a lesson's question set or an earlier review), was wrong. Answering it correctly anywhere takes it
- * off the list.
+ * off the list. A question left blank (a mock exam handed in or timed out) is not an answer: it neither
+ * adds the question nor replaces an earlier answer.
  */
 export class Review {
   /** Id of the review question set; review attempts are saved under it. */
@@ -16,6 +17,7 @@ export class Review {
     const latest = new Map<QuestionId, AnswerRecord>();
     for (const attempt of attempts) {
       for (const [id, answer] of Object.entries(attempt.answers)) {
+        if (!answer.chosen?.length) continue;
         const seen = latest.get(id);
         // An answer saved without a time sorts before any answer that has one.
         if (!seen || (answer.answeredAt ?? "") > (seen.answeredAt ?? "")) latest.set(id, { ...answer, questionId: id });

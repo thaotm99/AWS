@@ -1,0 +1,25 @@
+---
+import BaseLayout from "../../../../../layouts/BaseLayout.astro";
+import MockExamPage from "../../../../../modules/practice/ui/MockExamPage.tsx";
+import { practiceCatalog } from "../../../../../modules/practice/content/PracticeCatalog";
+import "../../../../../styles/practice.css";
+
+export function getStaticPaths() {
+  return practiceCatalog.examPaths().map(({ cert, exam }) => ({
+    params: { cert, exam },
+    props: { code: practiceCatalog.getCertification(cert).code, number: practiceCatalog.getExam(cert, exam).number },
+  }));
+}
+
+const { cert, exam } = Astro.params;
+const { code, number } = Astro.props;
+---
+<BaseLayout
+  title={`Thi thử ${code} · Đề ${number} · AWS Thực Chiến`}
+  titleKey="practice.mock.pageTitle"
+  titleParams={{ code, n: number }}
+  section="practice"
+  sidebar={false}
+>
+  <MockExamPage client:only="react" certId={cert} examId={exam} />
+</BaseLayout>
