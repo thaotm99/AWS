@@ -31,7 +31,7 @@ export const vi = {
     skip: "Bỏ qua tới nội dung",
   },
   flashcards: {
-    pageTitle: "Thẻ ôn tập · AWS Thực Chiến",
+    pageTitle: "Thẻ ôn tập · CloudLab",
     eyebrow: "Ôn tập 5 phút mỗi ngày",
     title: "Thẻ ôn tập",
     lede: "Mỗi thẻ là một thuật ngữ của lộ trình. Lật thẻ, đọc định nghĩa theo tài liệu AWS, rồi chọn đã nhớ hay chưa: thẻ đã nhớ quay lại sau 1, 3, 7, 14 rồi 30 ngày; thẻ chưa nhớ quay lại ngay trong buổi. Tiến độ được lưu trên trình duyệt này.",
@@ -53,7 +53,7 @@ export const vi = {
     nothingDue: "Không có thẻ nào đến hạn ôn. Quay lại vào ngày mai, hoặc chọn lớp khác để học thêm thẻ mới.",
   },
   pomodoro: {
-    pageTitle: "Thời gian học · AWS Thực Chiến",
+    pageTitle: "Thời gian học · CloudLab",
     open: "Pomodoro",
     chipIdle: "Pomodoro: chưa chạy. Mở bảng hẹn giờ",
     chipRunning: "Pomodoro: {mode}, còn {time}. Mở bảng hẹn giờ",
@@ -146,7 +146,7 @@ export const vi = {
     unsupported: "Trình duyệt này không hỗ trợ đọc offline.",
   },
   glossary: {
-    pageTitle: "Thuật ngữ · AWS Thực Chiến",
+    pageTitle: "Thuật ngữ · CloudLab",
     eyebrow: "Tra cứu",
     title: "Thuật ngữ AWS",
     lede: "{n} thuật ngữ dùng trong các bài học, định nghĩa theo tài liệu AWS. Mỗi thuật ngữ dẫn tới bài học phân tích chi tiết và trang tài liệu gốc.",
@@ -176,7 +176,7 @@ export const vi = {
   home: {
     eyebrow: "Kiến trúc AWS qua một hệ thống thực tế",
     title: "Thiết kế hệ thống trên AWS từ yêu cầu đến kiến trúc hoàn chỉnh",
-    lede: "AWS Thực Chiến xây dựng kiến thức kiến trúc AWS thông qua ShopViet, một hệ thống thương mại điện tử giả định. Lộ trình đi từ hạ tầng toàn cầu, mạng và bảo mật đến tính toán, lưu trữ, cơ sở dữ liệu và vận hành; mỗi quyết định thiết kế được phân tích từ yêu cầu và minh hoạ bằng mô phỏng tương tác.",
+    lede: "CloudLab xây dựng kiến thức kiến trúc AWS thông qua ShopViet, một hệ thống thương mại điện tử giả định. Lộ trình đi từ hạ tầng toàn cầu, mạng và bảo mật đến tính toán, lưu trữ, cơ sở dữ liệu và vận hành; mỗi quyết định thiết kế được phân tích từ yêu cầu và minh hoạ bằng mô phỏng tương tác.",
     start: "Bắt đầu học",
     resume: "Tiếp tục:",
     practice: "Luyện đề",
@@ -186,7 +186,7 @@ export const vi = {
     statLanguages: "Ngôn ngữ",
     mapTitle: "Kiến trúc tổng thể của ShopViet",
     mapLede: "Sơ đồ mô tả luồng xử lý request qua các dịch vụ AWS trong hệ thống. Chọn một luồng để theo dõi, hoặc chọn một dịch vụ để mở bài học tương ứng.",
-    features: "Cách học trên AWS Thực Chiến",
+    features: "Cách học trên CloudLab",
     f1Title: "Học từ tình huống thực tế",
     f1Body: "Mỗi bài học xuất phát từ một yêu cầu cụ thể của ShopViet: độ trễ, tính sẵn sàng, bảo mật hay chi phí. Từ yêu cầu đó, bài học so sánh các dịch vụ AWS và chỉ ra phương án phù hợp.",
     f2Title: "Mô phỏng tương tác",
@@ -225,14 +225,14 @@ export const vi = {
   },
   donate: {
     title: "Mời mình một ly cafe",
-    body: "AWS Thực Chiến là dự án cá nhân và hoàn toàn miễn phí. Nếu bài học giúp ích cho bạn, bạn có thể mời mình một ly cafe để có thêm động lực viết tiếp những bài mới. Hoàn toàn tự nguyện nhé, bạn vẫn học đầy đủ mọi nội dung như bình thường.",
+    body: "CloudLab là dự án cá nhân và hoàn toàn miễn phí. Nếu bài học giúp ích cho bạn, bạn có thể mời mình một ly cafe để có thêm động lực viết tiếp những bài mới. Hoàn toàn tự nguyện nhé, bạn vẫn học đầy đủ mọi nội dung như bình thường.",
     bank: "Ngân hàng",
     account: "Số tài khoản",
     holder: "Chủ tài khoản",
     note: "Nội dung chuyển khoản",
     copy: "Sao chép",
     copied: "Đã chép ✓",
-    hint: "Số tiền để trống, tuỳ tâm bạn. Cảm ơn bạn đã đồng hành cùng AWS Thực Chiến!",
+    hint: "Số tiền để trống, tuỳ tâm bạn. Cảm ơn bạn đã đồng hành cùng CloudLab!",
     scan: "Quét bằng ứng dụng ngân hàng, nội dung đã điền sẵn",
   },
   roadmap: {

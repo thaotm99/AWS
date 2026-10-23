@@ -40,7 +40,7 @@ const after = next
     ? { href: `/concepts/${id}/quiz/`, vi: "Câu hỏi kiểm tra", en: "Quiz" }
     : { href: `/concepts/${id}/`, vi: "Tổng quan bài", en: "Lesson overview" };
 ---
-<BaseLayout title={`${head(part.title.vi)} · ${concept.title} · AWS Thực Chiến`} description={entry.data.lede} current={id}>
+<BaseLayout title={`${head(part.title.vi)} · ${concept.title} · CloudLab`} description={entry.data.lede} current={id}>
   <nav slot="toc" class="ltoc pnav" aria-label="Các phần của bài học" data-i18n-attr="aria-label:lesson.parts.label">
     <a class="pnav-back" href={`/concepts/${id}/`}>← <T k="lesson.parts.overview" /></a>
     <p class="toc-lesson"><L vi={title} en={titleEn} /></p>

@@ -12,8 +12,8 @@ export const vi = {
   },
   catalog: {
     crumb: "Luyện đề",
-    pageTitle: "Luyện đề · AWS Thực Chiến",
-    certPageTitle: "Luyện đề {code} · AWS Thực Chiến",
+    pageTitle: "Luyện đề · CloudLab",
+    certPageTitle: "Luyện đề {code} · CloudLab",
     examPageTitle: "{code} · Đề {n} · Luyện đề",
     title: "Luyện đề",
     lede: "Thực hành theo từng câu hỏi: chọn phương án, kiểm tra đáp án và đối chiếu lời giải trước khi chuyển sang câu tiếp theo. Tiến độ được lưu cục bộ trên trình duyệt.",
@@ -91,7 +91,7 @@ export const vi = {
   review: {
     crumb: "Câu cần ôn lại",
     title: "Câu cần ôn lại",
-    pageTitle: "Câu cần ôn lại · {code} · AWS Thực Chiến",
+    pageTitle: "Câu cần ôn lại · {code} · CloudLab",
     cardBody: "{n} câu bạn trả lời sai ở lần làm gần nhất, ở mọi đề và mọi bài Kiểm tra. Làm lại để đưa chúng ra khỏi danh sách.",
     cta: "Ôn lại {n} câu sai",
     again: "Ôn tiếp các câu còn sai",
@@ -102,7 +102,7 @@ export const vi = {
   },
   mock: {
     title: "Thi thử đề {n}",
-    pageTitle: "Thi thử {code} · Đề {n} · AWS Thực Chiến",
+    pageTitle: "Thi thử {code} · Đề {n} · CloudLab",
     cta: "Thi thử {minutes} phút",
     rule1: "{n} câu trong {minutes} phút, đúng định dạng kỳ thi thật. Đồng hồ vẫn chạy khi đóng trang.",
     rule2: "Đáp án đúng chỉ hiện sau khi nộp bài; trước đó có thể đổi đáp án và chuyển tới câu bất kỳ.",
@@ -131,7 +131,7 @@ export const vi = {
   topic: {
     crumb: "Kiểm tra",
     title: "Kiểm tra: {title}",
-    pageTitle: "Kiểm tra {title} · AWS Thực Chiến",
+    pageTitle: "Kiểm tra {title} · CloudLab",
     lede: "Toàn bộ câu hỏi trong bộ đề luyện tập liên quan đến chủ đề này, làm lần lượt từng câu. Tiến độ được lưu cục bộ trên trình duyệt.",
     backToLesson: "Về bài học",
   },

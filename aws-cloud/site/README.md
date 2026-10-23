@@ -1,4 +1,4 @@
-# Kiến trúc app · AWS Thực Chiến
+# Kiến trúc app · CloudLab
 
 Tài liệu này dành cho người sửa code trong `aws-cloud/site/`. Nó trả lời ba câu hỏi:
 

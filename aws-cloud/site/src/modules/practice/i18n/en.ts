@@ -14,8 +14,8 @@ export const en: Messages<typeof vi> = {
   },
   catalog: {
     crumb: "Practice",
-    pageTitle: "Practice · AWS Thực Chiến",
-    certPageTitle: "{code} practice · AWS Thực Chiến",
+    pageTitle: "Practice · CloudLab",
+    certPageTitle: "{code} practice · CloudLab",
     examPageTitle: "{code} · Practice Test {n} · Practice",
     title: "Practice tests",
     lede: "Pick a certification and a practice test, then answer one question at a time. Choose Check answer to see if you are right and read the explanation, then go to the next question. Your progress is saved in this browser.",
@@ -93,7 +93,7 @@ export const en: Messages<typeof vi> = {
   review: {
     crumb: "Questions to review",
     title: "Questions to review",
-    pageTitle: "Questions to review · {code} · AWS Thực Chiến",
+    pageTitle: "Questions to review · {code} · CloudLab",
     cardBody: "{n} questions you got wrong the last time you answered them, in any practice test or lesson quiz. Answer them again to clear them.",
     cta: "Review {n} wrong answers",
     again: "Review the ones still wrong",
@@ -104,7 +104,7 @@ export const en: Messages<typeof vi> = {
   },
   mock: {
     title: "Mock exam {n}",
-    pageTitle: "Mock exam {code} · Test {n} · AWS Thực Chiến",
+    pageTitle: "Mock exam {code} · Test {n} · CloudLab",
     cta: "Mock exam, {minutes} min",
     rule1: "{n} questions in {minutes} minutes, in the real exam format. The clock keeps running if you close the page.",
     rule2: "Correct answers appear only after you hand in; until then you can change answers and go to any question.",
@@ -133,7 +133,7 @@ export const en: Messages<typeof vi> = {
   topic: {
     crumb: "Quiz",
     title: "Quiz: {title}",
-    pageTitle: "{title} quiz · AWS Thực Chiến",
+    pageTitle: "{title} quiz · CloudLab",
     lede: "Every practice-test question about this topic, one at a time. Your progress is saved in this browser.",
     backToLesson: "Back to the lesson",
   },

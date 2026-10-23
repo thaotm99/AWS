@@ -33,7 +33,7 @@ export const en: Messages<typeof vi> = {
     skip: "Skip to content",
   },
   flashcards: {
-    pageTitle: "Flashcards · AWS Thực Chiến",
+    pageTitle: "Flashcards · CloudLab",
     eyebrow: "Five minutes a day",
     title: "Flashcards",
     lede: "Each card is a term from the study path. Turn it over, read the definition from the AWS documentation, then say whether you remembered it: remembered cards come back after 1, 3, 7, 14 and then 30 days; forgotten ones come back in the same session. Progress is kept in this browser.",
@@ -55,7 +55,7 @@ export const en: Messages<typeof vi> = {
     nothingDue: "No cards are due. Come back tomorrow, or pick another layer to learn new cards.",
   },
   pomodoro: {
-    pageTitle: "Study time · AWS Thực Chiến",
+    pageTitle: "Study time · CloudLab",
     open: "Pomodoro",
     chipIdle: "Pomodoro: not running. Open the timer",
     chipRunning: "Pomodoro: {mode}, {time} left. Open the timer",
@@ -145,7 +145,7 @@ export const en: Messages<typeof vi> = {
     unsupported: "This browser does not support offline reading.",
   },
   glossary: {
-    pageTitle: "Glossary · AWS Thực Chiến",
+    pageTitle: "Glossary · CloudLab",
     eyebrow: "Reference",
     title: "AWS glossary",
     lede: "{n} terms used in the lessons, defined after the AWS documentation. Each term links to the lesson that covers it in depth and to the original documentation page.",
@@ -175,7 +175,7 @@ export const en: Messages<typeof vi> = {
   home: {
     eyebrow: "AWS architecture through a real-world system",
     title: "Designing systems on AWS, from requirements to a complete architecture",
-    lede: "AWS Thực Chiến teaches AWS architecture through ShopViet, a fictional e-commerce system. The study path runs from global infrastructure, networking and security to compute, storage, databases and operations; each design decision starts from a requirement and is shown with an interactive simulation.",
+    lede: "CloudLab teaches AWS architecture through ShopViet, a fictional e-commerce system. The study path runs from global infrastructure, networking and security to compute, storage, databases and operations; each design decision starts from a requirement and is shown with an interactive simulation.",
     start: "Start learning",
     resume: "Continue:",
     practice: "Practice tests",
@@ -185,7 +185,7 @@ export const en: Messages<typeof vi> = {
     statLanguages: "Languages",
     mapTitle: "ShopViet's overall architecture",
     mapLede: "The diagram follows requests through the AWS services in the system. Pick a flow to follow it, or a service to open its lesson.",
-    features: "How you learn on AWS Thực Chiến",
+    features: "How you learn on CloudLab",
     f1Title: "Learn from real situations",
     f1Body: "Each lesson starts from a concrete ShopViet requirement: latency, availability, security or cost. From that requirement, the lesson compares AWS services and shows which option fits.",
     f2Title: "Interactive simulations",
@@ -224,14 +224,14 @@ export const en: Messages<typeof vi> = {
   },
   donate: {
     title: "Buy me a coffee",
-    body: "AWS Thực Chiến is a personal project and completely free. If a lesson helped you, you can buy me a coffee to keep new lessons coming. It is entirely optional; every lesson stays fully open to you.",
+    body: "CloudLab is a personal project and completely free. If a lesson helped you, you can buy me a coffee to keep new lessons coming. It is entirely optional; every lesson stays fully open to you.",
     bank: "Bank",
     account: "Account number",
     holder: "Account holder",
     note: "Transfer note",
     copy: "Copy",
     copied: "Copied ✓",
-    hint: "Leave the amount blank and give what you like. Thank you for learning with AWS Thực Chiến!",
+    hint: "Leave the amount blank and give what you like. Thank you for learning with CloudLab!",
     scan: "Scan with your banking app; the note is prefilled",
   },
   roadmap: {

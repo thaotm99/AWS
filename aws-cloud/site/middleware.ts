@@ -15,7 +15,7 @@ import { next } from "@vercel/functions";
 // Unset or empty locks the whole site. /api/** is always added, because the practice
 // pages load their question data from there.
 
-const REALM = 'Basic realm="AWS Thuc Chien", charset="UTF-8"';
+const REALM = 'Basic realm="CloudLab", charset="UTF-8"';
 
 /** Compares without stopping at the first different character. */
 function same(a: string, b: string): boolean {
@@ -96,7 +96,7 @@ export default function middleware(request: Request): Response {
   const given = credentials(request);
   if (given && same(given.user, user) && same(given.password, password)) return next();
 
-  return new Response("Cần đăng nhập để xem AWS Thực Chiến.", {
+  return new Response("Cần đăng nhập để xem CloudLab.", {
     status: 401,
     headers: {
       "WWW-Authenticate": REALM,

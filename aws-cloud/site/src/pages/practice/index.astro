@@ -4,7 +4,7 @@ import T from "../../app/T.astro";
 import CatalogPage from "../../modules/practice/ui/CatalogPage.tsx";
 import "../../styles/practice.css";
 ---
-<BaseLayout title="Luyện đề · AWS Thực Chiến" titleKey="practice.catalog.pageTitle" description="Luyện đề chứng chỉ AWS từng câu, xem đúng sai và lời giải ngay." section="practice" sidebar={false}>
+<BaseLayout title="Luyện đề · CloudLab" titleKey="practice.catalog.pageTitle" description="Luyện đề chứng chỉ AWS từng câu, xem đúng sai và lời giải ngay." section="practice" sidebar={false}>
   <h1><T k="practice.catalog.title" /></h1>
   <p class="lede"><T k="practice.catalog.lede" /></p>
   <CatalogPage client:only="react" certId={null} />
