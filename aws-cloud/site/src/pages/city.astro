@@ -1,0 +1,19 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import T from "../app/T.astro";
+import CityGame from "../components/city/CityGame.tsx";
+import { getCurriculum } from "../data/exam";
+
+const curriculum = getCurriculum();
+// Only lesson ids and titles reach the page: the game unlocks buildings from the learner's progress.
+const layers = curriculum.map((l) => l.concepts.map((c) => c.id));
+const titles = Object.fromEntries(curriculum.flatMap((l) => l.concepts.map((c) => [c.id, { vi: c.title, en: c.titleEn }])));
+---
+<BaseLayout title="Thành phố mây · CloudLab" titleKey="shell.city.pageTitle" description="Vận hành MFTECH như một thành phố: mỗi dịch vụ AWS là một công trình, mỗi ngày là một sự kiện." section="lab" sidebar={false} wide>
+  <header class="gl-head">
+    <span class="gl-eyebrow"><a href="/lab/" style="color: inherit"><T k="shell.lab.eyebrow" /></a> · <T k="shell.city.eyebrow" /></span>
+    <h1><T k="shell.city.title" /></h1>
+    <p class="lede"><T k="shell.city.lede" /></p>
+  </header>
+  <CityGame client:load layers={layers} titles={titles} />
+</BaseLayout>
