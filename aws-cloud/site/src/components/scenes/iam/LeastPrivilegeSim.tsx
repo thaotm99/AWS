@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
-import "./iam-sims.css";
 
 // The MFTech finance team must list the reports bucket and delete old reports, nothing more.
 // The current policy only names the bucket ARN, so DeleteObject never matches an object.
@@ -65,31 +64,31 @@ export default function LeastPrivilegeSim() {
   const json = `{\n  "Version": "2012-10-17",\n  "Statement": [\n${stmts.map(show).join(",\n")}\n  ]\n}`;
 
   return (
-    <div className="stage iam-lp">
-      <div className="policy-grid">
-        <pre className="policy-json"><code>{json}</code></pre>
-        <div className="policy-reqs" role="group" aria-label={L({ vi: "Statement bổ sung", en: "Statement to add" })}>
-          <div className="label">{L({ vi: "Statement bổ sung", en: "Statement to add" })}</div>
+    <div className="stage">
+      <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] max-md:grid-cols-1">
+        <pre className="m-0 overflow-x-auto border-r border-line bg-bg px-4 py-3.5 text-[0.8125rem] leading-[1.5] max-md:border-r-0 max-md:border-b"><code>{json}</code></pre>
+        <div className="grid content-start gap-1.5 p-3.5" role="group" aria-label={L({ vi: "Statement bổ sung", en: "Statement to add" })}>
+          <div className="label text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Statement bổ sung", en: "Statement to add" })}</div>
           {FIXES.map((f, i) => (
-            <button key={f.id} className="picker-item" aria-pressed={i === fi} onClick={() => setFi(i)}><code>{L(f.label)}</code></button>
+            <button key={f.id} className="picker-item" aria-pressed={i === fi} onClick={() => setFi(i)}><code className="bg-transparent p-0 text-[0.78rem] wrap-anywhere">{L(f.label)}</code></button>
           ))}
         </div>
       </div>
       <div className="readout" aria-live="polite">
-        <ul className="log iam-lp-rows">
+        <ul className="log">
           {rows.map(({ r, ok }) => {
             const good = ok === r.needed;
             const tag = ok ? (r.needed ? { cls: "hit", t: L({ vi: "CẦN · ALLOW", en: "NEEDED · ALLOW" }) } : { cls: "bad", t: L({ vi: "THỪA · ALLOW", en: "EXCESS · ALLOW" }) })
               : r.needed ? { cls: "bad", t: L({ vi: "THIẾU · DENY", en: "MISSING · DENY" }) } : { cls: "info", t: "DENY" };
             return (
-              <li key={r.action + r.resource} className={good ? "" : "iam-lp-off"}>
+              <li key={r.action + r.resource} className={"flex-wrap items-baseline" + (good ? "" : " [&_b]:text-bad")}>
                 <span className={`tag ${tag.cls}`}>{tag.t}</span>
-                <span><b>{L(r.label)}</b> <code className="iam-lp-req">{r.action} · {r.resource.replace("arn:aws:s3:::", "")}</code></span>
+                <span><b>{L(r.label)}</b> <code className="text-[0.72rem] wrap-anywhere text-muted">{r.action} · {r.resource.replace("arn:aws:s3:::", "")}</code></span>
               </li>
             );
           })}
         </ul>
-        <p className={`iam-result ${exact ? "ok" : "bad"}`}>
+        <p className={`mx-0 mt-2.5 mb-0 rounded-[12px] px-2.5 py-2 text-step--1 ${exact ? "bg-ok-soft" : "bg-bad-soft"}`}>
           {exact
             ? L({ vi: "Đạt least privilege: đủ quyền cần thiết, không có quyền thừa. ", en: "Least privilege reached: every needed permission, nothing extra. " })
             : L({

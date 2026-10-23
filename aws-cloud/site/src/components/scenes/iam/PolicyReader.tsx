@@ -97,10 +97,10 @@ export default function PolicyReader() {
           <button key={x.name} className="btn" aria-pressed={i === pi} onClick={() => { setPi(i); setRi(null); }}>{x.name}</button>
         ))}
       </div>
-      <div className="policy-grid">
-        <pre className="policy-json"><code>{p.json}</code></pre>
-        <div className="policy-reqs">
-          <div className="label">{L({ vi: "Request kiểm tra", en: "Test requests" })}</div>
+      <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] max-md:grid-cols-1">
+        <pre className="m-0 overflow-x-auto border-r border-line bg-bg px-4 py-3.5 text-[0.8125rem] leading-[1.5] max-md:border-r-0 max-md:border-b"><code>{p.json}</code></pre>
+        <div className="grid content-start gap-1.5 p-3.5">
+          <div className="label text-[0.75rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Request kiểm tra", en: "Test requests" })}</div>
           {p.requests.map((x, i) => (
             <button key={x.label} className="picker-item" aria-pressed={i === ri} onClick={() => setRi(i)}>{x.label}</button>
           ))}
