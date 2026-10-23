@@ -77,7 +77,7 @@ export default function HybridDnsSim() {
           <g className="res res-site"><rect x={PHZ[0] - 70} y={PHZ[1] - 18} width={140} height={36} rx={6} /><text className="res-t" x={PHZ[0]} y={PHZ[1] - 2} textAnchor="middle">Private hosted zone</text><text className="res-s" x={PHZ[0]} y={PHZ[1] + 12} textAnchor="middle">mftech.internal</text></g>
           <g className="res res-net"><rect x={OUTBOUND[0] - 55} y={OUTBOUND[1] - 18} width={110} height={36} rx={6} /><text className="res-t" x={OUTBOUND[0]} y={OUTBOUND[1] + 5} textAnchor="middle">Outbound EP</text></g>
           <g className="res res-net"><rect x={INBOUND[0] - 55} y={INBOUND[1] - 18} width={110} height={36} rx={6} /><text className="res-t" x={INBOUND[0]} y={INBOUND[1] + 5} textAnchor="middle">Inbound EP</text></g>
-          <path className="dx-line" d="M495 110 H590 M495 200 H590" />
+          <path className="fill-none stroke-edge stroke-3" d="M495 110 H590 M495 200 H590" />
           <text className="ts" x={545} y={160} textAnchor="middle">VPN / DX</text>
           <rect className="region" x={580} y={80} width={160} height={140} rx={12} />
           <text className="t" x={596} y={102}>On-premises</text>

@@ -112,13 +112,13 @@ export default function RecordTypeSim() {
           <span className="label">{L({ vi: "Yêu cầu", en: "Requirement" })}</span>
           <p>{rich(L(need.detail))}</p>
           <span className="label">{L({ vi: "Loại record", en: "Record type" })}</span>
-          <div className="rt-types" role="group" aria-label={L({ vi: "Loại record", en: "Record type" })}>
+          <div className="mx-0 mt-1 mb-2.5 flex flex-wrap gap-1.5" role="group" aria-label={L({ vi: "Loại record", en: "Record type" })}>
             {TYPES.map((t) => (
               <button key={t} className="chip" aria-pressed={t === pick} onClick={() => setPick(t)}>{t}</button>
             ))}
           </div>
           {pick === null ? (
-            <p className="rt-hint">{L({ vi: "Chọn một loại record để kiểm tra.", en: "Pick a record type to check it." })}</p>
+            <p className="text-muted">{L({ vi: "Chọn một loại record để kiểm tra.", en: "Pick a record type to check it." })}</p>
           ) : (
             <>
               <strong className={hit ? "verdict ok" : "verdict bad"}>
@@ -130,7 +130,6 @@ export default function RecordTypeSim() {
           )}
         </div>
       </div>
-      <style>{`.rt-types{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}.rt-hint{color:var(--muted)}`}</style>
     </div>
   );
 }

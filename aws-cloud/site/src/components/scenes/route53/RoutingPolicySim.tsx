@@ -116,7 +116,7 @@ export default function RoutingPolicySim() {
                   <circle className="user" cy={-9} r={7} /><path className="user" d="M-13 13 a13 13 0 0 1 26 0 z" />
                 </g>
                 <text className="ts" x={u.at[0]} y={u.at[1] + 32} textAnchor="middle">{L(u.label)}</text>
-                <text className="ts ans-t" x={200} y={u.at[1] - 8} textAnchor="middle">
+                <text className="ts fill-accent font-medium" x={200} y={u.at[1] - 8} textAnchor="middle">
                   {a === null ? L({ vi: "→ không có phản hồi", en: "→ no answer" }) : a === "error" ? L({ vi: "→ trang lỗi S3", en: "→ S3 error page" }) : `→ ${REGIONS[a].label.replace("ALB ", "")}`}
                 </text>
               </g>
