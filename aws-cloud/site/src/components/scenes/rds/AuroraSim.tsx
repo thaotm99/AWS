@@ -164,7 +164,7 @@ export default function AuroraSim() {
   };
 
   return (
-    <div className="stage rdx">
+    <div className="stage">
       <div className="stage-bar">
         <button className="btn primary" onClick={write} disabled={busy}>{tr({ vi: "Ghi đơn hàng", en: "Write order" })}</button>
         <button className="btn" onClick={read} disabled={busy}>{tr({ vi: "6 lượt đọc", en: "6 reads" })}</button>

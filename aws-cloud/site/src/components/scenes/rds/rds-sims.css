@@ -1,50 +1,46 @@
-/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
-@layer legacy {
-/* RDS lesson simulations (rds/RdsOpsSim, rds/AuroraSim). Theme tokens only. */
-.rdx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
-.rdx-row + .rdx-row { padding-top: 8px; }
-.rdx-lbl { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
-.rdx-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 3px 8px; overflow-wrap: anywhere; }
-.rdx-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); cursor: pointer; }
-.rdx .stage-bar { margin-top: 12px; border-top: 1px solid var(--line); }
-.rdx .stage-bar .btn.primary { margin-left: auto; }
-.rdx-wire { stroke: var(--line); stroke-width: 2; fill: none; }
-.rdx-wire.dash { stroke-dasharray: 5 5; }
-.rdx-box { fill: var(--bg); stroke: var(--muted); stroke-width: 1.2; }
-.rdx-box.dash { fill: none; stroke-dasharray: 6 4; }
-.rdx-node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill .2s, stroke .2s, opacity .2s; }
-.rdx-node.pass rect, .rdx-node.ok rect { fill: var(--ok-soft); stroke: var(--ok); }
-.rdx-node.block rect, .rdx-node.bad rect { fill: var(--bad-soft); stroke: var(--bad); }
-.rdx-node.change rect, .rdx-node.warn rect { fill: var(--edge-soft); stroke: var(--edge); }
-.rdx-node.on rect { stroke: var(--accent); fill: var(--accent-soft); }
-.rdx-node.skip, .rdx-node.off { opacity: .4; }
-.rdx-t { fill: var(--ink); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
-.rdx-s { fill: var(--muted); font-family: var(--font-body); font-size: 10px; }
-.rdx-m { fill: var(--muted); font-family: var(--font-mono); font-size: 10.5px; }
-.rdx-m.ok { fill: var(--ok); }
-.rdx-m.bad { fill: var(--bad); }
-.rdx-m.edge { fill: var(--edge); }
-.rdx-strike { stroke: var(--bad); stroke-width: 2; }
-.rdx-flash-ok { fill: var(--ok); font-family: var(--font-mono); font-size: 13px; font-weight: 700; text-anchor: middle; }
-.rdx-flash-edge { fill: var(--edge); font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-anchor: middle; }
-.rdx-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
-.rdx-result { margin-top: 6px; padding: 8px 10px; border-radius: 12px; display: block !important; }
-.rdx-result.ok { background: var(--ok-soft); }
-.rdx-result.bad { background: var(--bad-soft); }
-.rdx-result.warn { background: var(--edge-soft); }
-.rdx .tag.lock { background: var(--accent-soft); color: var(--accent); }
-.rdx-pop { animation: rdx-pop .4s ease-out both; transform-box: fill-box; transform-origin: center; }
-@keyframes rdx-pop { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .rdx-pop { animation: none; } }
-.rdx-region { fill: var(--bg); stroke: var(--muted); stroke-width: 1.2; transition: fill .25s, stroke .25s; }
-.rdx-region.down { fill: var(--bad-soft); stroke: var(--bad); stroke-width: 2; }
-.rdx-az { fill: none; stroke: var(--line); stroke-width: 1.2; stroke-dasharray: 4 4; }
-.rdx-bar-bg { fill: var(--surface); stroke: var(--line); stroke-width: 1; }
-.rdx-bar { fill: var(--ok); transition: width .6s ease-out, fill .3s; }
-.rdx-bar.warn { fill: var(--edge); }
-.rdx-bar.bad { fill: var(--bad); }
-.rdx-copy { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.2; transition: fill .2s; }
-.rdx-copy.hit { fill: var(--ok); stroke: var(--ok); }
-.rdx-node.down { opacity: .35; }
-.rdx .stage-bar:first-child { margin-top: 0; border-top: 0; }
+@reference "../../../styles/app.css";
+
+/* RDS lesson simulations (RdsOpsSim, AuroraSim, ReplicaLab, MultiAzSim): SVG parts and the result line. Nodes take
+   the state of the step that reached them: .pass/.ok, .block/.bad, .change/.warn, .on (active), .skip/.off/.down. */
+@layer components {
+  .rdx-wire { @apply fill-none stroke-line stroke-2; }
+  .rdx-wire.dash { stroke-dasharray: 5 5; }
+  .rdx-node rect { @apply fill-surface stroke-line stroke-[1.5]; transition: fill .2s, stroke .2s, opacity .2s; }
+  .rdx-node.pass rect, .rdx-node.ok rect { @apply fill-ok-soft stroke-ok; }
+  .rdx-node.block rect, .rdx-node.bad rect { @apply fill-bad-soft stroke-bad; }
+  .rdx-node.change rect, .rdx-node.warn rect { @apply fill-edge-soft stroke-edge; }
+  .rdx-node.on rect { @apply fill-accent-soft stroke-accent; }
+  .rdx-node.skip, .rdx-node.off { @apply opacity-40; }
+  .rdx-node.down { @apply opacity-35; }
+  .rdx-t { @apply fill-ink font-body text-[12px] font-semibold; }
+  .rdx-s { @apply fill-muted font-body text-[10px]; }
+  .rdx-m { @apply fill-muted font-mono text-[10.5px]; }
+  .rdx-region { @apply fill-bg stroke-muted stroke-[1.2]; transition: fill .25s, stroke .25s; }
+  .rdx-region.down { @apply fill-bad-soft stroke-bad stroke-2; }
+  .rdx-az { @apply fill-none stroke-line stroke-[1.2]; stroke-dasharray: 4 4; }
+  /* RdsOpsSim metric bars: .warn from 80%, .bad from 95%. */
+  .rdx-bar-bg { @apply fill-surface stroke-line stroke-1; }
+  .rdx-bar { @apply fill-ok; transition: width .6s ease-out, fill .3s; }
+  .rdx-bar.warn { @apply fill-edge; }
+  .rdx-bar.bad { @apply fill-bad; }
+  /* AuroraSim: the six copies of the cluster volume; .hit once a write reached them. */
+  .rdx-copy { @apply fill-accent-soft stroke-accent stroke-[1.2]; transition: fill .2s; }
+  .rdx-copy.hit { @apply fill-ok stroke-ok; }
+  /* AuroraSim: a reader or Region that just appeared drops in. */
+  .rdx-pop { animation: rdx-pop .4s ease-out both; transform-box: fill-box; transform-origin: center; }
+  /* Label that flashText() pops on a node. */
+  .rdx-flash-ok { @apply fill-ok font-mono text-[13px] font-bold; text-anchor: middle; }
+  /* Closing line of a run (a log item or a paragraph), tinted by its tone. */
+  .rdx-result { @apply mt-1.5 block! rounded-[12px] px-2.5 py-2; }
+  .rdx-result.ok { @apply bg-ok-soft; }
+  .rdx-result.bad { @apply bg-bad-soft; }
+  .rdx-result.warn { @apply bg-edge-soft; }
+
+  /* MultiAzSim: synchronous standby link, asynchronous replica link and client connections. */
+  .maz-sync { @apply fill-none stroke-ok stroke-3; }
+  .maz-async { @apply fill-none stroke-edge stroke-[2.5]; stroke-dasharray: 6 5; }
+  .maz-conn { @apply fill-none stroke-muted stroke-[1.5]; }
+
+  @media (prefers-reduced-motion: reduce) { .rdx-pop { animation: none; } }
+  @keyframes rdx-pop { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
 }

@@ -244,18 +244,18 @@ export default function RdsOpsSim() {
   );
 
   return (
-    <div className="stage rdx">
-      <div className="rdx-row" role="group" aria-label={tr({ vi: "Tình huống", en: "Scenario" })}>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={tr({ vi: "Tình huống", en: "Scenario" })}>
         {SCENARIOS.map((s, i) => (
           <button key={s.name.vi} className="chip" aria-pressed={i === index} disabled={busy && i !== index} onClick={() => pick(i)}>{tr(s.name)}</button>
         ))}
       </div>
-      <div className="stage-bar">
-        <label className="rdx-toggle">
+      <div className="stage-bar mt-3 border-t border-line">
+        <label className="inline-flex cursor-pointer items-center gap-1.5 text-step--1">
           <input type="checkbox" checked={on} disabled={busy} onChange={(e) => { setOn(e.target.checked); reset(); }} />
           {tr(sc.toggle)}
         </label>
-        <button className="btn primary" onClick={go} disabled={busy}>{tr({ vi: "Chạy", en: "Run" })}</button>
+        <button className="btn primary ml-auto" onClick={go} disabled={busy}>{tr({ vi: "Chạy", en: "Run" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 20 820 255" role="img" aria-label={tr({ vi: "Ứng dụng kết nối database RDS tại Region Singapore; tuỳ tình huống có RDS Proxy, Read Replica hoặc replica tại Tokyo", en: "The application connects to the RDS database in the Singapore Region; depending on the scenario there is an RDS Proxy, a Read Replica or a replica in Tokyo" })}>
@@ -291,7 +291,7 @@ export default function RdsOpsSim() {
       </div>
       <div className="readout">
         {log.length === 0 && !result ? (
-          <p className="rdx-hint">{tr({ vi: <>Chọn một sự cố và nhấn <b>Chạy</b> để quan sát hậu quả. Sau đó bật tính năng tương ứng và chạy lại.</>, en: <>Choose an incident and press <b>Run</b> to see the impact. Then turn on the matching feature and run again.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{tr({ vi: <>Chọn một sự cố và nhấn <b>Chạy</b> để quan sát hậu quả. Sau đó bật tính năng tương ứng và chạy lại.</>, en: <>Choose an incident and press <b>Run</b> to see the impact. Then turn on the matching feature and run again.</> })}</p>
         ) : (
           <ul className="log" aria-live="polite">
             {log.map((e, i) => (
