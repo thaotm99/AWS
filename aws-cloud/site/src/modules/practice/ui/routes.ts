@@ -7,5 +7,6 @@ export const routes = {
   lesson: (topicId: string) => `/concepts/${topicId}/`,
   topic: (topicId: string) => `/concepts/${topicId}/quiz/`,
   review: (certId: CertificationId) => `/practice/${certId}/review/`,
+  reviewSession: (certId: CertificationId, all = false) => `/practice/${certId}/review/session/${all ? "?all=1" : ""}`,
   skills: (certId: CertificationId) => `/practice/${certId}/skills/`,
 };

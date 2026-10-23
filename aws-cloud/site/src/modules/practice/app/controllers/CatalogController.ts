@@ -39,7 +39,7 @@ export class CatalogController extends Controller<PracticeEvent, CatalogState, C
             }),
           ])
         : [null, [] as Attempt[]];
-      if (request === this.request) this.store.loaded(certifications, selected, AttemptService.latestByExam(attempts), Review.wrongIds(attempts).length);
+      if (request === this.request) this.store.loaded(certifications, selected, AttemptService.latestByExam(attempts), Review.bookIds(attempts).length);
     } catch (e) {
       if (request === this.request) this.store.failed({ code: "loadCatalog", detail: Controller.message(e) });
     }

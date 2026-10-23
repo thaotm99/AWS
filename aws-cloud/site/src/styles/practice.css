@@ -272,3 +272,24 @@
 .sk-empty { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
 .sk-empty .btn { min-height: 44px; text-decoration: none; }
 @media (max-width: 800px) { .sk-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* Wrong-answer book (/practice/<cert>/review/) */
+.rp { display: flex; flex-direction: column; gap: 18px; margin-bottom: 40px; }
+.rp-boxes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.rp-box { padding: 14px 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; gap: 4px; font-size: 0.8125rem; color: var(--muted); }
+.rp-box b { font-family: var(--font-mono); font-size: 1.75rem; color: var(--ink); line-height: 1.2; }
+.rp-box.due { border-color: var(--accent); background: var(--accent-soft); }
+.rp-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.rp-actions .btn { min-height: 46px; padding: 0 18px; text-decoration: none; }
+.rp-card { padding: 16px 18px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); }
+.rp-card h2, .rp-topics h2 { margin: 0 0 12px; font-size: 0.95rem; }
+.rp-bars { height: 130px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; align-items: end; }
+.rp-bar { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; font-size: 0.75rem; color: var(--muted); }
+.rp-bar i { width: 100%; max-width: 48px; border-radius: 6px 6px 2px 2px; background: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+.rp-bar i[data-empty] { height: 3px; background: var(--line); }
+.rp-bar[data-today] { color: var(--ink); font-weight: 600; }
+.rp-bar[data-today] i:not([data-empty]) { background: var(--accent); }
+.rp-topics ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.rp-topics a, .rp-topics span { display: inline-flex; min-height: 34px; align-items: center; padding: 0 12px; border-radius: 17px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); text-decoration: none; font-size: 0.8125rem; }
+.rp-how { margin: 0; font-size: 0.8125rem; }
+@media (max-width: 640px) { .rp-boxes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

@@ -1,4 +1,4 @@
-import { Review } from "../../domain/Review";
+import { Review, dayOf } from "../../domain/Review";
 import { Scoring } from "../../domain/Scoring";
 import type { CertificationId, ContentLocale, Exam, OptionKey, QuestionId, QuestionSetRef } from "../../domain/types";
 import type { AttemptService } from "../../services/AttemptService";
@@ -69,7 +69,8 @@ export class ExamController extends Controller<PracticeEvent, ExamState, ExamSto
     this.store.loading();
     try {
       if (set.kind === "review") {
-        this.reviewIds = Review.wrongIds(await this.attempts.list(certId)).slice(0, Review.ROUND);
+        const attempts = await this.attempts.list(certId);
+        this.reviewIds = (set.all ? Review.bookIds(attempts) : Review.dueIds(attempts, dayOf(new Date().toISOString()))).slice(0, Review.ROUND);
         if (!this.reviewIds.length) {
           const cert = await this.catalog.getCertification(certId);
           if (request === this.openRequest) this.store.nothingToReview(cert);
