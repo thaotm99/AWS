@@ -1,31 +1,30 @@
-/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
-@layer legacy {
-/* CloudFront lesson simulations (cloudfront/TieredPathSim). Theme tokens only. */
-.cft-row, .cft-opts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
-.cft-opts { padding-top: 8px; }
-.cft-lbl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
-.cft-opt { border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; border-radius: 12px; padding: 4px 10px; font-size: var(--step--1); text-align: left; max-width: 100%; overflow-wrap: anywhere; }
-.cft-opt[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.cft-opt:disabled, .cft .chip:disabled { cursor: default; opacity: .6; }
-.cft-opt[aria-pressed="true"]:disabled { opacity: 1; }
-.cft .stage-bar { margin-top: 12px; border-top: 1px solid var(--line); flex-wrap: wrap; }
-.cft .stage-bar .btn.primary { margin-left: auto; }
-.cft-req { font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 3px 8px; overflow-wrap: anywhere; min-width: 0; }
-.cft-wire { stroke: var(--line); stroke-width: 2; fill: none; }
-.cft-wire.dash { stroke-dasharray: 5 5; }
-.cft-node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill .2s, stroke .2s, opacity .2s; }
-.cft-node.ok rect { fill: var(--ok-soft); stroke: var(--ok); }
-.cft-node.bad rect { fill: var(--bad-soft); stroke: var(--bad); }
-.cft-node.warn rect { fill: var(--edge-soft); stroke: var(--edge); }
-.cft-node.on rect { stroke: var(--accent); fill: var(--accent-soft); }
-.cft-node.off { opacity: .4; }
-.cft-t { fill: var(--ink); font-family: var(--font-body); font-size: 13px; font-weight: 600; }
-.cft-s { fill: var(--muted); font-family: var(--font-body); font-size: 10.5px; }
-.cft-m { fill: var(--muted); font-family: var(--font-mono); font-size: 10.5px; }
-.cft-hint { margin: 0; color: var(--muted); font-size: var(--step--1); }
-.cft-reqline { display: block !important; margin-top: 6px; }
-.cft-reqline:first-child { margin-top: 0; }
-.cft-result { margin-top: 6px; padding: 8px 10px; border-radius: 12px; display: block !important; }
-.cft-result.ok { background: var(--ok-soft); }
-.cft-result.bad { background: var(--bad-soft); }
+@reference "../../../styles/app.css";
+
+/* CloudFront lesson simulations: SVG parts of TieredPathSim (cft-*) and EdgePipelineSim (cfx-*). Nodes take the
+   state of the step that reached them. Layout lives in the markup. */
+@layer components {
+  /* TieredPathSim: viewer → POP → regional edge cache → origin. */
+  .cft-wire { @apply fill-none stroke-line stroke-2; }
+  .cft-wire.dash { stroke-dasharray: 5 5; }
+  .cft-node rect { @apply fill-surface stroke-line stroke-[1.5]; transition: fill .2s, stroke .2s, opacity .2s; }
+  .cft-node.ok rect { @apply fill-ok-soft stroke-ok; }
+  .cft-node.bad rect { @apply fill-bad-soft stroke-bad; }
+  .cft-node.warn rect { @apply fill-edge-soft stroke-edge; }
+  .cft-node.on rect { @apply fill-accent-soft stroke-accent; }
+  .cft-node.off { @apply opacity-40; }
+  .cft-t { @apply fill-ink font-body text-[13px] font-semibold; }
+  .cft-s { @apply fill-muted font-body text-[10.5px]; }
+  .cft-m { @apply fill-muted font-mono text-[10.5px]; }
+
+  /* EdgePipelineSim: the edge location, its gates (.pass, .block, .change, .skip) and the origin group
+     (.ok, .bad). */
+  .cfx-edge { @apply fill-edge-soft/35 stroke-edge stroke-[1.5]; stroke-dasharray: 6 5; }
+  .cfx-group { @apply fill-none stroke-muted stroke-[1.2]; stroke-dasharray: 4 4; }
+  .cfx-gate rect, .cfx-origin rect { @apply fill-surface stroke-line stroke-[1.5]; transition: fill .2s, stroke .2s, opacity .2s; }
+  .cfx-gt { @apply fill-ink font-body text-[12px] font-semibold; }
+  .cfx-gs { @apply fill-muted font-body text-[11px]; }
+  .cfx-gate.pass rect, .cfx-origin.ok rect { @apply fill-ok-soft stroke-ok; }
+  .cfx-gate.block rect, .cfx-origin.bad rect { @apply fill-bad-soft stroke-bad; }
+  .cfx-gate.change rect { @apply fill-edge-soft stroke-edge; }
+  .cfx-gate.skip { @apply opacity-45; }
 }

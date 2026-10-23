@@ -307,22 +307,22 @@ export default function TieredPathSim() {
   );
 
   return (
-    <div className="stage cft">
-      <div className="cft-row" role="group" aria-label={L({ vi: "Tình huống", en: "Scenario" })}>
-        <span className="cft-lbl">{L({ vi: "Tình huống", en: "Scenario" })}</span>
+    <div className="stage">
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Tình huống", en: "Scenario" })}>
+        <span className="mr-1 text-[0.72rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Tình huống", en: "Scenario" })}</span>
         {SC.map((s, i) => (
-          <button key={s.name} className="chip" aria-pressed={i === si} disabled={busy} onClick={() => pickScenario(i)}>{s.name}</button>
+          <button key={s.name} className="chip disabled:cursor-default disabled:opacity-60" aria-pressed={i === si} disabled={busy} onClick={() => pickScenario(i)}>{s.name}</button>
         ))}
       </div>
-      <div className="cft-opts" role="group" aria-label={L({ vi: "Cấu hình", en: "Configuration" })}>
-        <span className="cft-lbl">{L({ vi: "Cấu hình", en: "Configuration" })}</span>
+      <div className="flex flex-wrap items-center gap-1.5 px-3.5 pt-2 pb-0" role="group" aria-label={L({ vi: "Cấu hình", en: "Configuration" })}>
+        <span className="mr-1 text-[0.72rem] font-semibold tracking-[0.08em] text-muted uppercase">{L({ vi: "Cấu hình", en: "Configuration" })}</span>
         {sc.options.map((o, i) => (
-          <button key={o.label} className="cft-opt" aria-pressed={i === oi} disabled={busy} onClick={() => pickOption(i)}>{o.label}</button>
+          <button key={o.label} className="max-w-full cursor-pointer rounded-[12px] border border-line bg-surface px-2.5 py-1 text-left text-step--1 wrap-anywhere text-ink disabled:cursor-default disabled:opacity-60 aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-bg aria-pressed:disabled:opacity-100" aria-pressed={i === oi} disabled={busy} onClick={() => pickOption(i)}>{o.label}</button>
         ))}
       </div>
-      <div className="stage-bar">
-        <code className="cft-req">{opt.reqs.map((r) => r.line).join("  →  ")}</code>
-        <button className="btn primary" onClick={send} disabled={busy}>{L({ vi: "Gửi request", en: "Send request" })}</button>
+      <div className="stage-bar mt-3 flex-wrap border-t border-line">
+        <code className="min-w-0 rounded-[10px] border border-line bg-bg px-2 py-[3px] text-[0.8125rem] wrap-anywhere">{opt.reqs.map((r) => r.line).join("  →  ")}</code>
+        <button className="btn primary ml-auto" onClick={send} disabled={busy}>{L({ vi: "Gửi request", en: "Send request" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox="0 36 820 168" role="img" aria-label={L({ vi: "Request đi từ người dùng tới POP, regional edge cache và origin", en: "The request goes from the user to the POP, the regional edge cache and the origin" })}>
@@ -342,7 +342,7 @@ export default function TieredPathSim() {
       </div>
       <div className="readout">
         {log.length === 0 ? (
-          <p className="cft-hint">{L({
+          <p className="m-0 text-step--1 text-muted">{L({
             vi: <>Chọn tình huống và cấu hình, sau đó nhấn <b>Gửi request</b>. Thử lần lượt từng cấu hình để so sánh đường đi và kết quả.</>,
             en: <>Choose a scenario and a configuration, then press <b>Send request</b>. Try each configuration in turn to compare the path and the result.</>,
           })}</p>
@@ -350,9 +350,9 @@ export default function TieredPathSim() {
           <ul className="log" aria-live="polite">
             {log.map((e, i) =>
               e.kind === "req" ? (
-                <li key={i} className="cft-reqline"><code>{e.text}</code></li>
+                <li key={i} className="mt-1.5 block! first:mt-0"><code>{e.text}</code></li>
               ) : e.kind === "result" ? (
-                <li key={i} className={`cft-result ${e.ok ? "ok" : "bad"}`}>{rich(e.msg)}</li>
+                <li key={i} className={`mt-1.5 block! rounded-[12px] px-2.5 py-2 ${e.ok ? "bg-ok-soft" : "bg-bad-soft"}`}>{rich(e.msg)}</li>
               ) : (
                 <li key={i}>
                   <span className={`tag ${TAG[e.state].cls}`}>{L(TAG[e.state].text)}</span>
