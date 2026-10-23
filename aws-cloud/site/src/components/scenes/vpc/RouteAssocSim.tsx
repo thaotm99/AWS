@@ -61,30 +61,30 @@ export default function RouteAssocSim() {
   }
 
   return (
-    <div className="stage vpx">
-      <div className="vpx-assoc">
-        <div className="vpx-col" role="group" aria-label={L({ vi: "Subnet", en: "Subnets" })}>
-          <span className="vpx-lbl">Subnet</span>
+    <div className="stage">
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-3 px-3.5 py-3 max-sm:grid-cols-1">
+        <div className="grid content-start gap-1.5" role="group" aria-label={L({ vi: "Subnet", en: "Subnets" })}>
+          <span className="mr-1 text-[0.72rem] font-semibold tracking-[0.08em] text-muted uppercase">Subnet</span>
           {SUBNETS.map((s) => (
-            <button key={s.id} className="vpx-card" aria-pressed={sel === s.id} onClick={() => { setSel(s.id); setMsg(null); }}>
+            <button key={s.id} className="grid cursor-pointer gap-0.5 rounded-[12px] border border-line bg-surface px-2.5 py-2 text-left text-step--1 text-ink aria-pressed:border-accent aria-pressed:shadow-[0_0_0_1px_var(--color-accent)]" aria-pressed={sel === s.id} onClick={() => { setSel(s.id); setMsg(null); }}>
               <b>{s.name}</b> <code>{s.cidr}</code>
-              <small>{s.ec2}</small>
-              <small className={assoc[s.id] ? "vpx-ex" : "vpx-im"}>
+              <small className="text-muted">{s.ec2}</small>
+              <small className={assoc[s.id] ? "text-accent" : "text-edge"}>
                 → {TABLES[eff(s.id)].name} {assoc[s.id] ? L({ vi: "(tường minh)", en: "(explicit)" }) : L({ vi: "(ngầm định, main)", en: "(implicit, main)" })}
               </small>
             </button>
           ))}
         </div>
-        <div className="vpx-col">
-          <span className="vpx-lbl">Route table</span>
+        <div className="grid content-start gap-1.5">
+          <span className="mr-1 text-[0.72rem] font-semibold tracking-[0.08em] text-muted uppercase">Route table</span>
           {(Object.keys(TABLES) as Rt[]).map((id) => {
             const t = TABLES[id];
             const users = SUBNETS.filter((s) => eff(s.id) === id).map((s) => s.name.replace("subnet-", ""));
             return (
-              <div key={id} className={"vpx-rt" + (eff(sel) === id ? " on" : "")}>
-                <div><b>{t.name}</b> <small>{L(t.note)}</small></div>
-                <table><tbody>{t.routes.map(([d, g]) => <tr key={d}><td><code>{d}</code></td><td><code>{g}</code></td></tr>)}</tbody></table>
-                <small>{L({ vi: "Subnet đang dùng: ", en: "Used by: " })}{users.length ? users.join(", ") : "—"}</small>
+              <div key={id} className={"grid gap-1 rounded-[12px] border px-2.5 py-2 text-step--1 " + (eff(sel) === id ? "border-accent bg-accent-soft" : "border-line bg-bg")}>
+                <div><b>{t.name}</b> <small className="text-muted">{L(t.note)}</small></div>
+                <table className="border-collapse [&_td]:py-px [&_td]:pr-2.5 [&_td]:pl-0"><tbody>{t.routes.map(([d, g]) => <tr key={d}><td><code>{d}</code></td><td><code>{g}</code></td></tr>)}</tbody></table>
+                <small className="text-muted">{L({ vi: "Subnet đang dùng: ", en: "Used by: " })}{users.length ? users.join(", ") : "—"}</small>
               </div>
             );
           })}

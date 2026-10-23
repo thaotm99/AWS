@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { flashText, travel, type Pt } from "../../../lib/animate";
 import { useLang, type Bi } from "../../../lib/lang";
+import "./vpc-sims.css";
 
 // Three-tier security group chaining: ALB → EC2 → RDS, referencing security groups
 // instead of IP ranges (exam2_q28, exam2_q55, exam4_q52, exam4_q26, exam5_q29).
@@ -28,10 +29,10 @@ const DB_OPTIONS: { id: Rule; label: Bi }[] = [
 function Tier({ at, title, sg, rule }: { at: Pt; title: string; sg: string; rule: string }) {
   return (
     <g>
-      <rect className="tier" x={at[0] - 70} y={at[1] - 30} width={140} height={60} rx={10} />
+      <rect className="vpc-tier" x={at[0] - 70} y={at[1] - 30} width={140} height={60} rx={10} />
       <text className="t" x={at[0]} y={at[1] - 6} textAnchor="middle">{title}</text>
       <text className="ts" x={at[0]} y={at[1] + 12} textAnchor="middle">{sg}</text>
-      <text className="ts rule-t" x={at[0]} y={at[1] + 50} textAnchor="middle">{rule}</text>
+      <text className="ts vpc-rule-t" x={at[0]} y={at[1] + 50} textAnchor="middle">{rule}</text>
     </g>
   );
 }
@@ -111,7 +112,7 @@ export default function SgChain() {
           </g>
           <text className="ts" x={TIERS.user[0]} y={TIERS.user[1] + 34} textAnchor="middle">{L({ vi: "Người dùng", en: "Users" })}</text>
           <g transform={`translate(${TIERS.attacker[0]} ${TIERS.attacker[1]})`} aria-hidden="true">
-            <circle className="attacker" cy={-9} r={7} /><path className="attacker" d="M-13 13 a13 13 0 0 1 26 0 z" />
+            <circle className="vpc-attacker" cy={-9} r={7} /><path className="vpc-attacker" d="M-13 13 a13 13 0 0 1 26 0 z" />
           </g>
           <text className="ts" x={TIERS.attacker[0]} y={TIERS.attacker[1] + 34} textAnchor="middle">{L({ vi: "Client bên ngoài", en: "External client" })}</text>
           <Tier at={TIERS.alb} title="ALB" sg="sg-alb" rule={L({ vi: "0.0.0.0/0, port 443", en: "0.0.0.0/0, port 443" })} />

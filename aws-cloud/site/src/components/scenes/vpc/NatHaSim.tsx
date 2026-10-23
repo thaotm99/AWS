@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { flashText, prefersReducedMotion, travel, type Pt } from "../../../lib/animate";
 import { useLang, type Bi } from "../../../lib/lang";
+import "./vpc-sims.css";
 
 // Private subnets reach the internet through a NAT gateway placed in a public subnet;
 // for AZ independence each AZ needs its own (exam3_q44, exam3_q62, exam6_q13).
@@ -111,7 +112,7 @@ export default function NatHaSim() {
       <div className="svg-wrap">
         <svg ref={svgRef} viewBox="0 0 760 320" role="img" aria-label={L({ vi: "Hai AZ, mỗi AZ có public subnet và private subnet; EC2 instance trong private subnet kết nối ra internet qua NAT gateway", en: "Two AZs, each with a public subnet and a private subnet; EC2 instances in the private subnets reach the internet through a NAT gateway" })}>
           <text className="t" x={NET[0]} y={NET[1] - 6} textAnchor="middle">Internet</text>
-          <rect className="gate-igw" x={IGW[0] - 22} y={IGW[1] - 14} width={44} height={28} rx={6} />
+          <rect className="vpc-igw" x={IGW[0] - 22} y={IGW[1] - 14} width={44} height={28} rx={6} />
           <text className="tw" x={IGW[0]} y={IGW[1] + 5} textAnchor="middle">IGW</text>
           <rect className="region" x={20} y={96} width={720} height={212} rx={12} />
           {(["a", "b"] as Az[]).map((az) => {
@@ -124,9 +125,9 @@ export default function NatHaSim() {
                 <rect className="az" x={x} y={108} width={320} height={190} rx={10} />
                 <text className="t" x={x + 12} y={128}>AZ {az}</text>
                 {isDown && <text className="down-t" x={x + 308} y={128} textAnchor="end">{L({ vi: "SỰ CỐ", en: "FAILED" })}</text>}
-                <rect className="subnet pub" x={x + 12} y={136} width={296} height={60} rx={6} />
+                <rect className="vpc-subnet pub" x={x + 12} y={136} width={296} height={60} rx={6} />
                 <text className="ts" x={x + 22} y={154}>public subnet</text>
-                <rect className="subnet" x={x + 12} y={206} width={296} height={84} rx={6} />
+                <rect className="vpc-subnet" x={x + 12} y={206} width={296} height={84} rx={6} />
                 <text className="ts" x={x + 22} y={224}>private subnet · route 0.0.0.0/0 → NAT {mode === "shared" ? "AZ a" : `AZ ${az}`}</text>
                 <g className="res res-ec2">
                   <rect x={ec2Pos(az)[0] - 45} y={ec2Pos(az)[1] - 16} width={90} height={32} rx={6} />

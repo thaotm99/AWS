@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { flashText, travel, type Pt } from "../../../lib/animate";
 import { useLang, type Bi } from "../../../lib/lang";
+import "./vpc-sims.css";
 
 // Every check a request from the internet passes on its way in and back out
 // (exam5_q63, exam4_q38, exam3_q9, exam3_q25, exam6_q8).
@@ -90,16 +91,16 @@ export default function PacketPath() {
           <text className="t" x={166} y={52}>VPC 10.0.0.0/16</text>
           <rect className={"az" + (on.route ? "" : " dashed")} x={292} y={70} width={440} height={140} rx={10} />
           <text className="ts" x={306} y={90}>{on.route ? "public subnet 10.0.1.0/24" : L({ vi: "subnet (không có route tới IGW)", en: "subnet (no route to IGW)" })}</text>
-          <g className="gate">
-            <rect x={160} y={110} width={32} height={40} rx={6} className="gate-igw" />
+          <g>
+            <rect x={160} y={110} width={32} height={40} rx={6} className="vpc-igw" />
             <text className="ts" x={176} y={172} textAnchor="middle">IGW</text>
           </g>
-          <g className={"gate" + (on.naclIn && on.naclOut ? "" : " warn")}>
-            <rect x={284} y={102} width={16} height={56} rx={4} className="gate-nacl" />
+          <g>
+            <rect x={284} y={102} width={16} height={56} rx={4} className={"vpc-nacl" + (on.naclIn && on.naclOut ? "" : " warn")} />
             <text className="ts" x={276} y={192} textAnchor="end">NACL</text>
             <text className="ts" x={276} y={204} textAnchor="end">(stateless)</text>
           </g>
-          <circle cx={640} cy={130} r={74} className={"sg-ring" + (on.sgIn ? "" : " warn")} />
+          <circle cx={640} cy={130} r={74} className={"vpc-sg-ring" + (on.sgIn ? "" : " warn")} />
           <text className="ts" x={640} y={222} textAnchor="middle">Security Group (stateful)</text>
           <g className="res res-ec2">
             <rect x={600} y={110} width={80} height={40} rx={7} />

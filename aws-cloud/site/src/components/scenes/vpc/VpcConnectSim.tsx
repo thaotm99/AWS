@@ -2,6 +2,7 @@ import { useId, useRef, useState } from "react";
 import { flashText, travel, type Pt } from "../../../lib/animate";
 import { rich } from "../diagram";
 import { useLang, type Bi } from "../../../lib/lang";
+import "./vpc-sims.css";
 
 // Connecting many VPCs: peering is 1:1 and not transitive; Transit VPC is a customer-managed hub of
 // EC2 VPN appliances (whitepaper "Building a Scalable and Secure Multi-VPC AWS Network
@@ -89,25 +90,25 @@ export default function VpcConnectSim() {
       <div className="svg-wrap">
         <svg viewBox="0 0 760 300" role="img" aria-label={L({ vi: `${n} VPC kết nối bằng ${mode === "tgw" ? "Transit Gateway" : "VPC peering"}`, en: `${n} VPCs connected with ${mode === "tgw" ? "Transit Gateway" : "VPC peering"}` })}>
           {links.map(([i, j]) => (
-            <line key={`${i}-${j}`} className="peer-line" x1={pts[i][0]} y1={pts[i][1]} x2={pts[j][0]} y2={pts[j][1]} />
+            <line key={`${i}-${j}`} className="vpc-peer" x1={pts[i][0]} y1={pts[i][1]} x2={pts[j][0]} y2={pts[j][1]} />
           ))}
-          {mode !== "peering" && pts.map((p, i) => <line key={i} className="tgw-line" strokeDasharray={mode === "tvpc" ? "5 4" : undefined} x1={CENTER[0]} y1={CENTER[1]} x2={p[0]} y2={p[1]} />)}
+          {mode !== "peering" && pts.map((p, i) => <line key={i} className="vpc-tgw" strokeDasharray={mode === "tvpc" ? "5 4" : undefined} x1={CENTER[0]} y1={CENTER[1]} x2={p[0]} y2={p[1]} />)}
           {mode === "tvpc" && (
             <g className="pop">
-              <rect className="vpc-node" x={CENTER[0] - 52} y={CENTER[1] - 30} width={104} height={60} rx={10} />
+              <rect className="vpc-box" x={CENTER[0] - 52} y={CENTER[1] - 30} width={104} height={60} rx={10} />
               <text className="t" x={CENTER[0]} y={CENTER[1] - 6} textAnchor="middle">Transit VPC</text>
               <text className="ts" x={CENTER[0]} y={CENTER[1] + 12} textAnchor="middle">{L({ vi: "EC2 router + VPN", en: "EC2 router + VPN" })}</text>
             </g>
           )}
           {mode === "tgw" && (
             <g className="pop">
-              <circle className="tgw-hub" cx={CENTER[0]} cy={CENTER[1]} r={30} />
+              <circle className="vpc-tgw-hub" cx={CENTER[0]} cy={CENTER[1]} r={30} />
               <text className="tw" x={CENTER[0]} y={CENTER[1] + 4} textAnchor="middle">TGW</text>
             </g>
           )}
           {pts.map((p, i) => (
             <g key={i}>
-              <rect className="vpc-node" x={p[0] - 26} y={p[1] - 16} width={52} height={32} rx={8} />
+              <rect className="vpc-box" x={p[0] - 26} y={p[1] - 16} width={52} height={32} rx={8} />
               <text className="t" x={p[0]} y={p[1] + 5} textAnchor="middle">{NAMES[i]}</text>
             </g>
           ))}

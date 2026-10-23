@@ -1,6 +1,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import { travel, type Pt } from "../../../lib/animate";
 import { useLang, type Bi } from "../../../lib/lang";
+import "./vpc-sims.css";
 
 // How a private instance reaches S3 / SQS: through NAT, a gateway endpoint, or an
 // interface endpoint (exam3_q47, exam5_q24, exam6_q64, exam6_q65, exam3_q7).
@@ -61,18 +62,18 @@ export default function EndpointSim() {
         <span className="sep" />
         <button className="btn primary" onClick={send} disabled={busy}>{L({ vi: "EC2 gửi request tới ", en: "EC2 sends request to " })}{m.target}</button>
       </div>
-      <div className="endpoint-grid">
+      <div className="grid grid-cols-[minmax(0,1fr)_240px] items-start max-md:grid-cols-1">
         <div className="svg-wrap">
           <svg viewBox="0 0 760 300" role="img" aria-label={L({ vi: `EC2 instance trong private subnet gửi request tới ${m.target}: ${L(m.label)}`, en: `An EC2 instance in a private subnet sends a request to ${m.target}: ${L(m.label)}` })}>
             <path className="cloud" d="M340 60 a18 18 0 0 1 10 -32 a24 24 0 0 1 44 -6 a18 18 0 0 1 26 22 a14 14 0 0 1 -6 16 z" />
             <rect className="region" x={30} y={60} width={470} height={230} rx={12} />
             <text className="t" x={46} y={84}>VPC</text>
-            <rect className="subnet pub" x={190} y={66} width={140} height={40} rx={6} />
-            <rect className="subnet" x={50} y={150} width={330} height={130} rx={6} />
+            <rect className="vpc-subnet pub" x={190} y={66} width={140} height={40} rx={6} />
+            <rect className="vpc-subnet" x={50} y={150} width={330} height={130} rx={6} />
             <text className="ts" x={60} y={168}>private subnet</text>
             <g className="res res-ec2"><rect x={80} y={194} width={80} height={32} rx={6} /><text className="res-t" x={120} y={215} textAnchor="middle">EC2</text></g>
             <g className={"res res-net" + (mode === "nat" ? "" : " faded")}><rect x={200} y={70} width={100} height={30} rx={6} /><text className="res-t" x={250} y={90} textAnchor="middle">NAT gateway</text></g>
-            <rect className="gate-igw" x={358} y={28} width={44} height={24} rx={5} /><text className="tw" x={380} y={45} textAnchor="middle">IGW</text>
+            <rect className="vpc-igw" x={358} y={28} width={44} height={24} rx={5} /><text className="tw" x={380} y={45} textAnchor="middle">IGW</text>
             {mode === "gateway" && (
               <g className="res res-net pop"><rect x={430} y={194} width={84} height={32} rx={6} /><text className="res-t" x={472} y={208} textAnchor="middle">vpce</text><text className="res-s" x={472} y={221} textAnchor="middle">gateway</text></g>
             )}
@@ -84,13 +85,13 @@ export default function EndpointSim() {
             <g ref={pk} />
           </svg>
         </div>
-        <div className="rt">
-          <div className="rt-title">{L({ vi: "Route table của private subnet", en: "Route table of the private subnet" })}</div>
+        <div className="rt max-md:border-t max-md:border-l-0 max-md:border-line">
+          <div className="mb-2 font-semibold">{L({ vi: "Route table của private subnet", en: "Route table of the private subnet" })}</div>
           <table>
             <thead><tr><th>Destination</th><th>Target</th></tr></thead>
             <tbody>
               {m.routes.map(([d, t], i) => (
-                <tr key={d} className={i === 2 ? "rt-new" : undefined}><td><code>{d}</code></td><td><code>{t}</code></td></tr>
+                <tr key={d} className={i === 2 ? "[&>td]:bg-ok-soft" : undefined}><td><code>{d}</code></td><td><code>{t}</code></td></tr>
               ))}
             </tbody>
           </table>

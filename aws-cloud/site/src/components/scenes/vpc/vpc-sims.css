@@ -1,45 +1,29 @@
-/* Pre-Tailwind styles, kept in the "legacy" layer until this area is migrated to utilities. */
-@layer legacy {
-/* VPC lesson simulations (vpc/CidrSim, vpc/RouteAssocSim). Theme tokens only. */
-.vpx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 14px 0; }
-.vpx-row.vpx-sep { margin-top: 12px; padding-bottom: 12px; border-top: 1px solid var(--line); }
-.vpx-lbl { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin-right: 4px; }
-.vpx-input { font-family: var(--font-mono); font-size: 0.875rem; width: 10.5rem; max-width: 100%; padding: 4px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); }
-.vpx .chip code { font-size: 0.75rem; }
-.vpx-bits { display: grid; grid-template-columns: repeat(32, minmax(0, 1fr)); gap: 2px; padding: 14px 14px 4px; font-family: var(--font-mono); font-size: 0.7rem; text-align: center; }
-.vpx-bits span { padding: 3px 0; border-radius: 3px; }
-.vpx-bits .net { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
-.vpx-bits .host { background: var(--bg); color: var(--muted); border: 1px dashed var(--line); }
-.vpx-bits .gap { margin-right: 4px; }
-.vpx-legend { display: flex; flex-wrap: wrap; gap: 14px; padding: 4px 14px 0; font-size: var(--step--1); color: var(--muted); }
-.vpx-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
-.vpx-legend i.net { background: var(--accent); }
-.vpx-legend i.host { border: 1px dashed var(--muted); }
-.vpx-facts { display: grid; gap: 6px; margin: 10px 14px 0; font-size: var(--step--1); }
-.vpx-facts div { display: grid; grid-template-columns: minmax(0, 10rem) minmax(0, 1fr); gap: 8px; }
-.vpx-facts dt { color: var(--muted); font-weight: 600; }
-.vpx-facts dd { margin: 0; overflow-wrap: anywhere; }
-.vpx-reserved { list-style: none; margin: 8px 14px 0; padding: 8px 10px; display: grid; gap: 2px; font-size: var(--step--1); background: var(--bg); border-radius: 12px; }
-.vpx-reserved li { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); column-gap: 8px; }
-.vpx-policy { margin-top: 10px; display: grid; gap: 6px; }
-.vpx-policy p { margin: 0; }
-.vpx-code { display: block; white-space: pre; overflow-x: auto; font-size: 0.75rem; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 6px 8px; }
-.vpx-assoc { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 12px; padding: 12px 14px; }
-.vpx-col { display: grid; gap: 6px; align-content: start; }
-.vpx-card { text-align: left; display: grid; gap: 2px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); cursor: pointer; font: inherit; font-size: var(--step--1); }
-.vpx-card[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.vpx-card small { color: var(--muted); }
-.vpx-card small.vpx-ex { color: var(--accent); }
-.vpx-card small.vpx-im { color: var(--edge); }
-.vpx-rt { padding: 8px 10px; border: 1px solid var(--line); border-radius: 12px; font-size: var(--step--1); background: var(--bg); display: grid; gap: 4px; }
-.vpx-rt.on { border-color: var(--accent); background: var(--accent-soft); }
-.vpx-rt small { color: var(--muted); }
-.vpx-rt table { border-collapse: collapse; }
-.vpx-rt td { padding: 1px 10px 1px 0; }
-@media (max-width: 560px) {
-  .vpx-assoc { grid-template-columns: minmax(0, 1fr); }
-  .vpx-facts div { grid-template-columns: minmax(0, 1fr); gap: 0; }
-  .vpx-bits { grid-template-columns: repeat(16, minmax(0, 1fr)); row-gap: 6px; font-size: 0.72rem; padding: 12px 10px 4px; }
-  .vpx-bits .gap { margin-right: 3px; }
-}
+@reference "../../../styles/app.css";
+
+/* VPC lesson simulations: the CIDR facts list, and the SVG parts drawn by PacketPath, EndpointSim, NatHaSim, SgChain
+   and VpcConnectSim. Layout lives in the markup. */
+@layer components {
+  /* CidrSim: label/value rows of the address block; stacked on phones. */
+  .vpx-facts { @apply mx-3.5 mt-2.5 mb-0 grid gap-1.5 text-step--1; }
+  .vpx-facts > div { @apply grid grid-cols-[minmax(0,10rem)_minmax(0,1fr)] gap-2 max-sm:grid-cols-1 max-sm:gap-0; }
+  .vpx-facts dt { @apply font-semibold text-muted; }
+  .vpx-facts dd { @apply m-0 wrap-anywhere; }
+
+  /* Network diagrams: subnets (.pub is public), internet gateway, network ACL and security group ring (.warn when
+     they block), three-tier boxes with their rule labels, and the external client. */
+  .vpc-subnet { @apply fill-bg stroke-line stroke-[1.2]; }
+  .vpc-subnet.pub { @apply fill-ok-soft/50; }
+  .vpc-igw { @apply fill-ink; }
+  .vpc-nacl { @apply fill-accent; }
+  .vpc-nacl.warn { @apply fill-bad; }
+  .vpc-sg-ring { @apply fill-none stroke-accent stroke-2; stroke-dasharray: 6 4; }
+  .vpc-sg-ring.warn { @apply stroke-bad; }
+  .vpc-tier { @apply fill-surface stroke-accent stroke-[1.5]; }
+  .vpc-rule-t { @apply fill-accent; }
+  .vpc-attacker { @apply fill-bad; }
+  /* VpcConnectSim: peering mesh, Transit Gateway spokes and hub, and the VPCs. */
+  .vpc-peer { @apply stroke-accent stroke-[1.5] opacity-55; }
+  .vpc-tgw { @apply stroke-edge stroke-[2.5]; }
+  .vpc-tgw-hub { @apply fill-edge; }
+  .vpc-box { @apply fill-surface stroke-ink stroke-[1.5]; }
 }
