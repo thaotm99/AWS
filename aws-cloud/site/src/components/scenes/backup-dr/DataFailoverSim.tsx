@@ -94,7 +94,7 @@ const SCENARIOS: PScenario[] = [
     layout: rds,
     run: (replica) => ({
       steps: [
-        { at: "pri", state: "block", flash: "sự cố", msg: "Region Singapore mất điện." },
+        { at: "pri", state: "block", flash: "sự cố", msg: "Region Singapore ngừng hoạt động." },
         { from: "pri", at: "stb", jump: true, state: "block", tag: "CÙNG SỰ CỐ", msg: "Standby của **Multi-AZ** nằm ở AZ khác nhưng **cùng Region**. Khi Region ngừng hoạt động, standby cũng không còn khả dụng." },
         replica
           ? { from: "pri", at: "tok", jump: true, state: "change", tag: "PROMOTE", relabel: { l1: "RDS Tokyo", l2: "DB độc lập, nhận ghi" }, msg: "**Promote** read replica tại Tokyo thành database độc lập. Automated backup đã được sao chép sang Tokyo có thể dùng để restore về một thời điểm khi cần." }
@@ -120,7 +120,7 @@ const SCENARIOS: PScenario[] = [
           steps: [
             { at: "pri", state: "block", flash: "sự cố", msg: "Phần cứng của primary node gặp sự cố." },
             { from: "pri", at: "rep", jump: true, state: "change", tag: "PROMOTE", relabel: { l1: "Redis primary mới", l2: "AZ b" }, msg: "ElastiCache **tự động promote** replica tại AZ b. Replica đã nhận dữ liệu liên tục nên lượng dữ liệu bị mất rất ít." },
-            { from: "app", at: "rep", state: "pass", flash: "OK", msg: "Web vẫn sử dụng **primary endpoint** cũ, hiện trỏ tới node mới. Không cần thay đổi cấu hình." },
+            { from: "app", at: "rep", state: "pass", flash: "OK", msg: "Web tier vẫn sử dụng **primary endpoint** cũ, hiện trỏ tới node mới. Không cần thay đổi cấu hình." },
           ],
           ok: true,
           result: "Thời gian gián đoạn ngắn, dữ liệu giỏ hàng gần như được bảo toàn, không cần can thiệp thủ công.",
@@ -220,7 +220,7 @@ const SCENARIOS_EN: PScenario[] = [
     layout: rdsEn,
     run: (replica) => ({
       steps: [
-        { at: "pri", state: "block", flash: "failure", msg: "The Singapore Region loses power." },
+        { at: "pri", state: "block", flash: "failure", msg: "The Singapore Region becomes unavailable." },
         { from: "pri", at: "stb", jump: true, state: "block", tag: "SAME FAILURE", msg: "The **Multi-AZ** standby is in another AZ but **in the same Region**. When the Region goes down, the standby is unavailable too." },
         replica
           ? { from: "pri", at: "tok", jump: true, state: "change", tag: "PROMOTE", relabel: { l1: "RDS Tokyo", l2: "standalone DB, writable" }, msg: "**Promote** the read replica in Tokyo to a standalone database. The automated backups already replicated to Tokyo can be used for a point-in-time restore when needed." }

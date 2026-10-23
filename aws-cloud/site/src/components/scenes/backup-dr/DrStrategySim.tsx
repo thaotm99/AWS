@@ -40,7 +40,7 @@ const ROUTE: Bi = { vi: "Route 53 định tuyến người dùng sang Tokyo.", e
 
 const STRATS: Record<StratId, Strategy> = {
   br: {
-    name: "Backup & restore",
+    name: "Backup and restore",
     about: { vi: "Tokyo chỉ lưu **bản backup**: snapshot database mỗi 4 giờ và (nếu đã copy) AMI của web. Không có instance nào đang chạy.",
       en: "Tokyo keeps only **backups**: a database snapshot every 4 hours and (if copied) the web AMI. No instances are running." },
     cost: 120,
@@ -61,8 +61,8 @@ const STRATS: Record<StratId, Strategy> = {
   },
   pilot: {
     name: "Pilot light",
-    about: { vi: "Phần lõi luôn hoạt động: **database replica** tại Tokyo nhận dữ liệu liên tục. Web server ở trạng thái **tắt** và được khởi tạo từ AMI khi cần.",
-      en: "The core is always running: a **database replica** in Tokyo receives data continuously. Web servers are **off** and are launched from the AMI when needed." },
+    about: { vi: "Phần lõi luôn hoạt động: **database replica** tại Tokyo nhận dữ liệu liên tục. EC2 instance của web tier chưa chạy (**tắt**) và được launch từ AMI khi cần.",
+      en: "The core is always running: a **database replica** in Tokyo receives data continuously. Web tier EC2 instances are not running (**off**) and are launched from the AMI when needed." },
     cost: 450,
     rpo: 5 / 60,
     usesAmi: true,
@@ -81,8 +81,8 @@ const STRATS: Record<StratId, Strategy> = {
   },
   warm: {
     name: "Warm standby",
-    about: { vi: "Một **phiên bản thu nhỏ nhưng đầy đủ chức năng** luôn hoạt động tại Tokyo: 1 web server kích thước nhỏ và database replica. Khi có sự cố chỉ cần scale lên.",
-      en: "A **scaled-down but fully functional copy** is always running in Tokyo: 1 small web server and a database replica. On failure, it only needs to scale up." },
+    about: { vi: "Một **phiên bản thu nhỏ nhưng đầy đủ chức năng** luôn hoạt động tại Tokyo: 1 EC2 instance của web tier với instance type nhỏ và database replica. Khi có sự cố chỉ cần scale lên.",
+      en: "A **scaled-down but fully functional copy** is always running in Tokyo: 1 web tier EC2 instance of a small instance type and a database replica. On failure, it only needs to scale up." },
     cost: 1300,
     rpo: 5 / 60,
     usesAmi: false,
@@ -98,7 +98,7 @@ const STRATS: Record<StratId, Strategy> = {
     ],
   },
   multi: {
-    name: "Multi-site active-active",
+    name: "Multi-site active/active",
     about: { vi: "Tokyo là **một site đầy đủ** đang phục vụ người dùng đồng thời với Singapore. Database cho phép ghi tại cả hai Region.",
       en: "Tokyo is **a full site** serving users at the same time as Singapore. The database accepts writes in both Regions." },
     cost: 3200,
@@ -235,7 +235,7 @@ export default function DrStrategySim() {
     await wait(150);
     setPhase("down");
     flashText(layer, 180, 136, L({ vi: "Region gặp sự cố", en: "Region failure" }), "drs-flash bad", 1300);
-    setLog([{ vi: `Toàn bộ Region Singapore mất điện. Dữ liệu chỉ còn tới bản sao gần nhất tại Tokyo: **mất ${fmt(S.rpo)}** dữ liệu đơn hàng.`, en: `The entire Singapore Region loses power. Data survives only up to the latest copy in Tokyo: **${fmtEn(S.rpo)}** of order data is **lost**.` }]);
+    setLog([{ vi: `Toàn bộ Region Singapore ngừng hoạt động. Dữ liệu chỉ còn tới bản sao gần nhất tại Tokyo: **mất ${fmt(S.rpo)}** dữ liệu đơn hàng.`, en: `The entire Singapore Region becomes unavailable. Data survives only up to the latest copy in Tokyo: **${fmtEn(S.rpo)}** of order data is **lost**.` }]);
     await wait(700);
     let t = 0;
     for (const step of S.steps(ami)) {
