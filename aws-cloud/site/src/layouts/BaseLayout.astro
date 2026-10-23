@@ -87,27 +87,27 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lexend:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" />
   </head>
   <body>
-    <a class="skip-link" href="#content"><T k="shell.nav.skip" /></a>
-    <header class="topbar">
-      <div class="topbar-inner">
-        <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Mở menu" data-i18n-attr="aria-label:shell.nav.openMenu">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path class="icon-open" d="M4 7h16M4 12h16M4 17h16" /><path class="icon-close" d="M6 6l12 12M18 6L6 18" /></svg>
+    <a class="fixed top-2 left-2 z-100 -translate-y-[160%] rounded-sm bg-accent px-4 py-2.5 font-bold text-on-accent no-underline transition-transform duration-150 focus:translate-y-0" href="#content"><T k="shell.nav.skip" /></a>
+    <header class="topbar sticky top-[env(safe-area-inset-top,0px)] z-5 border-b border-line bg-surface pr-[max(16px,env(safe-area-inset-right,0px))] pl-[max(16px,env(safe-area-inset-left,0px))]">
+      <div class="topbar-inner mx-auto flex h-16 max-w-[1520px] items-center gap-4 max-sm:gap-1.5">
+        <button class="hidden h-[34px] w-9 flex-none cursor-pointer place-items-center rounded-[10px] border border-line bg-surface p-0 text-ink max-lg:grid" id="menuBtn" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Mở menu" data-i18n-attr="aria-label:shell.nav.openMenu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path class="drawer-open:hidden" d="M4 7h16M4 12h16M4 17h16" /><path class="hidden drawer-open:inline" d="M6 6l12 12M18 6L6 18" /></svg>
         </button>
-        <a class="brand" href="/">
-          <span class="brand-mark" aria-hidden="true">
+        <a class="flex min-h-8 items-center gap-2.5 max-lg:mr-auto font-display text-[1.1875rem] font-bold tracking-[-0.01em] text-ink no-underline max-sm:gap-2" href="/">
+          <span class="grid h-[34px] w-[34px] place-items-center rounded-[11px] bg-accent text-on-accent shadow-[0_3px_0_var(--accent-strong)]" aria-hidden="true">
             <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="9" width="14" height="5" rx="1" fill="currentColor"/><rect x="3" y="4" width="10" height="4" rx="1" fill="currentColor" opacity=".75"/><rect x="5" y="1" width="6" height="2" rx="1" fill="currentColor" opacity=".5"/></svg>
           </span>
-          <span class="brand-text">CloudLab</span>
+          <span class="whitespace-nowrap max-sm:text-[0.94rem] max-xs:hidden">CloudLab</span>
         </a>
-        <nav class="topnav" aria-label="Chính" data-i18n-attr="aria-label:shell.nav.main">
-          <a href="/" aria-current={section === "theory" ? "page" : undefined}><T k="shell.nav.theory" /></a>
-          <a href="/practice/" aria-current={section === "practice" ? "page" : undefined}><T k="shell.nav.practice" /></a>
-          <a href="/lab/" aria-current={section === "lab" ? "page" : undefined}><T k="shell.nav.lab" /></a>
-          <a href="/glossary/" aria-current={section === "glossary" ? "page" : undefined}><T k="shell.nav.glossary" /></a>
-          <a href="/flashcards/" aria-current={section === "flashcards" ? "page" : undefined}><T k="shell.nav.flashcards" /></a>
-          <a href="/progress/" aria-current={section === "progress" ? "page" : undefined}><T k="shell.nav.progress" /></a>
+        <nav class="ml-auto flex gap-1 max-lg:hidden" aria-label="Chính" data-i18n-attr="aria-label:shell.nav.main">
+          <a class="nav-pill" href="/" aria-current={section === "theory" ? "page" : undefined}><T k="shell.nav.theory" /></a>
+          <a class="nav-pill" href="/practice/" aria-current={section === "practice" ? "page" : undefined}><T k="shell.nav.practice" /></a>
+          <a class="nav-pill" href="/lab/" aria-current={section === "lab" ? "page" : undefined}><T k="shell.nav.lab" /></a>
+          <a class="nav-pill" href="/glossary/" aria-current={section === "glossary" ? "page" : undefined}><T k="shell.nav.glossary" /></a>
+          <a class="nav-pill" href="/flashcards/" aria-current={section === "flashcards" ? "page" : undefined}><T k="shell.nav.flashcards" /></a>
+          <a class="nav-pill" href="/progress/" aria-current={section === "progress" ? "page" : undefined}><T k="shell.nav.progress" /></a>
         </nav>
-        <button class="search-btn" id="searchBtn" type="button" aria-label="Tìm kiếm" data-i18n-attr="aria-label:shell.search.open;title:shell.search.shortcut" title="Tìm kiếm (/)" aria-haspopup="dialog" aria-controls="search">
+        <button class="icon-btn" id="searchBtn" type="button" aria-label="Tìm kiếm" data-i18n-attr="aria-label:shell.search.open;title:shell.search.shortcut" title="Tìm kiếm (/)" aria-haspopup="dialog" aria-controls="search">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
         </button>
         <Pomodoro client:idle />
@@ -119,14 +119,14 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
 
     <div class:list={["shell", { single: !sidebar, wide: !sidebar && wide, "with-toc": toc }]}>
       <!-- Sidebar on desktop; on phones the same element is the ☰ drawer, which also carries the main links. -->
-      <aside class:list={["sidebar", { "nav-only": !sidebar }]} id="drawer" aria-label="Menu" data-i18n-attr="aria-label:shell.nav.menu">
-        <nav class="drawer-nav" aria-label="Chính" data-i18n-attr="aria-label:shell.nav.main">
-          <a href="/" aria-current={section === "theory" ? "page" : undefined}><T k="shell.nav.theory" /></a>
-          <a href="/practice/" aria-current={section === "practice" ? "page" : undefined}><T k="shell.nav.practice" /></a>
-          <a href="/lab/" aria-current={section === "lab" ? "page" : undefined}><T k="shell.nav.lab" /></a>
-          <a href="/glossary/" aria-current={section === "glossary" ? "page" : undefined}><T k="shell.nav.glossary" /></a>
-          <a href="/flashcards/" aria-current={section === "flashcards" ? "page" : undefined}><T k="shell.nav.flashcards" /></a>
-          <a href="/progress/" aria-current={section === "progress" ? "page" : undefined}><T k="shell.nav.progress" /></a>
+      <aside class:list={["sidebar", { "nav-only lg:hidden": !sidebar }]} id="drawer" aria-label="Menu" data-i18n-attr="aria-label:shell.nav.menu">
+        <nav class="mb-3.5 hidden gap-0.5 border-b border-line pb-3 max-lg:grid" aria-label="Chính" data-i18n-attr="aria-label:shell.nav.main">
+          <a class="drawer-link" href="/" aria-current={section === "theory" ? "page" : undefined}><T k="shell.nav.theory" /></a>
+          <a class="drawer-link" href="/practice/" aria-current={section === "practice" ? "page" : undefined}><T k="shell.nav.practice" /></a>
+          <a class="drawer-link" href="/lab/" aria-current={section === "lab" ? "page" : undefined}><T k="shell.nav.lab" /></a>
+          <a class="drawer-link" href="/glossary/" aria-current={section === "glossary" ? "page" : undefined}><T k="shell.nav.glossary" /></a>
+          <a class="drawer-link" href="/flashcards/" aria-current={section === "flashcards" ? "page" : undefined}><T k="shell.nav.flashcards" /></a>
+          <a class="drawer-link" href="/progress/" aria-current={section === "progress" ? "page" : undefined}><T k="shell.nav.progress" /></a>
         </nav>
         {sidebar && <Roadmap client:load layers={layers} current={current} currentQuiz={currentQuiz} ready={ready} />}
       </aside>

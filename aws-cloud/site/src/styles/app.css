@@ -5,6 +5,18 @@
 @import "tailwindcss/utilities.css" layer(utilities);
 @import "./tokens.css";
 
+/* Breakpoints used across the site (min-width; use max-lg: etc. for "below"). */
+@theme {
+  --breakpoint-xs: 23.125rem;
+  --breakpoint-sm: 35rem;
+  --breakpoint-md: 47.5rem;
+  --breakpoint-lg: 56.25rem;
+  --breakpoint-xl: 80rem;
+}
+
+/* The phone drawer is open (ShellController toggles html.drawer-open). */
+@custom-variant drawer-open (&:where(html.drawer-open, html.drawer-open *));
+
 /* Dark theme follows <html data-theme="dark">, set before first paint by BaseLayout. */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
@@ -61,3 +73,5 @@
 
   --spacing-section: var(--space-section);
 }
+
+@import "./components/controls.css" layer(components);
