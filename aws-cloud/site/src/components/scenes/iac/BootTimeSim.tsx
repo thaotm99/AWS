@@ -107,11 +107,11 @@ export default function BootTimeSim() {
   const Y0 = 40;
 
   return (
-    <div className="stage bts">
+    <div className="stage">
       <div className="stage-bar">
         <span className="label">Elastic Beanstalk scale out</span>
         <span className="count">{L({ vi: `Yêu cầu: instance mới phục vụ được request trong ${TARGET} phút`, en: `Requirement: new instances serve requests within ${TARGET} minutes` })}</span>
-        <button className="btn primary bts-play" onClick={play} disabled={busy}>{L({ vi: "Khởi động 4 instance", en: "Launch 4 instances" })}</button>
+        <button className="btn primary ml-auto" onClick={play} disabled={busy}>{L({ vi: "Khởi động 4 instance", en: "Launch 4 instances" })}</button>
       </div>
       <div className="svg-wrap">
         <svg viewBox={`0 0 820 ${Y0 + LANES.length * LH + 34}`} role="group" aria-label={L({ vi: "So sánh thời gian của bốn phương án khởi động instance trên cùng một trục thời gian", en: "Timing of four instance startup approaches compared on one time axis" })}>
@@ -156,17 +156,17 @@ export default function BootTimeSim() {
           })}
         </svg>
       </div>
-      <div className="bts-legend">
+      <div className="flex flex-wrap gap-x-4 gap-y-1.5 px-4 pt-0 pb-2.5 text-step--1 text-muted">
         {(Object.keys(KIND_TEXT) as Seg["kind"][]).map((k) => (
-          <span key={k}><i className={"bts-sw " + k} />{L(KIND_TEXT[k])}</span>
+          <span key={k} className="inline-flex items-center gap-1.5"><i className={"bts-sw inline-block h-2.5 w-3.5 rounded-[3px] " + k} />{L(KIND_TEXT[k])}</span>
         ))}
       </div>
       <div className="readout" aria-live="polite">
-        <p className="bts-pick">{L({ vi: "Chọn một phương án để xem phân tích. Đang xem:", en: "Choose an approach to see the analysis. Viewing:" })} <b>{L(lane.name)}</b></p>
+        <p className="mx-0 mt-0 mb-1.5 text-step--1 text-muted">{L({ vi: "Chọn một phương án để xem phân tích. Đang xem:", en: "Choose an approach to see the analysis. Viewing:" })} <b>{L(lane.name)}</b></p>
         {laneDone && now > 0 ? (
-          <p className={"bts-result " + (lane.works && total(lane) <= TARGET ? "ok" : "bad")}>{rich(L(lane.note))}</p>
+          <p className={"m-0 rounded-[12px] px-2.5 py-2 text-step--1 " + (lane.works && total(lane) <= TARGET ? "bg-ok-soft" : "bg-bad-soft")}>{rich(L(lane.note))}</p>
         ) : (
-          <p className="bts-hint">{L({ vi: <>Chọn <b>Khởi động 4 instance</b> và chờ phương án này hoàn tất.</>, en: <>Choose <b>Launch 4 instances</b> and wait for this approach to finish.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn <b>Khởi động 4 instance</b> và chờ phương án này hoàn tất.</>, en: <>Choose <b>Launch 4 instances</b> and wait for this approach to finish.</> })}</p>
         )}
       </div>
     </div>

@@ -1,6 +1,5 @@
 import PacketSim, { type PLayout, type PScenario } from "../elb/PacketSim";
 import { useLang } from "../../../lib/lang";
-import "./iac-sims.css";
 
 // Reading the SecurityGroupIngress block of a MFTech template by sending traffic at
 // it. Rule 1 lets anyone reach port 80; rule 2 lets one office IP reach port 22.
@@ -146,7 +145,7 @@ export default function SgRuleSim() {
   const L = useLang();
   return (
     <>
-      <pre className="sgr-template" aria-label={L({ vi: "Đoạn template khai báo security group", en: "Template snippet that declares the security group" })}>{L({ vi: SNIPPET, en: SNIPPET_EN })}</pre>
+      <pre className="mx-0 mt-3 mb-0 rounded-[14px] bg-surface overflow-x-auto border border-line px-3 py-2.5 font-mono text-[0.8125rem] leading-[1.5] text-ink" aria-label={L({ vi: "Đoạn template khai báo security group", en: "Template snippet that declares the security group" })}>{L({ vi: SNIPPET, en: SNIPPET_EN })}</pre>
       <PacketSim scenarios={L({ vi: SCENARIOS, en: SCENARIOS_EN })} action={L({ vi: "Gửi request", en: "Send request" })} hint={L({ vi: "Chọn một kết nối, sau đó chọn Gửi request để xác định rule nào trong template cho phép kết nối.", en: "Choose a connection, then choose Send request to find which rule in the template allows it." })} />
     </>
   );

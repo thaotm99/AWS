@@ -260,8 +260,8 @@ export default function StackSim() {
   const x0 = (820 - rowW) / 2;
 
   return (
-    <div className="stage sks">
-      <div className="sks-row" role="group" aria-label={L({ vi: "Tình huống", en: "Scenarios" })}>
+    <div className="stage">
+      <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-0" role="group" aria-label={L({ vi: "Tình huống", en: "Scenarios" })}>
         {L({ vi: SCENARIOS, en: SCENARIOS_EN }).map((s, i) => (
           <button key={i} className="chip" aria-pressed={i === index} disabled={busy && i !== index} onClick={() => pick(i)}>{s.name}</button>
         ))}
@@ -269,10 +269,10 @@ export default function StackSim() {
       <div className="stage-bar">
         <span className="label">Stack</span>
         <code>{sc.stack}</code>
-        <span className={"sks-status " + (stackStatus.startsWith("ROLLBACK") ? "bad" : stackStatus.endsWith("COMPLETE") ? "ok" : "")}>{stackStatus}</span>
-        <button className="btn primary sks-play" onClick={play} disabled={busy}>{sc.action}</button>
+        <span className={"rounded-[10px] border px-2 py-0.5 font-mono text-[0.8125rem] font-semibold " + (stackStatus.startsWith("ROLLBACK") ? "border-bad bg-bad-soft text-bad" : stackStatus.endsWith("COMPLETE") ? "border-ok bg-ok-soft text-ok" : "border-line bg-bg text-muted")}>{stackStatus}</span>
+        <button className="btn primary ml-auto" onClick={play} disabled={busy}>{sc.action}</button>
       </div>
-      <pre className="sks-template" aria-label="Template">
+      <pre className="mx-3.5 mt-3 mb-0 rounded-[12px] bg-bg overflow-x-auto border border-line px-3 py-2.5 font-mono text-[0.8125rem] leading-[1.5] text-ink" aria-label="Template">
         {sc.template.map((l, i) => (
           <span key={i} className={"sks-line" + (l.mark ? " " + l.mark : "")}>{(l.mark === "add" ? "+ " : l.mark === "del" ? "- " : l.mark === "bad" ? "! " : "  ") + l.line}{"\n"}</span>
         ))}
@@ -296,9 +296,9 @@ export default function StackSim() {
         </svg>
       </div>
       <div className="readout" aria-live="polite">
-        {sc.changeSet && <p className="sks-change">{rich(sc.changeSet)}</p>}
+        {sc.changeSet && <p className="mx-0 mt-0 mb-2 rounded-[12px] bg-accent-soft px-2.5 py-1.5 text-step--1">{rich(sc.changeSet)}</p>}
         {shown < 0 ? (
-          <p className="sks-hint">{L({ vi: <>Chọn <b>{sc.action}</b> để xem lần lượt các stack event.</>, en: <>Choose <b>{sc.action}</b> to see the stack events one by one.</> })}</p>
+          <p className="m-0 text-step--1 text-muted">{L({ vi: <>Chọn <b>{sc.action}</b> để xem lần lượt các stack event.</>, en: <>Choose <b>{sc.action}</b> to see the stack events one by one.</> })}</p>
         ) : (
           <ul className="log">
             {sc.events.slice(0, shown + 1).map((e, i) => (
@@ -307,7 +307,7 @@ export default function StackSim() {
                 <span><b>{e.res}</b>{e.reason ? `: ${e.reason}` : ""}</span>
               </li>
             ))}
-            {done && <li className={"sks-result " + (sc.ok ? "ok" : "bad")}>{rich(sc.result)}</li>}
+            {done && <li className={"mt-1.5 block rounded-[12px] px-2.5 py-2 " + (sc.ok ? "bg-ok-soft" : "bg-bad-soft")}>{rich(sc.result)}</li>}
           </ul>
         )}
       </div>
