@@ -86,14 +86,14 @@ import Quiz from "../../components/scenes/Quiz.tsx";
   { href: "#s5", label: "5 · Truy cập S3 qua giao diện file" },
   { href: "#challenge", label: "Bài tập" },
 ]}>
-Hệ thống ShopViet có bốn nhu cầu lưu trữ khác nhau: database yêu cầu ổ đĩa hiệu năng cao, các web server cần thư mục dùng chung, văn phòng cần file share cho Windows, và team dữ liệu cần file system có hiệu năng rất cao cho tác vụ tính toán. Mỗi nhu cầu tương ứng với một loại dịch vụ lưu trữ khác nhau.
+Hệ thống ShopViet có bốn nhu cầu lưu trữ khác nhau: database yêu cầu block storage hiệu năng cao, các web server cần shared file system, văn phòng cần file share SMB cho Windows, và team dữ liệu cần file system hiệu năng cao cho workload high performance computing (HPC). Mỗi nhu cầu tương ứng với một loại dịch vụ lưu trữ khác nhau.
 </Story>
 
-<Scene id="s1" label="Phần 1/5" title="Lưu trữ dùng chung cho nhiều web server" questions={["exam2_q29", "exam6_q15", "exam1_q46", "exam1_q9"]}>
+<Scene id="s1" label="Phần 1/5" title="Shared storage cho nhiều EC2 instance" questions={["exam2_q29", "exam6_q15", "exam1_q46", "exam1_q9"]}>
 
-<p class="scene-intro">Khi nhiều máy chủ cùng phục vụ một website, dữ liệu do người dùng tải lên phải được lưu ở nơi mọi máy chủ đều đọc được.</p>
+<p class="scene-intro">Khi nhiều EC2 instance cùng phục vụ một website, dữ liệu do người dùng tải lên phải được lưu ở nơi mọi instance đều đọc được.</p>
 
-ShopViet vận hành ba web server tại hai AZ phía sau một load balancer. Người dùng tải video giới thiệu sản phẩm lên một server bất kỳ, và người dùng khác được định tuyến tới server nào cũng phải xem được video đó. Thử lưu video tại ba vị trí:
+ShopViet vận hành ba EC2 instance chạy web server tại hai Availability Zone (AZ) phía sau một load balancer. Người dùng tải video giới thiệu sản phẩm lên một instance bất kỳ, và người dùng khác được định tuyến tới instance nào cũng phải xem được video đó. Thử lưu video tại ba vị trí:
 
 <SharedStorageSim client:visible />
 
@@ -103,15 +103,15 @@ Ba loại dịch vụ cũng khác nhau về cách tính phí lưu trữ. Đội 
 
 <StorageBillSim client:visible />
 
-<Takeaway>Block storage (EBS): ổ đĩa riêng của một instance trong một AZ, tính phí theo dung lượng cấp phát. File storage (EFS, FSx): nhiều instance dùng chung; EFS tự co giãn và tính theo dung lượng dữ liệu thực tế lưu trữ. Object storage (S3): truy cập qua API, S3 Standard lưu dữ liệu tại tối thiểu 3 AZ. S3 Standard và EFS Regional cùng được thiết kế cho độ bền 99.999999999% (11 số 9). Theo giá niêm yết us-east-1 (10/2026), mỗi GB-tháng: S3 Standard $0,023, EFS Standard $0,30, EBS gp2 $0,10 và gp3 $0,08 tính trên dung lượng cấp phát. Với 1 GB dữ liệu trên volume 100 GB: S3 < EFS < EBS. Giá thay đổi theo Region; so sánh luôn dựa trên bảng giá hiện hành.</Takeaway>
+<Takeaway>Block storage (EBS): volume gắn vào một instance trong cùng AZ, tính phí theo dung lượng cấp phát. File storage (EFS, FSx): nhiều instance dùng chung; EFS tự co giãn và tính theo dung lượng dữ liệu thực tế lưu trữ. Object storage (S3): truy cập qua API, S3 Standard lưu dữ liệu tại tối thiểu 3 AZ. S3 Standard và EFS Regional cùng được thiết kế cho độ bền 99.999999999% (11 số 9). Theo giá niêm yết us-east-1 (10/2026), mỗi GB-tháng: S3 Standard $0,023, EFS Standard $0,30, EBS gp2 $0,10 và gp3 $0,08 tính trên dung lượng cấp phát. Với 1 GB dữ liệu trên volume 100 GB: S3 < EFS < EBS. Giá thay đổi theo Region; so sánh luôn dựa trên bảng giá hiện hành.</Takeaway>
 
 </Scene>
 
-<Scene id="s2" label="Phần 2/5" title="Lựa chọn EBS volume cho database" questions={["exam3_q27", "exam5_q22", "exam1_q44", "exam6_q24", "exam4_q15", "exam5_q64", "exam5_q16", "exam5_q40"]}>
+<Scene id="s2" label="Phần 2/5" title="Amazon EBS volume types cho database" questions={["exam3_q27", "exam5_q22", "exam1_q44", "exam6_q24", "exam4_q15", "exam5_q64", "exam5_q16", "exam5_q40"]}>
 
-<p class="scene-intro">Ổ đĩa của database quyết định tốc độ đọc ghi của toàn hệ thống; AWS có nhiều loại ổ đĩa, khác nhau ở hiệu năng và giá.</p>
+<p class="scene-intro">EBS volume của database quyết định IOPS và throughput của toàn hệ thống; Amazon EBS cung cấp nhiều volume type, khác nhau về hiệu năng và giá.</p>
 
-Database đơn hàng của ShopViet chạy trên EC2 với nhu cầu IOPS tăng dần. Điều chỉnh thanh IOPS và bật các yêu cầu để xem loại volume phù hợp:
+Database đơn hàng của ShopViet chạy trên EC2 instance với nhu cầu IOPS tăng dần. Điều chỉnh thanh IOPS và bật các yêu cầu để xem loại volume phù hợp:
 
 <VolumeChooser client:visible />
 
@@ -124,37 +124,37 @@ Ngoài việc lựa chọn loại volume, vận hành EBS còn bao gồm các t�
 <RequirementPicker client:visible items={[
   { need: "Tạo môi trường test từ dữ liệu production, yêu cầu đạt hiệu năng đầy đủ ngay từ đầu", answer: "Snapshot + EBS fast snapshot restore",
     why: "Volume tạo từ snapshot đã bật fast snapshot restore đạt hiệu năng đầy đủ ngay lập tức, không phải chờ dữ liệu được nạp dần." },
-  { need: "Snapshot backup bị xoá nhầm; cần khôi phục với thao tác tối thiểu", answer: "Recycle Bin với rule lưu giữ snapshot 7 ngày",
-    why: "Snapshot bị xoá được chuyển vào Recycle Bin và có thể khôi phục trong thời hạn lưu giữ." },
-  { need: "Khi bật encryption cho EBS, những thành phần nào được mã hoá?", answer: "Dữ liệu trên volume, snapshot, và dữ liệu truyền giữa volume và instance",
+  { need: "EBS snapshot dùng làm backup bị xoá nhầm; cần khôi phục với thao tác tối thiểu", answer: "Recycle Bin với retention rule 7 ngày cho snapshot",
+    why: "Snapshot bị xoá được chuyển vào Recycle Bin và có thể khôi phục trong retention period." },
+  { need: "Khi bật EBS encryption, những thành phần nào được mã hoá?", answer: "Dữ liệu trên volume, snapshot, và dữ liệu truyền giữa volume và instance",
     why: "Cả ba thành phần đều được mã hoá bằng KMS key, không yêu cầu thay đổi ứng dụng. Volume tạo từ các snapshot đó cũng được mã hoá." },
   { need: "Volume io1 chiếm phần lớn chi phí nhưng IOPS sử dụng thấp, chỉ thỉnh thoảng có đợt I/O ngắn", answer: "Chuyển sang General Purpose SSD bằng Elastic Volumes (gp3)",
     why: "io1 tính phí theo GB và theo từng IOPS cấp phát dù không sử dụng. Elastic Volumes đổi loại volume mà không gián đoạn instance. gp2 xử lý đợt I/O ngắn bằng burst credit; gp3 là thế hệ hiện hành, rẻ hơn gp2 khoảng 20% mỗi GB và duy trì 3.000 IOPS không cần credit. Tài liệu ôn tập cũ thường chọn gp2 cho tình huống này." },
 ]} />
 
-<Takeaway>Lựa chọn mặc định: gp3 (baseline 3.000 IOPS không cần credit, tối đa 80.000 IOPS; gp2 tối đa 16.000 IOPS, baseline 3 IOPS/GiB, volume dưới 1 TiB burst tới 3.000 IOPS bằng I/O credit, theo dõi bằng metric BurstBalance). Cần IOPS ổn định cho database I/O lớn, trên 80.000 IOPS, hoặc Multi-Attach: io1/io2 (io2 Block Express tối đa 256.000 IOPS). Đọc tuần tự khối dữ liệu lớn: st1; dữ liệu ít truy cập: sc1; hai loại HDD không dùng được làm boot volume. Tạo môi trường test nhanh từ snapshot: fast snapshot restore.</Takeaway>
+<Takeaway>Volume type mặc định: gp3 (baseline 3.000 IOPS không cần credit, tối đa 80.000 IOPS; gp2 tối đa 16.000 IOPS, baseline 3 IOPS/GiB, volume dưới 1 TiB burst tới 3.000 IOPS bằng I/O credit, theo dõi bằng metric BurstBalance). Cần IOPS ổn định cho database I/O lớn, trên 80.000 IOPS, hoặc Multi-Attach: io1/io2 (io2 Block Express tối đa 256.000 IOPS). Đọc tuần tự khối dữ liệu lớn: st1; dữ liệu ít truy cập: sc1; hai loại HDD không dùng được làm boot volume. Tạo môi trường test nhanh từ snapshot: fast snapshot restore.</Takeaway>
 
 </Scene>
 
 <Scene id="s3" label="Phần 3/5" title="Cấu hình EFS theo đặc điểm tải" questions={["exam2_q64", "exam4_q55", "exam3_q11", "exam2_q60", "exam6_q39", "exam4_q24", "exam1_q12", "exam5_q47", "exam1_q9"]}>
 
-<p class="scene-intro">File system dùng chung cũng cần được điều chỉnh khi tải thay đổi, khi dữ liệu cũ đi và khi phải giới hạn ai được truy cập.</p>
+<p class="scene-intro">Shared file system cũng cần được điều chỉnh khi tải thay đổi, khi dữ liệu ít được truy cập dần và khi phải kiểm soát quyền truy cập.</p>
 
-Sau khi triển khai EFS, ShopViet cần giải quyết các vấn đề vận hành: điều chỉnh cấu hình khi tải lớn, tối ưu chi phí lưu trữ tệp cũ, và kiểm soát quyền mount. Chọn từng tình huống:
+Sau khi triển khai Amazon EFS, ShopViet cần giải quyết các vấn đề vận hành: điều chỉnh performance mode và throughput mode khi tải lớn, tối ưu chi phí lưu trữ tệp cũ, và kiểm soát quyền mount. Chọn từng tình huống:
 
 <RequirementPicker client:visible items={[
   { need: "Job big data chạy song song trên rất nhiều instance, cùng đọc ghi EFS", answer: "Performance mode: General Purpose", why: "AWS khuyến nghị General Purpose cho mọi file system. Max I/O là performance mode thế hệ trước, dành cho tải song song cao chịu được độ trễ lớn hơn; Max I/O không hỗ trợ Elastic throughput và One Zone file system." },
   { need: "Tải biến động, khó dự đoán, không muốn tự cấp phát throughput", answer: "Elastic throughput (mặc định)", why: "Throughput tự động tăng giảm theo tải; chỉ trả phí theo lượng dữ liệu và metadata được đọc ghi, không dùng burst credit. Bursting throughput thì tăng theo dung lượng lưu trữ ở lớp Standard (50 KiBps mỗi GiB)." },
   { need: "Thư mục cấu hình dung lượng nhỏ (dưới 1 TB) nhưng được đọc ghi liên tục", answer: "Provisioned throughput", why: "Cấp phát mức throughput cố định, không phụ thuộc dung lượng file system hay số dư burst credit. Phù hợp khi đã biết trước yêu cầu hiệu năng." },
   { need: "Ảnh đơn hàng cũ ít được truy cập nhưng đôi khi phải truy xuất ngay; yêu cầu tối ưu chi phí", answer: "EFS Infrequent Access (lifecycle sang IA)", why: "Storage class chi phí thấp hơn cho tệp ít truy cập, vẫn đọc được ngay." },
-  { need: "Mỗi web server truy cập EFS với độ trễ thấp nhất", answer: "Mount target tại mỗi AZ, EC2 mount target cùng AZ", why: "Traffic không phải đi qua AZ khác." },
-  { need: "Chỉ các web server được phép mount, các server khác bị từ chối", answer: "Security group + IAM policy", why: "Security group của mount target kiểm soát truy cập mạng; IAM kiểm soát quyền mount." },
-  { need: "Rủi ro sự cố cấp Region gây mất dữ liệu trên EFS", answer: "AWS Backup sao lưu sang Region khác", why: "Backup theo lịch và copy sang Region khác." },
+  { need: "Mỗi EC2 instance truy cập EFS với độ trễ thấp nhất", answer: "Mount target tại mỗi AZ, instance mount qua mount target cùng AZ", why: "Traffic không phải đi qua AZ khác." },
+  { need: "Chỉ các web server được phép mount, các EC2 instance khác bị từ chối", answer: "Security group + IAM policy", why: "Security group của mount target kiểm soát truy cập mạng; IAM kiểm soát quyền mount." },
+  { need: "Rủi ro sự cố cấp Region gây mất dữ liệu trên EFS", answer: "AWS Backup với cross-Region copy", why: "Backup plan chạy backup theo lịch và copy recovery point sang Region khác." },
   { need: "Thư mục tạm cho môi trường dev, chỉ dùng trong một AZ, ưu tiên chi phí thấp", answer: "File system type One Zone", why: "One Zone lưu dữ liệu trong một AZ (us-east-1: $0,16 so với $0,30 mỗi GB-tháng của Regional). Dữ liệu có thể mất nếu AZ bị hư hại; EFS tự động backup One Zone file system bằng AWS Backup. One Zone luôn dùng General Purpose và hỗ trợ cả ba throughput mode: chọn One Zone không làm thay đổi throughput mode." },
   { need: "Nhiều ứng dụng dùng chung file system, mỗi ứng dụng chỉ được thấy thư mục của mình với UID/GID cố định", answer: "EFS access point", why: "Access point là điểm vào riêng cho từng ứng dụng: áp đặt user identity POSIX và root directory cho mọi request đi qua nó. Kết hợp IAM policy để buộc ứng dụng chỉ dùng access point được chỉ định. Security group vẫn áp dụng tại mount target." },
 ]} />
 
-**Bursting throughput** cho throughput tỉ lệ với dung lượng dữ liệu ở lớp **Standard**: baseline 50 KiBps mỗi GiB, burst tới 100 KiBps mỗi GiB (tối thiểu 100 MiBps) khi còn credit. Credit tích luỹ khi tải thấp hơn baseline, tối đa 2,1 TiB (file system dưới 1 TiB) hoặc 2,1 TiB cho mỗi TiB. Dữ liệu đã chuyển sang IA không được tính vào baseline. Mô phỏng thư mục ảnh sản phẩm khi có đợt nhập hàng loạt:
+**Bursting throughput** cho throughput tỉ lệ với dung lượng dữ liệu ở lớp **Standard**: baseline 50 KiBps mỗi GiB, burst tới 100 KiBps mỗi GiB (tối thiểu 100 MiBps) khi còn credit. Burst credit tích luỹ khi tải thấp hơn baseline, tối đa 2,1 TiB (file system dưới 1 TiB) hoặc 2,1 TiB cho mỗi TiB. Dữ liệu đã chuyển sang IA không được tính vào baseline. Mô phỏng thư mục ảnh sản phẩm khi có đợt nhập hàng loạt:
 
 <BurstCreditSim client:visible kind="efs" />
 
@@ -187,15 +187,15 @@ Team gợi ý sản phẩm của ShopViet chạy Lambda function trong VPC, cầ
 
 Các lưu ý khác khi Lambda chạy trong VPC (truy cập Internet, NAT gateway): xem [bài Lambda](/concepts/lambda/production/).
 
-<Takeaway>EFS: file system NFS dùng chung giữa nhiều AZ. Cấu hình khuyến nghị: General Purpose performance mode + Elastic throughput; Max I/O là thế hệ trước (tài liệu cũ có thể khuyến nghị Max I/O cho tải song song). Bursting: throughput theo dung lượng lớp Standard, dùng burst credit. Đã biết trước nhu cầu throughput: Provisioned throughput. Tệp ít truy cập: lớp IA. Không cần chịu lỗi cấp AZ, ưu tiên chi phí: One Zone. Mount target cùng AZ để giảm độ trễ. Lambda mount EFS qua access point.</Takeaway>
+<Takeaway>EFS: file system NFS dùng chung giữa nhiều AZ. Cấu hình khuyến nghị: General Purpose performance mode + Elastic throughput; Max I/O là thế hệ trước (tài liệu cũ có thể khuyến nghị Max I/O cho tải song song). Bursting: throughput theo dung lượng lớp Standard, dùng burst credit. Đã biết trước nhu cầu throughput: Provisioned throughput. Tệp ít truy cập: lớp IA. Không cần chịu lỗi cấp AZ, ưu tiên chi phí: One Zone. Instance mount qua mount target cùng AZ để giảm độ trễ. Lambda mount EFS qua access point.</Takeaway>
 
 </Scene>
 
-<Scene id="s4" label="Phần 4/5" title="Lựa chọn file system cho bốn nhóm người dùng" questions={["exam2_q12", "exam2_q56", "exam1_q65", "exam3_q5", "exam3_q43", "exam3_q56", "exam1_q24", "exam3_q61", "exam3_q26", "exam5_q47", "exam5_q54"]}>
+<Scene id="s4" label="Phần 4/5" title="Lựa chọn Amazon FSx file system" questions={["exam2_q12", "exam2_q56", "exam1_q65", "exam3_q5", "exam3_q43", "exam3_q56", "exam1_q24", "exam3_q61", "exam3_q26", "exam5_q47", "exam5_q54"]}>
 
-<p class="scene-intro">Ngoài file system dùng chung cho Linux, nhiều nhóm người dùng có yêu cầu riêng, ví dụ chia sẻ file Windows hoặc tính toán hiệu năng cao; mỗi yêu cầu có một loại file system phù hợp.</p>
+<p class="scene-intro">Ngoài shared file system cho Linux, nhiều nhóm người dùng có yêu cầu riêng, ví dụ file share SMB cho Windows hoặc HPC; mỗi yêu cầu có một loại file system phù hợp.</p>
 
-Ngoài EFS, AWS cung cấp bốn loại **FSx** cho các nhu cầu chuyên biệt. Mỗi nhóm trong bốn nhóm người dùng của ShopViet có ba yêu cầu bắt buộc. Thử mount từng file system cho từng nhóm để xác định file system đáp ứng đầy đủ yêu cầu:
+Ngoài EFS, AWS cung cấp bốn loại **Amazon FSx** file system cho các nhu cầu chuyên biệt. Mỗi nhóm trong bốn nhóm người dùng của ShopViet có ba yêu cầu bắt buộc. Thử mount từng file system cho từng nhóm để xác định file system đáp ứng đầy đủ yêu cầu:
 
 <FsxSim client:visible />
 
@@ -205,7 +205,7 @@ Các tính năng quản lý dữ liệu của FSx for NetApp ONTAP và FSx for O
 
 <RequirementPicker client:visible items={[
   { need: "Kho hàng dùng FSx for ONTAP; phần lớn tệp chỉ truy cập trong tháng đầu, cần giảm chi phí SSD", answer: "Volume tiering sang capacity pool", why: "ONTAP có hai storage tier: SSD tier cấp phát trước cho dữ liệu hoạt động, và capacity pool co giãn, chi phí thấp cho dữ liệu ít truy cập. Tiering policy đặt theo volume: Auto chuyển dữ liệu lạnh sau cooling period (mặc định 31 ngày, cấu hình 2 đến 183 ngày), Snapshot Only chỉ chuyển snapshot, All lưu mọi dữ liệu ở capacity pool. Metadata luôn ở SSD tier." },
-  { need: "Sao chép volume ONTAP sang Region khác để khôi phục sau thảm hoạ", answer: "NetApp SnapMirror (volume-level)", why: "SnapMirror sao chép theo lịch, tối đa mỗi 5 phút, giữa hai file system cùng Region hoặc khác Region. Lịch sao chép được cấu hình bằng NetApp Console hoặc ONTAP CLI; FSx for ONTAP chỉ hỗ trợ SnapMirror cấp volume, không hỗ trợ Synchronous SnapMirror." },
+  { need: "Replicate volume ONTAP sang Region khác phục vụ disaster recovery", answer: "NetApp SnapMirror (volume-level)", why: "SnapMirror sao chép theo lịch, tối đa mỗi 5 phút, giữa hai file system cùng Region hoặc khác Region. Lịch sao chép được cấu hình bằng NetApp Console hoặc ONTAP CLI; FSx for ONTAP chỉ hỗ trợ SnapMirror cấp volume, không hỗ trợ Synchronous SnapMirror." },
   { need: "Microservice trên Fargate cần file system POSIX dùng chung giữa nhiều AZ và backup sang Region khác với RPO 8 giờ", answer: "Amazon EFS + AWS Backup (copy sang Region khác)", why: "EFS mount trực tiếp từ Fargate task, lưu dữ liệu tại nhiều AZ; AWS Backup chạy backup theo lịch và copy sang Region khác. FSx for ONTAP sao chép khác Region bằng SnapMirror, phải cấu hình bằng công cụ NetApp." },
   { need: "Một kỹ sư đề xuất FSx for Lustre làm file system dùng chung cho microservice phải chịu được sự cố mất một AZ", answer: "Không phù hợp: file server của FSx for Lustre nằm trong một AZ", why: "Mọi deployment type của FSx for Lustre (Scratch, Persistent 1, Persistent 2) chỉ nhận đúng một subnet, và file server chạy trong AZ của subnet đó; client ở AZ khác trong cùng VPC vẫn mount được, nhưng traffic phải đi sang AZ đó. Persistent với SSD hoặc HDD sao chép dữ liệu trong cùng AZ; Intelligent-Tiering sao chép dữ liệu qua nhiều AZ nhưng file server vẫn ở một subnet; Scratch không sao chép dữ liệu. File system chịu lỗi cấp AZ: EFS Regional (mount target tại mỗi AZ), hoặc FSx for Windows File Server, ONTAP, OpenZFS với deployment type Multi-AZ. Danh sách loại volume của ECS cũng không có FSx for Lustre." },
   { need: "Chuyển file server Linux dùng ZFS tại chỗ lên AWS, giữ snapshot và clone, client Linux và macOS truy cập qua NFS", answer: "FSx for OpenZFS", why: "AWS khuyến nghị FSx for OpenZFS cho ZFS hoặc file server Linux. Truy cập qua NFS v3, v4.0, v4.1, v4.2 từ Linux, Windows, macOS; độ trễ vài trăm micro giây; deployment type Multi-AZ (HA), Single-AZ (HA), Single-AZ (non-HA). Không hỗ trợ SMB: khi cần cả SMB và NFS, chọn FSx for NetApp ONTAP." },
@@ -228,16 +228,16 @@ Mountpoint phù hợp với ứng dụng đọc nhiều trên quy mô lớn: dat
 
 <RequirementPicker client:visible items={[
   { need: "Job huấn luyện trên EC2 Linux đọc tuần tự hàng TB dữ liệu từ S3, ứng dụng chỉ biết đọc tệp", answer: "Mountpoint for Amazon S3", why: "Mount bucket thành thư mục, đọc với throughput co giãn của S3, không phải sao chép dữ liệu. Job chỉ đọc và tạo tệp kết quả mới nên không gặp giới hạn của Mountpoint." },
-  { need: "Server render tại trung tâm dữ liệu cần truy cập thường xuyên, độ trễ thấp tới tệp media lớn trên S3", answer: "Amazon S3 File Gateway", why: "File Gateway triển khai tại chỗ (VM hoặc thiết bị phần cứng), cung cấp file share NFS/SMB và cache cục bộ trong suốt để truy cập với độ trễ thấp; dữ liệu vẫn lưu trên S3." },
+  { need: "Render server tại on-premises data center cần truy cập thường xuyên, độ trễ thấp tới tệp media lớn trên S3", answer: "Amazon S3 File Gateway", why: "File Gateway triển khai on-premises (VM hoặc hardware appliance), cung cấp file share NFS/SMB và local cache trong suốt để truy cập với độ trễ thấp; dữ liệu vẫn lưu trên S3." },
   { need: "Microservice trên Fargate ghi log nối tiếp và cần file system POSIX dùng chung giữa nhiều AZ", answer: "Amazon EFS", why: "Mountpoint không sửa được tệp đã có và không có file locking; EFS hỗ trợ đọc ghi đầy đủ qua NFSv4 và lưu dữ liệu tại nhiều AZ." },
-  { need: "Công cụ phân tích rủi ro chạy Docker với volume cục bộ, chuyển lên ECS Fargate để không quản lý server; một đề xuất là chạy script mount bucket S3 vào container", answer: "Volume EFS khai báo trong task definition", why: "Fargate task chỉ dùng các loại volume ECS hỗ trợ: EFS (bền vững, dùng chung), EBS (giữ lại được khi gắn cho standalone task, tạm thời khi task thuộc service), bind mount trên ephemeral storage của Fargate (mặc định 20 GiB, tối đa 200 GiB, mất khi task dừng), và Amazon S3 Files. Bucket S3 bản thân không phải loại volume; Mountpoint for Amazon S3 là file client cài trên máy Linux, không phải volume của task. Muốn mount dữ liệu S3 phải tạo trước một S3 file system liên kết với bucket rồi khai báo trong task definition, không dùng script mount bucket." },
-  { need: "Cụm EC2 tại nhiều AZ cần file system dùng chung, đọc ghi thường xuyên với độ trễ thấp", answer: "EFS, mount target tại mỗi AZ", why: "Mỗi instance mount qua mount target cùng AZ. Mountpoint không có đầy đủ ngữ nghĩa ghi và khoá tệp của một shared file system." },
+  { need: "Công cụ phân tích rủi ro chạy Docker với volume cục bộ, chuyển lên Amazon ECS trên AWS Fargate để không phải quản lý server; một đề xuất là chạy script mount bucket S3 vào container", answer: "Volume EFS khai báo trong task definition", why: "Fargate task chỉ dùng các loại volume ECS hỗ trợ: EFS (bền vững, dùng chung), EBS (giữ lại được khi gắn cho standalone task, tạm thời khi task thuộc service), bind mount trên ephemeral storage của Fargate (mặc định 20 GiB, tối đa 200 GiB, mất khi task dừng), và Amazon S3 Files. Bucket S3 bản thân không phải loại volume; Mountpoint for Amazon S3 là file client cài trên máy Linux, không phải volume của task. Muốn mount dữ liệu S3 phải tạo trước một S3 file system liên kết với bucket rồi khai báo trong task definition, không dùng script mount bucket." },
+  { need: "Nhóm EC2 instance tại nhiều AZ cần shared file system, đọc ghi thường xuyên với độ trễ thấp", answer: "EFS, mount target tại mỗi AZ", why: "Mỗi instance mount qua mount target cùng AZ. Mountpoint không có đầy đủ ngữ nghĩa ghi và khoá tệp của một shared file system." },
   { need: "Máy Windows và Linux dùng chung file share, giữ quyền NTFS và Active Directory", answer: "FSx for Windows File Server", why: "Mountpoint chỉ chạy trên Linux và không có quyền NTFS; EFS không hỗ trợ Windows (phần 4)." },
 ]} />
 
 **Amazon S3 Files** là file system dùng chung, xây dựng trên Amazon EFS, liên kết với một bucket hoặc một prefix: ứng dụng đọc ghi tệp với đầy đủ ngữ nghĩa file system, còn S3 Files tự đồng bộ thay đổi giữa file system và bucket. S3 file system mount được trên EC2, Lambda, và được khai báo làm volume (`s3filesVolumeConfiguration`) cho ECS task trên Fargate, ECS Managed Instances và EC2; bắt buộc có task IAM role và mã hoá khi truyền. Tài liệu ôn tập cũ khẳng định "S3 không mount được như file system"; với S3 Files, dữ liệu S3 mount được qua một tài nguyên file system riêng, nhưng bucket vẫn không phải loại volume để gắn thẳng vào task. Với microservice cần thư mục POSIX dùng chung giữa nhiều AZ mà dữ liệu không cần nằm trong S3, EFS vẫn là phương án trực tiếp nhất.
 
-<Takeaway>Fargate task: volume EFS, EBS, bind mount (ephemeral storage) hoặc S3 Files; không mount bucket bằng script. Mountpoint for Amazon S3: file client cho Linux, đọc tệp lớn và tạo tệp mới với throughput của S3; không sửa tệp đã có, không xoá thư mục, không hỗ trợ symbolic link và file locking. Truy cập S3 dạng file từ trung tâm dữ liệu với cache cục bộ: S3 File Gateway. Cần POSIX đầy đủ: EFS, hoặc FSx for Lustre liên kết S3 cho HPC.</Takeaway>
+<Takeaway>Fargate task: volume EFS, EBS, bind mount (ephemeral storage) hoặc S3 Files; không mount bucket bằng script. Mountpoint for Amazon S3: file client cho Linux, đọc tệp lớn và tạo tệp mới với throughput của S3; không sửa tệp đã có, không xoá thư mục, không hỗ trợ symbolic link và file locking. Truy cập S3 dạng file từ on-premises data center với local cache: S3 File Gateway. Cần POSIX đầy đủ: EFS, hoặc FSx for Lustre liên kết S3 cho HPC.</Takeaway>
 
 </Scene>
 
@@ -247,7 +247,7 @@ Phân loại từng đặc tính vào dịch vụ tương ứng. Trên thiết b
 
 <SortGame client:visible
   bins={[
-    { id: "ebs", title: "EBS", sub: "Block, 1 AZ", hint: "Gợi ý: ổ đĩa gắn vào instance." },
+    { id: "ebs", title: "EBS", sub: "Block, 1 AZ", hint: "Gợi ý: block storage volume gắn vào instance." },
     { id: "efs", title: "EFS", sub: "NFS dùng chung", hint: "Gợi ý: file system Linux dùng chung giữa nhiều AZ." },
     { id: "fsx", title: "FSx", sub: "Windows, Lustre, ONTAP", hint: "Gợi ý: file system chuyên dụng." },
   ]}
@@ -265,10 +265,10 @@ Câu hỏi kiểm tra: với vai trò người thiết kế hệ thống ShopVie
     opts: ["General Purpose SSD (gp2)", "Provisioned IOPS SSD (io1)", "Throughput Optimized HDD (st1)"],
     a: 1,
     why: "gp2 đạt tối đa 16.000 IOPS; io1 cấp phát được tới 64.000 IOPS ổn định. st1 tối đa 500 IOPS." },
-  { q: "Dự kiến sử dụng ổ HDD chi phí thấp làm ổ boot cho server log. Hai loại EBS nào không dùng được làm boot volume?",
+  { q: "Dự kiến sử dụng HDD volume chi phí thấp làm boot volume cho EC2 instance ghi log. Hai EBS volume type nào không dùng được làm boot volume?",
     opts: ["gp3 và io2", "st1 và sc1", "gp2 và st1"],
     a: 1,
-    why: "Hai loại HDD (st1, sc1) không dùng được làm boot volume." },
+    why: "Hai HDD volume type (st1, sc1) không dùng được làm boot volume." },
   { q: "Phòng kế toán có cả máy Windows và Linux cùng sử dụng một file share, yêu cầu giữ quyền NTFS và xác thực bằng Active Directory. Dịch vụ nào phù hợp?",
     opts: ["Amazon EFS", "FSx for Windows File Server", "FSx for Lustre"],
     a: 1,

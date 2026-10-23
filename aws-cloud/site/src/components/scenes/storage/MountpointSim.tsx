@@ -35,7 +35,7 @@ const RESULT: Record<Target, Record<Op, Verdict>> = {
   },
   efs: {
     read: { ok: true, at: "store", msg: { vi: "EFS đọc qua NFS tại mount target cùng AZ.", en: "EFS reads over NFS through the mount target in the same AZ." } },
-    create: { ok: true, at: "store", msg: { vi: "Tạo tệp mới như trên ổ đĩa cục bộ; mọi instance mount cùng file system đều thấy tệp.", en: "Creates the file as on a local disk; every instance that mounts the file system sees it." } },
+    create: { ok: true, at: "store", msg: { vi: "Tạo tệp mới như trên local file system; mọi instance mount cùng file system đều thấy tệp.", en: "Creates the file as on a local file system; every instance that mounts the file system sees it." } },
     append: { ok: true, at: "store", msg: { vi: "Sửa và ghi nối tệp có sẵn theo ngữ nghĩa NFS (close-to-open consistency).", en: "Modifies and appends to existing files with NFS semantics (close-to-open consistency)." } },
     rmdir: { ok: true, at: "store", msg: { vi: "Xoá thư mục như trên file system thông thường; quyền truy cập theo POSIX permission.", en: "Deletes the directory as on a regular file system; access follows POSIX permissions." } },
     lock: { ok: true, at: "store", msg: { vi: "EFS hỗ trợ NFSv4 file locking (kể cả byte-range locking), dạng advisory lock.", en: "EFS supports NFSv4 file locking (including byte-range locking) as advisory locks." } },
