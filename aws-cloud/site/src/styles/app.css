@@ -79,3 +79,4 @@
 @import "./components/controls.css" layer(components);
 @import "./components/shell.css" layer(components);
 @import "./components/lesson.css" layer(components);
+@import "./components/practice.css" layer(components);
