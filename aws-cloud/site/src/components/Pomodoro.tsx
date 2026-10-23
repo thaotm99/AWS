@@ -119,6 +119,8 @@ export default function Pomodoro() {
   const [timer, setTimer] = useState<Timer>(() => idle("focus", DEFAULTS));
   const [now, setNow] = useState(0);
   const [open, setOpen] = useState(false);
+  /** A tab picked while a session is under way: shown in the panel, applied only when Start is pressed. */
+  const [pending, setPending] = useState<Mode | null>(null);
   const [denied, setDenied] = useState(false);
   const chip = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLElement>(null);
@@ -212,6 +214,11 @@ export default function Pomodoro() {
     document.title = show ? `${isBreak(timer.mode) ? "☕" : "⏱"} ${clock(left)} · ${base}` : base;
   });
 
+  useEffect(() => {
+    if (!open) setPending(null);
+  }, [open]);
+  useEffect(() => setPending(null), [timer.mode]);
+
   // The panel closes on Esc, and on a press outside it.
   useEffect(() => {
     if (!open) return;
@@ -252,6 +259,9 @@ export default function Pomodoro() {
   const L = (x: { vi: string; en: string }) => x[locale] || x.vi;
   const modeName = (m: Mode) => t(`shell.pomodoro.mode.${m}`);
   const time = clock(left);
+  // A pending tab is only a preview: the running (or paused) session goes on until Start is pressed.
+  const preview = pending && pending !== timer.mode && state !== "idle" ? pending : null;
+  const shownMode = preview ?? timer.mode;
   const brk = isBreak(timer.mode);
   const frac = timer.total ? left / timer.total : 1;
   const every = settings.every;
@@ -293,7 +303,7 @@ export default function Pomodoro() {
 
       {open && <div className="hidden max-sm:fixed max-sm:inset-0 max-sm:z-29 max-sm:block max-sm:bg-black/50" aria-hidden="true" onClick={() => setOpen(false)} />}
       {open && (
-        <section ref={panel} id="pomodoro-panel" data-mode={brk ? "break" : "focus"} aria-label={t("shell.pomodoro.panel")}
+        <section ref={panel} id="pomodoro-panel" data-mode={isBreak(shownMode) ? "break" : "focus"} aria-label={t("shell.pomodoro.panel")}
           className="absolute top-[calc(100%+10px)] -right-15 z-30 flex w-85 flex-col gap-4 rounded-lg border border-line bg-surface p-4.5 text-ink shadow-[0_18px_50px] shadow-black/28
             max-sm:fixed max-sm:inset-x-0 max-sm:top-auto max-sm:bottom-0 max-sm:max-h-[88dvh] max-sm:w-auto max-sm:overflow-y-auto max-sm:rounded-t-[20px] max-sm:rounded-b-none max-sm:border-x-0 max-sm:border-b-0
             max-sm:pt-2.5 max-sm:pb-[calc(22px+env(safe-area-inset-bottom,0px))]">
@@ -302,8 +312,12 @@ export default function Pomodoro() {
             {MODES.map((m) => (
               <button key={m} type="button" role="tab"
                 className="min-h-9 cursor-pointer rounded-[7px] border-0 bg-transparent text-[0.8125rem] text-muted hover:text-ink aria-selected:bg-accent-soft aria-selected:font-semibold aria-selected:text-ink aria-selected:data-[mode=break]:bg-edge-soft max-sm:min-h-10"
-                aria-selected={timer.mode === m} data-mode={isBreak(m) ? "break" : "focus"}
-                onClick={() => timer.mode !== m && commit(select(timer, settings, m))}>
+                aria-selected={shownMode === m} data-mode={isBreak(m) ? "break" : "focus"}
+                onClick={() => {
+                  if (state === "idle") {
+                    if (timer.mode !== m) commit(select(timer, settings, m));
+                  } else setPending(m === timer.mode ? null : m);
+                }}>
                 {modeName(m)}
               </button>
             ))}
@@ -311,10 +325,10 @@ export default function Pomodoro() {
 
           <div className="flex items-center gap-4.5 max-sm:flex-col max-sm:gap-2.5">
             <div className="relative size-33 flex-none">
-              <Ring size={132} stroke={8} frac={frac} />
+              <Ring size={132} stroke={8} frac={preview ? 1 : frac} />
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <b className="font-mono text-[1.85rem] leading-[1.1] font-semibold tabular-nums">{time}</b>
-                <small className="text-[0.75rem] text-muted">{t("shell.pomodoro.of", { time: clock(timer.total) })}</small>
+                <b className="font-mono text-[1.85rem] leading-[1.1] font-semibold tabular-nums">{preview ? clock(length(preview, settings)) : time}</b>
+                <small className="text-[0.75rem] text-muted">{t("shell.pomodoro.of", { time: clock(preview ? length(preview, settings) : timer.total) })}</small>
               </div>
             </div>
             <div className="flex min-w-0 flex-col gap-2 text-[0.8125rem] leading-[1.45] text-muted max-sm:items-center max-sm:text-center">
@@ -329,12 +343,24 @@ export default function Pomodoro() {
                   {t("shell.pomodoro.reading")} <a className="font-semibold text-ink" href={reading.href}>{L(reading.title)}</a>
                 </span>
               )}
-              <span>{t("shell.pomodoro.after", { mode: modeName(nextMode).toLowerCase(), min: settings[nextMode] })}</span>
+              {preview ? (
+                <span className="text-ink" role="status">{t("shell.pomodoro.stillRunning", { mode: modeName(timer.mode), time, next: modeName(preview).toLowerCase() })}</span>
+              ) : (
+                <span>{t("shell.pomodoro.after", { mode: modeName(nextMode).toLowerCase(), min: settings[nextMode] })}</span>
+              )}
             </div>
           </div>
 
           <div className="flex gap-2">
-            {state === "running" ? (
+            {preview ? (
+              <>
+                <button type="button" className={GO} onClick={() => { unlockAudio(); commit(start(select(timer, settings, preview), at(), getAllPartsRead())); setPending(null); }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12-7.5z" /></svg>
+                  {t("shell.pomodoro.startMode", { mode: modeName(preview).toLowerCase() })}
+                </button>
+                <button type="button" className="btn min-h-11" onClick={() => setPending(null)}>{t("shell.pomodoro.backToTimer")}</button>
+              </>
+            ) : state === "running" ? (
               <button type="button" className={GO} onClick={() => commit(pause(timer, at()))}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1" /><rect x="14" y="4" width="5" height="16" rx="1" /></svg>
                 {t("shell.pomodoro.pause")}
@@ -345,12 +371,12 @@ export default function Pomodoro() {
                 {t(state === "paused" ? "shell.pomodoro.resume" : "shell.pomodoro.start")}
               </button>
             )}
-            <button type="button" className={ICON_BTN} aria-label={t("shell.pomodoro.skip")} title={t("shell.pomodoro.skip")} onClick={() => commit(skip(timer, settings))}>
+            {!preview && <button type="button" className={ICON_BTN} aria-label={t("shell.pomodoro.skip")} title={t("shell.pomodoro.skip")} onClick={() => commit(skip(timer, settings))}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true"><path d="m5 5 10 7-10 7z" /><path d="M19 5v14" /></svg>
-            </button>
-            <button type="button" className={ICON_BTN} aria-label={t("shell.pomodoro.reset")} title={t("shell.pomodoro.reset")} disabled={state === "idle"} onClick={() => commit(reset(timer, settings))}>
+            </button>}
+            {!preview && <button type="button" className={ICON_BTN} aria-label={t("shell.pomodoro.reset")} title={t("shell.pomodoro.reset")} disabled={state === "idle"} onClick={() => commit(reset(timer, settings))}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 3-6.2" /><path d="M4 4v5h5" /></svg>
-            </button>
+            </button>}
           </div>
 
           <div className="flex flex-col gap-1 border-t border-line pt-3 text-[0.8125rem]">

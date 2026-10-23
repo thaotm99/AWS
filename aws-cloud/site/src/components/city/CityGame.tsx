@@ -169,6 +169,7 @@ export default function CityGame({ layers, titles }: Props) {
       </div>
 
       <div className="cc-body">
+        <div className="cc-main">
         <div className={`cc-map${down ? " storm" : ""}`} aria-label={t("shell.city.map")} role="group">
           <div className="cc-wallrow">{slot("wall")}</div>
           <div className="cc-flow">
@@ -205,6 +206,44 @@ export default function CityGame({ layers, titles }: Props) {
               </div>
             </div>
           )}
+        </div>
+          <section className="cc-build" aria-labelledby="cc-build-h">
+            <div className="cc-build-head">
+              <h2 id="cc-build-h">{t("shell.city.build")}</h2>
+              <p className="cc-tip" aria-live="polite">
+                {picked ? t("shell.city.pickSlot", { name: L(BUILDINGS[picked].name) }) + " " + L(BUILDINGS[picked].role) : t("shell.city.buildTip")}
+              </p>
+            </div>
+            <ul className="cc-cards">
+              {ORDER.filter((b) => unlocked(b, studied)).map((b) => (
+                <li key={b}>
+                  <button type="button" className="cc-card" aria-pressed={picked === b} title={L(BUILDINGS[b].role)}
+                    disabled={state.money < BUILDINGS[b].price || (!!event && !outcome)}
+                    onClick={() => { setPicked(picked === b ? null : b); setSelected(null); }}>
+                    <b>{L(BUILDINGS[b].name)}</b>
+                    <small>{BUILDINGS[b].aws}</small>
+                    <span className="cc-price">{money(BUILDINGS[b].price)} <small>· {t("shell.city.perDay", { n: BUILDINGS[b].upkeep })}</small></span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {ORDER.some((b) => !unlocked(b, studied)) && (
+              <details className="cc-locked-list">
+                <summary>{t("shell.city.lockedCount", { n: ORDER.filter((b) => !unlocked(b, studied)).length })}</summary>
+                <ul>
+                  {ORDER.filter((b) => !unlocked(b, studied)).map((b) => (
+                    <li key={b} className="cc-locked">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+                      <span>
+                        <b>{L(BUILDINGS[b].name)}</b> <small>· {BUILDINGS[b].aws}</small>
+                        <a href={`/concepts/${BUILDINGS[b].lesson}/`}>{t("shell.city.studyToUnlock", { lesson: L(titles[BUILDINGS[b].lesson!] ?? { vi: "", en: "" }) })}</a>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </section>
         </div>
 
         <aside className="cc-side">
@@ -250,33 +289,6 @@ export default function CityGame({ layers, titles }: Props) {
             )}
           </section>
 
-          <section className="cc-build" aria-labelledby="cc-build-h">
-            <h2 id="cc-build-h">{t("shell.city.build")}</h2>
-            <p className="cc-tip" aria-live="polite">{picked ? t("shell.city.pickSlot", { name: L(BUILDINGS[picked].name) }) : t("shell.city.buildTip")}</p>
-            <ul>
-              {ORDER.map((b) =>
-                unlocked(b, studied) ? (
-                  <li key={b}>
-                    <button type="button" className="cc-card" aria-pressed={picked === b} disabled={state.money < BUILDINGS[b].price || !!event && !outcome}
-                      onClick={() => { setPicked(picked === b ? null : b); setSelected(null); }}>
-                      <span><b>{L(BUILDINGS[b].name)}</b><small>{BUILDINGS[b].aws} · {L(BUILDINGS[b].role)}</small></span>
-                      <span className="cc-price"><b>{money(BUILDINGS[b].price)}</b><small>{t("shell.city.perDay", { n: BUILDINGS[b].upkeep })}</small></span>
-                    </button>
-                  </li>
-                ) : (
-                  <li key={b} className="cc-locked">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
-                    <span>
-                      <b>{L(BUILDINGS[b].name)}</b>
-                      <small>
-                        {BUILDINGS[b].aws} · <a href={`/concepts/${BUILDINGS[b].lesson}/`}>{t("shell.city.studyToUnlock", { lesson: L(titles[BUILDINGS[b].lesson!] ?? { vi: "", en: "" }) })}</a>
-                      </small>
-                    </span>
-                  </li>
-                ),
-              )}
-            </ul>
-          </section>
         </aside>
       </div>
 
