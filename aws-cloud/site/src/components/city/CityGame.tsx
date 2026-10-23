@@ -94,7 +94,7 @@ export default function CityGame({ layers, titles }: Props) {
   const down = event && !outcome ? event.conditions(0).down : undefined;
   const pct = (x: number) => `${(x * 100).toLocaleString(locale === "en" ? "en" : "vi", { maximumFractionDigits: 2 })}%`;
   const num = (x: number) => x.toLocaleString(locale === "en" ? "en" : "vi");
-  const money = (x: number) => `$${num(x)}`;
+  const money = (x: number) => `${x < 0 ? "-" : ""}$${num(Math.abs(x))}`;
 
   function clickSlot(slot: Slot) {
     const b = state.placed[slot.id];
@@ -135,7 +135,8 @@ export default function CityGame({ layers, titles }: Props) {
   const slotView = (slot: Slot) => {
     const b = state.placed[slot.id];
     const fits = picked && !b && BUILDINGS[picked].slots.includes(slot.kind);
-    const label = b ? `${L(BUILDINGS[b].name)} · ${BUILDINGS[b].aws}` : fits ? t("shell.city.placeHere") : t("shell.city.empty");
+    const emptyText = slot.kind === "zone" || slot.kind === "city" ? t("shell.city.empty") : t(`shell.city.plot.${slot.kind}`);
+    const label = b ? `${L(BUILDINGS[b].name)} · ${BUILDINGS[b].aws}` : fits ? t("shell.city.placeHere") : emptyText;
     return (
       <button key={slot.id} type="button" className="cc-slot" data-kind={slot.kind} data-filled={b ? "" : undefined} data-fits={fits ? "" : undefined}
         data-building={b} aria-pressed={selected === slot.id} aria-label={label} title={label}
@@ -146,7 +147,7 @@ export default function CityGame({ layers, titles }: Props) {
             <small>{BUILDINGS[b].aws}</small>
           </>
         ) : (
-          <small>{fits ? t("shell.city.placeHere") : t("shell.city.empty")}</small>
+          <small>{fits ? t("shell.city.placeHere") : emptyText}</small>
         )}
       </button>
     );
@@ -241,7 +242,7 @@ export default function CityGame({ layers, titles }: Props) {
                 <dl className="cc-compare">
                   <div><dt>{t("shell.city.latency")}</dt><dd>{num(outcome.before.latency)} → <b>{num(outcome.result.latency)} ms</b></dd></div>
                   <div><dt>{t("shell.city.errors")}</dt><dd>{pct(outcome.before.errors)} → <b>{pct(outcome.result.errors)}</b></dd></div>
-                  <div><dt>{t("shell.city.moneyDay")}</dt><dd><b>{outcome.money >= 0 ? "+" : ""}{money(outcome.money)}</b></dd></div>
+                  <div><dt>{t("shell.city.moneyDay")}</dt><dd><b>{outcome.money > 0 ? "+" : ""}{money(outcome.money)}</b></dd></div>
                 </dl>
                 <a href={`/concepts/${event.learn.lesson}/${event.learn.part}/`}>{t("shell.city.read", { lesson: L(titles[event.learn.lesson] ?? { vi: "", en: "" }) })}</a>
                 <button type="button" className="btn primary" onClick={() => { setEvent(null); setOutcome(null); }}>{t("shell.city.next")}</button>

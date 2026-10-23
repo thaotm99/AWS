@@ -211,6 +211,7 @@ export const vi = {
     outage: "mất điện",
     citywide: "Toàn thành phố (Regional)",
     empty: "Ô trống",
+    plot: { gate: "Vị trí cổng thành", router: "Vị trí trạm điều phối", wall: "Vị trí tường thành" },
     placeHere: "Đặt vào đây",
     upkeep: "Chi phí duy trì ${n}/ngày",
     upkeepShort: "Duy trì",

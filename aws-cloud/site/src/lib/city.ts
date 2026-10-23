@@ -123,7 +123,7 @@ export function simulate(p: Placed, c: Conditions): DayResult {
   const upkeep = SLOTS.reduce((s, sl) => s + (p[sl.id] ? BUILDINGS[p[sl.id]!].upkeep : 0), 0);
   // Happy residents buy: income falls with latency above 300 ms.
   const mood = latency <= 300 ? 1 : Math.max(0.3, 300 / latency);
-  const income = Math.round((orders - ordersLost) * 2 * mood);
+  const income = Math.round((orders - ordersLost) * 4 * mood);
   return { demand, capacity: Math.round(capacity), served: Math.round(served), latency, errors, ordersLost, income, upkeep, bankDown };
 }
 
@@ -264,7 +264,7 @@ export interface CityState {
 }
 
 export const START: CityState = {
-  placed: { a1: "factory", a2: "bank", router: "router", c1: "warehouse" },
+  placed: { a1: "factory", b1: "factory", a2: "bank", router: "router", c1: "warehouse" },
   money: 400,
   day: 1,
   seen: [],
@@ -274,7 +274,7 @@ export const START: CityState = {
 };
 
 /** Residents per second on an ordinary day at a level. */
-export const baseDemand = (level: number) => 400 + 200 * level;
+export const baseDemand = (level: number) => 300 + 150 * level;
 
 /** The next event: the first one at or below the level not seen in this round. */
 export function nextEvent(state: CityState, level: number): CityEvent {

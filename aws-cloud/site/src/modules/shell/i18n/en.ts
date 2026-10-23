@@ -213,6 +213,7 @@ export const en: Messages<typeof vi> = {
     outage: "power cut",
     citywide: "Citywide (Regional)",
     empty: "Empty plot",
+    plot: { gate: "Plot for the city gate", router: "Plot for the dispatch station", wall: "Plot for the city wall" },
     placeHere: "Build here",
     upkeep: "Upkeep ${n}/day",
     upkeepShort: "Upkeep",
