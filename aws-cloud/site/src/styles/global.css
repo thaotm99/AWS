@@ -869,7 +869,9 @@ input[type="checkbox"]:disabled, input[type="range"]:disabled { opacity: .5; cur
 .gl-card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--layer) 45%, var(--line)); }
 .gl-card:target { border-color: var(--layer); animation: gl-rise .5s both, gl-flash 1.6s ease .2s 2; }
 /* Every card has the same height; a long definition scrolls inside .gl-body. */
-.gl-body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; scrollbar-width: thin; overscroll-behavior: contain; }
+.gl-body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+/* Only a card whose text is taller than the card becomes a scroller; the wheel passes on to the page at either end. */
+.gl-body.scrolls { overflow-y: auto; scrollbar-width: thin; }
 .gl-body > * { flex: none; }
 .gl-body.scrolls:not(.at-end) { mask-image: linear-gradient(#000 calc(100% - 36px), transparent); }
 .gl-card h3 { margin: 0; font-size: 1.05rem; line-height: 1.3; }
