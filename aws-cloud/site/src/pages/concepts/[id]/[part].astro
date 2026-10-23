@@ -82,6 +82,7 @@ const after = next
     )}
   </article>
   <div class="part-end" aria-hidden="true"></div>
+  <section class="notes-panel" data-notes aria-label="Ghi chú" data-i18n-attr="aria-label:shell.notes.panelLabel"></section>
 
   <nav class="part-pager" aria-label="Chuyển phần" data-i18n-attr="aria-label:lesson.parts.label">
     {prev ? (
@@ -104,6 +105,8 @@ const after = next
 
 <script>
   import { getPartsRead, onProgressChange, setLastPart, setPartRead } from "../../../lib/progress";
+  import { i18n } from "../../../app/i18n";
+  import { Highlighter } from "../../../modules/notes/Highlighter";
 
   const body = document.querySelector<HTMLElement>(".part-body");
   if (body) {
@@ -113,6 +116,8 @@ const after = next
     const pager = document.querySelector<HTMLElement>(".part-pager")!;
     const nextLink = pager.querySelector<HTMLAnchorElement>("[data-part-next]")!;
     setLastPart({ lesson, slug: part, title: JSON.parse(body.dataset.title!), next: { href: nextLink.getAttribute("href")!, title: JSON.parse(nextLink.dataset.title!) } });
+
+    new Highlighter(body, { lesson, part, title: JSON.parse(body.dataset.title!) }, i18n, document.querySelector<HTMLElement>("[data-notes]")!).start();
 
     // Read state on the part list (desktop column) and the step bar.
     const sync = () => {

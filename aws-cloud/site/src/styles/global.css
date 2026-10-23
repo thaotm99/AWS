@@ -1431,3 +1431,46 @@ main.article:focus { outline: none; }
 .cmp-verdict { padding: 14px 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; line-height: 1.6; }
 .cmp-verdict p, .cmp-verdict ul { margin: 0; }
 .cmp-verdict ul { padding-left: 1.2em; color: var(--muted); }
+
+/* ---------- Highlights and notes ---------- */
+mark.hl { color: inherit; border-radius: 3px; padding: 1px 0; cursor: pointer; transition: box-shadow .3s; }
+mark.hl[data-color="yellow"] { background: color-mix(in srgb, #f0c75a 45%, transparent); }
+mark.hl[data-color="blue"] { background: color-mix(in srgb, #4cc2df 35%, transparent); }
+mark.hl[data-color="violet"] { background: color-mix(in srgb, #b29cff 40%, transparent); }
+mark.hl.flash { box-shadow: 0 0 0 3px var(--edge); }
+.hl-bar { position: fixed; z-index: 40; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; max-width: min(360px, calc(100vw - 16px)); padding: 6px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); box-shadow: 0 12px 30px rgb(0 0 0 / .3); }
+.hl-bar[hidden] { display: none; }
+.hl-swatch { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--line); cursor: pointer; }
+.hl-swatch[data-color="yellow"] { background: #f0c75a; }
+.hl-swatch[data-color="blue"] { background: #4cc2df; }
+.hl-swatch[data-color="violet"] { background: #b29cff; }
+.hl-swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink); }
+.hl-sep { width: 1px; height: 24px; background: var(--line); margin: 0 4px; }
+.hl-act { min-height: 36px; padding: 0 10px; border-radius: 8px; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 0.8125rem; cursor: pointer; }
+.hl-act:hover { background: var(--bg); }
+.hl-act.primary { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+.hl-note { display: flex; flex-direction: column; gap: 6px; width: 100%; font-size: 0.75rem; color: var(--muted); }
+.hl-note textarea, .notes-panel textarea, .np textarea { box-sizing: border-box; width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; font-size: 0.875rem; resize: vertical; }
+.hl-note-actions { display: flex; justify-content: flex-end; gap: 6px; width: 100%; }
+.notes-panel { margin: 28px 0 8px; padding: 16px 18px; border-radius: 14px; border: 1px dashed var(--line); }
+.notes-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.notes-head h2 { margin: 0; font-size: 0.95rem; }
+.notes-head a { font-size: 0.8125rem; }
+.notes-panel > p { margin: 8px 0 0; font-size: 0.8125rem; color: var(--muted); }
+.notes-panel ul, .np ul { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.notes-panel li, .np li { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); }
+.notes-panel blockquote, .np blockquote { margin: 0; padding-left: 10px; border-left: 3px solid; font-size: 0.875rem; line-height: 1.55; }
+[data-color="yellow"] > blockquote { border-color: #e0b33f; }
+[data-color="blue"] > blockquote { border-color: var(--accent); }
+[data-color="violet"] > blockquote { border-color: var(--violet); }
+.notes-panel li > div { display: flex; gap: 8px; }
+.notes-panel li button, .np-actions button { min-height: 36px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; font-size: 0.8125rem; cursor: pointer; }
+.np { display: flex; flex-direction: column; gap: 16px; margin-bottom: 40px; }
+.np-tools { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.np-tools .gl-search { flex: 1 1 280px; }
+.np-tools .btn { min-height: 48px; padding: 0 16px; }
+.np-count { margin: 0; font-size: 0.8125rem; color: var(--muted); }
+.np-group h2 { margin: 0; font-size: 1rem; }
+.np-actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.np-actions small { color: var(--muted); font-size: 0.75rem; }
+.np-empty { color: var(--muted); }
