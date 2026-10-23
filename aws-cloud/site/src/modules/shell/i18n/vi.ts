@@ -16,6 +16,7 @@ export const vi = {
     kind: { lesson: "Bài học", part: "Phần học", term: "Thuật ngữ" },
   },
   nav: {
+    progress: "Tiến độ",
     lab: "Lab",
     main: "Chính",
     theory: "Lý thuyết",
@@ -165,6 +166,17 @@ export const vi = {
     all: "Ghi chú của tôi",
     show: "Xem trong bài",
     empty: "Chọn một đoạn văn trong bài để đánh dấu hoặc thêm ghi chú.",
+  },
+  progress: {
+    pageTitle: "Tiến độ học tập · CloudLab",
+    eyebrow: "Tiến độ học tập",
+    heading: "Tiến độ của bạn",
+    lede: "Mục tiêu hằng ngày, chuỗi ngày học và lịch 5 tuần gần đây. Số liệu được lưu trên trình duyệt này.",
+    more: "Theo dõi thêm",
+    skills: "Bản đồ kỹ năng theo domain",
+    review: "Ôn lại câu trả lời sai",
+    pomodoro: "Thống kê thời gian học",
+    notes: "Ghi chú của tôi",
   },
   goals: {
     title: "Hôm nay",

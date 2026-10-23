@@ -18,6 +18,7 @@ export const en: Messages<typeof vi> = {
     kind: { lesson: "Lesson", part: "Part", term: "Term" },
   },
   nav: {
+    progress: "Progress",
     lab: "Lab",
     main: "Main",
     theory: "Concepts",
@@ -167,6 +168,17 @@ export const en: Messages<typeof vi> = {
     all: "My notes",
     show: "Show in the text",
     empty: "Select text in the lesson to highlight it or add a note.",
+  },
+  progress: {
+    pageTitle: "Study progress · CloudLab",
+    eyebrow: "Study progress",
+    heading: "Your progress",
+    lede: "Daily goals, your study streak and the last five weeks. The data is stored in this browser.",
+    more: "Track more",
+    skills: "Skill map by domain",
+    review: "Review wrong answers",
+    pomodoro: "Study time statistics",
+    notes: "My notes",
   },
   goals: {
     title: "Today",
