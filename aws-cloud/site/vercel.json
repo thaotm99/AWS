@@ -32,6 +32,16 @@
       "permanent": true
     }
   ],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api?__route=/api/:path*"
+    },
+    {
+      "source": "/auth/:path*",
+      "destination": "/api?__route=/auth/:path*"
+    }
+  ],
   "headers": [
     {
       "source": "/sw.js",
