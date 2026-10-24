@@ -63,8 +63,7 @@ const order = concepts.filter((c) => ready.has(c.id)).map((c) => ({ id: c.id, vi
 <BaseLayout title="CloudLab" sidebar={false} wide>
   <section class="grid grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] items-center gap-12 pt-12 pb-6 max-lg:grid-cols-1 max-md:pt-6">
     <div>
-    <span class="inline-flex items-center rounded-full bg-ok-soft px-3.5 py-1.5 text-[0.875rem] font-semibold text-ok"><T k="shell.home.badge" /></span>
-    <h1 class="mx-0 mt-4 mb-[18px] max-w-[16ch] text-[length:clamp(2.25rem,5vw,3.5rem)] leading-[1.14] font-extrabold tracking-[-0.02em]"><T k="shell.home.titleA" /> <mark class="rounded-sm bg-sun px-[.18em] text-ink box-decoration-clone dark:text-bg"><T k="shell.home.titleHl" /></mark> <T k="shell.home.titleB" /></h1>
+    <h1 class="mx-0 mt-0 mb-[18px] max-w-[16ch] text-[length:clamp(2.25rem,5vw,3.5rem)] leading-[1.14] font-extrabold tracking-[-0.02em]"><T k="shell.home.titleA" /> <mark class="rounded-sm bg-sun px-[.18em] text-ink box-decoration-clone dark:text-bg"><T k="shell.home.titleHl" /></mark> <T k="shell.home.titleB" /></h1>
     <p class="lede max-w-[34em] text-step-1"><T k="shell.home.lede2" /></p>
     <div class="mt-6 mb-7 flex flex-wrap gap-4 max-md:*:flex-[1_1_100%]">
       {first && (

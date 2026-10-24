@@ -385,7 +385,6 @@ export const vi = {
     supportingHint: "Áp dụng cho các yêu cầu chuyên biệt",
   },
   home: {
-    badge: "Miễn phí · Song ngữ Việt – Anh",
     titleA: "Học AWS bằng cách",
     titleHl: "tự tay dựng",
     titleB: "một hệ thống thực tế",

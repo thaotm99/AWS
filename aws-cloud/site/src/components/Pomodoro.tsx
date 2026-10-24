@@ -121,6 +121,8 @@ export default function Pomodoro() {
   const [open, setOpen] = useState(false);
   /** A tab picked while a session is under way: shown in the panel, applied only when Start is pressed. */
   const [pending, setPending] = useState<Mode | null>(null);
+  /** The pending session comes from Skip: starting it skips the current one (keeping the cycle's count right). */
+  const [pendingSkip, setPendingSkip] = useState(false);
   const [denied, setDenied] = useState(false);
   const chip = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLElement>(null);
@@ -316,7 +318,10 @@ export default function Pomodoro() {
                 onClick={() => {
                   if (state === "idle") {
                     if (timer.mode !== m) commit(select(timer, settings, m));
-                  } else setPending(m === timer.mode ? null : m);
+                  } else {
+                    setPending(m === timer.mode ? null : m);
+                    setPendingSkip(false);
+                  }
                 }}>
                 {modeName(m)}
               </button>
@@ -354,7 +359,7 @@ export default function Pomodoro() {
           <div className="flex gap-2">
             {preview ? (
               <>
-                <button type="button" className={GO} onClick={() => { unlockAudio(); commit(start(select(timer, settings, preview), at(), getAllPartsRead())); setPending(null); }}>
+                <button type="button" className={GO} onClick={() => { unlockAudio(); commit(start(pendingSkip ? skip(timer, settings) : select(timer, settings, preview), at(), getAllPartsRead())); setPending(null); }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12-7.5z" /></svg>
                   {t("shell.pomodoro.startMode", { mode: modeName(preview).toLowerCase() })}
                 </button>
@@ -371,7 +376,13 @@ export default function Pomodoro() {
                 {t(state === "paused" ? "shell.pomodoro.resume" : "shell.pomodoro.start")}
               </button>
             )}
-            {!preview && <button type="button" className={ICON_BTN} aria-label={t("shell.pomodoro.skip")} title={t("shell.pomodoro.skip")} onClick={() => commit(skip(timer, settings))}>
+            {!preview && <button type="button" className={ICON_BTN} aria-label={t("shell.pomodoro.skip")} title={t("shell.pomodoro.skip")} onClick={() => {
+              if (state === "idle") commit(skip(timer, settings));
+              else {
+                setPending(skip(timer, settings).mode);
+                setPendingSkip(true);
+              }
+            }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true"><path d="m5 5 10 7-10 7z" /><path d="M19 5v14" /></svg>
             </button>}
             {!preview && <button type="button" className={ICON_BTN} aria-label={t("shell.pomodoro.reset")} title={t("shell.pomodoro.reset")} disabled={state === "idle"} onClick={() => commit(reset(timer, settings))}>
