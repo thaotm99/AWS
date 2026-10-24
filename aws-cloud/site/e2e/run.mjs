@@ -24,8 +24,10 @@ const PORT = 4399;
 const ORIGIN = `http://localhost:${PORT}`;
 const WIDTHS = [1280, 390];
 const WORKERS = Number(process.env.E2E_WORKERS ?? 4);
-// A new learner per run, so one run's hourly practice-test budget does not carry into the next.
+// A new learner per run and per browser context (as each context had its own localStorage before), so neither one run's hourly practice-test budget nor the state
+// one width leaves behind (city game, progress) carries into another check.
 const E2E_EMAIL = `e2e-${Date.now()}@example.com`;
+let learners = 0;
 const AXE = readFileSync(require.resolve("axe-core/axe.min.js"), "utf8");
 
 const failures = [];
@@ -187,7 +189,7 @@ await Promise.all(
     for (const w of WIDTHS) {
       contexts[w] = await browser.newContext({ viewport: { width: w, height: 900 }, hasTouch: w < 500 });
       if (withApi) {
-        const res = await contexts[w].request.post(`${ORIGIN}/auth/dev-login`, { data: { email: E2E_EMAIL }, headers: { Origin: ORIGIN } });
+        const res = await contexts[w].request.post(`${ORIGIN}/auth/dev-login`, { data: { email: `${++learners}-${E2E_EMAIL}` }, headers: { Origin: ORIGIN } });
         if (!res.ok()) throw new Error(`test sign-in failed: ${res.status()}`);
       }
     }
