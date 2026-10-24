@@ -17,7 +17,7 @@ export default function SkillMap({ certId, passingScore }: { certId: string; pas
 
   useEffect(() => {
     Promise.all([
-      fetch(`/api/certifications/${certId}/skills.json`).then((r) => (r.ok ? r.json() : Promise.reject(r.status))),
+      getApiClient().get<SkillMapData>(`/certifications/${certId}/skills`),
       getApiClient().get<Attempt[]>("/attempts", { certId }),
     ])
       .then(([map, attempts]) => setData({ map, attempts }))

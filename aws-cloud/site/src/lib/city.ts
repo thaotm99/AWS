@@ -1,7 +1,8 @@
 // Cloud City: MFTECH as a city. Each AWS service is a building, request traffic is the city's
 // population, and every day brings an event (a storm, a sale, an attack) that the city survives or not
 // depending on what was built. Buildings unlock as the learner studies the lessons. Pure rules here;
-// the island (components/city/CityGame.tsx) draws them. Kept in this browser.
+// the island (components/city/CityGame.tsx) draws them. Kept per account (app/userData).
+import { userData } from "../app/userData";
 
 export type Text = { vi: string; en: string };
 const t = (vi: string, en: string): Text => ({ vi, en });
@@ -353,18 +354,10 @@ export function demolish(state: CityState, slot: string): CityState {
 
 const KEY = "city";
 export function readCity(): CityState {
-  try {
-    const v = JSON.parse(localStorage.getItem(KEY) ?? "null");
-    return v && typeof v === "object" && v.placed && typeof v.money === "number" ? { ...START, ...v } : START;
-  } catch {
-    return START;
-  }
+  const v = userData.get<CityState>(KEY);
+  return v && typeof v === "object" && v.placed && typeof v.money === "number" ? { ...START, ...v } : START;
 }
 
 export function writeCity(s: CityState) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(s));
-  } catch {
-    /* storage blocked: the city lasts for this visit */
-  }
+  userData.set(KEY, s);
 }

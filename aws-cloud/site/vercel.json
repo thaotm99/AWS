@@ -2,14 +2,12 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "astro",
   "installCommand": "npm ci",
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run build && npm run db:deploy",
   "outputDirectory": "dist",
+  "regions": [
+    "sin1"
+  ],
   "trailingSlash": true,
-  "git": {
-    "deploymentEnabled": {
-      "claude/*": false
-    }
-  },
   "redirects": [
     {
       "source": "/on-tap",
@@ -30,6 +28,16 @@
       "source": "/concepts/:id/kiem-tra/",
       "destination": "/concepts/:id/quiz/",
       "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api?__route=/api/:path*"
+    },
+    {
+      "source": "/auth/:path*",
+      "destination": "/api?__route=/auth/:path*"
     }
   ],
   "headers": [

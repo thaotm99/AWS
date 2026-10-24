@@ -1,4 +1,4 @@
-import type { Attempt, Certification, OptionKey, Question, QuestionId } from "./types";
+import type { Attempt, Certification, QuestionId } from "./types";
 
 export interface Score {
   answered: number;
@@ -15,14 +15,8 @@ export interface Score {
  */
 export type QuestionScope = readonly QuestionId[] | number;
 
-/** Grading rules: an answer counts only when the chosen set equals the correct set. */
+/** Scores of attempts; each answer is graded by the server (an answer counts only when the chosen set equals the correct set). */
 export class Scoring {
-  static isCorrect(question: Question, chosen: readonly OptionKey[] | undefined): boolean {
-    const picked = chosen ?? [];
-    if (picked.length !== question.correct.length) return false;
-    return question.correct.every((key) => picked.includes(key));
-  }
-
   /** Scaled score out of 1000 approximated as a percentage, e.g. 720 → 72. */
   static passPercent(cert: Pick<Certification, "passingScore">): number {
     return cert.passingScore / 10;

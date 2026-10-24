@@ -3,6 +3,7 @@ import type { APIRoute } from "astro";
 // GET /sw.js: the service worker for offline reading. Pages go to the network first, so an online
 // reader always gets the current version. Saved pages and their files (hashed names) are kept across
 // deploys, so lessons saved for offline reading survive an update; only cached JSON is dropped then.
+// /api/* and /auth/* are never cached; a "sign-out" message drops the cached data.
 const VERSION = new Date().toISOString().replace(/\D/g, "").slice(0, 14);
 
 const worker = `
@@ -32,7 +33,8 @@ async function networkFirst(request) {
   const cache = await caches.open(PAGES);
   try {
     const response = await fetch(request);
-    if (response.ok && response.type === "basic") cache.put(request, response.clone());
+    // A page answered with a redirect (to /login/ once signed out) is not that page: not saved under its URL.
+    if (response.ok && response.type === "basic" && !response.redirected) cache.put(request, response.clone());
     return response;
   } catch {
     return (await cache.match(request, { ignoreSearch: true, ignoreVary: true })) || (await cache.match(OFFLINE)) || Response.error();
@@ -101,7 +103,14 @@ async function saveLesson(urls, port) {
   port.postMessage({ type: "done", pages: urls.length, files: seen.size });
 }
 
+// Signing out (or landing on the login page) drops the cached data, so nothing of the account stays here.
+async function signOut() {
+  const keys = await caches.keys();
+  await Promise.all(keys.filter((k) => k.startsWith("data-")).map((k) => caches.delete(k)));
+}
+
 self.addEventListener("message", (event) => {
+  if (event.data?.type === "sign-out") return event.waitUntil(signOut());
   if (event.data?.type !== "save-lesson" || !event.ports[0]) return;
   const port = event.ports[0];
   event.waitUntil(saveLesson(event.data.urls, port).catch((e) => port.postMessage({ type: "error", message: String(e) })));
@@ -113,6 +122,8 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   const fonts = url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com";
   if (url.origin !== self.location.origin && !fonts) return;
+  // Account data, practice tests and sign-in always come from the server, never from a cache.
+  if (!fonts && /^[/](api|auth)([/]|$)/.test(url.pathname)) return;
   if (request.mode === "navigate") return event.respondWith(networkFirst(request));
   if (url.pathname.startsWith("/_astro/") || /[.](png|svg|webmanifest)$/.test(url.pathname)) return event.respondWith(cacheFirst(request, ASSETS));
   if (fonts || url.pathname.endsWith(".json")) return event.respondWith(staleWhileRevalidate(request, event));

@@ -1,45 +1,34 @@
+import { userData } from "../app/userData";
 import { recordActivity } from "./goals";
 
-// Per-browser learning progress. Phase 2 moves this to Cognito + DynamoDB and
-// keeps localStorage as the guest fallback.
+// Learning progress, kept per account (app/userData).
 const DONE_KEY = "done";
 /** Parts read per lesson: {"vpc": ["nat-gateway", …]}. */
 const PARTS_KEY = "parts-read";
 export const PROGRESS_EVENT = "progress-change";
 
-function read(key: string): string | null {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
+if (typeof window !== "undefined") userData.subscribe([DONE_KEY, PARTS_KEY], () => window.dispatchEvent(new Event(PROGRESS_EVENT)));
 
-function write(key: string, value: string) {
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    /* storage blocked: progress just isn't remembered */
-  }
+/** A list of ids; older browser copies stored it as "a,b,c". */
+export function idList(v: unknown): string[] {
+  if (Array.isArray(v)) return v.filter((x): x is string => typeof x === "string" && x !== "");
+  return typeof v === "string" ? v.split(",").filter(Boolean) : [];
 }
 
 export function getDone(): Set<string> {
-  return new Set((read(DONE_KEY) ?? "").split(",").filter(Boolean));
+  return new Set(idList(userData.get(DONE_KEY)));
 }
 
 /**
- * Call `sync` whenever the saved progress may differ from what is on screen: a change on this page,
- * a change in another tab (storage event), or a page restored from the back/forward cache (pageshow).
+ * Call `sync` whenever the saved progress may differ from what is on screen: a change on this page or
+ * in another tab, or a page restored from the back/forward cache (pageshow).
  * Returns the unsubscribe function.
  */
 export function onProgressChange(sync: () => void): () => void {
-  const onStorage = (e: StorageEvent) => (e.key === DONE_KEY || e.key === PARTS_KEY || e.key === null) && sync();
   window.addEventListener(PROGRESS_EVENT, sync);
-  window.addEventListener("storage", onStorage);
   window.addEventListener("pageshow", sync);
   return () => {
     window.removeEventListener(PROGRESS_EVENT, sync);
-    window.removeEventListener("storage", onStorage);
     window.removeEventListener("pageshow", sync);
   };
 }
@@ -48,17 +37,12 @@ export function setDone(id: string, on: boolean) {
   const done = getDone();
   if (on) done.add(id);
   else done.delete(id);
-  write(DONE_KEY, [...done].join(","));
-  window.dispatchEvent(new Event(PROGRESS_EVENT));
+  userData.set(DONE_KEY, [...done]);
 }
 
 function readParts(): Record<string, string[]> {
-  try {
-    const v = JSON.parse(read(PARTS_KEY) ?? "{}");
-    return v && typeof v === "object" ? v : {};
-  } catch {
-    return {};
-  }
+  const v = userData.get(PARTS_KEY);
+  return v && typeof v === "object" && !Array.isArray(v) ? { ...(v as Record<string, string[]>) } : {};
 }
 
 /** Slugs of the parts of a lesson the reader has finished. */
@@ -77,10 +61,9 @@ export function setPartRead(lesson: string, slug: string, all: string[]) {
   if (finished.has(slug)) return;
   finished.add(slug);
   parts[lesson] = [...finished];
-  write(PARTS_KEY, JSON.stringify(parts));
+  userData.set(PARTS_KEY, parts);
   recordActivity("parts");
   if (all.every((p) => finished.has(p)) && !getDone().has(lesson)) setDone(lesson, true);
-  else window.dispatchEvent(new Event(PROGRESS_EVENT));
 }
 
 /** Every part read, as "lesson/slug". */
@@ -100,14 +83,12 @@ export interface LastPart {
 }
 
 export function getLastPart(): LastPart | null {
-  try {
-    const v = JSON.parse(read(LAST_KEY) ?? "null");
-    return v && typeof v.lesson === "string" && typeof v.slug === "string" && v.title ? v : null;
-  } catch {
-    return null;
-  }
+  const v = userData.get<LastPart>(LAST_KEY);
+  return v && typeof v === "object" && typeof v.lesson === "string" && typeof v.slug === "string" && v.title ? v : null;
 }
 
 export function setLastPart(part: LastPart) {
-  write(LAST_KEY, JSON.stringify(part));
+  // Opening the same part again is not a change worth a request.
+  if (JSON.stringify(getLastPart()) === JSON.stringify(part)) return;
+  userData.set(LAST_KEY, part);
 }

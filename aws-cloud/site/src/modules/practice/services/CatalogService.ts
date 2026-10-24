@@ -1,4 +1,4 @@
-import type { Certification, CertificationDetail, CertificationId, ContentLocale, Exam, Question, QuestionId, QuestionSetRef } from "../domain/types";
+import type { Certification, CertificationDetail, CertificationId, ContentLocale, Exam, Question, QuestionId, QuestionSetRef, Reveal } from "../domain/types";
 import { Review } from "../domain/Review";
 import { ApiService } from "../../../core/api/ApiService";
 
@@ -6,6 +6,28 @@ import { ApiService } from "../../../core/api/ApiService";
 export class CatalogService extends ApiService {
   private readonly exams = new Map<string, Promise<Exam>>();
   private readonly questions = new Map<string, Promise<Question>>();
+  /** Answer sides received this session; merged into question sets loaded before the answer was given. */
+  private readonly reveals = new Map<QuestionId, Reveal>();
+
+  remember(reveals: readonly Reveal[]): void {
+    for (const r of reveals) this.reveals.set(r.questionId, r);
+  }
+
+  /** The set with every answer side known so far filled in (explanation in the set's language). */
+  withReveals(exam: Exam): Exam;
+  withReveals(exam: Exam | null): Exam | null;
+  withReveals(exam: Exam | null): Exam | null {
+    if (!exam || !exam.questions.some((q) => this.reveals.has(q.id) && !q.correct)) return exam;
+    return {
+      ...exam,
+      questions: exam.questions.map((q) => {
+        const r = this.reveals.get(q.id);
+        if (!r || q.correct) return q;
+        const explanationHtml = (exam.locale === "vi" && q.translated && r.explanationHtml.vi) || r.explanationHtml.en;
+        return { ...q, correct: r.correct, explanationHtml, learn: r.learn };
+      }),
+    };
+  }
 
   listCertifications(): Promise<Certification[]> {
     return this.api.get<Certification[]>("/certifications");
@@ -28,7 +50,7 @@ export class CatalogService extends ApiService {
       exam.catch(() => this.exams.delete(key));
       this.exams.set(key, exam);
     }
-    return exam;
+    return exam.then((e) => this.withReveals(e));
   }
 
   /** One question (about 5 kB), fetched once per session. */

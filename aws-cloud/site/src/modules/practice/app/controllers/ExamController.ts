@@ -136,7 +136,11 @@ export class ExamController extends Controller<PracticeEvent, ExamState, ExamSto
     this.store.saving();
     try {
       const chosen = [...selection].sort();
-      this.store.saved(await this.attempts.answer(attempt.id, q.id, { chosen, correct: Scoring.isCorrect(q, chosen) }));
+      const { attempt: saved, reveal } = await this.attempts.answer(attempt.id, q.id, { chosen });
+      this.catalog.remember([reveal]);
+      const { exam, original } = this.store.getState();
+      if (exam) this.store.content(this.catalog.withReveals(exam), this.catalog.withReveals(original));
+      this.store.saved(saved);
     } catch (e) {
       this.store.saveFailed({ code: "saveAnswer", detail: Controller.message(e) });
     }

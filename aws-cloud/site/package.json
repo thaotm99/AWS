@@ -6,8 +6,13 @@
     "dev": "astro dev",
     "build": "astro check && astro build",
     "preview": "astro preview",
-    "test:unit": "tsx src/modules/practice/domain/Review.test.ts && tsx src/modules/practice/domain/Skills.test.ts && tsx src/lib/flashcards.test.ts && tsx src/lib/pomodoro.test.ts && tsx src/lib/labs.test.ts && tsx src/lib/drills.test.ts && tsx src/lib/pricing.test.ts && tsx src/lib/compare.test.ts && tsx src/lib/notes.test.ts && tsx src/lib/goals.test.ts && tsx src/lib/exam-date.test.ts && tsx src/lib/city.test.ts && tsx src/modules/practice/content/HtmlSanitizer.test.ts",
-    "test:e2e": "node e2e/run.mjs"
+    "test:unit": "tsx src/core/userdata/UserDataStore.test.ts && tsx src/modules/practice/domain/Review.test.ts && tsx src/modules/practice/domain/Skills.test.ts && tsx src/lib/flashcards.test.ts && tsx src/lib/pomodoro.test.ts && tsx src/lib/labs.test.ts && tsx src/lib/drills.test.ts && tsx src/lib/pricing.test.ts && tsx src/lib/compare.test.ts && tsx src/lib/notes.test.ts && tsx src/lib/goals.test.ts && tsx src/lib/exam-date.test.ts && tsx src/lib/city.test.ts && tsx src/modules/practice/content/HtmlSanitizer.test.ts",
+    "test:e2e": "node e2e/run.mjs",
+    "db:migrate": "node scripts/db-migrate.mjs",
+    "serve": "tsx scripts/dev-server.ts",
+    "test:server": "tsx src/server/auth.test.ts && tsx src/server/data.test.ts && tsx src/server/practice.test.ts",
+    "db:import": "tsx scripts/import-questions.ts",
+    "db:deploy": "node scripts/db-deploy.mjs"
   },
   "dependencies": {
     "@astrojs/check": "0.9.4",
@@ -16,6 +21,8 @@
     "@tailwindcss/vite": "4.3.3",
     "@vercel/functions": "3.9.11",
     "astro": "5.18.1",
+    "jose": "6.1.0",
+    "pg": "8.16.3",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "tailwindcss": "4.3.3",
@@ -23,6 +30,7 @@
   },
   "devDependencies": {
     "@types/node": "22.15.3",
+    "@types/pg": "8.15.5",
     "@types/qrcode": "1.5.6",
     "@types/react": "18.3.18",
     "@types/react-dom": "18.3.5",

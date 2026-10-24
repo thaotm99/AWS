@@ -243,14 +243,14 @@ Bản vẽ đã review: https://claude.ai/artifact/JVZe1388mcNjpSmx1GiHmf (7 mà
 
 | # | Giai đoạn | Việc chính | Điều kiện xong | Trạng thái |
 |---|---|---|---|---|
-| 0 | Chuẩn bị (chủ repo) | Chuyển repo private; thêm Neon qua Vercel Marketplace; tạo OAuth Client trên Google Cloud; đặt biến môi trường (mục 11) | `DATABASE_URL`, `GOOGLE_CLIENT_ID/SECRET`, `SESSION_SECRET` có trên Vercel | ⬜ |
-| 1 | Store dữ liệu chung | `src/core/userdata/`; đổi `src/lib/*`, `Highlighter`, `MockExamPage` sang store; unit test cho store và luật gộp | Không đổi hành vi; pixel diff + click QA như cũ | ⬜ |
-| 2 | Hạ tầng server | Adapter `@astrojs/vercel` (trang vẫn prerender); `db/migrations` + `npm run db:migrate`; hai role Postgres | Build và deploy preview OK; migration chạy được trên Neon | ⬜ |
-| 3 | Đăng nhập Google | `/login`, `/auth/*`, bảng `users`/`sessions`; middleware thay Basic auth trên production; menu tài khoản | Đăng nhập được bằng mọi tài khoản Google đã xác minh email; đăng xuất thu hồi phiên; preview vẫn Basic auth | ⬜ |
-| 4 | Dữ liệu người học trên server | `/api/me`, `/api/data*`, `/api/notes/*`; store đọc và ghi qua API; báo lỗi và hoàn tác khi không lưu được; xoá dữ liệu cũ trong trình duyệt ở lần đăng nhập đầu; SW không cache API | Dữ liệu khớp giữa 2 trình duyệt; không còn dữ liệu người học trong `localStorage`/IndexedDB | ⬜ |
-| 5 | Đề thi trong database | Script nhập đề; manifest; `/api/practice/*` (chấm ở server, giới hạn tần suất, audit log); trang luyện đề tải qua API; bỏ JSON tĩnh | Đủ 390 câu; mọi luồng luyện đề, thi thử, ôn câu sai, bản đồ kỹ năng chạy như cũ; `dist` không còn nội dung đề | ⬜ |
+| 0 | Chuẩn bị (chủ repo) | Chuyển repo private; thêm Neon qua Vercel Marketplace; tạo OAuth Client trên Google Cloud; đặt biến môi trường (mục 11) | `DATABASE_URL`, `GOOGLE_CLIENT_ID/SECRET`, `SESSION_SECRET` có trên Vercel | ⬜ xem `DEPLOY-accounts.md` |
+| 1 | Store dữ liệu chung | `src/core/userdata/`; đổi `src/lib/*`, `Highlighter`, `MockExamPage` sang store; unit test cho store và luật gộp | Không đổi hành vi; pixel diff + click QA như cũ | ✅ `src/core/userdata/` |
+| 2 | Hạ tầng server | Adapter `@astrojs/vercel` (trang vẫn prerender); `db/migrations` + `npm run db:migrate`; hai role Postgres | Build và deploy preview OK; migration chạy được trên Neon | ✅ một Vercel Function `api/index.ts` thay cho adapter |
+| 3 | Đăng nhập Google | `/login`, `/auth/*`, bảng `users`/`sessions`; middleware thay Basic auth trên production; menu tài khoản | Đăng nhập được bằng mọi tài khoản Google đã xác minh email; đăng xuất thu hồi phiên; preview vẫn Basic auth | ✅ |
+| 4 | Dữ liệu người học trên server | `/api/me`, `/api/data*`, `/api/notes/*`; store đọc và ghi qua API; báo lỗi và hoàn tác khi không lưu được; xoá dữ liệu cũ trong trình duyệt ở lần đăng nhập đầu; SW không cache API | Dữ liệu khớp giữa 2 trình duyệt; không còn dữ liệu người học trong `localStorage`/IndexedDB | ✅ |
+| 5 | Đề thi trong database | Script nhập đề; manifest; `/api/practice/*` (chấm ở server, giới hạn tần suất, audit log); trang luyện đề tải qua API; bỏ JSON tĩnh | Đủ 390 câu; mọi luồng luyện đề, thi thử, ôn câu sai, bản đồ kỹ năng chạy như cũ; `dist` không còn nội dung đề | ✅ manifest để lại cho giai đoạn 6 |
 | 6 | Dọn repo | Xoá file đề và bản dịch khỏi repo; cập nhật tài liệu; (tuỳ chọn, cần đồng ý riêng) xoá khỏi lịch sử git | `git grep` không còn nội dung đề | ⬜ |
-| 7 | Trang tài khoản | Hồ sơ, bảng dữ liệu đã lưu, xuất dữ liệu JSON, phiên đăng nhập (đăng xuất các thiết bị khác), xoá tài khoản (gõ email để xác nhận) | Xuất ra đủ dữ liệu; xoá tài khoản xoá sạch các bảng | ⬜ |
+| 7 | Trang tài khoản | Hồ sơ, bảng dữ liệu đã lưu, xuất dữ liệu JSON, phiên đăng nhập (đăng xuất các thiết bị khác), xoá tài khoản (gõ email để xác nhận) | Xuất ra đủ dữ liệu; xoá tài khoản xoá sạch các bảng | ✅ |
 | 8 | QA và vận hành | Kiểm tra bảo mật (mục 4), sáng/tối, desktop/điện thoại, VI/EN; tài liệu khôi phục dữ liệu | Checklist mục 4 đạt hết | ⬜ |
 
 Thứ tự bắt buộc: 0 → 1 → 2 → 3, sau đó 4 và 5 làm song song được; 6 chỉ làm sau khi 5 chạy ổn trên production.
@@ -267,6 +267,8 @@ Thứ tự bắt buộc: 0 → 1 → 2 → 3, sau đó 4 và 5 làm song song đ
 | Có cần chấm đề ở server (ẩn đáp án tới khi nộp)? | Có (mục 4.1); thêm một request mỗi câu, chấp nhận được |
 
 ## 11. Việc chủ repo làm
+
+Các bước chi tiết (Neon, Google OAuth, biến môi trường, kiểm tra): **`DEPLOY-accounts.md`**.
 
 1. GitHub: Settings → Danger Zone → Change repository visibility → **Make private**.
 2. Vercel: project `aws` → Storage → Create Database → **Neon** → nối vào project (tự có `DATABASE_URL`).

@@ -9,6 +9,9 @@
 //    contrast, which is reported only (some states are dimmed on purpose)
 //
 // Env: E2E_PAGES=/,/glossary/ limits the browser checks to some pages; E2E_WORKERS (default 4).
+// With DATABASE_URL (migrated, questions imported) the site runs on scripts/dev-server.ts with the
+// API and a test sign-in, so the practice pages load their questions; without it, on `astro preview`,
+// where pages that need the server show their error state.
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
@@ -21,6 +24,10 @@ const PORT = 4399;
 const ORIGIN = `http://localhost:${PORT}`;
 const WIDTHS = [1280, 390];
 const WORKERS = Number(process.env.E2E_WORKERS ?? 4);
+// A new learner per run and per browser context (as each context had its own localStorage before), so neither one run's hourly practice-test budget nor the state
+// one width leaves behind (city game, progress) carries into another check.
+const E2E_EMAIL = `e2e-${Date.now()}@example.com`;
+let learners = 0;
 const AXE = readFileSync(require.resolve("axe-core/axe.min.js"), "utf8");
 
 const failures = [];
@@ -45,7 +52,8 @@ const pages = html
 for (const file of html) {
   const text = readFileSync(file, "utf8");
   for (const [, href] of text.matchAll(/href="(\/[^"#?]*)(?:[#?][^"]*)?"/g)) {
-    if (href.startsWith("//")) continue;
+    // /auth/* is served by the server function, not a file in dist/.
+    if (href.startsWith("//") || href.startsWith("/auth/")) continue;
     const p = join(DIST, href);
     if (!existsSync(p) && !existsSync(join(p, "index.html"))) fail("/" + relative(DIST, file), "broken link", href);
   }
@@ -57,12 +65,24 @@ for (const file of all.filter((f) => /\.(html|json|js)$/.test(f))) {
 console.log(`static: ${html.length} HTML files, ${all.length} files checked`);
 
 // ---------- browser checks ----------
-const server = spawn("npx", ["astro", "preview", "--port", String(PORT)], { stdio: "ignore" });
-const stop = () => server.kill();
+const withApi = Boolean(process.env.DATABASE_URL);
+const server = withApi
+  ? spawn("npx", ["tsx", "scripts/dev-server.ts", String(PORT)], {
+      stdio: "ignore",
+      detached: true,
+      env: { ...process.env, AUTH_DEV_LOGIN: "1", SESSION_SECRET: process.env.SESSION_SECRET ?? "e2e-secret-e2e-secret-e2e-secret!!" },
+    })
+  : spawn("npx", ["astro", "preview", "--port", String(PORT)], { stdio: "ignore", detached: true });
+// The server runs in its own process group (npx → tsx → node), so stopping it stops every child too.
+const stop = () => {
+  try {
+    process.kill(-server.pid);
+  } catch {}
+};
 process.on("exit", stop);
 for (let i = 0; ; i++) {
   try {
-    if ((await fetch(ORIGIN)).ok) break;
+    if ((await fetch(withApi ? `${ORIGIN}/auth/methods` : ORIGIN)).ok) break;
   } catch {}
   if (i > 60) throw new Error("preview server did not start");
   await new Promise((r) => setTimeout(r, 500));
@@ -166,7 +186,13 @@ let next = 0;
 await Promise.all(
   Array.from({ length: WORKERS }, async () => {
     const contexts = {};
-    for (const w of WIDTHS) contexts[w] = await browser.newContext({ viewport: { width: w, height: 900 }, hasTouch: w < 500 });
+    for (const w of WIDTHS) {
+      contexts[w] = await browser.newContext({ viewport: { width: w, height: 900 }, hasTouch: w < 500 });
+      if (withApi) {
+        const res = await contexts[w].request.post(`${ORIGIN}/auth/dev-login`, { data: { email: `${++learners}-${E2E_EMAIL}` }, headers: { Origin: ORIGIN } });
+        if (!res.ok()) throw new Error(`test sign-in failed: ${res.status()}`);
+      }
+    }
     while (next < jobs.length) {
       const [path, width] = jobs[next++];
       await checkPage(contexts[width], path, width);
