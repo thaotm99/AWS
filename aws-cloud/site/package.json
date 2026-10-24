@@ -10,7 +10,7 @@
     "test:e2e": "node e2e/run.mjs",
     "db:migrate": "node scripts/db-migrate.mjs",
     "serve": "tsx scripts/dev-server.ts",
-    "test:server": "tsx src/server/auth.test.ts"
+    "test:server": "tsx src/server/auth.test.ts && tsx src/server/data.test.ts"
   },
   "dependencies": {
     "@astrojs/check": "0.9.4",
