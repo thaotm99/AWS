@@ -75,7 +75,7 @@ export default function EdgeCacheDemo() {
           <circle className="edge-dot" cx={360} cy={110} r={22} />
           <text className="edge-t" x={360} y={72} textAnchor="middle">Edge location (CloudFront)</text>
           <g className={"cache-box" + (cached ? " full" : "")}>
-            <rect x={300} y={146} width={120} height={40} rx={6} />
+            <rect x={280} y={146} width={160} height={40} rx={6} />
             <text className="cache-t" x={360} y={171} textAnchor="middle">{cached ? "cache: product.jpg ✓" : L({ vi: "cache: trống", en: "cache: empty" })}</text>
           </g>
           <g className="origin">
