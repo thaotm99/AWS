@@ -1,0 +1,138 @@
+---
+// Sign-in page: reachable without a session (middleware.ts). A centred card with the Google button,
+// an error line when /auth/callback sends the visitor back, and the language and theme switches.
+// The test sign-in form only appears where /auth/methods says it is enabled (never in production).
+import "../styles/app.css";
+import T from "../app/T.astro";
+import LanguageSwitch from "../modules/shell/ui/LanguageSwitch.astro";
+import ThemeToggle from "../modules/shell/ui/ThemeToggle.astro";
+import { DEFAULT_LOCALE } from "../core/i18n/types";
+import { DEFAULT_THEME, THEMES } from "../core/theme/types";
+
+const earlyPreferences = `(function(){var h=document.documentElement,t=${JSON.stringify(DEFAULT_THEME)};try{var s=localStorage.getItem("theme");if(${JSON.stringify(THEMES)}.indexOf(s)>=0)t=s;var l=localStorage.getItem("locale");if(l&&l!==${JSON.stringify(DEFAULT_LOCALE)}){h.lang=l;h.classList.add("i18n-pending");setTimeout(function(){h.classList.remove("i18n-pending")},2000)}}catch(e){}h.dataset.theme=t})();`;
+---
+<!doctype html>
+<html lang="vi" data-i18n-title="shell.login.pageTitle">
+  <head>
+    <meta charset="utf-8" />
+    <style is:inline>@layer theme, base, components, utilities;</style>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex" />
+    <title>Đăng nhập · CloudLab</title>
+    <script is:inline set:html={earlyPreferences} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#f6f5ff" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lexend:wght@500;600;700;800&display=swap" />
+  </head>
+  <body>
+    <main class="flex min-h-dvh flex-col items-center justify-center gap-7 px-4 py-10" id="content">
+      <div class="flex items-center gap-3 font-display text-[1.5rem] font-bold text-ink">
+        <span class="grid h-11 w-11 place-items-center rounded-[14px] bg-accent text-on-accent shadow-[0_3px_0_var(--accent-strong)]" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 16 16"><rect x="1" y="9" width="14" height="5" rx="1" fill="currentColor"/><rect x="3" y="4" width="10" height="4" rx="1" fill="currentColor" opacity=".75"/><rect x="5" y="1" width="6" height="2" rx="1" fill="currentColor" opacity=".5"/></svg>
+        </span>
+        CloudLab
+      </div>
+
+      <div class="flex w-full max-w-[420px] flex-col gap-5.5 rounded-[24px] border-2 border-line bg-surface px-9 py-10 shadow-[0_6px_0_var(--line)] max-sm:px-5 max-sm:py-7">
+        <div class="flex flex-col gap-2">
+          <h1 class="m-0 font-display text-[1.75rem] font-bold"><T k="shell.login.title" /></h1>
+          <p class="m-0 leading-relaxed text-muted"><T k="shell.login.lede" /></p>
+        </div>
+
+        <p class="m-0 rounded-[14px] border border-bad bg-bad-soft px-4 py-3 text-step--1 text-ink" id="login-error" role="alert" hidden></p>
+
+        <a class="flex min-h-12 items-center justify-center gap-3 rounded-full border border-[#747775] bg-white px-4 font-semibold text-[#1f1f1f] no-underline hover:bg-[#f8f9fa] hover:text-[#1f1f1f]" id="google-signin" href="/auth/login">
+          <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          <T k="shell.login.google" />
+        </a>
+
+        <form class="flex flex-col gap-2.5 rounded-[14px] border border-dashed border-line p-4" id="dev-login" hidden>
+          <p class="m-0 text-step--1 font-semibold text-muted"><T k="shell.login.devTitle" /></p>
+          <label class="flex flex-col gap-1 text-step--1">
+            <T k="shell.login.devEmail" />
+            <input class="min-h-11 rounded-sm border border-line bg-bg px-3 text-ink" type="email" name="email" required autocomplete="email" />
+          </label>
+          <button class="btn" type="submit"><T k="shell.login.devSubmit" /></button>
+        </form>
+
+        <div class="flex items-start gap-3 rounded-[14px] bg-bg px-4 py-3.5">
+          <svg class="mt-0.5 flex-none text-muted" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+          <span class="text-step--1 leading-relaxed text-muted"><T k="shell.login.privacy" /></span>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4.5">
+          <div class="flex items-center gap-2">
+            <LanguageSwitch />
+            <ThemeToggle />
+          </div>
+          <details class="group text-step--1">
+            <summary class="cursor-pointer font-semibold text-accent"><T k="shell.login.howStored" /></summary>
+          </details>
+        </div>
+        <p class="m-0 text-step--1 leading-relaxed text-muted" id="stored-body" hidden><T k="shell.login.storedBody" /></p>
+      </div>
+    </main>
+
+    <script>
+      import { i18n } from "../app/i18n";
+      import { theme } from "../app/theme";
+      import { ShellController } from "../modules/shell/ui/ShellController";
+      import type { SiteMessageKey } from "../app/i18n";
+
+      new ShellController(i18n, theme).start();
+
+      const params = new URLSearchParams(location.search);
+      const back = params.get("return");
+      const returnTo = back && back.startsWith("/") && !back.startsWith("//") ? back : "/";
+      const google = document.getElementById("google-signin") as HTMLAnchorElement;
+      if (returnTo !== "/") google.href = `/auth/login?return=${encodeURIComponent(returnTo)}`;
+
+      // /auth/callback sends the visitor back with ?error=<code>.
+      const ERRORS: Record<string, SiteMessageKey> = {
+        cancelled: "shell.login.errCancelled",
+        expired: "shell.login.errExpired",
+        bad_nonce: "shell.login.errExpired",
+        email_unverified: "shell.login.errUnverified",
+        email_in_use: "shell.login.errInUse",
+        auth_not_configured: "shell.login.errUnavailable",
+      };
+      const errorLine = document.getElementById("login-error")!;
+      const showError = (key: SiteMessageKey) => {
+        errorLine.dataset.i18n = key;
+        errorLine.textContent = i18n.translator().t(key);
+        errorLine.hidden = false;
+      };
+      const code = params.get("error");
+      if (code) showError(ERRORS[code] ?? "shell.login.errGeneric");
+
+      // "How is my data stored?" opens the explanation below the card's footer.
+      const details = document.querySelector("details")!;
+      const stored = document.getElementById("stored-body")!;
+      details.addEventListener("toggle", () => (stored.hidden = !details.open));
+
+      // Sign-in methods this deployment offers.
+      const dev = document.getElementById("dev-login") as HTMLFormElement;
+      fetch("/auth/methods")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((m: { google: boolean; dev: boolean } | null) => {
+          if (!m) return;
+          dev.hidden = !m.dev;
+          if (!m.google && m.dev) google.hidden = true;
+        })
+        .catch(() => {});
+      dev.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = String(new FormData(dev).get("email") ?? "");
+        const res = await fetch(`/auth/dev-login?return=${encodeURIComponent(returnTo)}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        if (res.ok) location.assign(((await res.json()) as { return: string }).return);
+        else showError("shell.login.errGeneric");
+      });
+    </script>
+  </body>
+</html>

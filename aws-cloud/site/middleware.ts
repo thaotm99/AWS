@@ -1,7 +1,16 @@
 import { next } from "@vercel/functions";
+import { accountsEnabled, config } from "./src/server/config";
+import { SESSION_COOKIE, readCookie, verifySessionToken } from "./src/server/auth/token";
 
 // Vercel Routing Middleware: runs before every request when the site is hosted on
-// Vercel (never in `astro dev`/`astro preview`). Vercel's own Deployment Protection
+// Vercel (never in `astro dev`/`astro preview`).
+//
+// Accounts mode: when DATABASE_URL, SESSION_SECRET and a sign-in method (GOOGLE_CLIENT_ID and
+// GOOGLE_CLIENT_SECRET, or AUTH_DEV_LOGIN=1 outside production) are set, every page needs a signed-in
+// session; signed-out visitors go to /login/ and /api/* answers 401. The middleware only checks the
+// session cookie's signature and expiry; the API also checks that the session was not revoked.
+//
+// Otherwise the Basic auth below applies, unchanged. Vercel's own Deployment Protection
 // does not cover the production domain on the free Hobby plan, so this keeps the
 // whole site, including /api/*.json, behind a password. Set SITE_USER and
 // SITE_PASSWORD in the Vercel project.
@@ -81,7 +90,26 @@ function misconfigured(): Response {
   return new Response("Site auth misconfigured", { status: 500, headers: { "Content-Type": "text/plain; charset=utf-8" } });
 }
 
-export default function middleware(request: Request): Response {
+/** Reachable without signing in: the login page, the sign-in flow, and what the login page loads. */
+const PUBLIC = [/^\/login\/?$/, /^\/auth\//, /^\/_astro\//, /^\/(favicon\.svg|icon-[\w-]+\.png|manifest\.webmanifest|sw\.js|robots\.txt)$/];
+
+async function accountsGate(request: Request): Promise<Response> {
+  const url = new URL(request.url);
+  if (PUBLIC.some((re) => re.test(url.pathname))) return next();
+  if (await verifySessionToken(config.sessionSecret(), readCookie(request.headers.get("cookie"), SESSION_COOKIE))) return next();
+  if (url.pathname.startsWith("/api/")) {
+    return new Response(JSON.stringify({ error: { code: "signed_out", message: "Sign in to continue" } }), {
+      status: 401,
+      headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "private, no-store" },
+    });
+  }
+  const back = url.pathname + url.search;
+  const login = new URL(back === "/" ? "/login/" : `/login/?return=${encodeURIComponent(back)}`, url);
+  return new Response(null, { status: 302, headers: { Location: login.toString(), "Cache-Control": "private, no-store" } });
+}
+
+export default function middleware(request: Request): Response | Promise<Response> {
+  if (accountsEnabled()) return accountsGate(request);
   const user = process.env.SITE_USER;
   const password = process.env.SITE_PASSWORD;
   if (!user !== !password) return misconfigured();

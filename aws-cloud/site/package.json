@@ -9,7 +9,8 @@
     "test:unit": "tsx src/modules/practice/domain/Review.test.ts && tsx src/modules/practice/domain/Skills.test.ts && tsx src/lib/flashcards.test.ts && tsx src/lib/pomodoro.test.ts && tsx src/lib/labs.test.ts && tsx src/lib/drills.test.ts && tsx src/lib/pricing.test.ts && tsx src/lib/compare.test.ts && tsx src/lib/notes.test.ts && tsx src/lib/goals.test.ts && tsx src/lib/exam-date.test.ts && tsx src/lib/city.test.ts && tsx src/modules/practice/content/HtmlSanitizer.test.ts",
     "test:e2e": "node e2e/run.mjs",
     "db:migrate": "node scripts/db-migrate.mjs",
-    "serve": "tsx scripts/dev-server.ts"
+    "serve": "tsx scripts/dev-server.ts",
+    "test:server": "tsx src/server/auth.test.ts"
   },
   "dependencies": {
     "@astrojs/check": "0.9.4",
