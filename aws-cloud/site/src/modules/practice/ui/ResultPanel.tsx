@@ -10,7 +10,7 @@ interface Props {
   exam: Exam;
   attempt: Attempt;
   /** Set when the questions are a service's set rather than a practice test. */
-  topic?: { id: string; title: string };
+  topic?: { id: string };
   /** Set when the questions are the wrong-answer review. */
   review?: boolean;
   /** Set for a mock exam: show the scaled score; retaking starts a new timed test. */

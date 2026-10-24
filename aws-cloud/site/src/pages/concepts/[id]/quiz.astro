@@ -2,23 +2,28 @@
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import ExamPage from "../../../modules/practice/ui/ExamPage.tsx";
 import { practiceCatalog } from "../../../modules/practice/content/PracticeCatalog";
+import { findConcept } from "../../../data/curriculum";
+import { getCurriculum } from "../../../data/exam";
 
 // getStaticPaths runs in its own scope, so the certification id is written inside it.
 export function getStaticPaths() {
   const cert = "saa-c03";
   return practiceCatalog.topicContentPaths()
     .filter((p) => p.cert === cert && p.lang === "en")
-    .map(({ topic }) => ({ params: { id: topic }, props: { cert, title: practiceCatalog.getTopic(cert, topic).title } }));
+    .map(({ topic }) => ({ params: { id: topic }, props: { cert } }));
 }
 
 const { id } = Astro.params;
-const { cert, title } = Astro.props;
+const { cert } = Astro.props;
+// The lesson's title in both languages, as on the lesson page.
+const concept = findConcept(getCurriculum(), id)!;
+const title = { vi: concept.title, en: concept.titleEn };
 ---
 <BaseLayout
-  title={`Bài kiểm tra · ${title} · CloudLab`}
+  title={`Bài kiểm tra · ${title.vi} · CloudLab`}
   titleKey="practice.topic.pageTitle"
   titleParams={{ title }}
-  description={`Bài kiểm tra gồm các câu hỏi về ${title}.`}
+  description={`Bài kiểm tra gồm các câu hỏi về ${title.vi}.`}
   current={id}
   currentQuiz
 >
