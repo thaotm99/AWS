@@ -1,0 +1,15 @@
+---
+// Account and data: profile, certifications, stored data with a JSON export, sessions, account deletion.
+// Everything shown comes from /api/me and /api/data in the browser; the page itself is static.
+import BaseLayout from "../layouts/BaseLayout.astro";
+import T from "../app/T.astro";
+import AccountPage from "../components/account/AccountPage.tsx";
+---
+<BaseLayout title="Tài khoản · CloudLab" titleKey="shell.account.pageTitle" sidebar={false} section="account">
+  <header class="gl-head">
+    <span class="gl-eyebrow"><T k="shell.account.eyebrow" /></span>
+    <h1><T k="shell.account.title" /></h1>
+    <p class="lede"><T k="shell.account.lede" /></p>
+  </header>
+  <AccountPage client:only="react" />
+</BaseLayout>

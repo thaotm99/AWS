@@ -1,31 +1,23 @@
-// The learner's exam date, kept in this browser. The exam guide counts down to it and marks the study phase
-// that applies with that many days left.
+// The learner's exam date, kept on the account's certification (user_certs, through app/userData). The
+// exam guide counts down to it and marks the study phase that applies with that many days left.
+import { CURRENT_CERT, EXAM_DATE, userData } from "../app/userData";
 import { today } from "./flashcards";
 
 export const EXAM_DATE_EVENT = "exam-date-change";
-const KEY = "exam-date";
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+if (typeof window !== "undefined") userData.subscribe(EXAM_DATE, () => window.dispatchEvent(new Event(EXAM_DATE_EVENT)));
 
 /** Study phases of the guide, in order; "exam" and "past" have no card of their own. */
 export type Phase = "baseline" | "gaps" | "mocks" | "eve" | "exam" | "past";
 
 export function readExamDate(): string | null {
-  try {
-    const v = localStorage.getItem(KEY);
-    return v && ISO_DATE.test(v) ? v : null;
-  } catch {
-    return null;
-  }
+  const v = userData.examDate(CURRENT_CERT);
+  return v && ISO_DATE.test(v) ? v : null;
 }
 
 export function writeExamDate(date: string | null) {
-  try {
-    if (date && ISO_DATE.test(date)) localStorage.setItem(KEY, date);
-    else localStorage.removeItem(KEY);
-  } catch {
-    /* storage blocked */
-  }
-  window.dispatchEvent(new Event(EXAM_DATE_EVENT));
+  void userData.setExamDate(CURRENT_CERT, date && ISO_DATE.test(date) ? date : null);
 }
 
 /** Whole local days from `now` to the exam date (0 on the day itself, negative once it has passed). */

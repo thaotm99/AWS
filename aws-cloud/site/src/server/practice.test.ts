@@ -9,6 +9,7 @@ if (!process.env.DATABASE_URL) {
   process.exit(0);
 }
 process.env.SESSION_SECRET ??= "test-secret-test-secret-test-secret!";
+process.env.AUTH_DEV_LOGIN = "1"; // accounts on: practice routes answer 404 while they are off
 
 const { handle } = await import("./routes/index");
 const { closeDb, query } = await import("./db");
@@ -25,7 +26,7 @@ if (!(await query(`select 1 from questions where cert_id = $1 limit 1`, [CERT]))
 
 async function learner(id: string): Promise<string> {
   await query(`insert into users (id, email) values ($1, $2) on conflict do nothing`, [id, `${id}@example.com`]);
-  return (await startSession(new Request(SITE), id)).split(";")[0];
+  return (await startSession(new Request(SITE), id)).map((c) => c.split(";")[0]).join("; ");
 }
 
 function call(cookie: string, method: string, path: string, body?: unknown): Promise<Response> {

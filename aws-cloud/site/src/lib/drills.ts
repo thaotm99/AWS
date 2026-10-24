@@ -1,6 +1,7 @@
 // Incident drills: an outage or a surprise at MFTECH, played as a few decisions. Each choice is
 // judged, explained, and moves the metrics the way the real system would. Plain data, imported by the
 // island and by the build.
+import { userData } from "../app/userData";
 import type { Text } from "./labs";
 export type { Text };
 
@@ -397,19 +398,11 @@ export function score(first: (Verdict | undefined)[]): number {
 
 const KEY = "drills";
 export function readDrills(): Record<string, { best: number; steps: number }> {
-  try {
-    const v = JSON.parse(localStorage.getItem(KEY) ?? "{}");
-    return v && typeof v === "object" && !Array.isArray(v) ? v : {};
-  } catch {
-    return {};
-  }
+  const v = userData.get(KEY);
+  return v && typeof v === "object" && !Array.isArray(v) ? { ...(v as Record<string, { best: number; steps: number }>) } : {};
 }
 
 export function saveDrill(id: string, best: number, steps: number) {
-  try {
-    const all = readDrills();
-    if ((all[id]?.best ?? -1) < best) localStorage.setItem(KEY, JSON.stringify({ ...all, [id]: { best, steps } }));
-  } catch {
-    /* storage blocked */
-  }
+  const all = readDrills();
+  if ((all[id]?.best ?? -1) < best) userData.set(KEY, { ...all, [id]: { best, steps } });
 }

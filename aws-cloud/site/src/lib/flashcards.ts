@@ -1,4 +1,6 @@
-// Spaced repetition for the flashcards page (Leitner boxes), kept in this browser.
+import { userData } from "../app/userData";
+
+// Spaced repetition for the flashcards page (Leitner boxes), kept per account (app/userData).
 // A card the learner remembers moves up a box and comes back after a longer gap; one they forget
 // drops to box 0 (not learned yet) and comes back in the same session.
 
@@ -23,20 +25,12 @@ export function today(now = new Date()): number {
 }
 
 export function readDeck(): Deck {
-  try {
-    const v = JSON.parse(localStorage.getItem(KEY) ?? "{}");
-    return v && typeof v === "object" && !Array.isArray(v) ? v : {};
-  } catch {
-    return {};
-  }
+  const v = userData.get(KEY);
+  return v && typeof v === "object" && !Array.isArray(v) ? { ...(v as Deck) } : {};
 }
 
 export function writeDeck(deck: Deck) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(deck));
-  } catch {
-    /* storage blocked: the session still works, it just isn't remembered */
-  }
+  userData.set(KEY, deck);
 }
 
 /** Card state after an answer. */

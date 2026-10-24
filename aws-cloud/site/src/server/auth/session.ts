@@ -16,19 +16,26 @@ export interface User {
   currentCertId: string | null;
 }
 
-/** Creates the session row and returns the Set-Cookie header for it. */
-export async function startSession(request: Request, userId: string): Promise<string> {
+/**
+ * A readable companion of the session cookie, holding no secret: it tells the page's scripts that this
+ * deployment has accounts and the visitor signed in, so a site without accounts never asks /api/data.
+ */
+export const SIGNED_IN_COOKIE = "cl_signed_in";
+
+/** Creates the session row and returns the Set-Cookie headers for it. */
+export async function startSession(request: Request, userId: string): Promise<string[]> {
   const sid = crypto.randomUUID();
   await query(
     `insert into sessions (id, user_id, user_agent, expires_at) values ($1, $2, $3, now() + make_interval(days => $4))`,
     [sid, userId, (request.headers.get("user-agent") ?? "").slice(0, 300), SESSION_DAYS],
   );
   const token = await signToken(config.sessionSecret(), { sid }, userId, `${SESSION_DAYS}d`);
-  return cookie(request, SESSION_COOKIE, token, { maxAge: SESSION_DAYS * 86_400 });
+  const maxAge = SESSION_DAYS * 86_400;
+  return [cookie(request, SESSION_COOKIE, token, { maxAge }), cookie(request, SIGNED_IN_COOKIE, "1", { maxAge, readable: true })];
 }
 
-export function endSessionCookie(request: Request): string {
-  return clearCookie(request, SESSION_COOKIE);
+export function endSessionCookies(request: Request): string[] {
+  return [clearCookie(request, SESSION_COOKIE), cookie(request, SIGNED_IN_COOKIE, "", { maxAge: 0, readable: true })];
 }
 
 export interface CurrentSession {

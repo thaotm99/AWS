@@ -6,11 +6,11 @@
     "dev": "astro dev",
     "build": "astro check && astro build",
     "preview": "astro preview",
-    "test:unit": "tsx src/modules/practice/domain/Review.test.ts && tsx src/modules/practice/domain/Skills.test.ts && tsx src/lib/flashcards.test.ts && tsx src/lib/pomodoro.test.ts && tsx src/lib/labs.test.ts && tsx src/lib/drills.test.ts && tsx src/lib/pricing.test.ts && tsx src/lib/compare.test.ts && tsx src/lib/notes.test.ts && tsx src/lib/goals.test.ts && tsx src/lib/exam-date.test.ts && tsx src/lib/city.test.ts && tsx src/modules/practice/content/HtmlSanitizer.test.ts",
+    "test:unit": "tsx src/core/userdata/UserDataStore.test.ts && tsx src/modules/practice/domain/Review.test.ts && tsx src/modules/practice/domain/Skills.test.ts && tsx src/lib/flashcards.test.ts && tsx src/lib/pomodoro.test.ts && tsx src/lib/labs.test.ts && tsx src/lib/drills.test.ts && tsx src/lib/pricing.test.ts && tsx src/lib/compare.test.ts && tsx src/lib/notes.test.ts && tsx src/lib/goals.test.ts && tsx src/lib/exam-date.test.ts && tsx src/lib/city.test.ts && tsx src/modules/practice/content/HtmlSanitizer.test.ts",
     "test:e2e": "node e2e/run.mjs",
     "db:migrate": "node scripts/db-migrate.mjs",
     "serve": "tsx scripts/dev-server.ts",
-    "test:server": "tsx src/server/auth.test.ts && tsx src/server/practice.test.ts",
+    "test:server": "tsx src/server/auth.test.ts && tsx src/server/data.test.ts && tsx src/server/practice.test.ts",
     "db:import": "tsx scripts/import-questions.ts",
     "db:deploy": "node scripts/db-deploy.mjs"
   },

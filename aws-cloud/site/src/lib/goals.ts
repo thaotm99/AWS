@@ -1,6 +1,7 @@
-// Daily study goals and the study streak, kept in this browser. Parts read and flashcards answered are
-// counted per day as they happen; Pomodoro sessions come from the Pomodoro log.
+// Daily study goals and the study streak, kept per account (app/userData). Parts read and flashcards
+// answered are counted per day as they happen; Pomodoro sessions come from the Pomodoro log.
 
+import { userData } from "../app/userData";
 import { today } from "./flashcards";
 import { dayOf, readLog } from "./pomodoro";
 
@@ -25,22 +26,15 @@ export const GOALS_EVENT = "goals-change";
 const ACTIVITY = "activity";
 const GOALS = "goals";
 
+if (typeof window !== "undefined") userData.subscribe([GOALS, ACTIVITY], () => window.dispatchEvent(new Event(GOALS_EVENT)));
+
 function read<T>(key: string, fallback: T): T {
-  try {
-    const v = JSON.parse(localStorage.getItem(key) ?? "null");
-    return v && typeof v === "object" ? v : fallback;
-  } catch {
-    return fallback;
-  }
+  const v = userData.get(key);
+  return v && typeof v === "object" ? (structuredClone(v) as T) : fallback;
 }
 
 function write(key: string, value: unknown) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    /* storage blocked */
-  }
-  window.dispatchEvent(new Event(GOALS_EVENT));
+  userData.set(key, value);
 }
 
 export function readGoals(): Goals {

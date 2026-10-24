@@ -80,8 +80,11 @@ const earlyPreferences = `(function(){var h=document.documentElement,t=${JSON.st
       import { theme } from "../app/theme";
       import { ShellController } from "../modules/shell/ui/ShellController";
       import type { SiteMessageKey } from "../app/i18n";
+      import { forgetCachedData } from "../app/session";
 
       new ShellController(i18n, theme).start();
+      // Signed out (by choice or because the session ended): nothing of the account stays cached.
+      forgetCachedData();
 
       const params = new URLSearchParams(location.search);
       const back = params.get("return");

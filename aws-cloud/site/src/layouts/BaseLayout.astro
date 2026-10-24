@@ -2,6 +2,7 @@
 import "../styles/app.css";
 import Roadmap from "../components/Roadmap.tsx";
 import Pomodoro from "../components/Pomodoro.tsx";
+import AccountMenu from "../components/account/AccountMenu.tsx";
 import { getCollection } from "astro:content";
 import { getCurriculum } from "../data/exam";
 import T from "../app/T.astro";
@@ -25,7 +26,7 @@ interface Props {
   /** The page is the current lesson's question set, not the lesson itself. */
   currentQuiz?: boolean;
   /** Top-nav section this page belongs to. */
-  section?: "guide" | "theory" | "practice" | "lab" | "glossary" | "flashcards" | "pomodoro" | "progress";
+  section?: "guide" | "theory" | "practice" | "lab" | "glossary" | "flashcards" | "pomodoro" | "progress" | "account";
   /** Practice pages have no lesson roadmap. */
   sidebar?: boolean;
   /** Full-width content (home page map); only used without the sidebar. */
@@ -94,7 +95,7 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
   <body>
     <a class="fixed top-2 left-2 z-100 -translate-y-[160%] rounded-sm bg-accent px-4 py-2.5 font-bold text-on-accent no-underline transition-transform duration-150 focus:translate-y-0" href="#content"><T k="shell.nav.skip" /></a>
     <header class="topbar sticky top-[env(safe-area-inset-top,0px)] z-5 border-b border-line bg-surface pr-[max(16px,env(safe-area-inset-right,0px))] pl-[max(16px,env(safe-area-inset-left,0px))]">
-      <div class="topbar-inner mx-auto flex h-16 max-w-[1520px] items-center gap-4 max-sm:gap-1.5">
+      <div class="topbar-inner group/top mx-auto flex h-16 max-w-[1520px] items-center gap-4 max-sm:gap-1.5">
         <button class="hidden h-[34px] w-9 flex-none cursor-pointer place-items-center rounded-[10px] border border-line bg-surface p-0 text-ink max-lg:grid" id="menuBtn" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Mở menu" data-i18n-attr="aria-label:shell.nav.openMenu">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path class="drawer-open:hidden" d="M4 7h16M4 12h16M4 17h16" /><path class="hidden drawer-open:inline" d="M6 6l12 12M18 6L6 18" /></svg>
         </button>
@@ -102,7 +103,7 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
           <span class="grid h-[34px] w-[34px] place-items-center rounded-[11px] bg-accent text-on-accent shadow-[0_3px_0_var(--accent-strong)]" aria-hidden="true">
             <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="9" width="14" height="5" rx="1" fill="currentColor"/><rect x="3" y="4" width="10" height="4" rx="1" fill="currentColor" opacity=".75"/><rect x="5" y="1" width="6" height="2" rx="1" fill="currentColor" opacity=".5"/></svg>
           </span>
-          <span class="whitespace-nowrap max-sm:text-[0.94rem] max-xs:hidden">CloudLab</span>
+          <span class="whitespace-nowrap max-sm:text-[0.94rem] max-xs:hidden max-sm:group-has-[[data-account]]/top:hidden">CloudLab</span>
         </a>
         <nav class="ml-auto flex gap-1 max-lg:hidden" aria-label="Chính" data-i18n-attr="aria-label:shell.nav.main">
           <a class="nav-pill" href="/exam-guide/" aria-current={section === "guide" ? "page" : undefined}><T k="shell.nav.guide" /></a>
@@ -119,6 +120,7 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
         <Pomodoro client:idle />
         <LanguageSwitch />
         <ThemeToggle />
+        <AccountMenu client:only="react" />
       </div>
       {toc && <div class="read-bar absolute inset-x-0 -bottom-px hidden h-0.75 overflow-hidden no-toc:block" aria-hidden="true"><i class="block h-full w-[var(--read,0%)] bg-accent transition-[width] duration-120 ease-linear" /></div>}
     </header>
