@@ -5,7 +5,7 @@ chỉ merge khi chủ repo đồng ý (xem `CLAUDE.md`).
 
 ## 1. Mục tiêu
 
-1. Đăng nhập bằng Google; chỉ email trong danh sách cho phép được vào site.
+1. Đăng nhập bằng Google; mọi tài khoản Google đã xác minh email đều đăng nhập được (không có danh sách email cho phép).
 2. Mọi dữ liệu học tập đang lưu trong trình duyệt được lưu theo tài khoản trên server, dùng chung giữa các thiết bị.
 3. Câu hỏi, lời giải và bản dịch của 6 đề luyện thi chỉ nằm trong database, không còn trong repo, trong bản build
    hay trong file JSON công khai. Lý do: nội dung có bản quyền; lộ ra ngoài là sự cố nghiêm trọng.
@@ -84,18 +84,18 @@ Trình duyệt ──► Vercel (một domain)
 |---|---|
 | Repo public, lịch sử git chứa đề | Chuyển repo sang **private** (việc của chủ repo, làm ngay). Xoá file đề khỏi repo (giai đoạn 6). Cân nhắc xoá khỏi lịch sử bằng `git filter-repo` + force push: **không đảo ngược được**, chỉ làm khi chủ repo đồng ý riêng |
 | JSON đề công khai trên Vercel | Bỏ hẳn `src/pages/api/certifications/**` khỏi build; đề chỉ trả qua `/api/practice/*` sau khi kiểm tra phiên |
-| Người ngoài đăng nhập bằng tài khoản Google bất kỳ | Danh sách cho phép (`ALLOWED_EMAILS` hoặc bảng `allowed_emails`), kiểm tra `email_verified`; từ chối trước khi tạo phiên |
+| Bất kỳ ai có tài khoản Google đều đăng nhập được (chủ repo đã chọn bỏ danh sách email cho phép) | Chỉ nhận ID token có `email_verified`; đề vẫn chỉ trả sau khi đăng nhập, theo từng đề, có giới hạn tần suất và nhật ký truy cập. Nếu sau này cần đóng lại, thêm bảng `allowed_emails` và một bước kiểm tra trong `/auth/callback` |
 | Lộ `DATABASE_URL` | Chỉ nằm trong biến môi trường Vercel (không có tiền tố public, không vào bundle client). Hai role Postgres: `app_rw` cho API (không có quyền DDL, chỉ đọc bảng câu hỏi) và `importer` cho script nhập đề, chỉ dùng trên máy chủ repo |
 | Người dùng hợp lệ tải hàng loạt đề | API trả từng câu hoặc từng đề, không có endpoint dump; giới hạn tần suất theo người dùng (bảng `rate_limits` trong Postgres hoặc Vercel Firewall rate limiting); ghi `audit_log` mỗi lần đọc đề |
 | Đáp án lộ trước khi làm | `GET` câu hỏi không kèm đáp án đúng và lời giải; trả sau khi người dùng nộp (`POST /check`) hoặc kết thúc bài thi thử |
 | Cache đề ở CDN hoặc trình duyệt | `Cache-Control: private, no-store` cho mọi `/api/practice/*`; service worker không cache `/api/practice/*` và `/api/data/*`; đăng xuất xoá cache dữ liệu của SW |
-| Đánh cắp phiên | Cookie `HttpOnly`/`Secure`/`SameSite=Lax`; mọi request ghi (`PUT/POST/DELETE`) yêu cầu header `X-Requested-With` hoặc kiểm tra `Origin` (chống CSRF); bảng `sessions` để thu hồi khi đăng xuất hoặc khi xoá email khỏi danh sách |
+| Đánh cắp phiên | Cookie `HttpOnly`/`Secure`/`SameSite=Lax`; mọi request ghi (`PUT/POST/DELETE`) yêu cầu header `X-Requested-With` hoặc kiểm tra `Origin` (chống CSRF); bảng `sessions` để thu hồi khi đăng xuất hoặc khi đăng xuất khỏi các thiết bị khác |
 | Mất dữ liệu | Neon có point-in-time restore (thời gian giữ tuỳ gói); script xuất dữ liệu người dùng ra JSON; bản gốc HTML đề giữ ngoại tuyến ở máy chủ repo |
 
 ### 4.2. Giới hạn cần nói rõ
 
-Database bảo vệ đề khỏi bị lộ công khai và khỏi người không được phép. Người dùng đã đăng nhập vẫn đọc được câu hỏi trên
-màn hình; giới hạn tần suất và nhật ký truy cập chỉ làm việc sao chép hàng loạt khó hơn và để lại dấu vết, không ngăn
+Database chặn việc tải đề hàng loạt từ file công khai và buộc phải đăng nhập. Vì không có danh sách email cho phép, bất kỳ ai
+có tài khoản Google đều đăng nhập và đọc được câu hỏi trên màn hình; giới hạn tần suất và nhật ký truy cập chỉ làm việc sao chép hàng loạt khó hơn và để lại dấu vết, không ngăn
 được hoàn toàn.
 
 ## 5. Mô hình dữ liệu (Postgres)
@@ -116,7 +116,6 @@ create table sessions (
   expires_at timestamptz not null,
   revoked_at timestamptz
 );
-create table allowed_emails (email text primary key, added_at timestamptz not null default now());
 
 -- Dữ liệu người học: một dòng cho mỗi tài liệu nhỏ (thay cho mỗi khoá localStorage)
 create table user_docs (
@@ -175,7 +174,7 @@ Migration viết bằng SQL thuần trong `aws-cloud/site/db/migrations/NNN_*.sq
 | Method | Đường dẫn | Việc |
 |---|---|---|
 | GET | `/auth/login` | Tạo `state`, `nonce`, PKCE; chuyển sang Google |
-| GET | `/auth/callback` | Đổi code lấy token, xác minh ID token, kiểm tra danh sách cho phép, upsert `users`, tạo `sessions`, đặt cookie |
+| GET | `/auth/callback` | Đổi code lấy token, xác minh ID token (`email_verified`), upsert `users`, tạo `sessions`, đặt cookie |
 | POST | `/auth/logout` | Thu hồi phiên, xoá cookie |
 | GET | `/api/me` | Hồ sơ người dùng |
 | GET | `/api/data` | Toàn bộ `user_docs` + notes của người dùng (một request khi mở site) |
@@ -203,7 +202,8 @@ Migration viết bằng SQL thuần trong `aws-cloud/site/db/migrations/NNN_*.sq
   - `notes`: theo từng item, `updated_at` mới hơn thắng; xoá là xoá mềm.
   - Còn lại (`goals`, `labs`, `drills`, `city`, cài đặt, `exam-date`): bản có `updated_at` mới hơn thắng; `409` thì
     tải bản mới nhất rồi áp lại thay đổi chưa gửi.
-- Lần đăng nhập đầu: hỏi "Đưa tiến độ đang có trên trình duyệt này vào tài khoản?" → `POST /api/data/import`.
+- Lần đăng nhập đầu: dữ liệu đang có trên trình duyệt được tự động gộp vào tài khoản (`POST /api/data/import`), không hỏi,
+  theo cùng luật gộp ở trên.
 - Đăng xuất: xoá dữ liệu người dùng trong `localStorage`, IndexedDB và cache của service worker.
 - Luyện đề: `src/app/api.ts` đổi sang `HttpApiClient` cho `attempts`; các trang luyện đề tải đề qua `/api/practice/*`.
 
@@ -225,18 +225,31 @@ Migration viết bằng SQL thuần trong `aws-cloud/site/db/migrations/NNN_*.sq
 7. Kiểm tra: grep bản build không còn chuỗi đặc trưng của đề (lấy mẫu 20 câu ngẫu nhiên); `dist/api` không còn tồn tại;
    gọi `/api/practice/*` khi chưa đăng nhập trả `401`.
 
+## 8a. Giao diện
+
+Bản vẽ đã review: https://claude.ai/artifact/JVZe1388mcNjpSmx1GiHmf (7 màn, cùng màu và font CloudLab).
+
+| # | Màn | Nội dung |
+|---|---|---|
+| 1–2 | Đăng nhập (desktop, điện thoại) | Lợi ích khi có tài khoản; nút "Đăng nhập bằng Google" theo mẫu nút của Google; dòng "CloudLab chỉ đọc tên, email và ảnh đại diện"; chọn VI/EN. Lỗi đăng nhập (huỷ, email chưa xác minh, phiên hết hạn) hiện thành một dòng ngay dưới nút, không có trang riêng |
+| 3 | Menu tài khoản và biểu tượng đồng bộ | Ảnh đại diện trên thanh trên cùng mở menu: tên, email, trạng thái đồng bộ, Tài khoản và dữ liệu, Tiến độ, Đăng xuất. Biểu tượng đồng bộ có 4 trạng thái: Đã lưu · Đang lưu · Offline (số thay đổi chờ gửi) · Chưa lưu được (Thử lại / Đăng nhập lại) |
+| 4 | Trang tài khoản `/account/` | Hồ sơ; bảng dữ liệu đã lưu (9 loại, số lượng, thời điểm cập nhật); tải dữ liệu JSON; danh sách phiên, đăng xuất các thiết bị khác; vùng xoá tài khoản |
+| 5 | Xác nhận xoá tài khoản | Gõ đúng email mới bật nút xoá; nhắc tải dữ liệu về trước |
+| 6 | Luyện đề | Câu hỏi tải từ API; bấm Kiểm tra mới nhận đáp án và lời giải từ server |
+| 7 | Trạng thái khi tải đề | Đang tải (lần đầu có thể chậm do database khởi động), mất mạng, mở quá nhiều câu (tạm dừng `[n]` giây), phiên hết hạn |
+
 ## 9. Các giai đoạn
 
 | # | Giai đoạn | Việc chính | Điều kiện xong | Trạng thái |
 |---|---|---|---|---|
-| 0 | Chuẩn bị (chủ repo) | Chuyển repo private; thêm Neon qua Vercel Marketplace; tạo OAuth Client trên Google Cloud; đặt biến môi trường (mục 11) | `DATABASE_URL`, `GOOGLE_CLIENT_ID/SECRET`, `SESSION_SECRET`, `ALLOWED_EMAILS` có trên Vercel | ⬜ |
+| 0 | Chuẩn bị (chủ repo) | Chuyển repo private; thêm Neon qua Vercel Marketplace; tạo OAuth Client trên Google Cloud; đặt biến môi trường (mục 11) | `DATABASE_URL`, `GOOGLE_CLIENT_ID/SECRET`, `SESSION_SECRET` có trên Vercel | ⬜ |
 | 1 | Store dữ liệu chung | `src/core/userdata/`; đổi `src/lib/*`, `Highlighter`, `MockExamPage` sang store; unit test cho store và luật gộp | Không đổi hành vi; pixel diff + click QA như cũ | ⬜ |
 | 2 | Hạ tầng server | Adapter `@astrojs/vercel` (trang vẫn prerender); `db/migrations` + `npm run db:migrate`; hai role Postgres | Build và deploy preview OK; migration chạy được trên Neon | ⬜ |
-| 3 | Đăng nhập Google | `/login`, `/auth/*`, bảng `users`/`sessions`/`allowed_emails`; middleware thay Basic auth trên production; menu tài khoản (ảnh, tên, đăng xuất) | Email ngoài danh sách bị từ chối; đăng xuất thu hồi phiên; preview vẫn Basic auth | ⬜ |
+| 3 | Đăng nhập Google | `/login`, `/auth/*`, bảng `users`/`sessions`; middleware thay Basic auth trên production; menu tài khoản và biểu tượng đồng bộ | Đăng nhập được bằng mọi tài khoản Google đã xác minh email; đăng xuất thu hồi phiên; preview vẫn Basic auth | ⬜ |
 | 4 | Dữ liệu người học trên server | `/api/me`, `/api/data*`, `/api/notes/*`; đồng bộ local-first; import lần đầu; SW không cache API | Dữ liệu khớp giữa 2 trình duyệt; offline vẫn dùng được và đồng bộ khi có mạng | ⬜ |
 | 5 | Đề thi trong database | Script nhập đề; manifest; `/api/practice/*` (chấm ở server, giới hạn tần suất, audit log); trang luyện đề tải qua API; bỏ JSON tĩnh | Đủ 390 câu; mọi luồng luyện đề, thi thử, ôn câu sai, bản đồ kỹ năng chạy như cũ; `dist` không còn nội dung đề | ⬜ |
 | 6 | Dọn repo | Xoá file đề và bản dịch khỏi repo; cập nhật tài liệu; (tuỳ chọn, cần đồng ý riêng) xoá khỏi lịch sử git | `git grep` không còn nội dung đề | ⬜ |
-| 7 | Trang tài khoản | Hồ sơ, xuất dữ liệu JSON, xoá tài khoản; trang quản lý danh sách email (chỉ chủ repo) | Xuất ra đủ dữ liệu; xoá tài khoản xoá sạch các bảng | ⬜ |
+| 7 | Trang tài khoản | Hồ sơ, bảng dữ liệu đã lưu, xuất dữ liệu JSON, phiên đăng nhập (đăng xuất các thiết bị khác), xoá tài khoản (gõ email để xác nhận) | Xuất ra đủ dữ liệu; xoá tài khoản xoá sạch các bảng | ⬜ |
 | 8 | QA và vận hành | Kiểm tra bảo mật (mục 4), sáng/tối, desktop/điện thoại, VI/EN; tài liệu khôi phục dữ liệu | Checklist mục 4 đạt hết | ⬜ |
 
 Thứ tự bắt buộc: 0 → 1 → 2 → 3, sau đó 4 và 5 làm song song được; 6 chỉ làm sau khi 5 chạy ổn trên production.
@@ -245,7 +258,8 @@ Thứ tự bắt buộc: 0 → 1 → 2 → 3, sau đó 4 và 5 làm song song đ
 
 | Câu hỏi | Đề xuất |
 |---|---|
-| Ai được đăng nhập? | Danh sách email (bảng `allowed_emails`, quản lý ở trang tài khoản) |
+| Ai được đăng nhập? | **Đã chốt:** mọi tài khoản Google đã xác minh email, không có danh sách cho phép |
+| Dữ liệu trình duyệt khi đăng nhập lần đầu? | **Đã chốt:** tự động gộp vào tài khoản, không hiện hộp thoại hỏi |
 | Bản preview của Vercel đăng nhập thế nào? | Giữ Basic auth (Google không nhận redirect URI thay đổi theo từng preview); preview dùng một nhánh database riêng của Neon, không có đề thật hoặc chỉ một đề mẫu |
 | Giữ đường deploy S3 + CloudFront? | Ngừng; `infra/` giữ lại làm tài liệu tham khảo hoặc xoá |
 | Xoá đề khỏi lịch sử git? | Có, nhưng chỉ sau khi repo đã private và giai đoạn 5 chạy ổn; cần sao lưu repo trước |
@@ -259,7 +273,7 @@ Thứ tự bắt buộc: 0 → 1 → 2 → 3, sau đó 4 và 5 làm song song đ
 3. Google Cloud Console: APIs & Services → Credentials → Create OAuth client ID (Web application);
    Authorized redirect URI: `https://aws-thao-tm.vercel.app/auth/callback` và `http://localhost:4321/auth/callback`.
 4. Vercel → Environment Variables (Production): `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`,
-   `SESSION_SECRET` (chuỗi ngẫu nhiên ≥ 32 byte), `ALLOWED_EMAILS`.
+   `SESSION_SECRET` (chuỗi ngẫu nhiên ≥ 32 byte).
 5. Giữ một bản sao 6 file đề và bản dịch ở nơi riêng tư ngoài repo, để chạy script nhập đề.
 
 ## 12. Rủi ro
