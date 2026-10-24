@@ -11,7 +11,8 @@
     "db:migrate": "node scripts/db-migrate.mjs",
     "serve": "tsx scripts/dev-server.ts",
     "test:server": "tsx src/server/auth.test.ts && tsx src/server/practice.test.ts",
-    "db:import": "tsx scripts/import-questions.ts"
+    "db:import": "tsx scripts/import-questions.ts",
+    "db:deploy": "node scripts/db-deploy.mjs"
   },
   "dependencies": {
     "@astrojs/check": "0.9.4",

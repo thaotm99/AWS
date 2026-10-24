@@ -2,14 +2,9 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "astro",
   "installCommand": "npm ci",
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run build && npm run db:deploy",
   "outputDirectory": "dist",
   "trailingSlash": true,
-  "git": {
-    "deploymentEnabled": {
-      "claude/*": false
-    }
-  },
   "redirects": [
     {
       "source": "/on-tap",
