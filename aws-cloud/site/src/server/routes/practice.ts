@@ -8,7 +8,7 @@ import { requireSession } from "../auth/session";
 import { answeredIds, audit, lang, questionById, rateLimit, setQuestions, toQuestion, topicQuestions, type Lang, type QuestionRow } from "../practice/content";
 
 /** Question sets (65 questions each at most) and single questions a learner may load per hour. */
-const SETS_PER_HOUR = 150;
+const SETS_PER_HOUR = 300;
 const QUESTIONS_PER_HOUR = 1200;
 
 interface CertRow {

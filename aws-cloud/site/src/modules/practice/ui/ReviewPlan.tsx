@@ -33,7 +33,7 @@ export default function ReviewPlan({ certId }: { certId: string }) {
     Promise.all([
       getApiClient().get<Attempt[]>("/attempts", { certId }),
       // Topic names are a nicety: the page works without them.
-      fetch(`/api/certifications/${certId}/skills.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+      getApiClient().get<SkillMapData>(`/certifications/${certId}/skills`).catch(() => null),
     ])
       .then(([attempts, map]) => setData({ attempts, map }))
       .catch(() => setError(true));

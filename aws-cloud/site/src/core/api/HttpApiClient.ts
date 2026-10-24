@@ -24,7 +24,14 @@ export class HttpApiClient extends ApiClient {
       body: req.body !== undefined ? JSON.stringify(req.body) : undefined,
     });
     if (res.status === 401) this.options.onUnauthorized?.();
-    if (!res.ok) throw new ApiError(res.status, `${req.method} ${req.path} returned ${res.status}`, req);
+    if (!res.ok) {
+      // Read the body so the connection is released, and keep the server's reason (e.g. rate limit).
+      const reason = await res
+        .json()
+        .then((b: { error?: { message?: string } }) => b?.error?.message)
+        .catch(() => undefined);
+      throw new ApiError(res.status, `${req.method} ${req.path} returned ${res.status}${reason ? `: ${reason}` : ""}`, req);
+    }
     if (res.status === 204) return undefined as T;
     return (await res.json()) as T;
   }

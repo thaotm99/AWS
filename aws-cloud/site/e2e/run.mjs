@@ -24,6 +24,8 @@ const PORT = 4399;
 const ORIGIN = `http://localhost:${PORT}`;
 const WIDTHS = [1280, 390];
 const WORKERS = Number(process.env.E2E_WORKERS ?? 4);
+// A new learner per run, so one run's hourly practice-test budget does not carry into the next.
+const E2E_EMAIL = `e2e-${Date.now()}@example.com`;
 const AXE = readFileSync(require.resolve("axe-core/axe.min.js"), "utf8");
 
 const failures = [];
@@ -48,7 +50,8 @@ const pages = html
 for (const file of html) {
   const text = readFileSync(file, "utf8");
   for (const [, href] of text.matchAll(/href="(\/[^"#?]*)(?:[#?][^"]*)?"/g)) {
-    if (href.startsWith("//")) continue;
+    // /auth/* is served by the server function, not a file in dist/.
+    if (href.startsWith("//") || href.startsWith("/auth/")) continue;
     const p = join(DIST, href);
     if (!existsSync(p) && !existsSync(join(p, "index.html"))) fail("/" + relative(DIST, file), "broken link", href);
   }
@@ -178,7 +181,7 @@ await Promise.all(
     for (const w of WIDTHS) {
       contexts[w] = await browser.newContext({ viewport: { width: w, height: 900 }, hasTouch: w < 500 });
       if (withApi) {
-        const res = await contexts[w].request.post(`${ORIGIN}/auth/dev-login`, { data: { email: "e2e@example.com" }, headers: { Origin: ORIGIN } });
+        const res = await contexts[w].request.post(`${ORIGIN}/auth/dev-login`, { data: { email: E2E_EMAIL }, headers: { Origin: ORIGIN } });
         if (!res.ok()) throw new Error(`test sign-in failed: ${res.status()}`);
       }
     }
