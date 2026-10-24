@@ -2,7 +2,7 @@
 import { one, query, transaction } from "../db";
 import { HttpError, json, noContent, readJson } from "../http";
 import type { Route } from "../router";
-import { endSessionCookie, requireSession } from "../auth/session";
+import { endSessionCookies, requireSession } from "../auth/session";
 
 interface UserCertRow {
   cert_id: string;
@@ -113,7 +113,7 @@ export const meRoutes: Route[] = [
         await db.query(`delete from users where id = $1`, [user.id]);
         await db.query(`insert into audit_log (user_id, action) values ($1, 'account.delete')`, [user.id]);
       });
-      return noContent({ "Set-Cookie": endSessionCookie(request) });
+      return noContent({}, endSessionCookies(request));
     },
   },
 ];

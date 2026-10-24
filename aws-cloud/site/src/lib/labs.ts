@@ -2,6 +2,8 @@
 // the design against the requirements. Plain data plus rule functions, so the island imports it
 // directly (functions cannot travel as island props) and the rules can be tested without a browser.
 
+import { userData } from "../app/userData";
+
 export type Text = { vi: string; en: string };
 
 export type ServiceId =
@@ -289,7 +291,7 @@ export function evaluate(lab: Lab, p: Placement): boolean[] {
   return lab.rules.map((r) => r.check(p));
 }
 
-// ---------- progress in this browser ----------
+// ---------- progress, kept per account (app/userData) ----------
 
 const KEY = "labs";
 export interface LabProgress {
@@ -298,18 +300,10 @@ export interface LabProgress {
 }
 
 export function readLabs(): Record<string, LabProgress> {
-  try {
-    const v = JSON.parse(localStorage.getItem(KEY) ?? "{}");
-    return v && typeof v === "object" && !Array.isArray(v) ? v : {};
-  } catch {
-    return {};
-  }
+  const v = userData.get(KEY);
+  return v && typeof v === "object" && !Array.isArray(v) ? { ...(v as Record<string, LabProgress>) } : {};
 }
 
 export function writeLab(id: string, progress: LabProgress) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify({ ...readLabs(), [id]: progress }));
-  } catch {
-    /* storage blocked: the lab still works on this page */
-  }
+  userData.set(KEY, { ...readLabs(), [id]: progress });
 }

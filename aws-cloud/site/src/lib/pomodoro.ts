@@ -1,4 +1,6 @@
-// Pomodoro timer for study sessions, kept in this browser. The timer runs on the wall clock (an end
+import { userData } from "../app/userData";
+
+// Pomodoro timer for study sessions, kept per account (app/userData). The timer runs on the wall clock (an end
 // time, not a counter), so it carries on across pages, tabs and a sleeping laptop. Every change is a
 // pure function of the state and the time, so it can be tested without a browser.
 
@@ -263,32 +265,14 @@ const KEYS = { timer: "pomodoro", settings: "pomodoro-settings", log: "pomodoro-
 export const POMODORO_KEYS: readonly string[] = Object.values(KEYS);
 export const POMODORO_EVENT = "pomodoro-change";
 
-/** What was written on this page, for when storage is blocked: the timer still runs here. */
-const memory = new Map<string, string>();
+if (typeof window !== "undefined") userData.subscribe(POMODORO_KEYS, () => window.dispatchEvent(new Event(POMODORO_EVENT)));
 
 function read<T>(key: string, fallback: T): T {
-  let text: string | null | undefined;
-  try {
-    text = localStorage.getItem(key);
-  } catch {
-    text = memory.get(key);
-  }
-  try {
-    return JSON.parse(text ?? "null") ?? fallback;
-  } catch {
-    return fallback;
-  }
+  return (userData.get<T>(key) ?? fallback) as T;
 }
 
 function write(key: string, value: unknown) {
-  const text = JSON.stringify(value);
-  memory.set(key, text);
-  try {
-    localStorage.setItem(key, text);
-  } catch {
-    /* storage blocked: kept in memory for this page */
-  }
-  window.dispatchEvent(new Event(POMODORO_EVENT));
+  userData.set(key, value);
 }
 
 export const readSettings = () => cleanSettings(read(KEYS.settings, {}));

@@ -18,8 +18,10 @@ export function json(body: unknown, status = 200, headers: Record<string, string
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json; charset=utf-8", ...NO_STORE, ...headers } });
 }
 
-export function noContent(headers: Record<string, string> = {}): Response {
-  return new Response(null, { status: 204, headers: { ...NO_STORE, ...headers } });
+export function noContent(headers: Record<string, string> = {}, cookies: string[] = []): Response {
+  const h = new Headers({ ...NO_STORE, ...headers });
+  for (const c of cookies) h.append("Set-Cookie", c);
+  return new Response(null, { status: 204, headers: h });
 }
 
 export function redirect(location: string, cookies: string[] = []): Response {
@@ -54,13 +56,13 @@ export interface CookieOptions {
   path?: string;
 }
 
-/** HttpOnly, SameSite=Lax; Secure except on plain-http localhost (local runs and tests). */
-export function cookie(request: Request, name: string, value: string, { maxAge, path = "/" }: CookieOptions = {}): string {
+/** HttpOnly (unless `readable`), SameSite=Lax; Secure except on plain-http localhost (local runs and tests). */
+export function cookie(request: Request, name: string, value: string, { maxAge, path = "/", readable = false }: CookieOptions & { readable?: boolean } = {}): string {
   const secure = new URL(request.url).protocol === "https:";
   return [
     `${name}=${encodeURIComponent(value)}`,
     `Path=${path}`,
-    "HttpOnly",
+    readable ? "" : "HttpOnly",
     "SameSite=Lax",
     secure ? "Secure" : "",
     maxAge !== undefined ? `Max-Age=${maxAge}` : "",

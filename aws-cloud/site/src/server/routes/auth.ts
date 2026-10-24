@@ -4,7 +4,7 @@ import { query } from "../db";
 import { HttpError, clearCookie, cookie, json, noContent, parseCookies, readJson, redirect, safeReturnPath } from "../http";
 import type { Route } from "../router";
 import { authorizationUrl, finishSignIn, newOAuthStart, type GoogleProfile } from "../auth/google";
-import { currentSession, endSessionCookie, revokeSession, startSession } from "../auth/session";
+import { currentSession, endSessionCookies, revokeSession, startSession } from "../auth/session";
 import { signToken, verifyToken } from "../auth/token";
 
 /** Holds state, nonce, PKCE verifier and the return path between /auth/login and /auth/callback. */
@@ -32,7 +32,7 @@ async function signIn(request: Request, profile: GoogleProfile, returnTo: string
   await upsertUser(profile);
   const session = await startSession(request, profile.sub);
   await query(`insert into audit_log (user_id, action) values ($1, 'auth.login')`, [profile.sub]);
-  return redirect(returnTo, [...extraCookies, session]);
+  return redirect(returnTo, [...extraCookies, ...session]);
 }
 
 export const authRoutes: Route[] = [
@@ -102,7 +102,7 @@ export const authRoutes: Route[] = [
     handler: async ({ request }) => {
       const session = await currentSession(request);
       if (session) await revokeSession(session.sid);
-      return noContent({ "Set-Cookie": endSessionCookie(request) });
+      return noContent({}, endSessionCookies(request));
     },
   },
 ];

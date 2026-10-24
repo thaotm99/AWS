@@ -1,4 +1,6 @@
-// Highlights and notes on lesson parts, kept in this browser. A highlight is anchored by the text it
+import { userData } from "../app/userData";
+
+// Highlights and notes on lesson parts, kept per account (app/userData). A highlight is anchored by the text it
 // covers plus a little context before and after, so it finds its place again after the page is
 // rebuilt, as long as the sentence itself has not changed.
 
@@ -26,22 +28,15 @@ export const CONTEXT = 32;
 const KEY = "notes";
 export const NOTES_EVENT = "notes-change";
 
+if (typeof window !== "undefined") userData.subscribe(KEY, () => window.dispatchEvent(new Event(NOTES_EVENT)));
+
 export function readNotes(): Highlight[] {
-  try {
-    const v = JSON.parse(localStorage.getItem(KEY) ?? "[]");
-    return Array.isArray(v) ? v.filter((h) => h && typeof h.quote === "string" && typeof h.id === "string") : [];
-  } catch {
-    return [];
-  }
+  const v = userData.get(KEY);
+  return Array.isArray(v) ? v.filter((h) => h && typeof h.quote === "string" && typeof h.id === "string") : [];
 }
 
 export function writeNotes(list: Highlight[]) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(list));
-  } catch {
-    /* storage blocked: highlights last until the page is left */
-  }
-  window.dispatchEvent(new Event(NOTES_EVENT));
+  userData.set(KEY, list);
 }
 
 export const addNote = (h: Highlight) => writeNotes([...readNotes(), h]);
