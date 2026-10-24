@@ -24,7 +24,7 @@ function Question({ item, n }: { item: QuizItem; n: number }) {
   const { t } = useI18n();
 
   return (
-    <div className="rounded-lg border-2 border-line bg-surface px-[22px] py-5 shadow-[0_4px_0_var(--color-line)]">
+    <div className="min-w-0 rounded-lg border-2 border-line bg-surface px-[22px] py-5 wrap-anywhere shadow-[0_4px_0_var(--color-line)]">
       <div className="mb-3.5 font-display text-step-1 leading-[1.4] font-semibold">{n}. {item.q}</div>
       <div className="grid gap-2.5">
         {item.opts.map((o, i) => {

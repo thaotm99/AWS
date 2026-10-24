@@ -15,3 +15,6 @@ export type MessageKey<T, P extends string = "", D extends unknown[] = []> = D["
   : { [K in keyof T & string]: T[K] extends string ? `${P}${K}` : MessageKey<T[K], `${P}${K}.`, [...D, 0]> }[keyof T & string];
 
 export type MessageParams = Record<string, string | number>;
+
+/** Placeholder values written into static markup; a `{ vi, en }` value is read in the chosen language. */
+export type DomParams = Record<string, string | number | Record<Locale, string>>;

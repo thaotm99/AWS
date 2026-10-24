@@ -15,7 +15,7 @@ interface Props {
   /** A practice test… */
   examId?: string;
   /** …or every question about one service, opened from its lesson… */
-  topic?: { id: string; title: string };
+  topic?: { id: string; title: { vi: string; en: string } };
   /** …or the questions whose latest answer was wrong. */
   review?: boolean;
 }
@@ -26,6 +26,7 @@ function ExamView({ certId, examId, topic, review }: Props) {
   const state = useStore(store);
   const { cert, exam, attempt, index, view } = state;
   const { t, locale } = useT();
+  const topicTitle = topic?.title[locale];
 
   const set = review
     ? { kind: "review" as const, id: "review", all: new URLSearchParams(location.search).has("all") }
@@ -62,7 +63,7 @@ function ExamView({ certId, examId, topic, review }: Props) {
   useEffect(() => {
     if (!cert) return;
     if (review) document.title = t("review.pageTitle", { code: cert.code });
-    else if (exam) document.title = topic ? t("topic.pageTitle", { title: topic.title }) : t("catalog.examPageTitle", { code: cert.code, n: exam.number });
+    else if (exam) document.title = topic ? t("topic.pageTitle", { title: topicTitle! }) : t("catalog.examPageTitle", { code: cert.code, n: exam.number });
   }, [cert, exam, t]);
 
   // Each new question or the result starts at the top of the page.
@@ -103,7 +104,7 @@ function ExamView({ certId, examId, topic, review }: Props) {
   }
   if (!cert || !exam || !attempt || state.status !== "ready") return <p className="pr-muted">{t("exam.loading")}</p>;
   const examLabel = t("catalog.examLabel", { n: exam.number });
-  const heading = review ? t("review.title") : topic ? t("topic.title", { title: topic.title }) : `${cert.code} · ${examLabel}`;
+  const heading = review ? t("review.title") : topic ? t("topic.title", { title: topicTitle! }) : `${cert.code} · ${examLabel}`;
 
   const question = exam.questions[index];
   const finished = Scoring.isFinished(attempt, exam.questions.map((q) => q.id));
@@ -113,7 +114,7 @@ function ExamView({ certId, examId, topic, review }: Props) {
         reviewCrumbs
       ) : topic ? (
         <div className="crumbs">
-          <a href={routes.lesson(topic.id)}>{topic.title}</a><span aria-hidden="true">/</span>
+          <a href={routes.lesson(topic.id)}>{topicTitle}</a><span aria-hidden="true">/</span>
           <b>{t("topic.crumb")}</b>
         </div>
       ) : (
