@@ -229,6 +229,11 @@ html.zoom-open {
   & :has(.svg-wrap, .pr-illus-frame) {
     @apply flex min-h-0 flex-auto flex-col;
   }
+  /* Only the drawing gives up height: controls and text around it (a readout, a caption) keep their full
+     height, else a long explanation is cut off at the bottom of the screen. */
+  & :has(.svg-wrap, .pr-illus-frame) > :not(.svg-wrap, .pr-illus-frame, :has(.svg-wrap, .pr-illus-frame)) {
+    @apply shrink-0;
+  }
   & .svg-wrap,
   & .pr-illus-frame {
     @apply flex min-h-[120px] flex-auto overflow-hidden;
