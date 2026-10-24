@@ -3,43 +3,20 @@ import PageBoundary from "./PageBoundary";
 import QuestionCard from "./QuestionCard";
 import ResultPanel from "./ResultPanel";
 import type { Dispatch, PracticeEvent } from "../app/events";
-import { Scoring } from "../domain/Scoring";
-import type { Attempt, CertificationDetail, Exam, OptionKey, QuestionId } from "../domain/types";
+import type { Attempt, CertificationDetail, Exam, MockDraft } from "../domain/types";
 import { getApiClient } from "../../../app/api";
 import { AttemptService } from "../services/AttemptService";
 import { CatalogService } from "../services/CatalogService";
 import { routes } from "./routes";
 import { useT } from "./useT";
 
-/** Answers in progress, kept in the browser until the test is handed in. */
-interface Draft {
-  startedAt: number;
-  answers: Record<QuestionId, OptionKey[]>;
-  flags: QuestionId[];
-  index: number;
-}
+/** Answers in progress, kept on the server (debounced) until the test is handed in. */
+type Draft = MockDraft;
 
 type Phase = "intro" | "running" | "overview" | "submitting" | "result" | "review";
 
-const draftKey = (certId: string, examId: string) => `mock-draft:${certId}:${examId}`;
-
-function readDraft(key: string): Draft | null {
-  try {
-    const d = JSON.parse(localStorage.getItem(key) ?? "null");
-    return d && typeof d.startedAt === "number" && d.answers && Array.isArray(d.flags) ? d : null;
-  } catch {
-    return null;
-  }
-}
-
-function writeDraft(key: string, draft: Draft | null) {
-  try {
-    if (draft) localStorage.setItem(key, JSON.stringify(draft));
-    else localStorage.removeItem(key);
-  } catch {
-    /* storage blocked: the test still runs, it just won't survive a reload */
-  }
-}
+/** Delay before a change to the draft is saved, so picking several options sends one request. */
+const SAVE_DELAY = 800;
 
 const clock = (ms: number) => {
   const s = Math.max(0, Math.ceil(ms / 1000));
@@ -56,8 +33,9 @@ interface Props {
 /**
  * Mock exam: the real format of the certification (65 questions, 130 minutes for SAA-C03), with the
  * verdict only after the test is handed in. Answers can be changed and questions flagged until then;
- * time runs on the clock, so a closed tab does not stop it. Handing in saves an ordinary attempt
- * (exam id "mock-<id>"), so the result, the lessons to learn again and the review list all apply.
+ * time runs on the clock, so a closed tab does not stop it, and the draft is kept on the server, so the
+ * test resumes on another device. Handing in saves an ordinary attempt (exam id "mock-<id>") graded by
+ * the server, so the result, the lessons to learn again and the review list all apply.
  */
 function MockExam({ certId, examId }: Props) {
   const { t, locale } = useT();
@@ -65,8 +43,8 @@ function MockExam({ certId, examId }: Props) {
     const api = getApiClient();
     return { catalog: new CatalogService(api), attempts: new AttemptService(api) };
   }, []);
-  const key = draftKey(certId, examId);
   const mockId = `mock-${examId}`;
+  const saveTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const [cert, setCert] = useState<CertificationDetail | null>(null);
   const [exam, setExam] = useState<Exam | null>(null);
@@ -84,9 +62,12 @@ function MockExam({ certId, examId }: Props) {
   useEffect(() => {
     (async () => {
       try {
-        const [c, last] = await Promise.all([services.catalog.getCertification(certId), services.attempts.latest(certId, mockId)]);
+        const [c, last, saved] = await Promise.all([
+          services.catalog.getCertification(certId),
+          services.attempts.latest(certId, mockId),
+          services.attempts.draft(certId, examId),
+        ]);
         setCert(c);
-        const saved = readDraft(key);
         if (saved) {
           setDraft(saved);
           setPhase("running");
@@ -137,9 +118,16 @@ function MockExam({ certId, examId }: Props) {
     window.scrollTo({ top: 0 });
   }, [phase, draft?.index, reviewIndex]);
 
+  function persist(next: Draft | null) {
+    clearTimeout(saveTimer.current);
+    const save = () => services.attempts.saveDraft(certId, examId, next).catch((e) => console.error("[mock] draft not saved", e));
+    if (next) saveTimer.current = setTimeout(save, SAVE_DELAY);
+    else void save();
+  }
+
   function update(next: Draft) {
     setDraft(next);
-    writeDraft(key, next);
+    persist(next);
   }
 
   function start() {
@@ -155,14 +143,14 @@ function MockExam({ certId, examId }: Props) {
     submitting.current = true;
     setPhase("submitting");
     try {
+      clearTimeout(saveTimer.current);
       const a = await services.attempts.start({ certId, examId: mockId, questionCount: exam.questions.length });
-      let saved = a;
-      // Unanswered questions are recorded as wrong, as in the real exam.
-      for (const q of exam.questions) {
-        const chosen = [...(draft.answers[q.id] ?? [])].sort();
-        saved = await services.attempts.answer(a.id, q.id, { chosen, correct: Scoring.isCorrect(q, chosen) });
-      }
-      writeDraft(key, null);
+      // The server grades every question; unanswered ones count as wrong, as in the real exam. It also
+      // drops the saved draft.
+      const { attempt: saved, reveals } = await services.attempts.submit(a.id, draft.answers);
+      services.catalog.remember(reveals);
+      setExam(services.catalog.withReveals(exam));
+      setOriginal(services.catalog.withReveals(original));
       setDraft(null);
       setAttempt(saved);
       setPhase("result");

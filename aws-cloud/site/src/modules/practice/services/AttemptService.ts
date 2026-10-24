@@ -1,5 +1,4 @@
-import { ApiError } from "../../../core/api/ApiClient";
-import type { AnswerInput, Attempt, AttemptId, CertificationId, ExamId, NewAttempt, QuestionId } from "../domain/types";
+import type { AnswerInput, AnswerResult, Attempt, AttemptId, CertificationId, ExamId, MockDraft, NewAttempt, QuestionId, SubmitResult } from "../domain/types";
 import { ApiService } from "../../../core/api/ApiService";
 
 /** The learner's attempts at practice exams. */
@@ -15,13 +14,9 @@ export class AttemptService extends ApiService {
     return latest;
   }
 
-  async latest(certId: CertificationId, examId: ExamId): Promise<Attempt | null> {
-    try {
-      return await this.api.get<Attempt>("/attempts/latest", { certId, examId });
-    } catch (e) {
-      if (e instanceof ApiError && e.isNotFound) return null;
-      throw e;
-    }
+  /** Newest attempt of one exam; null when there is none yet. */
+  latest(certId: CertificationId, examId: ExamId): Promise<Attempt | null> {
+    return this.api.get<Attempt | null>("/attempts/latest", { certId, examId });
   }
 
   start(input: NewAttempt): Promise<Attempt> {
@@ -33,7 +28,23 @@ export class AttemptService extends ApiService {
     await this.api.delete<unknown>("/attempts");
   }
 
-  answer(attemptId: AttemptId, questionId: QuestionId, input: AnswerInput): Promise<Attempt> {
-    return this.api.put<Attempt>(ApiService.path("attempts", attemptId, "answers", questionId), input);
+  /** The server grades the answer and returns the question's answer side with the attempt. */
+  answer(attemptId: AttemptId, questionId: QuestionId, input: AnswerInput): Promise<AnswerResult> {
+    return this.api.put<AnswerResult>(ApiService.path("attempts", attemptId, "answers", questionId), input);
+  }
+
+  /** Hands in a mock exam: every question of its set graded at once (unanswered ones count as wrong). */
+  submit(attemptId: AttemptId, answers: Record<QuestionId, string[]>): Promise<SubmitResult> {
+    return this.api.post<SubmitResult>(ApiService.path("attempts", attemptId, "submit"), { answers });
+  }
+
+  /** The mock exam in progress on this test; null when none is. */
+  draft(certId: CertificationId, examId: ExamId): Promise<MockDraft | null> {
+    return this.api.get<MockDraft | null>(ApiService.path("mock-drafts", certId, examId));
+  }
+
+  async saveDraft(certId: CertificationId, examId: ExamId, draft: MockDraft | null): Promise<void> {
+    const path = ApiService.path("mock-drafts", certId, examId);
+    await (draft ? this.api.put<unknown>(path, draft) : this.api.delete<unknown>(path));
   }
 }

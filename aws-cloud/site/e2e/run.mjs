@@ -9,6 +9,9 @@
 //    contrast, which is reported only (some states are dimmed on purpose)
 //
 // Env: E2E_PAGES=/,/glossary/ limits the browser checks to some pages; E2E_WORKERS (default 4).
+// With DATABASE_URL (migrated, questions imported) the site runs on scripts/dev-server.ts with the
+// API and a test sign-in, so the practice pages load their questions; without it, on `astro preview`,
+// where pages that need the server show their error state.
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
@@ -57,12 +60,18 @@ for (const file of all.filter((f) => /\.(html|json|js)$/.test(f))) {
 console.log(`static: ${html.length} HTML files, ${all.length} files checked`);
 
 // ---------- browser checks ----------
-const server = spawn("npx", ["astro", "preview", "--port", String(PORT)], { stdio: "ignore" });
+const withApi = Boolean(process.env.DATABASE_URL);
+const server = withApi
+  ? spawn("npx", ["tsx", "scripts/dev-server.ts", String(PORT)], {
+      stdio: "ignore",
+      env: { ...process.env, AUTH_DEV_LOGIN: "1", SESSION_SECRET: process.env.SESSION_SECRET ?? "e2e-secret-e2e-secret-e2e-secret!!" },
+    })
+  : spawn("npx", ["astro", "preview", "--port", String(PORT)], { stdio: "ignore" });
 const stop = () => server.kill();
 process.on("exit", stop);
 for (let i = 0; ; i++) {
   try {
-    if ((await fetch(ORIGIN)).ok) break;
+    if ((await fetch(withApi ? `${ORIGIN}/auth/methods` : ORIGIN)).ok) break;
   } catch {}
   if (i > 60) throw new Error("preview server did not start");
   await new Promise((r) => setTimeout(r, 500));
@@ -166,7 +175,13 @@ let next = 0;
 await Promise.all(
   Array.from({ length: WORKERS }, async () => {
     const contexts = {};
-    for (const w of WIDTHS) contexts[w] = await browser.newContext({ viewport: { width: w, height: 900 }, hasTouch: w < 500 });
+    for (const w of WIDTHS) {
+      contexts[w] = await browser.newContext({ viewport: { width: w, height: 900 }, hasTouch: w < 500 });
+      if (withApi) {
+        const res = await contexts[w].request.post(`${ORIGIN}/auth/dev-login`, { data: { email: "e2e@example.com" }, headers: { Origin: ORIGIN } });
+        if (!res.ok()) throw new Error(`test sign-in failed: ${res.status()}`);
+      }
+    }
     while (next < jobs.length) {
       const [path, width] = jobs[next++];
       await checkPage(contexts[width], path, width);

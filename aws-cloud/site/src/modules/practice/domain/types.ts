@@ -1,4 +1,4 @@
-// Shapes exchanged over the practice API. The static build and a future server return the same JSON.
+// Shapes exchanged over the practice API (src/server/routes/practice.ts and attempts.ts).
 
 export type CertificationId = string;
 export type ExamId = string;
@@ -58,10 +58,22 @@ export interface Question {
   selectCount: number;
   promptHtml: string;
   options: QuestionOption[];
-  correct: OptionKey[];
-  explanationHtml: string;
-  /** Where the lessons teach this question; attached by the content endpoints, absent in older data. */
+  /**
+   * The answer side: the server sends it only for questions the learner has already answered, and
+   * with the response to an answer (see Reveal). Absent on a question not yet answered.
+   */
+  correct?: OptionKey[];
+  explanationHtml?: string;
+  /** Where the lessons teach this question. */
   learn?: LearnLink[];
+}
+
+/** The answer side of one question, returned by the server once the learner has answered it. */
+export interface Reveal {
+  questionId: QuestionId;
+  correct: OptionKey[];
+  explanationHtml: { en: string; vi: string | null };
+  learn: LearnLink[];
 }
 
 /** A set of questions to work through: a practice test, or every question about one service ("topic"). */
@@ -112,5 +124,24 @@ export interface NewAttempt {
 
 export interface AnswerInput {
   chosen: OptionKey[];
-  correct: boolean;
+}
+
+/** The server's verdict on one answer: the attempt as now stored, and the question's answer side. */
+export interface AnswerResult {
+  attempt: Attempt;
+  reveal: Reveal;
+}
+
+/** A mock exam handed in: every question graded at once. */
+export interface SubmitResult {
+  attempt: Attempt;
+  reveals: Reveal[];
+}
+
+/** A mock exam in progress, kept on the server until it is handed in. */
+export interface MockDraft {
+  startedAt: number;
+  answers: Record<QuestionId, OptionKey[]>;
+  flags: QuestionId[];
+  index: number;
 }
