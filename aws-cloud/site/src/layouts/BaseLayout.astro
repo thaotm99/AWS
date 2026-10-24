@@ -25,7 +25,7 @@ interface Props {
   /** The page is the current lesson's question set, not the lesson itself. */
   currentQuiz?: boolean;
   /** Top-nav section this page belongs to. */
-  section?: "theory" | "practice" | "lab" | "glossary" | "flashcards" | "pomodoro" | "progress";
+  section?: "guide" | "theory" | "practice" | "lab" | "glossary" | "flashcards" | "pomodoro" | "progress";
   /** Practice pages have no lesson roadmap. */
   sidebar?: boolean;
   /** Full-width content (home page map); only used without the sidebar. */
@@ -105,6 +105,7 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
           <span class="whitespace-nowrap max-sm:text-[0.94rem] max-xs:hidden">CloudLab</span>
         </a>
         <nav class="ml-auto flex gap-1 max-lg:hidden" aria-label="Chính" data-i18n-attr="aria-label:shell.nav.main">
+          <a class="nav-pill" href="/exam-guide/" aria-current={section === "guide" ? "page" : undefined}><T k="shell.nav.guide" /></a>
           <a class="nav-pill" href="/" aria-current={section === "theory" ? "page" : undefined}><T k="shell.nav.theory" /></a>
           <a class="nav-pill" href="/practice/" aria-current={section === "practice" ? "page" : undefined}><T k="shell.nav.practice" /></a>
           <a class="nav-pill" href="/lab/" aria-current={section === "lab" ? "page" : undefined}><T k="shell.nav.lab" /></a>
@@ -126,6 +127,7 @@ const layers = getCurriculum().map(({ n, name, nameEn, concepts }) => ({
       <!-- Sidebar on desktop; on phones the same element is the ☰ drawer, which also carries the main links. -->
       <aside class:list={["sidebar", { "nav-only lg:hidden": !sidebar }]} id="drawer" aria-label="Menu" data-i18n-attr="aria-label:shell.nav.menu">
         <nav class="mb-3.5 hidden gap-0.5 border-b border-line pb-3 max-lg:grid" aria-label="Chính" data-i18n-attr="aria-label:shell.nav.main">
+          <a class="drawer-link" href="/exam-guide/" aria-current={section === "guide" ? "page" : undefined}><T k="shell.nav.guide" /></a>
           <a class="drawer-link" href="/" aria-current={section === "theory" ? "page" : undefined}><T k="shell.nav.theory" /></a>
           <a class="drawer-link" href="/practice/" aria-current={section === "practice" ? "page" : undefined}><T k="shell.nav.practice" /></a>
           <a class="drawer-link" href="/lab/" aria-current={section === "lab" ? "page" : undefined}><T k="shell.nav.lab" /></a>

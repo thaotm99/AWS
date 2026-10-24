@@ -1,0 +1,155 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import T from "../app/T.astro";
+import ExamCountdown from "../components/guide/ExamCountdown.tsx";
+import ExamPhases from "../components/guide/ExamPhases.tsx";
+import { CERTIFICATIONS, practiceCatalog } from "../modules/practice/content/PracticeCatalog";
+
+const cert = practiceCatalog.listCertifications()[0];
+const domains = CERTIFICATIONS.find((c) => c.id === cert.id)?.domains ?? [];
+const maxWeight = Math.max(...domains.map((d) => d.weight));
+const mockHref = `/practice/${cert.id}/1/mock/`;
+
+// The daily routine: each step opens the tool it uses.
+const steps = [
+  { id: "practice", minutes: 60, href: "/practice/", tone: "bg-accent-soft text-accent-strong dark:text-ink" },
+  { id: "review", minutes: 45, href: `/practice/${cert.id}/review/`, tone: "bg-edge-soft text-edge" },
+  { id: "weak", minutes: 45, href: `/practice/${cert.id}/skills/`, tone: "bg-ok-soft text-ok" },
+  { id: "cards", minutes: 30, href: "/flashcards/", tone: "bg-sun-soft text-sun-ink" },
+] as const;
+
+const facts = [
+  { id: "questions", tone: "text-accent" },
+  { id: "time", tone: "text-accent" },
+  { id: "pass", tone: "text-ok" },
+  { id: "guess", tone: "text-edge" },
+] as const;
+
+const bands = [
+  { id: "low", tone: "bg-bad-soft", ink: "text-bad" },
+  { id: "mid", tone: "bg-sun-soft", ink: "text-sun-ink" },
+  { id: "high", tone: "bg-ok-soft", ink: "text-ok" },
+] as const;
+
+const tips = ["a", "b", "c", "d"] as const;
+const sectionHead = "flex flex-col gap-2";
+const h2 = "m-0 text-[2rem] max-md:text-[1.5rem]";
+const lede = "m-0 max-w-[68ch] text-[1.0625rem] leading-[1.65] text-muted";
+const card = "rounded-lg border-2 border-line bg-surface";
+---
+<BaseLayout title="Hướng dẫn ôn thi SAA-C03 · CloudLab" titleKey="shell.guide.pageTitle" sidebar={false} wide section="guide">
+  <div class="flex flex-col gap-section">
+    <section class="flex flex-wrap items-stretch gap-10">
+      <div class="flex min-w-0 flex-[999_1_520px] flex-col justify-center gap-[18px]">
+        <span class="text-[0.8125rem] font-bold tracking-[0.08em] text-edge uppercase"><T k="shell.guide.eyebrow" /></span>
+        <h1 class="m-0 text-[3rem] leading-[1.12] font-extrabold max-md:text-[2rem]"><T k="shell.guide.heading" /></h1>
+        <p class="m-0 max-w-[60ch] text-[1.1875rem] leading-[1.65] text-muted max-md:text-[1.0625rem]"><T k="shell.guide.lede" /></p>
+        <div class="mt-1.5 flex flex-wrap gap-3.5">
+          <a class="btn primary cta" href={mockHref}><T k="shell.guide.startMock" /></a>
+          <a class="btn cta" href="#loop"><T k="shell.guide.seeLoop" /></a>
+        </div>
+      </div>
+      <div class="min-w-0 flex-[1_1_320px]">
+        <ExamCountdown client:load />
+      </div>
+    </section>
+
+    <section class="flex flex-col gap-6" aria-labelledby="exam-h">
+      <div class={sectionHead}>
+        <h2 id="exam-h" class={h2}><T k="shell.guide.exam.heading" /></h2>
+        <p class={lede}><T k="shell.guide.exam.lede" /></p>
+      </div>
+      <dl class="m-0 grid grid-cols-4 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
+        {facts.map((f) => (
+          <div class:list={[card, "flex flex-col gap-1.5 p-5"]}>
+            <dt class:list={["font-display text-[1.75rem] leading-tight font-extrabold", f.tone]}><T k={`shell.guide.exam.${f.id}`} /></dt>
+            <dd class="m-0 text-[0.9375rem] leading-[1.55] text-muted"><T k={`shell.guide.exam.${f.id}Body`} /></dd>
+          </div>
+        ))}
+      </dl>
+      <div class:list={[card, "flex flex-col gap-4 p-6"]}>
+        <h3 class="m-0 text-[1.25rem]"><T k="shell.guide.exam.domains" /></h3>
+        <ul class="m-0 flex list-none flex-col gap-3 p-0">
+          {domains.map((d) => (
+            <li class="grid grid-cols-[minmax(0,300px)_minmax(0,1fr)_56px] items-center gap-4 max-md:grid-cols-[minmax(0,1fr)_56px]">
+              <span class="font-semibold">{d.name}</span>
+              <span class="block h-3.5 overflow-hidden rounded-full bg-accent-soft max-md:col-span-2 max-md:row-start-2" aria-hidden="true"><span class="block h-full rounded-full bg-accent" style={`width: ${(d.weight / maxWeight) * 100}%`}></span></span>
+              <span class="text-right font-mono">{Math.round(d.weight * 100)}%</span>
+            </li>
+          ))}
+        </ul>
+        <p class="m-0 text-[0.9375rem] leading-[1.6] text-muted"><T k="shell.guide.exam.domainsNote" /></p>
+      </div>
+    </section>
+
+    <section id="loop" class="flex scroll-mt-24 flex-col gap-6" aria-labelledby="loop-h">
+      <div class={sectionHead}>
+        <h2 id="loop-h" class={h2}><T k="shell.guide.loop.heading" /></h2>
+        <p class={lede}><T k="shell.guide.loop.lede" /></p>
+      </div>
+      <ol class="m-0 grid list-none grid-cols-4 gap-4 p-0 max-lg:grid-cols-2 max-sm:grid-cols-1">
+        {steps.map((s, i) => (
+          <li class:list={[card, "flex flex-col gap-3 p-[22px] shadow-[0_6px_0] shadow-line"]}>
+            <div class="flex items-center justify-between">
+              <span class:list={["grid size-10 place-items-center rounded-[14px] font-display text-[1.125rem] font-extrabold", s.tone]}>{i + 1}</span>
+              <span class="rounded-full bg-bg px-3 py-1 font-mono text-[0.8125rem] text-muted"><T k="shell.guide.loop.minutes" params={{ n: s.minutes }} /></span>
+            </div>
+            <h3 class="m-0 text-[1.25rem]"><T k={`shell.guide.loop.${s.id}.title`} /></h3>
+            <p class="m-0 flex-grow text-[0.9375rem] leading-[1.6] text-muted"><T k={`shell.guide.loop.${s.id}.body`} /></p>
+            <a class="font-semibold no-underline" href={s.href}><T k={`shell.guide.loop.${s.id}.link`} />{" →"}</a>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section class="flex flex-col gap-6" aria-labelledby="plan-h">
+      <div class={sectionHead}>
+        <h2 id="plan-h" class={h2}><T k="shell.guide.plan.heading" /></h2>
+        <p class={lede}><T k="shell.guide.plan.lede" /></p>
+      </div>
+      <ExamPhases client:load />
+    </section>
+
+    <section class="flex flex-col gap-6" aria-labelledby="score-h">
+      <div class={sectionHead}>
+        <h2 id="score-h" class={h2}><T k="shell.guide.score.heading" /></h2>
+        <p class={lede}><T k="shell.guide.score.lede" /></p>
+      </div>
+      <div class="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4">
+        {bands.map((b) => (
+          <div class:list={["flex flex-col gap-2 rounded-[20px] p-[22px]", b.tone]}>
+            <span class:list={["font-display text-[1.75rem] font-extrabold", b.ink]}><T k={`shell.guide.score.${b.id}`} /></span>
+            <span class="leading-[1.6]"><T k={`shell.guide.score.${b.id}Body`} /></span>
+          </div>
+        ))}
+      </div>
+      <p class:list={[card, "m-0 flex max-w-none items-start gap-3.5 px-[22px] py-[18px] leading-[1.6]"]}>
+        <svg class="mt-0.5 flex-none text-edge" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg>
+        <span><T k="shell.guide.score.repeat" /></span>
+      </p>
+    </section>
+
+    <section class="flex flex-wrap gap-6" aria-labelledby="tips-h">
+      <div class:list={[card, "flex min-w-0 flex-[1_1_420px] flex-col gap-3.5 p-6"]}>
+        <h2 id="tips-h" class="m-0 text-[1.625rem]"><T k="shell.guide.tips.heading" /></h2>
+        <ul class="m-0 flex list-disc flex-col gap-2.5 pl-5 leading-[1.6]">
+          {tips.map((k) => <li><T k={`shell.guide.tips.items.${k}`} /></li>)}
+        </ul>
+      </div>
+      <div class:list={[card, "flex min-w-0 flex-[1_1_420px] flex-col gap-3.5 p-6"]}>
+        <h2 class="m-0 text-[1.625rem]"><T k="shell.guide.tips.avoidHeading" /></h2>
+        <ul class="m-0 flex list-disc flex-col gap-2.5 pl-5 leading-[1.6]">
+          {tips.map((k) => <li><T k={`shell.guide.tips.avoid.${k}`} /></li>)}
+        </ul>
+      </div>
+    </section>
+
+    <section class="flex flex-wrap items-center justify-between gap-6 rounded-[28px] bg-accent p-9 text-on-accent dark:bg-accent-soft dark:text-ink max-md:p-6">
+      <div class="flex min-w-0 flex-[1_1_420px] flex-col gap-2">
+        <h2 class="m-0 text-[1.875rem] max-md:text-[1.375rem]"><T k="shell.guide.cta.heading" /></h2>
+        <p class="m-0 text-[1.0625rem] leading-[1.6] opacity-90"><T k="shell.guide.cta.body" /></p>
+      </div>
+      <a class="btn cta sun" href={mockHref}><T k="shell.guide.cta.button" /></a>
+    </section>
+  </div>
+</BaseLayout>
