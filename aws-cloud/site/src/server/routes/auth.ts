@@ -21,11 +21,20 @@ function loginError(code: string, returnTo = "/"): Response {
 async function upsertUser(profile: GoogleProfile): Promise<void> {
   const taken = await query<{ id: string }>(`select id from users where email = $1 and id <> $2`, [profile.email, profile.sub]);
   if (taken.length) throw new HttpError(409, "email_in_use", "This email belongs to another account");
-  await query(
-    `insert into users (id, email, name, picture) values ($1, $2, $3, $4)
-     on conflict (id) do update set email = excluded.email, name = excluded.name, picture = excluded.picture, last_login_at = now()`,
-    [profile.sub, profile.email, profile.name, profile.picture],
-  );
+  const upsert = () =>
+    query(
+      `insert into users (id, email, name, picture) values ($1, $2, $3, $4)
+       on conflict (id) do update set email = excluded.email, name = excluded.name, picture = excluded.picture, last_login_at = now()`,
+      [profile.sub, profile.email, profile.name, profile.picture],
+    );
+  try {
+    await upsert();
+  } catch (e) {
+    // Two first sign-ins of the same account at once (two tabs): the other insert won the email's
+    // unique index; the row exists now, so the retry takes the update path.
+    if ((e as { code?: string }).code !== "23505") throw e;
+    await upsert();
+  }
 }
 
 async function signIn(request: Request, profile: GoogleProfile, returnTo: string, extraCookies: string[] = []): Promise<Response> {

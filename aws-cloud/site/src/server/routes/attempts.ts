@@ -147,7 +147,8 @@ export const attemptRoutes: Route[] = [
       if (typeof body.certId !== "string" || typeof body.examId !== "string") throw new HttpError(400, "bad_attempt", "certId and examId are required");
       const allowed = await attemptQuestionIds(body.certId, body.examId);
       const count = allowed === "any" ? Number(body.questionCount) : allowed.length;
-      if (!Number.isInteger(count) || count < 1 || count > MAX_REVIEW) throw new HttpError(400, "bad_attempt", "questionCount is out of range");
+      // Fixed sets are counted by the server; only a review round takes its size from the client.
+      if (!Number.isInteger(count) || count < 1 || (allowed === "any" && count > MAX_REVIEW)) throw new HttpError(400, "bad_attempt", "questionCount is out of range");
       const row = await one<AttemptRow>(
         `insert into attempts (id, user_id, cert_id, exam_id, question_count) values ($1, $2, $3, $4, $5) returning ${ATTEMPT_COLUMNS}`,
         [crypto.randomUUID(), user.id, body.certId, body.examId, count],

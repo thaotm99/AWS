@@ -67,10 +67,16 @@ const withApi = Boolean(process.env.DATABASE_URL);
 const server = withApi
   ? spawn("npx", ["tsx", "scripts/dev-server.ts", String(PORT)], {
       stdio: "ignore",
+      detached: true,
       env: { ...process.env, AUTH_DEV_LOGIN: "1", SESSION_SECRET: process.env.SESSION_SECRET ?? "e2e-secret-e2e-secret-e2e-secret!!" },
     })
-  : spawn("npx", ["astro", "preview", "--port", String(PORT)], { stdio: "ignore" });
-const stop = () => server.kill();
+  : spawn("npx", ["astro", "preview", "--port", String(PORT)], { stdio: "ignore", detached: true });
+// The server runs in its own process group (npx → tsx → node), so stopping it stops every child too.
+const stop = () => {
+  try {
+    process.kill(-server.pid);
+  } catch {}
+};
 process.on("exit", stop);
 for (let i = 0; ; i++) {
   try {

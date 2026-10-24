@@ -92,6 +92,11 @@ try {
   const set = (await (await call(ada, "GET", `/api/certifications/${CERT}/topics/${topic}/en`)).json()) as { id: string; questions: { number: number }[] };
   assert.equal(set.id, `topic-${topic}`);
   assert.deepEqual(set.questions.map((x) => x.number), set.questions.map((_, i) => i + 1));
+  // The largest lesson set (over 100 questions) still starts an attempt.
+  const big = (await query<{ topic_id: string; n: number }>(`select topic_id, count(*)::int as n from question_topics where cert_id = $1 group by 1 order by 2 desc limit 1`, [CERT]))[0];
+  const bigAttempt = await call(ada, "POST", "/api/attempts", { certId: CERT, examId: `topic-${big.topic_id}`, questionCount: big.n });
+  assert.equal(bigAttempt.status, 201);
+  assert.equal(((await bigAttempt.json()) as { questionCount: number }).questionCount, big.n);
 
   // Mock exam: the draft lives on the server; handing in grades every question and drops the draft.
   const draft = { startedAt: Date.now(), answers: { [q.id]: right }, flags: [q.id], index: 3 };
