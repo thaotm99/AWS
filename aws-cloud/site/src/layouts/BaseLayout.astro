@@ -6,7 +6,7 @@ import { getCollection } from "astro:content";
 import { getCurriculum } from "../data/exam";
 import T from "../app/T.astro";
 import type { SiteMessageKey } from "../app/i18n";
-import type { MessageParams } from "../core/i18n/types";
+import type { DomParams } from "../core/i18n/types";
 import LanguageSwitch from "../modules/shell/ui/LanguageSwitch.astro";
 import ThemeToggle from "../modules/shell/ui/ThemeToggle.astro";
 import { DEFAULT_LOCALE } from "../core/i18n/types";
@@ -32,7 +32,7 @@ interface Props {
   wide?: boolean;
   /** Translated <title>; `title` stays as the default-language text. */
   titleKey?: SiteMessageKey;
-  titleParams?: MessageParams;
+  titleParams?: DomParams;
 }
 
 const {
