@@ -238,6 +238,13 @@ export class UserDataStore {
     }
   }
 
+  /** Sends what is waiting and resolves once nothing is left in flight (before signing out), or after `ms`. */
+  async drain(ms = 3000): Promise<void> {
+    this.flush();
+    const until = Date.now() + ms;
+    while (this.saving && Date.now() < until) await new Promise((r) => setTimeout(r, 50));
+  }
+
   /** True while some change has not reached the server yet. */
   get saving(): boolean {
     return this.timers.size > 0 || this.inflight.size > 0;
