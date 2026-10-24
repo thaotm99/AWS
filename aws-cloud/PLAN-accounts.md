@@ -180,7 +180,6 @@ Migration viết bằng SQL thuần trong `aws-cloud/site/db/migrations/NNN_*.sq
 | GET | `/api/data` | Toàn bộ `user_docs` + notes của người dùng (một request khi mở site) |
 | PUT | `/api/data/:name` | Ghi một tài liệu, body `{ value, baseVersion }`; trả `409` kèm bản mới nhất khi lệch version |
 | PUT / DELETE | `/api/notes/:id` | Ghi hoặc xoá mềm một ghi chú |
-| POST | `/api/data/import` | Lần đăng nhập đầu: tải toàn bộ dữ liệu trình duyệt lên (gộp theo luật ở mục 7) |
 | GET | `/api/practice/certifications`, `/:cert` | Danh sách chứng chỉ, đề, số câu, domain (không có nội dung câu) |
 | GET | `/api/practice/:cert/exams/:n` | Câu hỏi của một đề, **không có** đáp án và lời giải |
 | POST | `/api/practice/questions/:id/check` | Chấm một câu, ghi `attempts`, trả đáp án + lời giải |
@@ -188,23 +187,25 @@ Migration viết bằng SQL thuần trong `aws-cloud/site/db/migrations/NNN_*.sq
 | GET | `/api/practice/:cert/topics/:topic`, `/review`, `/skills` | Câu theo chủ đề, câu cần ôn, bản đồ kỹ năng (tính từ `attempts`) |
 | GET | `/api/account/export` · DELETE `/api/account` | Xuất dữ liệu JSON · xoá tài khoản và mọi dữ liệu |
 
-## 7. Đồng bộ ở client (local-first)
+## 7. Dữ liệu ở client: đọc và ghi thẳng lên server
+
+Chủ repo đã chọn **không đồng bộ dữ liệu trình duyệt**: server là nơi lưu duy nhất, trình duyệt không giữ bản sao
+để chạy offline và không có hàng đợi gửi lại.
 
 - Gom mọi truy cập `localStorage` ở `src/lib/*` về một store chung `src/core/userdata/` với API
   `get(name)`, `set(name, value)`, `subscribe(name, fn)`; sự kiện `*-change` hiện có giữ nguyên để giao diện không đổi.
-- `localStorage` vẫn là bộ đệm: giao diện đọc ngay, chạy được khi offline. Mỗi lần ghi: lưu local → đưa vào hàng đợi →
-  gửi `PUT` sau ~1 giây (gộp các lần ghi liền nhau) → gửi lại khi có mạng (`online`, `visibilitychange`).
-- Mở site: `GET /api/data`, gộp với local theo luật dưới, rồi phát sự kiện thay đổi.
-- Luật gộp:
-  - Tập hợp (`parts-read`, `done`, `known-terms`): hợp hai tập.
-  - `activity`: cộng theo ngày, lấy giá trị lớn hơn cho từng ngày.
-  - `flashcards`: theo từng thẻ, giữ bản có lần ôn mới hơn.
-  - `notes`: theo từng item, `updated_at` mới hơn thắng; xoá là xoá mềm.
-  - Còn lại (`goals`, `labs`, `drills`, `city`, cài đặt, `exam-date`): bản có `updated_at` mới hơn thắng; `409` thì
-    tải bản mới nhất rồi áp lại thay đổi chưa gửi.
-- Lần đăng nhập đầu: dữ liệu đang có trên trình duyệt được tự động gộp vào tài khoản (`POST /api/data/import`), không hỏi,
-  theo cùng luật gộp ở trên.
-- Đăng xuất: xoá dữ liệu người dùng trong `localStorage`, IndexedDB và cache của service worker.
+  Store đọc và ghi qua API thay vì `localStorage`.
+- Mở trang: `GET /api/data` một lần, giữ kết quả trong bộ nhớ của trang (không ghi xuống trình duyệt).
+- Ghi: cập nhật giao diện ngay, gửi `PUT /api/data/:name` (gộp các lần ghi liền nhau trong ~1 giây). Lỗi mạng hoặc
+  server: hoàn tác thay đổi trên giao diện và báo "Chưa lưu được, thử lại". `409` (thiết bị khác vừa ghi): tải bản
+  mới nhất rồi áp lại thay đổi.
+- Không gộp, không chuyển dữ liệu cũ: tiến độ đang nằm trong trình duyệt hiện tại **không** được đưa vào tài khoản.
+  Tài khoản bắt đầu trống; dữ liệu cũ trong `localStorage` và IndexedDB được xoá ở lần đăng nhập đầu.
+- Chỉ còn hai giá trị nằm ở trình duyệt: `theme` và `locale`, để trang hiện đúng màu và ngôn ngữ ngay khi tải
+  (trước khi gọi API). Chúng cũng được lưu lên tài khoản như cài đặt.
+- Mất mạng: bài học đã lưu offline vẫn đọc được (service worker giữ trang tĩnh như hiện tại), nhưng tiến độ, ghi chú
+  và làm đề không lưu được; giao diện báo rõ.
+- Đăng xuất: xoá cache dữ liệu của service worker; không còn dữ liệu người học nào trên trình duyệt.
 - Luyện đề: `src/app/api.ts` đổi sang `HttpApiClient` cho `attempts`; các trang luyện đề tải đề qua `/api/practice/*`.
 
 ## 8. Đưa đề thi vào database
@@ -231,8 +232,8 @@ Bản vẽ đã review: https://claude.ai/artifact/JVZe1388mcNjpSmx1GiHmf (7 mà
 
 | # | Màn | Nội dung |
 |---|---|---|
-| 1–2 | Đăng nhập (desktop, điện thoại) | Lợi ích khi có tài khoản; nút "Đăng nhập bằng Google" theo mẫu nút của Google; dòng "CloudLab chỉ đọc tên, email và ảnh đại diện"; chọn VI/EN. Lỗi đăng nhập (huỷ, email chưa xác minh, phiên hết hạn) hiện thành một dòng ngay dưới nút, không có trang riêng |
-| 3 | Menu tài khoản và biểu tượng đồng bộ | Ảnh đại diện trên thanh trên cùng mở menu: tên, email, trạng thái đồng bộ, Tài khoản và dữ liệu, Tiến độ, Đăng xuất. Biểu tượng đồng bộ có 4 trạng thái: Đã lưu · Đang lưu · Offline (số thay đổi chờ gửi) · Chưa lưu được (Thử lại / Đăng nhập lại) |
+| 1–2 | Đăng nhập (desktop, điện thoại) | Logo CloudLab và một thẻ đăng nhập ở giữa (không có cột giới thiệu bên trái); nút "Đăng nhập bằng Google" theo mẫu nút của Google; dòng "CloudLab chỉ đọc tên, email và ảnh đại diện"; chọn VI/EN. Lỗi đăng nhập (huỷ, email chưa xác minh, phiên hết hạn) hiện thành một dòng ngay dưới nút, không có trang riêng |
+| 3 | Menu tài khoản | Ảnh đại diện trên thanh trên cùng mở menu: tên, email, Tài khoản và dữ liệu, Tiến độ, Đăng xuất |
 | 4 | Trang tài khoản `/account/` | Hồ sơ; bảng dữ liệu đã lưu (9 loại, số lượng, thời điểm cập nhật); tải dữ liệu JSON; danh sách phiên, đăng xuất các thiết bị khác; vùng xoá tài khoản |
 | 5 | Xác nhận xoá tài khoản | Gõ đúng email mới bật nút xoá; nhắc tải dữ liệu về trước |
 | 6 | Luyện đề | Câu hỏi tải từ API; bấm Kiểm tra mới nhận đáp án và lời giải từ server |
@@ -245,8 +246,8 @@ Bản vẽ đã review: https://claude.ai/artifact/JVZe1388mcNjpSmx1GiHmf (7 mà
 | 0 | Chuẩn bị (chủ repo) | Chuyển repo private; thêm Neon qua Vercel Marketplace; tạo OAuth Client trên Google Cloud; đặt biến môi trường (mục 11) | `DATABASE_URL`, `GOOGLE_CLIENT_ID/SECRET`, `SESSION_SECRET` có trên Vercel | ⬜ |
 | 1 | Store dữ liệu chung | `src/core/userdata/`; đổi `src/lib/*`, `Highlighter`, `MockExamPage` sang store; unit test cho store và luật gộp | Không đổi hành vi; pixel diff + click QA như cũ | ⬜ |
 | 2 | Hạ tầng server | Adapter `@astrojs/vercel` (trang vẫn prerender); `db/migrations` + `npm run db:migrate`; hai role Postgres | Build và deploy preview OK; migration chạy được trên Neon | ⬜ |
-| 3 | Đăng nhập Google | `/login`, `/auth/*`, bảng `users`/`sessions`; middleware thay Basic auth trên production; menu tài khoản và biểu tượng đồng bộ | Đăng nhập được bằng mọi tài khoản Google đã xác minh email; đăng xuất thu hồi phiên; preview vẫn Basic auth | ⬜ |
-| 4 | Dữ liệu người học trên server | `/api/me`, `/api/data*`, `/api/notes/*`; đồng bộ local-first; import lần đầu; SW không cache API | Dữ liệu khớp giữa 2 trình duyệt; offline vẫn dùng được và đồng bộ khi có mạng | ⬜ |
+| 3 | Đăng nhập Google | `/login`, `/auth/*`, bảng `users`/`sessions`; middleware thay Basic auth trên production; menu tài khoản | Đăng nhập được bằng mọi tài khoản Google đã xác minh email; đăng xuất thu hồi phiên; preview vẫn Basic auth | ⬜ |
+| 4 | Dữ liệu người học trên server | `/api/me`, `/api/data*`, `/api/notes/*`; store đọc và ghi qua API; báo lỗi và hoàn tác khi không lưu được; xoá dữ liệu cũ trong trình duyệt ở lần đăng nhập đầu; SW không cache API | Dữ liệu khớp giữa 2 trình duyệt; không còn dữ liệu người học trong `localStorage`/IndexedDB | ⬜ |
 | 5 | Đề thi trong database | Script nhập đề; manifest; `/api/practice/*` (chấm ở server, giới hạn tần suất, audit log); trang luyện đề tải qua API; bỏ JSON tĩnh | Đủ 390 câu; mọi luồng luyện đề, thi thử, ôn câu sai, bản đồ kỹ năng chạy như cũ; `dist` không còn nội dung đề | ⬜ |
 | 6 | Dọn repo | Xoá file đề và bản dịch khỏi repo; cập nhật tài liệu; (tuỳ chọn, cần đồng ý riêng) xoá khỏi lịch sử git | `git grep` không còn nội dung đề | ⬜ |
 | 7 | Trang tài khoản | Hồ sơ, bảng dữ liệu đã lưu, xuất dữ liệu JSON, phiên đăng nhập (đăng xuất các thiết bị khác), xoá tài khoản (gõ email để xác nhận) | Xuất ra đủ dữ liệu; xoá tài khoản xoá sạch các bảng | ⬜ |
@@ -259,12 +260,11 @@ Thứ tự bắt buộc: 0 → 1 → 2 → 3, sau đó 4 và 5 làm song song đ
 | Câu hỏi | Đề xuất |
 |---|---|
 | Ai được đăng nhập? | **Đã chốt:** mọi tài khoản Google đã xác minh email, không có danh sách cho phép |
-| Dữ liệu trình duyệt khi đăng nhập lần đầu? | **Đã chốt:** tự động gộp vào tài khoản, không hiện hộp thoại hỏi |
+| Đồng bộ dữ liệu trình duyệt? | **Đã chốt:** không. Server là nơi lưu duy nhất; tiến độ cũ trong trình duyệt không chuyển vào tài khoản |
 | Bản preview của Vercel đăng nhập thế nào? | Giữ Basic auth (Google không nhận redirect URI thay đổi theo từng preview); preview dùng một nhánh database riêng của Neon, không có đề thật hoặc chỉ một đề mẫu |
 | Giữ đường deploy S3 + CloudFront? | Ngừng; `infra/` giữ lại làm tài liệu tham khảo hoặc xoá |
 | Xoá đề khỏi lịch sử git? | Có, nhưng chỉ sau khi repo đã private và giai đoạn 5 chạy ổn; cần sao lưu repo trước |
 | Có cần chấm đề ở server (ẩn đáp án tới khi nộp)? | Có (mục 4.1); thêm một request mỗi câu, chấp nhận được |
-| Lượt làm đề cũ trong IndexedDB? | Tải lên cùng lần import đầu tiên, giữ nguyên `id` câu |
 
 ## 11. Việc chủ repo làm
 
@@ -281,7 +281,9 @@ Thứ tự bắt buộc: 0 → 1 → 2 → 3, sau đó 4 và 5 làm song song đ
 | Rủi ro | Cách giảm |
 |---|---|
 | Thay đổi lớn, chạm gần như mọi tính năng | Giai đoạn 1 không đổi hành vi, có pixel diff và click QA; mỗi giai đoạn một PR |
-| Neon gói miễn phí tự tắt khi không dùng → request đầu chậm | Local-first: giao diện không chờ server; chỉ đồng bộ và tải đề bị trễ |
+| Neon gói miễn phí tự tắt khi không dùng → request đầu chậm | Hiện trạng thái đang tải; trang tĩnh (bài học) vẫn hiện ngay, chỉ phần dữ liệu cá nhân và đề bị trễ |
+| Mất mạng thì không lưu được tiến độ | Báo rõ trên giao diện và cho thử lại; chấp nhận được vì chủ repo đã chọn không đồng bộ offline |
+| Mất tiến độ đang có trong trình duyệt | Đã chốt không chuyển; nếu cần giữ, chủ repo xuất dữ liệu cũ trước khi lên bản mới |
 | Luyện đề phụ thuộc mạng | Đề đang làm giữ trong bộ nhớ trang; mất mạng thì báo và cho làm lại khi có mạng (không cache đề lâu dài) |
 | Xoá lịch sử git làm hỏng các clone cũ và PR mở | Làm cuối cùng, khi không còn PR mở; báo trước |
 | Hết hạn gói miễn phí hoặc đổi giá | Dữ liệu nhỏ; có script xuất toàn bộ dữ liệu ra JSON để chuyển nơi khác |
